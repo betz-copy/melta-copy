@@ -60,6 +60,7 @@ const BodyComponent: React.FC<StepComponentProps<TableMetaData>> = ({ values }) 
                         editable={false}
                         defaultFilter={memoizedFilter}
                         disableFilter
+                        columnsToShow={values.columns}
                     />
                 </Card>
             )}

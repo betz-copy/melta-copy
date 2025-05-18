@@ -13,7 +13,7 @@ const PieChart: React.FC<{
     disabled: boolean;
 }> = ({ formik, formikValues, entityTemplate, disabled }) => {
     return (
-        <Grid container direction="column" spacing={2} marginTop={2}>
+        <Grid container direction="column" spacing={2}>
             <Grid item>
                 <AxisInput
                     formikField="metaData.dividedByField"

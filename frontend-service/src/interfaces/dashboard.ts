@@ -3,16 +3,15 @@ import { IGraphFilterBodyBatch } from './entities';
 import { IFrame } from './iFrames';
 
 export enum DashboardItemType {
-    Iframe = 'iframe',
-    Chart = 'chart',
     Table = 'table',
+    Chart = 'chart',
+    Iframe = 'iframe',
 }
-
-export enum IPermission {
-    Protected = 'protected',
-    Private = 'private',
+export interface MongoBaseFields {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
-
 export interface TableMetaData {
     templateId: string;
     name: string;
@@ -22,48 +21,48 @@ export interface TableMetaData {
     filter?: IGraphFilterBodyBatch;
 }
 
-export interface IframeMetaData {
-    iframeId: string;
+export interface TableItem {
+    type: DashboardItemType.Table;
+    metaData: TableMetaData;
 }
 
-export interface ChartMetaData {
-    chartId: string;
-}
-
-export interface DashboardItemBase {
-    _id: string;
-    type: DashboardItemType;
-    // permission: IPermission;
-    // createdBy: string;
-}
-
-export interface ChartDashboardItem extends DashboardItemBase {
+export interface ChartItem {
     type: DashboardItemType.Chart;
-    metaData: ChartMetaData;
+    metaData: string;
 }
 
-export interface ChartDashboardItemPopulated extends DashboardItemBase {
+export interface IframeItem {
+    type: DashboardItemType.Iframe;
+    metaData: string;
+}
+
+export type DashboardItem = TableItem | ChartItem | IframeItem;
+
+export interface ChartItemPopulated {
     type: DashboardItemType.Chart;
     metaData: IChart;
 }
 
-export interface IframeDashboardItem extends DashboardItemBase {
+export interface IframeItemPopulated {
     type: DashboardItemType.Iframe;
-    metaData: IframeMetaData;
+    metaData: IFrame;
 }
 
-export interface TableDashboardItem extends DashboardItemBase {
-    type: DashboardItemType.Table;
-    metaData: TableMetaData;
+export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItemPopulated;
+
+export type MongoDashboardItem = DashboardItem & MongoBaseFields;
+export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
+
+export enum ViewMode {
+    Edit = 'edit',
+    ReadOnly = 'readonly',
+    Add = 'add',
 }
-export type DashboardItem = ChartDashboardItem | IframeDashboardItem | TableDashboardItem;
-
-export type DashboardItemPopulated = ChartDashboardItemPopulated | IframeDashboardItem | TableDashboardItem;
-
-export type DashboardItemData = IFrame | IChart | TableMetaData;
 
 export const isChartItem = ({ type }: DashboardItem) => type === DashboardItemType.Chart;
 
 export const isIframeItem = ({ type }: DashboardItem) => type === DashboardItemType.Iframe;
 
 export const isTableItem = ({ type }: DashboardItem) => type === DashboardItemType.Table;
+
+export type DashboardItemData = IChart | IFrame | TableMetaData;

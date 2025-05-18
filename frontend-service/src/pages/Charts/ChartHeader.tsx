@@ -5,12 +5,12 @@ import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
-import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import SearchInput from '../../common/inputs/SearchInput';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { TopBarGrid } from '../../common/TopBar';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 
 const ChartHeader: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -36,8 +36,8 @@ const ChartHeader: React.FC<{
                     </Grid>
                     <Grid item>
                         <Grid container wrap="nowrap" gap="15px">
-                            <GlobalSearchBar
-                                onSearch={(searchValue) => setTextSearch(searchValue || undefined)}
+                            <SearchInput
+                                onChange={(searchValue) => setTextSearch(searchValue || undefined)}
                                 placeholder={i18next.t('globalSearch.searchInPage')}
                                 toTopBar
                             />
@@ -57,7 +57,7 @@ const ChartHeader: React.FC<{
                 <IconButtonWithPopover
                     popoverText={i18next.t('charts.actions.addChart')}
                     iconButtonProps={{
-                        onClick: () => navigate(`${currentLocation}/chart`),
+                        onClick: () => navigate(`${currentLocation}/chart`, { state: { isChartPage: true } }),
                     }}
                     style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '150px', height: '35px' }}
                 >

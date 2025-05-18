@@ -1,0 +1,30 @@
+import axios from '../axios';
+import { environment } from '../globals';
+import { DashboardItem, DashboardItemPopulated, TableItem } from '../interfaces/dashboard';
+
+const { dashboard } = environment.api;
+
+export const createDashboardItem = async (newDashboardItem: DashboardItem) => {
+    const { data } = await axios.post(dashboard, newDashboardItem);
+    return data;
+};
+
+export const editDashboardItem = async (dashboardItemId: string, updatedDashboardItem: DashboardItemPopulated) => {
+    const { data } = await axios.put(`${dashboard}/${dashboardItemId}`, updatedDashboardItem);
+    return data;
+};
+
+export const getDashboardItemById = async (dashboardItemId: string) => {
+    const { data } = await axios.get<TableItem>(`${dashboard}/${dashboardItemId}`);
+    return data;
+};
+
+export const deleteDashboardItem = async (dashboardItemId: string) => {
+    const { data } = await axios.delete(`${dashboard}/${dashboardItemId}`);
+    return data;
+};
+
+export const getDashboardItems = async (textSearch?: string) => {
+    const { data } = await axios.post<DashboardItem[]>(`${dashboard}/search`, { textSearch });
+    return data;
+};

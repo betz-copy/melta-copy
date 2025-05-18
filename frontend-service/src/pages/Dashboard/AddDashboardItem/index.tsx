@@ -24,7 +24,7 @@ const AddDashboardItem: React.FC = () => {
         },
         {
             title: 'תרשים',
-            onClick: () => navigate('/charts/chart'),
+            onClick: () => navigate('/charts/chart', { state: { isChartPage: false } }),
             content: <img src="/icons/dashboardViews/chart.svg" />,
         },
         {

@@ -27,6 +27,7 @@ export const environment = {
         ruleBreachesRequests: '/rule-breaches/requests',
         ruleBreachesAlerts: '/rule-breaches/alerts',
         workspaces: '/workspaces',
+        dashboard: '/dashboard',
     },
     unauthorizedId: 'unauthorized',
     defaultTitle: 'Melta',

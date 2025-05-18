@@ -31,6 +31,8 @@ export interface DashboardItemBase {
     type: DashboardItemType;
     // permission: IPermission;
     // createdBy: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface ChartDashboardItem extends DashboardItemBase {

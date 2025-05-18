@@ -2,22 +2,27 @@ import { Check, Close, Delete, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
-import { FormikProps } from 'formik';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
+import { ViewMode } from '../../../interfaces/dashboard';
 
 interface DashboardItemHeaderProps {
     title: string;
-    readonly: boolean;
-    edit: boolean;
     backPath: { title: string; path: string };
     onDelete: () => void;
-    formikRef?: React.RefObject<FormikProps<any>>;
+    isLoading: boolean;
+    viewMode: {
+        value: ViewMode;
+        set: React.Dispatch<React.SetStateAction<ViewMode>>;
+    };
 }
 
-const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, readonly, edit, backPath, onDelete, formikRef }) => {
+const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPath, onDelete, isLoading, viewMode }) => {
+    /// todo:check edit permissin: only for admin
+    const hasPermission = true;
+    // todo: add loading spinner
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -59,11 +64,11 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, readon
             </Box>
 
             <Box display="flex" alignItems="center" gap="10px">
-                {readonly ? (
+                {viewMode.value === ViewMode.ReadOnly && hasPermission && (
                     <IconButtonWithPopover
-                        popoverText="הוספת כרטיסייה"
+                        popoverText="עריכה"
                         iconButtonProps={{
-                            onClick: () => console.log('hi'),
+                            onClick: () => viewMode.set(ViewMode.Edit),
                         }}
                         style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '100px', height: '35px' }}
                     >
@@ -72,14 +77,13 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, readon
                             עריכה
                         </Typography>
                     </IconButtonWithPopover>
-                ) : (
+                )}
+
+                {viewMode.value !== ViewMode.ReadOnly && hasPermission && (
                     <>
                         <IconButtonWithPopover
                             popoverText="ביטול"
                             iconButtonProps={{
-                                // onClick: () => {
-                                //     if (formikRef?.current) formikRef.current.resetForm();
-                                // },
                                 type: 'reset',
                             }}
                             style={{
@@ -98,9 +102,6 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, readon
                         <IconButtonWithPopover
                             popoverText="שמירה"
                             iconButtonProps={{
-                                // onClick: () => {
-                                //     if (formikRef?.current) formikRef.current.submitForm();
-                                // },
                                 type: 'submit',
                             }}
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '100px', height: '35px' }}
@@ -113,7 +114,7 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, readon
                     </>
                 )}
 
-                {edit && (
+                {(viewMode.value === ViewMode.Edit || viewMode.value === ViewMode.ReadOnly) && hasPermission && (
                     <Box
                         style={{
                             color: theme.palette.primary.main,
@@ -124,6 +125,7 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, readon
                     </Box>
                 )}
             </Box>
+
             <AreYouSureDialog
                 open={deleteDialogOpen}
                 title="בחרת למחוק את התרשים"

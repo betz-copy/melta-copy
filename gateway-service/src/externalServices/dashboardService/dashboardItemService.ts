@@ -1,5 +1,6 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
+import { IChart } from './chartService';
 import { IFrame } from './iframesService';
 
 const {
@@ -7,14 +8,14 @@ const {
 } = config;
 
 export enum DashboardItemType {
-    Iframe = 'iframe',
-    Chart = 'chart',
     Table = 'table',
+    Chart = 'chart',
+    Iframe = 'iframe',
 }
-
-export enum IPermission {
-    Protected = 'protected',
-    Private = 'private',
+export interface MongoBaseFields {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface TableMetaData {
@@ -24,52 +25,37 @@ export interface TableMetaData {
     filters: string;
 }
 
-export interface IframeMetaData {
-    iframeId: string;
-}
-
-export interface IframeMetaDataPopulated {
-    iframe: IFrame;
-}
-
-export interface ChartMetaData {
-    chartId: string;
-}
-
-export interface DashboardItemBase {
-    _id?: string;
-    type: DashboardItemType;
-    permission: IPermission;
-    createdBy: string;
-}
-
-export interface ChartDashboardItem extends DashboardItemBase {
-    type: DashboardItemType.Chart;
-    metaData: ChartMetaData;
-}
-
-export interface IframeDashboardItem extends DashboardItemBase {
-    type: DashboardItemType.Iframe;
-    metaData: IframeMetaData;
-}
-
-export interface TableDashboardItem extends DashboardItemBase {
-    type: DashboardItemType.Table;
-    metaData: IframeMetaDataPopulated;
-}
-
-export interface IframeDashboardItemPopulated extends DashboardItemBase {
+export interface TableItem {
     type: DashboardItemType.Table;
     metaData: TableMetaData;
 }
 
-export type DashboardItem = ChartDashboardItem | IframeDashboardItem | TableDashboardItem;
+export interface ChartItem {
+    type: DashboardItemType.Chart;
+    metaData: string;
+}
 
-export const isChartItem = ({ type }: DashboardItem) => type === DashboardItemType.Chart;
+export interface IframeItem {
+    type: DashboardItemType.Iframe;
+    metaData: string;
+}
 
-export const isIframeItem = ({ type }: DashboardItem) => type === DashboardItemType.Iframe;
+export type DashboardItem = TableItem | ChartItem | IframeItem;
 
-export const isTableItem = ({ type }: DashboardItem) => type === DashboardItemType.Table;
+export interface ChartItemPopulated {
+    type: DashboardItemType.Chart;
+    metaData: IChart;
+}
+
+export interface IframeItemPopulated {
+    type: DashboardItemType.Iframe;
+    metaData: IFrame;
+}
+
+export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItemPopulated;
+
+export type MongoDashboardItem = DashboardItem & MongoBaseFields;
+export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
 
 export class DashboardItemService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
@@ -78,6 +64,11 @@ export class DashboardItemService extends DefaultExternalServiceApi {
 
     async createDashboardItem(dashboardItem: DashboardItem): Promise<DashboardItem> {
         const { data } = await this.api.post('/', dashboardItem);
+        return data;
+    }
+
+    async searchDashboardItems(textSearch?: string) {
+        const { data } = await this.api.post<DashboardItem[]>('/search', { textSearch });
         return data;
     }
 }

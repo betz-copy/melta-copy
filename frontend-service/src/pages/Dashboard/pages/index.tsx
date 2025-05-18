@@ -4,30 +4,64 @@ import { Form, Formik, FormikProps } from 'formik';
 import { DashboardItemHeader } from './DashboardItemHeader';
 import { DashboardItemSideBar } from './DashboardItemSideBar';
 import { StepComponentHelpers, StepType } from '../../../common/wizards';
-import { DashboardItemData } from '../../../interfaces/dashboard';
+import { DashboardItemData, ViewMode } from '../../../interfaces/dashboard';
 
-interface DashboardItemProps {
+// interface DashboardItemProps {
+//     title: string;
+//     /// createOrEditMutation
+//     // onDelete: () => void;
+//     initialValues: DashboardItemData;
+//     backPath: { path: string; title: string };
+//     onDelete: () => void;
+//     steps: StepType<DashboardItemData>[];
+//     bodyComponent: (formikProps: FormikProps<DashboardItemData>, helpers?: StepComponentHelpers) => JSX.Element;
+//     isLoading: boolean;
+//     submitFunction: (values: DashboardItemData) => Promise<any>;
+//     viewMode: ViewMode;
+//     setViewMode: React.Dispatch<React.SetStateAction<ViewMode>>;
+// }
+
+interface DashboardItemProps<T extends DashboardItemData> {
+    initialValues: T;
+    submitFunction: (values: T) => Promise<any>;
+    steps: StepType<T>[];
+    viewMode: {
+        value: ViewMode;
+        set: React.Dispatch<React.SetStateAction<ViewMode>>;
+    };
     title: string;
-    /// createOrEditMutation
-    // onDelete: () => void;
-    initialValues: DashboardItemData;
-    edit: boolean;
-    readonly: boolean;
+    isLoading: boolean;
     backPath: { path: string; title: string };
     onDelete: () => void;
-    steps: StepType<DashboardItemData>[];
-    bodyComponent: (formikProps: FormikProps<DashboardItemData>, helpers?: StepComponentHelpers) => JSX.Element;
+    bodyComponent: (formikProps: FormikProps<T>, helpers?: StepComponentHelpers) => JSX.Element;
 }
 
-const DashboardItem: React.FC<DashboardItemProps> = ({ title, initialValues, edit, readonly, backPath, onDelete, steps, bodyComponent }) => {
+const DashboardItem = <T extends DashboardItemData>({
+    title,
+    initialValues,
+    backPath,
+    onDelete,
+    steps,
+    bodyComponent,
+    isLoading,
+    submitFunction,
+    viewMode,
+}: DashboardItemProps<T>) => {
     const [activeStep, setActiveStep] = React.useState(0);
 
     return (
-        <Formik initialValues={initialValues} onSubmit={() => console.log('Submit')} validationSchema={steps[activeStep].validationSchema}>
-            {(formikProps: FormikProps<DashboardItemData>) => (
+        <Formik
+            initialValues={initialValues}
+            onSubmit={async (values) => {
+                await submitFunction(values);
+            }}
+            validationSchema={steps[activeStep].validationSchema}
+        >
+            {(formikProps: FormikProps<T>) => (
                 <Form>
-                    <DashboardItemHeader title={title} edit={edit} readonly={readonly} backPath={backPath} onDelete={onDelete} />
-                    <Grid container height="94.7vh">
+                    <DashboardItemHeader title={title} backPath={backPath} onDelete={onDelete} isLoading={isLoading} viewMode={viewMode} />
+
+                    <Grid container height="94.7vh" wrap="nowrap">
                         <Grid item flexGrow={1} overflow="auto">
                             {bodyComponent(formikProps)}
                         </Grid>

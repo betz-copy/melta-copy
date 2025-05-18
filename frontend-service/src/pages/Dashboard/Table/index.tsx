@@ -1,70 +1,105 @@
 /* eslint-disable react/no-unstable-nested-components */
+import { CircularProgress } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useRef, useState } from 'react';
-import * as Yup from 'yup';
-import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
+import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation, useParams } from 'wouter';
+import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
-import { TableMetaData } from '../../../interfaces/dashboard';
-import { IEntity } from '../../../interfaces/entities';
+import { DashboardItemType, TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../services/dashboardService';
+import { dashboardInitialValues, tableDetailsSchema } from '../../../utils/dashboard/formik';
 import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
 import { DashboardItem } from '../pages';
 import { BodyComponent } from './BodyCompenet';
 import { SideBarDetails } from './sideBarDetails';
 
 const Table: React.FC = () => {
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
-    const [filters, setFilters] = useState<number[]>([]);
+    const { tableId } = useParams<{ tableId: string }>();
+    const [_, navigate] = useLocation();
 
-    const setColumnsVisible = (colId: string) => entitiesTableRef.current?.setColumnsVisible(colId);
+    const [viewMode, setViewMode] = useState<ViewMode>(tableId ? ViewMode.ReadOnly : ViewMode.Add);
 
-    const moveColumn = (colId: string, destination: number) => entitiesTableRef.current?.moveColumn(colId, destination);
+    const queryClient = useQueryClient();
+    const { data: table, isLoading: isLoadingGetTable } = useQuery(['getTable', tableId], () => getDashboardItemById(tableId!), {
+        enabled: !!tableId,
+    });
+
+    useEffect(() => {
+        if (tableId && table) setViewMode(ViewMode.ReadOnly);
+    }, [tableId, table]);
+
+    const { isLoading, mutateAsync } = useMutation(
+        (tableData: TableMetaData) =>
+            viewMode === ViewMode.Edit
+                ? editDashboardItem(tableId!, { type: DashboardItemType.Table, metaData: tableData as TableMetaData })
+                : createDashboardItem({ type: DashboardItemType.Table, metaData: tableData as TableMetaData }),
+
+        {
+            onSuccess: async (data) => {
+                if (viewMode === ViewMode.Edit) {
+                    queryClient.invalidateQueries(['getTable', tableId]);
+                    setViewMode(ViewMode.ReadOnly);
+                } else {
+                    navigate(`/table/${data._id}`);
+                }
+
+                toast.success(i18next.t(viewMode === ViewMode.Edit ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={
+                            ViewMode.Edit ? i18next.t('wizard.entityTemplate.failedToEdit') : i18next.t('wizard.entityTemplate.failedToCreate')
+                        }
+                    />,
+                );
+            },
+        },
+    );
+
+    const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(tableId), {
+        onSuccess: () => {
+            navigate('/');
+            toast.success(i18next.t('charts.actions.deletedSuccessfully'));
+        },
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
+        },
+    });
 
     const steps: StepType<TableMetaData>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <SideBarDetails {...props} />,
-            validationSchema: Yup.object().shape({
-                name: Yup.string().required(i18next.t('validation.required')),
-                description: Yup.string().required(i18next.t('validation.required')),
-            }),
+            validationSchema: tableDetailsSchema,
         },
         {
             label: i18next.t('charts.filterDetails'),
-            component: (props) => (
-                <FilterSideBar
-                    filters={filters}
-                    setFilters={setFilters}
-                    readonly={false}
-                    moveColumn={moveColumn}
-                    setColumnsVisible={setColumnsVisible}
-                    formikProps={props}
-                />
-            ),
+            component: (props) => <FilterSideBar {...props} />,
             validationSchema: undefined,
-            validate: undefined,
         },
     ];
 
+    if (isLoadingGetTable) return <CircularProgress />;
+
     return (
-        <DashboardItem
-            title="הוספת טבלה"
-            edit
-            readonly={false}
+        <DashboardItem<TableMetaData>
+            title={viewMode === ViewMode.Add ? i18next.t('dashboard.tables.addTable') : i18next.t('dashboard.tables.editTable')}
             backPath={{ path: '/', title: 'מסך ראשי' }}
-            onDelete={() => {}}
+            onDelete={deleteMutateAsync}
             steps={steps}
-            initialValues={
-                {
-                    templateId: '',
-                    name: '',
-                    description: '',
-                    columns: [],
-                    columnsOrder: [],
-                    filter: {},
-                    // filters: {},
-                } as TableMetaData
-            }
-            bodyComponent={BodyComponent}
+            initialValues={table ? table.metaData : dashboardInitialValues.table}
+            bodyComponent={(props) => <BodyComponent {...props} />}
+            submitFunction={(values) => mutateAsync(values)}
+            isLoading={isLoading}
+            viewMode={{
+                value: viewMode,
+                set: setViewMode,
+            }}
         />
     );
 };

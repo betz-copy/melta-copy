@@ -56,7 +56,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     searchValue?: string;
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
-    hideColumns?: string[];
+    columnsToShow?: string[];
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -81,7 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
     entityTemplates,
-    hideColumns = ['age'],
+    columnsToShow,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -106,7 +106,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                   (defaultVisibleColumns[property] !== undefined
                       ? !defaultVisibleColumns[property]
                       : hideNonPreview && !template.propertiesPreview.includes(property)) ||
-                  hideColumns?.includes(property);
+                  (columnsToShow && !columnsToShow?.includes(property));
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
@@ -309,6 +309,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
     );
 
     columnDefs.sort((a, b) => {
+        console.log({ a, b });
+
         if (!a.field || !b.field) return 0;
 
         const orderA = defaultColumnsOrder[a.field]?.order;

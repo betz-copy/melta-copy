@@ -41,22 +41,29 @@ const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemp
     };
 
     return (
-        <Grid item marginTop={2}>
-            <Typography variant="subtitle1">{i18next.t('charts.chartDetails')}</Typography>
+        <Grid container direction="column" spacing={2}>
+            <Grid item container direction="column" spacing={1}>
+                <Grid item>
+                    <Typography fontSize="14px" fontWeight="400" color="#9398C2">
+                        {i18next.t('charts.chartType')}
+                    </Typography>
+                </Grid>
 
-            <Grid item marginTop={2}>
-                {chartTypeButtons.map(({ icon, type, label }) => (
-                    <ChartTypeButton
-                        key={type}
-                        icon={icon}
-                        buttonId={type}
-                        selectedButton={formikValues.type}
-                        handleClick={handleButtonClick}
-                        popoverText={label}
-                        disabled={disabled}
-                    />
-                ))}
+                <Grid item>
+                    {chartTypeButtons.map(({ icon, type, label }) => (
+                        <ChartTypeButton
+                            key={type}
+                            icon={icon}
+                            buttonId={type}
+                            selectedButton={formikValues.type}
+                            handleClick={handleButtonClick}
+                            popoverText={label}
+                            disabled={disabled}
+                        />
+                    ))}
+                </Grid>
             </Grid>
+
             <Grid item>
                 {formikValues.type && (
                     <SelectedChartType formik={formik} formikValues={formikValues} entityTemplate={entityTemplate} disabled={disabled} />

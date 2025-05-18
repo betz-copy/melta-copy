@@ -209,6 +209,8 @@ export type EntitiesTableOfTemplateProps<Data> = {
     editable?: boolean;
     defaultFilter?: FilterModel;
     disableFilter?: boolean;
+    disableDragColumn?: boolean;
+    columnsToShow?: string[];
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -256,6 +258,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             editable = true,
             defaultFilter,
             disableFilter = false,
+            columnsToShow,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -378,6 +381,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             searchValue: quickFilterText,
             disableEditCell: !editable || editRowButtonProps?.disabledButton,
             entityTemplates,
+            columnsToShow,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 

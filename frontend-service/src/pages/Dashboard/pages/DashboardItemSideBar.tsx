@@ -5,14 +5,19 @@ import React from 'react';
 import { StepType } from '../../../common/wizards';
 import { DashboardItemData } from '../../../interfaces/dashboard';
 
-interface DashboardItemSideBarProps {
+interface DashboardItemSideBarProps<T extends DashboardItemData> {
     activeStep: number;
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-    steps: StepType<DashboardItemData>[];
-    formikProps: FormikProps<DashboardItemData>;
+    steps: StepType<T>[];
+    formikProps: FormikProps<T>;
 }
 
-const DashboardItemSideBar: React.FC<DashboardItemSideBarProps> = ({ activeStep, setActiveStep, steps, formikProps }) => {
+const DashboardItemSideBar = <T extends DashboardItemData>({
+    activeStep,
+    setActiveStep,
+    steps,
+    formikProps,
+}: DashboardItemSideBarProps<T>): React.ReactElement => {
     const theme = useTheme();
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {

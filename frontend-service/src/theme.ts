@@ -15,15 +15,14 @@ const basicTheme: ThemeOptions = {
                     '& .MuiInputBase-root': {
                         borderRadius: '10px',
                     },
-                    '& .MuiInputBase-input': {
-                        fontSize: '14px',
-                    },
+
                     '& fieldset': {
                         borderColor: '#CCCFE5',
                         color: '#CCCFE5',
                     },
                     '& label': {
                         color: '#9398C2',
+                        fontSize: 14,
                     },
                 },
             },

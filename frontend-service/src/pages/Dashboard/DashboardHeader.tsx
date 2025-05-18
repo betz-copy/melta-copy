@@ -1,14 +1,17 @@
-import { Grid } from '@mui/material';
+import { Loop } from '@mui/icons-material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { BlueTitle } from '../../common/BlueTitle';
-import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import SearchInput from '../../common/inputs/SearchInput';
 import { TopBarGrid } from '../../common/TopBar';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { AddDashboardItem } from './AddDashboardItem';
 
 const DashboardHeader: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const theme = useTheme();
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
@@ -24,8 +27,8 @@ const DashboardHeader: React.FC = () => {
                     </Grid>
                     <Grid item>
                         <Grid container wrap="nowrap" gap="15px">
-                            <GlobalSearchBar
-                                onSearch={(searchValue) => console.log({ searchValue })}
+                            <SearchInput
+                                onChange={(searchValue) => console.log({ searchValue })}
                                 placeholder={i18next.t('globalSearch.searchInPage')}
                                 toTopBar
                             />
@@ -35,7 +38,25 @@ const DashboardHeader: React.FC = () => {
             </Grid>
 
             <Grid item>
-                <AddDashboardItem />
+                <Grid container spacing={1} wrap="nowrap" alignItems="center">
+                    <Grid item>
+                        <IconButtonWithPopover
+                            popoverText="איפוס תצוגה"
+                            iconButtonProps={{
+                                onClick: () => console.log('rest'),
+                            }}
+                            style={{ borderRadius: '7px', width: '150px', height: '35px' }}
+                        >
+                            <Loop htmlColor={theme.palette.primary.main} />
+                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: theme.palette.primary.main }}>
+                                איפוס תצוגה
+                            </Typography>
+                        </IconButtonWithPopover>
+                    </Grid>
+                    <Grid item>
+                        <AddDashboardItem />
+                    </Grid>
+                </Grid>
             </Grid>
         </TopBarGrid>
     );

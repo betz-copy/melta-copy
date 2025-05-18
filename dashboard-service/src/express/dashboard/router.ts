@@ -10,4 +10,10 @@ dashboardRouter.post('/', controller.createDashboardItem);
 
 dashboardRouter.get('/:dashboardItemId', controller.getDashboardItemById);
 
+dashboardRouter.put('/:dashboardItemId', controller.editDashboardItem);
+
+dashboardRouter.delete('/:dashboardItemId', controller.deleteDashboardItem);
+
+dashboardRouter.post('/search', controller.getChartsByTemplateId);
+
 export default dashboardRouter;

@@ -3,6 +3,7 @@ import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { IoIosArrowDown } from 'react-icons/io';
 import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
@@ -62,7 +63,9 @@ const AxisInput: React.FC<AxisInputProps> = ({
             {titleFormikField && (
                 <>
                     <Grid item>
-                        <Typography variant="subtitle2">{label}</Typography>
+                        <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
+                            {label}
+                        </Typography>
                     </Grid>
                     <Grid item>
                         <TextField
@@ -74,8 +77,6 @@ const AxisInput: React.FC<AxisInputProps> = ({
                             error={Boolean(titleError)}
                             helperText={titleError}
                             fullWidth
-                            margin="normal"
-                            sx={{ width: '100%' }}
                             variant={readonly ? 'standard' : 'outlined'}
                             inputProps={{
                                 readOnly: readonly,
@@ -83,6 +84,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                                     textOverflow: 'ellipsis',
                                 },
                             }}
+                            sx={{ width: 295 }}
                         />
                     </Grid>
                 </>
@@ -92,7 +94,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     formik={formik}
                     formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}
                     options={typeOptions[optionsType]}
-                    label={label}
+                    label={i18next.t('charts.fieldToView')}
                     getOptionLabel={(option) => getOptionLabel(option)}
                     multiple={false}
                     onChange={(newValue) => {
@@ -100,7 +102,6 @@ const AxisInput: React.FC<AxisInputProps> = ({
                             formik.setFieldValue(formikField, { type: newValue, byField: '' } as IAggregation);
                         else formik.setFieldValue(formikField, (newValue as string) ?? '');
                     }}
-                    style={{ width: '100%' }}
                     readonly={readonly}
                     getOptionDisabled={(option) => {
                         const propertyTemplate = entityTemplate.properties.properties[option];
@@ -110,6 +111,8 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         }
                         return false;
                     }}
+                    popupIcon={<IoIosArrowDown fontSize="Medium" />}
+                    style={{ width: 295 }}
                 />
             </Grid>
             {isAggregation(fieldValue) && fieldValue?.type !== IAggregationType.CountAll && (
@@ -125,8 +128,8 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         label={`${i18next.t('charts.byField')}`}
                         getOptionLabel={(option) => getOptionLabel(option)}
                         multiple={false}
-                        style={{ width: '100%' }}
                         readonly={readonly}
+                        popupIcon={<IoIosArrowDown fontSize="Medium" />}
                     />
                 </Grid>
             )}
