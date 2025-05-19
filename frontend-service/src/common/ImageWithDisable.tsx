@@ -1,4 +1,5 @@
 import React, { CSSProperties } from 'react';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 
 interface ImageWithDisableProps {
     srcPath: string;
@@ -6,8 +7,8 @@ interface ImageWithDisableProps {
     style?: CSSProperties;
 }
 
-const ImageWithDisable: React.FC<ImageWithDisableProps> = ({ srcPath, disabled = false, style }) => {
-    return <img src={srcPath} style={{ opacity: disabled ? '0.3' : '1', ...style }} />;
+const ImageWithDisable: React.FC<ImageWithDisableProps> = ({ disabled = false, style }) => {
+    return <ContentCopyOutlinedIcon style={{ opacity: disabled ? '0.3' : '1', ...style }} />;
 };
 
 export { ImageWithDisable };
