@@ -19,7 +19,6 @@ export class Server {
 
     createExpressApp() {
         const app = express();
-
         app.use(helmet());
         app.use(bodyParser.json({ limit: config.service.maxFileSize }));
         app.use(bodyParser.urlencoded({ extended: true, limit: config.service.maxFileSize }));

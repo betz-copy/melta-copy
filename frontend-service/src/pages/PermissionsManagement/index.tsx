@@ -40,6 +40,7 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
 
     const permissionsTableRef = useRef<PermissionsTableRef<IUser>>(null);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSetQuickFilterText = useCallback(
         _debounce((value: string) => setQuickFilterText(value), 1000),
         [setQuickFilterText],

@@ -21,6 +21,7 @@ import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
 import { createCategoryOrder } from './templates/config';
+import { createCharts } from './templateCharts';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -128,6 +129,10 @@ const main = async () => {
     console.log('Creating gantts');
 
     await createGantts(chance, mainWorkspace._id, createdEntityTemplates, createdRelationshipTemplates);
+
+    console.log('Creating charts');
+
+    await createCharts(mainWorkspace._id, createdEntityTemplates, userIds[0]);
 
     console.log('Finished');
 };

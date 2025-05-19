@@ -38,5 +38,6 @@ module.exports = {
         'no-undef': 'off', // Checked by typescript
         'import/prefer-default-export': 'off',
         'no-plusplus': 'off',
+        'no-console': ['error', { allow: ['error'] }],
     },
 };

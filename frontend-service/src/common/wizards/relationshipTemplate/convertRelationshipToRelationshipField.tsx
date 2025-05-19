@@ -81,6 +81,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                             formik.setFieldValue('fieldName', relationshipTemplate.name);
                             formik.setFieldValue('displayFieldName', relationshipTemplate.displayName);
                         }
+                        // eslint-disable-next-line react-hooks/exhaustive-deps
                     }, [relationshipTemplate]);
 
                     return (

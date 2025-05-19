@@ -35,7 +35,7 @@ module.exports = {
         ],
         'no-underscore-dangle': 'off',
         'no-unused-vars': 'off', // Checked by typescript,
-        'no-console': 'off',
+        'no-console': ['error', { allow: ['error'] }],
         'import/prefer-default-export': 'off', // rule sucks
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',

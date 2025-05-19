@@ -72,6 +72,7 @@ const Category: React.FC = () => {
             ]);
             return [...existingCategoryTemplatesIds, ...entityTemplatesToAddIds];
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entityTemplates.size, category._id]);
 
     return (

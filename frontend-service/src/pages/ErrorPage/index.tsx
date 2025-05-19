@@ -17,7 +17,7 @@ const ErrorPage: React.FC<{ errorText: string; navigateToRoot?: boolean }> = ({ 
                 className="text__container"
                 onClick={(event) => {
                     if (event.detail === 3) {
-                        console.log(atob('JWNZb3UncmUgZ29ubmEgbmVlZCBhIGJpZ2dlciBib2F0'), 'color: blue; font-size:30px');
+                        console.error(atob('JWNZb3UncmUgZ29ubmEgbmVlZCBhIGJpZ2dlciBib2F0'), 'color: blue; font-size:30px');
                         setShowEasterEgg2((prev) => !prev);
                     }
                 }}
@@ -30,7 +30,7 @@ const ErrorPage: React.FC<{ errorText: string; navigateToRoot?: boolean }> = ({ 
                 onClick={(event) => {
                     if (event.detail === 3) {
                         setShowEasterEgg((prev) => !prev);
-                        console.log(atob('JWNIb3VzdG9uLCB3ZSBoYXZlIGEgcHJvYmxlbQ=='), 'color: blue; font-size:30px');
+                        console.error(atob('JWNIb3VzdG9uLCB3ZSBoYXZlIGEgcHJvYmxlbQ=='), 'color: blue; font-size:30px');
                     }
                 }}
             >
