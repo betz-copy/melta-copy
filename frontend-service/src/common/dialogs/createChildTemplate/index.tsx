@@ -17,7 +17,7 @@ import {
     InputAdornment,
 } from '@mui/material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -26,6 +26,10 @@ import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import SelectUserFieldDialog from './SelectUserFieldDialog';
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { createEntityChildTemplateRequest } from '../../../services/templates/entityChildTemplatesService';
+import { ErrorToast } from '../../ErrorToast';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
@@ -52,6 +56,10 @@ export interface IEntityChildTemplate {
     filters: Record<string, unknown>;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
+}
+
+export interface IMongoEntityChildTemplate extends IEntityChildTemplate {
+    _id: string;
 }
 
 export interface ITemplateFieldsFilters {
@@ -103,6 +111,23 @@ const CreateChildTemplateDialog: React.FC<{
         }
     }, [entityTemplate]);
 
+    const { mutateAsync: createEntityChildTemplate } = useMutation(
+        (newEntityChildTemplate: IEntityChildTemplate) => createEntityChildTemplateRequest(newEntityChildTemplate),
+        {
+            onError: (err: AxiosError) => {
+                console.error('failed to create entity child template. error:', err);
+                toast.error(
+                    <ErrorToast axiosError={err} defaultErrorMessage={i18next.t('createChildTemplateDialog.failedToCreateEntityChildTemplate')} />,
+                );
+            },
+            onSuccess: (_data: IMongoEntityChildTemplate) => {
+                toast.success(i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'));
+                queryClient.invalidateQueries('getEntityChildTemplates');
+                handleClose();
+            },
+        },
+    );
+
     const handleSave = async () => {
         const selectedFields = Object.entries(templateFieldsFilters).filter(([_fieldName, fieldFilter]) => fieldFilter.selected);
 
@@ -140,8 +165,8 @@ const CreateChildTemplateDialog: React.FC<{
             isFilterByCurrentUser: childTemplateFilterByCurrentUser,
             isFilterByUserUnit: childTemplateFilterByUserUnit,
         };
-        console.log('Child Template Created:', newChildTemplate);
-        handleClose();
+
+        createEntityChildTemplate(newChildTemplate);
     };
 
     const hasUserTypeProperty = React.useMemo(() => {

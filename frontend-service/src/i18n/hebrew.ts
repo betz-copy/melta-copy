@@ -1493,5 +1493,6 @@ export default {
             addAction: 'הוספה',
             byUser: 'משתמש',
         },
+        failedToCreateEntityChildTemplate: 'נכשל ליצור תבנית ישות בן',
     },
 };

@@ -1,7 +1,6 @@
 import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
-
-// format of properties keys in entity template
+import { ExtendedJoi } from '../../utils/joi';
 
 const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
 
@@ -57,17 +56,15 @@ export const createEntityChildTemplateSchema = Joi.object({
         name: variableNameValidation.required(),
         displayName: Joi.string().required(),
         description: Joi.string(),
-        fatherTemplate: MongoIdSchema.required(),
+        fatherTemplateId: MongoIdSchema.required(),
         categories: Joi.array().items(MongoIdSchema).required(),
-        propertiesFilters: Joi.object()
-            .pattern(Joi.string(), {
-                filter: searchFilterSchema,
-            })
-            .default({}),
+        properties: ExtendedJoi.stringToObject().required(),
         disabled: Joi.boolean().default(false),
         actions: Joi.string(),
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
-        filterByCurrentUser: Joi.boolean().default(false),
+        defaults: ExtendedJoi.stringToObject().required(),
+        filters: searchFilterSchema,
+        isFilterByCurrentUser: Joi.boolean().default(false),
         filterByUserUnit: Joi.boolean().default(false),
     },
     query: {},
