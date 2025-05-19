@@ -1,15 +1,13 @@
-/* eslint-disable react/no-array-index-key */
-/* eslint-disable no-nested-ternary */
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import React from 'react';
 import { AddRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
-import { IFieldFilter, ITemplateFieldsFilters } from '.';
 import { IExtendedUserFieldType, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
+import { IFieldFilter, ITemplateFieldsFilters } from './interfaces';
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -153,7 +151,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                                     );
                                                                 }}
                                                                 color="default"
-                                                                // style={{ backgroundColor: '#EBEFFA', borderRadius: '10px' }}
                                                             />
                                                         </Grid>
                                                     );
@@ -288,12 +285,22 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 },
                             ]);
                         } else if (dialogType === 'default') {
+                            const value = typeof fieldValue === 'object' && 'value' in fieldValue ? fieldValue.value : fieldValue;
+
+                            setTemplateFieldsFilters((prev) => ({
+                                ...prev,
+                                [fieldName]: {
+                                    ...prev[fieldName],
+                                    defaultValue: value,
+                                },
+                            }));
+
                             setFieldChips((prev) => [
                                 ...prev,
                                 {
                                     fieldName,
                                     chipType: 'default',
-                                    value: typeof fieldValue === 'object' && 'value' in fieldValue ? fieldValue.value : fieldValue,
+                                    value,
                                 },
                             ]);
                         }

@@ -1453,8 +1453,8 @@ export default {
         unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
     },
     createChildTemplateDialog: {
-        title: 'תואנה',
-        templateName: 'שם תצוגת תבנית בן (אנגלית)',
+        templateTitle: 'יצירת תבנית בן',
+        templateName: 'שם תבנית בן באנגלית',
         templateDisplayName: 'שם תצוגת תבנית בן',
         templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
         status: {
