@@ -1255,7 +1255,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }));
                                                                 if (checked) createEmptyGroup(value.name);
                                                             }}
-                                                            disabled={hasIdentifier && !value.identifier}
+                                                            disabled={(hasIdentifier && !value.identifier) || value.archive}
                                                             checked={value.identifier ?? false}
                                                         />
                                                     }
