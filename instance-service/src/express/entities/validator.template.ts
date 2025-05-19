@@ -45,6 +45,7 @@ ajv.addFormat('user', {
     },
 });
 ajv.addFormat('kartoffelUserField', /.*/);
+ajv.addFormat('unitUserField', /.*/);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
 ajv.addFormat('location', {

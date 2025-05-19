@@ -41,6 +41,7 @@ export interface IMetadata {
     searchLimits: {
         bulk: number;
     };
+    unitFieldSplitDepth: number;
 }
 export interface IWorkspace {
     _id: string;

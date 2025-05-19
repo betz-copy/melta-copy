@@ -92,8 +92,11 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isUsers = propertyTemplate.items?.format === 'user';
     const isComment = propertyTemplate.format === 'comment';
     const isKartoffelUserField = propertyTemplate.format === 'kartoffelUserField';
+    const isUnitField = propertyTemplate.format === 'unitUserField';
 
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField;
+    return (
+        !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField && !isUnitField
+    );
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>

@@ -3,6 +3,7 @@ import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { IExtendedUserFieldType } from '../../../interfaces/entityTemplates';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;
@@ -12,9 +13,10 @@ export interface FieldEditCardProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
     userPropertiesInTemplate?: string[];
+    extendedUserFieldType?: IExtendedUserFieldType;
 }
 
-const KartoffelUserField: React.FC<FieldEditCardProps> = ({
+const ExtendedUserField: React.FC<FieldEditCardProps> = ({
     value,
     index,
     touched,
@@ -22,6 +24,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
     setFieldValue,
     isDisabled,
     userPropertiesInTemplate = [],
+    extendedUserFieldType = IExtendedUserFieldType.kartoffelUserField,
 }) => {
     const kartoffelUserFields: string[] = [
         'displayName',
@@ -64,6 +67,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                 options={userPropertiesInTemplate}
                 onChange={(_e, userField) => {
                     const newValue = { ...value.expandedUserField, relatedUserField: userField || undefined };
+                    if (extendedUserFieldType === IExtendedUserFieldType.unitUserField) newValue.kartoffelField = 'hierarchy';
                     setFieldValue('expandedUserField', newValue);
                 }}
                 sx={{ marginRight: '5px', width: '50%' }}
@@ -88,7 +92,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                     />
                 )}
             />
-            {value.expandedUserField?.relatedUserField && (
+            {value.expandedUserField?.relatedUserField && extendedUserFieldType === IExtendedUserFieldType.kartoffelUserField && (
                 <TextField
                     select
                     label={i18next.t('wizard.entityTemplate.fieldDisplay')}
@@ -116,4 +120,4 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
     );
 };
 
-export default KartoffelUserField;
+export default ExtendedUserField;

@@ -52,14 +52,14 @@ import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IExtendedUserFieldType, isExtendedUserFieldType } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
 import { getInitialValue, useMuiRteTheme } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
 import { commentColors } from '../../inputs/JSONSchemaFormik/RjsfCommentWidget';
-import KartoffelUserField from './KartoffelUserField';
+import ExtendedUserField from './ExtendedUserField';
 import { ImageWithDisable } from '../../ImageWithDisable';
 import SelectAutocomplete from '../../inputs/SelectAutocomplete';
 
@@ -115,7 +115,7 @@ export interface FieldEditCardProps {
     supportConvertingToMultipleFields?: boolean;
     supportComment?: boolean;
     userPropertiesInTemplate?: string[];
-    onDuplicateKartoffelField?: (fieldIndex: number) => void;
+    onDuplicateExpandedUserField?: (fieldIndex: number, type: IExtendedUserFieldType) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -152,7 +152,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportConvertingToMultipleFields = true,
     supportComment,
     userPropertiesInTemplate = [],
-    onDuplicateKartoffelField,
+    onDuplicateExpandedUserField,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -652,7 +652,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     type: newType,
                                                     required: newType === 'serialNumber' || prevValue.required,
                                                     title: newType === 'comment' ? value.name : value.title,
-                                                    readOnly: e.target.value === 'kartoffelUserField' || prevValue.readOnly,
+                                                    readOnly: isExtendedUserFieldType(e.target.value) || prevValue.readOnly,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -679,7 +679,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                     if (validPropertyType === 'comment') return supportComment;
                                                     if (
-                                                        validPropertyType === 'kartoffelUserField' &&
+                                                        isExtendedUserFieldType(validPropertyType) &&
                                                         userPropertiesInTemplate.length === 0 &&
                                                         !value.deleted
                                                     )
@@ -980,8 +980,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 isDisabled={isDisabled}
                                             />
                                         )}
-                                        {value.type === 'kartoffelUserField' && (
-                                            <KartoffelUserField
+                                        {isExtendedUserFieldType(value.type) && (
+                                            <ExtendedUserField
                                                 value={value}
                                                 index={index}
                                                 touched={touched}
@@ -989,6 +989,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 setFieldValue={setFieldValue}
                                                 isDisabled={isDisabled}
                                                 userPropertiesInTemplate={userPropertiesInTemplate}
+                                                extendedUserFieldType={value.type}
                                             />
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
@@ -1093,7 +1094,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                     <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                         <Box>
-                                            {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
+                                            {value.required !== undefined && setValues && !isComment && !isExtendedUserFieldType(value.type) && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1140,7 +1141,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required || value.archive || value.type === 'kartoffelUserField' || isComment}
+                                                        disabled={value.required || value.archive || isExtendedUserFieldType(value.type) || isComment}
                                                         checked={value.readOnly || isComment}
                                                     />
                                                 }
@@ -1178,7 +1179,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 unique !== undefined &&
                                                 setValues &&
                                                 value.type !== 'signature' &&
-                                                value.type !== 'kartoffelUserField' &&
+                                                !isExtendedUserFieldType(value.type) &&
                                                 !isComment && (
                                                     <FormControlLabel
                                                         control={
@@ -1331,10 +1332,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         </Box>
                                                     </MeltaTooltip>
                                                 )}
-                                            {value.type === 'kartoffelUserField' && (
+                                            {isExtendedUserFieldType(value.type) && (
                                                 <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
                                                     <Box>
-                                                        <IconButton onClick={() => onDuplicateKartoffelField?.(index)}>
+                                                        <IconButton
+                                                            onClick={() =>
+                                                                onDuplicateExpandedUserField?.(index, value.type as IExtendedUserFieldType)
+                                                            }
+                                                        >
                                                             <ImageWithDisable
                                                                 srcPath="/icons/duplicate.svg"
                                                                 style={{ width: '22px', height: '22px' }}
@@ -1343,6 +1348,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     </Box>
                                                 </MeltaTooltip>
                                             )}
+
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>

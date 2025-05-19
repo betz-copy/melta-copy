@@ -84,3 +84,12 @@ export interface ISearchEntityTemplateQuery {
     limit: number;
     skip: number;
 }
+
+export enum IExtendedUserFieldType {
+    kartoffelUserField = 'kartoffelUserField',
+    unitUserField = 'unitUserField',
+}
+
+export const isExtendedUserFieldType = (field: string): field is IExtendedUserFieldType => {
+    return Object.values(IExtendedUserFieldType).includes(field as IExtendedUserFieldType);
+};

@@ -34,6 +34,7 @@ export const defaultMetadata = {
     searchLimits: {
         bulk: 5,
     },
+    unitFieldSplitDepth: 2,
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

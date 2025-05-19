@@ -240,6 +240,7 @@ export const environment = {
             columnsOrder: 'columnsOrder-',
             columnWidths: 'columnWidths-',
         },
+        unitFieldSplitDepth: 2,
     },
     filterOptions: {
         string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],

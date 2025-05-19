@@ -907,6 +907,7 @@ export default {
         signature: 'חתימה',
         comment: 'הערה',
         kartoffelUserField: 'משתמש - שדה קרטופלי',
+        unitUserField: 'יחידה - שדה קרטופלי',
     },
     input: {
         imagePicker: {
@@ -1449,6 +1450,7 @@ export default {
             // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
+        unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
     },
     createChildTemplateDialog: {
         title: 'תואנה',

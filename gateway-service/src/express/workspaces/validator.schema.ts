@@ -29,6 +29,7 @@ const metadataSchema = Joi.object({
     searchLimits: Joi.object({
         bulk: Joi.number(),
     }).optional(),
+    unitFieldSplitDepth: Joi.number(),
 }).optional();
 
 const workspaceSchema = Joi.object({
