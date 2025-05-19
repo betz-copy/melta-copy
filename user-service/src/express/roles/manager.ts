@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IRole, IUserAgGridRequest, IBaseRole, RelatedPermission } from '@microservices/shared';
+import { ISubCompactPermissions, IRole, IUserAgGridRequest, IBaseRole, RelatedPermission, NotFoundError } from '@microservices/shared';
 import RolesModel from './model';
 import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
@@ -112,6 +112,10 @@ class RolesManager {
             .exec();
 
         return this.appendPermissionsToRoles(roles);
+    }
+
+    static async deleteRoleById(roleId: string) {
+        return RolesModel.findByIdAndDelete(roleId).orFail(new NotFoundError('Role not found'));
     }
 
     static async searchRolesByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ roles: IRole[]; count: number }> {

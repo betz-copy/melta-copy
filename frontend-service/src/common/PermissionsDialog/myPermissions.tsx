@@ -207,6 +207,7 @@ const MyPermissions: React.FC<{
                                     isError={Boolean(formikProps.touched.fullName && formikProps.errors.fullName)}
                                     helperText={formikProps.touched.fullName ? formikProps.errors.fullName : ''}
                                     isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
+                                    enableClear={mode === 'create'}
                                 />
                             </Box>
 
@@ -222,6 +223,7 @@ const MyPermissions: React.FC<{
                                         readOnly={mode === 'view'}
                                         isError={Boolean(formikProps.touched.roleId && formikProps.errors.roleId)}
                                         helperText={formikProps.touched.roleId ? formikProps.errors.roleId : ''}
+                                        enableClear={mode !== 'view'}
                                     />
                                 </Box>
                             )}

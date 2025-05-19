@@ -1,6 +1,7 @@
 import fileDetails from '../types';
 import { NotificationType } from './notification';
 import { ICompactPermissions, ISubCompactPermissions } from './permission';
+import { IBaseRole } from './role';
 
 export interface IBaseUser {
     _id: string;
@@ -23,6 +24,9 @@ export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
     roleId?: string;
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
+}
+export interface IUserPopulated extends Omit<IUser, 'roleId'> {
+    role?: IBaseRole;
 }
 
 export enum RelatedPermission {

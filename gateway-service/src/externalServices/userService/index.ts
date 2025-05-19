@@ -12,6 +12,7 @@ import {
     IRole,
     IBaseRole,
     RelatedPermission,
+    IUserPopulated,
 } from '@microservices/shared';
 import config from '../../config';
 
@@ -40,8 +41,8 @@ class UserService {
         return data;
     }
 
-    static async searchUsers(searchBody: IUserSearchBody): Promise<{ users: IUser[]; count: number }> {
-        const { data } = await this.userService.post<{ users: IUser[]; count: number }>(`${usersRoute}/search`, searchBody);
+    static async searchUsers(searchBody: IUserSearchBody): Promise<{ users: IUserPopulated[]; count: number }> {
+        const { data } = await this.userService.post<{ users: IUserPopulated[]; count: number }>(`${usersRoute}/search`, searchBody);
         return data;
     }
 

@@ -1,15 +1,17 @@
 import { Divider, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IUser } from '../../../interfaces/users';
+import { IUserPopulated } from '../../../interfaces/users';
 
-const UserDetails: React.FC<{ existingUser: IUser; editProfile: boolean }> = ({ existingUser, editProfile }) => {
+const UserDetails: React.FC<{ existingUser: IUserPopulated; editProfile: boolean }> = ({ existingUser, editProfile }) => {
     const userDetailsMap: { [key: string]: string | boolean | undefined } = {
         fullName: existingUser.fullName,
         email: existingUser.mail,
         jobTitle: existingUser.jobTitle,
         hierarchy: existingUser.hierarchy,
+        ...(existingUser.role?.name && { role: existingUser.role.name }),
     };
+
     return (
         <Grid container gap={editProfile ? 1.5 : 2}>
             <Grid item xs={12}>

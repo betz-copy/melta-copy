@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { PermissionData, RelatedPermission } from '../../../interfaces/users';
+import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -18,6 +18,7 @@ import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { trycatch } from '../../../utils/trycatch';
 import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
+import { IRole } from '../../../interfaces/roles';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -52,6 +53,17 @@ const columnDefs = (
         sortable: true,
         suppressHeaderFilterButton: false,
     },
+    ...(permissionType === RelatedPermission.User
+        ? [
+              {
+                  field: 'role.name',
+                  headerName: i18next.t('roleAutocomplete.label'),
+                  filter: 'agTextColumnFilter',
+                  sortable: true,
+                  suppressHeaderFilterButton: false,
+              } as ColDef,
+          ]
+        : []),
     {
         field: 'externalMetadata.digitalIdentitySource',
         headerName: i18next.t('permissions.sourceHeaderName'),
@@ -175,7 +187,7 @@ const getDatasource = <Data extends any = PermissionData>(
     return {
         async getRows({ request, success, fail }: IServerSideGetRowsParams<Data>) {
             const { startRow, endRow, filterModel, sortModel } = request;
-            let data, error; //TODO: add types :)
+            let data: { dataArray?: IUser[] | IRole[]; count?: number }, error: unknown; //TODO: add types :)
             if (permissionType === RelatedPermission.User) {
                 const { result, err } = await trycatch(() =>
                     searchUsersRequest({
@@ -204,7 +216,7 @@ const getDatasource = <Data extends any = PermissionData>(
                 error = err;
             }
 
-            if (error || !data) {
+            if (error || !data.dataArray) {
                 onFail?.(error);
                 fail();
                 return;
@@ -234,35 +246,35 @@ const getRowModelProps = <Data extends any = PermissionData>(
     };
 };
 
-type PermissionsTableProps<Data> = {
+type PermissionsTableProps<PermissionData> = {
     categories: IMongoCategory[];
-    onDeletePermissions: (permissionsOfUser: Data) => any;
-    onEditPermissions: (permissionsOfUser: Data) => any;
+    onDeletePermissions: (permissionsOfUser: PermissionData) => any;
+    onEditPermissions: (permissionsOfUser: PermissionData) => any;
     quickFilterText: string;
     permissionType: RelatedPermission;
-    getRowId: (data: Data) => string;
+    getRowId: (data: PermissionData) => string;
 };
 
-export type PermissionsTableRef<Data> = {
+export type PermissionsTableRef<PermissionData> = {
     refreshServerSide: () => void;
-    updateRowDataClientSide: (data: Data) => void;
+    updateRowDataClientSide: (data: PermissionData) => void;
 };
 
-const PermissionsTable = forwardRef<PermissionsTableRef<unknown>, PermissionsTableProps<unknown>>(
-    <Data extends any>(
+const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, PermissionsTableProps<PermissionData>>(
+    (
         { permissionType, categories, onDeletePermissions, onEditPermissions, quickFilterText, getRowId },
-        ref: ForwardedRef<PermissionsTableRef<Data>>,
+        ref: ForwardedRef<PermissionsTableRef<PermissionData>>,
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
-        const gridRef = useRef<AgGridReact<Data>>(null);
+        const gridRef = useRef<AgGridReact<PermissionData>>(null);
         const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
         useImperativeHandle(ref, () => ({
             refreshServerSide() {
                 gridRef.current?.api.refreshServerSide({ purge: true });
             },
-            updateRowDataClientSide(data: Data) {
+            updateRowDataClientSide(data: PermissionData) {
                 gridRef.current?.api.forEachNode((rowNode) => {
                     if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
                         rowNode.updateData(data);
@@ -282,7 +294,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<unknown>, PermissionsTab
         );
 
         return (
-            <AgGridReact<Data>
+            <AgGridReact<PermissionData>
                 ref={gridRef}
                 className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 containerStyle={{

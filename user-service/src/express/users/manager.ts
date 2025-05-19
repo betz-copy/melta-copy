@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest, RelatedPermission } from '@microservices/shared';
+import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest, RelatedPermission, IUserPopulated, IRole } from '@microservices/shared';
 import UsersModel from './model';
 import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
@@ -76,14 +76,14 @@ class UsersManager {
         return users.map(({ _id }) => _id);
     }
 
-    static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUser[]; count: number }> {
+    static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUserPopulated[]; count: number }> {
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
 
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
         const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
         const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
-        const permissionsToUsers = await this.appendPermissionsToUsers(users);
+        const permissionsToUsers = await this.appendPermissionsToUsers(users, true);
 
         return { users: permissionsToUsers, count };
     }
@@ -117,13 +117,24 @@ class UsersManager {
         );
     }
 
-    private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
+    private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[], populated?: boolean): Promise<IUser | IUserPopulated> {
+        const { roleId, ...userWithoutRole } = user;
+
         const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
-        return { ...user, permissions, displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}` };
+
+        let role: string | IRole | undefined = roleId;
+        if (populated && roleId) role = await RolesManager.getRoleById(roleId);
+
+        return {
+            ...userWithoutRole,
+            [populated ? 'role' : 'roleId']: role,
+            permissions,
+            displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}`,
+        };
     }
 
-    private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
-        return Promise.all(users.map((user) => this.baseUserToUser(user)));
+    private static async appendPermissionsToUsers(users: IBaseUser[], populated?: boolean): Promise<IUser[] | IUserPopulated[]> {
+        return Promise.all(users.map((user) => this.baseUserToUser(user, undefined, populated)));
     }
 
     static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {

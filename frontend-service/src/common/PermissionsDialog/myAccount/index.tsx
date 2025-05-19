@@ -3,13 +3,13 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash/isEqual';
 import React, { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { IUser } from '../../../interfaces/users';
+import { IUser, IUserPopulated } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { updateUserPreferencesMetadataRequest } from '../../../services/userService';
+import { getRoleByIdRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
 import { ErrorToast } from '../../ErrorToast';
 import { UserProfile } from './userProfile';
 import { UserDetails } from './userDetails';
@@ -77,6 +77,25 @@ const MyAccount: React.FC<{
         },
     );
 
+    const { data: role } = useQuery(
+        ['getRoleById', existingUser.roleId],
+        () => (existingUser.roleId ? getRoleByIdRequest(existingUser.roleId) : null),
+        {
+            enabled: !!existingUser.roleId,
+            staleTime: Infinity,
+            cacheTime: Infinity,
+            retry: false,
+        },
+    );
+
+    const userPopulated: IUserPopulated = role
+        ? {
+              ...existingUser,
+              role,
+              ...(existingUser.roleId && { roleId: undefined }),
+          }
+        : existingUser;
+
     return (
         <Grid container>
             <Grid
@@ -99,7 +118,7 @@ const MyAccount: React.FC<{
                     setProfilePreference={setProfilePreference}
                 />
 
-                <UserDetails existingUser={existingUser} editProfile={editProfile} />
+                <UserDetails existingUser={userPopulated} editProfile={editProfile} />
 
                 <Grid container item display="flex" justifyContent="space-between" alignItems="center" width="100%" margin={1}>
                     <Grid item>

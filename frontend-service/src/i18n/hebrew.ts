@@ -468,6 +468,7 @@ export default {
         email: 'מייל',
         jobTitle: 'תפקיד',
         hierarchy: 'היררכיה',
+        role: 'תפקידן',
         addFile: 'הוסף קובץ',
         close: 'סגירה',
         edit: 'עריכת פרופיל',

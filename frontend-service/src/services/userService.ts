@@ -3,7 +3,16 @@ import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IMongoRole, IRole } from '../interfaces/roles';
-import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody, RelatedPermission } from '../interfaces/users';
+import {
+    IExternalUser,
+    IKartoffelUser,
+    IMongoUser,
+    IUser,
+    IUserPopulated,
+    IUserPreferences,
+    IUserSearchBody,
+    RelatedPermission,
+} from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const {
@@ -26,7 +35,7 @@ export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
 };
 
 export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
-    const { data } = await axios.post<{ users: IUser[]; count: number }>(`${users}/search`, searchBody);
+    const { data } = await axios.post<{ users: IUserPopulated[]; count: number }>(`${users}/search`, searchBody);
     return data;
 };
 

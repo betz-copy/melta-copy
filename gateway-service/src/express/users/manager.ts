@@ -16,6 +16,7 @@ import {
     IBaseRole,
     DeepPartial,
     RelatedPermission,
+    IUserPopulated,
 } from '@microservices/shared';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
@@ -65,7 +66,7 @@ class UsersManager {
         return UserService.searchUserIds(searchBody);
     }
 
-    static async searchUsers(searchBody: IUserSearchBody): Promise<{ users: IUser[]; count: number }> {
+    static async searchUsers(searchBody: IUserSearchBody): Promise<{ users: IUserPopulated[]; count: number }> {
         return UserService.searchUsers(searchBody);
     }
 

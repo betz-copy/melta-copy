@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { getRoleByIdRequest, searchRolesRequest } from '../../services/userService';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { IRole } from '../../interfaces/roles';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 export interface IRoleAutocomplete {
     roleId?: string;
@@ -51,6 +52,7 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
     textFieldProps,
     overrideSx,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const [internalDisplayValue, setInputValue] = useState<string | undefined>(roleId);
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
@@ -62,7 +64,9 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
     } = useQuery(
         ['searchRoles', currentDisplayValue],
         () => {
-            return searchRolesRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseRoles) => baseRoles.roles);
+            return searchRolesRequest({ search: currentDisplayValue || undefined, limit: 10, workspaceIds: [workspace._id] }).then(
+                (baseRoles) => baseRoles.roles,
+            );
         },
         {
             onError: () => {
