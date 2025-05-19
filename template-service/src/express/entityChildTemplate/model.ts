@@ -41,14 +41,6 @@ const EntityChildTemplateSchema = new mongoose.Schema(
         actions: {
             type: String,
         },
-        defaults: {
-            type: Object,
-            required: true,
-        },
-        filters: {
-            type: Object,
-            required: true,
-        },
         viewType: {
             type: String,
             enum: ['categoryPage', 'userPage'],
