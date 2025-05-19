@@ -11,7 +11,7 @@ ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
 ajv.addFormat('comment', /.*/);
 ajv.addFormat('kartoffelUserField', /.*/);
-ajv.addFormat('unitField', /.*/);
+ajv.addFormat('unitUserField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -63,7 +63,7 @@ export const stringFormats = [
     'signature',
     'comment',
     'kartoffelUserField',
-    'unitField',
+    'unitUserField',
 ];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
@@ -130,7 +130,7 @@ const propertiesArraySchema = Joi.array()
             }).when('format', {
                 switch: [
                     { is: 'kartoffelUserField', then: Joi.required() },
-                    { is: 'unitField', then: Joi.required() },
+                    { is: 'unitUserField', then: Joi.required() },
                 ],
                 otherwise: Joi.forbidden(),
             }),

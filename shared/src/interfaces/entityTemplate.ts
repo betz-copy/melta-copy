@@ -23,7 +23,7 @@ export interface IEntitySingleProperty {
         | 'signature'
         | 'comment'
         | 'kartoffelUserField'
-        | 'unitField';
+        | 'unitUserField';
     enum?: string[];
     readOnly?: true;
     identifier?: true;

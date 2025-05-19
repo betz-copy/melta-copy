@@ -1,5 +1,5 @@
 import './initWindowGlobal';
-import React from 'react';
+import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 import './i18n';
 import './utils/agGrid';
@@ -42,9 +42,11 @@ const Index: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-                <TourWrapper>
-                    <App />
-                </TourWrapper>
+                <StrictMode>
+                    <TourWrapper>
+                        <App />
+                    </TourWrapper>
+                </StrictMode>
                 <ToastContainer
                     theme={darkMode ? 'dark' : 'light'}
                     position="bottom-right"

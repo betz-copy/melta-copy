@@ -1061,7 +1061,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             newExpandedUserFields = newProperties.filter((property) => {
                 return (
                     updatedTemplateData.properties.properties[property].format === 'kartoffelUserField' ||
-                    updatedTemplateData.properties.properties[property].format === 'unitField'
+                    updatedTemplateData.properties.properties[property].format === 'unitUserField'
                 );
             });
 

@@ -11,7 +11,7 @@ import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IExtendedUserFieldType, IMongoEntityTemplatePopulated, isExtendedUserFieldType } from '../../../interfaces/entityTemplates';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
@@ -171,7 +171,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         if (isDeleted) {
             const indexesToUpdate = [index];
 
-            if (removedProperty.type === 'kartoffelUserField' || removedProperty.type === 'unitField') {
+            if (isExtendedUserFieldType(removedProperty.type)) {
                 const userFieldIndex = displayValuesCopy.findIndex(
                     (property) =>
                         property.type === 'user' && removedProperty.expandedUserField?.relatedUserField === property.name && property.deleted,
@@ -186,10 +186,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             const indexesToUpdate = [index];
             if (removedProperty.type === 'user') {
                 displayValuesCopy.forEach((property, propIndex) => {
-                    if (
-                        (property.type === 'kartoffelUserField' || property.type === 'unitField') &&
-                        property.expandedUserField?.relatedUserField === removedProperty.name
-                    ) {
+                    if (isExtendedUserFieldType(property.type) && property.expandedUserField?.relatedUserField === removedProperty.name) {
                         indexesToUpdate.push(propIndex);
                     }
                 });
@@ -200,10 +197,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             displayValuesCopy.splice(index, 1);
             if (removedProperty.type === 'user') {
                 displayValuesCopy.forEach((property, propIndex) => {
-                    if (
-                        (property.type === 'kartoffelUserField' || property.type === 'unitField') &&
-                        property.expandedUserField?.relatedUserField === removedProperty.name
-                    ) {
+                    if (isExtendedUserFieldType(property.type) && property.expandedUserField?.relatedUserField === removedProperty.name) {
                         displayValuesCopy.splice(propIndex, 1);
                     }
                 });
@@ -252,28 +246,12 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         [propertiesType, values],
     );
 
-    const onDuplicateKartoffelField = (fieldIndex: number) => {
+    const onDuplicateExpandedUserField = (fieldIndex: number, type: IExtendedUserFieldType) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
         displayValuesCopy.splice(fieldIndex + 1, 0, {
             id: uuid(),
             ...initialFieldCardDataOnAdd,
-            type: 'kartoffelUserField',
-            readOnly: true,
-            expandedUserField: {
-                relatedUserField: displayValues[fieldIndex].expandedUserField?.relatedUserField || '',
-                kartoffelField: '',
-            },
-        });
-
-        setDisplayValues(displayValuesCopy);
-    };
-
-    const onDuplicateUnitField = (fieldIndex: number) => {
-        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
-        displayValuesCopy.splice(fieldIndex + 1, 0, {
-            id: uuid(),
-            ...initialFieldCardDataOnAdd,
-            type: 'unitField',
+            type,
             readOnly: true,
             expandedUserField: {
                 relatedUserField: displayValues[fieldIndex].expandedUserField?.relatedUserField || '',
@@ -340,8 +318,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportConvertingToMultipleFields,
                                                 supportComment,
                                                 userPropertiesInTemplate,
-                                                onDuplicateKartoffelField,
-                                                onDuplicateUnitField,
+                                                onDuplicateExpandedUserField,
                                             };
 
                                             if (

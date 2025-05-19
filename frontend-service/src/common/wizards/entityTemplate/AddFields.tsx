@@ -14,6 +14,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
+import { isExtendedUserFieldType } from '../../../interfaces/entityTemplates';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -68,7 +69,7 @@ const addFieldsSchema = Yup.object({
                     }),
                 }),
                 expandedUserField: Yup.object().when('type', {
-                    is: (type) => type === 'kartoffelUserField' || type === 'unitField',
+                    is: (type) => isExtendedUserFieldType(type),
                     then: Yup.object({
                         relatedUserField: Yup.string().required(i18next.t('validation.required')),
                         kartoffelField: Yup.string().required(i18next.t('validation.required')),

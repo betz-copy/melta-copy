@@ -10,7 +10,7 @@ import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import { cloneDeep } from 'lodash';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IExtendedUserFieldType, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
@@ -51,7 +51,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
-    ajv.addFormat('unitField', /.*/);
+    ajv.addFormat('unitUserField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -248,7 +248,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                                 userFieldsToUpdate.forEach((key) => {
                                     const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
 
-                                    if (schema.properties[key].format === 'unitField') {
+                                    if (schema.properties[key].format === IExtendedUserFieldType.unitUserField) {
                                         propertiesToUpdate[key] =
                                             user && kartoffelField ? user[kartoffelField].split('/')[unitFieldSplitDepth] : undefined;
                                     } else {
