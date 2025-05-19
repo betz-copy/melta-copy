@@ -37,7 +37,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         return this.model
             .find(query)
             .populate<Pick<IEntityChildTemplatePopulated, 'categories'>>('categories')
-            .populate<Pick<IEntityChildTemplatePopulated, 'fatherTemplate'>>('fatherTemplate')
+            .populate<Pick<IEntityChildTemplatePopulated, 'fatherTemplateId'>>('fatherTemplateId')
             .limit(limit)
             .skip(skip)
             .lean()
@@ -52,7 +52,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         return this.model
             .findById(id)
             .populate<Pick<IEntityChildTemplatePopulated, 'categories'>>('categories')
-            .populate<Pick<IEntityChildTemplatePopulated, 'fatherTemplate'>>('fatherTemplate')
+            .populate<Pick<IEntityChildTemplatePopulated, 'fatherTemplateId'>>('fatherTemplateId')
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
@@ -61,8 +61,8 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
     async createChildTemplate(templateData: Omit<IEntityChildTemplate, 'disabled'>) {
         const createdEntityChildTemplate = await this.model.create(templateData);
         return (await createdEntityChildTemplate.populate<Pick<IEntityChildTemplatePopulated, 'categories'>>('categories')).populate<
-            Pick<IEntityChildTemplatePopulated, 'fatherTemplate'>
-        >('fatherTemplate');
+            Pick<IEntityChildTemplatePopulated, 'fatherTemplateId'>
+        >('fatherTemplateId');
     }
 }
 

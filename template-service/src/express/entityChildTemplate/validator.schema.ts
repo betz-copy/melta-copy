@@ -29,6 +29,14 @@ const searchFilterSchema = Joi.object({
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
 
+const childTemplatePropertySchema = Joi.object({
+    title: Joi.string().required(),
+    type: Joi.string().required(),
+    format: Joi.string(),
+    defaultValue: Joi.any(),
+    filters: searchFilterSchema,
+});
+
 // POST /api/templates/entities/child/search
 export const searchEntityChildTemplatesSchema = Joi.object({
     query: {},
@@ -58,14 +66,12 @@ export const createEntityChildTemplateSchema = Joi.object({
         description: Joi.string(),
         fatherTemplateId: MongoIdSchema.required(),
         categories: Joi.array().items(MongoIdSchema).required(),
-        properties: ExtendedJoi.stringToObject().required(),
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
         disabled: Joi.boolean().default(false),
         actions: Joi.string(),
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
-        defaults: ExtendedJoi.stringToObject().required(),
-        filters: searchFilterSchema,
         isFilterByCurrentUser: Joi.boolean().default(false),
-        filterByUserUnit: Joi.boolean().default(false),
+        isFilterByUserUnit: Joi.boolean().default(false),
     },
     query: {},
     params: {},

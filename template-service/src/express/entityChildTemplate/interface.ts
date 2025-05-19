@@ -6,18 +6,24 @@ export enum ViewType {
     userPage = 'userPage',
 }
 
+export interface IEntityChildTemplateProperty {
+    title: string;
+    type: string;
+    format?: string;
+    defaultValue?: string | number | boolean | Date | string[];
+    filters?: Record<string, unknown>;
+}
+
 export interface IEntityChildTemplate {
     name: string;
     displayName: string;
     description: string;
     fatherTemplateId: string;
     categories: IMongoCategory['_id'][];
-    properties: Record<string, unknown>;
+    properties: Record<string, IEntityChildTemplateProperty>;
     disabled: boolean;
     actions?: string;
     viewType: ViewType;
-    defaults: Record<string, string | number | boolean | Date | string[]>;
-    filters: Record<string, unknown>;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
 }
@@ -26,7 +32,7 @@ export interface IMongoEntityChildTemplate extends IEntityChildTemplate, Documen
     _id: string;
 }
 
-export interface IEntityChildTemplatePopulated extends Omit<IMongoEntityChildTemplate, 'categories' | 'fatherTemplate'> {
-    fatherTemplate: IMongoEntityTemplate;
+export interface IEntityChildTemplatePopulated extends Omit<IMongoEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
+    fatherTemplateId: IMongoEntityTemplate;
     categories: IMongoCategory[];
 }
