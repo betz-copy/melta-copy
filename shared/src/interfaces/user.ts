@@ -25,6 +25,11 @@ export interface IUser extends IBaseUser {
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 
+export enum RelatedPermission {
+    User = 'user',
+    Role = 'role',
+}
+
 export interface IMongoUser extends IUser {
     createdAt: Date;
     updatedAt: Date;

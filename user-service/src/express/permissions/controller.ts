@@ -4,9 +4,9 @@ import PermissionsManager from './manager';
 class PermissionsController {
     static async getCompactPermissions(req: Request, res: Response) {
         const { relatedId } = req.params;
-        const { workspaceIds } = req.body;
+        const { workspaceIds, permissionType } = req.body;
 
-        res.json(await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, workspaceIds));
+        res.json(await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, workspaceIds, permissionType));
     }
 
     static async syncCompactPermissions(req: Request, res: Response) {

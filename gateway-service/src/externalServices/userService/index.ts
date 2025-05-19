@@ -11,6 +11,7 @@ import {
     RecursiveNullable,
     IRole,
     IBaseRole,
+    RelatedPermission,
 } from '@microservices/shared';
 import config from '../../config';
 
@@ -50,7 +51,7 @@ class UserService {
     }
 
     static async updateUser(userId: string, updates: DeepPartial<IBaseUser>): Promise<IUser> {
-        const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, updates);
+        const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, { ...updates, roleId: updates.roleId ?? null });
         return data;
     }
 
@@ -59,16 +60,17 @@ class UserService {
         return data;
     }
 
-    static async getUserPermissions(userId: string, workspaceIds?: string[]): Promise<ICompactPermissions> {
+    static async getUserPermissions(userId: string, permissionType: RelatedPermission, workspaceIds?: string[]): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/find-by-related-id/${userId}`, {
             workspaceIds,
+            permissionType,
         });
         return data;
     }
 
     static async syncPermissions(
         relatedId: string,
-        permissionType: 'user' | 'role',
+        permissionType: RelatedPermission,
         permissions: ICompactNullablePermissions | ICompactPermissions,
     ): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, {

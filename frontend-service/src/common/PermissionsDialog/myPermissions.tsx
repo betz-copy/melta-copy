@@ -89,26 +89,42 @@ const MyPermissions: React.FC<{
                 toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
             },
             onSuccess: () => {
-                onSuccess?.();
                 queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
+                handleClose();
+                onSuccess?.();
+            },
+        },
+    );
+
+    const { mutate: updateUserRoleId } = useMutation(
+        (formUser: IUser) => updateUserRoleIdRequest(formUser._id, formUser.permissions, formUser.roleId),
+        {
+            onError: (error) => {
+                console.error('failed to upsert permission. error:', error);
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+            },
+            onSuccess: (newUser) => {
+                onSuccess?.(newUser);
+                queryClient.invalidateQueries('allIFrames');
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
                 handleClose();
             },
         },
     );
 
-    const { mutate: updateUserRoleId } = useMutation((formUser: IUser) => updateUserRoleIdRequest(formUser._id, formUser.roleId), {
-        onError: (error) => {
-            console.error('failed to upsert permission. error:', error);
-            toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+    const { mutateAsync: deletePermissionsOfUser } = useMutation(
+        () =>
+            syncPermissionsRequest(existingUser!._id, RelatedPermission.User, {
+                [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
+            }),
+        {
+            onError: (error) => {
+                console.error('failed to delete personal permissions. error:', error);
+                toast.error(i18next.t('permissions.failedToDeleteUser'));
+            },
         },
-        onSuccess: () => {
-            onSuccess?.();
-            queryClient.invalidateQueries('allIFrames');
-            toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
-            handleClose();
-        },
-    });
+    );
 
     const { mutate: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
@@ -158,24 +174,11 @@ const MyPermissions: React.FC<{
             }}
             onSubmit={(formUser) => {
                 if (mode === 'create') createUser(formUser);
-                else if ((!existingUser?.roleId && formUser.roleId) || existingUser?.roleId !== formUser.roleId) {
-                    // add role instead of personal permissions
-                    updateUserRoleId(formUser);
-
-                    if (!existingUser?.roleId && formUser.roleId) {
-                        // remove personal permissions if it has any
-                        syncUserPermissions({
-                            ...formUser,
-                            [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
-                        });
-                    }
-                } else {
-                    if (existingUser?.roleId && !formUser.roleId) {
-                        // remove role and add personal permissions
-                        updateUserRoleId(formUser);
-                    }
-
-                    syncUserPermissions(formUser); // update personal permissions or add if it enters the if above
+                else if (existingUser?.roleId == undefined && formUser.roleId === undefined)
+                    syncUserPermissions(formUser); // update personal permissions (without roles)
+                else {
+                    if (existingUser?.roleId === undefined && !!formUser.roleId) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
+                    updateUserRoleId(formUser); // role changed, added or deleted
                 }
             }}
         >
@@ -207,20 +210,21 @@ const MyPermissions: React.FC<{
                                 />
                             </Box>
 
-                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
-                                <RoleAutocomplete
-                                    roleId={formikProps.values.roleId}
-                                    onChange={(_e, chosenRole) => {
-                                        formikProps.setFieldValue('roleId', chosenRole?._id ?? undefined);
-                                        formikProps.setFieldValue('permissions', chosenRole?.permissions ?? {});
-                                    }}
-                                    onBlur={formikProps.handleBlur}
-                                    readOnly={mode === 'view'}
-                                    isError={Boolean(formikProps.touched.fullName && formikProps.errors.fullName)}
-                                    helperText={formikProps.touched.fullName ? formikProps.errors.fullName : ''}
-                                    isOptionDisabled={(option) => !option.name}
-                                />
-                            </Box>
+                            {(mode !== 'view' || formikProps.values.roleId) && (
+                                <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
+                                    <RoleAutocomplete
+                                        roleId={formikProps.values.roleId}
+                                        onChange={(_e, chosenRole) => {
+                                            formikProps.setFieldValue('roleId', chosenRole?._id ?? undefined);
+                                            formikProps.setFieldValue('permissions', chosenRole?.permissions ?? {});
+                                        }}
+                                        onBlur={formikProps.handleBlur}
+                                        readOnly={mode === 'view'}
+                                        isError={Boolean(formikProps.touched.roleId && formikProps.errors.roleId)}
+                                        helperText={formikProps.touched.roleId ? formikProps.errors.roleId : ''}
+                                    />
+                                </Box>
+                            )}
 
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
@@ -233,7 +237,7 @@ const MyPermissions: React.FC<{
                         </DialogContent>
 
                         <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
-                            <Grid container justifyContent="space-between">
+                            <Grid container justifyContent="space-between" marginTop="15px">
                                 <Grid>
                                     {mode !== 'view' && (
                                         <Button

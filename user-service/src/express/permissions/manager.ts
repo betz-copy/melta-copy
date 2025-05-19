@@ -7,6 +7,7 @@ import {
     IPermission,
     ISubCompactPermissions,
     RecursiveNullable,
+    RelatedPermission,
 } from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
@@ -29,8 +30,17 @@ class PermissionsManager {
         return compactPermissions;
     }
 
-    static async getCompactPermissionsOfRelatedId(relatedId: string, workspaceIds?: string[]): Promise<ICompactPermissions> {
-        const query: FilterQuery<IPermission> = { relatedId };
+    static async getCompactPermissionsOfRelatedId(
+        relatedId: string,
+        workspaceIds?: string[],
+        permissionType: RelatedPermission = RelatedPermission.User,
+    ): Promise<ICompactPermissions> {
+        const query: FilterQuery<IPermission> = {};
+
+        if (permissionType === RelatedPermission.User) {
+            const user = await UsersManager.getUserById(relatedId, workspaceIds, false);
+            query.relatedId = user.roleId ?? relatedId;
+        } else query.relatedId = relatedId;
 
         if (workspaceIds) query.workspaceId = { $in: workspaceIds };
 
@@ -40,10 +50,10 @@ class PermissionsManager {
 
     static async syncCompactPermissions(
         relatedId: string,
-        permissionType: 'user' | 'role',
+        permissionType: RelatedPermission,
         permissionsCompact: ICompactNullablePermissions | ICompactPermissions,
     ): Promise<ICompactPermissions> {
-        if (permissionType === 'user')
+        if (permissionType === RelatedPermission.User)
             await UsersManager.getUserById(relatedId); // Validate user exists
         else await RolesManager.getRoleById(relatedId); // Validate role exists
 
@@ -73,7 +83,7 @@ class PermissionsManager {
             await Promise.all(actions);
         });
 
-        return this.getCompactPermissionsOfRelatedId(relatedId, updatedWorkspacesIds);
+        return this.getCompactPermissionsOfRelatedId(relatedId, updatedWorkspacesIds, permissionType);
     }
 
     static async deletePermissionsFromMetadata(

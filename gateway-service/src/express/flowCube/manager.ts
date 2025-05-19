@@ -1,4 +1,4 @@
-import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchEntityTemplatesBody, RelatedPermission } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -98,7 +98,7 @@ class FlowCubeManager extends DefaultManagerProxy<null> {
             searchBody.search = body?.Parameters?.Value || body?.Value;
         }
 
-        const usersPermissions = await UserService.getUserPermissions(userId);
+        const usersPermissions = await UserService.getUserPermissions(userId, RelatedPermission.User);
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
         const filteredWorkspaces = await filterWorkspacesByPermissions(workspaces, usersPermissions);
 

@@ -1,5 +1,5 @@
 import * as joi from 'joi';
-import { PermissionTypeOptions } from '@microservices/shared';
+import { PermissionTypeOptions, RelatedPermission } from '@microservices/shared';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactNullablePermissionsSchema, SubCompactNullablePermissionSchema } from '../../utils/joi/schemas/permission/compact';
 
@@ -8,6 +8,7 @@ export const getCompactPermissionsRequestSchema = joi.object({
     query: {},
     body: {
         workspaceIds: joi.array().items(mongoIdSchema.required()),
+        permissionType: joi.string().valid(RelatedPermission.User, RelatedPermission.Role).required(),
     },
     params: {
         relatedId: mongoIdSchema.required(),
@@ -19,7 +20,7 @@ export const syncCompactPermissionsRequestSchema = joi.object({
     query: {},
     body: {
         relatedId: mongoIdSchema.required(),
-        permissionType: joi.string().valid('user', 'role').required(),
+        permissionType: joi.string().valid(RelatedPermission.User, RelatedPermission.Role).required(),
         permissions: CompactNullablePermissionsSchema.required(),
     },
     params: {},

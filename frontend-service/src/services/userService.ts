@@ -61,8 +61,8 @@ export const updateUserExternalMetadataRequest = async (userId: string, kartoffe
     return data;
 };
 
-export const updateUserRoleIdRequest = async (userId: string, roleId?: string) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/roleId`, { roleId });
+export const updateUserRoleIdRequest = async (userId: string, permissions: IUser['permissions'], roleId?: string) => {
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/roleId`, { roleId, permissions });
     return data;
 };
 

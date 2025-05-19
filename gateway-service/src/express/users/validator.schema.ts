@@ -19,6 +19,7 @@ const UserExternalMetadataSchema = joi.object({
 });
 
 const UserRoleIdSchema = joi.object({
+    permissions: joi.object(),
     roleId: joi.string(),
 });
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IRole, IUserAgGridRequest, IBaseRole } from '@microservices/shared';
+import { ISubCompactPermissions, IRole, IUserAgGridRequest, IBaseRole, RelatedPermission } from '@microservices/shared';
 import RolesModel from './model';
 import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
@@ -79,7 +79,7 @@ class RolesManager {
     static async createRole({ permissions, ...roleData }: Omit<IRole, '_id'>): Promise<IRole> {
         const baseRole = (await RolesModel.create(roleData)).toObject();
 
-        await PermissionsManager.syncCompactPermissions(baseRole._id, 'role', permissions);
+        await PermissionsManager.syncCompactPermissions(baseRole._id, RelatedPermission.Role, permissions);
 
         return this.baseRoleToRole(baseRole);
     }
@@ -96,7 +96,7 @@ class RolesManager {
     }
 
     private static async baseRoleToRole(role: IBaseRole, workspaceIds?: string[]): Promise<IRole> {
-        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(role._id, workspaceIds);
+        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(role._id, workspaceIds, RelatedPermission.Role);
         return { ...role, permissions };
     }
 

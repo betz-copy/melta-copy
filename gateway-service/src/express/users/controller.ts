@@ -35,7 +35,9 @@ class UsersController {
     }
 
     static async updateUserRoleId(req: Request, res: Response) {
-        res.json(await UsersManager.updateUserRoleId(req.params.userId, req.body));
+        const { roleId, permissions } = req.body;
+
+        res.json(await UsersManager.updateUserRoleId(req.params.userId, permissions, roleId));
     }
 
     static async createUser(req: Request, res: Response) {

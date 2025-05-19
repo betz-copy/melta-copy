@@ -4,7 +4,7 @@ import _debounce from 'lodash.debounce';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { searchRolesRequest } from '../../services/userService';
+import { getRoleByIdRequest, searchRolesRequest } from '../../services/userService';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { IRole } from '../../interfaces/roles';
 
@@ -74,13 +74,21 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
         },
     );
 
+    const { data: selectedRoleById } = useQuery(['getRoleById', roleId], () => (roleId ? getRoleByIdRequest(roleId) : null), {
+        enabled: !!roleId && !rolesOptions?.some((role) => role._id === roleId),
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        retry: false,
+    });
+
     const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
 
     const value = useMemo(() => {
-        if (!roleId || !Array.isArray(rolesOptions)) return null;
-        return rolesOptions.find((role) => role._id === roleId) ?? null;
-    }, [roleId, rolesOptions]);
-    console.log({ value, roleId });
+        if (!roleId) return null;
+
+        const foundInOptions = rolesOptions?.find((role) => role._id === roleId);
+        return foundInOptions ?? selectedRoleById ?? null;
+    }, [roleId, rolesOptions, selectedRoleById]);
 
     return (
         <MeltaTooltip title={value?.name ?? ''} sx={{ maxWidth: 'none' }}>

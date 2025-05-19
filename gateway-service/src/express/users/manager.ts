@@ -15,6 +15,7 @@ import {
     IRole,
     IBaseRole,
     DeepPartial,
+    RelatedPermission,
 } from '@microservices/shared';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
@@ -68,7 +69,13 @@ class UsersManager {
         return UserService.searchUsers(searchBody);
     }
 
-    static async updateUserRoleId(userId: string, roleId?: string): Promise<IUser> {
+    static async updateUserRoleId(userId: string, updatedPermissions: IUser['permissions'], roleId?: string): Promise<IUser> {
+        const existingUser = await this.getUserById(userId);
+        if (!!existingUser?.roleId && roleId === undefined) {
+            // changing from role to personal permissions
+            this.syncUserPermissions(userId, RelatedPermission.User, updatedPermissions);
+        }
+
         return UserService.updateUser(userId, { roleId });
     }
 
@@ -87,11 +94,8 @@ class UsersManager {
     static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions, roleId?: string): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
-        if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource) {
-            if ((!existingUser.roleId && roleId) || roleId !== existingUser.roleId) return this.updateUserRoleId(existingUser._id, roleId);
-            const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, 'user', permissions);
-            return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
-        }
+        if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource)
+            return this.updateUserRoleId(existingUser._id, permissions, roleId);
 
         const {
             _id,
@@ -146,7 +150,7 @@ class UsersManager {
 
     static async syncUserPermissions(
         relatedId: string,
-        permissionType: 'user' | 'role',
+        permissionType: RelatedPermission,
         permissions: ICompactNullablePermissions,
     ): Promise<ICompactPermissions> {
         return UserService.syncPermissions(relatedId, permissionType, permissions);

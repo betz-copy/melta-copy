@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest } from '@microservices/shared';
+import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest, RelatedPermission } from '@microservices/shared';
 import UsersModel from './model';
 import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
@@ -9,9 +9,9 @@ import { translateAgGridFilterModel, translateAgGridSortModel } from '../../util
 import RolesManager from '../roles/manager';
 
 class UsersManager {
-    static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
+    static async getUserById(id: string, workspaceIds?: string[], withPermissions: boolean = true): Promise<IUser | Partial<IUser>> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.baseUserToUser(baseUser, workspaceIds);
+        return withPermissions ? this.baseUserToUser(baseUser, workspaceIds) : baseUser;
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -93,13 +93,21 @@ class UsersManager {
 
         if (userData.roleId)
             await RolesManager.getRoleById(userData.roleId); // Validate role exists
-        else await PermissionsManager.syncCompactPermissions(baseUser._id, 'user', permissions);
+        else await PermissionsManager.syncCompactPermissions(baseUser._id, RelatedPermission.User, permissions);
 
         return this.baseUserToUser(baseUser);
     }
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
-        const baseUser = await UsersModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
+        const updateQuery: any = { ...updateData };
+
+        if (updateQuery.roleId === null) {
+            delete updateQuery.roleId; // remove from $set
+            updateQuery.$unset = { roleId: '' };
+        }
+
+        const baseUser = await UsersModel.findByIdAndUpdate(id, updateQuery, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
+
         return this.baseUserToUser(baseUser);
     }
 
@@ -110,7 +118,7 @@ class UsersManager {
     }
 
     private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
-        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user.roleId ?? user._id, workspaceIds);
+        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
         return { ...user, permissions, displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}` };
     }
 
@@ -133,7 +141,7 @@ class UsersManager {
 
         const users = await Promise.all(permissions.map(({ relatedId }) => this.getUserById(relatedId)));
 
-        return { users, count };
+        return { users: users as IUser[], count };
     }
 }
 
