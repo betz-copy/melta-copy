@@ -39,5 +39,6 @@ module.exports = {
         'no-unused-vars': 'off', // Checked by typescript
         'import/prefer-default-export': 'off',
         'class-methods-use-this': 'off',
+        'no-console': ['error', { allow: ['error'] }],
     },
 };

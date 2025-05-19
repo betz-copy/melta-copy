@@ -2,8 +2,9 @@
 import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
 import { PassThrough } from 'stream';
-import ReadableStreamClone from 'readable-stream-clone';
+import { ReadableStreamClone } from 'readable-stream-clone';
 import { UploadedFile } from './interface';
+import config from '../../config';
 
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.is('multipart/form-data')) return next();
@@ -17,17 +18,28 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
 
         busboy.on('file', (fieldname, file, { encoding, filename, mimeType }) => {
             const copiedStream = new ReadableStreamClone(file);
-            const passthrough = new PassThrough();
-            file.pipe(passthrough);
+            const passthrough = new PassThrough({
+                highWaterMark: config.service.highWaterMark,
+            });
 
             const validFileName = Buffer.from(filename, 'binary').toString('utf8');
             let size = 0;
 
             file.on('data', (data) => {
                 size += data.length;
+                const canContinue = passthrough.write(data);
+                if (!canContinue) {
+                    file.pause();
+                }
+            });
+
+            passthrough.on('drain', () => {
+                file.resume();
             });
 
             file.on('end', () => {
+                passthrough.end();
+
                 const fileData: UploadedFile = {
                     fieldname,
                     originalname: validFileName,
@@ -42,6 +54,10 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                 if (fieldname === 'file') {
                     singleFileField = fileData;
                 }
+            });
+
+            file.on('error', (err) => {
+                passthrough.destroy(err);
             });
         });
 

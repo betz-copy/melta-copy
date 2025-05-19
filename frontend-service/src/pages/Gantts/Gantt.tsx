@@ -118,8 +118,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
                 return lastPage.length ? nextPage : undefined;
             },
             onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to get entities. error:', error);
+                console.error('failed to get entities. error:', error);
                 toast.error(i18next.t('gantts.failedToGetEntities'));
             },
             refetchInterval,
