@@ -1,8 +1,8 @@
-import { StorageService } from '../../externalServices/storageService';
+import { ISearchIFramesBody, IFrame, IMongoIframe, UploadedFile } from '@microservices/shared';
+import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { IFrame, IMongoIframe, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
+import IFramesService from '../../externalServices/dashboardService/iframesService';
 
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;

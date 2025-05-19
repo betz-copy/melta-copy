@@ -1,13 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession, FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import config from '../../../config';
-import { escapeRegExp } from '../../../utils';
-import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { ServiceError, TemplateNotFoundError } from '../../error';
-import ProcessInstanceManager from '../../instances/processes/manager';
-import StepTemplateManager from '../steps/manager';
 import {
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
@@ -15,7 +8,15 @@ import {
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
-} from './interface';
+    DefaultManagerMongo,
+    ServiceError,
+} from '@microservices/shared';
+import config from '../../../config';
+import { escapeRegExp } from '../../../utils';
+import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
+import { TemplateNotFoundError } from '../../error';
+import ProcessInstanceManager from '../../instances/processes/manager';
+import StepTemplateManager from '../steps/manager';
 import { ProcessTemplateSchema } from './model';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated : IMongoProcessTemplate;
@@ -58,7 +59,11 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         await this.throwIfProcessTemplateHasInstances(id);
         return transaction(async (session) => {
             await this.stepTemplateManager.deleteStepsByIds(processTemplateToDelete.steps, session);
-            return this.model.findByIdAndDelete(id).orFail(new TemplateNotFoundError('process', id)).populate(config.processFields.steps).lean();
+            return this.model
+                .findByIdAndDelete(id)
+                .orFail(new TemplateNotFoundError('process', id))
+                .populate(config.processFields.steps)
+                .lean<IMongoProcessTemplatePopulated>();
         });
     }
 
@@ -152,7 +157,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         const stepsIds = await this.stepTemplateManager.updateStepsTemplates(updatedData.steps, session);
         return this.model
             .findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
-            .populate(config.processFields.steps)
+            .populate<IMongoProcessTemplatePopulated>(config.processFields.steps)
             .orFail(new TemplateNotFoundError('process', id))
             .lean();
     }

@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { IWorkspace } from '@microservices/shared';
 import config from './config';
-import { IWorkspace } from './interfaces/workspaces';
 import { trycatch } from './utils';
 
 const { url, baseRoute, isAliveRoute } = config.workspacesService;
@@ -13,7 +13,9 @@ export const createWorkspace = async (workspace: Omit<IWorkspace, '_id'>) => {
 export const createWorkspaces = async (workspaces: Omit<IWorkspace, '_id'>[]) => {
     let mainWorkspace: IWorkspace;
 
+    // eslint-disable-next-line no-restricted-syntax
     for (const workspace of workspaces) {
+        // eslint-disable-next-line no-await-in-loop
         mainWorkspace = await createWorkspace(workspace);
     }
 

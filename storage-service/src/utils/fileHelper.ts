@@ -1,4 +1,4 @@
-import { fileExtension } from '../config/documentExtension';
+import fileExtension from '../config/documentExtension';
 
 const { document } = fileExtension;
 

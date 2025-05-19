@@ -6,7 +6,7 @@ const { tokenSecret, accessTokenExpirationTime } = config.authentication.shragaA
 
 export class AuthenticationManager {
     static createAccessToken(payload: IConnectedUser): string {
-        return jwt.sign(payload, tokenSecret, { expiresIn: accessTokenExpirationTime });
+        return jwt.sign(payload, tokenSecret, { expiresIn: accessTokenExpirationTime as any });
     }
 }
 

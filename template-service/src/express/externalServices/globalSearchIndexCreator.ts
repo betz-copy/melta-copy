@@ -1,17 +1,8 @@
+import { IUpdateIndexRequest, IndexingAction } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
 
 const { rabbit } = config;
-
-export enum Action {
-    upsertGlobalIndex = 'upsertGlobalIndex',
-    upsertTemplateIndex = 'upsertTemplateIndex',
-    deleteTemplateIndex = 'deleteTemplateIndex',
-}
-export interface IUpdateIndexRequest {
-    action: Action;
-    templateId?: string;
-}
 
 export default class GlobalSearchIndexCreator extends DefaultExternalServiceRabbit {
     async sendUpdateIndex(request: IUpdateIndexRequest) {
@@ -20,15 +11,15 @@ export default class GlobalSearchIndexCreator extends DefaultExternalServiceRabb
 
     async sendUpdateIndexesOnUpdateTemplate(changedTemplateId: string) {
         return Promise.all([
-            this.sendUpdateIndex({ action: Action.upsertGlobalIndex }),
-            this.sendUpdateIndex({ action: Action.upsertTemplateIndex, templateId: changedTemplateId }),
+            this.sendUpdateIndex({ action: IndexingAction.upsertGlobalIndex }),
+            this.sendUpdateIndex({ action: IndexingAction.upsertTemplateIndex, templateId: changedTemplateId }),
         ]);
     }
 
     async sendUpdateIndexesOnDeleteTemplate(deletedTemplateId: string) {
         return Promise.all([
-            this.sendUpdateIndex({ action: Action.upsertGlobalIndex }),
-            this.sendUpdateIndex({ action: Action.deleteTemplateIndex, templateId: deletedTemplateId }),
+            this.sendUpdateIndex({ action: IndexingAction.upsertGlobalIndex }),
+            this.sendUpdateIndex({ action: IndexingAction.deleteTemplateIndex, templateId: deletedTemplateId }),
         ]);
     }
 }

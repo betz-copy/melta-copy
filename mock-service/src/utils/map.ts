@@ -1,14 +1,11 @@
+import { CoordinateSystem } from '@microservices/shared';
+
 const gazaBounds = [
     [31.596668, 34.480591],
     [31.532311, 34.580841],
     [31.219261, 34.269104],
     [31.322554, 34.223785],
 ];
-
-enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
 
 export const generateRandomLocation = () => {
     const lat = (Math.random() * (gazaBounds[1][0] - gazaBounds[2][0]) + gazaBounds[2][0]).toFixed(5);

@@ -1,6 +1,5 @@
 /* eslint-disable default-case */
 
-import { ServiceError } from '../../express/error';
 import {
     basicFilterOperationTypes,
     FilterQuery,
@@ -9,7 +8,8 @@ import {
     IAgGridSort,
     numberFilterOperationTypes,
     textFilterOperationTypes,
-} from './interfaces';
+    ServiceError,
+} from '@microservices/shared';
 
 const translateAgGridFilter = (
     type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,

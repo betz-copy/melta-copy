@@ -1,9 +1,10 @@
+/* eslint-disable import/prefer-default-export */
 import { load } from 'cheerio';
 import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import mammoth from 'mammoth';
+import { IEntity } from '@microservices/shared';
 import config from '../../../config';
-import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
 
 const {
     service: { jewishDateIndicator, hebrewDateIndicator, maxPatchIterations },

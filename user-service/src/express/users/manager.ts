@@ -1,15 +1,13 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { IBaseUser, IUser } from './interface';
-import { UsersModel } from './model';
-import { PermissionsManager } from '../permissions/manager';
+import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest } from '@microservices/shared';
+import UsersModel from './model';
+import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
-import { ISubCompactPermissions } from '../permissions/interface/permissions';
-import { IAgGridRequest } from '../../utils/agGrid/interfaces';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 
-export class UsersManager {
+class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
@@ -26,6 +24,7 @@ export class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
         { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {
@@ -76,7 +75,7 @@ export class UsersManager {
         return users.map(({ _id }) => _id);
     }
 
-    static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
+    static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUser[]; count: number }> {
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
 
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
@@ -134,3 +133,5 @@ export class UsersManager {
         return { users, count };
     }
 }
+
+export default UsersManager;

@@ -1,8 +1,8 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
+import { logger } from '@microservices/shared';
 import config from './config';
-import logger from './utils/logger/logsLogger';
-import { checkForDateNotifications } from './cron/dateNotificationsCheck';
+import checkForDateNotifications from './cron/dateNotificationsCheck';
 import { updateKartoffelFields } from './cron/usersSyncing';
 
 const { service, rabbit, notifications, userFieldsSync } = config;

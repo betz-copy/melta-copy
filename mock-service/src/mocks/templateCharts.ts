@@ -1,12 +1,5 @@
-import {
-    IAggregationType,
-    IChart,
-    IChartType,
-    IColumnOrLineMetaData,
-    INUmberMetaData,
-    IPermission,
-    IPieMetaData,
-} from '../interfaces/templateCharts';
+/* eslint-disable import/prefer-default-export */
+import { IAggregationType, IChart, IChartType, IColumnOrLineMetaData, INUmberMetaData, IChartPermission, IPieMetaData } from '@microservices/shared';
 
 export const chartsCreator = (
     travelAgentId: string,
@@ -26,8 +19,9 @@ export const chartsCreator = (
             yAxis: { title: 'כמות רשומות', field: { type: IAggregationType.CountAll } },
         } as IColumnOrLineMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: travelAgentId,
+        description: '',
     },
     {
         name: 'תרשים פאי עפ"י מגדר',
@@ -37,8 +31,9 @@ export const chartsCreator = (
             aggregationType: { type: IAggregationType.CountAll },
         } as IPieMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: travelAgentId,
+        description: '',
     },
     {
         name: 'גיל מקסימלי של סוכן נסיעות',
@@ -47,8 +42,9 @@ export const chartsCreator = (
             accumulator: { type: IAggregationType.Maximum, byField: 'age' },
         } as INUmberMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: travelAgentId,
+        description: '',
     },
     {
         name: 'גיל ממוצע',
@@ -58,8 +54,9 @@ export const chartsCreator = (
             yAxis: { field: { type: IAggregationType.Average, byField: 'age' }, title: 'ממוצע' },
         } as IColumnOrLineMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: touristId,
+        description: '',
     },
     {
         name: 'תרשים פאי עפ" רשימה',
@@ -71,8 +68,9 @@ export const chartsCreator = (
             },
         } as IPieMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: allPropertiesId,
+        description: '',
     },
     {
         name: 'כמות רשומות לפי תאריך',
@@ -88,8 +86,9 @@ export const chartsCreator = (
             },
         } as IColumnOrLineMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: tripId,
+        description: '',
     },
     {
         name: 'כמות רשומות לפי סוג מושב',
@@ -101,8 +100,9 @@ export const chartsCreator = (
             },
         } as IPieMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: flightId,
+        description: '',
     },
     {
         name: 'סכום תקרה לכל שם',
@@ -122,7 +122,7 @@ export const chartsCreator = (
             },
         } as IColumnOrLineMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: creditCardId,
     },
     {
@@ -135,7 +135,7 @@ export const chartsCreator = (
             },
         } as INUmberMetaData,
         createdBy: userId,
-        permission: IPermission.Protected,
+        permission: IChartPermission.Protected,
         templateId: phoneId,
     },
 ];

@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 import _forEach from 'lodash.foreach';
 import { ClientSession, startSession, Types } from 'mongoose';
+import { ServiceError } from '@microservices/shared';
 import { trycatch } from '.';
-import { ServiceError } from '../express/error';
 
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();
@@ -16,6 +16,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     } finally {
         const { err: endSessionErr } = await trycatch(() => session.endSession());
         if (endSessionErr) {
+            // eslint-disable-next-line no-unsafe-finally
             throw new ServiceError(undefined, 'failed to end session. possible resource leak', { error: endSessionErr });
         }
     }

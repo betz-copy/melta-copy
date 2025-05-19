@@ -1,7 +1,6 @@
 import { ConsumerMessage } from 'menashmq';
-import { basicValidateRequest } from '../utils/joi';
+import { logger, basicValidateRequest } from '@microservices/shared';
 import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
-import logger from '../utils/logger/logsLogger';
 import config from '../config';
 import { SemanticManager } from '../express/semantics/manager';
 import { IIndexFilesRequest } from '../express/semantics/interface';
@@ -18,7 +17,7 @@ class SemanticConsumer {
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 
-            console.log('Indexing files: ', value);
+            logger.info('Indexing files: ', { value });
 
             await manager.indexFiles(value);
 
@@ -36,7 +35,7 @@ class SemanticConsumer {
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 
-            console.log('Deleting files: ', value);
+            logger.info('Deleting files: ', { value });
 
             await manager.deleteFiles(value.minioFileIds);
 

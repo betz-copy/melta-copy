@@ -1,5 +1,6 @@
+/* eslint-disable import/prefer-default-export */
 import { menash } from 'menashmq';
-import { config } from '../../config';
+import config from '../../config';
 import DeleteFilesConsumer from './consumer';
 
 const { rabbit } = config;

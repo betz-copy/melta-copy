@@ -1,6 +1,5 @@
+import { BadRequestError } from '@microservices/shared';
 import mongoose from 'mongoose';
-
-import { BadRequestError } from '../error';
 
 const GroupBySchema = new mongoose.Schema(
     {
