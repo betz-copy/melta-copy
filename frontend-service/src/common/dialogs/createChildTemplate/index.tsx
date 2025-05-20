@@ -32,7 +32,6 @@ import { AxiosError } from 'axios';
 import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip } from './interfaces';
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
-import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 
 const CreateChildTemplateDialog: React.FC<{
     open: boolean;
@@ -108,6 +107,8 @@ const CreateChildTemplateDialog: React.FC<{
                 initialValues={{ name: '', displayName: '', description: '' }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description }) => {
+                    const fullName = `${entityTemplate.name}_${name}`;
+                    const fullDisplayName = `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
                     const properties: IEntityChildTemplate['properties'] = {};
@@ -124,10 +125,10 @@ const CreateChildTemplateDialog: React.FC<{
                         const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
 
                         if (filterChips.length > 0) {
-                            childProp.filters = filterChips.reduce((acc, chip) => {
-                                const chipFilter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!);
-                                return { ...acc, ...chipFilter };
-                            }, {});
+                            const filtersArray = filterChips.map((chip) => {
+                                return filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!);
+                            });
+                            childProp.filters = { $and: filtersArray };
                         }
 
                         if ('defaultValue' in fieldConfig && fieldConfig.defaultValue !== undefined) {
@@ -138,8 +139,8 @@ const CreateChildTemplateDialog: React.FC<{
                     });
 
                     const newChildTemplate: IEntityChildTemplate = {
-                        name,
-                        displayName,
+                        name: fullName,
+                        displayName: fullDisplayName,
                         description,
                         fatherTemplateId: entityTemplate._id,
                         categories: selectedCategories.map((c) => c._id),
@@ -165,8 +166,8 @@ const CreateChildTemplateDialog: React.FC<{
                                             fullWidth
                                             label={i18next.t('createChildTemplateDialog.templateName')}
                                             name="name"
-                                            value={values.name}
-                                            onChange={handleChange}
+                                            value={values.name.trimStart()}
+                                            onChange={(e) => handleChange({ target: { name: 'name', value: e.target.value.trimStart() } })}
                                             error={touched.name && Boolean(errors.name)}
                                             helperText={touched.name && errors.name}
                                             InputProps={{ startAdornment: <InputAdornment position="start">{entityTemplate.name}_</InputAdornment> }}
@@ -177,12 +178,12 @@ const CreateChildTemplateDialog: React.FC<{
                                             fullWidth
                                             label={i18next.t('createChildTemplateDialog.templateDisplayName')}
                                             name="displayName"
-                                            value={values.displayName}
-                                            onChange={handleChange}
+                                            value={values.displayName.trimStart()}
+                                            onChange={(e) => handleChange({ target: { name: 'displayName', value: e.target.value.trimStart() } })}
                                             error={touched.displayName && Boolean(errors.displayName)}
                                             helperText={touched.displayName && errors.displayName}
                                             InputProps={{
-                                                startAdornment: <InputAdornment position="start">{entityTemplate.displayName} -</InputAdornment>,
+                                                startAdornment: <InputAdornment position="start">{entityTemplate.displayName}-</InputAdornment>,
                                             }}
                                         />
                                     </Grid>
