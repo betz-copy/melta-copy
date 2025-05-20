@@ -30,9 +30,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
-    console.log({ touched });
-    console.log({ errors });
-
     const selectedEntityTemplatePropOptions = useMemo(
         () =>
             Object.entries(selectedEntityTemplate?.properties?.properties || {})
@@ -140,9 +137,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         const { format, enum: propEnum, type, items } = property;
 
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature' || format === 'user' || type === 'array') return null;
-
-        // const fieldError = errorRelationshipReference?.filters?.[index];
-        // const fieldTouched = touchedRelationshipReference?.filters?.[index];
 
         if (propEnum) {
             return (

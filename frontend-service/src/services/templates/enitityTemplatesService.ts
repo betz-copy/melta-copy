@@ -455,9 +455,6 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
-    console.log('in create entity template req frontend');
-    console.dir({ entityTemplate }, { depth: null });
-
     if (newEntityTemplate.icon) {
         if (newEntityTemplate.icon.file instanceof File) {
             formData.append('file', newEntityTemplate.icon.file);
