@@ -3,6 +3,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 import { IMongoCategory } from '../../interfaces/categories';
+import { ViewType } from '../../common/dialogs/createChildTemplate/interfaces';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
@@ -17,9 +18,19 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
 export const didPermissionsChange = (currentPermissions: IUser['permissions'], newPermissions: IUser['permissions']) =>
     isEqualWith(currentPermissions, newPermissions);
 
+export type entityChildTemplatePermissionDialog = {
+    id: string;
+    name: string;
+    fatherTemplateId: string;
+    isFilterByCurrentUser: boolean;
+    isFilterByUserUnit: boolean;
+    viewType: ViewType;
+};
+
 export type entityTemplatePermissionDialog = {
     id: string;
     name: string;
+    entityChildTemplates: entityChildTemplatePermissionDialog[];
 };
 
 export type CategoryWithTemplates = IMongoCategory & {

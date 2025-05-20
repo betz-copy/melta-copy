@@ -7,6 +7,7 @@ import {
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISubCompactPermissions,
+    IMongoEntityChildTemplate,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -16,7 +17,7 @@ const {
     service: { workspaceIdHeaderName },
     templateService: {
         baseRoute,
-        entities: { baseEntitiesRoute, baseCategoriesRoute },
+        entities: { baseEntitiesRoute, baseCategoriesRoute, baseChildTemplatesRoute },
     },
 } = config;
 
@@ -132,6 +133,12 @@ class EntityTemplateService extends TemplatesManagerService {
 
     async deleteEntityTemplate(entityTemplateId: string) {
         const { data } = await this.api.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
+
+        return data;
+    }
+
+    async getAllChildTemplates() {
+        const { data } = await this.api.get<IMongoEntityChildTemplate[]>(`${baseChildTemplatesRoute}`);
 
         return data;
     }

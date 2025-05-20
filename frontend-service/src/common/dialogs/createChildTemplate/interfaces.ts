@@ -46,6 +46,8 @@ export interface IMongoEntityChildTemplate extends IEntityChildTemplate {
     _id: string;
 }
 
+export type IEntityChildTemplateMap = Map<string, IMongoEntityChildTemplate>;
+
 export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;
 }
