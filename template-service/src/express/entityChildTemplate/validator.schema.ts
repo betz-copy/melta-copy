@@ -1,6 +1,5 @@
 import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
-import { ExtendedJoi } from '../../utils/joi';
 
 const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
 

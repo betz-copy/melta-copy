@@ -9,6 +9,13 @@ export interface IFieldFilter {
     defaultValue?: string | number | boolean | Date | string[];
 }
 
+export interface IFieldChip {
+    fieldName: string;
+    chipType: 'filter' | 'default';
+    filterType?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    value: string | number | boolean | Date | string[];
+}
+
 export enum ViewType {
     categoryPage = 'categoryPage',
     userPage = 'userPage',

@@ -29,9 +29,10 @@ import { createEntityChildTemplateRequest } from '../../../services/templates/en
 import { ErrorToast } from '../../ErrorToast';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty } from './interfaces';
+import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip } from './interfaces';
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
+import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 
 const CreateChildTemplateDialog: React.FC<{
     open: boolean;
@@ -51,6 +52,7 @@ const CreateChildTemplateDialog: React.FC<{
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState<IMongoCategory[]>([]);
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(ViewType.categoryPage);
+    const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
 
     useEffect(() => {
         if (entityTemplate) {
@@ -119,8 +121,13 @@ const CreateChildTemplateDialog: React.FC<{
                             ...(format && { format }),
                         };
 
-                        if (fieldConfig.filterField) {
-                            childProp.filters = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, fieldConfig.filterField);
+                        const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
+
+                        if (filterChips.length > 0) {
+                            childProp.filters = filterChips.reduce((acc, chip) => {
+                                const chipFilter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!);
+                                return { ...acc, ...chipFilter };
+                            }, {});
                         }
 
                         if ('defaultValue' in fieldConfig && fieldConfig.defaultValue !== undefined) {
@@ -194,7 +201,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Grid>
                                 </Grid>
 
-                                <Grid container direction="row" sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
+                                <Grid container direction="row" sx={{ pt: 3, pl: 3 }} alignItems="center" justifyContent="space-between">
                                     <Grid item xs={6}>
                                         <FormControl fullWidth>
                                             <RadioGroup
@@ -268,7 +275,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Grid>
                                 </Grid>
 
-                                <Grid container sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
+                                <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
                                     <Grid item xs={6}>
                                         <FormControl fullWidth>
                                             <Autocomplete
@@ -347,7 +354,7 @@ const CreateChildTemplateDialog: React.FC<{
                                         <Typography sx={{ fontWeight: 400, fontSize: '16px', marginBottom: '19px' }}>
                                             {i18next.t('createChildTemplateDialog.columns.title')}
                                         </Typography>
-                                        <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+                                        <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
                                             <Grid item xs={3}>
                                                 <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                                                     {i18next.t('createChildTemplateDialog.columns.nameCol')}
@@ -372,12 +379,14 @@ const CreateChildTemplateDialog: React.FC<{
                                             )}
                                         </Grid>
 
-                                        <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', pr: 3 }}>
+                                        <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', pr: 2, pl: 2 }}>
                                             <FieldsAndFiltersTable
                                                 entityTemplate={entityTemplate}
                                                 templateFieldsFilters={templateFieldsFilters}
                                                 setTemplateFieldsFilters={setTemplateFieldsFilters}
                                                 viewType={childTemplateViewType}
+                                                setFieldChips={setFieldChips}
+                                                fieldChips={fieldChips}
                                             />
                                         </Grid>
                                     </Grid>

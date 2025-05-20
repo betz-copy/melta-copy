@@ -7,13 +7,15 @@ import { IExtendedUserFieldType, IMongoEntityTemplatePopulated } from '../../../
 import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
-import { IFieldFilter, ITemplateFieldsFilters } from './interfaces';
+import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from './interfaces';
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     templateFieldsFilters: ITemplateFieldsFilters;
     setTemplateFieldsFilters: React.Dispatch<React.SetStateAction<ITemplateFieldsFilters>>;
     viewType: 'categoryPage' | 'userPage';
+    fieldChips: IFieldChip[];
+    setFieldChips: React.Dispatch<React.SetStateAction<IFieldChip[]>>;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
@@ -21,17 +23,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     templateFieldsFilters,
     setTemplateFieldsFilters,
     viewType,
+    fieldChips,
+    setFieldChips,
 }) => {
     const [addFilterToField, setAddFilterToField] = React.useState<string | null>(null);
     const [dialogType, setDialogType] = React.useState<'filter' | 'default' | 'editByUser' | null>(null);
-    const [fieldChips, setFieldChips] = React.useState<
-        {
-            fieldName: string;
-            filterType?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
-            value: string | number | boolean | Date | string[];
-            chipType: 'filter' | 'default';
-        }[]
-    >([]);
 
     const addFilterToFieldHandler = (
         filterField: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter,
@@ -122,39 +118,40 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                     <Grid item xs={3}>
                                         <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                            {fieldChips
-                                                .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
-                                                .map((chip, index) => {
-                                                    const filterTypeLabel = 'type' in chip.filterType! ? chip.filterType.type : '';
-                                                    const filterValue =
-                                                        'filter' in chip.filterType!
-                                                            ? chip.filterType.filter
-                                                            : 'values' in chip.filterType!
-                                                            ? chip.filterType.values.join(', ')
-                                                            : 'dateFrom' in chip.filterType!
-                                                            ? chip.filterType.dateFrom?.toString()
-                                                            : '';
-                                                    return (
-                                                        <Grid item key={`${fieldName}-filter-${index}`}>
-                                                            <ColoredEnumChip
-                                                                label={`${i18next.t(`filters.${filterTypeLabel}`)} : ${filterValue}`}
-                                                                onDelete={() => {
-                                                                    setFieldChips((prev) =>
-                                                                        prev.filter(
-                                                                            (c) =>
-                                                                                !(
-                                                                                    c.fieldName === chip.fieldName &&
-                                                                                    c.chipType === 'filter' &&
-                                                                                    c.value === chip.value
-                                                                                ),
-                                                                        ),
-                                                                    );
-                                                                }}
-                                                                color="default"
-                                                            />
-                                                        </Grid>
-                                                    );
-                                                })}
+                                            {(fieldFilter.filterFields ?? []).map((filterField, index) => {
+                                                const filterTypeLabel = 'type' in filterField ? filterField.type : '';
+                                                const filterValue =
+                                                    'filter' in filterField
+                                                        ? filterField.filter
+                                                        : 'values' in filterField
+                                                        ? filterField.values.join(', ')
+                                                        : 'dateFrom' in filterField
+                                                        ? filterField.dateFrom?.toString()
+                                                        : '';
+
+                                                return (
+                                                    <Grid item key={`${fieldName}-filter-${index}`}>
+                                                        <ColoredEnumChip
+                                                            label={`${i18next.t(`filters.${filterTypeLabel}`)} : ${filterValue}`}
+                                                            onDelete={() => {
+                                                                setTemplateFieldsFilters((prev) => {
+                                                                    const updated = [...(prev[fieldName].filterFields ?? [])];
+                                                                    updated.splice(index, 1);
+                                                                    return {
+                                                                        ...prev,
+                                                                        [fieldName]: {
+                                                                            ...prev[fieldName],
+                                                                            filterFields: updated,
+                                                                        },
+                                                                    };
+                                                                });
+                                                            }}
+                                                            color="default"
+                                                        />
+                                                    </Grid>
+                                                );
+                                            })}
+
                                             <Grid item>
                                                 {entityTemplate.properties.properties[fieldName]?.format === 'user' ? (
                                                     <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
@@ -268,12 +265,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                         if (dialogType === 'filter') {
                             if (!fieldValue || typeof fieldValue !== 'object') return;
 
-                            setFieldChips((prev) => [
-                                ...prev,
-                                {
+                            setFieldChips((prev) => {
+                                const newChip = {
                                     fieldName,
-                                    chipType: 'filter',
-                                    filterType: fieldValue,
+                                    chipType: 'filter' as const,
+                                    filterType: structuredClone(fieldValue),
                                     value:
                                         'filter' in fieldValue
                                             ? fieldValue.filter
@@ -282,8 +278,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             : 'dateFrom' in fieldValue
                                             ? fieldValue.dateFrom
                                             : '',
-                                },
-                            ]);
+                                };
+
+                                return [...prev, newChip];
+                            });
                         } else if (dialogType === 'default') {
                             const value = typeof fieldValue === 'object' && 'value' in fieldValue ? fieldValue.value : fieldValue;
 
@@ -299,7 +297,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 ...prev,
                                 {
                                     fieldName,
-                                    chipType: 'default',
+                                    chipType: 'default' as const,
                                     value,
                                 },
                             ]);
