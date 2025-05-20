@@ -85,12 +85,25 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
         );
     }
 
-    const fieldValue =
-        relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'location'
-            ? entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
-                ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-                : entity.properties[relatedTemplateField].location
-            : entity.properties[relatedTemplateField];
+    const relationshipObjectToField = (): string => {
+        if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'location') {
+            return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
+                ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? ''
+                : entity.properties[relatedTemplateField].location;
+        } else if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'user') {
+            return entity.properties[relatedTemplateField].fullName;
+        } else if (
+            relatedEntityTemplate.properties.properties[relatedTemplateField].type === 'array' &&
+            relatedEntityTemplate.properties.properties[relatedTemplateField]?.items?.format === 'user'
+        ) {
+            return entity.properties[relatedTemplateField].fullNames.join(', ');
+        } else {
+            return entity.properties[relatedTemplateField];
+        }
+    };
+
+    const field = relationshipObjectToField();
+
     return (
         <MeltaTooltip
             PopperProps={{
@@ -128,10 +141,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
             >
                 <Grid display="inline-block">
                     <ColoredEnumChip
-                        // key={entity.properties[relatedTemplateField]}
-                        // label={entity.properties[relatedTemplateField]}
-                        key={fieldValue}
-                        label={fieldValue}
+                        key={field}
+                        label={field}
                         color={entityTemplateColor}
                         icon={
                             relatedEntityTemplate.iconFileId ? (

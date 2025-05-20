@@ -13,6 +13,7 @@ import { EntityPropertiesInternal } from '../EntityProperties';
 // import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
 import { locationConverterToString } from '../../utils/map/convert';
+import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -124,12 +125,15 @@ const TemplateEntitiesAutocomplete: React.FC<{
     ];
 
     const convertPropertyToString = (property: any): string | undefined => {
+        console.log(property);
         if (typeof property === 'object') {
             if (property.location) {
-                return locationConverterToString(property.location, property.coordinateSystem);
+                return property.coordinateSystem === CoordinateSystem.UTM
+                    ? locationConverterToString(property.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                    : property.location;
             } else if (Array.isArray(property)) {
                 try {
-                    //user array
+                    // user array when creating entity from scratch
                     const parsedArray = property.map((prop) => {
                         const parsed = JSON.parse(prop);
 
@@ -139,13 +143,20 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 } catch {
                     return property.toString();
                 }
+            } else if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
+                // user when editing entity
+                return `${property.fullName} - ${property.hierarchy}`;
+            } else if (property.fullNames && property.mails && property.hierarchies && property.ids && property.jobTitles) {
+                // user array when editing entity
+                const userStrings = property.fullNames.map((fullName, index) => `${fullName} - ${property.hierarchies[index]}`);
+                return userStrings.join(', ');
             } else {
                 return property.toString();
             }
         }
 
         try {
-            //check if field is user and parse it
+            // user when creating entity from scratch
             const parsedUser = JSON.parse(property);
 
             return typeof parsedUser === 'object' ? `${parsedUser.fullName} - ${parsedUser.hierarchy}` : parsedUser;

@@ -356,7 +356,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
-        
+
         return {
             fixedField: {
                 ...relatedEntityFixProperties,
@@ -887,7 +887,24 @@ export class EntityManager extends DefaultManagerNeo4j {
                 }
 
                 if (innerKeys[1] === 'properties') {
-                    relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
+                    if (innerKeys[3]) {
+                        let fourthKey = innerKeys[3];
+                        if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
+                            fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
+                        }
+
+                        if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+                            fourthKey = innerKeys[3].replace(config.neo4j.usersFieldsPropertySuffix, '');
+                        }
+
+                        if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]]) {
+                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = {};
+                        }
+
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
+                    } else {
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
+                    }
                 } else if (innerKeys[1] === 'templateId') {
                     relatedEntities[innerKeys[0]].templateId = value;
                 }
