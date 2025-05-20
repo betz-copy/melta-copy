@@ -12,7 +12,8 @@ import {
     TextField,
 } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import _debounce from 'lodash.debounce';
+import React, { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
@@ -42,8 +43,14 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
     const [addUserOpened, setAddUserOpened] = useState<boolean>(false);
 
     const [searchInput, setSearchInput] = useState('');
+    const [searchText, setSearchText] = useState('');
 
     const usersQueryKey = ['usersByWorkspaceId', workspace._id, searchInput];
+
+    const debouncedSetSearchInput = useCallback(
+        _debounce((value: string) => setSearchInput(value), 1000),
+        [setSearchInput],
+    );
 
     const { data: users = [], isLoading } = useQuery<IMongoUser[]>(usersQueryKey, () => searchUsersByPermissions(workspace._id, searchInput), {
         initialData: [] as IMongoUser[],
@@ -107,7 +114,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
             </DialogTitle>
             {addUserOpened && (
                 <DialogActions sx={{ paddingX: '1.5rem' }}>
-                    <Box display="flex" boxSizing="border-box" width="100%">
+                    <Box display="flex" boxSizing="border-box" width="100%" paddingLeft="15px" paddingRight="15px">
                         <Box width="100%">
                             <UserAutocomplete
                                 mode="external"
@@ -156,11 +163,12 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     <Grid item width="100%" marginBottom="15px">
                         <TextField
                             onChange={(e) => {
-                                setSearchInput(e.target.value);
+                                setSearchText(e.target.value);
+                                debouncedSetSearchInput(e.target.value);
                             }}
                             sx={{ borderRadius: '7px', width: '100%' }}
-                            placeholder={i18next.t('permissions.searchUser')}
-                            value={searchInput}
+                            label={i18next.t('permissions.searchUser')}
+                            value={searchText}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment
@@ -175,7 +183,6 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                                         <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
                                     </InputAdornment>
                                 ),
-                                startAdornment: <InputAdornment position="start" />,
                             }}
                         />
                     </Grid>
