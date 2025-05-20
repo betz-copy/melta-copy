@@ -8,7 +8,7 @@ import EntityChildTemplateSchema from './model';
 
 class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTemplate> {
     constructor(workspaceId: string) {
-        super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityChildTemplateSchema);
+        super(workspaceId, config.mongo.entityChildTemplatesCollectionName, EntityChildTemplateSchema);
     }
 
     getChildTemplates(searchQuery: {
@@ -59,7 +59,11 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
     }
 
     async createChildTemplate(templateData: Omit<IEntityChildTemplate, 'disabled'>) {
-        const createdEntityChildTemplate = await this.model.create(templateData);
+        const stringPropertiesFilters = Object.fromEntries(
+            Object.entries(templateData.properties).map(([key, value]) => [key, { ...value, filters: JSON.stringify(value.filters) }]),
+        );
+
+        const createdEntityChildTemplate = await this.model.create({ ...templateData, properties: stringPropertiesFilters });
         return (await createdEntityChildTemplate.populate<Pick<IEntityChildTemplatePopulated, 'categories'>>('categories')).populate<
             Pick<IEntityChildTemplatePopulated, 'fatherTemplateId'>
         >('fatherTemplateId');

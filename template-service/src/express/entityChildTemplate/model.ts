@@ -66,6 +66,14 @@ const EntityChildTemplateSchema = new mongoose.Schema(
 
 EntityChildTemplateSchema.index({ displayName: 'text' });
 
+EntityChildTemplateSchema.index({
+    name: 'text',
+    displayName: 'text',
+    description: 'text',
+});
+
+EntityChildTemplateSchema.index({ fatherTemplateId: 1 });
+
 EntityChildTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });

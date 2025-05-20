@@ -222,7 +222,7 @@ templatesRouter.post(
 );
 
 templatesRouter.post(
-    '/entities/child',
+    '/child',
     busboyMiddleware,
     ValidateRequest(createEntityChildTemplateSchema),
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
@@ -230,14 +230,14 @@ templatesRouter.post(
 );
 
 templatesRouter.post(
-    '/entities/child/search',
+    '/child/search',
     ValidateRequest(searchEntityChildTemplatesSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     TemplatesServiceProxy,
 );
 
 templatesRouter.get(
-    '/entities/child',
+    '/child',
     ValidateRequest(getAllChildTemplatesSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     TemplatesServiceProxy,

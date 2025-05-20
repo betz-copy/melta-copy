@@ -2,13 +2,9 @@ import Joi from 'joi';
 import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
-const nativeDataTypeSchema = Joi.alternatives(
-    Joi.boolean(),
-    Joi.string(),
-    Joi.number()
-  );
-  
-  const filterOfFieldSchema = Joi.object({
+const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
+
+const filterOfFieldSchema = Joi.object({
     $eq: nativeDataTypeSchema.allow(null),
     $ne: nativeDataTypeSchema.allow(null),
     $eqi: Joi.string(),
@@ -18,25 +14,21 @@ const nativeDataTypeSchema = Joi.alternatives(
     $lt: nativeDataTypeSchema,
     $lte: nativeDataTypeSchema,
     $in: Joi.alternatives(
-      Joi.array().items(Joi.boolean().allow(null)),
-      Joi.array().items(Joi.string().allow(null)),
-      Joi.array().items(Joi.number().allow(null)),
+        Joi.array().items(Joi.boolean().allow(null)),
+        Joi.array().items(Joi.string().allow(null)),
+        Joi.array().items(Joi.number().allow(null)),
     ),
     $not: Joi.link('#filterOfField'),
-  })
+})
     .min(1)
     .id('filterOfField');
-  
-  const filterOfTemplateSchema = Joi.object().pattern(
-    Joi.string(),
-    filterOfFieldSchema
-  ).min(1);
-  
-  export const searchFilterSchema = Joi.object({
+
+const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
+
+export const searchFilterSchema = Joi.object({
     $and: Joi.array().items(filterOfTemplateSchema).min(1),
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
-  }).min(1);
-  
+}).min(1);
 
 const childTemplatePropertySchema = Joi.object({
     title: Joi.string().required(),
@@ -295,7 +287,7 @@ export const searchRulesRequestSchema = Joi.object({
     params: {},
 });
 
-// POST /api/templates/entities/child/search
+// POST /api/templates/child/search
 export const searchEntityChildTemplatesSchema = Joi.object({
     body: {
         search: Joi.string(),
@@ -309,14 +301,14 @@ export const searchEntityChildTemplatesSchema = Joi.object({
     params: {},
 });
 
-// GET /api/templates/entities/child
+// GET /api/templates/child
 export const getAllChildTemplatesSchema = Joi.object({
     body: {},
     query: {},
     params: {},
 });
 
-// POST /api/templates/entities/child
+// POST /api/templates/child
 export const createEntityChildTemplateSchema = Joi.object({
     body: {
         name: Joi.string().required(),

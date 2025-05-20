@@ -11,7 +11,7 @@ const appRouter = Router();
 appRouter.use('/api/templates/relationships', relationshipTemplateRouter);
 appRouter.use('/api/templates/rules', ruleRouter);
 appRouter.use('/api/templates/entities', entityTemplateRouter);
-appRouter.use('/api/templates/entityChildren', entityChildTemplateRouter);
+appRouter.use('/api/templates/child', entityChildTemplateRouter);
 appRouter.use('/api/templates/categories', categoryRouter);
 
 appRouter.use('/isAlive', (_req, res) => {

@@ -7,7 +7,7 @@ const entityChildTemplateRouter: Router = Router();
 
 const controller = createController(EntityChildTemplateController);
 
-entityChildTemplateRouter.post('/', ValidateRequest(searchEntityChildTemplatesSchema), controller.searchEntityChildTemplates);
+entityChildTemplateRouter.post('/search', ValidateRequest(searchEntityChildTemplatesSchema), controller.searchEntityChildTemplates);
 
 entityChildTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), controller.getAllChildTemplates);
 

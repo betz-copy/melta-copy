@@ -36,7 +36,7 @@ const childTemplatePropertySchema = Joi.object({
     filters: searchFilterSchema,
 });
 
-// POST /api/templates/entities/child/search
+// POST /api/templates/child/search
 export const searchEntityChildTemplatesSchema = Joi.object({
     query: {},
     body: {
@@ -50,14 +50,14 @@ export const searchEntityChildTemplatesSchema = Joi.object({
     params: {},
 });
 
-// GET /api/templates/entities/child
+// GET /api/templates/child
 export const getAllChildTemplatesSchema = Joi.object({
     query: {},
     body: {},
     params: {},
 });
 
-// POST /api/templates/entities/child
+// POST /api/templates/child
 export const createEntityChildTemplateSchema = Joi.object({
     body: {
         name: variableNameValidation.required(),
