@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IChartType, IPermission } from './interface';
+import { IChartType, IChartPermission } from '@microservices/shared';
 
 export const ChartSchema = new mongoose.Schema(
     {
@@ -26,7 +26,7 @@ export const ChartSchema = new mongoose.Schema(
         },
         permission: {
             type: String,
-            enum: Object.values(IPermission),
+            enum: Object.values(IChartPermission),
             required: true,
         },
         createdBy: {

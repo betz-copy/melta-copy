@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import * as env from 'env-var';
 
-export const config = {
+const config = {
     service: {
         port: env.get('PORT').default(8000).asPortNumber(),
         workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
@@ -55,3 +55,5 @@ export const config = {
         previewFileType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default('.pdf').asString(),
     },
 };
+
+export default config;

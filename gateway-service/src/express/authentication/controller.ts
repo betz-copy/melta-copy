@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import config from '../../config';
-import { UserService } from '../../externalServices/userService';
+import UserService from '../../externalServices/userService';
+import UsersManager from '../users/manager';
 import { ShragaUser } from '../../utils/express/passport';
-import { UsersManager } from '../users/manager';
 import { AuthenticationManager } from './manager';
 
 const { accessTokenName } = config.authentication.shragaAuthentication;

@@ -60,6 +60,9 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -180,7 +183,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
                 }
 
-                console.log('failed to create/update entity template. error', error);
+                console.error('failed to create/update entity template. error', error);
             },
         },
     );

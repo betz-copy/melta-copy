@@ -1,8 +1,8 @@
-import { IWorkspace } from './inteface';
-import { WorkspaceService } from '../services/workspace';
+import { IWorkspace } from '@microservices/shared';
+import WorkspaceService from '../services/workspace';
 import DefaultManagerProxy from '../utils/express/manager';
 
-export class WorkspaceManager extends DefaultManagerProxy {
+class WorkspaceManager extends DefaultManagerProxy {
     static async getWorkspaceIds(type: IWorkspace['type']) {
         return WorkspaceService.getWorkspaceIds(type);
     }
@@ -11,3 +11,5 @@ export class WorkspaceManager extends DefaultManagerProxy {
         return WorkspaceService.getWorkspaceHierarchyIds(id);
     }
 }
+
+export default WorkspaceManager;

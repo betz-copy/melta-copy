@@ -20,9 +20,11 @@ const findFunctionDeclaration = (sourceFile: ts.SourceFile, functionName: IEntit
     return foundFunction;
 };
 
-export const isBodyFunctionHasContent = (code: string, functionName: IEntityCrudAction): boolean => {
+const isBodyFunctionHasContent = (code: string, functionName: IEntityCrudAction): boolean => {
     const sourceFile = ts.createSourceFile('codeAst.ts', code, ts.ScriptTarget.Latest, true);
 
     const functionDeclaration = findFunctionDeclaration(sourceFile, functionName);
     return functionDeclaration ? isFunctionBodyNonEmpty(functionDeclaration) : false;
 };
+
+export default isBodyFunctionHasContent;

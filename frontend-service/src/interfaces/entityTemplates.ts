@@ -36,6 +36,9 @@ export interface IEntitySingleProperty {
         kartoffelField: string;
     };
     archive?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 
 export interface IEntityTemplate {

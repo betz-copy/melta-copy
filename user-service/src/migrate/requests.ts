@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { ICompactPermissions } from '../express/permissions/interface/permissions';
-import { IUser } from '../express/users/interface';
-import { config } from './config';
+import { ICompactPermissions, IUser } from '@microservices/shared';
+import config from './config';
 import { IPermissionsOfUser } from './old_interfaces';
 
 export const getOldPermissionsOfUsers = async () => {

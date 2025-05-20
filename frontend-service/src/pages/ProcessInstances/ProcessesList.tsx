@@ -149,8 +149,7 @@ const ProcessesList: React.FC<{
                             });
                         }}
                         onQueryError={(error) => {
-                            // eslint-disable-next-line no-console
-                            console.log('failed loading all processes:', error);
+                            console.error('failed loading all processes:', error);
                             toast.error(i18next.t('processInstancesPage.failedToLoadAllProcesses'));
                         }}
                         getNextPageParam={(lastPage, allPages) => {

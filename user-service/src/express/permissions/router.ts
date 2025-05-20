@@ -1,14 +1,13 @@
 import { Router } from 'express';
-import { wrapController } from '../../utils/express';
-import { ValidateRequest } from '../../utils/joi';
-import { PermissionsController } from './controller';
+import { wrapController, ValidateRequest } from '@microservices/shared';
+import PermissionsController from './controller';
 import {
     deletePermissionsFromMetadataRequestSchema,
     getCompactPermissionsOfUserRequestSchema,
     syncCompactPermissionsRequestSchema,
 } from './validator.schema';
 
-export const permissionsRouter = Router();
+const permissionsRouter = Router();
 
 permissionsRouter.post(
     '/compact/find-by-user-id/:userId',
@@ -27,3 +26,5 @@ permissionsRouter.patch(
     ValidateRequest(deletePermissionsFromMetadataRequestSchema),
     wrapController(PermissionsController.deletePermissionsFromMetadata),
 );
+
+export default permissionsRouter;

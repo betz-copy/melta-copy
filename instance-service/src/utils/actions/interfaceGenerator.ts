@@ -1,4 +1,4 @@
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
@@ -8,7 +8,7 @@ const generateFromString = (
 
     if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference?.relatedTemplateId!)!.name;
+    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference!.relatedTemplateId)!.name;
 
     return 'string';
 };
@@ -35,6 +35,7 @@ export const generateInterface = (
 
     Object.entries(entity).forEach(([propertyName, propertyValues]) => {
         const { type, serialCurrent } = propertyValues;
+        const isComment = propertyValues.format === 'comment';
 
         switch (type) {
             case 'number':
@@ -47,7 +48,7 @@ export const generateInterface = (
                 dynamicInterface[propertyName] = generateFromArray(propertyValues);
                 break;
             default:
-                dynamicInterface[propertyName] = generateFromString(propertyValues, entitiesTemplatesByIds);
+                dynamicInterface[`${isComment ? 'readonly ' : ''}${propertyName}`] = generateFromString(propertyValues, entitiesTemplatesByIds);
         }
     });
 

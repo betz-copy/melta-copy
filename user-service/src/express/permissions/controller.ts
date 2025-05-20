@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { PermissionsManager } from './manager';
+import PermissionsManager from './manager';
 
-export class PermissionsController {
+class PermissionsController {
     static async getCompactPermissionsOfUser(req: Request, res: Response) {
         const { userId } = req.params;
         const { workspaceIds } = req.body;
@@ -19,3 +19,5 @@ export class PermissionsController {
         res.json(await PermissionsManager.deletePermissionsFromMetadata(req.body.query, req.body.metadata));
     }
 }
+
+export default PermissionsController;

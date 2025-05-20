@@ -1,11 +1,11 @@
+import { logger, IRerankRequest } from '@microservices/shared';
 import config from '../../config';
-import { ModelEmbeddingApiService } from '../../externalServices/model/embedding';
-import { ModelRerankingApiService } from '../../externalServices/model/reranking';
 import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
-import logger from '../../utils/logger/logsLogger';
-import { MinIOClient } from '../../utils/minio/minioClient';
-import { IIndexFilesRequest, IRerankRequest, ISearchRequest } from './interface';
+import MinIOClient from '../../utils/minio/minioClient';
+import { IIndexFilesRequest, ISearchRequest } from './interface';
+import ModelEmbeddingApiService from '../../externalServices/model/embedding';
+import ModelRerankingApiService from '../../externalServices/model/reranking';
 
 const {
     consts: { fileIdLength },

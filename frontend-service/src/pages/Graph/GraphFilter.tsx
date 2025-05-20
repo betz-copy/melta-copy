@@ -66,10 +66,12 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                   properties[prop].format !== 'fileId' &&
                   properties[prop].items?.format !== 'fileId' &&
                   properties[prop].format !== 'signature' &&
-                  properties[prop].format !== 'location',
+                  properties[prop].format !== 'location' &&
+                  properties[prop].format !== 'comment',
           )
         : [];
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedOnFilter = useCallback(
         debounce((newFilterField) => {
             setFilterRecord((prev) => ({

@@ -2,15 +2,21 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import groupBy from 'lodash.groupby';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import {
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IAction,
+    IEntity,
+    ActionErrors,
+    ValidationError,
+} from '@microservices/shared';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
-import { IEntity } from '../entities/interface';
-import { EntityManager } from '../entities/manager';
-import { ValidationError } from '../error';
-import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
+import EntityManager from '../entities/manager';
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
@@ -19,6 +25,7 @@ const ajv = new Ajv({ allErrors: true });
 
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
+ajv.addFormat('comment', /.*/);
 ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
@@ -40,6 +47,9 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -55,7 +65,7 @@ ajv.addKeyword({
     type: 'number',
 });
 
-export class BulkActionValidator extends DefaultController {
+class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -170,3 +180,5 @@ export class BulkActionValidator extends DefaultController {
         );
     }
 }
+
+export default BulkActionValidator;

@@ -1,10 +1,9 @@
 import { Router } from 'express';
+import { createController, wrapController, ValidateRequest } from '@microservices/shared';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, wrapController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
-import { WorkspaceController } from './controller';
+import WorkspaceController from './controller';
 import {
     createOneSchema,
     getByIdSchema,
@@ -15,11 +14,11 @@ import {
     updateMetadataSchema,
     updateOneSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
-const controller = createWorkspacesController(WorkspaceController);
+const controller = createController(WorkspaceController);
 
-export const workspaceRouter: Router = Router();
+const workspaceRouter: Router = Router();
 
 const workspaceProxy = createProxyMiddleware({
     target: `${config.workspaceService.url}${config.workspaceService.baseRoute}`,
@@ -64,5 +63,6 @@ workspaceRouter.put(
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.updateOne,
 );
-
 workspaceRouter.patch('/:id/metadata', ValidateRequest(updateMetadataSchema), workspaceProxy);
+
+export default workspaceRouter;

@@ -1,7 +1,7 @@
-import { IProcessTemplateWithSteps } from '../processTemplate';
+import { ICreateProcessTemplateBody, ProcessPropertyFormats } from '@microservices/shared';
 
-export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
-    const processTemplates: IProcessTemplateWithSteps[] = [
+const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
+    const processTemplates: ICreateProcessTemplateBody[] = [
         {
             name: 'createNewWeapon',
             displayName: 'יצירת נשק חדש',
@@ -20,7 +20,7 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
                         weaponsFile: {
                             title: 'קובץ הנשק',
                             type: 'string',
-                            format: 'fileId',
+                            format: 'fileId' as ProcessPropertyFormats,
                         },
                     },
                     required: ['weaponsFile'],
@@ -51,7 +51,7 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
                             sketch: {
                                 title: 'סקיצה',
                                 type: 'string',
-                                format: 'fileId',
+                                format: 'fileId' as ProcessPropertyFormats,
                             },
                         },
                         required: ['weaponName'],
@@ -126,7 +126,7 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
                         travelDocument: {
                             title: 'מסמך נסיעה',
                             type: 'string',
-                            format: 'fileId',
+                            format: 'fileId' as ProcessPropertyFormats,
                         },
                     },
                     required: [],
@@ -149,12 +149,12 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
                             departureTime: {
                                 title: 'שעת יציאה',
                                 type: 'string',
-                                format: 'date-time',
+                                format: 'date-time' as ProcessPropertyFormats,
                             },
                             arrivalTime: {
                                 title: 'שעת נחיתה',
                                 type: 'string',
-                                format: 'date-time',
+                                format: 'date-time' as ProcessPropertyFormats,
                             },
                             flightNumber: {
                                 title: 'מספר טיסה',
@@ -210,7 +210,7 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
                             insurancePolicy: {
                                 title: 'מדיניות ביטוח',
                                 type: 'string',
-                                format: 'fileId',
+                                format: 'fileId' as ProcessPropertyFormats,
                             },
                         },
                         required: [],
@@ -463,7 +463,7 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
                         manuscriptFile: {
                             title: 'קובץ התסריט',
                             type: 'string',
-                            format: 'fileId',
+                            format: 'fileId' as ProcessPropertyFormats,
                         },
                     },
                     required: ['manuscriptFile'],
@@ -704,3 +704,5 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
     ];
     return processTemplates;
 };
+
+export default getProcessTemplateToCreate;

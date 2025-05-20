@@ -846,6 +846,7 @@ export default {
         hide: 'הסתר',
         unique: 'ייחודי',
         readOnly: 'לקריאה בלבד',
+        hideFromDetailsPage: 'הסתר מעמוד פרט',
         identifier: 'מזהה ייחודי',
         incoming: 'משויך מ',
         outgoing: 'משויך ל',
@@ -879,6 +880,7 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
+        colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },
     propertyTypes: {
         string: 'טקסט',
@@ -903,6 +905,7 @@ export default {
         user: 'משתמש',
         users: 'משתמשים',
         signature: 'חתימה',
+        comment: 'הערה',
         kartoffelUserField: 'משתמש - שדה קרטופלי',
     },
     input: {

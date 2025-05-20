@@ -75,6 +75,10 @@ const addFieldsSchema = Yup.object({
                     }),
                 }),
                 mapSearch: Yup.boolean(),
+                comment: Yup.string().when('type', {
+                    is: 'comment',
+                    then: Yup.string().required(),
+                }),
             }),
         )
         .min(1, i18next.t('validation.oneField'))
@@ -124,8 +128,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             enabled: isEditMode,
             initialData: { count: 1, entities: [] },
             onError: (error: AxiosError) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to check areThereInstancesByTemplateId. error:', error);
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
@@ -212,6 +215,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportUnique
                                             supportLocation
                                             supportArchive
+                                            supportComment
                                             supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}

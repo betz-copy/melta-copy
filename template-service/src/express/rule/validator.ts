@@ -3,16 +3,26 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import Joi from 'joi';
 import isEqual from 'lodash.isequal';
-import DefaultController from '../../utils/express/controller';
-import { defaultValidationOptions, joiValidate } from '../../utils/joi';
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '../entityTemplate/interface';
+import {
+    IEntitySingleProperty,
+    IEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IRelevantTemplates,
+    IRule,
+    IConstant,
+    IPropertyOfVariable,
+    IVariable,
+    isConstant,
+    ICountAggFunction,
+    IRegularFunction,
+    ISumAggFunction,
+    IAggregationGroup,
+    DefaultController,
+    defaultValidationOptions,
+} from '@microservices/shared';
+import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
-import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
-import { IRelevantTemplates, IRule } from './interfaces';
-import { IConstant, IPropertyOfVariable, IVariable, isConstant } from './interfaces/formula/argument';
-import { ICountAggFunction, IRegularFunction, ISumAggFunction } from './interfaces/formula/function';
-import { IAggregationGroup } from './interfaces/formula/group';
 
 const numberRegExp = '[1-9]\\d*'; // digits that doesnt start with 0
 const dateDurationRegExp = new RegExp(`^(${numberRegExp}Y)?(${numberRegExp}M)?(${numberRegExp}D)?$`);
@@ -121,7 +131,7 @@ const formulaSchema = Joi.alternatives(
     Joi.object({ isAggregationGroup: Joi.boolean().valid(true).required() }).unknown(true),
 ).messages({ 'alternatives.match': 'formula must be one of equation/group/aggregationGroup' });
 
-export class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
+class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {
@@ -159,22 +169,46 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                     // todo: block in UI too, or support it
                     throw new Error('array not supported in formulas! sorry!');
                 }
-                if (format === 'relationshipReference') {
-                    throw new Error('relationshipReference not supported in formulas! sorry!');
-                }
                 return type;
         }
     }
 
-    private validatePropertyExistInEntityTemplate(property: string, entityTemplate: IEntityTemplatePopulated): IConstant['type'] {
+    private validatePropertyExistInEntityTemplate(
+        property: string,
+        entityTemplate: IEntityTemplatePopulated,
+        relevantTemplates: IRelevantTemplates,
+    ): IConstant['type'] {
         const entityTemplateWithDefaults = this.addDefaultFieldsToTemplate(entityTemplate);
-
         const propertyTemplate = entityTemplateWithDefaults.properties.properties[property];
-        if (propertyTemplate) {
-            return this.jsonSchemaTypeToType(propertyTemplate);
+
+        if (!propertyTemplate) {
+            throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
         }
 
-        throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
+        // If it's a relationshipReference, get the type from the related template's field
+        if (propertyTemplate.format === 'relationshipReference' && propertyTemplate.relationshipReference) {
+            const { relatedTemplateId } = propertyTemplate.relationshipReference;
+            const relatedFieldKey = propertyTemplate.relationshipReference.relatedTemplateField;
+
+            const relatedTemplate = [
+                relevantTemplates.entityTemplate,
+                ...relevantTemplates.connectionsTemplatesOfEntityTemplate.map((connection) => connection.otherEntityTemplate),
+            ].find((template) => template._id === relatedTemplateId);
+
+            if (!relatedTemplate) {
+                throw new Error(`related template "${relatedTemplateId}" not found in relevantTemplates`);
+            }
+
+            const relatedTemplateWithDefaults = this.addDefaultFieldsToTemplate(relatedTemplate);
+            const referencedField = relatedTemplateWithDefaults.properties.properties[relatedFieldKey];
+            if (!referencedField) {
+                throw new Error(`related field "${relatedFieldKey}" not found in template "${relatedTemplateId}"`);
+            }
+
+            return this.jsonSchemaTypeToType(referencedField);
+        }
+
+        return this.jsonSchemaTypeToType(propertyTemplate);
     }
 
     private validateConstant(constant: any): IConstant['type'] {
@@ -238,12 +272,12 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                 aggregationGroupsContext,
             );
 
-            return this.validatePropertyExistInEntityTemplate(property, otherEntityTemplate);
+            return this.validatePropertyExistInEntityTemplate(property, otherEntityTemplate, relevantTemplates);
         }
 
         assert(variable.entityTemplateId === relevantTemplates.entityTemplate._id, 'variable.entityTemplateId must be the same as entityTemplateId');
 
-        return this.validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate);
+        return this.validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate, relevantTemplates);
     }
 
     private validateCountAggFunction(
@@ -270,7 +304,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
             aggregationGroupsContext,
         );
 
-        return this.validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate);
+        return this.validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate, relevantTemplates);
     }
 
     private validateRegularFunction(
@@ -406,9 +440,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         if (formulaData.isEquation) this.validateEquation(formulaData, relevantTemplates, aggregationGroupsContext);
         if (formulaData.isGroup) this.validateGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        if (formulaData.isAggregationGroup) {
-            this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        }
+        if (formulaData.isAggregationGroup) this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
     }
 
     private async validateAndGetRelevantTemplates(rule: IRule): Promise<IRelevantTemplates> {
@@ -453,3 +485,5 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
         await this.validateRuleFormula(req.body);
     }
 }
+
+export default RuleValidator;

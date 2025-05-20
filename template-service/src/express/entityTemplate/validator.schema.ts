@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import {
     enumPropertiesColorsSchema,
     innerPropertiesSchema,
@@ -27,7 +27,9 @@ const entityTemplateSchema = {
 export const searchEntityTemplatesByFormatSchema = Joi.object({
     query: {},
     body: {
-        format: Joi.string().valid(...stringFormats).required(),
+        format: Joi.string()
+            .valid(...stringFormats)
+            .required(),
     },
     params: {},
 });
