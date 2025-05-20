@@ -52,13 +52,29 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
 
+    const parseAndAddDisabled = (filters: string) => {
+        const jsonFilters = JSON.parse(filters);
+
+        const disabledCondition = { disabled: { $eq: false } };
+
+        if (jsonFilters.$and && Array.isArray(jsonFilters.$and)) {
+            return {
+                $and: [...jsonFilters.$and, disabledCondition],
+            };
+        }
+
+        return {
+            $and: [jsonFilters, disabledCondition],
+        };
+    };
+
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
         ({ pageParam = 0 }) => {
             return searchEntitiesOfTemplateRequest(template._id!, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
-                filter: relationFilters ? JSON.parse(relationFilters) : { $and: { disabled: { $eq: false } } },
+                filter: relationFilters ? parseAndAddDisabled(relationFilters) : { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
             });
         },
