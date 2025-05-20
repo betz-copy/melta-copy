@@ -262,7 +262,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                         flexDirection="row"
                         style={{
                             ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
-                            marginBottom: '20px', // <-- ADD SPACING BETWEEN LINES HERE
+                            marginBottom: '20px',
                         }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
                         xs={propertySchema.comment ? 12 : undefined}
@@ -349,158 +349,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
             })}
         </>
     );
-
-    // return (
-    //     <>
-    //         {propertiesOrderedToShow.map((propertyKey) => {
-    //             const propertySchema = entityTemplate.properties.properties[propertyKey];
-    //             const propertyValue = properties[propertyKey];
-    //             const hideField = entityTemplate.properties.hide.includes(propertyKey);
-    //             const containsHtmlTags = containsHTMLTags(propertyValue);
-    //             let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
-    //             if (propertySchema.format === 'relationshipReference') {
-    //                 const relatedTemplateId = propertySchema.relationshipReference?.relatedTemplateId!;
-    //                 relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
-    //             }
-
-    //             const stringFormatValue = formatToString(propertyValue, propertySchema, {
-    //                 keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
-    //                 isPrintingMode,
-    //                 pureString,
-    //             });
-    //             const propertyValueColor = getPropertyColor(
-    //                 propertyKey,
-    //                 propertiesToHighlight,
-    //                 propertiesToHighlightColor,
-    //                 mode,
-    //                 darkMode ? '#dcdde2' : '#53566E',
-    //             );
-    //             const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
-    //             let innerContent;
-    //             if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
-    //             else if (containsHtmlTags)
-    //                 innerContent = viewFirstLineOfLongText
-    //                     ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
-    //                     : renderHTML(stringFormatValue);
-    //             else if (propertyValue && propertySchema.calculateTime)
-    //                 innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
-    //             else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
-    //             else if (propertySchema.format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
-    //             else innerContent = stringFormatValue;
-    //             let titleContent;
-    //             if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
-    //             else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
-    //             else titleContent = innerContent;
-    //             const overrideStyleInLongText =
-    //                 containsHtmlTags &&
-    //                 !viewFirstLineOfLongText &&
-    //                 propertyValue &&
-    //                 getNumLines(stringFormatValue) > 1 &&
-    //                 stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
-    //             const textDirection =
-    //                 // todo: make getTextDirection handle all possible value and reuse everywhere
-    //                 propertySchema.format !== 'text-area' &&
-    //                 propertySchema.format !== 'fileId' &&
-    //                 propertySchema.format !== 'relationshipReference' &&
-    //                 propertySchema.format !== 'user' &&
-    //                 propertySchema.format !== 'location' &&
-    //                 propertySchema.format !== 'signature'
-    //                     ? getTextDirection(propertyValue, {
-    //                           type: propertySchema.type,
-    //                           serialCurrent: propertySchema.serialCurrent,
-    //                       })
-    //                     : 'rtl';
-    //             return (
-    //                 <Grid
-    //                     key={propertyKey}
-    //                     item
-    //                     container
-    //                     flexDirection="row"
-    //                     style={{
-    //                         ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
-    //                         marginBottom: '20px',
-    //                     }}
-    //                     alignItems={textWrap ? 'flex-start' : 'center'}
-    //                 >
-    //                     <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
-    //                         <Grid
-    //                             item
-    //                             style={{
-    //                                 width: overrideStyleInLongText ? '10%' : '30%',
-    //                             }}
-    //                         >
-    //                             <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
-    //                                 <Typography
-    //                                     style={{
-    //                                         textOverflow: 'ellipsis',
-    //                                         whiteSpace: textWrap ? undefined : 'nowrap',
-    //                                         overflow: 'hidden',
-    //                                         textAlign: 'right',
-    //                                     }}
-    //                                     fontSize="14px"
-    //                                     color={propertyTitleColor}
-    //                                     fontWeight={mode === 'white' ? '800' : ''}
-    //                                 >
-    //                                     {propertySchema.title}:
-    //                                 </Typography>
-    //                             </MeltaTooltip>
-    //                         </Grid>
-    //                         <Grid
-    //                             item
-    //                             container
-    //                             flexDirection="row"
-    //                             alignItems={textWrap ? 'flex-start' : 'center'}
-    //                             flexWrap="nowrap"
-    //                             style={{
-    //                                 direction: 'rtl',
-    //                                 textAlign: 'right',
-    //                                 width: overrideStyleInLongText ? '90%' : '70%',
-    //                             }}
-    //                         >
-    //                             <MeltaTooltip
-    //                                 disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
-    //                                 placement="bottom"
-    //                                 title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
-    //                             >
-    //                                 <Typography
-    //                                     fontSize="14px"
-    //                                     color={propertyValueColor}
-    //                                     style={{
-    //                                         textOverflow: 'ellipsis',
-    //                                         whiteSpace: textWrap ? undefined : 'nowrap',
-    //                                         overflowX: 'hidden',
-    //                                         paddingLeft: '1rem',
-    //                                         maxHeight: isPrintingMode ? undefined : '350px',
-    //                                         direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
-    //                                     }}
-    //                                 >
-    //                                     <HighlightText text={innerContent} searchedText={searchedText} isLink />
-    //                                 </Typography>
-    //                             </MeltaTooltip>
-    //                             <Grid item>
-    //                                 {hideField && (
-    //                                     <IconButton
-    //                                         onClick={(event) => {
-    //                                             event.stopPropagation();
-    //                                             setHideFieldsToDisplay(() => {
-    //                                                 if (hideFieldsToDisplay.includes(propertyKey))
-    //                                                     return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
-    //                                                 return [...hideFieldsToDisplay, propertyKey];
-    //                                             });
-    //                                         }}
-    //                                         size="small"
-    //                                     >
-    //                                         {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
-    //                                     </IconButton>
-    //                                 )}
-    //                             </Grid>
-    //                         </Grid>
-    //                     </Grid>
-    //                 </Grid>
-    //             );
-    //         })}
-    //     </>
-    // );
 };
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean; showByGroups?: boolean }> = ({
@@ -566,8 +414,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     sx={{
                                         width: '100%',
                                         borderRadius: '10px',
-                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.6)',
-                                        padding: '10px',
+                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.6)', 
+                                        padding: '12px',
                                     }}
                                     key={group.name}
                                 >

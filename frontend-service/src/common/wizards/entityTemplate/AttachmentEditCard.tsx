@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
-import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import { CommonFormInputProperties } from './commonInterfaces';
@@ -24,7 +23,7 @@ interface AttachmentEditCardProps {
     supportDeleteForExistingInstances: boolean;
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
-    refDragAndDrop?: any;
+    dragRef?: any;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -41,7 +40,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     supportDeleteForExistingInstances,
     hasActions,
     supportConvertingToMultipleFields = true,
-    refDragAndDrop,
+    dragRef,
 }) => {
     const currentUser = useUserStore((state) => state.user);
 
@@ -60,12 +59,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const isNewProperty = !initialValue;
 
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
-    console.log({ initialValue, value });
 
     return (
-        // <Draggable draggableId={value.id} index={index}>
-        //     {(draggableProvided) => (
-        <Grid item ref={refDragAndDrop} alignSelf="stretch" marginBottom="1rem">
+        <Grid item ref={dragRef} alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -176,8 +172,6 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                 </CardContent>
             </Card>
         </Grid>
-        //     )}
-        // </Draggable>
     );
 };
 

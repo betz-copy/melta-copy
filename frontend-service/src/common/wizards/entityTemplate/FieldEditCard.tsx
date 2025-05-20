@@ -245,7 +245,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     useEffect(() => {
         setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {

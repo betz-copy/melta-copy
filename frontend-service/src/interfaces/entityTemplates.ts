@@ -1,4 +1,4 @@
-import { FieldsGroup } from '../common/wizards/entityTemplate/commonInterfaces';
+import { FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
 import { IFieldsGroup, IUniqueConstraintOfTemplate } from './entities';
 
@@ -37,7 +37,7 @@ export interface IEntitySingleProperty {
         kartoffelField: string;
     };
     archive?: boolean;
-    fieldGroup?: FieldsGroup;
+    fieldGroup?: FieldGroupData;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;

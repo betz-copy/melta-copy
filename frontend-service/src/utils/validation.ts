@@ -2,7 +2,9 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
-import { extractGroups, extractProperties } from '../services/templates/enitityTemplatesService';
+import { ExtractedEntityProps, extractGroups, extractProperties } from '../services/templates/enitityTemplatesService';
+import { ExtractedProcessProps } from '../services/templates/processTemplatesService';
+import { GroupCommonFormInputProperties } from '../common/wizards/entityTemplate/commonInterfaces';
 
 export const regexSchema = Yup.string().test('is-regex', (value, context) => {
     if (!value) return true;
@@ -34,15 +36,14 @@ const addDuplicateFieldsError = (
         `validation.${duplicateFieldType === 'normal' ? 'field' : 'attachmentField'}${inputType === 'name' ? 'Name' : 'Title'}Exists`,
     );
     const path = `${fieldPath}.${inputType}`;
-    console.log({ message, path });
 
     errors.push(context.createError({ message, path }));
 };
 const testFields = (
-    properties1: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[],
+    properties1: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[] | (GroupCommonFormInputProperties & { index: number })[],
     properties1Type: PropertiesType,
     properties1Path: Record<string, string>,
-    properties2: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[],
+    properties2: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[] | (GroupCommonFormInputProperties & { index: number })[],
     properties2Type: PropertiesType,
     properties2Path: Record<string, string>,
     context: Yup.TestContext,
@@ -101,11 +102,11 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
     if (!value) return true;
 
     const errors: Yup.ValidationError[] = [];
-    const { properties, propertiesPath } = extractProperties(value.properties, 'properties');
+    const { properties, propertiesPath } = extractProperties(value.properties, 'properties') as ExtractedEntityProps;
     const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties(
         value.attachmentProperties,
         'attachmentProperties',
-    );
+    ) as ExtractedEntityProps;
 
     const { groupsProperties, groupsPath } = extractGroups(value.properties);
     validateProperties(properties, context, errors);
@@ -125,11 +126,14 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
 export const processTemplateUniquePropertiesDetails = (value, context: Yup.TestContext) => {
     if (!value) return true;
     const errors: Yup.ValidationError[] = [];
-    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties(value.detailsProperties, 'detailsProperties');
+    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties(
+        value.detailsProperties,
+        'detailsProperties',
+    ) as ExtractedProcessProps;
     const { properties: attachmentProperties, propertiesPath: attachmentPropertiesPath } = extractProperties(
         value.detailsAttachmentProperties,
         'detailsAttachmentProperties',
-    );
+    ) as ExtractedProcessProps;
 
     testFields(detailsProperties, 'normal', detailsPropertiesPath, detailsProperties, 'normal', detailsPropertiesPath, context, errors);
     testFields(
@@ -155,11 +159,11 @@ export const processTemplateUniquePropertiesSteps = (value, context: Yup.TestCon
     const { steps } = value;
     const errors: Yup.ValidationError[] = [];
     steps.forEach((step, index) => {
-        const { properties, propertiesPath } = extractProperties(step.properties, `steps[${index}].properties`);
+        const { properties, propertiesPath } = extractProperties(step.properties, `steps[${index}].properties`) as ExtractedProcessProps;
         const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties(
             step.attachmentProperties,
             `steps[${index}].attachmentProperties`,
-        );
+        ) as ExtractedProcessProps;
         testFields(properties, 'normal', propertiesPath, properties, 'normal', propertiesPath, context, errors);
         testFields(attachmentProperties, 'attachment', attachmentPath, attachmentProperties, 'attachment', attachmentPath, context, errors);
         testFields(properties, 'normal', propertiesPath, attachmentProperties, 'attachment', attachmentPath, context, errors);

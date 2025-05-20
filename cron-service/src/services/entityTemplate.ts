@@ -95,6 +95,7 @@ export interface IEntityTemplate {
     fieldGroups?: IFieldsGroup[];
 }
 
+
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
     category: IMongoCategory;
 }

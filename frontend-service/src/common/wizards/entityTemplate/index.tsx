@@ -23,7 +23,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
-import { FieldsGroup } from './commonInterfaces';
+import { FieldGroupData, PropertyItem } from './commonInterfaces';
 
 const { errorCodes } = environment;
 
@@ -61,20 +61,21 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
-    fieldGroup?: FieldsGroup;
+    fieldGroup?: FieldGroupData;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
 }
 
+type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
         'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
-    properties: EntityTemplateFormInputProperties[];
-    attachmentProperties: EntityTemplateFormInputProperties[];
-    archiveProperties: { type: 'field'; data: EntityTemplateFormInputProperties } | EntityTemplateFormInputProperties[];
+    properties: PropertyItem[];
+    attachmentProperties: EntityTemplatePropertyByType[];
+    archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];

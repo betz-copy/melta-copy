@@ -7,14 +7,16 @@ import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
+import { FormikProps } from 'formik';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
-import { StepComponentProps } from '../index';
+import { StepComponentHelpers, StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { ItemTypes, StructureEditor } from './FieldBlock';
+import { ItemTypes, FieldBlockDND } from './FieldBlock';
+import { PropertyItem } from './commonInterfaces';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -94,7 +96,7 @@ const groupSchema = Yup.object({
         .min(1, i18next.t('validation.oneField'))
         .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item) => {
+            return entries.some((item: any) => {
                 return item.archive !== true;
             });
         }),
@@ -151,9 +153,25 @@ const addFieldsSchema = Yup.object({
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
 
-export const FieldBlockWrapper: React.FC<
-    StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock' | 'itemId' | 'index' | 'moveItem'>
-> = ({ itemId, index, moveItem, values, setValues, touched, errors, setFieldValue, initialValues, isEditMode, setBlock }) => {
+type AddFieldsDNDProps = Pick<
+    FormikProps<EntityTemplateWizardValues>,
+    'values' | 'setValues' | 'touched' | 'errors' | 'setFieldValue' | 'initialValues'
+> &
+    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'>;
+
+export const FieldBlockWrapper = ({
+    itemId,
+    index,
+    moveItem,
+    values,
+    setValues,
+    touched,
+    errors,
+    setFieldValue,
+    initialValues,
+    isEditMode,
+    setBlock,
+}) => {
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
         if (property.type === 'field' && property.data?.mapSearch) {
@@ -186,21 +204,21 @@ export const FieldBlockWrapper: React.FC<
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
-    const getTitle = (itemId: string): string => {
+    const getTitle = (id: string): string => {
         const titles: Record<string, string> = {
             properties: i18next.t('wizard.entityTemplate.properties'),
             attachmentProperties: i18next.t('wizard.entityTemplate.attachments'),
             archiveProperties: i18next.t('wizard.entityTemplate.archiveProperties'),
         };
 
-        return titles[itemId] || '';
+        return titles[id] || '';
     };
 
-    const ref = useRef(null);
+    const ref = useRef<HTMLDivElement | null>(null);
 
     const [, drop] = useDrop({
         accept: ItemTypes.PROPERTY,
-        hover(item, monitor) {
+        hover(item: { id: string; index: number }, monitor) {
             if (!ref.current) return;
             const dragIndex = item.index;
             const hoverIndex = index;
@@ -210,12 +228,13 @@ export const FieldBlockWrapper: React.FC<
             const hoverBoundingRect = ref.current?.getBoundingClientRect();
             const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
             const clientOffset = monitor.getClientOffset();
-            const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+            const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
 
             if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
             if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
             moveItem(dragIndex, hoverIndex);
+            // eslint-disable-next-line no-param-reassign
             item.index = hoverIndex;
         },
     });
@@ -227,6 +246,7 @@ export const FieldBlockWrapper: React.FC<
             isDragging: monitor.isDragging(),
         }),
     });
+
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
@@ -244,7 +264,7 @@ export const FieldBlockWrapper: React.FC<
             }}
         >
             <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
-                <StructureEditor
+                <FieldBlockDND
                     propertiesType={itemId}
                     values={values}
                     uniqueConstraints={values.uniqueConstraints}
@@ -281,20 +301,35 @@ export const FieldBlockWrapper: React.FC<
                     supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                     hasActions={hasActions}
                     draggable={{ isDraggable: true }}
-                    // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                     locationSearchFields={{
-                        show: Object.values(values.properties).some((property) => property.type === 'location'),
+                        show: (Object.values(values.properties) as PropertyItem[]).some((property) => {
+                            if (property.type === 'field') {
+                                return property.data.type === 'location';
+                            }
+                            if (property.type === 'group') {
+                                return property.fields.some((field) => field.type === 'location');
+                            }
+                            return false;
+                        }),
                         disabled: countMapSearchProperties >= 2,
                     }}
                     supportIdentifier
-                    hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                    hasIdentifier={(Object.values(values.properties) as PropertyItem[]).some((property) => {
+                        if (property.type === 'field') {
+                            return 'identifier' in property.data && Boolean(property.data.identifier);
+                        }
+                        if (property.type === 'group') {
+                            return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
+                        }
+                        return false;
+                    })}
                 />
             </div>
         </Grid>
     );
 };
 
-export const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     values,
     setValues,
     touched,

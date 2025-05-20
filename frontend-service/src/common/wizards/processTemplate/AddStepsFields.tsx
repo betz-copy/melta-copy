@@ -6,7 +6,6 @@ import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon, DragHandle as DragH
 import AddIcon from '@mui/icons-material/Add';
 import _debounce from 'lodash.debounce';
 import { FieldArray, FormikErrors } from 'formik';
-import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
@@ -16,11 +15,10 @@ import { StepComponentProps } from '../index';
 import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
-import { FieldBlockAccordion, FieldBlockProps, ItemTypes, StructureEditor } from '../entityTemplate/FieldBlock';
+import { FieldBlockAccordion, ItemTypes, FieldBlockDND } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { CommonFormInputProperties } from '../entityTemplate/commonInterfaces';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -72,7 +70,7 @@ const addStepsFieldsSchema = Yup.object({
     .test('uniqueProperties', processTemplateUniquePropertiesSteps)
     .test('uniqueStepNames', stepTemplateUniqueNames);
 
-const FieldBlockStepWarper: any = ({
+const FieldBlockStepWarper = ({
     values,
     initialValues,
     setFieldValue,
@@ -90,11 +88,11 @@ const FieldBlockStepWarper: any = ({
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const isFieldBlockTouched = touched?.steps;
 
-    const ref = useRef(null);
+    const ref = useRef<HTMLDivElement | null>(null);
 
     const [, drop] = useDrop({
         accept: ItemTypes.STEP,
-        hover(item, monitor) {
+        hover(item: { id: string; index: number }, monitor) {
             if (!ref.current) return;
             const dragIndex = item.index;
             const hoverIndex = index;
@@ -104,12 +102,13 @@ const FieldBlockStepWarper: any = ({
             const hoverBoundingRect = ref.current?.getBoundingClientRect();
             const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
             const clientOffset = monitor.getClientOffset();
-            const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+            const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
 
             if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
             if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
             moveItem(dragIndex, hoverIndex);
+            // eslint-disable-next-line no-param-reassign
             item.index = hoverIndex;
         },
     });
@@ -127,7 +126,6 @@ const FieldBlockStepWarper: any = ({
     }, []);
 
     drag(drop(ref));
-    console.log({ errors });
 
     return (
         <Grid
@@ -168,7 +166,7 @@ const FieldBlockStepWarper: any = ({
                     <AccordionDetails>
                         <Grid container direction="column" alignItems="stretch" spacing={1}>
                             <Grid item>
-                                <StructureEditor
+                                <FieldBlockDND
                                     propertiesType="properties"
                                     values={step}
                                     initialValues={initialValues.steps[index]}
@@ -197,7 +195,7 @@ const FieldBlockStepWarper: any = ({
                                 />
                             </Grid>
                             <Grid item>
-                                <StructureEditor
+                                <FieldBlockDND
                                     propertiesType="attachmentProperties"
                                     values={step}
                                     initialValues={initialValues.steps[index]}
@@ -297,6 +295,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
         },
         [values.steps],
     );
+
     return (
         <Grid style={{ width: '100%' }}>
             <FieldArray name="steps">
@@ -349,8 +348,6 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                         areThereAnyInstances={areThereAnyInstances}
                                         isEditMode={isEditMode}
                                         setBlock={setBlock}
-                                        title={i18next.t('wizard.processTemplate.properties')}
-                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addProperty')}
                                         touched={touched}
                                         errors={errors}
                                         key={step._id}

@@ -17,6 +17,11 @@ const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
 export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area', 'signature'];
 
+export type ExtractedProcessProps = {
+    properties: ProcessTemplateFormInputProperties[];
+    propertiesPath: Record<string, string>;
+};
+
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
 ): ProcessTemplateWizardValues | undefined => {
@@ -148,13 +153,11 @@ const addAttachmentProperties = (
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
         if (!deleted) {
             const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
-
             // eslint-disable-next-line no-param-reassign
             properties[name] = {
                 title,
                 ...attachmentProperty,
             };
-
             propertiesOrder.push(name);
         }
         if (required) detailsSchema.required.push(name);
@@ -164,8 +167,8 @@ const addAttachmentProperties = (
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
 
-    const extractDetailsProperties = extractProperties(detailsProperties);
-    const extractDetailsAttachmentProperties = extractProperties(detailsAttachmentProperties);
+    const { properties: extractDetailsProperties } = extractProperties(detailsProperties) as ExtractedProcessProps;
+    const { properties: extractDetailsAttachmentProperties } = extractProperties(detailsAttachmentProperties) as ExtractedProcessProps;
 
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
@@ -202,8 +205,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        const extractStepProperties = extractProperties(step.properties);
-        const extractStepAttachmentProperties = extractProperties(step.attachmentProperties);
+        const { properties: extractStepProperties } = extractProperties(step.properties) as ExtractedProcessProps;
+        const { properties: extractStepAttachmentProperties } = extractProperties(step.attachmentProperties) as ExtractedProcessProps;
 
         extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
             if (!deleted) {
