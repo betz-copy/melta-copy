@@ -1,9 +1,9 @@
-import { ActivityLogService } from '../../externalServices/activityLogService';
+import ActivityLogService from '../../externalServices/activityLogService';
 import { SearchParams } from '../../externalServices/activityLogService/interface';
-import { UserService } from '../../externalServices/userService';
+import UserService from '../../externalServices/userService';
 import DefaultManagerProxy from '../../utils/express/manager';
 
-export class ActivityLogManager extends DefaultManagerProxy<ActivityLogService> {
+class ActivityLogManager extends DefaultManagerProxy<ActivityLogService> {
     constructor(workspaceId: string) {
         super(new ActivityLogService(workspaceId));
     }
@@ -24,3 +24,5 @@ export class ActivityLogManager extends DefaultManagerProxy<ActivityLogService> 
         return this.service.getActivity(entityId, newParams);
     }
 }
+
+export default ActivityLogManager;

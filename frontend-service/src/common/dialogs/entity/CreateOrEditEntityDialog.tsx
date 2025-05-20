@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/rules-of-hooks */
 import { Grid, Card, CardContent, Box, Divider, Button, IconButton, CircularProgress, Typography } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -295,7 +297,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const draftId = useDraftIdStore((state) => state.draftId);
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const originalDrafts = useMemo(() => cloneDeep(drafts), []);
 
     const currentDraft = useMemo(
@@ -340,16 +341,15 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
                 const schema = filterFieldsFromPropertiesSchema(values.template.properties);
-                // eslint-disable-next-line react-hooks/rules-of-hooks
+
                 useEffect(() => {
                     setInitialValuePropsToFilter({ ...formInitialValues.properties });
                 }, []);
-                // eslint-disable-next-line react-hooks/rules-of-hooks
+
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
                 }, [initialCurrValues]);
 
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     schema.required.forEach((field) => {
                         const fieldPropertiesEnum = schema.properties[field].enum;
@@ -362,10 +362,8 @@ const CreateOrEditEntityDetails: React.FC<{
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
                         }
                     });
-                    // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [values.template]);
 
-                // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
                 const createOrUpdateDraftDebounced = useCallback(
                     debounce((newValues: EntityWizardValues, newDraftId: string) => {
                         let uniqueDraftId = newDraftId;
@@ -395,7 +393,6 @@ const CreateOrEditEntityDetails: React.FC<{
                     }, environment.draftAutoSaveDebounce),
                     [],
                 );
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const absoluteDirty = useMemo(() => {
                     // textarea/long-text causes the field to first be undefined, setting dirty to true,
                     // so we check for dirty manually while ignoring these fields
@@ -414,14 +411,11 @@ const CreateOrEditEntityDetails: React.FC<{
                     return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
                 }, [formInitialValues, values]);
 
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (!absoluteDirty) return;
                     createOrUpdateDraftDebounced(values, draftId);
-                    // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [absoluteDirty, values, draftId]);
 
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (absoluteDirty && !wasDirty) setWasDirty(true);
                 }, [absoluteDirty]);

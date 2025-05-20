@@ -1,15 +1,15 @@
 import Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { IEntityTemplate, IEnumPropertiesColors, IProperties } from './interface';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties, ColorSchema, variableNameValidation } from '@microservices/shared';
 import config from '../../config';
-import { ColorSchema, variableNameValidation } from '../../utils/joi';
 
 const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
+ajv.addFormat('comment', /.*/);
 ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
@@ -46,8 +46,23 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature', 'kartoffelUserField'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'comment',
+    'kartoffelUserField',
+];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -114,6 +129,9 @@ const propertiesArraySchema = Joi.array()
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
+            comment: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
+            color: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
+            hideFromDetailsPage: Joi.boolean().when('format', { not: 'comment', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

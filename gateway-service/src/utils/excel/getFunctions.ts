@@ -1,33 +1,28 @@
 import Excel, { CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { excelConfig } from './excelConfig';
-import { BadRequestError, ServiceError } from '../../express/error';
 import {
-    ActionErrors,
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    IBrokenRule,
-    IBrokenRuleEntity,
-    ICreateEntityMetadata,
+    IEntitySingleProperty,
     IFailedEntity,
-} from '../../externalServices/ruleBreachService/interfaces';
-import {
+    ActionErrors,
+    IMongoEntityTemplatePopulated,
     IEntity,
+    BadRequestError,
+    ServiceError,
+    IValidationErrorData,
+    IBrokenRule,
+    IAction,
+    ActionTypes,
+    ICreateEntityMetadata,
+    IActionPopulated,
+    IBrokenRuleEntity,
+    logger,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
-    IValidationErrorData,
-} from '../../externalServices/instanceService/interfaces/entities';
-import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
-import config from '../../config';
-import { UploadedFile } from '../busboy/interface';
-import {
+    UploadedFile,
     CoordinateSystem,
     extractUtmLocation,
     getCoordinateSystem,
@@ -35,7 +30,10 @@ import {
     isValidWGS84,
     locationConverterToString,
     stringToCoordinates,
-} from './map';
+} from '@microservices/shared';
+import excelConfig from './excelConfig';
+
+import config from '../../config';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 
@@ -92,9 +90,10 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isSignature = propertyTemplate.format === 'signature';
     const isUser = propertyTemplate.format === 'user';
     const isUsers = propertyTemplate.items?.format === 'user';
+    const isComment = propertyTemplate.format === 'comment';
     const isKartoffelUserField = propertyTemplate.format === 'kartoffelUserField';
 
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isKartoffelUserField;
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
@@ -200,7 +199,7 @@ const readExcelFile = async (
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
                     } catch (error: any) {
-                        console.error("there's an error in the entity", { error });
+                        logger.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {
                             failedProperties.push({ key, value, cellValue, format: 'date-time' });
                             isFailed = true;

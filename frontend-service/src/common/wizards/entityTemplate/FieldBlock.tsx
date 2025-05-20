@@ -53,6 +53,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportConvertingToMultipleFields?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
+    supportComment?: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -108,6 +109,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         mapSearch: false,
     },
     supportConvertingToMultipleFields = true,
+    supportComment,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
@@ -143,7 +145,12 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
         indexes.forEach((index) => {
-            displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
+            displayValuesCopy[index] = {
+                ...displayValuesCopy[index],
+                [field]: value,
+            };
+            if (field === 'name' && displayValuesCopy[index].type === 'comment')
+                displayValuesCopy[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
         });
 
         setDisplayValues(displayValuesCopy);
@@ -310,6 +317,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
+                                                supportComment,
                                                 userPropertiesInTemplate,
                                                 onDuplicateKartoffelField,
                                             };

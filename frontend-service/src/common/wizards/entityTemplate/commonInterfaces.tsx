@@ -34,6 +34,9 @@ export interface CommonFormInputProperties {
     archive?: boolean;
     identifier?: boolean;
     mapSearch?: boolean;
+    comment?: string;
+    hideFromDetailsPage?: boolean;
+    color?: string;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {

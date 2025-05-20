@@ -126,6 +126,7 @@ const Steps: React.FC<IStepsProp> = ({
 
     useEffect(() => {
         setScrollByStepIndex(currStepInstanceIndex);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currStepInstanceIndex]);
 
     return (

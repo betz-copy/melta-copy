@@ -1,12 +1,11 @@
 import { Request } from 'express';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { ForbiddenError, PermissionScope } from '@microservices/shared';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError } from '../error';
 
-export class TemplatesValidator extends DefaultController {
+class TemplatesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateService: RelationshipsTemplateService;
@@ -139,3 +138,5 @@ export class TemplatesValidator extends DefaultController {
             });
     }
 }
+
+export default TemplatesValidator;

@@ -1,23 +1,23 @@
-import { InstancesService } from '../../externalServices/instanceService';
-import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import {
     ChartsAndGenerator,
-    IAxisField,
     IChart,
     IChartBody,
-    IMongoChart,
-    IChartType,
+    IChartPermission,
     IColumnOrLineMetaData,
-    IPermission,
+    IMongoChart,
     IPieMetaData,
-    ChartService,
-} from '../../externalServices/dashboardService/chartService';
+    IChartType,
+    IMongoEntityTemplatePopulated,
+    ISubCompactPermissions,
+    IAxisField,
+} from '@microservices/shared';
+import InstancesService from '../../externalServices/instanceService';
+import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
+import ChartService from '../../externalServices/dashboardService/chartService';
 import TemplatesManager from '../templates/manager';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
-import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
 
-export class ChartManager extends DefaultManagerProxy<ChartService> {
+class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
 
     private templateManager: TemplatesManager;
@@ -40,7 +40,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         if (typeof field === 'string') {
             const propertyTemplate = chartEntityTemplate?.properties.properties[field];
             if (propertyTemplate?.format === 'relationshipReference') {
-                const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                const { relatedTemplateId } = propertyTemplate.relationshipReference!;
                 return allowedEntityTemplates?.some((allowedEntityTemplate) => allowedEntityTemplate._id === relatedTemplateId);
             }
         }
@@ -76,7 +76,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         const chartPermissionChecks = await Promise.all(
             charts.map(async (chart) => {
                 const hasPermission =
-                    chart.permission === IPermission.Protected || (chart.permission === IPermission.Private && userId === chart.createdBy);
+                    chart.permission === IChartPermission.Protected || (chart.permission === IChartPermission.Private && userId === chart.createdBy);
 
                 const isAllowedRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chart);
 
@@ -130,3 +130,5 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return this.service.deleteChart(chartId);
     }
 }
+
+export default ChartManager;

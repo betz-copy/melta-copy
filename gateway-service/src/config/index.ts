@@ -10,6 +10,10 @@ const config = {
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
+        highWaterMark: env
+            .get('HIGH_WATER_MARK')
+            .default(600 * 1024 * 1024)
+            .asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
         maxPatchIterations: env.get('MAX_PATCH_ITERATIONS').default(100).asIntPositive(),

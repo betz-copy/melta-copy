@@ -22,6 +22,7 @@ import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 import { IKartoffelUser } from '../../../interfaces/users';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
+import RjsfCommentWidget from './RjsfCommentWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -59,6 +60,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
+    ajv.addFormat('comment', /.*/);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -81,6 +83,15 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({
         keyword: 'serialCurrent',
+    });
+    ajv.addKeyword({
+        keyword: 'comment',
+    });
+    ajv.addKeyword({
+        keyword: 'hideFromDetailsPage',
+    });
+    ajv.addKeyword({
+        keyword: 'color',
     });
 
     ajv.addKeyword('identifier', {
@@ -154,7 +165,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
+            const biggerFieldCss = innerDiv.querySelector('.fullWidth');
             innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
         });
     }, [values.template]);
@@ -172,9 +183,18 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
+                if (propertySchema.format === 'comment')
+                    return {
+                        'ui:options': {
+                            hide: schema.hide.includes(propertyKey),
+                        },
+                        'ui:classNames': 'fullWidth',
+                        'ui:widget': 'CommentWidget',
+                    };
                 if (propertySchema.format === 'signature')
                     return {
                         'ui:widget': 'SignatureWidget',
+                        'ui:classNames': 'fullWidth',
                     };
                 if (propertySchema.readOnly)
                     return {
@@ -246,7 +266,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'text-area')
                     return {
                         'ui:widget': 'TextAreaWidget',
-                        'ui:classNames': 'text-area',
+                        'ui:classNames': 'fullWidth',
                         'ui:options': { toPrint },
                     };
                 if (propertySchema.format === 'relationshipReference')
@@ -283,6 +303,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             tagName="div"
             readonly={readonly}
             widgets={{
+                CommentWidget: RjsfCommentWidget,
                 SelectWidget: RjfsSelectWidget,
                 DateWidget: RjfsDateWidget,
                 DateTimeWidget: RjfsDateTimeWidget,

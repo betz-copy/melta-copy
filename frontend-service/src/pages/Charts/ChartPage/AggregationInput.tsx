@@ -3,6 +3,7 @@ import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { pickBy } from 'lodash';
 import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
@@ -36,7 +37,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
     const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
     const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
 
-    const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
+    const entityTemplateFields = Object.keys(pickBy(entityTemplate?.properties.properties, ({ format }) => format !== 'comment'));
     const entityTemplateNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
         include: value.type === 'number' && !value.serialStarter,
         value: property,
