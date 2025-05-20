@@ -118,39 +118,39 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                     <Grid item xs={3}>
                                         <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                            {(fieldFilter.filterFields ?? []).map((filterField, index) => {
-                                                const filterTypeLabel = 'type' in filterField ? filterField.type : '';
-                                                const filterValue =
-                                                    'filter' in filterField
-                                                        ? filterField.filter
-                                                        : 'values' in filterField
-                                                        ? filterField.values.join(', ')
-                                                        : 'dateFrom' in filterField
-                                                        ? filterField.dateFrom?.toString()
-                                                        : '';
-
-                                                return (
-                                                    <Grid item key={`${fieldName}-filter-${index}`}>
-                                                        <ColoredEnumChip
-                                                            label={`${i18next.t(`filters.${filterTypeLabel}`)} : ${filterValue}`}
-                                                            onDelete={() => {
-                                                                setTemplateFieldsFilters((prev) => {
-                                                                    const updated = [...(prev[fieldName].filterFields ?? [])];
-                                                                    updated.splice(index, 1);
-                                                                    return {
-                                                                        ...prev,
-                                                                        [fieldName]: {
-                                                                            ...prev[fieldName],
-                                                                            filterFields: updated,
-                                                                        },
-                                                                    };
-                                                                });
-                                                            }}
-                                                            color="default"
-                                                        />
-                                                    </Grid>
-                                                );
-                                            })}
+                                            {fieldChips
+                                                .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
+                                                .map((chip, index) => {
+                                                    const filterTypeLabel = 'type' in chip.filterType! ? chip.filterType.type : '';
+                                                    const filterValue =
+                                                        'filter' in chip.filterType!
+                                                            ? chip.filterType.filter
+                                                            : 'values' in chip.filterType!
+                                                            ? chip.filterType.values.join(', ')
+                                                            : 'dateFrom' in chip.filterType!
+                                                            ? chip.filterType.dateFrom?.toString()
+                                                            : '';
+                                                    return (
+                                                        <Grid item key={`${fieldName}-filter-${index}`}>
+                                                            <ColoredEnumChip
+                                                                label={`${i18next.t(`filters.${filterTypeLabel}`)} : ${filterValue}`}
+                                                                onDelete={() => {
+                                                                    setFieldChips((prev) =>
+                                                                        prev.filter(
+                                                                            (c) =>
+                                                                                !(
+                                                                                    c.fieldName === chip.fieldName &&
+                                                                                    c.chipType === 'filter' &&
+                                                                                    c.value === chip.value
+                                                                                ),
+                                                                        ),
+                                                                    );
+                                                                }}
+                                                                color="default"
+                                                            />
+                                                        </Grid>
+                                                    );
+                                                })}
 
                                             <Grid item>
                                                 {entityTemplate.properties.properties[fieldName]?.format === 'user' ? (
