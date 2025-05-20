@@ -1,12 +1,12 @@
 import * as http from 'http';
 import { BucketItem, Client, CopyConditions } from 'minio';
 import { Readable } from 'stream';
-import { config } from '../../config';
-import logger from '../logger/logsLogger';
+import { logger } from '@microservices/shared';
+import config from '../../config';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
-export class MinIOClient {
+class MinIOClient {
     private minioClient: Client;
 
     constructor(private bucketName: string) {
@@ -28,7 +28,7 @@ export class MinIOClient {
                 await this.makeBucket().catch((error) => {
                     throw error;
                 });
-                logger.info(`Bucket with name "${this.bucketName}" created successfully`);
+                logger.info(`Bucket with name "${this.bucketName}" created successfully`, { error: err });
             }
 
             return func();
@@ -60,7 +60,7 @@ export class MinIOClient {
     }
 
     getFilesList(recursive = false, prefix = '', startAfter = '') {
-        this.wrapDBNotExistsError(() => {
+        return this.wrapDBNotExistsError(() => {
             return new Promise((resolve, reject) => {
                 const files: BucketItem[] = [];
                 const stream = this.minioClient.listObjectsV2(this.bucketName, prefix, recursive, startAfter);
@@ -94,7 +94,22 @@ export class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.fPutObject(this.bucketName, destinationFilePath, sourceFilePath, metaData));
     }
 
-    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
-        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
+    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size?: number, metaData = {}) {
+        return this.wrapDBNotExistsError(() => {
+            if (typeof fileStream === 'string' || Buffer.isBuffer(fileStream)) {
+                if (typeof size !== 'number') {
+                    throw new Error('Size must be provided for string or Buffer uploads.');
+                }
+                return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData);
+            }
+
+            fileStream.on('error', (err) => {
+                console.error(`Error in fileStream to ${destinationFilePath}`, err);
+            });
+
+            return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData);
+        });
     }
 }
+
+export default MinIOClient;

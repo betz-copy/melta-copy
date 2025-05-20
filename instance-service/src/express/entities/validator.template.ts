@@ -5,35 +5,32 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
-import { addPropertyToRequest } from '../../utils/express';
-import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
-import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
-import { ValidationError } from '../error';
 import {
+    IEntitySingleProperty,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IFilterOfField,
     IFilterOfTemplate,
-    IGetExpandedEntityBody,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     IUniqueConstraintOfTemplate,
-} from './interface';
-import { ActionErrors } from '../bulkActions/interface';
+    ActionErrors,
+    addPropertyToRequest,
+    CoordinateSystem,
+    ValidationError,
+} from '@microservices/shared';
+import { IGetExpandedEntityBody } from './interface';
+import config from '../../config';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
+import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
+import DefaultController from '../../utils/express/controller';
+import { trycatch } from '../../utils/lib';
+import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 
 const { neo4j, ajvCustomFormats } = config;
-
-enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
 
 const ajv = new Ajv();
 
@@ -192,7 +189,7 @@ export class EntityValidator extends DefaultController {
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);
     }
 
-    private validateSimplePartFilterOfField(rhs: boolean | string | number | null, templateOfField: IEntitySingleProperty, path: string) {
+    private validateSimplePartFilterOfField(rhs: boolean | string | number | RegExp | null, templateOfField: IEntitySingleProperty, path: string) {
         if (rhs === null) return;
 
         const { type, format } = templateOfField;

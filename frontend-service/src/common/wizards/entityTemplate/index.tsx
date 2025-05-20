@@ -188,7 +188,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     />,
                 );
 
-                console.log('failed to create/update entity template. error', error);
+                console.error('failed to create/update entity template. error', error);
             },
         },
     );

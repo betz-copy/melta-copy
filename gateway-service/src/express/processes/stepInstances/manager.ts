@@ -1,20 +1,21 @@
-import { ProcessService } from '../../../externalServices/processService';
-import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
     IMongoStepInstance,
     IMongoStepInstancePopulated,
     IStepInstance,
     UpdateStepReqBody,
-} from '../../../externalServices/processService/interfaces/stepInstance';
-import { StorageService } from '../../../externalServices/storageService';
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessInstancePopulated,
+    logger,
+    UploadedFile,
+} from '@microservices/shared';
+import ProcessService from '../../../externalServices/processService';
+import StorageService from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
-import { InstancesManager } from '../../instances/manager';
-import { UsersManager } from '../../users/manager';
+import InstancesManager from '../../instances/manager';
+import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
-import logger from '../../../utils/logger/logsLogger';
-import { UploadedFile } from '../../../utils/busboy/interface';
 
-export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
+class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
 
     private instancesManager: InstancesManager;
@@ -26,8 +27,8 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
     }
 
     private async handleNotificationsOnUpdateStepInstance(
-        process: IMongoProcessInstancePopulated,
-        previousProcess: IMongoProcessInstanceWithSteps,
+        process: IMongoProcessInstanceReviewerPopulated,
+        previousProcess: IMongoProcessInstancePopulated,
         updatedStep: IMongoStepInstance,
     ) {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
@@ -48,7 +49,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         const propertiesPromise =
             step.properties && processInstancesManager.getPropertiesWithEntities(step.properties, stepTemplate.properties, userId);
         return Promise.all([reviewerPromise, populatedReviewersPromise, propertiesPromise]).then(([reviewer, populatedReviewers, properties]) => {
-            const { reviewerId, ...populatedStep } = {
+            const { reviewerId: _reviewerId, ...populatedStep } = {
                 ...step,
                 reviewers: populatedReviewers,
                 reviewer,
@@ -115,3 +116,5 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
     }
 }
+
+export default StepsInstancesManager;

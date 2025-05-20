@@ -1,12 +1,13 @@
+import { IEntityTemplate, IMongoEntityTemplate, IMongoCategory } from '@microservices/shared';
 import config from '../config';
-import { createAxiosInstance } from '../utils/axios';
-import { IMongoCategory } from './categories';
+import createAxiosInstance from '../utils/axios';
 
 const {
     url,
     entities: { createEntityTemplateRoute },
 } = config.templateService;
 
+<<<<<<< HEAD
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
@@ -81,12 +82,10 @@ export interface IEntityTemplate {
     fieldGroups?: IFieldsGroup[];
 }
 
+=======
+>>>>>>> eb28fdceef46601bac48660c962edc9f174b7029
 export interface IEntityTemplateMock extends Omit<IEntityTemplate, 'category' | 'iconFileId'> {
     category: { name: string };
-}
-
-export interface IMongoEntityTemplate extends IEntityTemplate {
-    _id: string;
 }
 
 export const createEntityTemplates = async (workspaceId: string, entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {

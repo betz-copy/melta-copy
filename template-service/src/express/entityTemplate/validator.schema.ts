@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import {
     enumPropertiesColorsSchema,
     innerPropertiesSchema,

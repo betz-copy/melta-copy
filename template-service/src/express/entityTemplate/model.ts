@@ -21,7 +21,7 @@ const FieldGroupSchema = new mongoose.Schema(
     { _id: false },
 );
 
-export const EntityTemplateSchema = new mongoose.Schema(
+const EntityTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -91,3 +91,5 @@ EntityTemplateSchema.index({ displayName: 'text' });
 EntityTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
+
+export default EntityTemplateSchema;

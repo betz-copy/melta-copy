@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { logger } from '@microservices/shared';
 import config from '../../config';
-import logger from '../../utils/logger/logsLogger';
 
 const {
     modelApi: {
@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-export class ModelEmbeddingApiService {
+class ModelEmbeddingApiService {
     static api = axios.create({ baseURL: baseUrl, timeout: requestTimeout });
 
     static async embed(texts: string[]): Promise<number[][]> {
@@ -25,3 +25,5 @@ export class ModelEmbeddingApiService {
         }
     }
 }
+
+export default ModelEmbeddingApiService;
