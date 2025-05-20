@@ -4,7 +4,7 @@ import "./dotenv.js";
 const config = {
   mongo: {
     uri: env.get("MONGO_URI").required().asString(),
-    targetCollection: env.get("TARGET_COLLECTION").required().asString(),
+    templatesCollection: env.get("TEMPLATES_COLLECTION").required().asString(),
   },
   neo: {
     uri: env.get("NEO_URI").required().asString(),
