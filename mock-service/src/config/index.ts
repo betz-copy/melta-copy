@@ -52,7 +52,7 @@ const config = {
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
         isAliveRoute: env.get('STORAGE_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        uploadFileRoute: env.get('UPLOAD_FILE_ROUTE').default('/api/files').asString(),
+        uploadFileRoute: env.get('UPLOAD_FILE_ROUTE').default('/api/files/bulk').asString(),
         fileName: env.get('EXAMPLE_FILE_NAME').default('mock-file.txt').asString(),
         fileData: env.get('EXAMPLE_FILE_DATA').default('bla bla bla bla bla').asString(),
     },

@@ -1,6 +1,7 @@
 import Joi from 'joi';
-import { ColorSchema, ExtendedJoi, fileSchema, iconFileSchema, MongoIdSchema } from '../../utils/joi';
 import { ConfigTypes } from '../../externalServices/templates/entityTemplateService';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({

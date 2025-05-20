@@ -1,13 +1,19 @@
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
+import {
+    DefaultController,
+    IMongoStepTemplate,
+    IProcessDetails,
+    CreateProcessReqBody,
+    IProcessInstance,
+    InstanceProperties,
+    UpdateProcessReqBody,
+    ValidationError,
+} from '@microservices/shared';
 import ajv from '../../../utils/ajv';
-import DefaultController from '../../../utils/express/controller';
-import { InstancePropertiesValidationError, ValidationError } from '../../error';
-import { IProcessDetails } from '../../templates/processes/interface';
+import { InstancePropertiesValidationError } from '../../error';
 import ProcessTemplateManager from '../../templates/processes/manager';
-import { IMongoStepTemplate } from '../../templates/steps/interface';
 import StepInstanceManager from '../steps/manager';
-import { CreateProcessReqBody, IProcessInstance, InstanceProperties, UpdateProcessReqBody } from './interface';
 import ProcessInstanceManager from './manager';
 
 export default class ProcessInstanceValidator extends DefaultController<IProcessInstance, ProcessInstanceManager> {

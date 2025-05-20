@@ -3,11 +3,10 @@ import _difference from 'lodash.difference';
 import _mapValues from 'lodash.mapvalues';
 import _isEqual from 'lodash.isequal';
 import { Transaction } from 'neo4j-driver';
+import { IMongoRule, IMongoEntityTemplate } from '@microservices/shared';
 import { IRuleFailure } from './interfaces';
 import { generateNeo4jRuleQueryOnEntity } from './generateRuleNeo4jQuery';
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { normalizeRuleResult, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 export const runRuleOnEntity = async (transaction: Transaction, entityId: string, rule: IMongoRule, entityTemplate: IMongoEntityTemplate) => {
     const ruleQuery = generateNeo4jRuleQueryOnEntity(rule, entityId, entityTemplate);

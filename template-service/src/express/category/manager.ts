@@ -1,12 +1,8 @@
+import { DefaultManagerMongo, IMongoCategory, ICategory, NotFoundError, ConfigTypes, IMongoOrderConfig } from '@microservices/shared';
 import config from '../../config';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { NotFoundError } from '../error';
-import { ICategory, IMongoCategory } from './interface';
-import { CategorySchema } from './model';
-import ConfigManager from '../config/manager';
-import { ConfigTypes, IMongoOrderConfig } from '../config/interface';
-import { withTransaction } from '../../utils/mongoose';
 import { ClientSession } from 'mongoose';
+import CategorySchema from './model';
+import { withTransaction } from '../../utils/mongoose';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     private configManager: ConfigManager;

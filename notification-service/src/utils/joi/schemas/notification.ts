@@ -1,6 +1,6 @@
 import * as joi from 'joi';
+import { NotificationType } from '@microservices/shared';
 import { mongoIdSchema } from '.';
-import { NotificationType } from '../../../express/notifications/interface';
 import { validateNotificationMetadataSchema } from './notificationMetadata';
 
 export const notificationSchema = joi.object({

@@ -1,9 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
+import { IMongoStepTemplate, IStepTemplate, DefaultManagerMongo, ValidationError, NotFoundError } from '@microservices/shared';
 import config from '../../../config';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { NoMatchingStepsError, NotFoundError, TemplateNotFoundError, ValidationError } from '../../error';
-import { IMongoStepTemplate, IStepTemplate } from './interface';
+import { NoMatchingStepsError, TemplateNotFoundError } from '../../error';
 import { StepTemplateSchema } from './model';
 
 export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
@@ -12,14 +11,14 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
     }
 
     async getStepTemplate(id: string): Promise<IMongoStepTemplate> {
-        return this.model.findById(id).orFail(new TemplateNotFoundError('step', id)).lean();
+        return this.model.findById(id).orFail(new TemplateNotFoundError('step', id)).lean<IMongoStepTemplate>();
     }
 
     async getStepTemplates(ids: string[]): Promise<IMongoStepTemplate[]> {
         return this.model
             .find({ _id: { $in: ids } })
             .orFail(new NoMatchingStepsError())
-            .lean();
+            .lean<IMongoStepTemplate[]>();
     }
 
     private throwIfDuplicateStepName(steps: IStepTemplate[]) {

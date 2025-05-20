@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import EntityTemplateController from './controller';
 import {
     convertToRelationshipFieldRequestSchema,
@@ -15,13 +14,12 @@ import {
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
 } from './validator.schema';
-import { EntityTemplateValidator } from './validator.template';
+import EntityTemplateValidator from './validator.template';
 
 const entityTemplateRouter: Router = Router();
 
 const controller = createController(EntityTemplateController);
 const validatorController = createController(EntityTemplateValidator, true);
-
 
 entityTemplateRouter.post('/searchByFormat', ValidateRequest(searchEntityTemplatesByFormatSchema), controller.searchEntityTemplatesIncludesFormat);
 
@@ -37,7 +35,12 @@ entityTemplateRouter.get(
     controller.getTemplatesUsingRelationshipReferance,
 );
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), validatorController.validateCreateEntityTemplate, controller.createEntityTemplate);
+entityTemplateRouter.post(
+    '/',
+    ValidateRequest(createEntityTemplateSchema),
+    validatorController.validateCreateEntityTemplate,
+    controller.createEntityTemplate,
+);
 
 entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller.deleteEntityTemplate);
 

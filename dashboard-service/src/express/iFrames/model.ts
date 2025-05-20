@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import { IMongoIframe } from './interface';
+import * as mongoose from 'mongoose';
+import { IMongoIframe } from '@microservices/shared';
 
 const IFrameSchema = new mongoose.Schema<IMongoIframe>(
     {
