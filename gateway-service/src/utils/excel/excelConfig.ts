@@ -25,6 +25,13 @@ export const excelConfig = {
         enum: 'רשימה',
         regex: 'תבנית (regex)',
         location: 'מיקום: x,y / POLYGON(( x y, x y....))/ zoneHemi x y / POLYGON((zoneHemi x y, zoneHemi x y))',
+        users: 'משתמשים',
+        comment: 'הערה',
+        user: 'משתמש',
+        files: 'קבצים',
+        fileId: 'קובץ',
+        signature: 'חתימה',
+        kartoffelUserField: 'שדה משתמש קרטופלי',
     },
     formulae: {
         errorTitle: 'אופציה לא תקינה',

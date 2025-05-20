@@ -64,15 +64,17 @@ const createWorkbook = async (fileName: string) => {
 
 const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     const { propertyType } = excelConfig;
-    const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+    const type = propertyType[propertyTemplate.format ?? propertyTemplate.type];
 
     if (type === propertyType.string) {
         if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
         if (propertyTemplate.pattern) return `${propertyType.regex}`;
     }
-    if (type === propertyType.array && propertyTemplate.items?.type === 'string')
+    if (type === propertyType.array && propertyTemplate.items) {
+        if (propertyTemplate.items.format === 'user') return propertyType.users;
+        if (propertyTemplate.items.format === 'fileId') return propertyType.files;
         return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
-
+    }
     return type;
 };
 
