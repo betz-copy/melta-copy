@@ -81,8 +81,6 @@ const main = async () => {
 
     const mainWorkspace = await createWorkspaces(getWorkspacesToCreate());
 
-    console.log('Creating category order');
-
     await createCategoryOrder(mainWorkspace._id, []);
 
     console.log('Creating categories');

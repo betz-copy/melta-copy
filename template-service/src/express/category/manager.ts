@@ -1,6 +1,6 @@
+import { ClientSession } from 'mongoose';
 import { DefaultManagerMongo, IMongoCategory, ICategory, NotFoundError, ConfigTypes, IMongoOrderConfig } from '@microservices/shared';
 import config from '../../config';
-import { ClientSession } from 'mongoose';
 import CategorySchema from './model';
 import { withTransaction } from '../../utils/mongoose';
 import ConfigManager from '../config/manager';
@@ -29,7 +29,7 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
 
         try {
             const categoryOrder: IMongoOrderConfig = await this.configManager.getOrderConfigByName('categoryOrder');
-            const order = categoryOrder.order;
+            const { order } = categoryOrder;
             this.configManager.updateOrder(categoryOrder._id, order.length, category._id);
         } catch {
             await this.configManager.createOrder({ name: 'categoryOrder', type: ConfigTypes.ORDER, order: [category._id] });

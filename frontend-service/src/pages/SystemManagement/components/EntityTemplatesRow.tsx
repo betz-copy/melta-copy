@@ -655,13 +655,9 @@ const EntityTemplatesRow: React.FC = () => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data.newCategory._id, data.newCategory));
                 setCategoriesToShow(
                     categoriesToShow.map((category) => {
-                        if (category._id === data.newCategory._id) {
-                            return data.newCategory;
-                        }
+                        if (category._id === data.newCategory._id) return data.newCategory;
 
-                        if (category._id === data.oldCategory._id) {
-                            return data.oldCategory;
-                        }
+                        if (category._id === data.oldCategory._id) return data.oldCategory;
 
                         return category;
                     }),

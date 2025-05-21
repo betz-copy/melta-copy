@@ -122,16 +122,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
-                }
-
-                try {
-                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
-                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
-                } catch (error) {
-                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
-                }
-
-                if (!isEditMode) {
                     try {
                         queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
                             const newCategoryMap = new Map(categories!);
@@ -142,6 +132,13 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     } catch (error) {
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }
+                }
+
+                try {
+                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
+                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                } catch (error) {
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
 
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import config from '../../config';
 import { NotFoundError, DefaultManagerMongo, ConfigTypes, IMongoBaseConfig, IMongoOrderConfig, IOrderConfig } from '@microservices/shared';
+import config from '../../config';
 import { ConfigSchema, orderConfigSchema } from './model';
 
 class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
@@ -26,7 +26,6 @@ class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
 
     async updateOrder(orderId: string, newIndex: number, item: string, removeItem: boolean = false): Promise<IMongoOrderConfig> {
         const order = await this.orderDiscriminator.findById(orderId).orFail(new NotFoundError('Config order not found')).exec();
-
         const currentIndex: number = order.order.indexOf(item);
 
         if (currentIndex === -1) {
@@ -39,7 +38,6 @@ class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
         }
 
         await order.save();
-
         return order;
     }
 

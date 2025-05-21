@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
@@ -204,7 +204,7 @@ const CategoriesRow: React.FC = () => {
         },
     );
 
-    const onDragEnd = (result) => {
+    const onDragEnd = (result: DropResult) => {
         const { source, destination, draggableId } = result;
         if (!destination) {
             return;

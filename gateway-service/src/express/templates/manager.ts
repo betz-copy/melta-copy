@@ -266,7 +266,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ]);
 
         let categoryOrder: IMongoOrderConfig | null;
-
         try {
             categoryOrder = await this.getCategoryOrderConfig('categoryOrder', permissionsOfUserId);
         } catch {

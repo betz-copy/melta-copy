@@ -8,7 +8,7 @@ export const getAllConfigsSchema = Joi.object({
     params: {},
 });
 
-//GET /api/config/:name
+// GET /api/config/:name
 export const getOrderConfigByNameSchema = Joi.object({
     query: {},
     body: {},

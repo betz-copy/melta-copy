@@ -7,7 +7,7 @@ import {
     IMongoEntityTemplate,
     IRelationshipTemplate,
     NotFoundError,
-    IMongoCategory
+    IMongoCategory,
 } from '@microservices/shared';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
@@ -168,7 +168,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         const { templatesOrder } = entityTemplate.category;
         templatesOrder.push(entityTemplate._id.toString());
-        await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder: templatesOrder });
+        await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
 
