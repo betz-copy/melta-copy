@@ -9,13 +9,13 @@ import {
     InstanceProperties,
     UpdateProcessReqBody,
     ValidationError,
+    IMongoStepInstance,
 } from '@microservices/shared';
 import ajv from '../../../utils/ajv';
 import { InstancePropertiesValidationError } from '../../error';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import StepInstanceManager from '../steps/manager';
 import ProcessInstanceManager from './manager';
-import { IMongoStepInstance } from '../steps/interface';
 
 export default class ProcessInstanceValidator extends DefaultController<IProcessInstance, ProcessInstanceManager> {
     private stepInstanceManager: StepInstanceManager;

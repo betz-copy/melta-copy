@@ -128,7 +128,6 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                 attachmentProperties: [],
                                                 reviewers: [],
                                                 icon: { file: { name: '' }, name: '' },
-                                                disableAddingReviewers: false,
                                             })
                                         }
                                         size="large"
@@ -254,19 +253,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         errors={errors}
                                                                         isEditMode={isEditMode}
                                                                         areThereAnyInstances={areThereAnyInstances}
-                                                                    />
-                                                                    <FormControlLabel
-                                                                        control={
-                                                                            <Switch
-                                                                                id="disableAddApprovers"
-                                                                                name="disableAddApprovers"
-                                                                                onChange={(_e, checked) => {
-                                                                                    setFieldValue(`steps[${index}].disableAddingReviewers`, checked);
-                                                                                }}
-                                                                                checked={step.disableAddingReviewers}
-                                                                            />
-                                                                        }
-                                                                        label={i18next.t('wizard.processTemplate.blockAddingApprovers')}
+                                                                        disableAddingReviewersFieldName={`steps[${index}].disableAddingReviewers`}
+                                                                        isDisableAddingReviewers={step.disableAddingReviewers || false}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>
