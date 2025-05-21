@@ -15,7 +15,7 @@ import {
     stepConnectorClasses,
     useTheme,
 } from '@mui/material';
-import { Edit, ScatterPlotOutlined as HiveIcon, Unarchive } from '@mui/icons-material';
+import { ScatterPlotOutlined as HiveIcon, Unarchive, Edit } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
@@ -227,7 +227,7 @@ const ProcessCard: React.FC<{
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
-                console.log('failed to update process instance. error', error);
+                console.error('failed to update process instance. error', error);
             },
         },
     );
@@ -238,7 +238,7 @@ const ProcessCard: React.FC<{
         },
         {
             onError: (error: AxiosError) => {
-                console.log('failed to delete process. error:', error);
+                console.error('failed to delete process. error:', error);
                 toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
             },
             onSuccess: () => {
@@ -253,10 +253,10 @@ const ProcessCard: React.FC<{
         {
             onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
                 if (process.archived) {
-                    console.log('failed to send process to archive. error:', error);
+                    console.error('failed to send process to archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
                 } else {
-                    console.log('failed to remove process from archive. error:', error);
+                    console.error('failed to remove process from archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
                 }
             },

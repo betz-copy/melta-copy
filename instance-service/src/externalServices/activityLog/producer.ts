@@ -1,11 +1,10 @@
-import { IActivityLog } from './interface';
+import { IActivityLog, ServiceError } from '@microservices/shared';
 import config from '../../config';
-import { DefaultExternalServiceRabbit } from '../../utils/rabbit/manager';
-import { ServiceError } from '../../express/error';
+import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
 
 const { rabbit } = config;
 
-export class ActivityLogProducer extends DefaultExternalServiceRabbit {
+class ActivityLogProducer extends DefaultExternalServiceRabbit {
     async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
         try {
             this.sendToQueue(rabbit.activityLogQueue, activityLog);
@@ -14,3 +13,5 @@ export class ActivityLogProducer extends DefaultExternalServiceRabbit {
         }
     }
 }
+
+export default ActivityLogProducer;

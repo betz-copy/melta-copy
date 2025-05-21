@@ -102,7 +102,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
         },
         {
             onError: (error: AxiosError) => {
-                console.log('failed to delete process. error:', error);
+                console.error('failed to delete process. error:', error);
                 toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
             },
             onSuccess: () => {

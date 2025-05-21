@@ -207,6 +207,7 @@ const Graph: React.FC = () => {
 
     useEffect(() => {
         loadNextBatch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {

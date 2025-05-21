@@ -53,8 +53,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                         queryKey={queryKey}
                         queryFunction={async ({ pageParam }) => searchGantts({ limit: infiniteScrollPageCount, step: pageParam, search })}
                         onQueryError={(error) => {
-                            // eslint-disable-next-line no-console
-                            console.log('failed loading gantts: ', error);
+                            console.error('failed loading gantts: ', error);
                             toast.error(i18next.t('gantts.searchFailed'));
                         }}
                         emptyText={i18next.t('gantts.noGanttsFound')}

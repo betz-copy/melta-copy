@@ -1,12 +1,10 @@
 import { FilterQuery, Types } from 'mongoose';
+import { DefaultManagerMongo, IMongoIframe, IFrame, ISearchIFramesBody, NotFoundError } from '@microservices/shared';
 import config from '../../config';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { NotFoundError } from '../error';
-import { IFrame, IMongoIframe, ISearchIFramesBody } from './interface';
 import IFrameSchema from './model';
 import { escapeRegExp } from '../../utils';
 
-export class IFrameManager extends DefaultManagerMongo<IMongoIframe> {
+class IFrameManager extends DefaultManagerMongo<IMongoIframe> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.iFramesCollectionName, IFrameSchema);
     }

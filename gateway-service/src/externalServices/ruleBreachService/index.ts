@@ -1,11 +1,19 @@
+import {
+    IRuleBreachAlert,
+    IRuleBreachRequest,
+    RuleBreachRequestStatus,
+    ActionTypes,
+    IActionMetadata,
+    IBrokenRule,
+    IAgGridRequest,
+} from '@microservices/shared';
 import config from '../../config';
-import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+import { IAgGridResult } from '../../utils/agGrid/interface';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from './interfaces';
 
 const { url, baseRoute, requestTimeout } = config.ruleBreachService;
 
-export class RuleBreachService extends DefaultExternalServiceApi {
+class RuleBreachService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
@@ -94,3 +102,5 @@ export class RuleBreachService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default RuleBreachService;

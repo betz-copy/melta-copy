@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createWorkspacesController } from '../../../utils/express';
+import { createController, ValidateRequest } from '@microservices/shared';
 import ProcessTemplatesController from './controller';
-import ValidateRequest from '../../../utils/joi';
 import {
     createProcessTemplateSchema,
     deleteProcessTemplateSchema,
@@ -10,11 +9,11 @@ import {
     searchProcessTemplatesSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
-import { busboyMiddleware } from '../../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 
 const TemplatesRouter: Router = Router();
 
-const TemplatesControllerMiddleware = createWorkspacesController(ProcessTemplatesController);
+const TemplatesControllerMiddleware = createController(ProcessTemplatesController);
 
 TemplatesRouter.get(
     '/:id',

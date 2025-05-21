@@ -127,7 +127,7 @@ const ActivitiesContent: React.FC<{
                         startDateInput={startDateInput}
                         endDateInput={endDateInput}
                         directionIsRow
-                        overrideSx={{}}
+                        overrideSx={{ spacing: 2 }}
                         borderRadius="20px"
                     />
                 </Grid>

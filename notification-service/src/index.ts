@@ -1,10 +1,10 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import * as mongoose from 'mongoose';
+import { logger } from '@microservices/shared';
 import config from './config';
 import Server from './express/server';
 import NotificationsConsumer from './rabbit/consumer';
-import logger from './utils/logger/logsLogger';
 
 const { mongo, rabbit, service } = config;
 

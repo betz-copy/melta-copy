@@ -1,7 +1,7 @@
 import * as env from 'env-var';
 import './dotenv';
 
-export const config = {
+const config = {
     service: {
         port: env.get('PORT').required().asIntPositive(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
@@ -40,3 +40,5 @@ export const config = {
         },
     },
 };
+
+export default config;

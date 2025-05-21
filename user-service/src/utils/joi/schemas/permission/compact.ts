@@ -1,7 +1,6 @@
 import * as joi from 'joi';
+import { PermissionType, IInstancePermissionOrderedHierarchy } from '@microservices/shared';
 import { UnknownPermissionTypeError } from '../../../../express/permissions/errors';
-import { PermissionType } from '../../../../express/permissions/interface';
-import { IInstancePermissionOrderedHierarchy } from '../../../../express/permissions/interface/permissions';
 import { getPermissionMetadataSchema } from './metadata';
 
 const getSubCompactPermissionSchema = (allowNull = false) => {

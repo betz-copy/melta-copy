@@ -13,7 +13,7 @@ export enum Status {
 
 interface IEmptyMetadata extends IBaseActivityLog {
     action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
-    metadata: {};
+    metadata: object;
 }
 
 interface IRelationshipMetadata extends IBaseActivityLog {

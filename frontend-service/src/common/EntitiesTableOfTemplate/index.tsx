@@ -265,7 +265,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const defaultVisibleColumnsRef = useRef<Record<string, boolean>>(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
-        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
 
         if (!pageRowCount) pageRowCount = rowCount;
 

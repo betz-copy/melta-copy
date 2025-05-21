@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
-import { IActivityLog } from './interface';
+import { IActivityLog, DefaultController } from '@microservices/shared';
 import ActivityLogManager from './manager';
 
 export default class ActivityLogController extends DefaultController<IActivityLog, ActivityLogManager> {
