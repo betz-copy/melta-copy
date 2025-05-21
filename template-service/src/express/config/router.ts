@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
+import { createController, ValidateRequest } from '@microservices/shared';
 import ConfigController from './controller';
-import ValidateRequest from '../../utils/joi';
 import { createOrderConfigSchema, getAllConfigsSchema, getOrderConfigByNameSchema, updateOrderConfigSchema } from './validator.schema';
 
 const configRouter: Router = Router();

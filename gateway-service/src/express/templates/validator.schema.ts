@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { ConfigTypes } from '../../externalServices/templates/entityTemplateService';
-import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema } from '@microservices/shared';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
 // POST /api/templates/categories

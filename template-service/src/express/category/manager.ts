@@ -3,6 +3,7 @@ import config from '../../config';
 import { ClientSession } from 'mongoose';
 import CategorySchema from './model';
 import { withTransaction } from '../../utils/mongoose';
+import ConfigManager from '../config/manager';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     private configManager: ConfigManager;

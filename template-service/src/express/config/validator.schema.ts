@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
-import { ConfigTypes } from './interface';
+import { MongoIdSchema, ConfigTypes, variableNameValidation } from '@microservices/shared';
 
 // GET /api/config/all
 export const getAllConfigsSchema = Joi.object({

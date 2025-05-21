@@ -1,27 +1,17 @@
 import config from '../config';
-import { createAxiosInstance } from '../utils/axios';
-import { IMongoCategory } from './categories';
+import createAxiosInstance from '../utils/axios';
+import { IMongoCategory, IOrderConfig, IMongoOrderConfig, ConfigTypes } from '@microservices/shared';
 
 const {
     url,
     config: { createOrderConfigRoute },
 } = config.templateService;
 
-export interface IOrderConfig {
-    name: string;
-    type: 'order';
-    order: string[];
-}
-
-export interface IMongoOrderConfig extends IOrderConfig {
-    _id: string;
-}
-
 export const createCategoryOrder = async (workspaceId: string, categories: IMongoCategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
     const data: IOrderConfig = {
         name: 'categoryOrder',
-        type: 'order',
+        type: ConfigTypes.ORDER,
         order: categories.map((category) => category._id),
     };
 

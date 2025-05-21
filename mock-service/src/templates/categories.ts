@@ -13,7 +13,7 @@ export const createCategories = async (workspaceId: string, categories: ICategor
     const results: IMongoCategory[] = [];
 
     for (const category of categories) {
-        const response = await axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
+        const response = await axiosInstance.post<IMongoCategory>(url + createCategoryRoute, { ...category, templatesOrder: undefined });
 
         results.push(response.data);
     }
