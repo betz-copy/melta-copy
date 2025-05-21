@@ -12,12 +12,7 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
-import {
-    CommonFormInputProperties,
-    FieldGroupData,
-    GroupCommonFormInputProperties,
-    PropertyItem,
-} from '../../common/wizards/entityTemplate/commonInterfaces';
+import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { ProcessTemplateFormInputProperties } from '../../common/wizards/processTemplate';
 
@@ -136,9 +131,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         if (!usedFields.has(key)) {
             const group = fieldToGroup[key];
             if (group) {
-                let existingGroup = propertiesArray.find(
-                    (item) => item.type === 'group' && item.name === group.name,
-                ) as GroupCommonFormInputProperties;
+                let existingGroup = propertiesArray.find((item) => item.type === 'group' && item.name === group.name) as GroupProperty;
                 const { name, displayName, id } = group;
 
                 if (!existingGroup) {
@@ -266,7 +259,7 @@ export const extractProperties = (
 export const extractGroups = (
     properties: any,
 ): {
-    groupsProperties: (GroupCommonFormInputProperties & { index: number })[];
+    groupsProperties: (GroupProperty & { index: number })[];
     groupsPath: Record<string, string>;
 } => {
     const groupsProperties = properties.map((item, index) => ({ ...item, index })).filter((item) => item.type === 'group');
@@ -447,6 +440,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             hideFromDetailsPage,
             color,
             comment,
+            expandedUserField,
         }) => {
             if (deleted) return;
             if (type === 'comment' && !comment) return;
@@ -498,6 +492,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                       }
                     : undefined,
                 comment,
+                expandedUserField,
             };
 
             if (isEditMode) {

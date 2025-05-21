@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -15,8 +15,8 @@ import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesServi
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { ItemTypes, FieldBlockDND } from './FieldBlock';
-import { PropertyItem } from './commonInterfaces';
+import { ItemTypes, FieldBlockDND, getFieldData } from './FieldBlock';
+import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -203,6 +203,291 @@ export const FieldBlockWrapper = ({
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
+    const getNewValues = (
+        indexesInTypes: { index: number; type: 'properties' | 'attachmentProperties' | 'archiveProperties'; groupIndex?: number }[],
+        field,
+        value: any,
+        currentValues: any,
+    ) => {
+        const displayValuesCopy = { ...currentValues };
+
+        indexesInTypes.forEach(({ index, type, groupIndex }) => {
+            if (groupIndex && groupIndex !== -1) {
+                const group = displayValuesCopy[type][groupIndex];
+                group.fields[index] = {
+                    ...group.fields[index],
+                    [field]: value,
+                };
+                if (field === 'name' && group.fields[index].type === 'comment')
+                    group.fields[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
+            } else if (index !== -1) {
+                displayValuesCopy[type][index].data = {
+                    ...displayValuesCopy[type][index].data,
+                    [field]: value,
+                };
+                if (field === 'name' && displayValuesCopy[type][index].type === 'comment')
+                    displayValuesCopy[type][index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
+            }
+        });
+
+        console.log({ displayValuesCopy });
+
+        return displayValuesCopy;
+    };
+
+    const userPropertiesInTemplate = useMemo(() => {
+        const userNames: string[] = [];
+
+        [...values.properties, ...values.archiveProperties].forEach((item) => {
+            if (item.type === 'group') {
+                item.fields.forEach((field) => {
+                    if (field.type === 'user' && !field.deleted) {
+                        userNames.push(field.name);
+                    }
+                });
+            } else if (item.data.type === 'user' && !item.data.deleted) {
+                userNames.push(item.data.name);
+            }
+        });
+
+        return userNames;
+    }, [values]);
+
+    const getUserFieldsIndexesDo = (
+        properties: PropertyItem[],
+        propertyToCheck: CommonFormInputProperties,
+    ): { propertyIndex: number; propertyGroupIndex?: number }[] => {
+        const indexesArray: { propertyIndex: number; propertyGroupIndex?: number }[] = [];
+        for (let index = 0; index < properties.length; index++) {
+            const property = properties[index];
+
+            if (property.type === 'group' && 'fields' in property && Array.isArray(property.fields)) {
+                for (let idx = 0; idx < property.fields.length; idx++) {
+                    const field = property.fields[idx];
+                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                        indexesArray.push({ propertyIndex: idx, propertyGroupIndex: index });
+                    }
+                }
+            } else if (property.type !== 'group') {
+                const propertyData = (property as FieldProperty).data;
+                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                    indexesArray.push({ propertyIndex: index });
+                }
+            }
+        }
+
+        return indexesArray;
+    };
+
+    const getUserFieldsIndexesUndo = (
+        properties: PropertyItem[],
+        propertyToCheck: CommonFormInputProperties,
+        fieldNameToCompare?: string,
+    ): { propertyIndex: number; propertyGroupIndex?: number } => {
+        for (let index = 0; index < properties.length; index++) {
+            const property = properties[index];
+
+            if (property.type === 'group' && 'fields' in property && Array.isArray(property.fields)) {
+                for (let idx = 0; idx < property.fields.length; idx++) {
+                    const field = property.fields[idx];
+                    if (
+                        field.type === 'user' &&
+                        propertyToCheck.expandedUserField?.relatedUserField === field.name &&
+                        (fieldNameToCompare ? field[fieldNameToCompare] : true)
+                    ) {
+                        return { propertyIndex: idx, propertyGroupIndex: index };
+                    }
+                }
+            } else if (property.type !== 'group') {
+                const propertyData = (property as FieldProperty).data;
+                if (
+                    propertyData.type === 'user' &&
+                    propertyToCheck.expandedUserField?.relatedUserField === propertyData.name &&
+                    (fieldNameToCompare ? propertyData[fieldNameToCompare] : true)
+                ) {
+                    return { propertyIndex: index };
+                }
+            }
+        }
+
+        return { propertyIndex: -1, propertyGroupIndex: -1 };
+    };
+
+    const archive = (index: number, propertyType: 'properties' | 'attachmentProperties' | 'archiveProperties', groupIndex?: number) => {
+        setValues((prevDisplayValues) => {
+            const archivedProperty = getFieldData(prevDisplayValues[propertyType], index, groupIndex);
+            const wasArchived = archivedProperty.archive;
+
+            if (wasArchived) {
+                const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
+
+                if (archivedProperty.type === 'kartoffelUserField') {
+                    const { propertyIndex, propertyGroupIndex } = getUserFieldsIndexesUndo(
+                        prevDisplayValues[propertyType],
+                        archivedProperty,
+                        'archive',
+                    );
+
+                    if (propertyIndex !== -1) indexesToUpdate.push({ index: propertyIndex, type: propertyType, groupIndex: propertyGroupIndex });
+                    else if (propertyType === 'archiveProperties') {
+                        const { propertyIndex: archivedPropertyIndex, propertyGroupIndex: archivedPropertyGroupIndex } = getUserFieldsIndexesUndo(
+                            prevDisplayValues.properties,
+                            archivedProperty,
+                            'archive',
+                        );
+                        if (archivedPropertyIndex !== -1)
+                            indexesToUpdate.push({ index: archivedPropertyIndex, type: 'properties', groupIndex: archivedPropertyGroupIndex });
+                    }
+                }
+
+                return getNewValues(indexesToUpdate, 'archive', false, prevDisplayValues);
+            }
+            const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
+
+            if (archivedProperty.type === 'user') {
+                const indexesArray = getUserFieldsIndexesDo(prevDisplayValues.properties, archivedProperty);
+                // indexesToUpdate.push({ index: propertyIndex, type: 'properties', groupIndex: propertyGroupIndex });
+                indexesToUpdate.push(
+                    ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
+                        const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'properties';
+
+                        return {
+                            index: propertyIndex || -1,
+                            type: propType,
+                            groupIndex: propertyGroupIndex,
+                        };
+                    }),
+                );
+
+                const archivedIndexesArray = getUserFieldsIndexesDo(
+                    prevDisplayValues.archiveProperties,
+                    archivedProperty,
+                );
+
+                // indexesToUpdate.push({ index: archivedPropertyIndex, type: 'archiveProperties', groupIndex: archivedPropertyGroupIndex });
+                indexesToUpdate.push(
+                    ...archivedIndexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
+                        const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'archiveProperties';
+
+                        return {
+                            index: propertyIndex || -1,
+                            type: propType,
+                            groupIndex: propertyGroupIndex,
+                        };
+                    }),
+                );
+            }
+
+            return getNewValues(indexesToUpdate, 'archive', true, prevDisplayValues);
+        });
+    };
+
+    const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<
+        {
+            index: number;
+            type: 'properties' | 'attachmentProperties' | 'archiveProperties';
+            groupIndex?: number;
+        }[]
+    >([]);
+
+    const onDeleteSure = (setShowAreUSureDialogForRemoveProperty: (val: boolean) => void) => {
+        setShowAreUSureDialogForRemoveProperty(false);
+        setValues((prevDisplayValues) => getNewValues(selectedIndexesToRemove, 'deleted', true, prevDisplayValues));
+    };
+
+    const remove = (
+        index: number,
+        isNewProperty: Boolean,
+        propertyType: 'properties' | 'attachmentProperties' | 'archiveProperties',
+        setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
+        groupIndex?: number,
+    ) => {
+        setValues((prevDisplayValues) => {
+            const removedProperty = getFieldData(prevDisplayValues[propertyType], index, groupIndex);
+            const wasDeleted = removedProperty?.deleted;
+            const valuesCopy = { ...prevDisplayValues };
+
+            if (wasDeleted) {
+                const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
+
+                if (removedProperty.type === 'kartoffelUserField') {
+                    const { propertyIndex, propertyGroupIndex } = getUserFieldsIndexesUndo(
+                        prevDisplayValues[propertyType],
+                        removedProperty,
+                        'deleted',
+                    );
+
+                    if (propertyIndex !== -1) indexesToUpdate.push({ index: propertyIndex, type: propertyType, groupIndex: propertyGroupIndex });
+                    else if (propertyType === 'archiveProperties') {
+                        const { propertyIndex: archivedPropertyIndex, propertyGroupIndex: archivedPropertyGroupIndex } = getUserFieldsIndexesUndo(
+                            prevDisplayValues.properties,
+                            removedProperty,
+                            'deleted',
+                        );
+
+                        if (archivedPropertyIndex !== -1)
+                            indexesToUpdate.push({ index: archivedPropertyIndex, type: 'properties', groupIndex: archivedPropertyGroupIndex });
+                    }
+                }
+
+                return getNewValues(indexesToUpdate, 'deleted', false, prevDisplayValues);
+            }
+            if (areThereAnyInstances && !isNewProperty) {
+                setShowAreUSureDialogForRemoveProperty(true);
+                const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
+
+                if (removedProperty.type === 'user') {
+                    const indexesArray = getUserFieldsIndexesDo(prevDisplayValues.properties, removedProperty);
+                    indexesToUpdate.push(
+                        ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
+                            const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'properties';
+
+                            return {
+                                index: propertyIndex || -1,
+                                type: propType,
+                                groupIndex: propertyGroupIndex,
+                            };
+                        }),
+                    );
+
+                    const archivedIndexesArray = getUserFieldsIndexesDo(prevDisplayValues.archiveProperties, removedProperty);
+
+                    indexesToUpdate.push(
+                        ...archivedIndexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
+                            const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'archiveProperties';
+
+                            return {
+                                index: propertyIndex || -1,
+                                type: propType,
+                                groupIndex: propertyGroupIndex,
+                            };
+                        }),
+                    );
+                }
+
+                setSelectedIndexesForRemove(indexesToUpdate);
+                return prevDisplayValues;
+            }
+            // valuesCopy[propertyType].splice(index, 1);
+
+            // if (removedProperty?.type === 'user') {
+            //     valuesCopy.properties.forEach((property, propIndex) => {
+            //         if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
+            //             valuesCopy.properties.splice(propIndex, 1);
+            //         }
+            //     });
+
+            //     valuesCopy.archiveProperties.forEach((property, propIndex) => {
+            //         if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
+            //             valuesCopy.archiveProperties.splice(propIndex, 1);
+            //         }
+            //     });
+            // }
+
+            // return valuesCopy;
+        });
+    };
+
     const getTitle = (id: string): string => {
         const titles: Record<string, string> = {
             properties: i18next.t('wizard.entityTemplate.properties'),
@@ -322,6 +607,10 @@ export const FieldBlockWrapper = ({
                         }
                         return false;
                     })}
+                    userPropertiesInTemplate={userPropertiesInTemplate}
+                    archive={(ind) => archive(ind, itemId)}
+                    remove={remove}
+                    onDeleteSure={onDeleteSure}
                 />
             </div>
         </Grid>

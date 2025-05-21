@@ -44,17 +44,17 @@ export interface CommonFormInputProperties {
     color?: string;
 }
 
-export interface FieldCommonFormInputProperties {
+export interface FieldProperty {
     type: 'field';
     data: CommonFormInputProperties;
 }
 
-export interface GroupCommonFormInputProperties extends FieldGroupData {
+export interface GroupProperty extends FieldGroupData {
     type: 'group';
     fields: CommonFormInputProperties[];
 }
 
-export type PropertyItem = FieldCommonFormInputProperties | GroupCommonFormInputProperties;
+export type PropertyItem = FieldProperty | GroupProperty;
 
 export interface ConvertToRelationshipFieldFormInputProperties {
     fieldName: string;

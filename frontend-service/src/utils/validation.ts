@@ -4,7 +4,7 @@ import { EntityTemplateFormInputProperties } from '../common/wizards/entityTempl
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
 import { ExtractedEntityProps, extractGroups, extractProperties } from '../services/templates/enitityTemplatesService';
 import { ExtractedProcessProps } from '../services/templates/processTemplatesService';
-import { GroupCommonFormInputProperties } from '../common/wizards/entityTemplate/commonInterfaces';
+import { GroupProperty } from '../common/wizards/entityTemplate/commonInterfaces';
 
 export const regexSchema = Yup.string().test('is-regex', (value, context) => {
     if (!value) return true;
@@ -40,10 +40,10 @@ const addDuplicateFieldsError = (
     errors.push(context.createError({ message, path }));
 };
 const testFields = (
-    properties1: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[] | (GroupCommonFormInputProperties & { index: number })[],
+    properties1: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[] | (GroupProperty & { index: number })[],
     properties1Type: PropertiesType,
     properties1Path: Record<string, string>,
-    properties2: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[] | (GroupCommonFormInputProperties & { index: number })[],
+    properties2: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[] | (GroupProperty & { index: number })[],
     properties2Type: PropertiesType,
     properties2Path: Record<string, string>,
     context: Yup.TestContext,

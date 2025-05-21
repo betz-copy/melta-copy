@@ -1,7 +1,7 @@
 import React, { SetStateAction, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, Grid, IconButton, styled, TextField, Typography } from '@mui/material';
 import { v4 as uuid } from 'uuid';
-import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
+import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
@@ -14,7 +14,8 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { CommonFormInputProperties, FieldCommonFormInputProperties, GroupCommonFormInputProperties, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const ItemTypes = {
     FIELD: 'field',
@@ -42,7 +43,7 @@ export interface FieldProps {
     moveGroup: (group: any, toIndex: number, toGroupId?: string | null) => void;
 }
 export interface GroupProps<PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>> {
-    group: GroupCommonFormInputProperties;
+    group: GroupProperty;
     onDrop: (group: any, toIndex: number, toGroupId?: string | null) => void;
     index: number;
     moveField: (item: any, toIndex: number, toGroupId: string | null) => void;
@@ -56,7 +57,7 @@ export interface GroupProps<PropertiesType extends string, Values extends Record
     setFieldDisplayValueWrapper: (index: number, groupIndex?: number) => (field: keyof Values, value: any) => void;
     setDisplayValueWrapper: (index: number, groupId?: string) => (value: SetStateAction<PropertyItem>) => void;
     buildProps: any;
-    addFieldToGroup: (item: GroupCommonFormInputProperties) => void;
+    addFieldToGroup: (item: GroupProperty) => void;
     addPropertyButtonLabel: string;
     areThereAnyInstances: boolean;
     isEditMode: boolean;
@@ -104,7 +105,22 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
     supportComment?: boolean;
+    userPropertiesInTemplate?: string[];
+    archive?: (index: number, groupIndex?: number) => void;
+    remove?: (
+        index: number,
+        isNewProperty: Boolean,
+        propertiesType: 'properties' | 'archiveProperties' | 'attachmentProperties',
+        setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
+        groupIndex?: number,
+    ) => void;
+    onDeleteSure?: (setShowAreUSureDialogForRemoveProperty: (v: boolean) => void) => void;
 }
+
+export const getFieldData = (displayValuesCopy: any, fieldIndex: number, groupIndex?: number) => {
+    if (typeof groupIndex === 'number') return (displayValuesCopy[groupIndex] as GroupProperty)?.fields[fieldIndex];
+    return (displayValuesCopy[fieldIndex] as FieldProperty).data;
+};
 
 const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
     const ref = React.useRef(null);
@@ -200,7 +216,7 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
                 cursor: 'grab',
             }}
         >
-            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+            <Grid item ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
                 <MemoFieldEditCard
                     {...buildProps}
                     key={field.id}
@@ -209,7 +225,7 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
                     uniqueConstraints={uniqueConstraints}
                     setUniqueConstraints={setUniqueConstraints}
                 />
-            </div>
+            </Grid>
         </Grid>
     );
 };
@@ -237,6 +253,19 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
 }: React.PropsWithChildren<GroupProps<PropertiesType, Values>>) => {
     const ref = React.useRef(null);
     const [isGroupOpen, setIsGroupOpen] = useState(false);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const groupName = `properties[${index}].name`;
+    const touchedName = touched?.[propertiesType]?.[index]?.name;
+    const errorName = (errors?.[propertiesType]?.[index] as GroupProperty)?.name;
+    const displayName = `properties[${index}].displayName`;
+    const touchedTitle = touched?.[propertiesType]?.[index]?.displayName;
+    const errorTitle = (errors?.[propertiesType]?.[index] as GroupProperty)?.displayName;
+
+    const isNewProperty = !initialValue;
+    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
+
+    const isGroupFieldBlockError = Boolean(touched?.[propertiesType]?.[index]) && Boolean(errors?.[propertiesType]?.[index]);
+
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
         hover(item: CommonFormInputProperties & { index: number; parentId: string | null }, monitor) {
@@ -278,18 +307,6 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
 
     drag(drop(ref));
 
-    const groupName = `properties[${index}].name`;
-    const touchedName = touched?.[propertiesType]?.[index]?.name;
-    const errorName = (errors?.[propertiesType]?.[index] as GroupCommonFormInputProperties)?.name;
-    const displayName = `properties[${index}].displayName`;
-    const touchedTitle = touched?.[propertiesType]?.[index]?.displayName;
-    const errorTitle = (errors?.[propertiesType]?.[index] as GroupCommonFormInputProperties)?.displayName;
-
-    const isNewProperty = !initialValue;
-    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
-
-    const isGroupFieldBlockError = Boolean(touched?.[propertiesType]?.[index]) && Boolean(errors?.[propertiesType]?.[index]);
-
     return (
         <Grid
             item
@@ -313,7 +330,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                         mb: 2,
                         padding: '0.5rem',
                         borderRadius: '12px',
-                        backgroundColor: '#f4f6fa',
+                        backgroundColor: darkMode ? '#4a4a5033' : '#f4f6fa',
                         boxShadow: 'none',
                         '&:before': { display: 'none' },
                         border: isGroupFieldBlockError ? '1px solid red' : '',
@@ -353,7 +370,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                                 sx={{
                                     marginRight: '6px',
                                     '& .MuiInputBase-root': {
-                                        backgroundColor: 'white',
+                                        backgroundColor: darkMode ? '' : 'white',
                                     },
                                 }}
                                 fullWidth
@@ -371,7 +388,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                                 sx={{
                                     marginRight: '6px',
                                     '& .MuiInputBase-root': {
-                                        backgroundColor: 'white',
+                                        backgroundColor: darkMode ? '' : 'white',
                                     },
                                 }}
                                 fullWidth
@@ -502,10 +519,15 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         relationshipReference: undefined,
         serialStarter: 0,
         archive: false,
+        deleted: false,
         mapSearch: false,
     },
     supportConvertingToMultipleFields = true,
     supportComment,
+    archive,
+    onDeleteSure,
+    remove,
+    userPropertiesInTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -522,6 +544,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
     }, []);
+
+    useEffect(() => {
+        setOrderedItems(values[propertiesType]);
+        orderedItemsRef.current = values[propertiesType];
+    }, [values[propertiesType]]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
@@ -570,11 +597,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     };
 
-    const getFieldData = (displayValuesCopy: Values[PropertiesType], fieldIndex: number, groupIndex?: number) => {
-        if (typeof groupIndex === 'number') return (displayValuesCopy[groupIndex] as GroupCommonFormInputProperties).fields[fieldIndex];
-        return (displayValuesCopy[fieldIndex] as FieldCommonFormInputProperties).data;
-    };
-    const onDeleteSure = () => {
+    const onSimpleDeleteSure = () => {
         setShowAreUSureDialogForRemoveProperty(false);
         setFieldDisplayValue(selectedIndexesToRemove, 'deleted' as keyof Values, true);
     };
@@ -594,12 +617,59 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     };
 
-    const remove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
+    const simpleRemove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
 
         const field = getFieldData(displayValuesCopy, index, groupIndex);
 
         const isDeleted = field.deleted;
+
+        if (!isDeleted && (!areThereAnyInstances || isNewProperty)) {
+            let removedField;
+            if (groupIndex !== undefined) {
+                const group = displayValuesCopy[groupIndex] as GroupProperty;
+                if (!group || !group.fields) return;
+
+                removedField = group.fields[index];
+
+                group.fields.splice(index, 1);
+            } else {
+                removedField = (displayValuesCopy[index] as FieldProperty).data;
+                displayValuesCopy.splice(index, 1);
+            }
+            if (removedField.type === 'user') {
+                for (let i = displayValuesCopy.length - 1; i >= 0; i--) {
+                    if (displayValuesCopy[i].type === 'group') {
+                        (displayValuesCopy[i] as GroupProperty).fields.filter(
+                            (fieldData) =>
+                                !(fieldData.type === 'kartoffelUserField' && fieldData.expandedUserField?.relatedUserField === removedField.name),
+                        );
+                    } else {
+                        const item = displayValuesCopy[i] as FieldProperty;
+                        if (item.data.type === 'kartoffelUserField' && item.data.expandedUserField?.relatedUserField === removedField.name) {
+                            displayValuesCopy.splice(i, 1);
+                        }
+                    }
+                }
+            }
+
+            setOrderedItems(displayValuesCopy);
+            updateFormik();
+
+            return;
+        }
+
+        if (remove) {
+            setSelectedIndexesForRemove([{ index, groupIndex }]);
+            remove(
+                index,
+                isNewProperty,
+                propertiesType as 'properties' | 'attachmentProperties' | 'archiveProperties',
+                setShowAreUSureDialogForRemoveProperty,
+            );
+
+            return;
+        }
 
         if (isDeleted) {
             const indexesToUpdate: { index: number; groupIndex?: number }[] = [{ index, groupIndex }];
@@ -644,37 +714,6 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
             setShowAreUSureDialogForRemoveProperty(true);
             setSelectedIndexesForRemove(indexesToUpdate);
-        } else {
-            if (groupIndex !== undefined) {
-                const group = displayValuesCopy[groupIndex] as GroupCommonFormInputProperties;
-                if (!group || !group.fields) return;
-
-                const removedField = group.fields[index];
-
-                group.fields.splice(index, 1);
-
-                if (removedField.type === 'user') {
-                    const userFieldName = removedField.name;
-                    group.fields = group.fields.filter(
-                        (fieldData) => !(fieldData.type === 'kartoffelUserField' && fieldData.expandedUserField?.relatedUserField === userFieldName),
-                    );
-                }
-            } else {
-                const removedField = (displayValuesCopy[index] as FieldCommonFormInputProperties).data;
-                displayValuesCopy.splice(index, 1);
-
-                if (removedField.type === 'user') {
-                    for (let i = displayValuesCopy.length - 1; i >= 0; i--) {
-                        const item = displayValuesCopy[i] as FieldCommonFormInputProperties;
-                        if (item.data.type === 'kartoffelUserField' && item.data.expandedUserField?.relatedUserField === removedField.name) {
-                            displayValuesCopy.splice(i, 1);
-                        }
-                    }
-                }
-            }
-
-            setOrderedItems(displayValuesCopy);
-            updateFormik();
         }
     };
 
@@ -688,8 +727,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             const updatedField = typeof valueOrFunc === 'function' ? valueOrFunc(group.fields[index]) : valueOrFunc;
             group.fields[index] = updatedField;
         } else {
-            const updatedValue =
-                typeof valueOrFunc === 'function' ? valueOrFunc(displayValuesCopy[index].data as FieldCommonFormInputProperties) : valueOrFunc;
+            const updatedValue = typeof valueOrFunc === 'function' ? valueOrFunc(displayValuesCopy[index].data as FieldProperty) : valueOrFunc;
             displayValuesCopy[index] = { type: 'field', data: updatedValue };
         }
 
@@ -707,7 +745,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
         if (groupIndex === -1) return;
 
-        const oldGroup = displayValuesCopy[groupIndex] as GroupCommonFormInputProperties;
+        const oldGroup = displayValuesCopy[groupIndex] as GroupProperty;
 
         const updatedGroup = {
             ...oldGroup,
@@ -721,7 +759,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             })),
         };
 
-        displayValuesCopy[groupIndex] = updatedGroup as GroupCommonFormInputProperties;
+        displayValuesCopy[groupIndex] = updatedGroup as GroupProperty;
 
         setOrderedItems(displayValuesCopy);
         updateFormik();
@@ -742,23 +780,23 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
-    const userPropertiesInTemplate = useMemo(() => {
-        const userNames: string[] = [];
+    // const userPropertiesInTemplate = useMemo(() => {
+    //     const userNames: string[] = [];
 
-        values[propertiesType].forEach((item) => {
-            if (item.type === 'group') {
-                item.fields.forEach((field) => {
-                    if (field.type === 'user' && !field.deleted) {
-                        userNames.push(field.name);
-                    }
-                });
-            } else if (item.data.type === 'user' && !item.data.deleted) {
-                userNames.push(item.data.name);
-            }
-        });
+    //     values[propertiesType].forEach((item) => {
+    //         if (item.type === 'group') {
+    //             item.fields.forEach((field) => {
+    //                 if (field.type === 'user' && !field.deleted) {
+    //                     userNames.push(field.name);
+    //                 }
+    //             });
+    //         } else if (item.data.type === 'user' && !item.data.deleted) {
+    //             userNames.push(item.data.name);
+    //         }
+    //     });
 
-        return userNames;
-    }, [propertiesType, values]);
+    //     return userNames;
+    // }, [propertiesType, values]);
 
     const onDuplicateKartoffelField = (fieldIndex: number, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
@@ -779,12 +817,13 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         };
 
         if (isGrouped) {
-            (displayValuesCopy[groupIndex] as GroupCommonFormInputProperties).fields.splice(fieldIndex + 1, 0, newField);
+            (displayValuesCopy[groupIndex] as GroupProperty).fields.splice(fieldIndex + 1, 0, newField);
         } else {
             displayValuesCopy.splice(fieldIndex + 1, 0, { data: newField, type: 'field' });
         }
 
         setOrderedItems(displayValuesCopy);
+        updateFormik();
     };
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
@@ -806,7 +845,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
             const group = currentTypeValues?.find(
                 (item) => item.type === 'group' && item.fields?.some((f) => f.id === propertyProp.id),
-            ) as GroupCommonFormInputProperties;
+            ) as GroupProperty;
             if (group) {
                 return {
                     data: group.fields?.find((f) => f.id === propertyProp.id),
@@ -827,7 +866,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             areThereAnyInstances,
             touched: touch,
             errors: error,
-            remove,
+            archive,
+            remove: simpleRemove,
             onChange: onChangeWrapper(index, groupIndex),
             supportSerialNumberType,
             supportUserType,
@@ -850,16 +890,17 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             supportComment,
             userPropertiesInTemplate,
             onDuplicateKartoffelField,
+            propertiesType,
         };
     };
 
-    const addFieldToGroup = (item: GroupCommonFormInputProperties) => {
+    const addFieldToGroup = (item: GroupProperty) => {
         const { name, displayName, id } = item;
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
 
         const newField = { ...initialFieldCardDataOnAdd, id: uuid(), fieldGroup: { name, displayName, id } };
 
-        const group = displayValuesCopy.find((val) => val.type === 'group' && val.id === id) as GroupCommonFormInputProperties;
+        const group = displayValuesCopy.find((val) => val.type === 'group' && val.id === id) as GroupProperty;
 
         if (!group) return;
 
@@ -894,7 +935,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup.id);
             if (fromGroupIndex === -1) return;
 
-            const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupCommonFormInputProperties;
+            const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
             const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
             if (fieldIndex === -1) return;
 
@@ -905,13 +946,13 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
             if (index === -1) return;
 
-            movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldCommonFormInputProperties).data;
+            movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
         }
 
         if (toGroupId) {
             const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
             if (toGroupIndex === -1) return;
-            const group = orderedItemsCopy[toGroupIndex] as GroupCommonFormInputProperties;
+            const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
             const { name, displayName } = group;
             group.fields.splice(toIndex, 0, {
                 ...movedField,
@@ -959,120 +1000,121 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 </Grid>
             </AccordionSummary>
 
-            <AccordionDetails>
-                <FieldArray name={propertiesType} key={propertiesType}>
-                    {() => (
+            <AccordionDetails sx={{ paddingTop: 0 }}>
+                <>
+                    <div
+                        key={propertiesType}
+                        ref={drop}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            // backgroundColor: 'yellow',
+                            paddingTop: '12px',
+                            paddingBottom: '10px',
+                        }}
+                    >
                         <Grid>
-                            <div
-                                key={propertiesType}
-                                ref={drop}
-                                style={{
-                                    margin: 10,
+                            {orderedItems.map((item, index) => {
+                                if (
+                                    propertiesType === 'properties' ||
+                                    propertiesType === 'detailsProperties' ||
+                                    propertiesType === 'archiveProperties'
+                                )
+                                    return (
+                                        <Box key={item.type === 'group' ? item.id : item.data.id} sx={{ marginBottom: 0.5 }}>
+                                            {item.type === 'group' ? (
+                                                <Group
+                                                    group={item}
+                                                    onDrop={moveGroup}
+                                                    index={index}
+                                                    moveField={moveField}
+                                                    touched={touched}
+                                                    errors={errors}
+                                                    propertiesType={propertiesType}
+                                                    onChangeGroupData={onChangeGroupData}
+                                                    remove={removeGroup}
+                                                    setDisplayValueWrapper={setDisplayValueWrapper}
+                                                    setFieldDisplayValueWrapper={setFieldDisplayValueWrapper}
+                                                    setUniqueConstraints={setUniqueConstraints}
+                                                    uniqueConstraints={uniqueConstraints}
+                                                    buildProps={buildProps}
+                                                    addFieldToGroup={addFieldToGroup}
+                                                    addPropertyButtonLabel={addPropertyButtonLabel}
+                                                    areThereAnyInstances={areThereAnyInstances}
+                                                    isEditMode={isEditMode}
+                                                    initialValue={initialValues?.[propertiesType]?.find(
+                                                        (property) => property.type === 'group' && property.id === item.id,
+                                                    )}
+                                                />
+                                            ) : (
+                                                <Field
+                                                    field={item.data}
+                                                    index={index}
+                                                    parentId={null}
+                                                    onDrop={moveField}
+                                                    buildProps={{ ...buildProps(item.data, index) }}
+                                                    key={item.data.id}
+                                                    setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
+                                                    setValues={setDisplayValueWrapper(index)}
+                                                    uniqueConstraints={uniqueConstraints}
+                                                    setUniqueConstraints={setUniqueConstraints}
+                                                    moveGroup={moveGroup}
+                                                />
+                                            )}
+                                        </Box>
+                                    );
+                                const { data } = item as FieldProperty;
+                                return (
+                                    <Attachment
+                                        key={data.id}
+                                        field={data}
+                                        index={index}
+                                        buildProps={{ ...buildProps(data, index) }}
+                                        onDrop={moveField}
+                                    />
+                                );
+                            })}
+                        </Grid>
+                    </div>
+                    <Grid>
+                        {supportAddFieldButton && (
+                            <Grid
+                                sx={{
                                     display: 'flex',
-                                    flexDirection: 'column',
-                                    minWidth: '500px',
+                                    justifyContent: 'center',
+                                    paddingTop: '5px',
                                 }}
                             >
-                                {orderedItems.map((item, index) => {
-                                    if (
-                                        propertiesType === 'properties' ||
-                                        propertiesType === 'detailsProperties' ||
-                                        propertiesType === 'archiveProperties'
-                                    )
-                                        return (
-                                            <Box key={item.type === 'group' ? item.id : item.data.id}>
-                                                {item.type === 'group' ? (
-                                                    <Group
-                                                        group={item}
-                                                        onDrop={moveGroup}
-                                                        index={index}
-                                                        moveField={moveField}
-                                                        touched={touched}
-                                                        errors={errors}
-                                                        propertiesType={propertiesType}
-                                                        onChangeGroupData={onChangeGroupData}
-                                                        remove={removeGroup}
-                                                        setDisplayValueWrapper={setDisplayValueWrapper}
-                                                        setFieldDisplayValueWrapper={setFieldDisplayValueWrapper}
-                                                        setUniqueConstraints={setUniqueConstraints}
-                                                        uniqueConstraints={uniqueConstraints}
-                                                        buildProps={buildProps}
-                                                        addFieldToGroup={addFieldToGroup}
-                                                        addPropertyButtonLabel={addPropertyButtonLabel}
-                                                        areThereAnyInstances={areThereAnyInstances}
-                                                        isEditMode={isEditMode}
-                                                        initialValue={initialValues?.[propertiesType]?.find(
-                                                            (property) => property.type === 'group' && property.id === item.id,
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Field
-                                                        field={item.data}
-                                                        index={index}
-                                                        parentId={null}
-                                                        onDrop={moveField}
-                                                        buildProps={{ ...buildProps(item.data, index) }}
-                                                        key={item.data.id}
-                                                        setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
-                                                        setValues={setDisplayValueWrapper(index)}
-                                                        uniqueConstraints={uniqueConstraints}
-                                                        setUniqueConstraints={setUniqueConstraints}
-                                                        moveGroup={moveGroup}
-                                                    />
-                                                )}
-                                            </Box>
-                                        );
-                                    const { data } = item as FieldCommonFormInputProperties;
-                                    return (
-                                        <Attachment
-                                            key={data.id}
-                                            field={data}
-                                            index={index}
-                                            buildProps={{ ...buildProps(data, index) }}
-                                            onDrop={moveField}
-                                        />
-                                    );
-                                })}
-                                {supportAddFieldButton && (
-                                    <Grid
-                                        sx={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            paddingTop: '5px',
-                                        }}
+                                <Button
+                                    style={{ margin: '8px' }}
+                                    type="button"
+                                    variant="contained"
+                                    onClick={() => push({ type: 'field', data: { id: uuid(), ...initialFieldCardDataOnAdd } })}
+                                >
+                                    <Typography>{addPropertyButtonLabel}</Typography>
+                                </Button>
+                                {propertiesType === 'properties' && supportArchive && (
+                                    <Button
+                                        type="button"
+                                        variant="contained"
+                                        style={{ margin: '8px' }}
+                                        onClick={() =>
+                                            push({
+                                                type: 'group',
+                                                id: uuid(),
+                                                name: '',
+                                                displayName: '',
+                                                fields: [],
+                                            })
+                                        }
                                     >
-                                        <Button
-                                            style={{ margin: '8px' }}
-                                            type="button"
-                                            variant="contained"
-                                            onClick={() => push({ type: 'field', data: { id: uuid(), ...initialFieldCardDataOnAdd } })}
-                                        >
-                                            <Typography>{addPropertyButtonLabel}</Typography>
-                                        </Button>
-                                        {propertiesType === 'properties' && supportArchive && (
-                                            <Button
-                                                type="button"
-                                                variant="contained"
-                                                style={{ margin: '8px' }}
-                                                onClick={() =>
-                                                    push({
-                                                        type: 'group',
-                                                        id: uuid(),
-                                                        name: '',
-                                                        displayName: '',
-                                                        fields: [],
-                                                    })
-                                                }
-                                            >
-                                                <Typography>{i18next.t('wizard.entityTemplate.createGroup')}</Typography>
-                                            </Button>
-                                        )}
-                                    </Grid>
+                                        <Typography>{i18next.t('wizard.entityTemplate.createGroup')}</Typography>
+                                    </Button>
                                 )}
-                            </div>
-                        </Grid>
-                    )}
-                </FieldArray>
+                            </Grid>
+                        )}
+                    </Grid>
+                </>
             </AccordionDetails>
             <AreYouSureDialog
                 open={showAreUSureDialogForRemoveProperty}
@@ -1082,12 +1124,12 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                 ${
                                     selectedIndexesToRemove.length > 0 &&
                                     getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
-                                        .title
+                                        ?.title
                                 }
                                 ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
                     (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
                 }`}
-                onYes={onDeleteSure}
+                onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />
         </FieldBlockAccordion>
     );
@@ -1142,10 +1184,15 @@ export const FieldBlock = <PropertiesType extends string, Values extends Record<
         relationshipReference: undefined,
         serialStarter: 0,
         archive: false,
+        deleted: false,
         mapSearch: false,
     },
     supportConvertingToMultipleFields = true,
     supportComment,
+    archive,
+    onDeleteSure,
+    remove,
+    userPropertiesInTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     return (
         <DndProvider backend={HTML5Backend}>
@@ -1204,6 +1251,10 @@ export const FieldBlock = <PropertiesType extends string, Values extends Record<
                 }
                 supportConvertingToMultipleFields={supportConvertingToMultipleFields ?? true}
                 supportComment={supportComment}
+                archive={archive}
+                onDeleteSure={onDeleteSure}
+                remove={remove}
+                userPropertiesInTemplate={userPropertiesInTemplate}
             />
         </DndProvider>
     );
