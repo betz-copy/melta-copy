@@ -98,11 +98,12 @@ const changeSpecificTemplate = (
     scope: PermissionScope,
     categoryId: string,
     templateId: string,
+    childTemplateId?: string,
 ) => {
     const categoriesPermissions = { ...permissions };
     const newScope = getNewScope(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.scope, scope, checked);
 
-    if (!newScope && Object.keys(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.fields ?? {}).length === 0) {
+    if (!newScope) {
         delete categoriesPermissions[categoryId].entityTemplates[templateId];
     } else {
         categoriesPermissions[categoryId] = {
@@ -111,7 +112,12 @@ const changeSpecificTemplate = (
                 ...categoriesPermissions[categoryId]?.entityTemplates,
                 [templateId]: {
                     scope: newScope,
-                    fields: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.fields ?? {},
+                    entityChildTemplates: {
+                        ...(categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates ?? {}),
+                        [childTemplateId ?? '']: {
+                            scope: newScope,
+                        },
+                    },
                 },
             },
         };
@@ -167,7 +173,7 @@ const handleUncheckCategoryByTemplates = (
                         categoriesPermissions[categoryId]?.scope === PermissionScope.write
                             ? PermissionScope.write
                             : categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
-                    fields: {},
+                    entityChildTemplates: {},
                 };
             }
         });
@@ -189,8 +195,9 @@ export const getChangedTemplatePermission = (
     categoryId: string,
     templateId: string,
     entityTemplates: entityTemplatePermissionDialog[],
+    childTemplateId?: string,
 ) => {
-    let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId);
+    let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId, childTemplateId);
 
     if (checked) {
         categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates);

@@ -3,12 +3,12 @@ import { IBasePermission, PermissionType } from '.';
 export enum InstancesSubclassesPermissions {
     categories = 'categories',
     entityTemplates = 'entityTemplates',
-    fields = 'fields',
+    entityChildTemplates = 'entityChildTemplates',
 }
 export const IInstancePermissionOrderedHierarchy = [
     InstancesSubclassesPermissions.categories,
     InstancesSubclassesPermissions.entityTemplates,
-    InstancesSubclassesPermissions.fields,
+    InstancesSubclassesPermissions.entityChildTemplates,
 ] as const;
 
 export type IAdminPermission = IBasePermission<PermissionType.admin>;

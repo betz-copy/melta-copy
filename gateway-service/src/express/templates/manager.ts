@@ -438,7 +438,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 scope: categoryScope,
                 entityTemplates: {
                     ...instances?.categories?.[categoryId]?.entityTemplates,
-                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {}, entityChildTemplates: {} },
                 },
             },
         };

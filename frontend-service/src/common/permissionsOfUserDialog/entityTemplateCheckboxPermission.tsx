@@ -1,20 +1,35 @@
-import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
-import { PermissionScope } from '../../interfaces/permissions';
+import { IDefaultPermissionDetails, IPermissionMetadata, PermissionScope } from '../../interfaces/permissions';
 import PermissionScopeBtn from './PermissionScopeBtn';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
+import { FilterList } from '@mui/icons-material';
+import { ColoredEnumChip } from '../ColoredEnumChip';
+import i18next from 'i18next';
+import { ViewType } from '../dialogs/createChildTemplate/interfaces';
+import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 const EntityTemplateCheckboxPermission: React.FC<{
     entityTemplate: entityTemplatePermissionDialog;
-    changePermissions: (checked: boolean, entityId: string, permissionScope: PermissionScope) => void;
+    changePermissions: (checked: boolean, entityId: string, permissionScope: PermissionScope, childTemplateId?: string) => void;
     disabled: boolean;
     permissionType: permissionTypeCheckboxProps;
     viewMode: boolean;
-    categoryPermissions: any;
+    categoryPermissions: IPermissionMetadata<
+        [InstancesSubclassesPermissions.entityTemplates, InstancesSubclassesPermissions.entityChildTemplates],
+        IDefaultPermissionDetails
+    >;
 }> = ({ entityTemplate, changePermissions, disabled, permissionType, viewMode, categoryPermissions }) => {
     const theme = useTheme();
     const [openChildTemplateList, setOpenChildTemplateList] = useState(false);
+    const childTemplates = entityTemplate.entityChildTemplates;
+    const templatesPermissions = categoryPermissions?.entityTemplates ?? {};
+    const childTemplatesPermissions = templatesPermissions?.[entityTemplate.id]?.entityChildTemplates ?? {};
+
+    const changeChildTemplatePermissions = (checked: boolean, childTemplateId: string, permissionScope: PermissionScope) => {
+        changePermissions(checked, entityTemplate.id, permissionScope, childTemplateId);
+    };
 
     return (
         <Grid container xs={12} key={entityTemplate.id}>
@@ -49,6 +64,9 @@ const EntityTemplateCheckboxPermission: React.FC<{
                         categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope === PermissionScope.write ||
                         permissionType.write.checked
                     }
+                    // indeterminate={Object.values(childTemplatesPermissions).some(
+                    //     (childTemplatePermission) => childTemplatePermission.scope === PermissionScope.read,
+                    // )}
                     checkboxSx={{ width: '17px', height: '17px' }}
                 />
             </Grid>
@@ -61,8 +79,83 @@ const EntityTemplateCheckboxPermission: React.FC<{
                     }
                     onChange={(_event, checked) => changePermissions(checked, entityTemplate.id, PermissionScope.write)}
                     disabled={disabled}
+                    // indeterminate={Object.values(childTemplatesPermissions).some(
+                    //     (childTemplatePermission) => childTemplatePermission.scope === PermissionScope.write,
+                    // )}
                     checkboxSx={{ width: '17px', height: '17px' }}
                 />
+            </Grid>
+            <Grid xs={12}>
+                <Collapse in={openChildTemplateList}>
+                    {childTemplates.map((childTemplateCheck) => {
+                        return (
+                            <Grid container xs={12} key={childTemplateCheck.id}>
+                                <Grid xs={1.3} />
+                                <Grid xs={4.7} display="flex" alignItems="center">
+                                    <Grid display="flex" alignItems="center" gap="8px">
+                                        <FilterList
+                                            fontSize="small"
+                                            sx={{
+                                                fontSize: '14px',
+                                            }}
+                                        />
+                                        <Typography fontSize={14.5}>{childTemplateCheck.name}</Typography>
+                                        {childTemplateCheck.viewType === ViewType.userPage && (
+                                            <ColoredEnumChip
+                                                color="#CF9030"
+                                                label={i18next.t('createChildTemplateDialog.permissionsPage.userPage')}
+                                            />
+                                        )}
+                                        {childTemplateCheck.isFilterByCurrentUser && (
+                                            <ColoredEnumChip color="#0072C6" label={i18next.t('createChildTemplateDialog.permissionsPage.user')} />
+                                        )}
+                                        {childTemplateCheck.isFilterByUserUnit && (
+                                            <ColoredEnumChip color="#2CB93A" label={i18next.t('createChildTemplateDialog.permissionsPage.unit')} />
+                                        )}
+                                    </Grid>
+                                </Grid>
+                                {childTemplateCheck.viewType === ViewType.categoryPage && (
+                                    <Grid container xs={6}>
+                                        <Grid xs={1} />
+                                        <Grid xs={5}>
+                                            <PermissionScopeBtn
+                                                viewMode={viewMode}
+                                                defaultChecked={
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope !== undefined ||
+                                                    permissionType.read.checked
+                                                }
+                                                onChange={(_event, checked) =>
+                                                    changeChildTemplatePermissions(checked, childTemplateCheck.id, PermissionScope.read)
+                                                }
+                                                disabled={
+                                                    disabled ||
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope === PermissionScope.write ||
+                                                    permissionType.write.checked
+                                                }
+                                                checkboxSx={{ width: '17px', height: '17px' }}
+                                            />
+                                        </Grid>
+                                        <Grid xs={1} />
+                                        <Grid xs={5}>
+                                            <PermissionScopeBtn
+                                                viewMode={viewMode}
+                                                defaultChecked={
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope === PermissionScope.write ||
+                                                    permissionType.write.checked
+                                                }
+                                                onChange={(_event, checked) =>
+                                                    changeChildTemplatePermissions(checked, childTemplateCheck.id, PermissionScope.write)
+                                                }
+                                                disabled={disabled}
+                                                checkboxSx={{ width: '17px', height: '17px' }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                )}
+                            </Grid>
+                        );
+                    })}
+                </Collapse>
             </Grid>
         </Grid>
     );
