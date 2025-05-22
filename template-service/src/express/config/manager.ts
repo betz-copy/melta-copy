@@ -23,15 +23,11 @@ class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
         }
     }
 
-    getConfigs(configName?: string): Promise<IMongoBaseConfig[]> {
-        return this.model
-            .find(configName ? { name: configName } : {})
-            .lean()
-            .exec();
+    getConfigs(): Promise<IMongoBaseConfig[]> {
+        return this.model.find().lean().exec();
     }
 
     getConfigByType(type: ConfigTypes): Promise<IMongoBaseConfig> {
-        console.log(type);
         return this.model.findOne({ type }).orFail(new NotFoundError('Config not found')).lean().exec();
     }
 

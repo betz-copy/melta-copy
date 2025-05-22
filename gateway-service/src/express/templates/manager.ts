@@ -403,12 +403,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // config
-    async getAllConfigs(configName?: string): Promise<IMongoBaseConfig[]> {
-        return this.entityTemplateService.getConfigs(configName);
+    async getAllConfigs(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']): Promise<IMongoBaseConfig[]> {
+        return this.entityTemplateService.getConfigs(permissionsOfUserId);
     }
 
     async getConfigByType(type: ConfigTypes, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']): Promise<IMongoBaseConfig> {
-        console.log(type);
         return this.entityTemplateService.getConfigByType(type, permissionsOfUserId);
     }
 

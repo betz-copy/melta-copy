@@ -7,8 +7,8 @@ class ConfigController extends DefaultController<IMongoBaseConfig, ConfigManager
         super(new ConfigManager(workspaceId));
     }
 
-    async getConfigs(req: Request, res: Response) {
-        res.json(await this.manager.getConfigs(req.query.configName as string));
+    async getConfigs(_req: Request, res: Response) {
+        res.json(await this.manager.getConfigs());
     }
 
     async getConfigByType(req: Request, res: Response) {

@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 export const ConfigSchema = new mongoose.Schema(
     {
-        // name: { type: String, required: true, unique: true },
         type: { type: String, required: true, unique: true },
     },
 

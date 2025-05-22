@@ -267,9 +267,7 @@ export const searchRulesRequestSchema = Joi.object({
 
 // GET /api/templates/config/all
 export const getAllConfigsSchema = Joi.object({
-    query: {
-        configName: Joi.string(),
-    },
+    query: {},
     body: {},
     params: {},
 });

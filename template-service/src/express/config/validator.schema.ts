@@ -1,11 +1,9 @@
 import Joi from 'joi';
-import { MongoIdSchema, ConfigTypes, variableNameValidation } from '@microservices/shared';
+import { MongoIdSchema, ConfigTypes } from '@microservices/shared';
 
 // GET /api/config/all
 export const getAllConfigsSchema = Joi.object({
-    query: {
-        configName: variableNameValidation,
-    },
+    query: {},
     body: {},
     params: {},
 });

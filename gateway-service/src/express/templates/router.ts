@@ -97,7 +97,7 @@ templatesRouter.patch(
 templatesRouter.get(
     `/config/all`,
     ValidateRequest(getAllConfigsSchema),
-    AuthorizerControllerMiddleware.userCanReadTemplates,
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.getAllConfigs,
 );
 

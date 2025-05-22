@@ -64,7 +64,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // config
     async getAllConfigs(req: Request, res: Response) {
-        res.json(await this.manager.getAllConfigs(req.query.configName as string));
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.getAllConfigs(permissionsOfUserId));
     }
 
     async getConfigByType(req: Request, res: Response) {
