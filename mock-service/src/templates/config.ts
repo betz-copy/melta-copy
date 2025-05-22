@@ -1,6 +1,6 @@
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
-import { IMongoCategory, IOrderConfig, IMongoOrderConfig, ConfigTypes } from '@microservices/shared';
+import { IMongoCategory, ICategoryOrderConfig, IMongoCategoryOrderConfig, ConfigTypes } from '@microservices/shared';
 
 const {
     url,
@@ -9,13 +9,12 @@ const {
 
 export const createCategoryOrder = async (workspaceId: string, categories: IMongoCategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
-    const data: IOrderConfig = {
-        name: 'categoryOrder',
-        type: ConfigTypes.ORDER,
+    const data: ICategoryOrderConfig = {
+        type: ConfigTypes.CATEGORY_ORDER,
         order: categories.map((category) => category._id),
     };
 
-    const response = await axiosInstance.post<IMongoOrderConfig>(url + createOrderConfigRoute, data);
+    const response = await axiosInstance.post<IMongoCategoryOrderConfig>(url + createOrderConfigRoute, data);
 
     return response.data;
 };

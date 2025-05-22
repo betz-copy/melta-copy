@@ -3,22 +3,26 @@ import { MongoIdSchema, ConfigTypes, variableNameValidation } from '@microservic
 
 // GET /api/config/all
 export const getAllConfigsSchema = Joi.object({
-    query: {},
+    query: {
+        configName: variableNameValidation,
+    },
     body: {},
     params: {},
 });
 
-// GET /api/config/:name
-export const getOrderConfigByNameSchema = Joi.object({
+// GET /api/config/:type
+export const getConfigByTypeSchema = Joi.object({
     query: {},
     body: {},
     params: {
-        configName: variableNameValidation.required(),
+        type: Joi.string()
+            .valid(...Object.values(ConfigTypes))
+            .required(),
     },
 });
 
 // PUT /api/config/:configId
-export const updateOrderConfigSchema = Joi.object({
+export const updateCategoryOrderConfigSchema = Joi.object({
     query: {},
     body: {
         newIndex: Joi.number().min(0).required(),
@@ -30,10 +34,9 @@ export const updateOrderConfigSchema = Joi.object({
 });
 
 // POST /api/config
-export const createOrderConfigSchema = Joi.object({
+export const createCategoryOrderConfigSchema = Joi.object({
     query: {},
     body: {
-        name: variableNameValidation.required(),
         type: Joi.string()
             .valid(...Object.values(ConfigTypes))
             .required(),

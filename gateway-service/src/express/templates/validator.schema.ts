@@ -267,17 +267,21 @@ export const searchRulesRequestSchema = Joi.object({
 
 // GET /api/templates/config/all
 export const getAllConfigsSchema = Joi.object({
-    query: {},
+    query: {
+        configName: Joi.string(),
+    },
     body: {},
     params: {},
 });
 
-// GET /api/templates/config/:name
-export const getOrderConfigByNameSchema = Joi.object({
+// GET /api/templates/config/:type
+export const getConfigByTypeSchema = Joi.object({
     query: {},
     body: {},
     params: {
-        configName: Joi.string().required(),
+        type: Joi.string()
+            .valid(...Object.values(ConfigTypes))
+            .required(),
     },
 });
 
@@ -297,7 +301,6 @@ export const updateOrderConfigSchema = Joi.object({
 export const createOrderConfigSchema = Joi.object({
     query: {},
     body: {
-        name: Joi.string().required(),
         type: Joi.string()
             .valid(...Object.values(ConfigTypes))
             .required(),

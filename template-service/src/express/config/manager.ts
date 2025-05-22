@@ -1,31 +1,42 @@
 import mongoose from 'mongoose';
-import { NotFoundError, DefaultManagerMongo, ConfigTypes, IMongoBaseConfig, IMongoOrderConfig, IOrderConfig } from '@microservices/shared';
+import {
+    NotFoundError,
+    DefaultManagerMongo,
+    ConfigTypes,
+    IMongoBaseConfig,
+    IMongoCategoryOrderConfig,
+    ICategoryOrderConfig,
+} from '@microservices/shared';
 import config from '../../config';
 import { ConfigSchema, orderConfigSchema } from './model';
 
 class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
-    private orderDiscriminator: mongoose.Model<IMongoOrderConfig>;
+    private categoryOrderDiscriminator: mongoose.Model<IMongoCategoryOrderConfig>;
 
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.configsCollectionName, ConfigSchema);
 
-        if (!this.model.discriminators?.[ConfigTypes.ORDER]) {
-            this.orderDiscriminator = this.model.discriminator<IMongoOrderConfig>(ConfigTypes.ORDER, orderConfigSchema);
+        if (!this.model.discriminators?.[ConfigTypes.CATEGORY_ORDER]) {
+            this.categoryOrderDiscriminator = this.model.discriminator<IMongoCategoryOrderConfig>(ConfigTypes.CATEGORY_ORDER, orderConfigSchema);
         } else {
-            this.orderDiscriminator = this.model.discriminators[ConfigTypes.ORDER] as mongoose.Model<IMongoOrderConfig>;
+            this.categoryOrderDiscriminator = this.model.discriminators[ConfigTypes.CATEGORY_ORDER] as mongoose.Model<IMongoCategoryOrderConfig>;
         }
     }
 
-    getConfigs(): Promise<IMongoBaseConfig[]> {
-        return this.model.find().lean().exec();
+    getConfigs(configName?: string): Promise<IMongoBaseConfig[]> {
+        return this.model
+            .find(configName ? { name: configName } : {})
+            .lean()
+            .exec();
     }
 
-    getOrderConfigByName(name: string): Promise<IMongoOrderConfig> {
-        return this.orderDiscriminator.findOne({ name }).orFail(new NotFoundError('Config not found')).lean().exec();
+    getConfigByType(type: ConfigTypes): Promise<IMongoBaseConfig> {
+        console.log(type);
+        return this.model.findOne({ type }).orFail(new NotFoundError('Config not found')).lean().exec();
     }
 
-    async updateOrder(orderId: string, newIndex: number, item: string, removeItem: boolean = false): Promise<IMongoOrderConfig> {
-        const order = await this.orderDiscriminator.findById(orderId).orFail(new NotFoundError('Config order not found')).exec();
+    async updateCategoryOrder(orderId: string, newIndex: number, item: string, removeItem: boolean = false): Promise<IMongoCategoryOrderConfig> {
+        const order = await this.categoryOrderDiscriminator.findById(orderId).orFail(new NotFoundError('Config order not found')).exec();
         const currentIndex: number = order.order.indexOf(item);
 
         if (currentIndex === -1) {
@@ -41,8 +52,8 @@ class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
         return order;
     }
 
-    createOrder(orderData: IOrderConfig): Promise<IMongoOrderConfig> {
-        return this.orderDiscriminator.create(orderData);
+    createCategoryOrder(orderData: ICategoryOrderConfig): Promise<IMongoCategoryOrderConfig> {
+        return this.categoryOrderDiscriminator.create(orderData);
     }
 }
 

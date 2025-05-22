@@ -25,7 +25,7 @@ const config = {
             createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
         },
         config: {
-            createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/order').asString(),
+            createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/categoryOrder').asString(),
         },
     },
     processService: {

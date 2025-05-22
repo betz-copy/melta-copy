@@ -17,7 +17,7 @@ import {
     deleteRuleByIdRequestSchema,
     getAllConfigsSchema,
     getCategoriesSchema,
-    getOrderConfigByNameSchema,
+    getConfigByTypeSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
@@ -102,15 +102,19 @@ templatesRouter.get(
 );
 
 templatesRouter.get(
-    '/config/order/:configName',
-    ValidateRequest(getOrderConfigByNameSchema),
-    AuthorizerControllerMiddleware.userCanReadTemplates,
-    templatesControllerMiddleware.getCategoryOrderConfig,
+    '/config/:type',
+    ValidateRequest(getConfigByTypeSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getConfigByType,
 );
 
-templatesRouter.put('/config/order/:configId', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.updateOrderConfig);
+templatesRouter.put(
+    '/config/categoryOrder/:configId',
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryOrderConfig,
+);
 
-templatesRouter.post('/config/order', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.createOrderConfig);
+templatesRouter.post('/config/categoryOrder', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.createOrderConfig);
 
 // entities (templates)
 templatesRouter.put(

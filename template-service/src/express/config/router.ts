@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
 import ConfigController from './controller';
-import { createOrderConfigSchema, getAllConfigsSchema, getOrderConfigByNameSchema, updateOrderConfigSchema } from './validator.schema';
+import { createCategoryOrderConfigSchema, getAllConfigsSchema, getConfigByTypeSchema, updateCategoryOrderConfigSchema } from './validator.schema';
 
 const configRouter: Router = Router();
 
@@ -9,10 +9,10 @@ const controller = createController(ConfigController);
 
 configRouter.get('/all', ValidateRequest(getAllConfigsSchema), controller.getConfigs);
 
-configRouter.get('/order/:configName', ValidateRequest(getOrderConfigByNameSchema), controller.getOrderConfigByName);
+configRouter.get('/:type', ValidateRequest(getConfigByTypeSchema), controller.getConfigByType);
 
-configRouter.put(`/order/:configId`, ValidateRequest(updateOrderConfigSchema), controller.updateOrder);
+configRouter.put(`/categoryOrder/:configId`, ValidateRequest(updateCategoryOrderConfigSchema), controller.updateCategoryOrder);
 
-configRouter.post(`/order`, ValidateRequest(createOrderConfigSchema), controller.createOrder);
+configRouter.post(`/categoryOrder`, ValidateRequest(createCategoryOrderConfigSchema), controller.createCategoryOrder);
 
 export default configRouter;

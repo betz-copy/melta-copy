@@ -7,10 +7,10 @@ import {
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISubCompactPermissions,
-    IMongoOrderConfig, 
-    IMongoBaseConfig, 
+    IMongoCategoryOrderConfig,
+    IMongoBaseConfig,
     ConfigTypes,
-    IOrderConfig,
+    ICategoryOrderConfig,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -154,28 +154,36 @@ class EntityTemplateService extends TemplatesManagerService {
     }
 
     // config
-    async getConfigs() {
-        const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
+    async getConfigs(configName?: string) {
+        const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`, { params: { configName } });
 
         return data;
     }
 
-    async getOrderConfigByName(configName: string, permissionsOfUserId: ISubCompactPermissions) {
-        const { data: categoryOrder } = await this.api.get<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configName}`);
+    async getConfigByType(type: ConfigTypes, permissionsOfUserId: ISubCompactPermissions) {
+        const { data } = await this.api.get<IMongoBaseConfig>(`${baseConfigRoute}/${type}`);
 
-        return permissionsOfUserId.admin
-            ? categoryOrder
-            : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
+        if (type === ConfigTypes.CATEGORY_ORDER) {
+            const categoryOrder = data as IMongoCategoryOrderConfig;
+            return permissionsOfUserId.admin
+                ? categoryOrder
+                : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
+        }
+
+        return data;
     }
 
     async updateOrderConfig(configId: string, newIndex: number, item: string) {
-        const { data } = await this.api.put<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configId}`, { newIndex, item });
+        const { data } = await this.api.put<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}/${configId}`, {
+            newIndex,
+            item,
+        });
 
         return data;
     }
 
-    async createOrderConfig(configData: IOrderConfig) {
-        const { data } = await this.api.post<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}`, configData);
+    async createOrderConfig(configData: ICategoryOrderConfig) {
+        const { data } = await this.api.post<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}`, configData);
 
         return data;
     }

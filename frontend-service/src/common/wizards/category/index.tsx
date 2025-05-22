@@ -10,13 +10,13 @@ import { createCategoryRequest, updateCategoryRequest } from '../../../services/
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ErrorToast } from '../../ErrorToast';
-import { IMongoOrderConfig } from '../../../interfaces/config';
+import { ConfigTypes, IMongoCategoryOrderConfig } from '../../../interfaces/config';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
-import { getOrderConfigByNameRequest } from '../../../services/templates/configService';
+import { getConfigByTypeRequest } from '../../../services/templates/configService';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -45,17 +45,20 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             onSuccess: async (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
                 if (!isEditMode) {
-                    const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryOrder');
+                    const categoryOrder = queryClient.getQueryData<IMongoCategoryOrderConfig>('getCategoryOrder');
 
                     if (categoryOrder) {
-                        queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', (categoryConfig) => {
+                        queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', (categoryConfig) => {
                             const { order } = categoryConfig!;
                             order.push(data._id);
 
                             return { ...categoryConfig!, order };
                         });
                     } else {
-                        queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', await getOrderConfigByNameRequest('categoryOrder'));
+                        queryClient.setQueryData<IMongoCategoryOrderConfig>(
+                            'getCategoryOrder',
+                            (await getConfigByTypeRequest(ConfigTypes.CATEGORY_ORDER)) as IMongoCategoryOrderConfig,
+                        );
                     }
                 }
 

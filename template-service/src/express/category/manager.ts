@@ -1,5 +1,5 @@
 import { ClientSession } from 'mongoose';
-import { DefaultManagerMongo, IMongoCategory, ICategory, NotFoundError, ConfigTypes, IMongoOrderConfig } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoCategory, ICategory, NotFoundError, ConfigTypes, IMongoCategoryOrderConfig } from '@microservices/shared';
 import config from '../../config';
 import CategorySchema from './model';
 import { withTransaction } from '../../utils/mongoose';
@@ -28,24 +28,26 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
         const category = await this.model.create(categoryData);
 
         try {
-            const categoryOrder: IMongoOrderConfig = await this.configManager.getOrderConfigByName('categoryOrder');
+            const categoryOrder: IMongoCategoryOrderConfig = (await this.configManager.getConfigByType(
+                ConfigTypes.CATEGORY_ORDER,
+            )) as IMongoCategoryOrderConfig;
             const { order } = categoryOrder;
-            this.configManager.updateOrder(categoryOrder._id, order.length, category._id);
+            this.configManager.updateCategoryOrder(categoryOrder._id, order.length, category._id);
         } catch {
-            await this.configManager.createOrder({ name: 'categoryOrder', type: ConfigTypes.ORDER, order: [category._id] });
+            await this.configManager.createCategoryOrder({ type: ConfigTypes.CATEGORY_ORDER, order: [category._id] });
         }
 
         return category;
     }
 
     async deleteCategory(id: string) {
-        const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
+        const categoryOrder = (await this.configManager.getConfigByType(ConfigTypes.CATEGORY_ORDER)) as IMongoCategoryOrderConfig;
         const { order } = categoryOrder;
         const index = order.indexOf(id);
 
         if (index > -1) {
             order.splice(index, 1);
-            this.configManager.updateOrder(categoryOrder._id, -1, id, true);
+            this.configManager.updateCategoryOrder(categoryOrder._id, -1, id, true);
         }
 
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Category not found')).lean().exec();

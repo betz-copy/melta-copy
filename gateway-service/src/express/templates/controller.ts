@@ -9,6 +9,7 @@ import {
     RequestWithSearchRuleTemplateBody,
 } from '../../externalServices/templates/relationshipsTemplateService';
 import config from '../../config';
+import { ConfigTypes } from 'shared/dist';
 
 const { userDoesntExistUnderReq } = config.templateService;
 
@@ -62,24 +63,24 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     // config
-    async getAllConfigs(_req: Request, res: Response) {
-        res.json(await this.manager.getAllConfigs());
+    async getAllConfigs(req: Request, res: Response) {
+        res.json(await this.manager.getAllConfigs(req.query.configName as string));
     }
 
-    async getCategoryOrderConfig(req: Request, res: Response) {
+    async getConfigByType(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.getCategoryOrderConfig(req.params.configName, permissionsOfUserId));
+        res.json(await this.manager.getConfigByType(req.params.type as ConfigTypes, permissionsOfUserId));
     }
 
-    async updateOrderConfig(req: Request, res: Response) {
+    async updateCategoryOrderConfig(req: Request, res: Response) {
         const { newIndex, item }: { newIndex: number; item: string } = req.body;
-        res.json(await this.manager.updateOrderConfig(req.params.configId, newIndex, item));
+        res.json(await this.manager.updateCategoryOrderConfig(req.params.configId, newIndex, item));
     }
 
     async createOrderConfig(req: Request, res: Response) {
-        res.json(await this.manager.createOrderConfig(req.body));
+        res.json(await this.manager.createCategoryOrderConfig(req.body));
     }
 
     // entityTemplates

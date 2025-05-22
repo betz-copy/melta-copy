@@ -5,13 +5,13 @@ import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplat
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoOrderConfig } from '../../interfaces/config';
+import { IMongoCategoryOrderConfig } from '../../interfaces/config';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 
 export type GetAllTemplatesType = {
     categories: IMongoCategory[];
-    categoryOrder: IMongoOrderConfig;
+    categoryOrder: IMongoCategoryOrderConfig;
     entityTemplates: IMongoEntityTemplatePopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
     processTemplates: IMongoProcessTemplatePopulated[];

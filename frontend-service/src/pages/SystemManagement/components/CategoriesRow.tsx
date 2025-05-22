@@ -23,8 +23,8 @@ import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { updateConfigOrderRequest } from '../../../services/templates/configService';
-import { IMongoOrderConfig } from '../../../interfaces/config';
+import { updateConfigCategoryOrderRequest } from '../../../services/templates/configService';
+import { IMongoCategoryOrderConfig } from '../../../interfaces/config';
 import { mapCategories } from '../../../utils/templates';
 import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 
@@ -142,7 +142,7 @@ const CategoriesRow: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryOrder');
+    const categoryOrder = queryClient.getQueryData<IMongoCategoryOrderConfig>('getCategoryOrder');
     const allowedCategoriesToShow = allowedCategories(categories, currentUser);
 
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
@@ -170,7 +170,7 @@ const CategoriesRow: React.FC = () => {
                 return data!;
             });
 
-            queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', (categoryConfig) => {
+            queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', (categoryConfig) => {
                 const { order } = categoryConfig!;
                 const index = order.indexOf(id);
 
@@ -191,11 +191,11 @@ const CategoriesRow: React.FC = () => {
 
     const { mutateAsync: changeOrder } = useMutation(
         ({ categoryId, newIndex }: { categoryId: string; newIndex: number }) => {
-            return updateConfigOrderRequest(categoryOrder!._id, newIndex, categoryId);
+            return updateConfigCategoryOrderRequest(categoryOrder!._id, newIndex, categoryId);
         },
         {
             onSuccess(data) {
-                queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', data);
+                queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', data);
                 queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(allowedCategoriesToShow, data.order));
             },
             onError(error: AxiosError) {
@@ -258,7 +258,16 @@ const CategoriesRow: React.FC = () => {
                                 {categories &&
                                     allowedCategoriesToShow.map((category, index) => {
                                         return (
-                                            <Draggable draggableId={category._id} key={category._id} index={index}>
+                                            <Draggable
+                                                draggableId={category._id}
+                                                key={category._id}
+                                                index={index}
+                                                isDragDisabled={
+                                                    !currentUser.currentWorkspacePermissions.admin &&
+                                                    currentUser.currentWorkspacePermissions.instances?.categories[category._id].scope ===
+                                                        PermissionScope.read
+                                                }
+                                            >
                                                 {(draggableProvided) => (
                                                     <Grid
                                                         ref={draggableProvided.innerRef}

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IMongoBaseConfig, DefaultController } from '@microservices/shared';
+import { IMongoBaseConfig, DefaultController, ConfigTypes } from '@microservices/shared';
 import ConfigManager from './manager';
 
 class ConfigController extends DefaultController<IMongoBaseConfig, ConfigManager> {
@@ -7,21 +7,22 @@ class ConfigController extends DefaultController<IMongoBaseConfig, ConfigManager
         super(new ConfigManager(workspaceId));
     }
 
-    async getConfigs(_req: Request, res: Response) {
-        res.json(await this.manager.getConfigs());
+    async getConfigs(req: Request, res: Response) {
+        res.json(await this.manager.getConfigs(req.query.configName as string));
     }
 
-    async getOrderConfigByName(req: Request, res: Response) {
-        res.json(await this.manager.getOrderConfigByName(req.params.configName));
+    async getConfigByType(req: Request, res: Response) {
+        console.log(req.params);
+        res.json(await this.manager.getConfigByType(req.params.type as ConfigTypes));
     }
 
-    async updateOrder(req: Request, res: Response) {
+    async updateCategoryOrder(req: Request, res: Response) {
         const { newIndex, item }: { newIndex: number; item: string } = req.body;
-        res.json(await this.manager.updateOrder(req.params.configId, newIndex, item));
+        res.json(await this.manager.updateCategoryOrder(req.params.configId, newIndex, item));
     }
 
-    async createOrder(req: Request, res: Response) {
-        res.json(await this.manager.createOrder(req.body));
+    async createCategoryOrder(req: Request, res: Response) {
+        res.json(await this.manager.createCategoryOrder(req.body));
     }
 }
 

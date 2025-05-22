@@ -1,17 +1,20 @@
 export enum ConfigTypes {
     BASE = 'base',
-    ORDER = 'order',
+    CATEGORY_ORDER = 'categoryOrder',
 }
 
 export interface IBaseConfig {
-    name: string;
     type: ConfigTypes;
 }
 
-export interface IOrderConfig extends IBaseConfig {
+export interface IMongoBaseConfig extends IBaseConfig {
+    _id: string;
+}
+
+export interface ICategoryOrderConfig extends IBaseConfig {
     order: string[];
 }
 
-export interface IMongoOrderConfig extends IOrderConfig {
+export interface IMongoCategoryOrderConfig extends ICategoryOrderConfig {
     _id: string;
 }
