@@ -1,0 +1,27 @@
+---
+description: Recommended Vite folder structure & config tweaks
+globs: 
+alwaysApply: false
+---
+
+## folder stracture:
+src/
+├─ assets/ # fonts
+├─ CLDR/ # hebrew jsons
+├─ common/ # reusable UI building blocks: wizards, dialogs, inputs, ...
+├─ css/ # global used css files
+├─ i18n/ # js object of all the hebrew values by en keys
+├─ interfaces/ # All the system objects interfaces and types
+├─ pages/ # route entries used by react-router
+├─ services/ # axios instances + endpoint defs
+├─ stores/ # `zustand` stores of: UserState, WorkspaceState, MeltaPlusState, DraftsState, DarkModeState
+├─ utils/ # shared custom hooks, functinos,complex basic components
+├───── agGrid/ # All ag-grid basic components andc functions for manipulating data
+├───── .../ # Move shared utils
+└─ theme.ts # MUI theme
+└─ App.tsx # This file defines the main React application component, handling user authentication, workspace setup, and global error/loading states, and serves as the entry point for rendering the app's core UI and analytics provider.
+
+
+* Use `vite-tsconfig-paths` for path aliasing (`@/components/...`). :contentReference[oaicite:8]{index=8}  
+* Set `build.target` to `"esnext"` unless you support legacy browsers—keeps bundles small.  
+* Enable `react()` plugin’s `fastRefresh` in dev; let Vite handle production minification (esbuild/Terser). :contentReference[oaicite:9]{index=9}
