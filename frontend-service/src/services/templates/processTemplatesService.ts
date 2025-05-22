@@ -238,13 +238,6 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             reviewers: reviewersIds,
         });
     });
-    console.log({
-        im2: {
-            ...restOfProperties,
-            details: { properties: detailsSchema, propertiesOrder: detailsPropertiesOrder },
-            steps: stepTemplates,
-        },
-    });
 
     return {
         ...restOfProperties,

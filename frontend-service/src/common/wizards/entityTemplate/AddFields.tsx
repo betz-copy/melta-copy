@@ -554,13 +554,13 @@ export const FieldBlockWrapper = ({
         <Grid
             item
             style={{
-                opacity: isDragging ? 0.5 : 1,
+                opacity: isDragging ? 0.7 : 1,
                 alignSelf: 'stretch',
                 marginBottom: '1rem',
                 cursor: 'grab',
             }}
         >
-            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.7 : 1 }}>
                 <FieldBlockDND
                     propertiesType={itemId}
                     values={values}

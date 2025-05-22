@@ -77,7 +77,6 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
         (values as ProcessTemplateWizardValues & { _id: string })._id,
         isEditMode,
     );
-    console.log({ values });
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
