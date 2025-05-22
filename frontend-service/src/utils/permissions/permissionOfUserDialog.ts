@@ -3,7 +3,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 import { IMongoCategory } from '../../interfaces/categories';
-import { ViewType } from '../../common/dialogs/createChildTemplate/interfaces';
+import { ViewType } from '../../interfaces/entityChildTemplates';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (

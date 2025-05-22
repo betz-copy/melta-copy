@@ -1,5 +1,5 @@
 import axios from '../../axios';
-import { IEntityChildTemplate, IMongoEntityChildTemplate } from '../../common/dialogs/createChildTemplate/interfaces';
+import { IEntityChildTemplate, IMongoEntityChildTemplate } from '../../interfaces/entityChildTemplates';
 import { environment } from '../../globals';
 
 const { entityChildTemplates } = environment.api;

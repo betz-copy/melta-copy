@@ -29,7 +29,7 @@ import { createEntityChildTemplateRequest } from '../../../services/templates/en
 import { ErrorToast } from '../../ErrorToast';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip, IEntityChildTemplateMap } from './interfaces';
+import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip, IEntityChildTemplateMap } from '../../../interfaces/entityChildTemplates';
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
 

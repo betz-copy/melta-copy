@@ -8,7 +8,7 @@ import { entityTemplatePermissionDialog } from '../../utils/permissions/permissi
 import { FilterList } from '@mui/icons-material';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import i18next from 'i18next';
-import { ViewType } from '../dialogs/createChildTemplate/interfaces';
+import { ViewType } from '../../interfaces/entityChildTemplates';
 import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 const EntityTemplateCheckboxPermission: React.FC<{
     entityTemplate: entityTemplatePermissionDialog;
@@ -24,12 +24,7 @@ const EntityTemplateCheckboxPermission: React.FC<{
     const theme = useTheme();
     const [openChildTemplateList, setOpenChildTemplateList] = useState(false);
     const childTemplates = entityTemplate.entityChildTemplates;
-    const templatesPermissions = categoryPermissions?.entityTemplates ?? {};
-    const childTemplatesPermissions = templatesPermissions?.[entityTemplate.id]?.entityChildTemplates ?? {};
 
-    const changeChildTemplatePermissions = (checked: boolean, childTemplateId: string, permissionScope: PermissionScope) => {
-        changePermissions(checked, entityTemplate.id, permissionScope, childTemplateId);
-    };
 
     return (
         <Grid container xs={12} key={entityTemplate.id}>
@@ -64,9 +59,6 @@ const EntityTemplateCheckboxPermission: React.FC<{
                         categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope === PermissionScope.write ||
                         permissionType.write.checked
                     }
-                    // indeterminate={Object.values(childTemplatesPermissions).some(
-                    //     (childTemplatePermission) => childTemplatePermission.scope === PermissionScope.read,
-                    // )}
                     checkboxSx={{ width: '17px', height: '17px' }}
                 />
             </Grid>
@@ -79,9 +71,6 @@ const EntityTemplateCheckboxPermission: React.FC<{
                     }
                     onChange={(_event, checked) => changePermissions(checked, entityTemplate.id, PermissionScope.write)}
                     disabled={disabled}
-                    // indeterminate={Object.values(childTemplatesPermissions).some(
-                    //     (childTemplatePermission) => childTemplatePermission.scope === PermissionScope.write,
-                    // )}
                     checkboxSx={{ width: '17px', height: '17px' }}
                 />
             </Grid>
@@ -121,15 +110,15 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                             <PermissionScopeBtn
                                                 viewMode={viewMode}
                                                 defaultChecked={
-                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope !== undefined ||
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates?.[childTemplateCheck.id]?.scope !== undefined ||
                                                     permissionType.read.checked
                                                 }
                                                 onChange={(_event, checked) =>
-                                                    changeChildTemplatePermissions(checked, childTemplateCheck.id, PermissionScope.read)
+                                                    changePermissions(checked, entityTemplate.id, PermissionScope.read, childTemplateCheck.id)
                                                 }
                                                 disabled={
                                                     disabled ||
-                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope === PermissionScope.write ||
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates?.[childTemplateCheck.id]?.scope === PermissionScope.write ||
                                                     permissionType.write.checked
                                                 }
                                                 checkboxSx={{ width: '17px', height: '17px' }}
@@ -140,11 +129,11 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                             <PermissionScopeBtn
                                                 viewMode={viewMode}
                                                 defaultChecked={
-                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.scope === PermissionScope.write ||
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates?.[childTemplateCheck.id]?.scope === PermissionScope.write ||
                                                     permissionType.write.checked
                                                 }
                                                 onChange={(_event, checked) =>
-                                                    changeChildTemplatePermissions(checked, childTemplateCheck.id, PermissionScope.write)
+                                                    changePermissions(checked, entityTemplate.id, PermissionScope.write, childTemplateCheck.id)
                                                 }
                                                 disabled={disabled}
                                                 checkboxSx={{ width: '17px', height: '17px' }}

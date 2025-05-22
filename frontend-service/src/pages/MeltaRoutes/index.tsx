@@ -17,7 +17,7 @@ import { handleWorkspace } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
-import { IEntityChildTemplateMap } from '../../common/dialogs/createChildTemplate/interfaces';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 interface IMeltaRoutesProps {
     path: string;

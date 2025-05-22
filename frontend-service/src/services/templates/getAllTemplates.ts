@@ -5,7 +5,7 @@ import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplat
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoEntityChildTemplate } from '../../common/dialogs/createChildTemplate/interfaces';
+import { IMongoEntityChildTemplate } from '../../interfaces/entityChildTemplates';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 

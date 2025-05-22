@@ -30,7 +30,7 @@ import {
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IEntityChildTemplateMap } from '../dialogs/createChildTemplate/interfaces';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
