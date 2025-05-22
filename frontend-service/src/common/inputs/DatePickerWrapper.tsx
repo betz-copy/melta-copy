@@ -39,6 +39,9 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
         dateAdapter={AdapterDateFns}
         adapterLocale={heLocale}
         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+        InputProps={{
+            style: {},
+        }}
     >
         <DatePicker
             inputFormat="dd/MM/yyyy"
@@ -47,7 +50,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             label={label}
             value={value}
             onChange={onChange}
-            renderInput={(params) => <TextField {...params} size="small" sx={sx} />}
+            renderInput={(params) => <TextField {...params} size="small" sx={sx} style={{ boxSizing: 'border-box', width: '100%' }} />}
             InputProps={{
                 style: {
                     // eslint-disable-next-line no-nested-ternary
@@ -56,6 +59,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             }}
             components={components}
             readOnly={readOnly}
+            disabled={readOnly}
         />
     </LocalizationProvider>
 );

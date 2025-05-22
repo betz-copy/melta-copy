@@ -1,5 +1,5 @@
 import { IMongoCategory } from './category';
-import { IUniqueConstraintOfTemplate } from './entity';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
@@ -8,28 +8,6 @@ export interface IRelationshipReference {
     relatedTemplateField: string;
     filters?: ISearchFilter | string;
 }
-
-export interface IFilterOfField {
-    $eq?: boolean | string | number | null;
-    $ne?: boolean | string | number | null;
-    $eqi?: string; // case insensitive $eq
-    $rgx?: string; // Java Regular Expression (not javascript)
-    $gt?: boolean | string | number;
-    $gte?: boolean | string | number;
-    $lt?: boolean | string | number;
-    $lte?: boolean | string | number;
-    $in?: Array<boolean | string | number | RegExp | null>;
-    $not?: IFilterOfField;
-}
-
-export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
-    [field in keyof T]?: IFilterOfField;
-};
-
-export type ISearchFilter<T extends Record<string, any> = Record<string, any>> = {
-    $and?: IFilterOfTemplate<T> | IFilterOfTemplate<T>[];
-    $or?: IFilterOfTemplate<T>[];
-};
 
 export interface IEntitySingleProperty {
     title: string;
