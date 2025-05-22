@@ -6,7 +6,7 @@ import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
@@ -91,11 +91,38 @@ const TemplateTablesViewResults = forwardRef<
                         page={pageType}
                         setUpdatedEntities={setUpdatedEntities}
                     />
-                {template.children.map((childTemplate) => (
-                    <Grid item key={childTemplate._id}>
-                        <TemplateTable  template={template} quickFilterText={searchInput} page={pageType} setUpdatedEntities={setUpdatedEntities} />
-                    </Grid>
-                ))}
+                    {template.children.map((childTemplate) => {
+                        const childTemplatePropertiesList = Object.keys(childTemplate.properties);
+                        const childTemplateProperties = Object.fromEntries(
+                            Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
+                        ) as Record<string, IEntitySingleProperty>;
+                        const { children, ...childTemplatePopulated } = {
+                            ...template,
+                            displayName: childTemplate.displayName,
+                            properties: {
+                                ...template.properties,
+                                properties: childTemplateProperties,
+                            },
+                            propertiesOrder: template.propertiesOrder.filter((property) => childTemplatePropertiesList.includes(property)),
+                        };
+                        return (
+                            <Grid item key={childTemplate._id}>
+                                <TemplateTable
+                                    ref={(el) => {
+                                        if (el) {
+                                            templateTablesRefs.current[childTemplate._id] = el;
+                                        } else {
+                                            delete templateTablesRefs.current[childTemplate._id];
+                                        }
+                                    }}
+                                    template={childTemplatePopulated}
+                                    quickFilterText={searchInput}
+                                    page={pageType}
+                                    setUpdatedEntities={setUpdatedEntities}
+                                />
+                            </Grid>
+                        );
+                    })}
                 </Grid>
             ))}
             {visibleTemplatesCount < templates.length && (
