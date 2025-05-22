@@ -44,9 +44,7 @@ export class ChartsValidator extends DefaultController {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
     }
 
-    private async validateUserHasPermissionToChart(req: Request, newChart: boolean = false) {
-        const { templateId } = req.body;
-
+    private async validateUserHasPermissionToChart(req: Request, templateId: string, newChart: boolean = false) {
         this.validateUserHasPermissionToTemplate(req, templateId);
 
         if (!newChart) {
@@ -73,11 +71,11 @@ export class ChartsValidator extends DefaultController {
     }
 
     async validateUserCanCreateChart(req: Request) {
-        return this.validateUserHasPermissionToChart(req, true);
+        return this.validateUserHasPermissionToChart(req, req.body.chart.templateId, true);
     }
 
     async validateUserCanUpdateChart(req: Request) {
-        return this.validateUserHasPermissionToChart(req);
+        return this.validateUserHasPermissionToChart(req, req.body.templateId);
     }
 
     async validateUserCanDeleteChart(req: Request) {
@@ -89,9 +87,13 @@ export class ChartsValidator extends DefaultController {
     }
 
     async validateUserCanCreateChartWithRelatedTemplate(req: Request) {
-        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
+        const {
+            body: { chart },
+            permissionsOfUserId,
+            user,
+        } = req as RequestWithPermissionsOfUserId;
 
-        const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user?.id!, permissionsOfUserId, body);
+        const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user?.id!, permissionsOfUserId, chart);
         if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
     }
 

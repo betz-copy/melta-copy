@@ -95,7 +95,7 @@ export const getChartByIdRequestSchema = Joi.object({
     },
 });
 
-// GET /api/dashboard/charts/by-template/:templateId
+// POST /api/dashboard/charts/by-template/:templateId
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
@@ -103,6 +103,17 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
     query: {},
     params: {
         templateId: MongoIdSchema.required(),
+    },
+});
+
+// POST /api/dashboard/charts/by-user/:userId
+export const searchChartsByUserRequestSchema = Joi.object({
+    body: {
+        textSearch: Joi.string().allow(''),
+    },
+    query: {},
+    params: {
+        userId: MongoIdSchema.required(),
     },
 });
 

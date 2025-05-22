@@ -23,7 +23,8 @@ export class IFrameController extends DefaultController<IFrameManager> {
     }
 
     async createIFrame(req: Request, res: Response) {
-        res.json(await this.manager.createIFrame(req.body, req.file));
+        console.dir({ toDas: req.query.toDashboard });
+        res.json(await this.manager.createIFrame(req.body, req.file, req.query.toDashboard as boolean | undefined));
     }
 
     async deleteIFrame(req: Request, res: Response) {

@@ -1,7 +1,7 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IChart } from './chartService';
-import { IFrame } from './iframesService';
+import { IMongoChart } from './chartService';
+import { IMongoIframe } from './iframesService';
 
 const {
     dashboardService: { url, baseRoute, requestTimeout, dashboard },
@@ -44,12 +44,12 @@ export type DashboardItem = TableItem | ChartItem | IframeItem;
 
 export interface ChartItemPopulated {
     type: DashboardItemType.Chart;
-    metaData: IChart;
+    metaData: IMongoChart;
 }
 
 export interface IframeItemPopulated {
     type: DashboardItemType.Iframe;
-    metaData: IFrame;
+    metaData: IMongoIframe;
 }
 
 export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItemPopulated;
@@ -68,7 +68,7 @@ export class DashboardItemService extends DefaultExternalServiceApi {
     }
 
     async searchDashboardItems(textSearch?: string) {
-        const { data } = await this.api.post<DashboardItem[]>('/search', { textSearch });
+        const { data } = await this.api.post<MongoDashboardItemPopulated[]>('/search', { textSearch });
         return data;
     }
 }

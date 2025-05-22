@@ -20,7 +20,9 @@ export const getIFrameByIdSchema = Joi.object({
 
 // POST /api/iframes
 export const createIFrameSchema = Joi.object({
-    query: {},
+    query: {
+        toDashboard: Joi.bool(),
+    },
     body: iFrameSchema,
     params: {},
     file: iconFileSchema,

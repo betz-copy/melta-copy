@@ -104,7 +104,7 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
 
 // POST /api/charts
 export const createChartRequestSchema = Joi.object({
-    body: chartSchema.required(),
+    body: { chart: chartSchema.required(), toDashboard: Joi.bool() },
     query: {},
     params: {},
 });

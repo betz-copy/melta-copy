@@ -3,13 +3,17 @@ import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { IFrame, IMongoIframe, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
+import { DashboardItemService, DashboardItemType, IframeItem } from '../../externalServices/dashboardService/dashboardItemService';
 
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;
 
+    private DashboardItemService: DashboardItemService;
+
     constructor(workspaceId: string) {
         super(new IFramesService(workspaceId));
         this.storageService = new StorageService(workspaceId);
+        this.DashboardItemService = new DashboardItemService(workspaceId);
     }
 
     private filterIFramesWithPermissions(allIFrames: IMongoIframe[], allowedCategories: string[]) {
@@ -35,14 +39,19 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
         return this.service.getIFrameById(iFrameId);
     }
 
-    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile) {
+    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile, toDashboard: boolean = false) {
         let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
-        return this.service.createIFrame(newIFrame);
+        const createdIframe = await this.service.createIFrame(newIFrame);
+
+        if (toDashboard)
+            await this.DashboardItemService.createDashboardItem({ type: DashboardItemType.Iframe, metaData: createdIframe._id } as IframeItem);
+
+        return createdIframe;
     }
 
     deleteIFrame(iFrameId: string) {

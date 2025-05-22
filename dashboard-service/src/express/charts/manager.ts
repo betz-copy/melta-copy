@@ -1,6 +1,6 @@
 import { FilterQuery } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import { IChart, IMongoChart } from './interface';
+import { IChart, IMongoChart, IPermission } from './interface';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import ChartSchema from './model';
 import config from '../../config';
@@ -19,6 +19,21 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
     async getChartsByTemplateId(templateId: string, textSearch?: string) {
         const query: FilterQuery<IMongoChart> = {
             templateId,
+            ...(textSearch && {
+                $or: [
+                    { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },
+                    { description: { $regex: escapeRegExp(textSearch), $options: 'i' } },
+                ],
+            }),
+        };
+
+        return this.model.find(query).lean().exec();
+    }
+
+    async searchChartsByUser(userId: string, textSearch?: string) {
+        const query: FilterQuery<IMongoChart> = {
+            createdBy: userId,
+            permission: IPermission.Protected,
             ...(textSearch && {
                 $or: [
                     { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },

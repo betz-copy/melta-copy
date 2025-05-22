@@ -18,8 +18,14 @@ export class ChartController extends DefaultController<ChartManager> {
         res.json(await this.manager.getChartsOfTemplateId(params.templateId, user?.id!, permissionsOfUserId, body.textSearch));
     }
 
+    async searchChartByUserId(req: Request, res: Response) {
+        const { body, params, user } = req as RequestWithPermissionsOfUserId;
+
+        res.json(await this.manager.searchChartByUserId(params.templateId, user?.id!, body.textSearch));
+    }
+
     async createChart(req: Request, res: Response) {
-        res.json(await this.manager.createChart(req.body));
+        res.json(await this.manager.createChart(req.body.chart, req.body.toDashboard));
     }
 
     async updateChart(req: Request, res: Response) {
