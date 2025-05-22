@@ -99,6 +99,12 @@ const groupSchema = Yup.object({
             return entries.some((item: any) => {
                 return item.archive !== true;
             });
+        })
+        .test('hasNonDeletedFields', i18next.t('validation.oneField'), (entries) => {
+            if (!entries) return false;
+            return entries.some((item: any) => {
+                return item.deleted !== true;
+            });
         }),
 });
 const fieldByTypeSchema = Yup.lazy((item: any): Yup.BaseSchema => {
@@ -212,7 +218,7 @@ export const FieldBlockWrapper = ({
         const displayValuesCopy = { ...currentValues };
 
         indexesInTypes.forEach(({ index, type, groupIndex }) => {
-            if (groupIndex && groupIndex !== -1) {
+            if (typeof groupIndex === 'number' && groupIndex !== -1) {
                 const group = displayValuesCopy[type][groupIndex];
                 group.fields[index] = {
                     ...group.fields[index],
@@ -220,7 +226,7 @@ export const FieldBlockWrapper = ({
                 };
                 if (field === 'name' && group.fields[index].type === 'comment')
                     group.fields[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
-            } else if (index !== -1) {
+            } else if (index !== -1 && !groupIndex) {
                 displayValuesCopy[type][index].data = {
                     ...displayValuesCopy[type][index].data,
                     [field]: value,
@@ -229,8 +235,6 @@ export const FieldBlockWrapper = ({
                     displayValuesCopy[type][index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
             }
         });
-
-        console.log({ displayValuesCopy });
 
         return displayValuesCopy;
     };
@@ -346,7 +350,7 @@ export const FieldBlockWrapper = ({
 
             if (archivedProperty.type === 'user') {
                 const indexesArray = getUserFieldsIndexesDo(prevDisplayValues.properties, archivedProperty);
-                // indexesToUpdate.push({ index: propertyIndex, type: 'properties', groupIndex: propertyGroupIndex });
+
                 indexesToUpdate.push(
                     ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
                         const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'properties';
@@ -359,18 +363,14 @@ export const FieldBlockWrapper = ({
                     }),
                 );
 
-                const archivedIndexesArray = getUserFieldsIndexesDo(
-                    prevDisplayValues.archiveProperties,
-                    archivedProperty,
-                );
+                const archivedIndexesArray = getUserFieldsIndexesDo(prevDisplayValues.archiveProperties, archivedProperty);
 
-                // indexesToUpdate.push({ index: archivedPropertyIndex, type: 'archiveProperties', groupIndex: archivedPropertyGroupIndex });
                 indexesToUpdate.push(
                     ...archivedIndexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
                         const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'archiveProperties';
 
                         return {
-                            index: propertyIndex || -1,
+                            index: propertyIndex ?? -1,
                             type: propType,
                             groupIndex: propertyGroupIndex,
                         };
@@ -437,13 +437,13 @@ export const FieldBlockWrapper = ({
                 const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
 
                 if (removedProperty.type === 'user') {
+
                     const indexesArray = getUserFieldsIndexesDo(prevDisplayValues.properties, removedProperty);
                     indexesToUpdate.push(
                         ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
                             const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'properties';
-
                             return {
-                                index: propertyIndex || -1,
+                                index: propertyIndex ?? -1,
                                 type: propType,
                                 groupIndex: propertyGroupIndex,
                             };
@@ -457,7 +457,7 @@ export const FieldBlockWrapper = ({
                             const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'archiveProperties';
 
                             return {
-                                index: propertyIndex || -1,
+                                index: propertyIndex ?? -1,
                                 type: propType,
                                 groupIndex: propertyGroupIndex,
                             };
@@ -468,23 +468,36 @@ export const FieldBlockWrapper = ({
                 setSelectedIndexesForRemove(indexesToUpdate);
                 return prevDisplayValues;
             }
-            // valuesCopy[propertyType].splice(index, 1);
 
-            // if (removedProperty?.type === 'user') {
-            //     valuesCopy.properties.forEach((property, propIndex) => {
-            //         if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
-            //             valuesCopy.properties.splice(propIndex, 1);
-            //         }
-            //     });
+            const values = valuesCopy[propertyType];
+            let removedField;
+            if (groupIndex !== undefined) {
+                const group = values[groupIndex] as GroupProperty;
+                if (!group || !group.fields) return;
 
-            //     valuesCopy.archiveProperties.forEach((property, propIndex) => {
-            //         if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
-            //             valuesCopy.archiveProperties.splice(propIndex, 1);
-            //         }
-            //     });
-            // }
+                removedField = group.fields[index];
 
-            // return valuesCopy;
+                group.fields.splice(index, 1);
+            } else {
+                removedField = (values[index] as FieldProperty).data;
+                values.splice(index, 1);
+            }
+            if (removedField.type === 'user') {
+                for (let i = values.length - 1; i >= 0; i--) {
+                    if (values[i].type === 'group') {
+                        (values[i] as GroupProperty).fields.filter(
+                            (fieldData) =>
+                                !(fieldData.type === 'kartoffelUserField' && fieldData.expandedUserField?.relatedUserField === removedField.name),
+                        );
+                    } else {
+                        const item = values[i] as FieldProperty;
+                        if (item.data.type === 'kartoffelUserField' && item.data.expandedUserField?.relatedUserField === removedField.name) {
+                            values.splice(i, 1);
+                        }
+                    }
+                }
+            }
+            return values;
         });
     };
 
@@ -608,7 +621,7 @@ export const FieldBlockWrapper = ({
                         return false;
                     })}
                     userPropertiesInTemplate={userPropertiesInTemplate}
-                    archive={(ind) => archive(ind, itemId)}
+                    archive={(ind, groupIndex) => archive(ind, itemId, groupIndex)}
                     remove={remove}
                     onDeleteSure={onDeleteSure}
                 />

@@ -118,8 +118,8 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
 }
 
 export const getFieldData = (displayValuesCopy: any, fieldIndex: number, groupIndex?: number) => {
-    if (typeof groupIndex === 'number') return (displayValuesCopy[groupIndex] as GroupProperty)?.fields[fieldIndex];
-    return (displayValuesCopy[fieldIndex] as FieldProperty).data;
+    if (typeof groupIndex === 'number') return (displayValuesCopy[groupIndex] as GroupProperty)?.fields?.[fieldIndex];
+    return (displayValuesCopy[fieldIndex] as FieldProperty)?.data;
 };
 
 const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
@@ -619,7 +619,6 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
     const simpleRemove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-
         const field = getFieldData(displayValuesCopy, index, groupIndex);
 
         const isDeleted = field.deleted;
@@ -666,6 +665,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 isNewProperty,
                 propertiesType as 'properties' | 'attachmentProperties' | 'archiveProperties',
                 setShowAreUSureDialogForRemoveProperty,
+                groupIndex,
             );
 
             return;
@@ -780,29 +780,10 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
-    // const userPropertiesInTemplate = useMemo(() => {
-    //     const userNames: string[] = [];
-
-    //     values[propertiesType].forEach((item) => {
-    //         if (item.type === 'group') {
-    //             item.fields.forEach((field) => {
-    //                 if (field.type === 'user' && !field.deleted) {
-    //                     userNames.push(field.name);
-    //                 }
-    //             });
-    //         } else if (item.data.type === 'user' && !item.data.deleted) {
-    //             userNames.push(item.data.name);
-    //         }
-    //     });
-
-    //     return userNames;
-    // }, [propertiesType, values]);
-
     const onDuplicateKartoffelField = (fieldIndex: number, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
 
         const isGrouped = typeof groupIndex === 'number';
-
         const sourceField = getFieldData(displayValuesCopy, fieldIndex, groupIndex);
 
         const newField = {
@@ -828,7 +809,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
         const isGroup = groupIndex !== undefined;
-        const currentTypeValues = initialValues?.[propertiesType]; // as ValueWrapper[] | undefined;
+        const currentTypeValues = initialValues?.[propertiesType];
         let error;
         let touch;
 
@@ -937,6 +918,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
             const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
             const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
+
             if (fieldIndex === -1) return;
 
             // eslint-disable-next-line prefer-destructuring
@@ -1008,8 +990,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
-                            // backgroundColor: 'yellow',
-                            paddingTop: '12px',
+                            paddingTop: '17px',
                             paddingBottom: '10px',
                         }}
                     >
