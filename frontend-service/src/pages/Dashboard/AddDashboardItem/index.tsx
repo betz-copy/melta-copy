@@ -1,12 +1,11 @@
-import { Add, ArrowForwardIosOutlined } from '@mui/icons-material';
-import { Box, Button, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import React, { useState } from 'react';
+import { Add } from '@mui/icons-material';
+import { Box, Typography, useTheme } from '@mui/material';
+import React from 'react';
 import { useLocation } from 'wouter';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import PopperSidebar from '../../../common/PopperSidebar';
+import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
-import { DashboardItemDetails } from './DashboardItemDetails';
 
 const AddDashboardItem: React.FC = () => {
     const theme = useTheme();
@@ -14,7 +13,7 @@ const AddDashboardItem: React.FC = () => {
     const [_, navigate] = useLocation();
 
     const [openPopper, setOpenPopper] = React.useState(false);
-    const [dialogContent, setDialogContent] = useState<{ mode: 'cards' | 'details'; type?: 'chart' | 'iframe' | 'table' }>({ mode: 'cards' });
+    const [searchParams, setSearchParams] = useSearchParams({});
 
     const itemsCards: DashboardItemCardProps[] = [
         {
@@ -29,28 +28,10 @@ const AddDashboardItem: React.FC = () => {
         },
         {
             title: 'קישור חיצוני',
-            onClick: () => setDialogContent({ mode: 'details', type: 'iframe' }),
+            onClick: () => navigate('/iframe'),
             content: <img src="/icons/dashboardViews/iframe.svg" />,
         },
     ];
-
-    const detailsCards: Record<string, DashboardItemCardProps> = {
-        table: {
-            title: 'הוספת טבלה',
-            onClick: () => setDialogContent({ mode: 'details', type: 'table' }),
-            content: <DashboardItemDetails title="טבלה" />,
-        },
-        chart: {
-            title: 'הוספת תרשים',
-            onClick: () => setDialogContent({ mode: 'details', type: 'chart' }),
-            content: <DashboardItemDetails title="תרשים" />,
-        },
-        iframe: {
-            title: 'הוספת קישור חיצוני',
-            onClick: () => setDialogContent({ mode: 'details', type: 'iframe' }),
-            content: <DashboardItemDetails title="קישור חיצוני" />,
-        },
-    };
 
     return (
         <>
@@ -71,30 +52,17 @@ const AddDashboardItem: React.FC = () => {
                 open={openPopper}
                 setOpen={setOpenPopper}
                 title={
-                    dialogContent.mode === 'cards' ? (
-                        <Typography color={theme.palette.primary.main} fontWeight={600} fontSize={20}>
-                            הוספת כרטיסייה
-                        </Typography>
-                    ) : (
-                        <Button
-                            variant="text"
-                            sx={{ fontWeight: '600', fontSize: '20px' }}
-                            startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
-                            onClick={() => setDialogContent({ mode: 'cards' })}
-                        >
-                            {i18next.t('charts.actions.back')}
-                        </Button>
-                    )
+                    <Typography color={theme.palette.primary.main} fontWeight={600} fontSize={20}>
+                        הוספת כרטיסייה
+                    </Typography>
                 }
                 side="left"
                 isCheckBoxClicked
             >
                 <Box display="flex" flexDirection="column" alignItems="center" gap={4} top={20} paddingTop={3}>
-                    {dialogContent.mode === 'cards' ? (
-                        itemsCards.map((item) => <DashboardItemCard key={item.title} {...item} />)
-                    ) : (
-                        <DashboardItemCard {...detailsCards[dialogContent.type!]} />
-                    )}
+                    {itemsCards.map((item) => (
+                        <DashboardItemCard key={item.title} {...item} />
+                    ))}
                 </Box>
             </PopperSidebar>
         </>

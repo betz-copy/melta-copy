@@ -3,13 +3,17 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { BlueTitle } from '../../common/BlueTitle';
+import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import SearchInput from '../../common/inputs/SearchInput';
 import { TopBarGrid } from '../../common/TopBar';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { AddDashboardItem } from './AddDashboardItem';
 
-const DashboardHeader: React.FC = () => {
+const DashboardHeader: React.FC<{
+    setTextSearch: React.Dispatch<React.SetStateAction<string | undefined>>;
+    resetLayout: () => void;
+    title: string;
+    AddNewItem: React.FC;
+}> = ({ setTextSearch, resetLayout, title, AddNewItem }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const theme = useTheme();
 
@@ -19,7 +23,7 @@ const DashboardHeader: React.FC = () => {
                 <Grid container spacing={5} wrap="nowrap" alignItems="center">
                     <Grid item>
                         <BlueTitle
-                            title="תצוגת מערכת"
+                            title={title}
                             component="h4"
                             variant="h4"
                             style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
@@ -27,10 +31,11 @@ const DashboardHeader: React.FC = () => {
                     </Grid>
                     <Grid item>
                         <Grid container wrap="nowrap" gap="15px">
-                            <SearchInput
-                                onChange={(searchValue) => console.log({ searchValue })}
+                            <GlobalSearchBar
+                                onSearch={(searchValue) => setTextSearch(searchValue || undefined)}
                                 placeholder={i18next.t('globalSearch.searchInPage')}
                                 toTopBar
+                                autoSearch
                             />
                         </Grid>
                     </Grid>
@@ -43,7 +48,7 @@ const DashboardHeader: React.FC = () => {
                         <IconButtonWithPopover
                             popoverText="איפוס תצוגה"
                             iconButtonProps={{
-                                onClick: () => console.log('rest'),
+                                onClick: () => resetLayout(),
                             }}
                             style={{ borderRadius: '7px', width: '150px', height: '35px' }}
                         >
@@ -54,7 +59,8 @@ const DashboardHeader: React.FC = () => {
                         </IconButtonWithPopover>
                     </Grid>
                     <Grid item>
-                        <AddDashboardItem />
+                        {/* <AddDashboardItem /> */}
+                        <AddNewItem />
                     </Grid>
                 </Grid>
             </Grid>

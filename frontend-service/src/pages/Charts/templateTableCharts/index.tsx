@@ -102,31 +102,29 @@ const TemplateTableCharts: React.FC<{
     };
 
     const generateCharts = () =>
-        templatesChart.map((chart, index) => {
-            return (
-                <div
-                    key={chart._id}
-                    style={{
-                        background: '#f9f9f9',
-                        border: '1px solid #ccc',
-                        borderRadius: '5px',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                    }}
-                    onMouseEnter={() => setIsHoverOnCard(index)}
-                    onMouseLeave={() => setIsHoverOnCard(null)}
-                    data-grid={layout[index]}
-                >
-                    <ChartItem
-                        chartDetails={chart}
-                        indexInGrid={index}
-                        isHoverOnCard={isHoverOnCard}
-                        onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
-                    />
-                </div>
-            );
-        });
+        templatesChart.map((chart, index) => (
+            <div
+                key={chart._id}
+                style={{
+                    background: '#f9f9f9',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                }}
+                onMouseEnter={() => setIsHoverOnCard(index)}
+                onMouseLeave={() => setIsHoverOnCard(null)}
+                data-grid={layout[index]}
+            >
+                <ChartItem
+                    chartDetails={chart}
+                    indexInGrid={index}
+                    isHoverOnCard={isHoverOnCard}
+                    onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
+                />
+            </div>
+        ));
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
