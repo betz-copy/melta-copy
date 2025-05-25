@@ -273,6 +273,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     const isGroupFieldBlockError = Boolean(touched?.[propertiesType]?.[index]) && Boolean(errors?.[propertiesType]?.[index]);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
@@ -326,6 +327,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                 transition: isDragging ? 'none' : 'box-shadow 0.1s ease',
                 opacity,
             }}
+            ref={isExpanded ? ref : undefined}
         >
             <Grid
                 item
@@ -346,9 +348,10 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                         '&:before': { display: 'none' },
                         border: isGroupFieldBlockError ? '1px solid red' : '',
                     }}
+                    onChange={(_, expanded) => setIsExpanded(expanded)}
                 >
                     <AccordionSummary
-                        ref={ref}
+                        ref={!isExpanded ? ref : undefined}
                         expandIcon={<ExpandMoreIcon />}
                         onClick={() => setIsGroupOpen(!isGroupOpen)}
                         sx={{
