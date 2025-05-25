@@ -127,7 +127,7 @@ const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
 
     const [, drop] = useDrop({
         accept: ItemTypes.FIELD,
-        hover: (item: CommonFormInputProperties & { index: number }) => {
+        drop: (item: CommonFormInputProperties & { index: number }) => {
             const dragIndex = item.index;
             const hoverIndex = index;
 
@@ -139,11 +139,15 @@ const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
         },
     });
 
-    const [{ isDragging }, drag, preview] = useDrag({
+    const [{ isDragging, opacity }, drag, preview] = useDrag({
         type: ItemTypes.FIELD,
         item: { ...field, index },
+        options: {
+            dropEffect: 'copy',
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
+            opacity: isDragging ? 0.5 : 1,
         }),
     });
 
@@ -157,13 +161,13 @@ const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
         <Grid
             item
             style={{
-                opacity: isDragging ? 0.5 : 1,
+                opacity,
                 alignSelf: 'stretch',
                 marginBottom: '1rem',
                 cursor: 'grab',
             }}
         >
-            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity }}>
                 <MemoAttachmentEditCard {...buildProps} dragRef={ref} key={field.id} />
             </div>
         </Grid>
@@ -175,7 +179,7 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
-        hover: (item: CommonFormInputProperties & { index: number; parentId: string | null }) => {
+        drop: (item: CommonFormInputProperties & { index: number; parentId: string | null }) => {
             const dragIndex = item.index;
             const hoverIndex = index;
 
@@ -192,11 +196,15 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
         },
     });
 
-    const [{ isDragging }, drag, preview] = useDrag({
+    const [{ isDragging, opacity }, drag, preview] = useDrag({
         type: ItemTypes.FIELD,
         item: { ...field, index, parentId },
+        options: {
+            dropEffect: 'copy',
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
+            opacity: monitor.isDragging() ? 0.5 : 1,
         }),
     });
 
@@ -210,13 +218,13 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
         <Grid
             item
             style={{
-                opacity: isDragging ? 0.5 : 1,
+                opacity,
                 alignSelf: 'stretch',
                 marginBottom: '1rem',
                 cursor: 'grab',
             }}
         >
-            <Grid item ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+            <Grid item ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity }}>
                 <MemoFieldEditCard
                     {...buildProps}
                     key={field.id}
@@ -268,7 +276,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
-        hover(item: CommonFormInputProperties & { index: number; parentId: string | null }, monitor) {
+        drop(item: CommonFormInputProperties & { index: number; parentId: string | null }, monitor) {
             if (!ref.current || !monitor.isOver({ shallow: true })) return;
 
             const hoverIndex = index;
@@ -293,36 +301,39 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
         },
     });
 
-    const [{ isDragging }, drag, preview] = useDrag({
+    const [{ isDragging, opacity }, drag, preview] = useDrag({
         type: ItemTypes.GROUP,
         item: { ...group, index },
+        options: {
+            dropEffect: 'copy',
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
+            opacity: monitor.isDragging() ? 0.7 : 1,
         }),
     });
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
-    }, []);
+    }, [preview]);
 
     drag(drop(ref));
 
     return (
         <Grid
-            item
             style={{
-                opacity: isDragging ? 0.5 : 1,
-                alignSelf: 'stretch',
-                marginBottom: '1rem',
                 cursor: 'grab',
+                transition: isDragging ? 'none' : 'box-shadow 0.1s ease',
+                opacity,
             }}
         >
-            <div
-                ref={ref}
+            <Grid
+                item
                 style={{
+                    opacity,
+                    alignSelf: 'stretch',
+                    marginBottom: '1rem',
                     cursor: 'grab',
-                    transition: isDragging ? 'none' : 'box-shadow 0.1s ease',
-                    opacity: isDragging ? 0.5 : 1,
                 }}
             >
                 <FieldBlockAccordion
@@ -337,6 +348,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                     }}
                 >
                     <AccordionSummary
+                        ref={ref}
                         expandIcon={<ExpandMoreIcon />}
                         onClick={() => setIsGroupOpen(!isGroupOpen)}
                         sx={{
@@ -465,7 +477,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                         )}
                     </AccordionDetails>
                 </FieldBlockAccordion>
-            </div>
+            </Grid>
         </Grid>
     );
 };
@@ -892,63 +904,68 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     };
 
-    const moveGroup = (group, toIndex: number, toGroupId: string | null = null) => {
-        if (toGroupId) {
-            console.warn('Groups cannot be moved into other groups.');
-            return;
-        }
+    const moveGroup = useCallback(
+        (group, toIndex: number, toGroupId: string | null = null) => {
+            if (toGroupId) {
+                console.warn('Groups cannot be moved into other groups.');
+                return;
+            }
 
-        const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-        const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
-        if (fromIndex === -1) return;
+            const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
+            const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
+            if (fromIndex === -1) return;
 
-        const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
-        orderedItemsCopy.splice(toIndex, 0, movedGroup);
+            const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
+            orderedItemsCopy.splice(toIndex, 0, movedGroup);
 
-        setOrderedItems(orderedItemsCopy);
-        updateFormik();
-    };
+            setOrderedItems(orderedItemsCopy);
+            updateFormik();
+        },
+        [setOrderedItems, updateFormik],
+    );
 
-    const moveField = (item, toIndex: number, toGroupId: string | null) => {
-        const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-        let movedField: any = null;
-        if (item.fieldGroup) {
-            const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup.id);
-            if (fromGroupIndex === -1) return;
+    const moveField = useCallback(
+        (item, toIndex: number, toGroupId: string | null) => {
+            const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
+            let movedField: any = null;
 
-            const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
-            const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
+            if (item.fieldGroup) {
+                const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup.id);
+                if (fromGroupIndex === -1) return;
 
-            if (fieldIndex === -1) return;
+                const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
+                const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
+                if (fieldIndex === -1) return;
 
-            // eslint-disable-next-line prefer-destructuring
-            movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
-        } else {
-            const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
+                movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
+            } else {
+                const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
+                if (index === -1) return;
 
-            if (index === -1) return;
+                movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
+            }
 
-            movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
-        }
+            if (toGroupId) {
+                const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
+                if (toGroupIndex === -1) return;
 
-        if (toGroupId) {
-            const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
-            if (toGroupIndex === -1) return;
-            const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
-            const { name, displayName } = group;
-            group.fields.splice(toIndex, 0, {
-                ...movedField,
-                fieldGroup: { name, displayName, id: toGroupId },
-            });
-        } else {
-            const { fieldGroup, ...movedGroupData } = movedField;
-            orderedItemsCopy.splice(toIndex, 0, { type: 'field', data: movedGroupData });
-        }
+                const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
+                const { name, displayName } = group;
 
-        setOrderedItems(orderedItemsCopy);
-        updateFormik();
-    };
+                group.fields.splice(toIndex, 0, {
+                    ...movedField,
+                    fieldGroup: { name, displayName, id: toGroupId },
+                });
+            } else {
+                const { fieldGroup, ...movedGroupData } = movedField;
+                orderedItemsCopy.splice(toIndex, 0, { type: 'field', data: movedGroupData });
+            }
 
+            setOrderedItems(orderedItemsCopy);
+            updateFormik();
+        },
+        [setOrderedItems, updateFormik],
+    );
     const [, drop] = useDrop(() => ({
         accept: [ItemTypes.FIELD, ItemTypes.GROUP],
         drop: (item: any, monitor) => {

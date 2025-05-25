@@ -437,7 +437,6 @@ export const FieldBlockWrapper = ({
                 const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
 
                 if (removedProperty.type === 'user') {
-
                     const indexesArray = getUserFieldsIndexesDo(prevDisplayValues.properties, removedProperty);
                     indexesToUpdate.push(
                         ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
