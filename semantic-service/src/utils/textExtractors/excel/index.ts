@@ -1,6 +1,6 @@
+import { FileTypes } from '@microservices/shared';
 import Excel from 'exceljs';
 import { Stream } from 'stream';
-import { FileTypes } from '../../types';
 
 const readExcelData = async (fileStream: Stream, type: FileTypes.CSV | FileTypes.XLSX) => {
     const workbook = new Excel.Workbook();

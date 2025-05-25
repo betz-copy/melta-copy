@@ -6,7 +6,7 @@ const {
     activityLogService: { url, requestTimeout, baseRoute },
 } = config;
 
-export class ActivityLogService extends DefaultExternalServiceApi {
+class ActivityLogService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
@@ -31,3 +31,5 @@ export class ActivityLogService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default ActivityLogService;

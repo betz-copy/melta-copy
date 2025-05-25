@@ -265,7 +265,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const defaultVisibleColumnsRef = useRef<Record<string, boolean>>(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
-        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -868,11 +867,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
                             const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
+                            const isEmptyArray = params.newValue.length === 0;
                             const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
                                 // eslint-disable-next-line no-nested-ternary
-                                [params.column.getColId()]: isEmpty ? (isRequired ? undefined : '') : params.newValue,
+                                [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 

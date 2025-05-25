@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
-export const RuleTemplateSchema = new mongoose.Schema(
+const RuleTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -40,3 +40,5 @@ export const RuleTemplateSchema = new mongoose.Schema(
 RuleTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
+
+export default RuleTemplateSchema;

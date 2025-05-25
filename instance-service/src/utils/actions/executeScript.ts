@@ -1,15 +1,15 @@
+/* eslint-disable import/prefer-default-export */
 import * as ts from 'typescript-actions';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import { formatDate } from 'date-fns/format';
 import { isDate } from 'date-fns';
-import { IEntity, IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
+import { IMongoEntityTemplate, IEntity, ValidationError, BadRequestError } from '@microservices/shared';
+import { IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import { EntityValidator } from '../../express/entities/validator.template';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../config';
 import { generateInterfaceWithRelationships } from './interfaceGenerator';
-import { EntityManager } from '../../express/entities/manager';
-import { BadRequestError, ValidationError } from '../../express/error';
+import EntityManager from '../../express/entities/manager';
 
 const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;
 

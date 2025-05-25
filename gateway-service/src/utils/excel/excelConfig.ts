@@ -1,4 +1,4 @@
-export const excelConfig = {
+const excelConfig = {
     excelDefaultColumns: [
         { key: 'disabled', header: '?מושבת', width: 20 },
         { key: 'createdAt', header: 'תאריך יצירה', width: 20 },
@@ -35,3 +35,5 @@ export const excelConfig = {
         mailError: 'נא להזין מייל חוקי',
     },
 };
+
+export default excelConfig;

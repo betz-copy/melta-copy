@@ -1,13 +1,12 @@
 import { Router } from 'express';
-import { createWorkspacesController } from '../../../utils/express';
-import ValidateRequest from '../../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import StepInstanceController from './controller';
 import { updateStepSchema } from './validator.schema';
-import { busboyMiddleware } from '../../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 
 const StepInstanceRouter: Router = Router({ mergeParams: true });
 
-const StepInstanceControllerMiddleware = createWorkspacesController(StepInstanceController);
+const StepInstanceControllerMiddleware = createController(StepInstanceController);
 
 StepInstanceRouter.patch('/:stepId', busboyMiddleware, ValidateRequest(updateStepSchema), StepInstanceControllerMiddleware.updateStep);
 

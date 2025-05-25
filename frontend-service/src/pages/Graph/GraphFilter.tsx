@@ -71,6 +71,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
           )
         : [];
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedOnFilter = useCallback(
         debounce((newFilterField) => {
             setFilterRecord((prev) => ({

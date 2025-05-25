@@ -1,6 +1,6 @@
 import { ConsumerMessage } from 'menashmq';
-import { ServiceError } from '../../express/error';
-import { FilesManager } from '../../express/files/manager';
+import { ServiceError } from '@microservices/shared';
+import FilesManager from '../../express/files/manager';
 
 class DeleteFilesConsumer {
     async createDeleteFilesQueueReq(msg: ConsumerMessage) {

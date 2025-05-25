@@ -244,6 +244,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     useEffect(() => {
         setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -1254,7 +1255,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }));
                                                                 if (checked) createEmptyGroup(value.name);
                                                             }}
-                                                            disabled={hasIdentifier && !value.identifier}
+                                                            disabled={(hasIdentifier && !value.identifier) || value.archive}
                                                             checked={value.identifier ?? false}
                                                         />
                                                     }

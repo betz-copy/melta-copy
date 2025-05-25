@@ -1,9 +1,9 @@
-import http from 'http';
+import * as http from 'http';
 import express from 'express';
 import helmet from 'helmet';
 
 import { once } from 'events';
-import { errorMiddleware } from './error';
+import { errorMiddleware } from '@microservices/shared';
 import appRouter from './router';
 import config from '../config';
 

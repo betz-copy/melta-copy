@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';

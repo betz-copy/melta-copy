@@ -56,6 +56,7 @@ const ConfigurationManagement: React.FC = () => {
 
     const filteredFields = useMemo(() => {
         return collectFilteredFields(configs);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [configs, updatedConfigs, searchText]);
 
     return (

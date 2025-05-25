@@ -1,13 +1,15 @@
-import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
+import { ExpandMore } from '@mui/icons-material';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
+import UserAvatar from '../UserAvatar';
 
 export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     mode: TMode;
@@ -93,6 +95,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         onChange?.(_e, newValue, reason);
                     }
                 }}
+                popupIcon={<ExpandMore />}
                 onInputChange={(_e, newValue, reason) => {
                     setInputValue(newValue);
                     onDisplayValueChange?.(_e, newValue, reason);
@@ -131,6 +134,13 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                             required,
                             readOnly,
                             endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
+                            startAdornment: value ? (
+                                <Chip avatar={<UserAvatar user={value} size={25} bgColor="1E2775" />} label={value.fullName} />
+                            ) : undefined,
+                            inputProps: {
+                                ...params.inputProps,
+                                style: value ? { display: 'none' } : {},
+                            },
                         }}
                         InputLabelProps={{
                             ...(params.InputLabelProps,
