@@ -1494,5 +1494,6 @@ export default {
             byUser: 'משתמש',
         },
         failedToCreateEntityChildTemplate: 'נכשל ליצור תבנית ישות בן',
+        succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
     },
 };
