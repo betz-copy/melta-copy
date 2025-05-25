@@ -1499,5 +1499,6 @@ export default {
             user: 'משתמש',
             userPage: 'עמוד לקוח',
         },
+        succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
     },
 };
