@@ -77,8 +77,7 @@ const propertiesArraySchema = Joi.array()
             format: Joi.string()
                 .valid(...stringFormats)
                 .when('type', { not: 'string', then: Joi.forbidden() })
-                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() })
-                .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
+                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             readOnly: Joi.valid(true),
             identifier: Joi.valid(true),
