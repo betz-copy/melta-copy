@@ -102,7 +102,6 @@ class RolesManager {
 
     static async getUserRolePerWorkspace(roleIds: string[], workspaceId: string) {
         const workspaceRoles = await this.getAllWorkspaceRoles([workspaceId]);
-        console.dir({ workspaceRoles, roleIds }, { depth: null });
 
         return workspaceRoles.find((role) => roleIds.includes(role._id.toString()));
     }

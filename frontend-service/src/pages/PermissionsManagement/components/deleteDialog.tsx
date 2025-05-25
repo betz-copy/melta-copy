@@ -24,9 +24,11 @@ const DeletePermissionsDialog: React.FC<{
                 [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
             }),
         {
-            onError: (error) => {
+            onError: (error: any) => {
                 console.error('failed to delete permission. error:', error);
-                toast.error(i18next.t(`permissions.failedToDelete${uppercasePermissionType}`));
+                if (error.response.data.metadata.message.includes(`can't remove role if there is users connected`))
+                    toast.error(i18next.t(`permissions.failedToDeleteRoleCauseConnectedToUsers`));
+                else toast.error(i18next.t(`permissions.failedToDelete${uppercasePermissionType}`));
             },
             onSuccess: (_data) => {
                 onSuccess();

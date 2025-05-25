@@ -413,6 +413,7 @@ export default {
         failedToDeleteUser: 'נכשל למחוק הרשאות של משתמש',
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToDeleteRole: 'נכשל למחוק הרשאות של תפקידן',
+        failedToDeleteRoleCauseConnectedToUsers: 'נכשל למחוק הרשאות של תפקידן שמחוברים אליו משתמשים',
         succeededToDeleteRole: 'נמחק הרשאות של תפקידן בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',

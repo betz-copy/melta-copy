@@ -148,12 +148,22 @@ class UsersManager {
         return this.appendPermissionsToUsers(users);
     }
 
+    static async deleteUserById(userId: string) {
+        return UsersModel.findByIdAndDelete(userId).orFail(new UserDoesNotExistError(userId));
+    }
+
     static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
         const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
 
         const users = await Promise.all(permissions.map(({ relatedId }) => this.getUserById(relatedId)));
 
         return { users: users as IUser[], count };
+    }
+
+    static async getUsersConnectedToRole(roleId: string) {
+        return UsersModel.find({ roleIds: { $in: [roleId] } })
+            .lean()
+            .exec();
     }
 }
 

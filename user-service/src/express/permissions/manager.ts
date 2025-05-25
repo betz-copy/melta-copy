@@ -10,6 +10,7 @@ import {
     RelatedPermission,
     IUser,
     IUserPopulated,
+    ValidationError,
 } from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
@@ -62,7 +63,22 @@ class PermissionsManager {
     ): Promise<ICompactPermissions> {
         if (permissionType === RelatedPermission.User)
             await UsersManager.getUserById(relatedId); // Validate user exists
-        else await RolesManager.getRoleById(relatedId); // Validate role exists
+        else {
+            await RolesManager.getRoleById(relatedId); // Validate role exists
+            if (
+                Object.values(permissionsCompact).every(
+                    (permission) =>
+                        permission === null ||
+                        (permission.permissions === null &&
+                            permission.rules === null &&
+                            permission.instances === null &&
+                            permission.processes === null &&
+                            permission.templates === null),
+                ) &&
+                (await UsersManager.getUsersConnectedToRole(relatedId)).length > 0
+            )
+                throw new ValidationError(`can't remove role if there is users connected`);
+        }
 
         const updatedWorkspacesIds: string[] = [];
 
@@ -90,7 +106,14 @@ class PermissionsManager {
             await Promise.all(actions);
         });
 
-        return this.getCompactPermissionsOfRelatedId(relatedId, updatedWorkspacesIds, permissionType);
+        const allRelatedPermissions = await this.getCompactPermissionsOfRelatedId(relatedId, undefined, permissionType);
+        if (Object.keys(allRelatedPermissions).length === 0) {
+            // no permissions of role or user and it can be deleted from collection
+            if (permissionType === RelatedPermission.User) UsersManager.deleteUserById(relatedId);
+            else RolesManager.deleteRoleById(relatedId);
+        }
+
+        return Object.fromEntries(Object.entries(allRelatedPermissions).filter(([key]) => updatedWorkspacesIds.includes(key)));
     }
 
     static async deletePermissionsFromMetadata(

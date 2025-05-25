@@ -40,6 +40,7 @@ const ManagePermissions: React.FC<{
             Object.fromEntries(checked ? Array.from(categories.keys()).map((categoryId) => [categoryId, { scope: PermissionScope.write }]) : []),
         );
     };
+
     return (
         <>
             {(!(
