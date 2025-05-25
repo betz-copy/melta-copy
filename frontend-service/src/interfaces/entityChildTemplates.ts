@@ -1,6 +1,6 @@
-import { IAGGridSetFilter, IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter } from "../utils/agGrid/interfaces";
-import { IEntitySingleProperty } from "./entityTemplates";
-import { IMongoCategory } from "./categories";
+import { IAGGridSetFilter, IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter } from '../utils/agGrid/interfaces';
+import { IEntitySingleProperty } from './entityTemplates';
+import { IMongoCategory } from './categories';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
@@ -30,30 +30,36 @@ export interface IChildTemplateProperty {
 }
 
 export interface IEntityChildTemplate {
+    _id: string;
     name: string;
     displayName: string;
     description: string;
+    categories: string[]; // Array of category IDs
     fatherTemplateId: string;
-    categories: IMongoCategory['_id'][];
-    properties: Record<string, IChildTemplateProperty>;
+    properties: Record<
+        string,
+        {
+            title: string;
+            type: string;
+            format?: string;
+        }
+    >;
     disabled: boolean;
-    actions?: string;
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
-export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
-    _id: string;
-}
-export type IChildEntityTemplateMap = Map<string, IMongoChildEntityTemplate>;
 
-export type IEntityChildTemplateMap = Map<string, IMongoEntityChildTemplate>;
+export type IEntityChildTemplateMap = Map<string, IEntityChildTemplate>;
 
 export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;
 }
-export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'category'> {
-    category: IMongoCategory;
+
+export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories'> {
+    categories: IMongoCategory[];
 }
 
 export interface IMongoChildEntityTemplate extends IEntityChildTemplate {

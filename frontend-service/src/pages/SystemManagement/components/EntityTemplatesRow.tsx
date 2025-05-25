@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppRegistration as AppRegistrationIcon, Edit } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -18,6 +18,7 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { IEntityChildTemplateMap, IEntityChildTemplate } from '../../../interfaces/entityChildTemplates';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
@@ -99,6 +100,7 @@ interface EntityTemplateCardProps {
         unknown
     >;
     entityHasWritePermission: boolean;
+    isDisabledView?: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -109,8 +111,25 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setAddChildTemplateDialogState,
     updateEntityTemplateStatusAsync,
     entityHasWritePermission,
+    isDisabledView = false,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const queryClient = useQueryClient();
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    console.log('Child Templates Map:', childTemplates);
+
+    const childTemplatesList = useMemo(() => {
+        if (!childTemplates) return [];
+        const templates = Array.from(childTemplates.values());
+        console.log('All Child Templates:', templates);
+        console.log('Current Template ID:', entityTemplate._id);
+        const filtered = templates.filter((child) => {
+            console.log('Checking child:', child.name, 'fatherTemplateId:', child.fatherTemplateId, 'against:', entityTemplate._id);
+            return child.fatherTemplateId === entityTemplate._id;
+        });
+        console.log('Filtered Child Templates for', entityTemplate.displayName, ':', filtered);
+        return filtered;
+    }, [childTemplates, entityTemplate._id]);
 
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
@@ -182,7 +201,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     <Grid item container flexBasis="10%">
-                        {isHoverOnCard && (
+                        {isHoverOnCard && !isDisabledView && (
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onOptionsIconClick={async () => {
@@ -230,6 +249,59 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             }
             expendedCard={
                 <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
+                    {childTemplatesList.length > 0 && (
+                        <Grid item container>
+                            <Typography color={theme.palette.primary.main} sx={{ mb: 1 }}>
+                                {i18next.t('childTemplates')}
+                            </Typography>
+                        </Grid>
+                    )}
+                    {childTemplatesList.map((childTemplate) => (
+                        <Grid
+                            key={childTemplate._id}
+                            item
+                            container
+                            gap="10px"
+                            alignItems="center"
+                            sx={{
+                                pl: 4,
+                                position: 'relative',
+                                '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    left: '10px',
+                                    top: '50%',
+                                    width: '20px',
+                                    height: '20px',
+                                    transform: 'translateY(-50%)',
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='${theme.palette.primary.main}' d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E")`,
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundSize: 'contain',
+                                },
+                            }}
+                        >
+                            <Grid item>
+                                <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
+                            </Grid>
+                            <Grid item>
+                                <MeltaTooltip title={childTemplate.displayName}>
+                                    <Typography
+                                        style={{
+                                            fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                                            color: theme.palette.primary.main,
+                                            fontWeight: '400',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            width: '130px',
+                                        }}
+                                    >
+                                        {childTemplate.displayName}
+                                    </Typography>
+                                </MeltaTooltip>
+                            </Grid>
+                        </Grid>
+                    ))}
                     <Grid item container justifyContent="space-between">
                         <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('category')}</Typography>
@@ -392,6 +464,9 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
+    const queryClient = useQueryClient();
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
@@ -408,6 +483,44 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
             updateCategoryRequest(entityTemplatesWithCategory.category._id, { ...entityTemplatesWithCategory.category, displayName: categoryName }),
         {},
     );
+
+    // Get all child templates that should be shown in this category
+    const categoryChildTemplates = useMemo(() => {
+        if (!childTemplates || !entityTemplates) return [];
+
+        const allChildTemplates = Array.from(childTemplates.values());
+        const currentCategoryId = entityTemplatesWithCategory.category._id;
+
+        return allChildTemplates.filter((child: IEntityChildTemplate) => {
+            // Show child template if it belongs to this category
+            return child.categories.includes(currentCategoryId);
+        });
+    }, [childTemplates, entityTemplatesWithCategory.category._id]);
+
+    // Get parent templates that should be shown in disabled state
+    const disabledParentTemplates = useMemo(() => {
+        if (!childTemplates || !entityTemplates) return new Map();
+
+        const result = new Map<string, IMongoEntityTemplatePopulated>();
+        const currentCategoryId = entityTemplatesWithCategory.category._id;
+
+        // For each child template in this category
+        categoryChildTemplates.forEach((child) => {
+            // If the father template is not in this category
+            const fatherTemplate = entityTemplates.get(child.fatherTemplateId);
+            if (fatherTemplate && !entityTemplatesWithCategory.entityTemplates.some((t) => t._id === fatherTemplate._id)) {
+                result.set(fatherTemplate._id, fatherTemplate);
+            }
+        });
+
+        return result;
+    }, [childTemplates, entityTemplates, entityTemplatesWithCategory, categoryChildTemplates]);
+
+    // Function to check if this is the original category of a child template
+    const isOriginalCategory = (childTemplate: IEntityChildTemplate): boolean => {
+        const fatherTemplate = entityTemplates?.get(childTemplate.fatherTemplateId);
+        return fatherTemplate?.category._id === entityTemplatesWithCategory.category._id;
+    };
 
     return (
         <Droppable droppableId={entityTemplatesWithCategory.category._id}>
@@ -473,6 +586,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                         }
                         onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                     >
+                        {/* First render regular templates */}
                         {!!entityTemplatesWithCategory.entityTemplates.length &&
                             entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => {
                                 const entityHasWritePermission = checkUserTemplatePermission(
@@ -482,37 +596,228 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     PermissionScope.write,
                                 );
 
+                                // Get child templates where this template is the father
+                                const templateChildTemplates = categoryChildTemplates.filter(
+                                    (child: IEntityChildTemplate) => child.fatherTemplateId === entityTemplate._id,
+                                );
+
                                 return (
-                                    <Draggable
-                                        draggableId={entityTemplate._id}
-                                        key={entityTemplate._id}
-                                        index={index}
-                                        isDragDisabled={!entityHasWritePermission}
-                                    >
-                                        {(draggableProvided) => (
+                                    <React.Fragment key={entityTemplate._id}>
+                                        <Draggable draggableId={entityTemplate._id} index={index} isDragDisabled={!entityHasWritePermission}>
+                                            {(draggableProvided) => (
+                                                <Grid
+                                                    ref={draggableProvided.innerRef}
+                                                    {...draggableProvided.draggableProps}
+                                                    {...draggableProvided.dragHandleProps}
+                                                >
+                                                    {loadedEntityTemplateId === entityTemplate._id ? (
+                                                        <Skeleton variant="rounded" height="50px" />
+                                                    ) : (
+                                                        <EntityTemplateCard
+                                                            entityTemplate={entityTemplate}
+                                                            setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                            setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                            setAddActionsDialogState={setAddActionsDialogState}
+                                                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                            setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                                            entityHasWritePermission={entityHasWritePermission}
+                                                            isDisabledView={false}
+                                                        />
+                                                    )}
+                                                </Grid>
+                                            )}
+                                        </Draggable>
+                                        {/* Render child templates under their parent */}
+                                        {templateChildTemplates.map((childTemplate: IEntityChildTemplate) => (
                                             <Grid
-                                                ref={draggableProvided.innerRef}
-                                                {...draggableProvided.draggableProps}
-                                                {...draggableProvided.dragHandleProps}
+                                                key={childTemplate._id}
+                                                sx={{
+                                                    pl: 4,
+                                                    position: 'relative',
+                                                }}
                                             >
-                                                {loadedEntityTemplateId === entityTemplate._id ? (
-                                                    <Skeleton variant="rounded" height="50px" />
-                                                ) : (
-                                                    <EntityTemplateCard
-                                                        entityTemplate={entityTemplate}
-                                                        setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                                        setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                                        setAddActionsDialogState={setAddActionsDialogState}
-                                                        updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                                        setAddChildTemplateDialogState={setAddChildTemplateDialogState}
-                                                        entityHasWritePermission={entityHasWritePermission}
-                                                    />
-                                                )}
+                                                <SubdirectoryArrowLeft
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        left: '10px',
+                                                        top: '50%',
+                                                        transform: 'translateY(-50%)',
+                                                        color: theme.palette.primary.main,
+                                                    }}
+                                                />
+                                                <ViewingCard
+                                                    width={250}
+                                                    title={
+                                                        <Grid
+                                                            container
+                                                            direction="row"
+                                                            justifyContent="space-between"
+                                                            minWidth="232px"
+                                                            alignItems="center"
+                                                            paddingLeft="20px"
+                                                            flexWrap="nowrap"
+                                                        >
+                                                            <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                                                                <Grid item>
+                                                                    <EntityTemplateColor
+                                                                        entityTemplateColor={getEntityTemplateColor(entityTemplate)}
+                                                                        style={{ height: '18px' }}
+                                                                    />
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    {entityTemplate.iconFileId ? (
+                                                                        <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
+                                                                    ) : (
+                                                                        <AppRegistrationIcon
+                                                                            style={{ ...workspace.metadata.iconSize }}
+                                                                            fontSize="small"
+                                                                        />
+                                                                    )}
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    <MeltaTooltip title={childTemplate.displayName}>
+                                                                        <Typography
+                                                                            style={{
+                                                                                fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                                                                                color: theme.palette.primary.main,
+                                                                                fontWeight: '400',
+                                                                                textOverflow: 'ellipsis',
+                                                                                whiteSpace: 'nowrap',
+                                                                                overflow: 'hidden',
+                                                                                width: '130px',
+                                                                            }}
+                                                                        >
+                                                                            {childTemplate.displayName}
+                                                                        </Typography>
+                                                                    </MeltaTooltip>
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Grid>
+                                                    }
+                                                    expendedCard={
+                                                        <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
+                                                            <Grid item container justifyContent="space-between">
+                                                                <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                                                                    <Typography>{i18next.t('category')}</Typography>
+                                                                </Grid>
+                                                                <Grid item flexBasis="70%">
+                                                                    {entityTemplate.category.displayName}
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Grid>
+                                                    }
+                                                />
                                             </Grid>
-                                        )}
-                                    </Draggable>
+                                        ))}
+                                    </React.Fragment>
                                 );
                             })}
+
+                        {/* Then render disabled parent templates with their children */}
+                        {Array.from(disabledParentTemplates.values()).map((parentTemplate) => {
+                            const childTemplatesForParent = categoryChildTemplates.filter((child) => child.fatherTemplateId === parentTemplate._id);
+
+                            return (
+                                <React.Fragment key={parentTemplate._id}>
+                                    {/* Render disabled parent template */}
+                                    <Grid sx={{ opacity: 0.6 }}>
+                                        <EntityTemplateCard
+                                            entityTemplate={parentTemplate}
+                                            setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                            setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                            setAddActionsDialogState={setAddActionsDialogState}
+                                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                            setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                            entityHasWritePermission={false}
+                                            isDisabledView={true}
+                                        />
+                                    </Grid>
+                                    {/* Render its child templates */}
+                                    {childTemplatesForParent.map((childTemplate: IEntityChildTemplate) => (
+                                        <Grid
+                                            key={childTemplate._id}
+                                            sx={{
+                                                pl: 4,
+                                                position: 'relative',
+                                                opacity: 0.6,
+                                            }}
+                                        >
+                                            <SubdirectoryArrowLeft
+                                                sx={{
+                                                    position: 'absolute',
+                                                    left: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    color: theme.palette.primary.main,
+                                                }}
+                                            />
+                                            <ViewingCard
+                                                width={250}
+                                                title={
+                                                    <Grid
+                                                        container
+                                                        direction="row"
+                                                        justifyContent="space-between"
+                                                        minWidth="232px"
+                                                        alignItems="center"
+                                                        paddingLeft="20px"
+                                                        flexWrap="nowrap"
+                                                    >
+                                                        <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                                                            <Grid item>
+                                                                <EntityTemplateColor
+                                                                    entityTemplateColor={getEntityTemplateColor(parentTemplate)}
+                                                                    style={{ height: '18px' }}
+                                                                />
+                                                            </Grid>
+                                                            <Grid item>
+                                                                {parentTemplate.iconFileId ? (
+                                                                    <CustomIcon iconUrl={parentTemplate.iconFileId} height="24px" width="24px" />
+                                                                ) : (
+                                                                    <AppRegistrationIcon
+                                                                        style={{ ...workspace.metadata.iconSize }}
+                                                                        fontSize="small"
+                                                                    />
+                                                                )}
+                                                            </Grid>
+                                                            <Grid item>
+                                                                <MeltaTooltip title={childTemplate.displayName}>
+                                                                    <Typography
+                                                                        style={{
+                                                                            fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                                                                            color: theme.palette.primary.main,
+                                                                            fontWeight: '400',
+                                                                            textOverflow: 'ellipsis',
+                                                                            whiteSpace: 'nowrap',
+                                                                            overflow: 'hidden',
+                                                                            width: '130px',
+                                                                        }}
+                                                                    >
+                                                                        {childTemplate.displayName}
+                                                                    </Typography>
+                                                                </MeltaTooltip>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                }
+                                                expendedCard={
+                                                    <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
+                                                        <Grid item container justifyContent="space-between">
+                                                            <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                                                                <Typography>{i18next.t('category')}</Typography>
+                                                            </Grid>
+                                                            <Grid item flexBasis="70%">
+                                                                {parentTemplate.category.displayName}
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                }
+                                            />
+                                        </Grid>
+                                    ))}
+                                </React.Fragment>
+                            );
+                        })}
                     </Box>
                 </Grid>
             )}
