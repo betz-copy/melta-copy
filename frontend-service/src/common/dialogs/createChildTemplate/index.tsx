@@ -29,7 +29,7 @@ import { createEntityChildTemplateRequest } from '../../../services/templates/en
 import { ErrorToast } from '../../ErrorToast';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip } from './interfaces';
+import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip, IMongoChildEntityTemplate } from './interfaces';
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
 
@@ -43,6 +43,7 @@ const CreateChildTemplateDialog: React.FC<{
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
+    // const allChildTemplates = queryClient.getQueryData<Map<string, IMongoChildEntityTemplate>>('getChildEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
     const [selectedUserField, setSelectedUserField] = useState<string | null>(null);
@@ -83,9 +84,15 @@ const CreateChildTemplateDialog: React.FC<{
     );
 
     const { mutateAsync: createEntityChildTemplate } = useMutation((template: IEntityChildTemplate) => createEntityChildTemplateRequest(template), {
-        onSuccess: () => {
+        onSuccess: (newTemplate) => {
             toast.success(i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'));
-            queryClient.invalidateQueries('getEntityChildTemplates');
+
+            queryClient.setQueryData<Map<string, IMongoChildEntityTemplate>>('getChildEntityTemplates', (prev) => {
+                const updated = new Map(prev ?? []);
+                updated.set(newTemplate._id, newTemplate);
+                return updated;
+            });
+
             handleClose();
         },
         onError: (err: AxiosError) => {

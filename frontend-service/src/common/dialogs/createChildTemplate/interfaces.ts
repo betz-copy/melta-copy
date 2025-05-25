@@ -42,10 +42,22 @@ export interface IEntityChildTemplate {
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
 }
-export interface IMongoEntityChildTemplate extends IEntityChildTemplate {
+export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
     _id: string;
 }
+export type IChildEntityTemplateMap = Map<string, IMongoChildEntityTemplate>;
 
 export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;
+}
+export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'category'> {
+    category: IMongoCategory;
+}
+
+export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
+    _id: string;
+}
+
+export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplatePopulated {
+    _id: string;
 }

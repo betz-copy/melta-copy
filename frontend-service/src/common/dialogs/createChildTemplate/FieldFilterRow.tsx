@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import debounce from 'lodash/debounce';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IFieldFilter } from '../../components/filters';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IFieldFilter } from './interfaces';
+import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 
 export const useFilterInputLogic = ({
     entityTemplate,

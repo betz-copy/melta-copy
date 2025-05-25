@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Autocomplete, Grid } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Autocomplete } from '@mui/material';
 import i18next from 'i18next';
 
 interface SelectUserFieldDialogProps {
