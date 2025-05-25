@@ -49,7 +49,7 @@ const StepsApproversBlock: React.FC<
                                 </Grid>
                                 <Grid container spacing={1}>
                                     {values.steps[propIndex].reviewers.map((user, index) => (
-                                        <CreateUserCard key={user._id} userName={user.displayName} userIndex={index} remove={() => remove(index)} />
+                                        <CreateUserCard key={user._id} user={user} userIndex={index} remove={() => remove(index)} />
                                     ))}
                                 </Grid>
                                 {errorsOfStep?.reviewers === i18next.t('validation.oneField') && (
