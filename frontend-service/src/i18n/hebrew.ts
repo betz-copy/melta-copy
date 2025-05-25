@@ -907,7 +907,7 @@ export default {
         signature: 'חתימה',
         comment: 'הערה',
         kartoffelUserField: 'משתמש - שדה קרטופלי',
-        unitUserField: 'יחידה - שדה קרטופלי',
+        unitField: 'יחידה',
     },
     input: {
         imagePicker: {

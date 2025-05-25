@@ -3,7 +3,7 @@ import React from 'react';
 import { AddRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
-import { IExtendedUserFieldType, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -157,11 +157,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
                                                         {i18next.t('createChildTemplateDialog.byUser')}
                                                     </Typography>
-                                                ) : entityTemplate.properties.properties[fieldName]?.format ===
-                                                  IExtendedUserFieldType.unitUserField ? (
-                                                    <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                        {i18next.t('createChildTemplateDialog.byUnit')}
-                                                    </Typography>
                                                 ) : (
                                                     <Button
                                                         color="primary"
@@ -214,11 +209,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     {entityTemplate.properties.properties[fieldName]?.format === 'user' ? (
                                                         <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
                                                             {i18next.t('createChildTemplateDialog.byUser')}
-                                                        </Typography>
-                                                    ) : entityTemplate.properties.properties[fieldName]?.format ===
-                                                      IExtendedUserFieldType.unitUserField ? (
-                                                        <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                            {i18next.t('createChildTemplateDialog.byUnit')}
                                                         </Typography>
                                                     ) : (
                                                         <Button
