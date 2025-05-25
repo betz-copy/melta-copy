@@ -10,7 +10,7 @@ import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import { cloneDeep } from 'lodash';
-import { IExtendedUserFieldType, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
@@ -23,7 +23,6 @@ import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 import { IKartoffelUser } from '../../../interfaces/users';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
 import RjsfCommentWidget from './RjsfCommentWidget';
-import { useWorkspaceStore } from '../../../stores/workspace';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -51,7 +50,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
-    ajv.addFormat('unitUserField', /.*/);
+    ajv.addFormat('unitField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -178,8 +177,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { unitFieldSplitDepth } = workspace.metadata;
 
     return (
         <JSONSchemaForm
@@ -247,13 +244,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
                                 userFieldsToUpdate.forEach((key) => {
                                     const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
-
-                                    if (schema.properties[key].format === IExtendedUserFieldType.unitUserField) {
-                                        propertiesToUpdate[key] =
-                                            user && kartoffelField ? user[kartoffelField].split('/')[unitFieldSplitDepth] : undefined;
-                                    } else {
-                                        propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
-                                    }
+                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
                                 });
 
                                 propertiesToUpdate[propertyKey] = user

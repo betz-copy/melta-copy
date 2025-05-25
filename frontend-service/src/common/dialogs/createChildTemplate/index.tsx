@@ -29,7 +29,15 @@ import { createEntityChildTemplateRequest } from '../../../services/templates/en
 import { ErrorToast } from '../../ErrorToast';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { ViewType, ITemplateFieldsFilters, IEntityChildTemplate, IChildTemplateProperty, IFieldChip, IMongoChildEntityTemplate } from './interfaces';
+import {
+    ViewType,
+    ITemplateFieldsFilters,
+    IEntityChildTemplate,
+    IChildTemplateProperty,
+    IFieldChip,
+    IEntityChildTemplateMap,
+    IMongoChildEntityTemplate,
+} from '../../../interfaces/entityChildTemplates';
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
 
@@ -79,12 +87,13 @@ const CreateChildTemplateDialog: React.FC<{
     );
 
     const hasUnitTypeProperty = useMemo(
-        () => Object.values(entityTemplate?.properties.properties || {}).some((property) => property.format === 'unitUserField'),
+        () => Object.values(entityTemplate?.properties.properties || {}).some((property) => property.format === 'unitField'),
         [entityTemplate],
     );
 
     const { mutateAsync: createEntityChildTemplate } = useMutation((template: IEntityChildTemplate) => createEntityChildTemplateRequest(template), {
-        onSuccess: (newTemplate) => {
+        onSuccess: (data) => {
+            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prevData) => prevData!.set(data._id, data));
             toast.success(i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'));
 
             queryClient.setQueryData<Map<string, IMongoChildEntityTemplate>>('getChildEntityTemplates', (prev) => {

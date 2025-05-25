@@ -1,16 +1,17 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -28,12 +29,22 @@ const TemplateTablesViewResults = forwardRef<
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
+    const queryClient = useQueryClient();
+
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
     const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(() => {
         const savedCount = sessionStorage.getItem('visibleTemplatesCount');
         return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
     });
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplatesList = Array.from(childTemplates.values());
+
     const loaderRef = useRef<HTMLDivElement | null>(null);
+
+    const templatesWithChildren = templates.map((template) => ({
+        ...template,
+        children: childTemplatesList.filter((child) => child.fatherTemplateId === template._id),
+    }));
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
@@ -65,7 +76,7 @@ const TemplateTablesViewResults = forwardRef<
 
     return (
         <Grid container direction="column" spacing={1}>
-            {templates.slice(0, visibleTemplatesCount).map((template) => (
+            {templatesWithChildren.slice(0, visibleTemplatesCount).map((template) => (
                 <Grid item key={template._id}>
                     <TemplateTable
                         ref={(el) => {
@@ -80,6 +91,38 @@ const TemplateTablesViewResults = forwardRef<
                         page={pageType}
                         setUpdatedEntities={setUpdatedEntities}
                     />
+                    {template.children.map((childTemplate) => {
+                        const childTemplatePropertiesList = Object.keys(childTemplate.properties);
+                        const childTemplateProperties = Object.fromEntries(
+                            Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
+                        ) as Record<string, IEntitySingleProperty>;
+                        const { children, ...childTemplatePopulated } = {
+                            ...template,
+                            displayName: childTemplate.displayName,
+                            properties: {
+                                ...template.properties,
+                                properties: childTemplateProperties,
+                            },
+                            propertiesOrder: template.propertiesOrder.filter((property) => childTemplatePropertiesList.includes(property)),
+                        };
+                        return (
+                            <Grid item key={childTemplate._id}>
+                                <TemplateTable
+                                    ref={(el) => {
+                                        if (el) {
+                                            templateTablesRefs.current[childTemplate._id] = el;
+                                        } else {
+                                            delete templateTablesRefs.current[childTemplate._id];
+                                        }
+                                    }}
+                                    template={childTemplatePopulated}
+                                    quickFilterText={searchInput}
+                                    page={pageType}
+                                    setUpdatedEntities={setUpdatedEntities}
+                                />
+                            </Grid>
+                        );
+                    })}
                 </Grid>
             ))}
             {visibleTemplatesCount < templates.length && (

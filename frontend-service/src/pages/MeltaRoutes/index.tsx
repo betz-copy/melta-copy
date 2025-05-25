@@ -17,6 +17,7 @@ import { handleWorkspace } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 interface IMeltaRoutesProps {
     path: string;
@@ -31,6 +32,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     // use queries enabled false, setting query data by hand "queryClient.setQueryData" (setting from getAllTemplates)
     useQuery('getCategories', () => undefined, { enabled: false });
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
+    useQuery('getChildEntityTemplates', () => undefined, { enabled: false });
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
     useQuery('getRules', () => undefined, { enabled: false });
     useQuery('getProcessTemplates', () => undefined, { enabled: false });
@@ -49,9 +51,10 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             toast.error(i18next.t('failedToGetTemplates'));
             console.error('failed to get templates error:', error);
         },
-        onSuccess: ({ categories, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
+        onSuccess: ({ categories, entityTemplates, relationshipTemplates, processTemplates, rules, childTemplates }) => {
             queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
+            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));

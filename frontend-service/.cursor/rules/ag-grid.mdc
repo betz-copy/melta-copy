@@ -1,0 +1,12 @@
+---
+description: AG-Grid Enterprise patterns & anti-patterns
+globs: 
+alwaysApply: false
+---
+
+* Register the license in `main.tsx` *before* rendering React.  
+* Use the **React Hook API** (`useEffect` → `gridRef.current!.api`) rather than imperative DOM look-ups. :contentReference[oaicite:6]{index=6}  
+* Column definitions live in a separate `columns.ts` per table feature; keep them pure.  
+* Enable **row virtualization** (`domLayout: "normal"` default) and set `rowHeight` to minimise reflows.  
+* Memoise large `rowData` transforms with `useMemo`, not inside render loops.  
+* Never mutate `rowData`—supply new arrays to leverage AG-Grid’s change detection.  

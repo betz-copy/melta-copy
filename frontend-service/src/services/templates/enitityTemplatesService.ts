@@ -30,7 +30,7 @@ export const stringFormats = [
     'signature',
     'comment',
     'kartoffelUserField',
-    'unitUserField',
+    'unitField',
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
@@ -219,7 +219,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'user'
                     | 'comment'
                     | 'kartoffelUserField'
-                    | 'unitUserField'
+                    | 'unitField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -269,6 +269,10 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
                     enumPropertiesColors[name][option] = enumColor;
                 });
+            }
+            if (type === 'unitField') {
+                const { units } = environment;
+                schema.properties[name].enum = [...units];
             }
         },
     );

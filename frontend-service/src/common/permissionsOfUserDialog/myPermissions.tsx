@@ -25,10 +25,12 @@ import ManagementPermissionsCard from './managementPermissionsCard';
 import {
     CategoryWithTemplates,
     didPermissionsChange,
+    entityChildTemplatePermissionDialog,
     entityTemplatePermissionDialog,
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -65,6 +67,8 @@ const MyPermissions: React.FC<{
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((entity) => {
@@ -72,10 +76,25 @@ const MyPermissions: React.FC<{
             entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
             ...entity.category,
         };
+        const displayEntityChildTemplates: entityChildTemplatePermissionDialog[] = Array.from(entityChildTemplates.values())
+            .filter((child) => child.fatherTemplateId === entity._id)
+            .map((child) => ({
+                id: child._id,
+                name: child.displayName,
+                isFilterByCurrentUser: child.isFilterByCurrentUser,
+                isFilterByUserUnit: child.isFilterByUserUnit,
+                viewType: child.viewType,
+                fatherTemplateId: child.fatherTemplateId,
+            }));
+
         const displayEntity: entityTemplatePermissionDialog = {
             id: entity._id,
             name: entity.displayName,
+            entityChildTemplates: displayEntityChildTemplates || [],
         };
+
+        console.log('displayEntity', displayEntity);
+
         category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
         dialogPermissionData.set(entity.category._id, category);
     });

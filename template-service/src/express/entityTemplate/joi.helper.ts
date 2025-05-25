@@ -11,7 +11,7 @@ ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
 ajv.addFormat('comment', /.*/);
 ajv.addFormat('kartoffelUserField', /.*/);
-ajv.addFormat('unitUserField', /.*/);
+ajv.addFormat('unitField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -63,7 +63,7 @@ export const stringFormats = [
     'signature',
     'comment',
     'kartoffelUserField',
-    'unitUserField',
+    'unitField',
 ];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
@@ -77,8 +77,7 @@ const propertiesArraySchema = Joi.array()
             format: Joi.string()
                 .valid(...stringFormats)
                 .when('type', { not: 'string', then: Joi.forbidden() })
-                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() })
-                .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
+                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             readOnly: Joi.valid(true),
             identifier: Joi.valid(true),
@@ -127,13 +126,7 @@ const propertiesArraySchema = Joi.array()
             expandedUserField: Joi.object({
                 relatedUserField: Joi.string().required(),
                 kartoffelField: Joi.string().required(),
-            }).when('format', {
-                switch: [
-                    { is: 'kartoffelUserField', then: Joi.required() },
-                    { is: 'unitUserField', then: Joi.required() },
-                ],
-                otherwise: Joi.forbidden(),
-            }),
+            }).when('format', { is: 'kartoffelUserField', then: Joi.required(), otherwise: Joi.forbidden() }),
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),

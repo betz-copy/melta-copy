@@ -2,7 +2,6 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
-import { isExtendedUserFieldType } from '../interfaces/entityTemplates';
 
 export const regexSchema = Yup.string().test('is-regex', (value, context) => {
     if (!value) return true;
@@ -68,23 +67,23 @@ const testFields = (
 };
 
 const validateProperties = (properties, context, errors) => {
-    const relatedExtendedUserFields: { value: string; index: number }[] = [];
+    const relatedUserFieldsOfkartoffelFields: { value: string; index: number }[] = [];
     const userFields: string[] = [];
     properties.forEach((value, index) => {
         if (value.type && value.type === 'user') {
             userFields.push(value.name);
         }
-        if (isExtendedUserFieldType(value?.type)) {
-            relatedExtendedUserFields.push({ value: value.expandedUserField?.relatedUserField || '', index });
+        if (value?.type === 'kartoffelUserField') {
+            relatedUserFieldsOfkartoffelFields.push({ value: value.expandedUserField?.relatedUserField || '', index });
         }
     });
 
-    relatedExtendedUserFields.forEach((extendedUserField) => {
-        if (!userFields.includes(extendedUserField.value))
+    relatedUserFieldsOfkartoffelFields.forEach((userField) => {
+        if (!userFields.includes(userField.value))
             errors.push(
                 context.createError({
                     message: 'wizard.entityTemplate.userFieldNotFound',
-                    path: `properties[${extendedUserField.index}].expandedUserField.relatedUserField`,
+                    path: `properties[${userField.index}].expandedUserField.relatedUserField`,
                 }),
             );
     });
