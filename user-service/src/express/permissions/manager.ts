@@ -46,7 +46,7 @@ class PermissionsManager {
 
         if (permissionType === RelatedPermission.User) {
             const user = await UsersManager.getUserById(relatedId, workspaceIds, false);
-            query.relatedId = { $in: user.roleIds && user.roleIds.length > 0 ? user.roleIds : [relatedId] };
+            query.relatedId = { $in: user.roleIds && user.roleIds.length > 0 ? [...user.roleIds, relatedId] : [relatedId] };
         } else query.relatedId = relatedId;
 
         if (workspaceIds) query.workspaceId = { $in: workspaceIds };
