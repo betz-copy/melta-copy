@@ -37,6 +37,7 @@ const DateRange: React.FC<{
             spacing={overrideSx && 'spacing' in overrideSx ? (overrideSx.spacing as number) : overrideSx ? 2 : 0}
             display="flex"
             flexDirection={directionIsRow ? 'row' : 'column'}
+            // style={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
         >
             <Grid item style={{ paddingBottom: !directionIsRow ? '10px' : '0px' }}>
                 <DatePickerWrapper
