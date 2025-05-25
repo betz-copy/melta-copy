@@ -27,7 +27,7 @@ import {
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
     convertToRelationshipFieldRequestSchema,
-    getEntitiesSearchBodyRequestSchema,
+    getSelectedEntitiesRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -93,9 +93,9 @@ entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSche
 
 entityRouter.post(
     '/get/multiple-select',
-    ValidateRequest(getEntitiesSearchBodyRequestSchema),
+    ValidateRequest(getSelectedEntitiesRequestSchema),
     entityValidatorController.validateTemplateExistence,
-    entityController.getEntitiesMultipleSelect,
+    entityController.getSelectedEntities,
 );
 
 entityRouter.put(

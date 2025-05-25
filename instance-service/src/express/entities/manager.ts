@@ -974,7 +974,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return this.relationshipManager.deleteRelationshipByIdInTransaction(relationshipToDelete.properties._id, [], transaction);
     }
 
-    async getEntitiesMultipleSelect(
+    async getSelectedEntities(
         searchBody: IMultipleSelect<boolean>,
         entityTemplate: IMongoEntityTemplate,
         showRelationships: boolean = true,
@@ -986,7 +986,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             const { entities } = await this.searchEntitiesOfTemplate(
                 { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships, textSearch, entityIdsToExclude: idsToExclude },
-                entityTemplate, // add something for update
+                entityTemplate,
             );
             fullEntities.push(...entities);
         } else {
@@ -1122,7 +1122,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-                const entitiesToDelete = await this.getEntitiesMultipleSelect(deleteBody, entityTemplate);
+                const entitiesToDelete = await this.getSelectedEntities(deleteBody, entityTemplate);
                 const allowedEntitiesToDelete = await this.getEntitiesToDeleteWithoutRelationships(
                     entitiesToDelete,
                     entityTemplate,
@@ -1416,7 +1416,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         userId?: string,
         convertToRelationshipField = false,
-        // updateOnlyGivenProps: boolean = false,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -1428,9 +1427,6 @@ export class EntityManager extends DefaultManagerNeo4j {
             throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
         }
 
-        // const updatedProperties = updateOnlyGivenProps
-        //     ? Object.keys({ ...propertiesToUpdate })
-        //     : this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
         const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
@@ -1443,12 +1439,8 @@ export class EntityManager extends DefaultManagerNeo4j {
             convertToRelationshipField,
         );
 
-        // const setPropQuery = updateOnlyGivenProps
-        //     ? Object.keys(fixedProperties).reduce((acc, key) => acc.concat(`SET e.${key} = $props.${key} `), '')
-        //     : `SET e = $props`;
-
         const updatedEntity = await runInTransactionAndNormalize(
-            transaction, // ${setPropQuery}
+            transaction,
             `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props
@@ -1537,14 +1529,18 @@ export class EntityManager extends DefaultManagerNeo4j {
         ignoredRules: IBrokenRule[],
         userId: string,
         convertToRelationshipField = false,
-        // updateOnlyGivenProps = false,
     ) {
+        console.log('hiiiii');
+        console.dir(ignoredRules, { depth: null });
+
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
+            console.log('nterrrrrrrrr');
+
             const actions = await this.buildActionsArray(
                 IEntityCrudAction.onUpdateEntity,
                 entityProperties,
@@ -1557,16 +1553,13 @@ export class EntityManager extends DefaultManagerNeo4j {
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const updatedEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results);
+            console.dir({ updatedEntity, fixedActions }, { depth: null });
             return { updatedEntity, actions: fixedActions };
         }
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                // const updatedProperties = updateOnlyGivenProps
-                //     ? Object.keys({ ...entityProperties })
-                //     : this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
                 const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
-
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
@@ -1576,11 +1569,9 @@ export class EntityManager extends DefaultManagerNeo4j {
                     transaction,
                     userId,
                     convertToRelationshipField,
-                    // updateOnlyGivenProps,
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-                console.dir({ ruleFailuresBeforeAction, ruleFailuresAfterAction }, { depth: null });
                 throwIfActionCausedRuleFailures(
                     ignoredRules,
                     ruleFailuresBeforeAction,

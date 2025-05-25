@@ -1,6 +1,6 @@
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IEntity, IMultipleSelect } from './entities';
-import { IActionPopulated, IAction } from './ruleBreaches/actionMetadata';
+import { IEntity } from './entities';
+import { IActionPopulated, IAction, ActionTypes } from './ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated, IRuleBreach } from './ruleBreaches/ruleBreach';
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {
@@ -18,16 +18,9 @@ export type IExternalErrors = {
     action: string;
 };
 
-export enum MutationActionType {
-    Update = 'update',
-    Create = 'create',
-    UpdateMultiple = 'updateMultiple',
-}
-
 export type IMutationWithPayload =
-    | { actionType: MutationActionType.Create; payload: undefined }
-    | { actionType: MutationActionType.Update; payload: IEntity }
-    | { actionType: MutationActionType.UpdateMultiple; payload: IMultipleSelect<boolean> };
+    | { actionType: ActionTypes.CreateEntity; payload: undefined }
+    | { actionType: ActionTypes.UpdateEntity; payload: IEntity };
 
 export type IMutationProps = IMutationWithPayload & {
     onSuccess?: (entity: IEntity) => void;

@@ -1,33 +1,24 @@
-import { Grid, Card, CardContent, Box, Divider, Button, IconButton, CircularProgress, Typography } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Grid, Card, CardContent, Divider, Button, CircularProgress } from '@mui/material';
+import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { Form, Formik } from 'formik';
-import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IEntity } from '../../../../interfaces/entities';
 import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ChooseTemplate } from '../ChooseTemplate';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { BlueTitle } from '../../../BlueTitle';
 import { ExportFormats } from '../ExportFormats';
-import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
+import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
 import { DraftWarningDialog } from '../draftWarningDialog';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-import {
-    IExternalErrors,
-    ICreateOrUpdateWithRuleBreachDialogState,
-    IMutationProps,
-    MutationActionType,
-} from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import EditProps from './EditProps';
 
 const { errorCodes, signaturePrefix } = environment;
 
@@ -73,42 +64,31 @@ const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
-    // onSuccess?: (entity: IEntity) => void;
     handleClose: () => void;
-    // onError: (entity: EntityWizardValues) => void;
     externalErrors: IExternalErrors;
     setExternalErrors: React.Dispatch<React.SetStateAction<IExternalErrors>>;
-    createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState; // TODO understand this
+    createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
-    createDraft?: boolean;
-    submitHandler?: (data: EntityWizardValues) => void;
 }> = ({
     mutationProps,
     entityTemplate,
     initialCurrValues,
     handleClose,
-    // onSuccess,
-    // onError,
     externalErrors,
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
     showActionButtons = true,
-    createDraft = true,
-    submitHandler,
 }) => {
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
-    const [selectedFields, setSelectedFields] = useState<Record<string, boolean> | undefined>(
-        actionType === MutationActionType.UpdateMultiple ? {} : undefined,
-    );
-    const isEditMode = actionType === MutationActionType.Update || actionType === MutationActionType.UpdateMultiple;
+    const isEditMode = actionType === ActionTypes.UpdateEntity;
 
     const initialValues = useMemo(() => {
-        if (actionType === MutationActionType.Update) {
+        if (isEditMode) {
             return convertIEntityToEntityWizardValues(payload, entityTemplate, initialTemplateFileKeys);
         }
         if (initialCurrValues) return initialCurrValues;
@@ -132,17 +112,15 @@ const CreateOrEditEntityDetails: React.FC<{
         setExternalErrors,
         errorCodes,
         setCreateOrUpdateWithRuleBreachDialogState,
-        // onError,
-        // onSuccess,
     );
 
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<object>({});
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
         entityTemplate,
         setInitialValuePropsToFilter,
         signaturePrefix,
-        actionType === MutationActionType.Update ? payload : undefined,
+        payload,
     );
 
     return (
@@ -165,7 +143,9 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
+                console.log('validate');
+
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
@@ -175,150 +155,13 @@ const CreateOrEditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues, submitForm }) => {
-                const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
-                    values.template || entityTemplate,
-                );
-                const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-                const schema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                useEffect(() => {
-                    setInitialValuePropsToFilter({ ...formInitialValues.properties });
-                }, []);
+            {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
+                console.log({ errors }, 'create');
+
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
                 }, [initialCurrValues]);
-
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                useEffect(() => {
-                    schema.required.forEach((field) => {
-                        const fieldPropertiesEnum = schema.properties[field].enum;
-                        const itemFieldProperties = schema.properties[field]?.items?.enum;
-
-                        if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
-                        }
-                        if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
-                        }
-                    });
-                    // eslint-disable-next-line react-hooks/exhaustive-deps
-                }, [values.template]);
-
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                const absoluteDirty = useMemo(() => {
-                    // textarea/long-text causes the field to first be undefined, setting dirty to true,
-                    // so we check for dirty manually while ignoring these fields
-                    // (if the value changes it won't be undefined and it will consider it dirty)
-                    const valuePropsToFilter = { ...values.properties };
-                    Object.keys(valuePropsToFilter).forEach((key) => {
-                        const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
-                        return valuePropsToFilter[key] === undefined || isSignatureField ? delete valuePropsToFilter[key] : {};
-                    });
-
-                    Object.keys(initialValuePropsToFilter).forEach((key) => {
-                        const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
-                        return initialValuePropsToFilter[key] === undefined || isSignatureField ? delete initialValuePropsToFilter[key] : {};
-                    });
-
-                    return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-                }, [formInitialValues, values]);
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                useEffect(() => {
-                    if (!absoluteDirty) return;
-                    if (createDraft) createOrUpdateDraftDebounced(values, draftId);
-                    // eslint-disable-next-line react-hooks/exhaustive-deps
-                }, [absoluteDirty, values, draftId]);
-
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                useEffect(() => {
-                    if (absoluteDirty && !wasDirty) setWasDirty(true);
-                }, [absoluteDirty]);
-
-                if (actionType === MutationActionType.UpdateMultiple) {
-                    const uniqueFields: string[] = [];
-                    values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
-                    uniqueFields.forEach((uniqueField) => {
-                        schema.properties[uniqueField].readOnly = true;
-                    });
-                }
-
-                const onCheckboxChange =
-                    actionType === MutationActionType.UpdateMultiple
-                        ? (field: string, checked: boolean) => {
-                              if (!checked) {
-                                  setFieldTouched(`properties.${field}`, false);
-                                  const { [field]: removedField, ...rest } = values.properties;
-                                  setFieldValue('properties', rest);
-                              }
-                              setSelectedFields((prev) => {
-                                  return { ...prev, [field]: checked };
-                              });
-                          }
-                        : undefined;
-
-                const propertiesComp = values.template?._id && (
-                    <JSONSchemaFormik
-                        schema={schema}
-                        values={values}
-                        setValues={(propertiesValues) => {
-                            return setFieldValue('properties', propertiesValues);
-                        }}
-                        errors={errors.properties ?? {}}
-                        uniqueErrors={{ ...externalErrors.unique }}
-                        touched={touched.properties ?? {}}
-                        setFieldTouched={(field, isTouched?) => setFieldTouched(`properties.${field}`, isTouched)}
-                        isEditMode={isEditMode}
-                        multipleEntities={actionType === MutationActionType.UpdateMultiple}
-                        onCheckboxChange={onCheckboxChange}
-                    />
-                );
-
-                const propertiesFilesComp = templateFileKeys.length > 0 && (
-                    <>
-                        <BlueTitle
-                            title={i18next.t('wizard.entityTemplate.attachments')}
-                            component="h6"
-                            variant="h6"
-                            style={{ marginBottom: externalErrors.files ? '0px' : '12px', fontSize: '16px', fontWeight: '600' }}
-                        />
-                        {externalErrors.files && (
-                            <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}>
-                                {i18next.t('errorCodes.FILES_TOO_BIG')}
-                            </p>
-                        )}
-                        {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                            <Grid item key={key} marginTop={index > 0 ? 2 : 0}>
-                                {value.items ? (
-                                    <InstanceFileInput
-                                        key={key}
-                                        fileFieldName={`attachmentsProperties.${key}`}
-                                        fieldTemplateTitle={value.title}
-                                        setFieldValue={setFieldValue}
-                                        required={requiredFilesNames.includes(key)}
-                                        value={values.attachmentsProperties[key] as File[] | undefined}
-                                        error={errors.attachmentsProperties?.[key] as string}
-                                        setFieldTouched={setFieldTouched}
-                                        setExternalErrors={setExternalErrors}
-                                    />
-                                ) : (
-                                    <InstanceSingleFileInput
-                                        key={key}
-                                        fileFieldName={`attachmentsProperties.${key}`}
-                                        fieldTemplateTitle={value.title}
-                                        setFieldValue={setFieldValue}
-                                        required={requiredFilesNames.includes(key)}
-                                        value={values.attachmentsProperties[key] as File | undefined}
-                                        error={errors.attachmentsProperties?.[key] as string}
-                                        setFieldTouched={setFieldTouched}
-                                        setExternalErrors={setExternalErrors}
-                                    />
-                                )}
-                            </Grid>
-                        ))}
-                    </>
-                );
 
                 return (
                     <>
@@ -326,81 +169,30 @@ const CreateOrEditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        <Grid item container xs={12}>
-                                            <Grid container flexDirection="column">
-                                                <Box width="100%">
-                                                    <Grid item container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
-                                                        <Grid item>
-                                                            <BlueTitle
-                                                                title={`${
-                                                                    isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')
-                                                                } ${values.template?.displayName || i18next.t('wizard.entity.createNewEntity')}`}
-                                                                component="h6"
-                                                                variant="h6"
-                                                                style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
-                                                            />
-                                                        </Grid>
+                                        <EditProps
+                                            setFieldValue={setFieldValue}
+                                            values={values}
+                                            errors={errors}
+                                            touched={touched}
+                                            setFieldTouched={setFieldTouched}
+                                            initialValues={formInitialValues}
+                                            setInitialValuePropsToFilter={setInitialValuePropsToFilter}
+                                            initialValuePropsToFilter={initialValuePropsToFilter}
+                                            createOrUpdateDraftDebounced={createOrUpdateDraftDebounced}
+                                            isMultipleSelection={false}
+                                            entityTemplate={entityTemplate}
+                                            draftId={draftId}
+                                            wasDirty={wasDirty}
+                                            setWasDirty={setWasDirty}
+                                            externalErrors={externalErrors}
+                                            setExternalErrors={setExternalErrors}
+                                            isEditMode={isEditMode}
+                                            currentDraft={currentDraft}
+                                            showCloseButton={showActionButtons}
+                                            setIsDraftDialogOpen={setIsDraftDialogOpen}
+                                            handleClose={handleClose}
+                                        />
 
-                                                        {currentDraft && (
-                                                            // TODO change if mult
-                                                            // ?  this is  the last update in the modal
-                                                            <Grid item container xs={8} justifyContent="right">
-                                                                <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
-                                                                    {i18next.t('draftSaveDialog.lastSavedAt', {
-                                                                        date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
-                                                                    })}
-                                                                </Typography>
-                                                            </Grid>
-                                                        )}
-
-                                                        {showActionButtons && (
-                                                            <Grid item>
-                                                                <IconButton
-                                                                    onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
-                                                                    sx={{
-                                                                        color: (theme) => theme.palette.primary.main,
-                                                                    }}
-                                                                >
-                                                                    <CloseIcon />
-                                                                </IconButton>
-                                                            </Grid>
-                                                        )}
-                                                    </Grid>
-                                                    {!entityTemplate._id && (
-                                                        <Grid item marginTop="20px">
-                                                            <ChooseTemplate
-                                                                setFieldValue={setFieldValue}
-                                                                values={values}
-                                                                errors={errors}
-                                                                touched={touched}
-                                                            />
-                                                        </Grid>
-                                                    )}
-                                                </Box>
-                                                <Box width="95%" maxWidth="95%" paddingLeft="20px">
-                                                    <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
-                                                        {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
-                                                    </Grid>
-                                                    {templateFileKeys.length > 0 && (
-                                                        <Grid item container flexDirection="column">
-                                                            <Grid marginTop="20px" alignSelf="stretch">
-                                                                <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
-                                                            </Grid>
-                                                        </Grid>
-                                                    )}
-                                                    <Grid marginTop="20px" marginBottom="20px">
-                                                        {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
-                                                    </Grid>
-                                                    {externalErrors.action && (
-                                                        <Typography color="error" variant="caption" fontSize="16px">
-                                                            {externalErrors.action}
-                                                        </Typography>
-                                                    )}
-                                                </Box>
-                                            </Grid>
-                                        </Grid>
-                                        {/* {showActionButtons && (
-                                            <> */}
                                         <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                         <Grid
                                             container
@@ -412,8 +204,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length &&
-                                            actionType === MutationActionType.Update ? (
+                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length && isEditMode ? (
                                                 <ExportFormats
                                                     properties={{
                                                         createdAt: payload?.properties.createdAt || new Date(),
@@ -438,32 +229,27 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 <Grid item container flexDirection="row" justifyContent="right">
                                                     <Button
                                                         style={{ borderRadius: '7px' }}
-                                                        type="button"
+                                                        type="submit"
                                                         variant="contained"
                                                         startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                        onClick={() => {
-                                                            if (submitHandler) submitHandler(values);
-                                                            else submitForm();
-
-                                                            return Object.keys(errors).length > 0
+                                                        onClick={() =>
+                                                            Object.keys(errors).length > 0
                                                                 ? ''
-                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
-                                                        }}
-                                                        disabled={!dirty || isLoading} // TODO add mult
+                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
+                                                        }
+                                                        disabled={!dirty || isLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}
                                                     </Button>
                                                 </Grid>
                                             </Grid>
                                         </Grid>
-                                        {/* </>
-                                        )} */}
                                     </Grid>
                                 </CardContent>
                             </Card>
                         </Form>
                         {createOrUpdateWithRuleBreachDialogState.isOpen && (
-                            <ActionOnEntityWithRuleBreachDialog // ? do later
+                            <ActionOnEntityWithRuleBreachDialog
                                 isLoadingActionOnEntity={isLoading}
                                 handleClose={() => setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false })}
                                 doActionEntity={() => {
@@ -472,10 +258,10 @@ const CreateOrEditEntityDetails: React.FC<{
                                         createOrUpdateWithRuleBreachDialogState.rawBrokenRules!,
                                     );
                                 }}
-                                actionType={isEditMode ? ActionTypes.UpdateEntity : ActionTypes.CreateEntity} // maybe add mult
+                                actionType={actionType}
                                 brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={createOrUpdateWithRuleBreachDialogState.rawBrokenRules!}
-                                currEntity={actionType === MutationActionType.Update ? payload : undefined}
+                                currEntity={payload}
                                 entityFormData={createOrUpdateWithRuleBreachDialogState.newEntityData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setCreateOrUpdateWithRuleBreachDialogState((prevState) => ({
@@ -493,7 +279,7 @@ const CreateOrEditEntityDetails: React.FC<{
                             isOpen={isDraftDialogOpen}
                             handleClose={() => setIsDraftDialogOpen(false)}
                             closeCreateOrEditDialog={handleClose}
-                            values={{ ...values, entityId: actionType === MutationActionType.Update ? payload?.properties._id : undefined }}
+                            values={{ ...values, entityId: payload?.properties?._id }}
                             isEditMode={isEditMode}
                             originalDrafts={originalDrafts}
                         />

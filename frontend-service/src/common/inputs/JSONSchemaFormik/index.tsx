@@ -122,24 +122,20 @@ const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) =
 
 const getComponent = (
     Component: React.ComponentType<WidgetProps>,
-    onCheckboxChange: (fieldName: string, isChecked: boolean) => void,
-    multipleEntities?: boolean,
+    checkboxProps?: {
+        isFieldChecked: (fieldName: string) => boolean;
+        onCheckboxChange: (fieldName: string, isChecked: boolean) => void;
+    },
 ) => {
-    const hasInput = (value) => {
-        if (value === undefined || value === null) return false;
-        if (typeof value === 'string' && value.trim() === '') return false;
-        if (Array.isArray(value) && value.length === 0) return false;
-        if (typeof value === 'object' && Object.keys(value).length > 0 && !!value.value) return false;
-        return true;
-    };
-
-    if (multipleEntities) {
+    if (checkboxProps) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-            const { label, disabled, name, value } = props;
-            const [checked, setChecked] = useState(hasInput(value));
+            const { label, disabled, name, value, schema, onChange } = props;
+            const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
+
+            if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 
             useEffect(() => {
-                onCheckboxChange(name, checked);
+                checkboxProps.onCheckboxChange(name, checked);
             }, [checked, name]);
 
             return (
@@ -168,8 +164,10 @@ interface JSONSchemaFormFormikProps {
     isEditMode?: boolean;
     readonly?: boolean;
     toPrint?: boolean;
-    multipleEntities?: boolean;
-    onCheckboxChange?: any;
+    checkboxProps?: {
+        isFieldChecked: (fieldName: string) => boolean;
+        onCheckboxChange: (fieldName: string, isChecked: boolean) => void;
+    };
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -183,8 +181,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setFieldTouched,
     isEditMode = false,
     toPrint = false,
-    multipleEntities,
-    onCheckboxChange,
+    checkboxProps,
 }) => {
     useEffect(() => {
         // define 100% width to text-area field
@@ -193,11 +190,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         );
         containerDiv.forEach((innerDiv) => {
             const hasTextAreaField = innerDiv.querySelector('.text-area');
-            const biggerFieldCss = hasTextAreaField || multipleEntities || innerDiv.querySelector('.signature');
+            const biggerFieldCss = hasTextAreaField || checkboxProps || innerDiv.querySelector('.signature');
             const classesToAdd: string[] = [];
             classesToAdd.push(biggerFieldCss ? 'full-width-field' : 'half-width-field');
             if (hasTextAreaField) classesToAdd.push('has-text-area-child');
-            if (multipleEntities) classesToAdd.push('no-padding-top');
+            if (checkboxProps) classesToAdd.push('no-padding-top');
 
             innerDiv.classList.add(...classesToAdd);
         });
@@ -212,18 +209,18 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     const Widgets = React.useMemo(
         () => ({
-            SelectWidget: getComponent(RjsfSelectWidget, onCheckboxChange, multipleEntities),
-            DateWidget: getComponent(RjsfDateWidget, onCheckboxChange, multipleEntities),
-            DateTimeWidget: getComponent(RjsfDateTimeWidget, onCheckboxChange, multipleEntities),
-            TextWidget: getComponent(RjsfTextWidget, onCheckboxChange, multipleEntities),
-            EmailWidget: getComponent(RjsfTextWidget, onCheckboxChange, multipleEntities),
-            TextAreaWidget: getComponent(RjsfTextAreaWidget, onCheckboxChange, multipleEntities),
-            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, onCheckboxChange, multipleEntities),
-            LocationWidget: getComponent(RjsfLocationWidget, onCheckboxChange, multipleEntities),
-            UserWidget: getComponent(RjsfUserWidget, onCheckboxChange, multipleEntities),
-            UserArrayWidget: getComponent(RjsfUserArrayWidget, onCheckboxChange, multipleEntities),
-            CheckboxWidget: getComponent(RjsfCheckboxWidget, onCheckboxChange, multipleEntities),
-            SignatureWidget: getComponent(RjsfSignatureWidgets, onCheckboxChange, multipleEntities),
+            SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
+            DateWidget: getComponent(RjsfDateWidget, checkboxProps),
+            DateTimeWidget: getComponent(RjsfDateTimeWidget, checkboxProps),
+            TextWidget: getComponent(RjsfTextWidget, checkboxProps),
+            EmailWidget: getComponent(RjsfTextWidget, checkboxProps),
+            TextAreaWidget: getComponent(RjsfTextAreaWidget, checkboxProps),
+            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, checkboxProps),
+            LocationWidget: getComponent(RjsfLocationWidget, checkboxProps),
+            UserWidget: getComponent(RjsfUserWidget, checkboxProps),
+            UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
+            CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
+            SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
         }),
         [],
     );

@@ -5,7 +5,7 @@
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
-import { Dictionary, mapValues } from 'lodash';
+import { Dictionary, mapValues, omit } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
@@ -112,7 +112,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         });
 
-        // if (props)
         Object.keys(filesToUpload).forEach((key) => {
             if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
@@ -362,18 +361,18 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    async updateEntities(
+    async updateMultipleEntities(
         updatedInstanceData: IEntity,
+        propertiesToRemove: string[],
         entitiesToUpdate: IMultipleSelect<boolean>,
         files: UploadedFile[],
-        ignoredRules: IBrokenRule[],
+        ignoredRules: Record<string, IBrokenRule[]>,
         userId: string,
     ) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
-
         const data = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
         const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
 
@@ -387,9 +386,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
 
                         if (location.coordinateSystem === CoordinateSystem.UTM)
-                            // TODO change import from excel
                             return JSON.stringify({
-                                location: locationConverterToString(location.location), // TODO change import from excel
+                                location: locationConverterToString(location.location),
                                 coordinateSystem: location.coordinateSystem,
                             });
                         return JSON.stringify(location);
@@ -402,42 +400,44 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             });
 
             const propToUpdate: IEntity = {
-                properties: { ...convertedProperties, ...updatedInstanceData.properties },
+                properties: omit({ ...convertedProperties, ...updatedInstanceData.properties }, propertiesToRemove),
                 templateId: updatedInstanceData.templateId,
             };
 
-            const myIgnoreRules = ignoredRules.filter((rule) => rule.failures.some((failure) => failure.entityId === entity.properties._id));
+            console.dir(propToUpdate, { depth: null });
+
+            // const entityIgnoreRules = ignoredRules.filter((rule) => rule.failures.some((failure) => failure.entityId === entity.properties._id));
+            // console.dir({ ignoredRules, entityIgnoreRules }, { depth: null });
 
             try {
-                const result = await this.updateEntityInstance(entity.properties._id, propToUpdate, files, myIgnoreRules, userId, true, false);
+                const result = await this.updateEntityInstance(
+                    entity.properties._id,
+                    propToUpdate,
+                    files,
+                    ignoredRules[entity.properties._id] || [],
+                    userId,
+                    true,
+                    false,
+                );
                 results.push(result);
             } catch (error) {
-                classifyEntityErrors(
-                    error,
-                    failedEntities,
-                    entity,
-                    allBrokenRulesEntities,
-                    //     [
-                    //     {
-                    //         actionType: ActionTypes.UpdateEntity,
-                    //         actionMetadata: { entity, updatedFields: updatedInstanceData.properties },
-                    //     },
-                    // ]
-                );
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
         await Promise.all(data!.map(async ({ entity }) => handleUpdateEntity(entity)));
         succeededEntities.push(...results);
-        const brokenRulesEntities: IBrokenRuleEntity = {
-            rawBrokenRules: allBrokenRulesEntities.flatMap((e) => e.rawBrokenRules),
-            brokenRules: allBrokenRulesEntities.flatMap((e) => e.brokenRules),
-            actions: allBrokenRulesEntities.flatMap((e) => e.actions),
-            rawActions: allBrokenRulesEntities.flatMap((e) => e.rawActions),
-            entities: allBrokenRulesEntities.flatMap((e) => e.entities),
-        };
 
-        return { succeededEntities, failedEntities, brokenRulesEntities };
+        // console.dir({ allBrokenRulesEntities }, { depth: null });
+        // const brokenRulesEntities: IBrokenRuleEntity = {
+        //     rawBrokenRules: allBrokenRulesEntities.flatMap((e) => e.rawBrokenRules),
+        //     brokenRules: allBrokenRulesEntities.flatMap((e) => e.brokenRules),
+        //     actions: allBrokenRulesEntities.flatMap((e) => e.actions),
+        //     rawActions: allBrokenRulesEntities.flatMap((e) => e.rawActions),
+        //     entities: allBrokenRulesEntities.flatMap((e) => e.entities),
+        // };
+
+        return { succeededEntities, failedEntities, brokenRulesEntities: allBrokenRulesEntities };
     }
 
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
@@ -771,12 +771,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
         isEditExcel: boolean = false,
-        // updateOnlyGivenProps: boolean = false,
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
-
         if (!isEditExcel) {
             if (entityTemplate.disabled) throw new BadRequestError("can't update, entity template disabled");
             if (currentEntity.properties.disabled) throw new BadRequestError("can't update disabled entity");
@@ -792,8 +790,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 ignoredRules,
                 userId,
-                false,
-                // updateOnlyGivenProps,
             )
             .catch((err) => this.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>

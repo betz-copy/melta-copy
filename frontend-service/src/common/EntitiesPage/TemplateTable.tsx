@@ -32,7 +32,7 @@ import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
@@ -42,6 +42,7 @@ import { LoadExcelButton } from './Buttons/LoadExcel';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const {
     loadExcel: { excelExtension },
@@ -441,29 +442,44 @@ const TemplateTable = forwardRef<
 
             <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    mutationProps={
-                        editDialog.isEditMode
+                    mutationProps={{
+                        ...(editDialog.isEditMode
                             ? {
-                                  actionType: MutationActionType.Update,
+                                  actionType: ActionTypes.UpdateEntity,
                                   payload: editDialog.entity!,
                               }
-                            : { actionType: MutationActionType.Create, payload: undefined }
-                    }
+                            : { actionType: ActionTypes.CreateEntity, payload: undefined }),
+                        onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
+                        onSuccess: (entity: IEntity) => {
+                            console.log('entity', entity);
+
+                            if (editDialog.isEditMode) {
+                                entitiesTableRef.current?.updateRowDataClientSide(entity);
+                                setUpdatedEntities?.(
+                                    Object.values(entity.properties).filter(
+                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
+                                    ),
+                                );
+                            } else entitiesTableRef.current?.refreshServerSide();
+                            setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                            setExternalErrors(initializedExternalErrors);
+                        },
+                    }}
                     entityTemplate={template}
                     initialCurrValues={editDialog.wizardValues}
-                    onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
-                    onSuccess={(entity: IEntity) => {
-                        if (editDialog.isEditMode) {
-                            entitiesTableRef.current?.updateRowDataClientSide(entity);
-                            setUpdatedEntities?.(
-                                Object.values(entity.properties).filter(
-                                    (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
-                                ),
-                            );
-                        } else entitiesTableRef.current?.refreshServerSide();
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors(initializedExternalErrors);
-                    }}
+                    // onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
+                    // onSuccess={(entity: IEntity) => {
+                    //     if (editDialog.isEditMode) {
+                    //         entitiesTableRef.current?.updateRowDataClientSide(entity);
+                    //         setUpdatedEntities?.(
+                    //             Object.values(entity.properties).filter(
+                    //                 (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
+                    //             ),
+                    //         );
+                    //     } else entitiesTableRef.current?.refreshServerSide();
+                    //     setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                    //     setExternalErrors(initializedExternalErrors);
+                    // }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}

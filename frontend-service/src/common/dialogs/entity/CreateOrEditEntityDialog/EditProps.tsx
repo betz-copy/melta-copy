@@ -1,8 +1,9 @@
 import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
-import { isEqual } from 'date-fns';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
+import { DebouncedFunc, isEqual } from 'lodash';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -10,49 +11,48 @@ import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/Inst
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from '../ChooseTemplate';
 import { getEntityTemplateFilesFieldsInfo } from '.';
+import { EntityWizardValues } from '..';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { Draft } from '../draftWarningDialog/index';
 
 const EditProps: React.FC<{
-    setFieldValue;
-    values;
-    errors;
-    touched;
-    setFieldTouched;
-    setValues;
-    // dirty;
-    initialValues;
-    // submitForm;
-    // getEntityTemplateFilesFieldsInfo;
-    setInitialValuePropsToFilter;
-    initialValuePropsToFilter;
+    setFieldValue: FormikHelpers<EntityWizardValues>['setFieldValue'];
+    values: FormikState<EntityWizardValues>['values'];
+    errors: FormikState<EntityWizardValues>['errors'];
+    touched: FormikState<EntityWizardValues>['touched'];
+    setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
+    initialValues: FormikComputedProps<EntityWizardValues>['initialValues'];
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
+    initialValuePropsToFilter: Record<string, any>;
+    multipleSelectionProps?: {
+        selectedFields: Record<string, boolean>;
+        setSelectedFields: Dispatch<SetStateAction<Record<string, boolean>>>;
+    };
     isMultipleSelection: boolean;
-    initialCurrValues?;
-    entityTemplate;
-    createOrUpdateDraftDebounced?;
-    draftId;
-    wasDirty;
-    setWasDirty;
-    externalErrors;
-    setExternalErrors;
-    isEditMode;
-    currentDraft;
-    showActionButtons;
-    setIsDraftDialogOpen;
-    handleClose;
+    entityTemplate: IMongoEntityTemplatePopulated;
+    createOrUpdateDraftDebounced?: DebouncedFunc<(newValues: EntityWizardValues, newDraftId: string) => void>;
+    draftId?: string;
+    wasDirty: boolean;
+    setWasDirty: Dispatch<React.SetStateAction<boolean>>;
+    externalErrors: IExternalErrors;
+    setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>;
+    isEditMode: boolean;
+    currentDraft?: Draft;
+    showCloseButton: boolean;
+    setIsDraftDialogOpen?: Dispatch<SetStateAction<boolean>>;
+    handleClose?: () => void;
 }> = ({
     setFieldValue,
     values,
     errors,
     touched,
     setFieldTouched,
-    setValues,
-    // dirty,
-    initialValues: formInitialValues,
-    // submitForm,
-    // getEntityTemplateFilesFieldsInfo,
+    initialValues,
     setInitialValuePropsToFilter,
     initialValuePropsToFilter,
+    multipleSelectionProps,
     isMultipleSelection,
-    initialCurrValues,
     entityTemplate,
     createOrUpdateDraftDebounced,
     draftId,
@@ -62,27 +62,19 @@ const EditProps: React.FC<{
     setExternalErrors,
     isEditMode,
     currentDraft,
-    showActionButtons,
+    showCloseButton,
     setIsDraftDialogOpen,
     handleClose,
 }) => {
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [selectedFields, setSelectedFields] = useState<Record<string, boolean> | undefined>(isMultipleSelection ? {} : undefined);
-    const schema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
-
-    console.log({ formInitialValues });
+    const schema = filterFieldsFromPropertiesSchema(values.template.properties, multipleSelectionProps?.selectedFields);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-        setInitialValuePropsToFilter({ ...formInitialValues.properties });
+        setInitialValuePropsToFilter({ ...initialValues.properties });
     }, []);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-        if (initialCurrValues) setValues(initialCurrValues);
-    }, [initialCurrValues]);
-
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         schema.required.forEach((field) => {
@@ -112,17 +104,16 @@ const EditProps: React.FC<{
 
         Object.keys(initialValuePropsToFilter).forEach((key) => {
             const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
-            // TODO for now
             // eslint-disable-next-line no-param-reassign
             return initialValuePropsToFilter[key] === undefined || isSignatureField ? delete initialValuePropsToFilter[key] : {};
         });
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-    }, [formInitialValues, values]);
+    }, [initialValues, values]);
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-        if (!absoluteDirty) return;
-        createOrUpdateDraftDebounced?.(values, draftId);
+        if (!absoluteDirty || !draftId || !createOrUpdateDraftDebounced) return;
+        createOrUpdateDraftDebounced(values, draftId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [absoluteDirty, values, draftId]);
 
@@ -139,18 +130,19 @@ const EditProps: React.FC<{
         });
     }
 
-    const onCheckboxChange = isMultipleSelection
-        ? (field: string, checked: boolean) => {
-              if (!checked) {
-                  setFieldTouched(`properties.${field}`, false);
-                  const { [field]: removedField, ...rest } = values.properties;
-                  setFieldValue('properties', rest);
-              }
-              setSelectedFields((prev) => {
-                  return { ...prev, [field]: checked };
-              });
-          }
-        : undefined;
+    const onCheckboxChange = (field: string, checked: boolean) => {
+        if (!checked) {
+            setFieldTouched(`properties.${field}`, false);
+            setFieldValue(`properties.${field}`, undefined);
+        }
+
+        multipleSelectionProps?.setSelectedFields((prev) => ({
+            ...prev,
+            [field]: checked,
+        }));
+    };
+
+    const isFieldChecked = (field: string) => Boolean(multipleSelectionProps?.selectedFields[field]);
 
     const propertiesComp = values.template?._id && (
         <JSONSchemaFormik
@@ -164,8 +156,7 @@ const EditProps: React.FC<{
             touched={touched.properties ?? {}}
             setFieldTouched={(field, isTouched?) => setFieldTouched(`properties.${field}`, isTouched)}
             isEditMode={isEditMode}
-            multipleEntities={isMultipleSelection}
-            onCheckboxChange={onCheckboxChange}
+            checkboxProps={isMultipleSelection ? { isFieldChecked, onCheckboxChange } : undefined}
         />
     );
 
@@ -231,8 +222,6 @@ const EditProps: React.FC<{
                         </Grid>
 
                         {currentDraft && (
-                            // TODO change if mult
-                            // ?  this is  the last update in the modal
                             <Grid item container xs={8} justifyContent="right">
                                 <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
                                     {i18next.t('draftSaveDialog.lastSavedAt', {
@@ -242,10 +231,10 @@ const EditProps: React.FC<{
                             </Grid>
                         )}
 
-                        {showActionButtons && (
+                        {showCloseButton && (
                             <Grid item>
                                 <IconButton
-                                    onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
+                                    onClick={() => (wasDirty ? setIsDraftDialogOpen?.(true) : handleClose?.())}
                                     sx={{
                                         color: (theme) => theme.palette.primary.main,
                                     }}

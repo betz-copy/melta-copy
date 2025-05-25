@@ -243,8 +243,6 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
     const templateProperties = newEntityData.template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
 
-    console.log({ ignoredRules }, 1);
-
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -259,14 +257,11 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
         } else if (value) {
             if (value instanceof File) {
                 filesToUpload.push([`${key}`, value]);
-                // unchangedFiles.push([`${key}`, undefined]);
             } else {
                 unchangedFiles.push([`${key}`, value]);
             }
         }
     });
-
-    console.log({ unchangedFiles }, 2);
 
     for (const [key, value] of properties) {
         if (templateProperties[key]?.format === 'signature') {
@@ -278,8 +273,6 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
         }
     }
 
-    console.log({ unchangedFiles }, 3);
-
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => {
@@ -290,8 +283,6 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
     });
     unchangedFiles.forEach(([key, value]) => {
         if (!newEntityData.template.properties.properties[key].items) {
-            console.log(key, value);
-
             newEntityData.properties[key] = value.name;
         } else {
             if (!newEntityData.properties[key]) {
@@ -303,17 +294,6 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
         }
     });
 
-    console.log({ unchangedFiles }, 3);
-
-    console.log(
-        mapValues(newEntityData.properties, (property, key) => {
-            const format = newEntityData.template.properties.properties[key]?.format;
-            if (format === 'signature' && !isUUID(property)) return undefined;
-            if (format === 'relationshipReference') return property?.properties?._id;
-            return property;
-        }),
-        1,
-    );
     formData.append(
         'properties',
         JSON.stringify(
@@ -370,10 +350,14 @@ export const updateEntityRequestForMultiple = async (
 export const updateMultipleEntitiesRequest = async (
     entitiesToUpdate: IMultipleSelect<boolean>,
     newEntityData: EntityWizardValues,
+    propertiesToRemove: string[],
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
+    console.log({ newEntityData, propertiesToRemove });
+
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
     formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
+    formData.append('propertiesToRemove', JSON.stringify(propertiesToRemove || []));
 
     const { data } = await axios.put<ITablesResults>(`${entities}/bulk`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

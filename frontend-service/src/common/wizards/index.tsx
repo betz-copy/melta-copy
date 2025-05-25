@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Formik, Form, FormikProps, FormikConfig } from 'formik';
+import { Formik, Form, FormikProps, FormikConfig, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -33,7 +33,7 @@ export type StepType<T extends object> = {
     stepperActions?: {
         disable?: 'all' | 'back' | 'next';
         back?: { text?: string; onClick?: () => void };
-        next?: { text?: string; onClick?: (values) => Promise<void> | void };
+        next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void };
     };
     invisibleBeforeStep?: boolean;
 };
@@ -118,7 +118,7 @@ const Wizard = <T extends object>({
                         } else {
                             console.log('before next');
 
-                            await steps[activeStep].stepperActions?.next?.onClick?.(values);
+                            await steps[activeStep].stepperActions?.next?.onClick?.(values, actions);
                             console.log('after next');
 
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);

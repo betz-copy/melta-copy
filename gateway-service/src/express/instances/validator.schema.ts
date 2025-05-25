@@ -34,12 +34,13 @@ export const updateEntityInstanceSchema = Joi.object({
 });
 
 // PUT /api/instances/entities/bulk
-export const updateEntityInstancesSchema = Joi.object({
+export const updateMultipleEntitiesSchema = Joi.object({
     body: Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
-        ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        ignoredRules: ExtendedJoi.stringToObject().default({}),
         entitiesToUpdate: ExtendedJoi.stringToObject(),
+        propertiesToRemove: ExtendedJoi.stringToArray().items(Joi.string()).default([]),
     }).unknown(true),
     query: {},
     params: {},

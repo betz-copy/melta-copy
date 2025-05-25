@@ -233,6 +233,7 @@ export class InstancesValidator extends DefaultController {
 
     // rules
     async validateUserCanIgnoreRules(req: Request) {
+        console.log('validateUserCanIgnoreRules');
         const { ignoredRules } = req.body;
         // console.log('ignoredRules', ignoredRules);
         const { user } = req;
@@ -242,12 +243,17 @@ export class InstancesValidator extends DefaultController {
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
 
         if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) return;
+        console.log('atfer if');
 
         const ignoredRulesPopulated: IRule[] = await Promise.all(
             ignoredRules.map((ignoredRule) => this.relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
         );
 
+        console.dir({ ignoredRulesPopulated }, { depth: 5 });
+
         if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
+            console.log('IM HERE');
+
             throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
     }

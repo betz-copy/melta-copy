@@ -4,11 +4,12 @@ import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { TableButton } from '../../TableButton';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -81,21 +82,33 @@ const AddEntityButton: React.FC<{
                 maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
             >
                 <CreateOrEditEntityDetails
-                    mutationProps={{ actionType: MutationActionType.Create, payload: undefined }}
+                    mutationProps={{
+                        actionType: ActionTypes.CreateEntity,
+                        payload: undefined,
+                        onError: (currEntityValues) =>
+                            setAddEntityWizardState((prev) => ({
+                                ...prev,
+                                isOpen: true,
+                                initialStep: 1,
+                                initialCurrValues: currEntityValues,
+                            })),
+
+                        onSuccess: handleSuccess,
+                    }}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    onError={(currEntityValues) =>
-                        setAddEntityWizardState((prev) => ({
-                            ...prev,
-                            isOpen: true,
-                            initialStep: 1,
-                            initialCurrValues: currEntityValues,
-                        }))
-                    }
-                    onSuccess={handleSuccess}
+                    // onError={(currEntityValues) =>
+                    //     setAddEntityWizardState((prev) => ({
+                    //         ...prev,
+                    //         isOpen: true,
+                    //         initialStep: 1,
+                    //         initialCurrValues: currEntityValues,
+                    //     }))
+                    // }
+                    // onSuccess={handleSuccess}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

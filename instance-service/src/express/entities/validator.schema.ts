@@ -268,7 +268,7 @@ const baseUpdateSchema = Joi.object({
     showRelationships: Joi.boolean().default(false),
 });
 
-export const getEntitiesSearchBodyRequestSchema = Joi.object({
+export const getSelectedEntitiesRequestSchema = Joi.object({
     body: baseUpdateSchema.concat(multipleSelectSchema),
     query: {},
     params: {},

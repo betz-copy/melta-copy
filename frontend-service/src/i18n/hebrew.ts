@@ -679,6 +679,13 @@ export default {
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
             },
+            multipleUpdate: {
+                title: 'עריכת ישויות',
+                editPropertiesTitle: 'ערוך מאפיינים',
+                editPropertiesDescription: 'לא ניתן לערוך ערכים ייחודים',
+                summeryTitle: 'סיכום עריכה',
+                entitiesAmount: 'כמות ישויות לעריכה',
+            },
             editExcel: { title: 'עריכת טבלה מתוך קובץ', failedReadExcel: 'קריאת קובץ נכשלה' },
         },
         rule: {

@@ -13,11 +13,13 @@ export const LoadEntitiesTables: React.FC<{
     onDownload?: (brokenRulesEntities?: boolean) => Promise<any>;
     isLoadingDownload?: boolean;
     isLoadingTables?: boolean;
-}> = ({ tablesData, template, onDownload, isLoadingDownload, isLoadingTables }) => {
+    brokenRulesEntities?: any[];
+}> = ({ tablesData, template, onDownload, isLoadingDownload, isLoadingTables, brokenRulesEntities }) => {
     const isFailedEntities = tablesData.failedEntities.length > 0;
-    const isBrokenRulesEntities = (tablesData.brokenRulesEntities?.entities?.length ?? 0) > 0;
+    const isBrokenRulesEntities = (tablesData.brokenRulesEntities?.entities?.length ?? 0) > 0 || (brokenRulesEntities?.length ?? 0) > 0;
 
     if (isLoadingTables) return <CircularProgress style={{ marginTop: '10px', margin: 'auto' }} />;
+    console.log({ brokenRulesEntities });
 
     return (
         // TODO maybe map this
@@ -30,11 +32,13 @@ export const LoadEntitiesTables: React.FC<{
                 title={`${tablesData.succeededEntities.length} ${i18next.t('wizard.entity.loadEntities.succeededEntities')}`}
             />
             <EntitiesTable
-                rowData={(tablesData.brokenRulesEntities?.entities as IEntity[]) || []}
+                rowData={brokenRulesEntities || (tablesData.brokenRulesEntities?.entities as IEntity[]) || []}
                 template={template}
                 defaultExpanded={isBrokenRulesEntities}
                 icon={<Gavel style={{ color: '#FFAC2F' }} />}
-                title={`${tablesData.brokenRulesEntities?.entities.length || 0} ${i18next.t('wizard.entity.loadEntities.brokenRulesEntities')}`}
+                title={`${brokenRulesEntities?.length || tablesData.brokenRulesEntities?.entities?.length || 0} ${i18next.t(
+                    'wizard.entity.loadEntities.brokenRulesEntities',
+                )}`}
                 description={i18next.t('wizard.entity.loadEntities.brokenRulesEntitiesDescription')}
                 download={onDownload && isLoadingDownload ? { onDownload: () => onDownload(true), isLoading: isLoadingDownload } : undefined}
             />

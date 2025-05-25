@@ -34,11 +34,11 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.semanticSearchResult, req.body.textSearch));
     }
 
-    async getEntitiesMultipleSelect(req: Request, res: Response) {
+    async getSelectedEntities(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         const { templateId, showRelationships, ...rest } = req.body;
 
-        res.json(await this.manager.getEntitiesMultipleSelect(rest, entityTemplate, showRelationships));
+        res.json(await this.manager.getSelectedEntities(rest, entityTemplate, showRelationships));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

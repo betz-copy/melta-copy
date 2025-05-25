@@ -30,7 +30,8 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { HighlightText } from '../../../utils/HighlightText';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -529,23 +530,36 @@ const EntityCard: React.FC<EntityCardProps> = ({
             </Grid>
             <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    mutationProps={{ actionType: MutationActionType.Update, payload: entity }}
+                    mutationProps={{
+                        actionType: ActionTypes.UpdateEntity,
+                        payload: entity,
+                        onError: (currEntityValues) =>
+                            setEditDialog({
+                                isOpen: true,
+                                wizardValues: currEntityValues,
+                            }),
+                        onSuccess: () => {
+                            setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                            setExternalErrors({ files: false, unique: {}, action: '' });
+                            refetchQuery?.();
+                        },
+                    }}
                     entityTemplate={entityTemplate}
                     initialCurrValues={editDialog.wizardValues}
-                    onSuccess={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                        refetchQuery?.();
-                    }}
+                    // onSuccess={() => {
+                    //     setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                    //     setExternalErrors({ files: false, unique: {}, action: '' });
+                    //     refetchQuery?.();
+                    // }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    onError={(currEntityValues) =>
-                        setEditDialog({
-                            isOpen: true,
-                            wizardValues: currEntityValues,
-                        })
-                    }
+                    // onError={(currEntityValues) =>
+                    //     setEditDialog({
+                    //         isOpen: true,
+                    //         wizardValues: currEntityValues,
+                    //     })
+                    // }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
