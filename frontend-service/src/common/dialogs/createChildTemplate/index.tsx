@@ -96,12 +96,6 @@ const CreateChildTemplateDialog: React.FC<{
             queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prevData) => prevData!.set(data._id, data));
             toast.success(i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'));
 
-            queryClient.setQueryData<Map<string, IMongoChildEntityTemplate>>('getChildEntityTemplates', (prev) => {
-                const updated = new Map(prev ?? []);
-                updated.set(newTemplate._id, newTemplate);
-                return updated;
-            });
-
             handleClose();
         },
         onError: (err: AxiosError) => {
