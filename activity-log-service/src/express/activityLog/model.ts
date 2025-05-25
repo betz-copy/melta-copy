@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import { Action } from './interface';
+import { ActionsLog } from '@microservices/shared';
 
-export const ActivityLogSchema = new mongoose.Schema({
+const ActivityLogSchema = new mongoose.Schema({
     timestamp: {
         type: Date,
         required: true,
@@ -17,7 +17,7 @@ export const ActivityLogSchema = new mongoose.Schema({
     action: {
         type: String,
         required: true,
-        enum: Action,
+        enum: ActionsLog,
     },
     metadata: {
         type: Object,
@@ -28,3 +28,5 @@ export const ActivityLogSchema = new mongoose.Schema({
 ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
 
 ActivityLogSchema.index({ entityId: 1, userId: 1 }, { unique: true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY' } } });
+
+export default ActivityLogSchema;

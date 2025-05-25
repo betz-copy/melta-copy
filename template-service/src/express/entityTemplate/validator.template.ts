@@ -1,14 +1,18 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
+import {
+    addPropertyToRequest,
+    DefaultController,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplate,
+    IEntitySingleProperty,
+    BadRequestError,
+} from '@microservices/shared';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
-import { addPropertyToRequest } from '../../utils/express';
-import DefaultController from '../../utils/express/controller';
-import { BadRequestError } from '../error';
-import { IEntitySingleProperty, IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
+import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 
-export class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
+class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
         super(new EntityTemplateManager(workspaceId));
     }
@@ -40,7 +44,7 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         return relationshipReferenceIdsMap;
     };
 
-    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
+    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IEntityTemplatePopulated>) => {
         const defaultCode = [
             '/// To throw a custom error in your code, use the following syntax:',
             '// throw new CustomError("Your error message")',
@@ -84,7 +88,7 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         const relatedUserFieldsOfkartoffelFields: string[] = [];
         const userFields: string[] = [];
         Object.entries(properties).forEach(([key, value]) => {
-            if(value.format && value.format === 'user') {
+            if (value.format && value.format === 'user') {
                 userFields.push(key);
             }
             if (value.format && value.format === 'kartoffelUserField') {
@@ -92,11 +96,9 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
             }
         });
 
-        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField))) 
+        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField)))
             throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist');
     }
-
-
 
     validateEntityTemplateUpdate = async (req: Request) => {
         const {
@@ -113,7 +115,6 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         this.validateProperties(properties.properties);
     };
 
-
     validateCreateEntityTemplate = async (req: Request) => {
         const {
             body: { properties },
@@ -122,3 +123,5 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         this.validateProperties(properties.properties);
     };
 }
+
+export default EntityTemplateValidator;

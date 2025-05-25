@@ -1,8 +1,16 @@
-import { TemplatesManagerService } from '.';
+import {
+    ICategory,
+    IMongoCategory,
+    IEntityTemplate,
+    IMongoEntityTemplate,
+    IMongoEntityTemplatePopulated,
+    ISearchEntityTemplatesBody,
+    IMongoRelationshipTemplate,
+    ISubCompactPermissions,
+} from '@microservices/shared';
+import TemplatesManagerService from '.';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { ISubCompactPermissions } from '../userService/interfaces/permissions/permissions';
-import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     service: { workspaceIdHeaderName },
@@ -12,127 +20,11 @@ const {
     },
 } = config;
 
-export interface ICategory {
-    name: string;
-    displayName: string;
-    iconFileId: string | null;
-    color: string;
-}
-
-export interface IMongoCategory extends ICategory {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-export interface ISearchCategoriesBody {
-    search?: string;
-    ids?: string[];
-    limit?: number;
-    skip?: number;
-}
-
-export interface IEntitySingleProperty {
-    title: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    format?:
-        | 'date'
-        | 'date-time'
-        | 'email'
-        | 'fileId'
-        | 'text-area'
-        | 'relationshipReference'
-        | 'location'
-        | 'user'
-        | 'signature'
-        | 'kartoffelUserField'
-        | 'comment';
-    enum?: string[];
-    readOnly?: true;
-    identifier?: true;
-    items?: {
-        type: 'string';
-        enum?: string[];
-        format?: 'fileId' | 'user';
-    };
-    minItems?: 1;
-    uniqueItems?: true;
-    pattern?: string;
-    patternCustomErrorMessage?: string;
-    dateNotification?: number;
-    isDailyAlert?: boolean;
-    isDatePastAlert?: boolean;
-    calculateTime?: boolean;
-    serialStarter?: number;
-    serialCurrent?: number;
-    expandedUserField?: {
-        relatedUserField: string;
-        kartoffelField: string;
-    };
-    isNewPropNameEqualDeletedPropName?: boolean;
-    relationshipReference?: {
-        relationshipTemplateId?: string;
-        relationshipTemplateDirection: 'outgoing' | 'incoming';
-        relatedTemplateId: string;
-        relatedTemplateField: string;
-    };
-    archive?: boolean;
-    comment?: string;
-    color?: string;
-    hideFromDetailsPage?: boolean;
-}
-
-export interface IEntityTemplate {
-    name: string;
-    displayName: string;
-    category: string;
-    properties: {
-        type: 'object';
-        properties: Record<string, IEntitySingleProperty>;
-        hide: string[];
-    };
-    propertiesOrder: string[];
-    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
-    propertiesPreview: string[];
-    enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
-    disabled: boolean;
-    iconFileId: string | null;
-    actions?: string;
-    documentTemplatesIds?: string[];
-    mapSearchProperties?: string[];
-}
-
-export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
-    category: IMongoCategory;
-}
-
-export interface IMongoEntityTemplate extends IEntityTemplate {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface ISearchBody {
-    search?: string;
-    limit?: number;
-    skip?: number;
-}
-
-export interface ISearchEntityTemplatesBody extends ISearchBody {
-    ids?: string[];
-    categoryIds?: string[];
-}
-
 export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
     searchQuery: ISearchEntityTemplatesBody;
 }
 
-export class EntityTemplateService extends TemplatesManagerService {
+class EntityTemplateService extends TemplatesManagerService {
     // categories
     filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
         if (!usersPermissions.instances) {
@@ -244,3 +136,5 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 }
+
+export default EntityTemplateService;

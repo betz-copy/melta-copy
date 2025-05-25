@@ -1,6 +1,6 @@
 import joi from 'joi';
-import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { PermissionType, iconFileSchema, MongoIdSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 import config from '../../config';
 
 const { profilePathPattern } = config.userService;
@@ -156,7 +156,9 @@ export const searchExternalUsersRequestSchema = joi.object({
 
 // GET /api/users/search/:workspaceId
 export const searchUsersByPermissionsSchema = joi.object({
-    query: {},
+    query: {
+        search: joi.string(),
+    },
     body: {},
     params: {
         workspaceId: joi.string().required(),

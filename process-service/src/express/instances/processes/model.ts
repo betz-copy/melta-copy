@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Status } from './interface';
+import { Status } from '@microservices/shared';
 import config from '../../../config';
 
 // eslint-disable-next-line import/prefer-default-export

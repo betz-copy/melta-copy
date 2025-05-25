@@ -14,6 +14,7 @@ export const RaqbMuiAutocompeleteAutoWidth: React.FC<FieldProps> = (fieldProps) 
         if (inputWidth < inputElement.scrollWidth) {
             setInputWidth(inputElement.scrollWidth);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLabel]);
 
     return (

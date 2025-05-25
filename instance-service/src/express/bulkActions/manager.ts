@@ -2,30 +2,32 @@
 import groupBy from 'lodash.groupby';
 import { Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
-import { IActivityLog } from '../../externalServices/activityLog/interface';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { EntitiesIdsRulesReasonsMap, IEntity, IRequiredConstraint, RunRuleReason } from '../entities/interface';
-import { EntityManager } from '../entities/manager';
-import { IRelationship } from '../relationships/interfaces';
-import { RelationshipManager } from '../relationships/manager';
-import { IBrokenRule } from '../rules/interfaces';
-import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import {
-    ActionErrors,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     ActionTypes,
-    IAction,
+    ActionErrors,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
     IUpdateEntityMetadata,
-} from './interface';
+    IAction,
+    IBrokenRule,
+    IRequiredConstraint,
+    IEntity,
+    IRelationship,
+    IActivityLog,
+    BadRequestError,
+} from '@microservices/shared';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
+import DefaultManagerNeo4j from '../../utils/neo4j/manager';
+import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
+import EntityManager from '../entities/manager';
+import RelationshipManager from '../relationships/manager';
+import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import config from '../../config';
-import { BadRequestError } from '../error';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -529,7 +531,6 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 dryRun,
             )
             .catch((err) => {
-                console.log({ errFromBulk: err });
                 return this.entityManager.throwServiceErrorIfFailedConstraintsValidation(err);
             });
     }

@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import React from 'react';
-import { AccordionDetails, AccordionSummary, Box, Grid, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Switch, Typography } from '@mui/material';
 import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
@@ -12,7 +12,12 @@ import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
-const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors, touched }) => {
+const StepsApproversBlock: React.FC<
+    StepsGenericBlockProps & {
+        disableAddingReviewersFieldName: string;
+        isDisableAddingReviewers: boolean;
+    }
+> = ({ title, values, propIndex, errors, touched, setFieldValue, disableAddingReviewersFieldName, isDisableAddingReviewers }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -55,6 +60,20 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                             </Box>
                         )}
                     </FieldArray>
+
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                id="disableAddApprovers"
+                                name="disableAddApprovers"
+                                onChange={(_e, checked) => {
+                                    setFieldValue(disableAddingReviewersFieldName, checked);
+                                }}
+                                checked={isDisableAddingReviewers}
+                            />
+                        }
+                        label={i18next.t('wizard.processTemplate.blockAddingApprovers')}
+                    />
                 </AccordionDetails>
             </FieldBlockAccordion>
         </Grid>

@@ -83,6 +83,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
 
     useEffect(() => {
         setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleChange = (state: EditorState) => {

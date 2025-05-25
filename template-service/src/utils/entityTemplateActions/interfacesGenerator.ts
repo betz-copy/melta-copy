@@ -1,14 +1,14 @@
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../../express/entityTemplate/interface';
+import { IEntitySingleProperty, IEntityTemplatePopulated } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
-    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    entitiesTemplatesByIds: Map<string, IEntityTemplatePopulated>,
 ) => {
     if (typeEnum) return typeEnum?.map((option) => `\`${option}\``).join(' | ');
 
     if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference?.relatedTemplateId!)!.name;
+    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference!.relatedTemplateId)!.name;
 
     return 'string';
 };
@@ -24,7 +24,7 @@ const generateFromArray = ({ items }: IEntitySingleProperty) => {
 export const generateInterface = (
     entity: Record<string, IEntitySingleProperty>,
     interfaceName: string,
-    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    entitiesTemplatesByIds: Map<string, IEntityTemplatePopulated>,
 ) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
@@ -59,7 +59,7 @@ export const generateInterface = (
     ].join('\n');
 };
 
-export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) =>
+export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, IEntityTemplatePopulated>) =>
     [...entitiesTemplatesByIds.values()]
         .map(({ properties: { properties }, name }) => generateInterface(properties, name, entitiesTemplatesByIds))
         .join('\n\n');

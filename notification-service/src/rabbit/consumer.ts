@@ -1,8 +1,7 @@
 import { ConsumerMessage } from 'menashmq';
+import { basicValidateRequest, ServiceError } from '@microservices/shared';
 import NotificationsManager from '../express/notifications/manager';
-import { basicValidateRequest } from '../utils/joi';
 import { notificationSchema } from '../utils/joi/schemas/notification';
-import { ServiceError } from '../express/error';
 import config from '../config';
 
 const {

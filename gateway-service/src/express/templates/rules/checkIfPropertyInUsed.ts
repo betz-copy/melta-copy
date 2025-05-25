@@ -1,10 +1,21 @@
+import {
+    IEquation,
+    isEquation,
+    IArgument,
+    IPropertyOfVariable,
+    isConstant,
+    isPropertyOfVariable,
+    isCountAggFunction,
+    isRegularFunction,
+    isSumAggFunction,
+    ISumAggFunction,
+    isAggregationGroup,
+    isGroup,
+    IFormula,
+    ServiceError,
+} from '@microservices/shared';
+
 import config from '../../../config';
-import { ServiceError } from '../../error';
-import { IFormula } from './interfaces/formula';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from './interfaces/formula/argument';
-import { IEquation, isEquation } from './interfaces/formula/equation';
-import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunction } from './interfaces/formula/function';
-import { isAggregationGroup, isGroup } from './interfaces/formula/group';
 
 const checkPropertyInUsed = (
     { variable, property }: IPropertyOfVariable | ISumAggFunction,
@@ -45,7 +56,7 @@ const checkPropertyInUsedFromEquation = (formula: IEquation, entityId: string, p
     checkPropertyInUsedFromArgument(formula.rhsArgument, entityId, properties, archive);
 };
 
-export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[], archive: boolean) => {
+const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[], archive: boolean) => {
     if (isGroup(formula)) {
         return formula.subFormulas.map((subFormula) => checkPropertyInUsedFromFormula(subFormula, entityId, properties, archive));
     }
@@ -65,3 +76,5 @@ export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: stri
 
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
+
+export default checkPropertyInUsedFromFormula;

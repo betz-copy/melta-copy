@@ -48,8 +48,7 @@ const DeleteRelationshipDialog: React.FC<{
                     });
                 }
 
-                // eslint-disable-next-line no-console
-                console.log('failed to delete relationship. error:', err);
+                console.error('failed to delete relationship. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('entityPage.failedToDeleteRelationship')} />);
             },
             onSuccess: () => {
@@ -87,7 +86,7 @@ const DeleteRelationshipDialog: React.FC<{
                     });
                 }
 
-                console.log('failed to create rule breach request. error:', err);
+                console.error('failed to create rule breach request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
             },
             onSuccess: () => {

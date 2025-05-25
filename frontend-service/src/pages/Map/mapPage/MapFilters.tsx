@@ -52,6 +52,7 @@ const MapFilters = ({
 
     useEffect(() => {
         setSelectedTemplates(templatesWithLocationField);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const categories: IMongoCategory[] = useMemo(() => {

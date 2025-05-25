@@ -1,43 +1,37 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import { trycatch } from '../../utils';
-import { BadRequestError, ForbiddenError } from '../error';
-import { InstancesManager } from '../instances/manager';
-
-import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
+    IMongoEntityTemplatePopulated,
+    IRuleBreachAlert,
+    IRuleBreachRequest,
+    RuleBreachRequestStatus,
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IDeleteRelationshipMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+    IUpdateEntityStatusMetadata,
+    IAction,
+    IBrokenRule,
+    IRuleBreach,
+    PermissionScope,
+    PermissionType,
     INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
-} from '../../externalServices/notificationService/interfaces';
-import {
+    IEntity,
+    IRelationship,
+    IAgGridRequest,
+    basicFilterOperationTypes,
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
-import { RuleBreachService } from '../../externalServices/ruleBreachService';
-import {
-    ActionTypes,
-    IAction,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IRuleBreach,
-    IRuleBreachAlert,
-    IRuleBreachRequest,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-    RuleBreachRequestStatus,
-} from '../../externalServices/ruleBreachService/interfaces';
-import {
+    BadRequestError,
+    ForbiddenError,
     IActionMetadataPopulated,
     IBrokenRulePopulated,
     ICauseInstancePopulated,
@@ -53,17 +47,22 @@ import {
     IRuleBreachRequestPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
-import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+    UploadedFile,
+} from '@microservices/shared';
+import { trycatch } from '../../utils';
+import InstancesManager from '../instances/manager';
+
+import config from '../../config';
+import InstancesService from '../../externalServices/instanceService';
+import RuleBreachService from '../../externalServices/ruleBreachService';
+import StorageService from '../../externalServices/storageService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { RabbitManager } from '../../utils/rabbit';
-import { UsersManager } from '../users/manager';
-import { WorkspaceManager } from '../workspaces/manager';
-import { UploadedFile } from '../../utils/busboy/interface';
+import RabbitManager from '../../utils/rabbit';
+import UsersManager from '../users/manager';
+import WorkspaceManager from '../workspaces/manager';
 import TemplatesManager from '../templates/manager';
 
 const { errorCodes, ruleBreachService } = config;
@@ -722,7 +721,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         updatedAgGridRequest.filterModel.originUserId = {
             filterType: 'text',
-            type: 'equals',
+            type: basicFilterOperationTypes.equals,
             filter: user.id,
         };
 
