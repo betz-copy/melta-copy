@@ -433,7 +433,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                     </AccordionSummary>
 
                     <AccordionDetails ref={drop}>
-                        <Grid item marginBottom={2}>
+                        <Grid item marginBottom={3}>
                             <Divider />
                         </Grid>
 
@@ -463,8 +463,7 @@ const Group = <PropertiesType extends string, Values extends Record<PropertiesTy
                                 type="button"
                                 variant="contained"
                                 style={{
-                                    marginTop: group.fields.length === 0 ? '30px' : '',
-                                    margin: '8px',
+                                    marginTop: group.fields.length === 0 ? '30px' : '10px',
                                     display: 'flex',
                                     justifyContent: 'center',
                                 }}
