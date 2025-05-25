@@ -7,16 +7,15 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    IconButton,
     InputAdornment,
     TextField,
+    Typography,
 } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { AddCircle, RemoveCircle } from '@mui/icons-material';
 import { BlueTitle } from '../../common/BlueTitle';
 import UserAutocomplete from '../../common/inputs/UserAutocomplete';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -25,7 +24,6 @@ import { createUserRequest, searchUsersByPermissions } from '../../services/user
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
 import { useUserStore } from '../../stores/user';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -99,22 +97,23 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     </Grid>
                     {hasPermissionsToModify() && (
                         <Grid item container flex={1} justifyContent="flex-end">
-                            <IconButton onClick={() => setAddUserOpened((prev) => !prev)}>
-                                {addUserOpened ? (
-                                    <RemoveCircle color="primary" fontSize="large" />
-                                ) : (
-                                    <MeltaTooltip title={i18next.t('permissions.permissionsOfUserDialog.createTitle')}>
-                                        <AddCircle color="primary" fontSize="large" />
-                                    </MeltaTooltip>
-                                )}
-                            </IconButton>
+                            <Button
+                                variant="contained"
+                                onClick={() => setAddUserOpened((prev) => !prev)}
+                                disabled={addUserOpened}
+                                sx={{ borderRadius: '7px' }}
+                            >
+                                <Typography fontSize="14px" fontWeight="500">
+                                    {i18next.t('permissions.permissionsOfUserDialog.createTitle')}
+                                </Typography>
+                            </Button>
                         </Grid>
                     )}
                 </Grid>
             </DialogTitle>
             {addUserOpened && (
                 <DialogActions sx={{ paddingX: '1.5rem' }}>
-                    <Box display="flex" boxSizing="border-box" width="100%" paddingLeft="15px" paddingRight="15px">
+                    <Box display="flex" boxSizing="border-box" width="100%" paddingX="15px">
                         <Box width="100%">
                             <UserAutocomplete
                                 mode="external"
@@ -125,8 +124,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                             />
                         </Box>
                         <Button
-                            color="primary"
-                            variant="text"
+                            variant="contained"
                             onClick={() => {
                                 giveUserPermissionsToWorkspace();
                                 setSearchedUser(null);
@@ -135,6 +133,16 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                             sx={{ marginLeft: '0.625rem' }}
                         >
                             {i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                        </Button>
+                        <Button
+                            color="primary"
+                            variant="text"
+                            onClick={() => {
+                                setAddUserOpened(false);
+                            }}
+                            sx={{ marginLeft: '0.625rem' }}
+                        >
+                            {i18next.t('permissions.permissionsOfUserDialog.cancleBtn')}
                         </Button>
                     </Box>
                 </DialogActions>
