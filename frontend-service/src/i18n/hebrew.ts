@@ -656,6 +656,7 @@ export default {
             addStep: 'הוסף שלב',
             blockAdd: 'לא ניתן להוסיף שלב לתהליך בעל מופעים',
             approvers: 'גורמים מאשרים',
+            blockAddingApprovers: 'חסימת הוספת גורמים מאשרים נוספים',
             labelApprovers: 'משתמשים',
             field: 'שדה',
             file: 'קובץ',
