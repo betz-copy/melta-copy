@@ -1,0 +1,19 @@
+---
+description: 
+globs: **/*.tsx,**/*.ts
+alwaysApply: false
+---
+---
+description: Code-style rules for React + TSX
+globs: ["**/*.tsx", "**/*.ts"]
+type: autoAttached
+---
+
+* Obey **strict** compiler settings (`"strict": true` in `tsconfig.json`). :contentReference[oaicite:2]{index=2}  
+* Component names **PascalCase**; files mirror default export (`UserCard.tsx`).  
+* Use **functional components** + React Hooks; no legacy class components.  
+* Give every component a **typed props interface**; never use `any`.  
+* Co-locate component, styles (`.scss` or `.ts` JSS), tests, and story.  
+* Prefer **absolute imports** via `@` alias (configured in `vite.config.ts`). :contentReference[oaicite:3]{index=3}  
+* Avoid anonymous default exports (hurts stack traces).  
+* Log with `console` only during dev; strip or wrap behind a debug flag for prod.  

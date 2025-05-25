@@ -262,12 +262,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
+        const allowedEntityChildTemplates = await this.entityTemplateService.getAllChildTemplates();
+
         return {
             categories: allAllowedCategories,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
             processTemplates,
+            childTemplates: allowedEntityChildTemplates,
         };
     }
 
@@ -435,7 +438,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 scope: categoryScope,
                 entityTemplates: {
                     ...instances?.categories?.[categoryId]?.entityTemplates,
-                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {}, entityChildTemplates: {} },
                 },
             },
         };

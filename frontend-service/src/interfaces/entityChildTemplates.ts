@@ -1,6 +1,6 @@
-import { IMongoCategory } from '../../../interfaces/categories';
-import { IEntitySingleProperty } from '../../../interfaces/entityTemplates';
-import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGridSetFilter, IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter } from "../utils/agGrid/interfaces";
+import { IEntitySingleProperty } from "./entityTemplates";
+import { IMongoCategory } from "./categories";
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
@@ -45,6 +45,8 @@ export interface IEntityChildTemplate {
 export interface IMongoEntityChildTemplate extends IEntityChildTemplate {
     _id: string;
 }
+
+export type IEntityChildTemplateMap = Map<string, IMongoEntityChildTemplate>;
 
 export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;

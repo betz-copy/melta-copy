@@ -81,6 +81,7 @@ const config = {
         entities: {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+            baseChildTemplatesRoute: env.get('TEMPLATE_SERVICE_CHILD_TEMPLATES_BASE_ROUTE').default('/api/templates/child').asString(),
         },
         relationships: {
             baseRelationshipsRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_BASE_ROUTE').default('/api/templates/relationships').asString(),

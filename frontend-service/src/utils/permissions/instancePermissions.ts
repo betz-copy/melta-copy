@@ -81,6 +81,7 @@ export const getChangedCategoryPermissions = (
             if (categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope === PermissionScope.write)
                 newTemplatePermission[key] = {
                     scope: PermissionScope.write,
+                    entityChildTemplates: (categoriesPermissions?.[id]?.entityTemplates?.[key]?.entityChildTemplates ?? {}),
                     fields: {},
                 };
         });
@@ -102,8 +103,8 @@ const changeSpecificTemplate = (
     const categoriesPermissions = { ...permissions };
     const newScope = getNewScope(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.scope, scope, checked);
 
-    if (!newScope && Object.keys(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.fields ?? {}).length === 0) {
-        delete categoriesPermissions[categoryId].entityTemplates[templateId];
+    if (!newScope) {
+        delete categoriesPermissions[categoryId].entityTemplates[templateId]?.scope;
     } else {
         categoriesPermissions[categoryId] = {
             ...categoriesPermissions[categoryId],
@@ -111,7 +112,44 @@ const changeSpecificTemplate = (
                 ...categoriesPermissions[categoryId]?.entityTemplates,
                 [templateId]: {
                     scope: newScope,
-                    fields: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.fields ?? {},
+                    entityChildTemplates: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates ?? {},
+                },
+            },
+        };
+    }
+
+    console.log('changeSpecificTemplate(categoriesPermissions)', categoriesPermissions);
+
+    return categoriesPermissions;
+};
+
+const changeSpecificChildTemplate = (
+    permissions: ICompact<IInstancesPermission>['categories'],
+    checked: boolean,
+    scope: PermissionScope,
+    categoryId: string,
+    templateId: string,
+    childTemplateId: string,
+) => {
+    const categoriesPermissions = { ...permissions };
+    const newScope = getNewScope(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates?.[childTemplateId]?.scope, scope, checked);
+
+    if (!newScope) {
+        delete categoriesPermissions[categoryId].entityTemplates[templateId].entityChildTemplates[childTemplateId];
+    } else {
+        categoriesPermissions[categoryId] = {
+            ...categoriesPermissions[categoryId],
+            entityTemplates: {
+                ...categoriesPermissions[categoryId]?.entityTemplates,
+                [templateId]: {
+                    ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId],
+                    entityChildTemplates: {
+                        ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates,
+                        [childTemplateId]: {
+                            scope: newScope,
+                            fields: {},
+                        },
+                    },
                 },
             },
         };
@@ -167,7 +205,7 @@ const handleUncheckCategoryByTemplates = (
                         categoriesPermissions[categoryId]?.scope === PermissionScope.write
                             ? PermissionScope.write
                             : categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
-                    fields: {},
+                    entityChildTemplates: categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates ?? {},
                 };
             }
         });
@@ -189,8 +227,15 @@ export const getChangedTemplatePermission = (
     categoryId: string,
     templateId: string,
     entityTemplates: entityTemplatePermissionDialog[],
+    childTemplateId?: string,
 ) => {
-    let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId);
+
+    let categoriesPermissions;
+    if(childTemplateId) {
+        categoriesPermissions = changeSpecificChildTemplate(permissions, checked, scope, categoryId, templateId, childTemplateId);
+    } else {
+        categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId);
+    }
 
     if (checked) {
         categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates);
@@ -201,6 +246,9 @@ export const getChangedTemplatePermission = (
     if (!categoriesPermissions?.[categoryId]?.scope && Object.keys(categoriesPermissions?.[categoryId]?.entityTemplates ?? {}).length === 0) {
         delete categoriesPermissions?.[categoryId];
     }
+
+    console.log('categoriesPermissions', categoriesPermissions);
+    
 
     return categoriesPermissions;
 };

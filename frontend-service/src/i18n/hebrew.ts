@@ -1494,6 +1494,11 @@ export default {
             byUser: 'משתמש',
         },
         failedToCreateEntityChildTemplate: 'נכשל ליצור תבנית ישות בן',
+        permissionsPage: {
+            unit: 'יחידה',
+            user: 'משתמש',
+            userPage: 'עמוד לקוח',
+        },
         succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
     },
 };
