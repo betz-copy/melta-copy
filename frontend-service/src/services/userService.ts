@@ -110,8 +110,10 @@ export const getUserProfileRequest = async (user: Partial<IUser>) => {
     return URL.createObjectURL(data);
 };
 
-export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
-    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`);
+export const searchUsersByPermissions = async (workspaceId: string, search?: string): Promise<IMongoUser[]> => {
+    const params = search ? { search } : undefined;
+
+    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`, { params });
     return data;
 };
 
