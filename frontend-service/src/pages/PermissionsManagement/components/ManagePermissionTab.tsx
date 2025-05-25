@@ -6,7 +6,7 @@ import _debounce from 'lodash.debounce';
 import PermissionsDialog from '../../../common/PermissionsDialog';
 import '../../../css/pages.css';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
+import { IUser, IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IRole } from '../../../interfaces/roles';
 import DeletePermissionsDialog from './deleteDialog';
 import SearchInput from '../../../common/inputs/SearchInput';
@@ -80,13 +80,16 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
                             permissionType={permissionType}
                             categories={Array.from(categories.values())}
                             onDeletePermissions={({ _id }) => setDeleteDialogState({ isDialogOpen: true, relatedId: _id })}
-                            onEditPermissions={(roleOrUser) =>
+                            onEditPermissions={(roleOrUser) => {
+                                const { roles, ...restOfUser } = roleOrUser as IUserPopulated;
+                                const roleIds = roles?.map((role) => role._id);
+
                                 setEditDialogState({
                                     isDialogOpen: true,
-                                    user: permissionType === RelatedPermission.User ? (roleOrUser as IUser) : null,
+                                    user: permissionType === RelatedPermission.User ? ({ roleIds, ...restOfUser } as IUser) : null,
                                     role: permissionType === RelatedPermission.Role ? (roleOrUser as IRole) : null,
-                                })
-                            }
+                                });
+                            }}
                             quickFilterText={quickFilterText}
                             getRowId={({ _id }) => _id}
                         />

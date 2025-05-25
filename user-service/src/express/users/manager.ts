@@ -53,7 +53,7 @@ class UsersManager {
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
             const relatedIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
-            query.$or = [{ _id: { $in: [...relatedIds] } }, { roleId: { $in: [...relatedIds] } }];
+            query.$or = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
         }
 
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
@@ -91,8 +91,9 @@ class UsersManager {
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
         const baseUser = (await UsersModel.create(userData)).toObject();
 
-        if (userData.roleId)
-            await RolesManager.getRoleById(userData.roleId); // Validate role exists
+        if (userData.roleIds && userData.roleIds?.length > 0)
+            await RolesManager.getRoleById(userData.roleIds[0]); // Validate role exists
+        // TODO: fix it for other workspaces
         else await PermissionsManager.syncCompactPermissions(baseUser._id, RelatedPermission.User, permissions);
 
         return this.baseUserToUser(baseUser);
@@ -101,9 +102,9 @@ class UsersManager {
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
         const updateQuery: any = { ...updateData };
 
-        if (updateQuery.roleId === null) {
-            delete updateQuery.roleId; // remove from $set
-            updateQuery.$unset = { roleId: '' };
+        if (updateQuery.roleIds === null) {
+            delete updateQuery.roleIds; // remove from $set
+            updateQuery.$unset = { roleIds: '' };
         }
 
         const baseUser = await UsersModel.findByIdAndUpdate(id, updateQuery, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
@@ -118,16 +119,16 @@ class UsersManager {
     }
 
     private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[], populated?: boolean): Promise<IUser | IUserPopulated> {
-        const { roleId, ...userWithoutRole } = user;
+        const { roleIds, ...userWithoutRole } = user;
 
         const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
 
-        let role: string | IRole | undefined = roleId;
-        if (populated && roleId) role = await RolesManager.getRoleById(roleId);
+        let roles: string[] | IRole[] | undefined = roleIds;
+        if (populated && roleIds && roleIds?.length > 0) roles = await RolesManager.getRolesByIds(roleIds);
 
         return {
             ...userWithoutRole,
-            [populated ? 'role' : 'roleId']: role,
+            [populated ? 'roles' : 'roleIds']: roles,
             permissions,
             displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}`,
         };

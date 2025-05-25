@@ -4,7 +4,7 @@ import config from '../../config';
 
 const { permissionsCollectionName } = config.mongo;
 
-const PermissionSchema = new Schema(
+export const PermissionSchema = new Schema(
     {
         relatedId: {
             type: String,

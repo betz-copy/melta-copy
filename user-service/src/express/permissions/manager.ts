@@ -8,6 +8,8 @@ import {
     ISubCompactPermissions,
     RecursiveNullable,
     RelatedPermission,
+    IUser,
+    IUserPopulated,
 } from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
@@ -30,6 +32,11 @@ class PermissionsManager {
         return compactPermissions;
     }
 
+    static async populateUserRoles(user: IUser): Promise<IUserPopulated> {
+        const { roleIds, ...restOfUser } = user;
+        return { ...restOfUser, roles: await RolesManager.getRolesByIds(roleIds ?? []) };
+    }
+
     static async getCompactPermissionsOfRelatedId(
         relatedId: string,
         workspaceIds?: string[],
@@ -39,7 +46,7 @@ class PermissionsManager {
 
         if (permissionType === RelatedPermission.User) {
             const user = await UsersManager.getUserById(relatedId, workspaceIds, false);
-            query.relatedId = user.roleId ?? relatedId;
+            query.relatedId = { $in: user.roleIds && user.roleIds.length > 0 ? user.roleIds : [relatedId] };
         } else query.relatedId = relatedId;
 
         if (workspaceIds) query.workspaceId = { $in: workspaceIds };

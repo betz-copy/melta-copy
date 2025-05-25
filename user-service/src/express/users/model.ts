@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema(
         profile: {
             type: String,
         },
-        roleId: { type: String, index: true },
+        roleIds: { type: [String], index: true },
         preferences: {
             darkMode: {
                 type: Boolean,

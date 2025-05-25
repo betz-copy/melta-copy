@@ -22,12 +22,12 @@ export interface IBaseUser {
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
-    roleId?: string;
+    roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 
-export interface IUserPopulated extends Omit<IUser, 'roleId'> {
-    role?: IBaseRole;
+export interface IUserPopulated extends Omit<IUser, 'roleIds'> {
+    roles?: IBaseRole[];
 }
 
 export type PermissionData = IUser | IRole;

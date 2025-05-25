@@ -39,8 +39,14 @@ export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
     return data;
 };
 
-export const createUserRequest = async (kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions, roleId?: string) => {
-    const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions, roleId });
+export const createUserRequest = async (
+    kartoffelId: string,
+    digitalIdentitySource: string,
+    permissions: ICompactPermissions,
+    workspaceId: string,
+    roleIds?: string[],
+) => {
+    const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions, workspaceId, roleIds });
     return data;
 };
 
@@ -70,8 +76,13 @@ export const updateUserExternalMetadataRequest = async (userId: string, kartoffe
     return data;
 };
 
-export const updateUserRoleIdRequest = async (userId: string, permissions: IUser['permissions'], roleId?: string) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/roleId`, { roleId, permissions });
+export const updateUserRoleIdsRequest = async (
+    userId: string,
+    workspaceId: string,
+    permissions: IUser['permissions'],
+    roleIds?: IUser['roleIds'],
+) => {
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/roleIds`, { workspaceId, roleIds, permissions });
     return data;
 };
 
@@ -124,7 +135,17 @@ export const updateRoleRequest = async (roleId: string, name: string) => {
     return data;
 };
 
-export const searchRolesByPermissions = async (workspaceId: string): Promise<IMongoRole[]> => {
+export const searchRolesByPermissionsRequest = async (workspaceId: string): Promise<IMongoRole[]> => {
     const { data } = await axios.get<IMongoRole[]>(`${roles}/search/${workspaceId}`);
+    return data;
+};
+
+export const getUserRolePerWorkspaceRequest = async (workspaceId: string, roleIds: string[]) => {
+    const { data } = await axios.post<IRole>(`${users}/userRoleWorkspace/${workspaceId}`, { roleIds });
+    return data;
+};
+
+export const getAllWorkspaceRolesRequest = async (workspaceIds: string[]) => {
+    const { data } = await axios.post<IRole[]>(`${users}/roles/workspaces`, { workspaceIds });
     return data;
 };

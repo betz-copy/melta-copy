@@ -18,15 +18,16 @@ export interface IBaseUser {
         kartoffelId: string;
         digitalIdentitySource: string;
     };
-    roleId?: string;
+    roleIds?: string[];
 }
+
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
-    roleId?: string;
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
-export interface IUserPopulated extends Omit<IUser, 'roleId'> {
-    role?: IBaseRole;
+
+export interface IUserPopulated extends Omit<IUser, 'roleIds'> {
+    roles?: IBaseRole[];
 }
 
 export enum RelatedPermission {

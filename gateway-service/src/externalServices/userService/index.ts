@@ -52,7 +52,7 @@ class UserService {
     }
 
     static async updateUser(userId: string, updates: DeepPartial<IBaseUser>): Promise<IUser> {
-        const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, { ...updates, roleId: updates.roleId ?? null });
+        const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, { ...updates, roleIds: updates.roleIds ?? null });
         return data;
     }
 
@@ -61,7 +61,7 @@ class UserService {
         return data;
     }
 
-    static async getUserPermissions(userId: string, permissionType: RelatedPermission, workspaceIds?: string[]): Promise<ICompactPermissions> {
+    static async getRelatedPermissions(userId: string, permissionType: RelatedPermission, workspaceIds?: string[]): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/find-by-related-id/${userId}`, {
             workspaceIds,
             permissionType,
@@ -117,6 +117,16 @@ class UserService {
 
     static async searchRolesByPermissions(workspaceId: string) {
         const { data } = await this.userService.get<IRole[]>(`${rolesRoute}/search/${workspaceId}`);
+        return data;
+    }
+
+    static async getUserRolePerWorkspace(workspaceId: string, roleIds: string[]) {
+        const { data } = await this.userService.post<IRole>(`${rolesRoute}/userRoleWorkspace/${workspaceId}`, { roleIds });
+        return data;
+    }
+
+    static async getAllWorkspaceRoles(workspaceIds: string[]) {
+        const { data } = await this.userService.post<IRole[]>(`${rolesRoute}/workspaces`, { workspaceIds });
         return data;
     }
 }

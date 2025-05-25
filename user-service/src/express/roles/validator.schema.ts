@@ -71,3 +71,19 @@ export const searchRolesByPermissionsSchema = joi.object({
         workspaceId: joi.string().required(),
     },
 });
+
+// POST /api/roles/workspaces
+export const getAllWorkspaceRolesSchema = joi.object({
+    query: {},
+    body: { workspaceIds: joi.array().items(joi.string()).required() },
+    params: {},
+});
+
+// POST /api/roles/userRoleWorkspace/:workspaceId
+export const userRoleWorkspaceSchema = joi.object({
+    query: {},
+    body: { roleIds: joi.array().items(joi.string()).required() },
+    params: {
+        workspaceId: joi.string().required(),
+    },
+});

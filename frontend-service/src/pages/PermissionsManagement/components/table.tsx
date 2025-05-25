@@ -56,8 +56,9 @@ const columnDefs = (
     ...(permissionType === RelatedPermission.User
         ? [
               {
-                  field: 'role.name',
+                  field: 'name',
                   headerName: i18next.t('roleAutocomplete.label'),
+                  valueGetter: (params) => (params.data.roles ?? []).find((role: IRole) => role.permissions[workspaceId])?.name ?? '',
                   filter: 'agTextColumnFilter',
                   sortable: true,
                   suppressHeaderFilterButton: false,

@@ -31,6 +31,14 @@ class RolesController {
     static async searchRolesByPermissions(req: Request, res: Response) {
         res.json(await RolesManager.searchRolesByPermissions(req.params.workspaceId));
     }
+
+    static async getAllWorkspaceRoles(req: Request, res: Response) {
+        res.json(await RolesManager.getAllWorkspaceRoles(req.body.workspaceIds));
+    }
+
+    static async getUserRolePerWorkspace(req: Request, res: Response) {
+        res.json(await RolesManager.getUserRolePerWorkspace(req.body.roleIds, req.params.workspaceId));
+    }
 }
 
 export default RolesController;

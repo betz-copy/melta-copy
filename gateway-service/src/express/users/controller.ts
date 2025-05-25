@@ -34,16 +34,16 @@ class UsersController {
         res.json(await UsersManager.searchUsers(req.body));
     }
 
-    static async updateUserRoleId(req: Request, res: Response) {
-        const { roleId, permissions } = req.body;
+    static async updateUserRoleIds(req: Request, res: Response) {
+        const { workspaceId, roleIds, permissions } = req.body;
 
-        res.json(await UsersManager.updateUserRoleId(req.params.userId, permissions, roleId));
+        res.json(await UsersManager.updateUserRoleIds(req.params.userId, workspaceId, permissions, roleIds));
     }
 
     static async createUser(req: Request, res: Response) {
-        const { kartoffelId, digitalIdentitySource, permissions, roleId } = req.body;
+        const { kartoffelId, digitalIdentitySource, permissions, workspaceId, roleIds } = req.body;
 
-        res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions, roleId));
+        res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions, workspaceId, roleIds));
     }
 
     static async updateUserPreferencesMetadata(req: Request, res: Response) {
@@ -101,6 +101,14 @@ class UsersController {
 
     static async searchRolesByPermissions(req: Request, res: Response) {
         res.json(await UsersManager.searchRolesByPermissions(req.params.workspaceId as string));
+    }
+
+    static async getUserRolePerWorkspace(req: Request, res: Response) {
+        res.json(await UsersManager.getUserRolePerWorkspace(req.params.workspaceId as string, req.body.roleIds));
+    }
+
+    static async getAllWorkspaceRoles(req: Request, res: Response) {
+        res.json(await UsersManager.getAllWorkspaceRoles(req.body.workspaceIds));
     }
 }
 

@@ -4,12 +4,13 @@ import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
 import _isEqual from 'lodash.isequal';
 import React from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
+import _debounce from 'lodash.debounce';
 
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
-import { createUserRequest, syncPermissionsRequest, updateUserRoleIdRequest } from '../../services/userService';
+import { createUserRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest, updateUserRoleIdsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -53,7 +54,6 @@ const MyPermissions: React.FC<{
         },
         permissions: {},
         displayName: '',
-        role: undefined,
     } as IUser;
 
     const queryClient = useQueryClient();
@@ -81,7 +81,8 @@ const MyPermissions: React.FC<{
                 formUser.externalMetadata.kartoffelId,
                 formUser.externalMetadata.digitalIdentitySource,
                 formUser.permissions,
-                formUser.roleId,
+                workspace._id,
+                formUser.roleIds,
             ),
         {
             onError: (error) => {
@@ -98,7 +99,7 @@ const MyPermissions: React.FC<{
     );
 
     const { mutate: updateUserRoleId } = useMutation(
-        (formUser: IUser) => updateUserRoleIdRequest(formUser._id, formUser.permissions, formUser.roleId),
+        (formUser: IUser) => updateUserRoleIdsRequest(formUser._id, workspace._id, formUser.permissions, formUser.roleIds),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
@@ -159,6 +160,21 @@ const MyPermissions: React.FC<{
         },
     );
 
+    const { data: workspaceRoles, refetch: searchRolesOptions } = useQuery(
+        ['getAllWorkspaceRolesRequest', existingUser],
+        () => getAllWorkspaceRolesRequest([workspace._id]),
+        {
+            enabled: !!workspace,
+            staleTime: Infinity,
+            cacheTime: Infinity,
+            retry: false,
+        },
+    );
+
+    const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
+
+    const prevRole = workspaceRoles?.find((role) => existingUser?.roleIds?.includes(role._id));
+
     return (
         <Formik
             initialValues={existingUser ? _cloneDeep(existingUser) : defaultEmptyUser}
@@ -173,16 +189,19 @@ const MyPermissions: React.FC<{
                 return {};
             }}
             onSubmit={(formUser) => {
+                const currentRole = workspaceRoles?.find((role) => formUser.roleIds?.includes(role._id));
+
                 if (mode === 'create') createUser(formUser);
-                else if (existingUser?.roleId == undefined && formUser.roleId === undefined)
+                else if (prevRole == undefined && currentRole === undefined)
                     syncUserPermissions(formUser); // update personal permissions (without roles)
                 else {
-                    if (existingUser?.roleId === undefined && !!formUser.roleId) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
+                    if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
                     updateUserRoleId(formUser); // role changed, added or deleted
                 }
             }}
         >
             {(formikProps: FormikProps<IUser>) => {
+                const formikRole = workspaceRoles?.find((role) => formikProps.values.roleIds?.includes(role._id));
                 return (
                     <Form>
                         <DialogTitle>
@@ -211,19 +230,25 @@ const MyPermissions: React.FC<{
                                 />
                             </Box>
 
-                            {(mode !== 'view' || formikProps.values.roleId) && (
+                            {(mode !== 'view' || formikProps.values.roleIds) && (
                                 <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                     <RoleAutocomplete
-                                        roleId={formikProps.values.roleId}
+                                        value={formikRole}
+                                        options={workspaceRoles}
                                         onChange={(_e, chosenRole) => {
-                                            formikProps.setFieldValue('roleId', chosenRole?._id ?? undefined);
+                                            const currentRoleIds = formikProps.values.roleIds ?? [];
+                                            const updatedRoleIds = currentRoleIds.filter((id) => id !== prevRole?._id);
+                                            if (chosenRole?._id) updatedRoleIds.push(chosenRole._id);
+
+                                            formikProps.setFieldValue('roleIds', updatedRoleIds);
                                             formikProps.setFieldValue('permissions', chosenRole?.permissions ?? {});
                                         }}
                                         onBlur={formikProps.handleBlur}
                                         readOnly={mode === 'view'}
-                                        isError={Boolean(formikProps.touched.roleId && formikProps.errors.roleId)}
-                                        helperText={formikProps.touched.roleId ? formikProps.errors.roleId : ''}
+                                        isError={Boolean(formikProps.touched.roleIds && formikProps.errors.roleIds)}
+                                        helperText={formikProps.touched.roleIds ? formikProps.errors.roleIds : ''}
                                         enableClear={mode !== 'view'}
+                                        refetch={searchRolesOptionsDebounced}
                                     />
                                 </Box>
                             )}
@@ -234,7 +259,7 @@ const MyPermissions: React.FC<{
                                 dialogPermissionData={dialogPermissionData}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
-                                disableCheckboxes={!!formikProps.values.roleId}
+                                disableCheckboxes={!!formikRole}
                             />
                         </DialogContent>
 

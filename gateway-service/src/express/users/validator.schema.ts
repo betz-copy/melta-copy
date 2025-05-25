@@ -18,9 +18,9 @@ const UserExternalMetadataSchema = joi.object({
     digitalIdentitySource: joi.string().required(),
 });
 
-const UserRoleIdSchema = joi.object({
+const UserRoleIdsSchema = joi.object({
     permissions: joi.object(),
-    roleId: joi.string(),
+    roleIds: joi.array().items(joi.string()),
 });
 
 const UserPreferencesMetadataSchema = joi.object({
@@ -98,10 +98,12 @@ export const searchUsersRequestSchema = joi.object({
     params: {},
 });
 
-// PATCH /api/users/:userId/roleId
-export const updateUserRoleIdRequestSchema = joi.object({
+// PATCH /api/users/:userId/roleIds
+export const updateUserRoleIdsRequestSchema = joi.object({
     query: {},
-    body: UserRoleIdSchema.required(),
+    body: UserRoleIdsSchema.keys({
+        workspaceId: joi.string(),
+    }).required(),
     params: {
         userId: joi.string().required(),
     },
@@ -112,7 +114,8 @@ export const createUserRequestSchema = joi.object({
     query: {},
     body: UserExternalMetadataSchema.keys({
         permissions: joi.object(),
-        roleId: joi.string(),
+        workspaceId: joi.string(),
+        roleIds: joi.array().items(joi.string()),
     }).required(),
     params: {},
 });
@@ -236,4 +239,20 @@ export const searchRolesByPermissionsSchema = joi.object({
     params: {
         workspaceId: joi.string().required(),
     },
+});
+
+// POST /api/users/userRoleWorkspace/:workspaceId
+export const userRoleWorkspaceRequestSchema = joi.object({
+    query: {},
+    body: { roleIds: joi.array().items(joi.string()).required() },
+    params: {
+        workspaceId: joi.string().required(),
+    },
+});
+
+// POST /api/users/roles/workspaces
+export const getAllWorkspaceRolesSchema = joi.object({
+    query: {},
+    body: { workspaceIds: joi.array().items(joi.string()).required() },
+    params: {},
 });

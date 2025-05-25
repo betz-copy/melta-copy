@@ -70,14 +70,30 @@ class UsersManager {
         return UserService.searchUsers(searchBody);
     }
 
-    static async updateUserRoleId(userId: string, updatedPermissions: IUser['permissions'], roleId?: string): Promise<IUser> {
+    static async updateUserRoleIds(
+        userId: string,
+        workspaceId: string,
+        updatedPermissions: IUser['permissions'],
+        roleIds?: string[],
+    ): Promise<IUser> {
         const existingUser = await this.getUserById(userId);
-        if (!!existingUser?.roleId && roleId === undefined) {
-            // changing from role to personal permissions
-            this.syncUserPermissions(userId, RelatedPermission.User, updatedPermissions);
+        const prevRole =
+            existingUser.roleIds && existingUser.roleIds.length > 0
+                ? await this.getUserRolePerWorkspace(workspaceId, existingUser.roleIds)
+                : undefined;
+        const updatedRole = roleIds && roleIds.length > 0 ? await this.getUserRolePerWorkspace(workspaceId, roleIds) : undefined;
+
+        if (prevRole && roleIds?.includes(prevRole._id) && updatedRole && roleIds?.includes(updatedRole._id))
+            throw new BadRequestError('only one role per workspace to user');
+
+        if (updatedRole === undefined) {
+            // adding personal permissions
+            const newUser = await UserService.updateUser(userId, { roleIds });
+            const newPermissions = await this.syncUserPermissions(userId, RelatedPermission.User, updatedPermissions);
+            return { ...newUser, permissions: newPermissions };
         }
 
-        return UserService.updateUser(userId, { roleId });
+        return UserService.updateUser(userId, { roleIds });
     }
 
     private static validateDigitalIdentity(
@@ -92,11 +108,17 @@ class UsersManager {
         }
     }
 
-    static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions, roleId?: string): Promise<IUser> {
+    static async createUser(
+        kartoffelId: string,
+        digitalIdentitySource: string,
+        permissions: ICompactPermissions,
+        workspaceId: string,
+        roleIds?: string[],
+    ): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource)
-            return this.updateUserRoleId(existingUser._id, permissions, roleId);
+            return this.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
 
         const {
             _id,
@@ -113,7 +135,7 @@ class UsersManager {
             permissions,
             externalMetadata: { kartoffelId, digitalIdentitySource },
             preferences,
-            roleId,
+            roleIds,
         });
     }
 
@@ -272,6 +294,14 @@ class UsersManager {
 
     static async searchRolesByPermissions(workspaceId: string): Promise<IRole[]> {
         return UserService.searchRolesByPermissions(workspaceId);
+    }
+
+    static async getUserRolePerWorkspace(workspaceId: string, roleIds: string[]): Promise<IRole> {
+        return UserService.getUserRolePerWorkspace(workspaceId, roleIds);
+    }
+
+    static async getAllWorkspaceRoles(workspaceIds: string[]): Promise<IRole[]> {
+        return UserService.getAllWorkspaceRoles(workspaceIds);
     }
 }
 

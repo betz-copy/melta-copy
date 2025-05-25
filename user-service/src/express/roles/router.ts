@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { wrapController, ValidateRequest } from '@microservices/shared';
 import {
     createRoleRequestSchema,
+    getAllWorkspaceRolesSchema,
     getRoleByIdRequestSchema,
     searchRolesByPermissionsSchema,
     searchRolesRequestSchema,
     updateRoleRequestSchema,
     updateRolesBulkRequestSchema,
+    userRoleWorkspaceSchema,
 } from './validator.schema';
 import RolesController from './controller';
 
@@ -23,10 +25,14 @@ rolesRouter.patch('/:id', ValidateRequest(updateRoleRequestSchema), wrapControll
 
 rolesRouter.patch('/bulk', ValidateRequest(updateRolesBulkRequestSchema), wrapController(RolesController.updateRolesBulk));
 
-rolesRouter.get(
-    '/roles/search/:workspaceId',
-    ValidateRequest(searchRolesByPermissionsSchema),
-    wrapController(RolesController.searchRolesByPermissions),
+rolesRouter.get('/search/:workspaceId', ValidateRequest(searchRolesByPermissionsSchema), wrapController(RolesController.searchRolesByPermissions));
+
+rolesRouter.post('/workspaces', ValidateRequest(getAllWorkspaceRolesSchema), wrapController(RolesController.getAllWorkspaceRoles));
+
+rolesRouter.post(
+    '/userRoleWorkspace/:workspaceId',
+    ValidateRequest(userRoleWorkspaceSchema),
+    wrapController(RolesController.getUserRolePerWorkspace),
 );
 
 export default rolesRouter;

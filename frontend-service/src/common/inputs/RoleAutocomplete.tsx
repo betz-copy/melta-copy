@@ -2,15 +2,13 @@ import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useMemo, useState } from 'react';
-import { useQuery } from 'react-query';
-import { toast } from 'react-toastify';
-import { getRoleByIdRequest, searchRolesRequest } from '../../services/userService';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { IRole } from '../../interfaces/roles';
-import { useWorkspaceStore } from '../../stores/workspace';
 
 export interface IRoleAutocomplete {
-    roleId?: string;
+    value?: IRole;
+    options?: IRole[];
+    refetch: any;
     displayValue?: string;
     onChange: AutocompleteProps<IRole, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IRole, undefined, undefined, undefined>['onInputChange'];
@@ -32,7 +30,9 @@ export interface IRoleAutocomplete {
 }
 
 const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
-    roleId,
+    value,
+    options,
+    refetch,
     displayValue,
     onChange,
     onDisplayValueChange,
@@ -44,7 +44,6 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
     label = i18next.t('roleAutocomplete.label'),
     isError,
     helperText,
-    minInputLengthToSearch = 2,
     size,
     enableClear = false,
     required,
@@ -52,47 +51,14 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
     textFieldProps,
     overrideSx,
 }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const [internalDisplayValue, setInputValue] = useState<string | undefined>(roleId);
+    const [inputValue, setInputValue] = useState(value?.name ?? '');
+    const currentDisplayValue = displayValue ?? inputValue;
 
-    const currentDisplayValue = displayValue ?? internalDisplayValue;
-
-    const {
-        data: rolesOptions,
-        refetch: searchRolesOptions,
-        isFetching: isFetchingRolesOptions,
-    } = useQuery(
-        ['searchRoles', currentDisplayValue],
-        () => {
-            return searchRolesRequest({ search: currentDisplayValue || undefined, limit: 10, workspaceIds: [workspace._id] }).then(
-                (baseRoles) => baseRoles.roles,
-            );
-        },
-        {
-            onError: () => {
-                toast.error(i18next.t('roleAutocomplete.failedToSearchRoles'));
-            },
-            enabled: false,
-            retry: false,
-            initialData: [],
-        },
-    );
-
-    const { data: selectedRoleById } = useQuery(['getRoleById', roleId], () => (roleId ? getRoleByIdRequest(roleId) : null), {
-        enabled: !!roleId && !rolesOptions?.some((role) => role._id === roleId),
-        staleTime: Infinity,
-        cacheTime: Infinity,
-        retry: false,
-    });
-
-    const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
-
-    const value = useMemo(() => {
-        if (!roleId) return null;
-
-        const foundInOptions = rolesOptions?.find((role) => role._id === roleId);
-        return foundInOptions ?? selectedRoleById ?? null;
-    }, [roleId, rolesOptions, selectedRoleById]);
+    const filteredRoles = useMemo(() => {
+        if (!options) return [];
+        const searchTerm = inputValue.toLowerCase();
+        return options.filter((role) => role.name.toLowerCase().includes(searchTerm));
+    }, [options, inputValue]);
 
     return (
         <MeltaTooltip title={value?.name ?? ''} sx={{ maxWidth: 'none' }}>
@@ -100,29 +66,21 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={(_e, newValue, reason) => {
-                    setInputValue(newValue?.name);
-                    onChange?.(_e, newValue, reason);
+                    onChange?.(_e, reason === 'clear' ? null : newValue, reason);
+                    if (reason === 'clear') onDisplayValueChange?.(_e, '', reason);
                 }}
                 onInputChange={(_e, newValue, reason) => {
-                    setInputValue(newValue);
-                    onDisplayValueChange?.(_e, newValue, reason);
-                    if (reason === 'input' && newValue.length >= minInputLengthToSearch) {
-                        searchRolesOptionsDebounced();
-                    }
+                    setInputValue(reason === 'clear' ? '' : newValue);
+                    onDisplayValueChange?.(_e, reason === 'clear' ? '' : newValue, reason);
+                    if (reason === 'input') refetch();
                 }}
                 disabled={disabled}
-                filterOptions={(o) => o} // the "autoComplete" is done at server side
+                filterOptions={(options) => options}
                 getOptionLabel={({ name }) => name}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currValue) => option._id === currValue?._id}
-                options={
-                    (rolesOptions?.sort((a, b) => {
-                        if (!a.name) return 1;
-                        if (!b.name) return -1;
-                        return 0;
-                    }) as IRole[]) ?? []
-                }
-                loading={isFetchingRolesOptions}
+                isOptionEqualToValue={(option, currentValue) => option._id === currentValue?._id}
+                options={filteredRoles}
+                loading={!options}
                 loadingText={i18next.t('roleAutocomplete.loading')}
                 noOptionsText={i18next.t('roleAutocomplete.noOptions')}
                 renderInput={(params) => (

@@ -9,12 +9,13 @@ import { environment } from '../../../globals';
 import { IUser, IUserPopulated } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { getRoleByIdRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
+import { getUserRolePerWorkspaceRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
 import { ErrorToast } from '../../ErrorToast';
 import { UserProfile } from './userProfile';
 import { UserDetails } from './userDetails';
 import { SelectCheckbox } from '../../SelectCheckBox';
 import { DayNightSwitch } from '../../inputs/DayNightSwitch';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { notificationsMoreData } = environment.notifications;
 
@@ -24,6 +25,8 @@ const MyAccount: React.FC<{
     isPreferencesUpdated: boolean;
     setIsPreferencesUpdated: (isUpdate: boolean) => void;
 }> = ({ existingUser, handleClose, isPreferencesUpdated, setIsPreferencesUpdated }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
@@ -78,10 +81,10 @@ const MyAccount: React.FC<{
     );
 
     const { data: role } = useQuery(
-        ['getRoleById', existingUser.roleId],
-        () => (existingUser.roleId ? getRoleByIdRequest(existingUser.roleId) : null),
+        ['getUserRolePerWorkspace', existingUser.roleIds],
+        () => (existingUser.roleIds ? getUserRolePerWorkspaceRequest(workspace._id, existingUser.roleIds) : null),
         {
-            enabled: !!existingUser.roleId,
+            enabled: !!existingUser.roleIds,
             staleTime: Infinity,
             cacheTime: Infinity,
             retry: false,
@@ -91,8 +94,8 @@ const MyAccount: React.FC<{
     const userPopulated: IUserPopulated = role
         ? {
               ...existingUser,
-              role,
-              ...(existingUser.roleId && { roleId: undefined }),
+              roles: [role],
+              ...(existingUser.roleIds && { roleIds: undefined }),
           }
         : existingUser;
 

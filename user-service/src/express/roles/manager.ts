@@ -13,6 +13,20 @@ class RolesManager {
         return this.baseRoleToRole(baseRole, workspaceIds);
     }
 
+    static async getRolesByIds(ids: string[], workspaceIds?: string[]): Promise<IRole[]> {
+        const baseRoles = await RolesModel.find({ _id: { $in: ids } })
+            .lean()
+            .exec();
+
+        if (baseRoles.length !== ids.length) {
+            const foundIds = baseRoles.map((role) => role._id.toString());
+            const missingIds = ids.filter((id) => !foundIds.includes(id));
+            throw new RoleDoesNotExistError(`Missing roles with IDs: ${missingIds.join(', ')}`);
+        }
+
+        return Promise.all(baseRoles.map((baseRole) => this.baseRoleToRole(baseRole, workspaceIds)));
+    }
+
     static async searchBaseRoles(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
@@ -40,8 +54,8 @@ class RolesManager {
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
-            const rolesIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
-            query._id = { $in: [...rolesIds] };
+            const roleIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
+            query._id = { $in: [...roleIds] };
         }
 
         const roles = await RolesModel.find(query, {}, { limit, skip: step * limit, sort })
@@ -74,6 +88,23 @@ class RolesManager {
         const permissionsToRoles = await this.appendPermissionsToRoles(roles);
 
         return { roles: permissionsToRoles, count };
+    }
+
+    static async getAllWorkspaceRoles(workspaceIds: string[]): Promise<IRole[]> {
+        const permissions = await PermissionsManager.searchBySubCompactPermissions({}, workspaceIds);
+        const roleIds = [...new Set(permissions.map(({ relatedId }) => relatedId))];
+
+        const roles = await RolesModel.find({ _id: { $in: roleIds } }).lean();
+        const permissionsToRoles = await this.appendPermissionsToRoles(roles);
+
+        return permissionsToRoles;
+    }
+
+    static async getUserRolePerWorkspace(roleIds: string[], workspaceId: string) {
+        const workspaceRoles = await this.getAllWorkspaceRoles([workspaceId]);
+        console.dir({ workspaceRoles, roleIds }, { depth: null });
+
+        return workspaceRoles.find((role) => roleIds.includes(role._id.toString()));
     }
 
     static async createRole({ permissions, ...roleData }: Omit<IRole, '_id'>): Promise<IRole> {

@@ -98,7 +98,7 @@ class FlowCubeManager extends DefaultManagerProxy<null> {
             searchBody.search = body?.Parameters?.Value || body?.Value;
         }
 
-        const usersPermissions = await UserService.getUserPermissions(userId, RelatedPermission.User);
+        const usersPermissions = await UserService.getRelatedPermissions(userId, RelatedPermission.User);
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
         const filteredWorkspaces = await filterWorkspacesByPermissions(workspaces, usersPermissions);
 

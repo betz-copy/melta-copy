@@ -22,7 +22,9 @@ import {
     updateRoleRequestSchema,
     searchRolesByPermissionsSchema,
     syncPermissionsRequestSchema,
-    updateUserRoleIdRequestSchema,
+    updateUserRoleIdsRequestSchema,
+    userRoleWorkspaceRequestSchema,
+    getAllWorkspaceRolesSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -58,10 +60,10 @@ usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapC
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
 usersRouter.patch(
-    '/:userId/roleId',
+    '/:userId/roleIds',
     AuthorizerControllerMiddleware.userCanWritePermissions,
-    ValidateRequest(updateUserRoleIdRequestSchema),
-    wrapController(UsersController.updateUserRoleId),
+    ValidateRequest(updateUserRoleIdsRequestSchema),
+    wrapController(UsersController.updateUserRoleIds),
 );
 
 usersRouter.post(
@@ -120,6 +122,14 @@ usersRouter.patch(
     ValidateRequest(updateRoleRequestSchema),
     wrapController(UsersController.updateRole),
 );
+
+usersRouter.post(
+    '/userRoleWorkspace/:workspaceId',
+    ValidateRequest(userRoleWorkspaceRequestSchema),
+    wrapController(UsersController.getUserRolePerWorkspace),
+);
+
+usersRouter.post('/roles/workspaces', ValidateRequest(getAllWorkspaceRolesSchema), wrapController(UsersController.getAllWorkspaceRoles));
 
 usersRouter.get('/roles/search/:workspaceId', ValidateRequest(searchRolesByPermissionsSchema), UserManagerProxy);
 
