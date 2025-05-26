@@ -47,8 +47,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
             toast.error(i18next.t('failedToGetTemplates'));
-            // eslint-disable-next-line no-console
-            console.log('failed to get templates error:', error);
+            console.error('failed to get templates error:', error);
         },
         onSuccess: ({ categories, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
             queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));

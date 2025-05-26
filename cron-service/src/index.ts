@@ -1,10 +1,11 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
+import { logger } from '@microservices/shared';
 import config from './config';
-import logger from './utils/logger/logsLogger';
-import { checkForDateNotifications } from './cron/dateNotificationsCheck';
+import checkForDateNotifications from './cron/dateNotificationsCheck';
+import { updateKartoffelFields } from './cron/usersSyncing';
 
-const { service, rabbit, notifications } = config;
+const { service, rabbit, notifications, userFieldsSync } = config;
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');
@@ -20,6 +21,7 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
+    if (userFieldsSync.isSyncingUsers) await updateKartoffelFields();
     if (notifications.displayCronDates) await checkForDateNotifications();
 
     logger.info(`Server started on port: ${service.port}`);

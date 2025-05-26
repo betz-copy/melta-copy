@@ -128,6 +128,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
             }
             setFieldValue('steps', setInitialStepsObject(values.template.steps));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values.template?._id]);
 
     return (
@@ -148,13 +149,14 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                 >
                     <CloseIcon fontSize="large" />
                 </IconButton>
-                <Grid container flexDirection="row" height="100%" flexWrap="nowrap">
+                <Grid container flexDirection="row" height="100%" width="100%" flexWrap="nowrap">
                     <Grid
                         container
                         item
                         flexDirection="column"
                         alignItems="center"
                         flexBasis="20%"
+                        minWidth="280px"
                         padding={3}
                         sx={{
                             backgroundColor: darkMode ? '#171717' : '#F0F2F7',
@@ -187,7 +189,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                     </Grid>
                     <Grid container item flexBasis="75%" flexDirection="column" height="100%">
                         {values.template && (
-                            <Grid item flexBasis="10%">
+                            <Grid item flexBasis="10%" width="100%">
                                 <Box sx={{ width: '40%', padding: 3 }}>
                                     <Stepper nonLinear activeStep={activeProcessDetailsStep} alternativeLabel>
                                         {steps.map(({ label }) => (
@@ -201,8 +203,8 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                         )}
                         <Divider variant="middle" />
                         {values.template && activeProcessDetailsStep === 0 && (
-                            <Grid item container flexDirection="column" height="85%" justifyContent="space-between">
-                                <Grid item height="85%">
+                            <Grid item container flexDirection="column" height="85%" width="100%" justifyContent="space-between">
+                                <Grid item height="85%" width="100%">
                                     <TemplateFields
                                         toPrint={false}
                                         values={values}

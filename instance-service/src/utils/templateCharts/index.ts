@@ -1,12 +1,10 @@
 import { fromZonedTime } from 'date-fns-tz';
 import neo4j from 'neo4j-driver';
+import { CoordinateSystem, locationConverterToString, IAggregation, IAggregationType, IAxisField, IMongoEntityTemplate } from '@microservices/shared';
 import config from '../../config';
-import { IAggregation, IAxisField } from '../../express/entities/interface';
 import { getFileName, getFilesName } from '../../express/entities/validator.template';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { formatDate } from '../neo4j/lib';
-import { EntityManager } from '../../express/entities/manager';
-import { CoordinateSystem, locationConverterToString } from '../map';
+import EntityManager from '../../express/entities/manager';
 
 const {
     neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },
@@ -40,15 +38,15 @@ const getRelatedEntityName = async (workspaceId: string, id: string, relatedTemp
 const getAggregation = (axis: IAxisField, specialProperties: Record<string, string>, coordinateSystemAgg?: boolean): IAggregation => {
     if (typeof axis === 'string') {
         const byField = specialProperties[axis] ?? axis;
-        return { type: 'none', byField: !coordinateSystemAgg ? `\`${byField}\`` : `\`${byField}${locationCoordinateSystemSuffix}\`` };
+        return { type: IAggregationType.None, byField: !coordinateSystemAgg ? `\`${byField}\`` : `\`${byField}${locationCoordinateSystemSuffix}\`` };
     }
 
-    if (axis.type === 'countAll') {
-        return { type: 'countAll', byField: '*' };
+    if (axis.type === IAggregationType.CountAll) {
+        return { type: IAggregationType.CountAll, byField: '*' };
     }
 
-    if (axis.type === 'countDistinct' && specialProperties[axis.byField!]) {
-        return { type: 'countDistinct', byField: `\`${specialProperties[axis.byField!]}\`` };
+    if (axis.type === IAggregationType.CountDistinct && specialProperties[axis.byField!]) {
+        return { type: IAggregationType.CountDistinct, byField: `\`${specialProperties[axis.byField!]}\`` };
     }
 
     return axis;

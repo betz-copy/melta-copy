@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import SignatureCanvas from 'react-signature-canvas';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -61,13 +62,13 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
 
     return (
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-            <Box display="flex" flexDirection="column" className="signature">
-                <Box sx={{ position: 'relative', width: 210 }}>
+            <Box display="flex" flexDirection="column">
+                <Box sx={{ position: 'relative' }}>
                     <Typography
                         sx={{
-                            fontSize: '15px',
-                            color: darkMode ? 'white' : 'black',
-                            padding: '0 3px',
+                            fontSize: '14px',
+                            color: '#9398C2',
+                            padding: '0 5px',
                             userSelect: 'none',
                         }}
                     >
@@ -78,12 +79,10 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
                         velocityFilterWeight={0.7}
                         penColor="black"
                         canvasProps={{
-                            className: 'signature',
-                            width: 205,
                             height: '100%',
                             style: {
                                 // eslint-disable-next-line no-nested-ternary
-                                backgroundColor: darkMode ? '#44505D' : !isDisabled ? '#fff' : undefined,
+                                backgroundColor: darkMode ? '#9398c2' : !isDisabled ? '#fff' : undefined,
                                 border:
                                     !signatureCanvas.current || signatureCanvas.current.isEmpty()
                                         ? '1px solid rgb(154, 159, 202)'

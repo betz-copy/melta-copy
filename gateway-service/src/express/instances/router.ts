@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
-import { createWorkspacesController } from '../../utils/express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import ValidateRequest from '../../utils/joi';
-import { InstancesController } from './controller';
-import { InstancesValidator } from './middlewares';
+import InstancesController from './controller';
+import InstancesValidator from './middlewares';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,
@@ -24,7 +23,7 @@ import {
     editExcelSchema,
     updateMultipleEntitiesSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const { instanceService } = config;
 
@@ -39,8 +38,8 @@ const InstanceManagerProxy = createProxyMiddleware({
 
 const InstancesRouter: Router = Router();
 
-const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
-const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
+const InstancesControllerMiddleware = createController(InstancesController);
+const InstancesValidatorMiddleware = createController(InstancesValidator, true);
 
 // entities (Instances)
 InstancesRouter.post(

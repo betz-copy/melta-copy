@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { wrapController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
-import { UsersController } from './controller';
+import { wrapController, ValidateRequest } from '@microservices/shared';
+import UsersController from './controller';
 import config from '../../config';
 import {
     createUserRequestSchema,
@@ -17,9 +16,10 @@ import {
     updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
     getKartoffelUserProfileRequestSchema,
+    getKartoffelUserByIdSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const { userService } = config;
 
@@ -29,7 +29,7 @@ const UserManagerProxy = createProxyMiddleware({
     proxyTimeout: userService.requestTimeout,
 });
 
-export const usersRouter: Router = Router();
+const usersRouter: Router = Router();
 
 usersRouter.get('/my', ValidateRequest(getMyUserRequestSchema), wrapController(UsersController.getMyUser));
 
@@ -42,6 +42,8 @@ usersRouter.get(
     ValidateRequest(getKartoffelUserProfileRequestSchema),
     wrapController(UsersController.getKartoffelUserProfile),
 );
+
+usersRouter.get('/kartoffelUser/:kartoffelId', ValidateRequest(getKartoffelUserByIdSchema), wrapController(UsersController.getKartoffelUserById));
 
 usersRouter.get('/user-profile/:userId', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
 
@@ -85,3 +87,5 @@ usersRouter.patch(
 );
 
 usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy);
+
+export default usersRouter;

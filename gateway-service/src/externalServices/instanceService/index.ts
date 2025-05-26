@@ -1,25 +1,26 @@
-import config from '../../config';
-import { IChartBody } from '../../express/templateCharts/interface';
-import { IMongoRule } from '../../express/templates/rules/interfaces';
-import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
-import { ISemanticSearchResult } from '../semanticSearch/interface';
-import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import {
+    IMongoRule,
+    IEntitySingleProperty,
+    IAction,
+    IBrokenRule,
     IConstraintsOfTemplate,
     ICountSearchResult,
-    IDeleteBody,
+    IDeleteEntityBody,
     IEntity,
     ISearchBatchBody,
-    ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-    IEntityWithDirectRelationships,
+    IRelationship,
+    ISemanticSearchResult,
+    ISearchEntitiesByLocationBody,
+    IChartBody,
     IMultipleSelect,
-} from './interfaces/entities';
-import { IRelationship } from './interfaces/relationships';
+    IEntityWithDirectRelationships,
+} from '@microservices/shared';
+import config from '../../config';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
     instanceService: {
@@ -34,7 +35,7 @@ const {
     },
 } = config;
 
-export class InstancesService extends DefaultExternalServiceApi {
+class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
@@ -77,7 +78,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId?: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
@@ -89,7 +90,7 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
-        const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
+        const { data } = await this.api.patch<object>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
             existingRelationships,
             addFieldToSrcEntity,
             fieldName,
@@ -105,7 +106,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         const { data } = await this.api.post<string[]>(`${baseEntitiesRoute}/delete/bulk`, deleteBody);
 
         return data;
@@ -265,3 +266,5 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default InstancesService;

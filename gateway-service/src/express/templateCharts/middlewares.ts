@@ -1,12 +1,11 @@
 import { Request } from 'express';
+import { IMongoChart, IChartPermission, ForbiddenError } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
-import { Authorizer } from '../../utils/authorizer';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { ForbiddenError } from '../error';
-import { ChartManager } from './manager';
-import { IChartDocument, IPermission } from './interface';
+import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import ChartManager from './manager';
 
-export class ChartsValidator extends DefaultController {
+class ChartsValidator extends DefaultController {
     private chartManager: ChartManager;
 
     private authorizer: Authorizer;
@@ -25,10 +24,10 @@ export class ChartsValidator extends DefaultController {
         return category._id;
     }
 
-    private async validateUserIsCreatorOfChart(req: Request, chart: IChartDocument) {
+    private async validateUserIsCreatorOfChart(req: Request, chart: IMongoChart) {
         const { permission, createdBy, _id } = chart;
 
-        if (permission === IPermission.Private && req.user?.id !== createdBy)
+        if (permission === IChartPermission.Private && req.user?.id !== createdBy)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on chart ${_id}` });
     }
 
@@ -87,4 +86,22 @@ export class ChartsValidator extends DefaultController {
         await this.validateUserHasPermissionToTemplate(req, chart.templateId);
         await this.validateUserIsCreatorOfChart(req, chart);
     }
+
+    async validateUserCanCreateChartWithRelatedTemplate(req: Request) {
+        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
+
+        const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user!.id, permissionsOfUserId, body);
+        if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
+    }
+
+    async validateUserCanUpdateChartWithRelatedTemplate(req: Request) {
+        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
+
+        if (user?.id && permissionsOfUserId) {
+            const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user!.id, permissionsOfUserId, body);
+            if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
+        }
+    }
 }
+
+export default ChartsValidator;

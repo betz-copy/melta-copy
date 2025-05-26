@@ -38,6 +38,7 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
         properties: ProcessTemplateFormInputProperties[];
         attachmentProperties: ProcessTemplateFormInputProperties[];
         reviewers: IUser[];
+        disableAddingReviewers?: boolean;
         icon?: fileDetails;
     }>;
 }
@@ -114,7 +115,11 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={isEditMode ? i18next.t('wizard.processTemplate.updateTitle') : i18next.t('wizard.processTemplate.createTitle')}
+            title={
+                isEditMode
+                    ? `${i18next.t('wizard.processTemplate.updateTitle')} - ${initialValues.displayName}`
+                    : i18next.t('wizard.processTemplate.createTitle')
+            }
             steps={stepsComponents}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

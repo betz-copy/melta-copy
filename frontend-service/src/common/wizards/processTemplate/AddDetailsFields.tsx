@@ -34,9 +34,7 @@ export const useAreThereProcessInstancesByTemplateId = (templateId: string, enab
             enabled,
             initialData: [],
             onError: (error: AxiosError) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to check areThereInstancesByTemplateId. error:', error);
-
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
@@ -90,7 +88,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
                     supportDeleteForExistingInstances
-                    supportRelationshipReference={false}
+                    supportRelationshipReference
                     supportUserType={false}
                     supportConvertingToMultipleFields={false}
                     locationSearchFields={{ show: false, disabled: false }}

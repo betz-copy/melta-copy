@@ -1,11 +1,10 @@
 import { Request } from 'express';
-import { IFrame } from '../../externalServices/iFramesService';
-import { ServiceError } from '../error';
+import { IFrame, ServiceError } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import { Authorizer } from '../../utils/authorizer';
 import IFrameManager from './manager';
 
-export class IFramesValidator extends DefaultController {
+class IFramesValidator extends DefaultController {
     private iFramesManager: IFrameManager;
 
     private authorizer: Authorizer;
@@ -61,3 +60,5 @@ export class IFramesValidator extends DefaultController {
         await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId, true);
     }
 }
+
+export default IFramesValidator;

@@ -1,11 +1,11 @@
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
-import { InstancesManager } from './manager';
+import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
+import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
-import { IDeleteBody, ISearchEntitiesByLocationBody } from '../../externalServices/instanceService/interfaces/entities';
 
-export class InstancesController extends DefaultController<InstancesManager> {
+class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
         super(new InstancesManager(workspaceId));
     }
@@ -59,6 +59,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
+
         res.json(
             await this.manager.updateEntityInstance(
                 req.params.id,
@@ -102,7 +103,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async deleteEntityInstances(req: Request, res: Response) {
-        const body = req.body as IDeleteBody;
+        const body = req.body as IDeleteEntityBody;
 
         res.json(await this.manager.deleteEntityInstances(body));
     }
@@ -143,3 +144,5 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
     }
 }
+
+export default InstancesController;

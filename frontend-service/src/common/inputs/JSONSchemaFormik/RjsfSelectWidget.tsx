@@ -1,14 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
-import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import MultipleSelect from '../MultipleSelect';
 import './form.css';
-import { ColoredEnumChip } from '../../ColoredEnumChip';
 
 const nums = new Set(['number', 'integer']);
 
-function processValue(schema: any, value: any) {
+const processValue = (schema: any, value: any) => {
     const { type, items } = schema;
     if (value === null) return undefined;
     if (type === 'array' && items && nums.has(items.type)) {
@@ -29,7 +27,7 @@ function processValue(schema: any, value: any) {
         }
     }
     return value;
-}
+};
 
 const RjsfSelectWidget = ({
     schema,
@@ -81,16 +79,13 @@ const RjsfSelectWidget = ({
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     return (
-        <Autocomplete<(typeof items)[number], boolean>
+        <MultipleSelect
+            items={items}
             id={id}
             disabled={disabled}
-            readOnly={readonly}
+            readonly={readonly}
             multiple={multiple}
-            disableCloseOnSelect={multiple}
-            value={selectedValue}
-            options={items}
-            getOptionLabel={(option) => option.label}
-            isOptionEqualToValue={(option, val) => option.value === val.value}
+            selectedValue={selectedValue}
             onChange={(event, newVal) => {
                 event.preventDefault();
                 if (multiple) {
@@ -101,54 +96,16 @@ const RjsfSelectWidget = ({
                     onChange(val ? processValue(schema, val) : undefined);
                 }
             }}
-            renderOption={(props, option) =>
-                option.color ? (
-                    <li {...props} key={option.value}>
-                        <ColoredEnumChip label={option.label} color={option.color || 'default'} />
-                    </li>
-                ) : (
-                    <span {...props}>{option.label}</span>
-                )
-            }
-            renderTags={(tagValue, getTagProps) =>
-                tagValue.map((option, index) => {
-                    const { key, onDelete, ...restTagProps } = getTagProps({ index });
-                    return (
-                        <ColoredEnumChip
-                            key={key}
-                            label={option.label}
-                            color={option.color || 'default'}
-                            onDelete={onDelete}
-                            deleteIcon={<CloseIcon />}
-                            {...restTagProps}
-                            style={{
-                                margin: '0 4px 4px 0',
-                            }}
-                        />
-                    );
-                })
-            }
-            renderInput={(params) => (
-                <TextField
-                    {...textFieldProps}
-                    {...params}
-                    required={required}
-                    autoFocus={autofocus}
-                    onBlur={_onBlur}
-                    onFocus={_onFocus}
-                    variant={variant}
-                    error={rawErrors.length > 0}
-                    label={label || schema.title}
-                    InputLabelProps={{
-                        shrink: readonly || undefined,
-                    }}
-                    inputProps={{
-                        required: multiple ? required && value.length === 0 : required,
-                        ...params.inputProps,
-                    }}
-                    color={color as TextFieldProps['color']}
-                />
-            )}
+            textFieldProps={textFieldProps}
+            required={required}
+            autofocus={autofocus}
+            onBlur={_onBlur}
+            onFocus={_onFocus}
+            variant={variant}
+            rawErrors={rawErrors}
+            label={label || schema.title}
+            color={color}
+            value={value}
         />
     );
 };

@@ -369,7 +369,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        userId: Joi.string().required(),
+        userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
         updateOnlyGivenProps: Joi.boolean().default(false),
     },

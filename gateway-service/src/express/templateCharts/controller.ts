@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
-import { ChartManager } from './manager';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
+import ChartManager from './manager';
 
-export class ChartController extends DefaultController<ChartManager> {
+class ChartController extends DefaultController<ChartManager> {
     constructor(workspaceId: string) {
         super(new ChartManager(workspaceId));
     }
@@ -15,22 +15,20 @@ export class ChartController extends DefaultController<ChartManager> {
     async getChartsByTemplateId(req: Request, res: Response) {
         const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.getChartsOfTemplateId(params.templateId, user?.id!, permissionsOfUserId, body.textSearch));
+        res.json(await this.manager.getChartsOfTemplateId(params.templateId, user!.id, permissionsOfUserId, body.textSearch));
     }
 
     async createChart(req: Request, res: Response) {
-        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.createChart(req.body));
+    }
 
-        res.json(await this.manager.createChart(body, user?.id!, permissionsOfUserId));
+    async updateChart(req: Request, res: Response) {
+        res.json(await this.manager.updateChart(req.params.chartId, req.body));
     }
 
     async deleteChart(req: Request, res: Response) {
         res.json(await this.manager.deleteChart(req.params.chartId));
     }
-
-    async updateChart(req: Request, res: Response) {
-        const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
-
-        res.json(await this.manager.updateChart(params.chartId, body, user?.id, permissionsOfUserId));
-    }
 }
+
+export default ChartController;

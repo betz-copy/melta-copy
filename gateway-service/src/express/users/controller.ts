@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { UsersManager } from './manager';
+import UsersManager from './manager';
 
-export class UsersController {
+class UsersController {
     static async getMyUser(req: Request, res: Response) {
         res.json(await UsersManager.getUserById(req.user!.id));
     }
@@ -14,6 +14,10 @@ export class UsersController {
         const stream = await UsersManager.getKartoffelUserProfileRequest(req.params.kartoffelId);
         res.setHeader('Content-Type', 'image/*');
         stream.pipe(res);
+    }
+
+    static async getKartoffelUserById(req: Request, res: Response) {
+        res.json(await UsersManager.getKartoffelUserById(req.params.kartoffelId));
     }
 
     static async getUserProfile(req: Request, res: Response) {
@@ -53,10 +57,18 @@ export class UsersController {
     }
 
     static async searchExternalUsers(req: Request, res: Response) {
-        res.json(await UsersManager.searchExternalUsers(req.query.search as string, req.query.workspaceId as string));
+        res.json(
+            await UsersManager.searchExternalUsers(
+                req.query.search as string,
+                req.query.isKartoffelUser as unknown as boolean,
+                req.query.workspaceId as string,
+            ),
+        );
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {
         res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId as string));
     }
 }
+
+export default UsersController;

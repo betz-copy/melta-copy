@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import JSZip from 'jszip';
 import { extractTextByTags, findDiagramFiles, normalizeDiagramPath, readXmlFromZip, RelsObject, XMLObject } from './helperFunctions';
 import config from '../../../config';

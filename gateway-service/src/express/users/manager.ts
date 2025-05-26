@@ -1,28 +1,32 @@
 /* eslint-disable no-param-reassign */
 import { menash } from 'menashmq';
-import config from '../../config';
-import { Kartoffel } from '../../externalServices/kartoffel';
-import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
-import { StorageService } from '../../externalServices/storageService';
-import { UserService } from '../../externalServices/userService';
 import {
+    IBaseUser,
+    IExternalUser,
+    IUser,
+    IUserSearchBody,
+    RecursiveNullable,
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
-} from '../../externalServices/userService/interfaces/permissions/permissions';
-import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
+    BadRequestError,
+    UploadedFile,
+} from '@microservices/shared';
+import config from '../../config';
+import Kartoffel from '../../externalServices/kartoffel';
+import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
+import StorageService from '../../externalServices/storageService';
+import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';
-import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
-import { BadRequestError } from '../error';
-import { UploadedFile } from '../../utils/busboy/interface';
 
 const {
     storageService: { usersGlobalBucketName },
     rabbit,
 } = config;
-export class UsersManager {
+
+class UsersManager {
     private static storageService = new StorageService(usersGlobalBucketName);
 
     static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
@@ -31,6 +35,11 @@ export class UsersManager {
 
     static async getKartoffelUserProfileRequest(kartoffelId: string) {
         return Kartoffel.getUserProfile(kartoffelId);
+    }
+
+    static async getKartoffelUserById(kartoffelId: string) {
+        const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
+        return kartoffelUser;
     }
 
     static async getUserProfile(userId: string) {
@@ -76,10 +85,13 @@ export class UsersManager {
             return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
         }
 
-        const { _id, displayName, existingDigitalIdentitySource, preferences, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
-            kartoffelId,
-            digitalIdentitySource,
-        );
+        const {
+            _id,
+            displayName: _displayName,
+            existingDigitalIdentitySource: _existingDigitalIdentitySource,
+            preferences,
+            ...digitalIdentity
+        } = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
 
@@ -137,8 +149,14 @@ export class UsersManager {
     static async syncUser(userId: string): Promise<IUser> {
         const user = await UserService.getUserById(userId);
 
-        const { _id, displayName, permissions, preferences, existingDigitalIdentitySource, ...digitalIdentity } =
-            await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
+        const {
+            _id,
+            displayName: _displayName,
+            permissions: _permissions,
+            existingDigitalIdentitySource: _existingDigitalIdentitySource,
+            preferences: _preferences,
+            ...digitalIdentity
+        } = await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
         if (objectContains(user, digitalIdentity)) return user;
@@ -146,11 +164,12 @@ export class UsersManager {
         return UserService.updateUser(userId, digitalIdentity);
     }
 
-    static async searchExternalUsers(search: string, workspaceId?: string): Promise<IExternalUser[]> {
+    static async searchExternalUsers(search: string, isKartoffelUser: boolean, workspaceId?: string): Promise<IExternalUser[] | IKartoffelUser[]> {
         const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(search);
 
-        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
+        if (isKartoffelUser) return kartoffelUsers;
 
+        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
         return normalizedKartoffelUsers.filter(
             (normalizedKartoffelUser) =>
                 !normalizedKartoffelUser.permissions[workspaceId || ''] ||
@@ -213,3 +232,5 @@ export class UsersManager {
         return UserService.searchUsersByPermissions(workspaceId);
     }
 }
+
+export default UsersManager;

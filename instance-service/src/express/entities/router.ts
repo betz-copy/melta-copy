@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import EntityController from './controller';
 import {
     countEntitiesOfTemplatesRequestSchema,
@@ -69,7 +68,6 @@ entityRouter.post(
     entityValidatorController.validateSearchBatchBody,
     entityController.searchEntitiesBatch,
 );
-
 entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation), entityController.searchEntitiesByLocation);
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);

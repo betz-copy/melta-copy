@@ -408,7 +408,7 @@ export const enumColDef = <Data extends any = EntityData>(
         editable: (params) => editable(params.data) ?? false,
         cellEditor: SelectCellEditor,
         cellEditorParams: {
-            values,
+            options: values,
             multiple: false,
             colorsOptions: enumColorOptions,
         },
@@ -465,7 +465,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         editable: (params) => editable(params.data) ?? false,
         cellEditor: SelectCellEditor,
         cellEditorParams: {
-            values,
+            options: values,
             multiple: true,
             colorsOptions: enumColorOptions,
         },

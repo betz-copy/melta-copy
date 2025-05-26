@@ -1,14 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
-import { IRelationship } from '../../express/relationships/interfaces';
+import {
+    ValidationError,
+    ActionErrors,
+    IEntity,
+    IEntityExpanded,
+    IEntityWithDirectRelationships,
+    IRelationship,
+    SplitBy,
+} from '@microservices/shared';
 import config from '../../config';
-import { EntityManager } from '../../express/entities/manager';
+import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
-import { ValidationError } from '../../express/error';
-import { SplitBy } from '../types';
-import { ActionErrors } from '../../express/bulkActions/interface';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },

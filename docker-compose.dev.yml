@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   #-------------------------------------------#
@@ -7,7 +7,7 @@ services:
   mongo:
     image: mongo:4.4.1
     restart: always
-    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
     ports:
       - 27017:27017
     networks:
@@ -19,8 +19,8 @@ services:
       - mongo
     volumes:
       - ./scripts:/scripts
-    restart: "no"
-    entrypoint: ["bash", "/scripts/setup_mongo.sh"]
+    restart: 'no'
+    entrypoint: ['bash', '/scripts/setup_mongo.sh']
     networks:
       - network
 
@@ -44,13 +44,13 @@ services:
   minio:
     image: minio/minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
-      - "4000:4000"
+      - '9000:9000'
+      - '9001:9001'
+      - '4000:4000'
     environment:
-      MINIO_ROOT_USER: "minioadmin"
-      MINIO_ROOT_PASSWORD: "minioadmin"
-    command: "minio server --console-address :4000 /data"
+      MINIO_ROOT_USER: 'minioadmin'
+      MINIO_ROOT_PASSWORD: 'minioadmin'
+    command: 'minio server --console-address :4000 /data'
     restart: always
     networks:
       - network
@@ -65,8 +65,8 @@ services:
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
       - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - '7474:7474'
+      - '7687:7687'
     restart: always
     networks:
       - network
@@ -124,8 +124,8 @@ services:
       - PIPELINE_WORKERS=2
       - BATCH_SIZE=50
     ports:
-      - "5044:5044"
-      - "9600:9600"
+      - '5044:5044'
+      - '9600:9600'
     volumes:
       - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./elk/logstash.yml:/usr/share/logstash/config/logstash.yml
@@ -170,7 +170,12 @@ services:
       - network
 
   mock-service:
-    build: ./mock-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'mock-service'
+    command: ['npm', 'run', 'start', '-w', 'mock-service']
     environment:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
@@ -179,6 +184,7 @@ services:
       STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
       GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
       WORKSPACES_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
+      DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
       USER_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
     depends_on:
@@ -190,6 +196,7 @@ services:
       - process-service
       - gantt-service
       - workspace-service
+      - dashboard-service
     restart: on-failure
     networks:
       - network
@@ -324,6 +331,17 @@ services:
     ports:
       - 8012:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
+    networks:
+      - network
+
+  dashboard-service:
+    ports:
+      - 8017:8000
+    restart: always
+    volumes:
+      - logs:/usr/src/app/logs
     networks:
       - network
 

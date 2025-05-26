@@ -1,11 +1,14 @@
+/* eslint-disable react/jsx-no-duplicate-props */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
+import './form.css';
 
 const RjsfTextWidget = ({
     id,
@@ -51,10 +54,21 @@ const RjsfTextWidget = ({
     else if (schema.type === 'number' && value) finalValue = getFixedNumber(Number(value));
     else finalValue = value ?? '';
 
+    const handleIncrement = () => {
+        const newValue = Number(value || 0) + 1;
+        onChange(newValue);
+    };
+
+    const handleDecrement = () => {
+        const newValue = Number(value || 0) - 1;
+        onChange(newValue);
+    };
+
     return (
         <TextField
             {...textFieldProps}
             color="primary"
+            className={inputType === 'number' && schema.serialCurrent === undefined ? 'rjsf-text-input-override' : undefined}
             variant={variant}
             fullWidth
             id={id}
@@ -63,19 +77,8 @@ const RjsfTextWidget = ({
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
-            InputLabelProps={{
-                shrink: readonly || undefined,
-                style: {
-                    fontSize: '14px',
-                },
-            }}
-            inputProps={{
-                readOnly: readonly,
-                style: {
-                    textOverflow: 'ellipsis',
-                    fontSize: '14px',
-                },
-            }}
+            InputLabelProps={{ shrink: readonly || undefined }}
+            inputProps={{ readOnly: readonly }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}
             error={!hideError && rawErrors.length > 0}
@@ -84,6 +87,21 @@ const RjsfTextWidget = ({
             onFocus={_onFocus}
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
+            }}
+            InputProps={{
+                endAdornment:
+                    inputType === 'number' && schema.serialCurrent === undefined ? (
+                        <InputAdornment position="end">
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <IconButton sx={{ padding: 0 }} size="small" onClick={handleIncrement} disabled={readonly || disabled}>
+                                    <KeyboardArrowUp fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                </IconButton>
+                                <IconButton sx={{ padding: 0 }} size="small" onClick={handleDecrement} disabled={readonly || disabled}>
+                                    <KeyboardArrowDown fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                </IconButton>
+                            </div>
+                        </InputAdornment>
+                    ) : null,
             }}
             dir={getTextDirection(value, schema)}
             data-hide-error={hideError}

@@ -99,7 +99,7 @@ const EntitiesPage: React.FC<{
         },
         {
             onError(error) {
-                console.log('Failed to export tables', error);
+                console.error('Failed to export tables', error);
                 toast.error(i18next.t('failedToExportTables'));
             },
             onSuccess(data) {

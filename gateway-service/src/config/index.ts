@@ -10,6 +10,10 @@ const config = {
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
+        highWaterMark: env
+            .get('HIGH_WATER_MARK')
+            .default(600 * 1024 * 1024)
+            .asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
         maxPatchIterations: env.get('MAX_PATCH_ITERATIONS').default(100).asIntPositive(),
@@ -21,16 +25,6 @@ const config = {
             },
         }).asJsonObject,
     },
-    mongo: {
-        url: env.get('MONGO_URL').required().asString(),
-        iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
-        chartCollectionName: env.get('MONGO_CHARTS_COLLECTION_NAME').required().asString(),
-        connectionOptions: {
-            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(20000).asIntPositive(),
-            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(20000).asIntPositive(),
-        },
-    },
-
     frontendConfig: {
         matotmo: {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
@@ -180,6 +174,17 @@ const config = {
         url: env.get('WORKSPACE_SERVICE_URL').required().asString(),
         baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
         requestTimeout: env.get('WORKSPACES_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
+    dashboardService: {
+        url: env.get('DASHBOARD_SERVICE_URL').required().asString(),
+        requestTimeout: env.get('DASHBOARD_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        baseRoute: env.get('DASHBOARD_SERVICE_BASE_ROUTE').default('/api/dashboard').asString(),
+        charts: {
+            baseRoute: env.get('DASHBOARD_SERVICE_CHARTS_ROUTE').default('/charts').asString(),
+        },
+        iframes: {
+            baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_ROUTE').default('/iframes').asString(),
+        },
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {

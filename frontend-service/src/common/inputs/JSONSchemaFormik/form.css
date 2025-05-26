@@ -44,3 +44,8 @@
 .MuiPickersToolbar-penIconButton {
     right: 265px !important;
 }
+
+.rjsf-text-input-override input[type='number'] {
+    direction: ltr !important;
+    text-align: right;
+}
