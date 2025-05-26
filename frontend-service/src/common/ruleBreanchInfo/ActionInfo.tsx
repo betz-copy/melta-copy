@@ -15,7 +15,6 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-    IUpdateMultipleEntitiesMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
@@ -341,27 +340,6 @@ const UpdateEntityActionInfo: React.FC<{
     );
 };
 
-// const UpdateMultipleEntitiesActionInfo: React.FC<{
-//     actionMetadata: IUpdateMultipleEntitiesMetadataPopulated;
-//     isCompact: boolean;
-//     failedProperties: string[];
-// }> = ({ actionMetadata, isCompact, failedProperties }) => {
-//     return (
-//         <Grid container direction="column">
-//             {actionMetadata.map((action) => {
-//                 return (
-//                     <UpdateEntityActionInfo
-//                         key={action.entity?.properties._id}
-//                         actionMetadata={action as IUpdateEntityMetadataPopulated}
-//                         isCompact={isCompact}
-//                         failedProperties={failedProperties}
-//                     />
-//                 );
-//             })}
-//         </Grid>
-//     );
-// };
-
 const UpdateEntityStatusActionInfo: React.FC<{
     actionMetadata: IUpdateEntityStatusMetadataPopulated;
     failedProperties: string[];
@@ -399,8 +377,6 @@ export const ActionInfo: React.FC<{
     actions: IActionPopulated[];
     failedProperties?: string[];
 }> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties = [] }) => {
-    console.log('here is the problem????');
-
     return (
         <Grid container flexDirection="column">
             <Grid item>

@@ -116,11 +116,5 @@ entityRouter.patch(
     ValidateRequest(deletePropertiesOfTemplateRequestSchema),
     entityController.deletePropertiesOfTemplate,
 );
-// entityRouter.patch(
-//     '/:id',
-//     // ValidateRequest(updateEntityByIdRequestSchema),
-//     // entityValidatorController.validateEntityRequest,
-//     entityController.updateSelectedPropertiesById,
-// );
 
 export default entityRouter;

@@ -116,11 +116,7 @@ const Wizard = <T extends object>({
                         if (isLastStep) {
                             await submitFunction(values);
                         } else {
-                            console.log('before next');
-
                             await steps[activeStep].stepperActions?.next?.onClick?.(values, actions);
-                            console.log('after next');
-
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);

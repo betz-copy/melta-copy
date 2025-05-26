@@ -1530,17 +1530,12 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         convertToRelationshipField = false,
     ) {
-        console.log('hiiiii');
-        console.dir(ignoredRules, { depth: null });
-
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
-            console.log('nterrrrrrrrr');
-
             const actions = await this.buildActionsArray(
                 IEntityCrudAction.onUpdateEntity,
                 entityProperties,
@@ -1553,7 +1548,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const updatedEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results);
-            console.dir({ updatedEntity, fixedActions }, { depth: null });
+
             return { updatedEntity, actions: fixedActions };
         }
 

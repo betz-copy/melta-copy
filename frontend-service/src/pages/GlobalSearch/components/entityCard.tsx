@@ -546,20 +546,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     }}
                     entityTemplate={entityTemplate}
                     initialCurrValues={editDialog.wizardValues}
-                    // onSuccess={() => {
-                    //     setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    //     setExternalErrors({ files: false, unique: {}, action: '' });
-                    //     refetchQuery?.();
-                    // }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    // onError={(currEntityValues) =>
-                    //     setEditDialog({
-                    //         isOpen: true,
-                    //         wizardValues: currEntityValues,
-                    //     })
-                    // }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

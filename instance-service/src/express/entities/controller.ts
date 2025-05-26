@@ -80,8 +80,6 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        // console.log('here', req.body.updateOnlyGivenProps);
-
         res.json(
             await this.manager.updateEntityById(
                 req.params.id,
@@ -90,26 +88,9 @@ class EntityController extends DefaultController<EntityManager> {
                 req.body.ignoredRules,
                 req.body.userId,
                 req.body.convertToRelationshipField,
-                // req.body.updateOnlyGivenProps,
             ),
         );
     }
-
-    // async updateSelectedPropertiesById(req: Request, res: Response) {
-    //     const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-
-    //     res.json(
-    //         await this.manager.updateEntityById(
-    //             req.params.id,
-    //             req.body.properties,
-    //             entityTemplate,
-    //             req.body.ignoredRules,
-    //             req.body.userId,
-    //             req.body.convertToRelationshipField,
-    //             true,
-    //         ),
-    //     );
-    // }
 
     async convertToRelationshipField(req: Request, res: Response) {
         const { existingRelationships, addFieldToSrcEntity, fieldName, userId } = req.body;

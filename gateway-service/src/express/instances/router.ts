@@ -114,7 +114,7 @@ InstancesRouter.put(
     busboyMiddleware,
     ValidateRequest(updateMultipleEntitiesSchema),
     InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
-    // InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesValidatorMiddleware.validateUserCanIgnoreRulesMultipleUpdate,
     InstancesControllerMiddleware.updateMultipleEntities,
 );
 

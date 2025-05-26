@@ -208,6 +208,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     editable?: boolean;
     defaultFilter?: FilterModel;
     disableFilter?: boolean;
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -253,6 +254,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             editable = true,
             defaultFilter,
             disableFilter = false,
+            setUpdatedTemplateIds,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -692,7 +694,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText },
+                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds },
                 });
 
             return panels;

@@ -20,13 +20,14 @@ import {
     ISearchFilter,
     ISearchResult,
 } from '../interfaces/entities';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import urlToFile from '../common/fileConversions';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -232,7 +233,10 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
     return data;
 };
 
-const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
+const getBodyForUpdateRequest = async (
+    newEntityData: EntityWizardValues,
+    ignoredRules?: IRuleBreach['brokenRules'] | Record<string, IBrokenRule[]>,
+) => {
     const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
 
@@ -351,15 +355,13 @@ export const updateMultipleEntitiesRequest = async (
     entitiesToUpdate: IMultipleSelect<boolean>,
     newEntityData: EntityWizardValues,
     propertiesToRemove: string[],
-    ignoredRules?: IRuleBreach['brokenRules'],
+    ignoredRules?: Record<string, IBrokenRule[]>,
 ) => {
-    console.log({ newEntityData, propertiesToRemove });
-
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
     formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
     formData.append('propertiesToRemove', JSON.stringify(propertiesToRemove || []));
 
-    const { data } = await axios.put<ITablesResults>(`${entities}/bulk`, formData, {
+    const { data } = await axios.put<IUpdateMultipleEntitiesResponse>(`${entities}/bulk`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 

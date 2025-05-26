@@ -96,7 +96,6 @@ export const sortBrokenRules = (brokenRules: IBrokenRule[]) => {
 };
 
 export const areAllBrokenRulesIgnored = (brokenRules: IBrokenRule[], ignoredRules: IBrokenRule[]) => {
-    console.dir({ brokenRules, ignoredRules }, { depth: null });
     const brokenRulesSorted = sortBrokenRules(brokenRules);
     const ignoredRulesSorted = sortBrokenRules(ignoredRules);
 

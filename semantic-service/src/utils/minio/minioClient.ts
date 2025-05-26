@@ -63,7 +63,6 @@ export class MinIOClient {
         switch (fileExtension) {
             case FileTypes.PDF: {
                 const buffer = await streamToBuffer(fileStream);
-                
                 return (await pdf(buffer)).text;
             }
             case FileTypes.TXT: {

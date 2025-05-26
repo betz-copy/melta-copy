@@ -100,15 +100,6 @@ const AddEntityButton: React.FC<{
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    // onError={(currEntityValues) =>
-                    //     setAddEntityWizardState((prev) => ({
-                    //         ...prev,
-                    //         isOpen: true,
-                    //         initialStep: 1,
-                    //         initialCurrValues: currEntityValues,
-                    //     }))
-                    // }
-                    // onSuccess={handleSuccess}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

@@ -77,35 +77,16 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(
-        id: string,
-        entity: IEntity,
-        ignoredRules: IBrokenRule[],
-        userId: string,
-        convertToRelationshipField = false,
-        // updateOnlyGivenProps = false,
-    ) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
             convertToRelationshipField,
-            // updateOnlyGivenProps,
         });
 
         return data;
     }
-
-    // async updateSelectedPropById(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
-    //     const { data } = await this.api.patch<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
-    //         ...entity,
-    //         ignoredRules,
-    //         userId,
-    //         convertToRelationshipField,
-    //     });
-
-    //     return data;
-    // }
 
     async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
         const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {

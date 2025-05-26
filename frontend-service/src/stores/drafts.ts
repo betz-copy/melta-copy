@@ -44,9 +44,6 @@ export const useDraftsStore = create(
             createOrUpdateDraft: (categoryId, templateId, draft, uniqueId) => {
                 const draftsCopy = getDraftsCopy(get().drafts, categoryId, templateId);
                 const draftIndex = draftsCopy[categoryId]![templateId].findIndex((value) => value.uniqueId === uniqueId);
-                console.log({ uniqueId, draftsCopy });
-
-                console.log({ drafttttt: draftsCopy[categoryId]![templateId], draftIndex });
 
                 if (draftIndex === -1) draftsCopy[categoryId]![templateId].push({ ...draft, uniqueId: uniqueId ?? uuid(), lastSavedAt: new Date() });
                 else draftsCopy[categoryId]![templateId][draftIndex] = { ...draft, uniqueId: uniqueId!, lastSavedAt: new Date() };
@@ -56,8 +53,6 @@ export const useDraftsStore = create(
             deleteDraft: (categoryId, templateId, draftId) => {
                 const draftsCopy = getDraftsCopy(get().drafts, categoryId, templateId);
                 const draftIndex = draftsCopy[categoryId]![templateId].findIndex((value) => value.uniqueId === draftId);
-
-                // console.log(draftsCopy[categoryId]![templateId], draftIndex);
 
                 if (draftIndex === -1) return;
 

@@ -2,7 +2,7 @@ import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { IAction } from '../../externalServices/ruleBreachService/interfaces';
+import { IAction, IBrokenRule } from '../../externalServices/ruleBreachService/interfaces';
 import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
@@ -233,27 +233,29 @@ export class InstancesValidator extends DefaultController {
 
     // rules
     async validateUserCanIgnoreRules(req: Request) {
-        console.log('validateUserCanIgnoreRules');
         const { ignoredRules } = req.body;
-        // console.log('ignoredRules', ignoredRules);
         const { user } = req;
+        await this.validateEnforcementRules(user, ignoredRules);
+    }
 
+    async validateUserCanIgnoreRulesMultipleUpdate(req: Request) {
+        const { ignoredRules } = req.body;
+        const { user } = req;
+        await this.validateEnforcementRules(user, Object.values(ignoredRules));
+    }
+
+    private async validateEnforcementRules(user: Express.User | undefined, ignoredRules: IBrokenRule[]) {
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
 
         if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) return;
-        console.log('atfer if');
 
         const ignoredRulesPopulated: IRule[] = await Promise.all(
             ignoredRules.map((ignoredRule) => this.relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
         );
 
-        console.dir({ ignoredRulesPopulated }, { depth: 5 });
-
         if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
-            console.log('IM HERE');
-
             throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
     }

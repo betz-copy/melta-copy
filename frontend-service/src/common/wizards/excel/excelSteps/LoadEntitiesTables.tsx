@@ -5,24 +5,21 @@ import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntitiesTable } from './EntitiesTable';
 import { IEntity } from '../../../../interfaces/entities';
-import { ITablesResults } from '../../../../interfaces/excel';
+import { ITablesData } from '../../../../interfaces/excel';
 
 export const LoadEntitiesTables: React.FC<{
-    tablesData: ITablesResults;
+    tablesData: ITablesData;
     template: IMongoEntityTemplatePopulated;
     onDownload?: (brokenRulesEntities?: boolean) => Promise<any>;
     isLoadingDownload?: boolean;
     isLoadingTables?: boolean;
-    brokenRulesEntities?: any[];
-}> = ({ tablesData, template, onDownload, isLoadingDownload, isLoadingTables, brokenRulesEntities }) => {
+}> = ({ tablesData, template, onDownload, isLoadingDownload, isLoadingTables }) => {
     const isFailedEntities = tablesData.failedEntities.length > 0;
-    const isBrokenRulesEntities = (tablesData.brokenRulesEntities?.entities?.length ?? 0) > 0 || (brokenRulesEntities?.length ?? 0) > 0;
+    const isBrokenRulesEntities = (tablesData.brokenRulesEntities?.length ?? 0) > 0;
 
     if (isLoadingTables) return <CircularProgress style={{ marginTop: '10px', margin: 'auto' }} />;
-    console.log({ brokenRulesEntities });
 
     return (
-        // TODO maybe map this
         <Grid container direction="column" padding="5px" paddingY="15px">
             <EntitiesTable
                 rowData={tablesData.succeededEntities as IEntity[]}
@@ -32,13 +29,11 @@ export const LoadEntitiesTables: React.FC<{
                 title={`${tablesData.succeededEntities.length} ${i18next.t('wizard.entity.loadEntities.succeededEntities')}`}
             />
             <EntitiesTable
-                rowData={brokenRulesEntities || (tablesData.brokenRulesEntities?.entities as IEntity[]) || []}
+                rowData={(tablesData.brokenRulesEntities as IEntity[]) || []}
                 template={template}
                 defaultExpanded={isBrokenRulesEntities}
                 icon={<Gavel style={{ color: '#FFAC2F' }} />}
-                title={`${brokenRulesEntities?.length || tablesData.brokenRulesEntities?.entities?.length || 0} ${i18next.t(
-                    'wizard.entity.loadEntities.brokenRulesEntities',
-                )}`}
+                title={`${tablesData.brokenRulesEntities?.length || 0} ${i18next.t('wizard.entity.loadEntities.brokenRulesEntities')}`}
                 description={i18next.t('wizard.entity.loadEntities.brokenRulesEntitiesDescription')}
                 download={onDownload && isLoadingDownload ? { onDownload: () => onDownload(true), isLoading: isLoadingDownload } : undefined}
             />

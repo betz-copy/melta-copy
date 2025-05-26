@@ -57,8 +57,9 @@ const TemplateTable = forwardRef<
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
->(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, setUpdatedTemplateIds }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
@@ -437,6 +438,7 @@ const TemplateTable = forwardRef<
                     }}
                     menuRowButtonProps={userHasWritePermissions}
                     refetch={() => entitiesTableRef.current?.refreshServerSide()}
+                    setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
 
@@ -451,8 +453,6 @@ const TemplateTable = forwardRef<
                             : { actionType: ActionTypes.CreateEntity, payload: undefined }),
                         onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
                         onSuccess: (entity: IEntity) => {
-                            console.log('entity', entity);
-
                             if (editDialog.isEditMode) {
                                 entitiesTableRef.current?.updateRowDataClientSide(entity);
                                 setUpdatedEntities?.(
@@ -467,19 +467,6 @@ const TemplateTable = forwardRef<
                     }}
                     entityTemplate={template}
                     initialCurrValues={editDialog.wizardValues}
-                    // onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
-                    // onSuccess={(entity: IEntity) => {
-                    //     if (editDialog.isEditMode) {
-                    //         entitiesTableRef.current?.updateRowDataClientSide(entity);
-                    //         setUpdatedEntities?.(
-                    //             Object.values(entity.properties).filter(
-                    //                 (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
-                    //             ),
-                    //         );
-                    //     } else entitiesTableRef.current?.refreshServerSide();
-                    //     setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    //     setExternalErrors(initializedExternalErrors);
-                    // }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}

@@ -10,11 +10,7 @@ import { EntityWizardValues } from '..';
 import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
 import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { updateEntityRequestForMultiple, createEntityRequest } from '../../../../services/entitiesService';
-import {
-    ICreateOrUpdateWithRuleBreachDialogState,
-    IExternalErrors,
-    IMutationProps,
-} from '../../../../interfaces/CreateOrEditEntityDialog';
+import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 
@@ -26,8 +22,6 @@ const useMutationHandler = (
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     errorCodes,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
-    // onError?: (values: EntityWizardValues) => void,
-    // onSuccess?: (entity: IEntity) => void,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
@@ -35,9 +29,6 @@ const useMutationHandler = (
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-
-        console.log({ template, err: err.response?.data });
-
         const errorMetadata = err.response?.data?.metadata;
 
         switch (errorMetadata?.errorCode) {

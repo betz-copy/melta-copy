@@ -220,7 +220,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 return (
                     <LoadEntitiesTables
                         {...props}
-                        tablesData={stepsData.data}
+                        tablesData={{ ...stepsData.data, brokenRulesEntities: stepsData.data.brokenRulesEntities?.entities || [] }}
                         template={template!}
                         onDownload={(brokenRulesEntities?: boolean) => {
                             return exportTemplateToExcel({

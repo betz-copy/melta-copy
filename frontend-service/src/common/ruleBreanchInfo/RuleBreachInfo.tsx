@@ -15,8 +15,6 @@ const RuleBreachInfo: React.FC<{
 }> = ({ originUser, brokenRules, actions, isCompact }) => {
     if (!actions) return null;
 
-    console.log({ actions });
-
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>

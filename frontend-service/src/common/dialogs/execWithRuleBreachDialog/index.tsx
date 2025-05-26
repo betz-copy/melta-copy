@@ -28,8 +28,6 @@ const ExecWithRuleBreachDialog: React.FC<{
         return rule.actionOnFail === 'ENFORCEMENT';
     });
 
-    console.log({ brokenRules, actionMetadata, actions, actionType });
-
     return (
         <Dialog
             open

@@ -404,11 +404,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 templateId: updatedInstanceData.templateId,
             };
 
-            console.dir(propToUpdate, { depth: null });
-
-            // const entityIgnoreRules = ignoredRules.filter((rule) => rule.failures.some((failure) => failure.entityId === entity.properties._id));
-            // console.dir({ ignoredRules, entityIgnoreRules }, { depth: null });
-
             try {
                 const result = await this.updateEntityInstance(
                     entity.properties._id,
@@ -427,15 +422,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         await Promise.all(data!.map(async ({ entity }) => handleUpdateEntity(entity)));
         succeededEntities.push(...results);
-
-        // console.dir({ allBrokenRulesEntities }, { depth: null });
-        // const brokenRulesEntities: IBrokenRuleEntity = {
-        //     rawBrokenRules: allBrokenRulesEntities.flatMap((e) => e.rawBrokenRules),
-        //     brokenRules: allBrokenRulesEntities.flatMap((e) => e.brokenRules),
-        //     actions: allBrokenRulesEntities.flatMap((e) => e.actions),
-        //     rawActions: allBrokenRulesEntities.flatMap((e) => e.rawActions),
-        //     entities: allBrokenRulesEntities.flatMap((e) => e.entities),
-        // };
 
         return { succeededEntities, failedEntities, brokenRulesEntities: allBrokenRulesEntities };
     }

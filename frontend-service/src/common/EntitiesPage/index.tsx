@@ -51,12 +51,13 @@ const EntitiesPage: React.FC<{
 
     const [searchInput, setSearchInput] = useState(search);
     const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
+    const [updatedTemplateIds, setUpdatedTemplateIds] = useState<string[]>([]);
 
     const queryClient = useQueryClient();
 
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
-    // todo :noa
+
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
             updatedEntities.forEach((entity) => {
@@ -66,6 +67,16 @@ const EntitiesPage: React.FC<{
             });
         }
     }, [updatedEntities, viewMode]);
+
+    useEffect(() => {
+        if (Array.isArray(updatedTemplateIds) && viewMode !== 'cards-view') {
+            updatedTemplateIds.forEach((templateId) => {
+                const reference = templateTablesViewRef.current!.templateTablesRefs?.[templateId];
+
+                if (reference) reference.refreshServerSide();
+            });
+        }
+    }, [updatedTemplateIds, viewMode]);
 
     useEffect(() => {
         setSearchInput(search || '');
@@ -168,6 +179,7 @@ const EntitiesPage: React.FC<{
                         semanticSearch={convertToBool(urlSearchParams.get('semanticSearch'))}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     />
                 )}
                 {viewMode === 'cards-view' && (

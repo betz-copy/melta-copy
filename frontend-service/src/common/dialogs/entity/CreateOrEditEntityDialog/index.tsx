@@ -143,8 +143,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
             }}
             validate={(values) => {
-                console.log('validate');
-
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
@@ -156,8 +154,6 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
-                console.log({ errors }, 'create');
-
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
