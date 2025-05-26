@@ -225,20 +225,27 @@ const createPatchesFromEntity = async (
             const trimmedValue: string = isHTML(String(value)) ? extractTextFromHtml(value) : value;
             const templateProperty = entityTemplate.properties.properties[key];
             if (templateProperty && templateProperty.format === 'signature') {
-                const imageBuffer = await getFilePreview(trimmedValue, 'image');
+                try {
+                    const imageBuffer = await getFilePreview(trimmedValue, 'image');
 
-                patches[key] = {
-                    type: PatchType.PARAGRAPH,
-                    children: [
-                        new ImageRun({
-                            data: imageBuffer,
-                            transformation: {
-                                width: 95,
-                                height: 70,
-                            },
-                        }),
-                    ],
-                };
+                    patches[key] = {
+                        type: PatchType.PARAGRAPH,
+                        children: [
+                            new ImageRun({
+                                data: imageBuffer,
+                                transformation: {
+                                    width: 95,
+                                    height: 70,
+                                },
+                            }),
+                        ],
+                    };
+                } catch {
+                    patches[key] = {
+                        type: PatchType.PARAGRAPH,
+                        children: [new TextRun(String(trimmedValue))],
+                    };
+                }
             } else {
                 let formattedValue = trimmedValue;
 

@@ -13,7 +13,7 @@ import { IEntity } from '../../../interfaces/entities';
 
 export const ExportFormats: React.FC<{
     properties: EntityWizardValues['properties'];
-    templateId: string;
+    templateId: IEntity['templateId'];
     documentTemplateIds?: string[];
     disabled?: boolean;
     justifyContent?: React.CSSProperties['justifyContent'];
