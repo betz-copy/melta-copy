@@ -371,8 +371,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         ignoredRules: Record<string, IBrokenRule[]>,
         userId: string,
     ) {
-        console.log('manager');
-
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
