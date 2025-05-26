@@ -57,7 +57,7 @@ import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
-import { getInitialValue, useMuiRteTheme } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
+import { getInitialValue, useMuiRteTheme } from '../../inputs/JSONSchemaFormik/RjsfTextAreaWidget';
 import { commentColors } from '../../inputs/JSONSchemaFormik/RjsfCommentWidget';
 import KartoffelUserField from './KartoffelUserField';
 import { ImageWithDisable } from '../../ImageWithDisable';

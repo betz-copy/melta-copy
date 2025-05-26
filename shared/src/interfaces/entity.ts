@@ -261,6 +261,6 @@ export type IMultipleSelect<T extends boolean = boolean> = {
           idsToInclude: string[];
       });
 
-export type IDeleteBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
 export type EntityData = IEntity | IFailedEntity;

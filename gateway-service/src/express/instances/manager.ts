@@ -39,6 +39,7 @@ import {
     UploadedFile,
     CoordinateSystem,
     locationConverterToString,
+    IMultipleSelect,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -370,6 +371,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         ignoredRules: Record<string, IBrokenRule[]>,
         userId: string,
     ) {
+        console.log('manager');
+
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];

@@ -246,7 +246,7 @@ class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRulesMultipleUpdate(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
-        await this.validateEnforcementRules(user, Object.values(ignoredRules));
+        await this.validateEnforcementRules(user, Object.values(ignoredRules).flat() as IBrokenRule[]);
     }
 
     private async validateEnforcementRules(user: Express.User | undefined, ignoredRules: IBrokenRule[]) {

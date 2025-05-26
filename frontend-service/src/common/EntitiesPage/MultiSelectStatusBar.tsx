@@ -68,7 +68,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const isBrokenRules = (stepsData.brokenRulesEntities ?? []).length > 0;
     const [wasDirty, setWasDirty] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
-    const [entityData, setEntityData] = useState<EntityWizardValues | undefined>(undefined);
+    const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -166,6 +166,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         setInitialValuePropsToFilter({});
         setWasDirty(false);
         setExternalErrors({ files: false, unique: {}, action: '' });
+        setEntityData(undefined);
         if (renderData) {
             api.refreshServerSide();
 
@@ -221,12 +222,11 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 disable: 'back',
                 next: {
                     onClick: (props, action) => {
-                        const allSelectedProperties = {};
+                        const allSelectedProperties = { disabled: false };
                         Object.entries(selectedFields).forEach(([key, value]) => {
-                            if (value) allSelectedProperties[key] = undefined;
+                            if (value) allSelectedProperties[key] = props.properties[key];
                         });
-                        const newProperties = { ...allSelectedProperties, ...props.properties };
-                        action.setValues({ ...props, properties: newProperties });
+                        action.setValues({ ...props, properties: allSelectedProperties });
                     },
                 },
             },
@@ -262,6 +262,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                     onClick: async (props) => {
                         const undefinedProperties = Object.keys(props.properties).filter((property) => props.properties[property] === undefined);
+                        setEntityData({ propertiesToChange: props, propertiesToRemove: undefinedProperties });
 
                         await updateMultipleMutation({
                             newEntityData: props,
@@ -370,9 +371,8 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 title={i18next.t('wizard.entity.multipleUpdate.title')}
                 steps={steps}
                 isLoading={isMultipleUpdateLoading}
-                submitFunction={async (values) => {
+                submitFunction={async () => {
                     if (isBrokenRules) {
-                        setEntityData(values);
                         setCreateOrUpdateWithRuleBreachDialogState(true);
                     } else {
                         handleClose(true);
@@ -397,13 +397,13 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
                         if (entityData)
                             await updateMultipleMutation({
-                                newEntityData: entityData,
+                                newEntityData: entityData.propertiesToChange,
                                 entitiesToUpdate: {
                                     selectAll: false,
                                     idsToInclude: stepsData.brokenRulesEntities?.map((rule) => rule.entities[0].properties._id),
                                 },
                                 ignoredRules: entityWithIgnoreRules,
-                                propertiesToRemove: [],
+                                propertiesToRemove: entityData.propertiesToRemove,
                             });
 
                         handleClose(true);
@@ -418,7 +418,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     }}
                     entityFormData={{
                         template,
-                        properties: { ...entityData?.properties, disabled: false },
+                        properties: { ...entityData?.propertiesToChange.properties, disabled: false },
                         attachmentsProperties: {},
                     }}
                     onCreateRuleBreachRequest={() => {

@@ -24,6 +24,7 @@ import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
 import RjsfSignatureWidgets from './RjsfSignatureWidgets';
 import { IKartoffelUser } from '../../../interfaces/users';
+import RjsfCommentWidget from './RjsfCommentWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -224,6 +225,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     const Widgets = React.useMemo(
         () => ({
+            CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
             SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
             DateWidget: getComponent(RjsfDateWidget, checkboxProps),
             DateTimeWidget: getComponent(RjsfDateTimeWidget, checkboxProps),
