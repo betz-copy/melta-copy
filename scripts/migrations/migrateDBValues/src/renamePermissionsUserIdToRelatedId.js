@@ -1,0 +1,46 @@
+/* eslint-disable no-console */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable import/prefer-default-export */
+import mongoose from 'mongoose';
+import config from './config/index.js';
+
+const { mongo } = config;
+
+const renameUserIdToRelatedId = async () => {
+    const db = mongoose.connection.client.db(mongo.targetDatabase);
+    const collections = await db.listCollections().toArray();
+    const collectionNames = collections.map((col) => col.name);
+
+    if (!collectionNames.includes(mongo.targetCollection)) {
+        console.warn(`Collection ${mongo.targetCollection} not found in database ${mongo.targetDatabase}`);
+        return;
+    }
+
+    console.log(`Updating ${mongo.targetDatabase}.${mongo.targetCollection}`);
+
+    const collection = db.collection(mongo.targetCollection);
+
+    const result = await collection.updateMany({ userId: { $exists: true } }, [{ $set: { relatedId: '$userId' } }, { $unset: 'userId' }]);
+
+    console.log(`${result.modifiedCount} documents updated in ${mongo.targetDatabase}.${mongo.targetCollection}`);
+};
+
+const connectToMongo = async () => {
+    await mongoose.connect(mongo.uri);
+    console.log('Connected to MongoDB');
+};
+
+const main = async () => {
+    try {
+        await connectToMongo();
+        await renameUserIdToRelatedId();
+    } catch (error) {
+        console.error('Error:', error);
+    } finally {
+        mongoose.connections.forEach((conn) => conn.close());
+    }
+};
+
+main().then(() => {
+    console.log('replaced all permission: userId --> relatedId ');
+});
