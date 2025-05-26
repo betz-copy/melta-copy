@@ -1500,5 +1500,6 @@ export default {
             userPage: 'עמוד לקוח',
         },
         succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
+        childTemplates: 'תבניות בן',
     },
 };

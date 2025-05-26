@@ -34,22 +34,13 @@ export interface IEntityChildTemplate {
     name: string;
     displayName: string;
     description: string;
-    categories: string[]; // Array of category IDs
+    categories: IMongoCategory['_id'][];
+    properties: Record<string, IChildTemplateProperty>;
     fatherTemplateId: string;
-    properties: Record<
-        string,
-        {
-            title: string;
-            type: string;
-            format?: string;
-        }
-    >;
     disabled: boolean;
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
 }
 
 export type IEntityChildTemplateMap = Map<string, IEntityChildTemplate>;

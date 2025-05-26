@@ -116,23 +116,18 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
-    console.log('Child Templates Map:', childTemplates);
 
     const childTemplatesList = useMemo(() => {
         if (!childTemplates) return [];
         const templates = Array.from(childTemplates.values());
-        console.log('All Child Templates:', templates);
-        console.log('Current Template ID:', entityTemplate._id);
         const filtered = templates.filter((child) => {
-            console.log('Checking child:', child.name, 'fatherTemplateId:', child.fatherTemplateId, 'against:', entityTemplate._id);
             return child.fatherTemplateId === entityTemplate._id;
         });
-        console.log('Filtered Child Templates for', entityTemplate.displayName, ':', filtered);
         return filtered;
     }, [childTemplates, entityTemplate._id]);
 
-    const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
+    const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
@@ -251,37 +246,15 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
                     {childTemplatesList.length > 0 && (
                         <Grid item container>
-                            <Typography color={theme.palette.primary.main} sx={{ mb: 1 }}>
-                                {i18next.t('childTemplates')}
+                            <Typography color={theme.palette.primary.main} sx={{ mt: 2 }}>
+                                {i18next.t('createChildTemplateDialog.childTemplates')}
                             </Typography>
                         </Grid>
                     )}
                     {childTemplatesList.map((childTemplate) => (
-                        <Grid
-                            key={childTemplate._id}
-                            item
-                            container
-                            gap="10px"
-                            alignItems="center"
-                            sx={{
-                                pl: 4,
-                                position: 'relative',
-                                '&::before': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    left: '10px',
-                                    top: '50%',
-                                    width: '20px',
-                                    height: '20px',
-                                    transform: 'translateY(-50%)',
-                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='${theme.palette.primary.main}' d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E")`,
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundSize: 'contain',
-                                },
-                            }}
-                        >
+                        <Grid key={childTemplate._id} item container gap="10px" alignItems="center">
                             <Grid item>
-                                <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
+                                <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ marginRight: '10px' }} />
                             </Grid>
                             <Grid item>
                                 <MeltaTooltip title={childTemplate.displayName}>
@@ -293,7 +266,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
-                                            width: '130px',
                                         }}
                                     >
                                         {childTemplate.displayName}
@@ -303,15 +275,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     ))}
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
-                            <Typography>{i18next.t('category')}</Typography>
-                        </Grid>
-                        <Grid item flexBasis="70%">
-                            {entityTemplate.category.displayName}
-                        </Grid>
-                    </Grid>
-                    <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                        <Grid item color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
                         </Grid>
                     </Grid>
@@ -484,7 +448,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         {},
     );
 
-    // Get all child templates that should be shown in this category
     const categoryChildTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return [];
 
@@ -492,21 +455,16 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
         return allChildTemplates.filter((child: IEntityChildTemplate) => {
-            // Show child template if it belongs to this category
             return child.categories.includes(currentCategoryId);
         });
     }, [childTemplates, entityTemplatesWithCategory.category._id]);
 
-    // Get parent templates that should be shown in disabled state
     const disabledParentTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return new Map();
 
         const result = new Map<string, IMongoEntityTemplatePopulated>();
-        const currentCategoryId = entityTemplatesWithCategory.category._id;
 
-        // For each child template in this category
         categoryChildTemplates.forEach((child) => {
-            // If the father template is not in this category
             const fatherTemplate = entityTemplates.get(child.fatherTemplateId);
             if (fatherTemplate && !entityTemplatesWithCategory.entityTemplates.some((t) => t._id === fatherTemplate._id)) {
                 result.set(fatherTemplate._id, fatherTemplate);
@@ -515,12 +473,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
         return result;
     }, [childTemplates, entityTemplates, entityTemplatesWithCategory, categoryChildTemplates]);
-
-    // Function to check if this is the original category of a child template
-    const isOriginalCategory = (childTemplate: IEntityChildTemplate): boolean => {
-        const fatherTemplate = entityTemplates?.get(childTemplate.fatherTemplateId);
-        return fatherTemplate?.category._id === entityTemplatesWithCategory.category._id;
-    };
 
     return (
         <Droppable droppableId={entityTemplatesWithCategory.category._id}>
@@ -586,7 +538,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                         }
                         onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                     >
-                        {/* First render regular templates */}
                         {!!entityTemplatesWithCategory.entityTemplates.length &&
                             entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => {
                                 const entityHasWritePermission = checkUserTemplatePermission(
@@ -596,7 +547,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     PermissionScope.write,
                                 );
 
-                                // Get child templates where this template is the father
                                 const templateChildTemplates = categoryChildTemplates.filter(
                                     (child: IEntityChildTemplate) => child.fatherTemplateId === entityTemplate._id,
                                 );
@@ -627,7 +577,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 </Grid>
                                             )}
                                         </Draggable>
-                                        {/* Render child templates under their parent */}
                                         {templateChildTemplates.map((childTemplate: IEntityChildTemplate) => (
                                             <Grid
                                                 key={childTemplate._id}
@@ -639,7 +588,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 <SubdirectoryArrowLeft
                                                     sx={{
                                                         position: 'absolute',
-                                                        left: '10px',
+                                                        left: '6px',
                                                         top: '50%',
                                                         transform: 'translateY(-50%)',
                                                         color: theme.palette.primary.main,
@@ -713,13 +662,11 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                 );
                             })}
 
-                        {/* Then render disabled parent templates with their children */}
                         {Array.from(disabledParentTemplates.values()).map((parentTemplate) => {
                             const childTemplatesForParent = categoryChildTemplates.filter((child) => child.fatherTemplateId === parentTemplate._id);
 
                             return (
                                 <React.Fragment key={parentTemplate._id}>
-                                    {/* Render disabled parent template */}
                                     <Grid sx={{ opacity: 0.6 }}>
                                         <EntityTemplateCard
                                             entityTemplate={parentTemplate}
@@ -732,7 +679,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             isDisabledView={true}
                                         />
                                     </Grid>
-                                    {/* Render its child templates */}
                                     {childTemplatesForParent.map((childTemplate: IEntityChildTemplate) => (
                                         <Grid
                                             key={childTemplate._id}
