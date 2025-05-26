@@ -6,6 +6,8 @@ import { createGantts } from './gantts';
 import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
 import categories from './mocks/categories';
 import entityTemplates from './mocks/entityTemplates';
+import simbaCategories from './mocks/simba/categories';
+import simbaEntityTemplates from './mocks/simba/entityTemplates';
 import getProcessTemplateToCreate from './mocks/processTemplates';
 import relationshipTemplates from './mocks/relationshipTemplates';
 import getUsersToCreate from './mocks/users';
@@ -19,7 +21,7 @@ import { createEntityTemplates } from './templates/entityTemplates';
 import { createRelationshipTemplates } from './templates/relationshipTemplates';
 import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
-import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
+import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive, updateWorkspaceMetadata } from './workspaces';
 import { createCharts } from './templateCharts';
 
 const main = async () => {
@@ -78,7 +80,9 @@ const main = async () => {
 
     console.log('Creating workspaces');
 
-    const mainWorkspace = await createWorkspaces(getWorkspacesToCreate());
+    const mainWorkspaces = await createWorkspaces(getWorkspacesToCreate());
+
+    const mainWorkspace = mainWorkspaces.find(({ name }) => name === 'operational')!;
 
     console.log('Creating categories');
 
@@ -130,6 +134,38 @@ const main = async () => {
     await createCharts(mainWorkspace._id, createdEntityTemplates, userIds[0]);
 
     console.log('Finished');
+
+    console.log('\n\nCreating simba workspaces');
+
+    const simbaWorkspace = mainWorkspaces.find(({ name }) => name === 'test')!;
+
+    console.log('Creating simba categories');
+
+    const createdSimbaCategories = await createCategories(simbaWorkspace._id, simbaCategories);
+
+    console.log('Creating simba entity templates');
+
+    const createdSimbaEntityTemplates = await createEntityTemplates(simbaWorkspace._id, simbaEntityTemplates, createdSimbaCategories);
+
+    const carTemplate = createdSimbaEntityTemplates.find(({ name }) => name === 'car')!;
+    const driverTemplate = createdSimbaEntityTemplates.find(({ name }) => name === 'driver')!;
+
+    const simbaWorkspaceMetadata = {
+        simba: {
+            usersInfoTemplateId: driverTemplate._id,
+            carsInfoTemplateId: carTemplate._id,
+        },
+    };
+
+    console.log('Updating simba workspace metadata');
+
+    await updateWorkspaceMetadata(rootWorkspace._id, simbaWorkspaceMetadata);
+
+    console.log('Creating simba entities');
+
+    await createInstances(simbaWorkspace._id, userIds[0], createdSimbaEntityTemplates, chance, exampleFileId);
+
+    console.log('Finished simba');
 };
 
 main();

@@ -36,6 +36,8 @@ export const createInstances = async (
         return selectedFunction();
     });
 
+    JSONSchemaFaker.format('email', (_value) => 't23458789sh@jello.com');
+
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
