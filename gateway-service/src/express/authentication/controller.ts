@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Request, Response } from 'express';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
@@ -15,7 +16,17 @@ class AuthenticationController {
 
         if (user) await UsersManager.syncUser(user._id);
 
-        const token = AuthenticationManager.createAccessToken({ id: user?._id || config.authentication.shragaAuthentication.unauthorizedId });
+        let token: string;
+        if (RelayState?.includes(config.authentication.shragaAuthentication.simbaEndURL)) {
+            token = AuthenticationManager.createAccessToken({
+                id: config.authentication.shragaAuthentication.simbaId,
+                kartoffelId: id,
+                simbaWorkspaceId: config.frontendConfig.simbaWorkspaceId,
+            });
+        } else {
+            token = AuthenticationManager.createAccessToken({ id: user?._id || config.authentication.shragaAuthentication.unauthorizedId });
+        }
+
         res.cookie(accessTokenName, token);
 
         return res.redirect(RelayState || '/');

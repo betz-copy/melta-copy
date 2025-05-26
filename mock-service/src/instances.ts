@@ -36,7 +36,15 @@ export const createInstances = async (
         return selectedFunction();
     });
 
-    JSONSchemaFaker.format('email', (_value) => 't23458789sh@jello.com');
+    JSONSchemaFaker.format('user', (_value) => {
+        return JSON.stringify({
+            _id: '5e5688d54203fc40043591ac',
+            fullName: 'אחמד אדידס',
+            jobTitle: 'טבח',
+            hierarchy: 'es_name/es',
+            mail: 't25458789sh@jello.com',
+        });
+    });
 
     const promises = entityTemplates
         .map((entityTemplate) => {

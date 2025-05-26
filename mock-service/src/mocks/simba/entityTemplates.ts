@@ -41,21 +41,17 @@ const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     title: 'בסיס',
                 },
-                id: {
+                user: {
                     type: 'string',
-                    title: 'ת.ז',
-                },
-                mail: {
-                    type: 'string',
-                    title: 'דואר אלקטרוני',
-                    format: 'email',
+                    title: 'משתמש',
+                    format: 'user',
                 },
             },
             hide: [],
         },
-        propertiesOrder: ['firstName', 'lastName', 'phone', 'startDate', 'endDate', 'licenseStatus', 'base', 'id', 'mail'],
+        propertiesOrder: ['firstName', 'lastName', 'phone', 'startDate', 'endDate', 'licenseStatus', 'base', 'user'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
-        propertiesPreview: ['firstName', 'lastName', 'phone', 'startDate', 'endDate', 'licenseStatus', 'base', 'id', 'mail'],
+        propertiesPreview: ['firstName', 'lastName', 'phone', 'startDate', 'endDate', 'licenseStatus', 'base', 'user'],
         disabled: false,
     },
     {

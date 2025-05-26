@@ -159,7 +159,7 @@ const main = async () => {
 
     console.log('Updating simba workspace metadata');
 
-    await updateWorkspaceMetadata(rootWorkspace._id, simbaWorkspaceMetadata);
+    await updateWorkspaceMetadata(simbaWorkspace._id, simbaWorkspaceMetadata);
 
     console.log('Creating simba entities');
 

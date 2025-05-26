@@ -55,6 +55,7 @@ const config = {
         },
         meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
         meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
+        simbaWorkspaceId: env.get('SIMBA_WORKSPACE_ID').default('68343b9d6582858895fb9831').asString(),
     },
 
     authentication: {
@@ -68,6 +69,8 @@ const config = {
             accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
             unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
+            simbaId: env.get('SIMBA_ID').default('simba').asString(),
+            simbaEndURL: env.get('SIMBA_END_URL').default('/simba/test.mlt').asString(),
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB

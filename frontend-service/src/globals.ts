@@ -30,6 +30,7 @@ export const environment = {
         workspaces: '/workspaces',
     },
     unauthorizedId: 'unauthorized',
+    simbaId: 'simba',
     defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
     graphSettings: {
