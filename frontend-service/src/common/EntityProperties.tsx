@@ -185,12 +185,13 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
-                const propertyValue = propertySchema.comment ?? properties[propertyKey];
+                const { format, type, serialCurrent, calculateTime, title, color, comment, relationshipReference } = propertySchema;
+                const propertyValue = comment ?? properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
                 let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
-                if (propertySchema.format === 'relationshipReference') {
-                    const relatedTemplateId = propertySchema.relationshipReference?.relatedTemplateId!;
+                if (format === 'relationshipReference') {
+                    const relatedTemplateId = relationshipReference?.relatedTemplateId!;
                     relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
                 }
 
@@ -223,14 +224,14 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
-                else if (propertyValue && propertySchema.calculateTime)
+                else if (propertyValue && calculateTime)
                     innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
-                else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
-                else if (propertySchema.format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
+                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue);
+                else if (format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                 else innerContent = stringFormatValue;
 
                 let titleContent;
-                if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
+                if (hideFieldsToDisplay.includes(propertyKey) || format === 'fileId') titleContent = '';
                 else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
                 else titleContent = innerContent;
 
@@ -241,16 +242,13 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
+                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature'];
+
                 const textDirection =
-                    propertySchema.format !== 'text-area' &&
-                    propertySchema.format !== 'fileId' &&
-                    propertySchema.format !== 'relationshipReference' &&
-                    propertySchema.format !== 'user' &&
-                    propertySchema.format !== 'location' &&
-                    propertySchema.format !== 'signature'
+                    format && !excludedFormats.includes(format)
                         ? getTextDirection(propertyValue, {
-                              type: propertySchema.type,
-                              serialCurrent: propertySchema.serialCurrent,
+                              type,
+                              serialCurrent,
                           })
                         : 'rtl';
 
@@ -265,17 +263,17 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             marginBottom: '20px',
                         }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
-                        xs={propertySchema.comment ? 12 : undefined}
+                        xs={comment ? 12 : undefined}
                     >
                         <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
-                            {!propertySchema.comment && (
+                            {!comment && (
                                 <Grid
                                     item
                                     style={{
                                         width: overrideStyleInLongText ? '10%' : '30%',
                                     }}
                                 >
-                                    <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
+                                    <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={title}>
                                         <Typography
                                             style={{
                                                 textOverflow: 'ellipsis',
@@ -287,7 +285,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                             color={propertyTitleColor}
                                             fontWeight={mode === 'white' ? '800' : ''}
                                         >
-                                            {propertySchema.title}:
+                                            {title}:
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
@@ -302,24 +300,24 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                     direction: 'rtl',
                                     textAlign: 'right',
                                     // eslint-disable-next-line no-nested-ternary
-                                    width: propertySchema.comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
+                                    width: comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
                                 <MeltaTooltip
-                                    disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
+                                    disableHoverListener={format === 'relationshipReference' ? true : textWrap}
                                     placement="bottom"
                                     title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                 >
                                     <Typography
                                         fontSize="14px"
-                                        color={propertySchema.color ?? propertyValueColor}
+                                        color={color ?? propertyValueColor}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflowX: 'hidden',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
+                                            direction: type === 'number' ? 'rtl' : textDirection,
                                         }}
                                     >
                                         <HighlightText text={innerContent} searchedText={searchedText} isLink />

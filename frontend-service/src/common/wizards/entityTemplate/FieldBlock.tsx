@@ -147,7 +147,7 @@ const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
         },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
-            opacity: isDragging ? 0.5 : 1,
+            opacity: monitor.isDragging() ? 0.5 : 1,
         }),
     });
 
