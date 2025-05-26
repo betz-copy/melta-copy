@@ -15,6 +15,7 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -284,7 +285,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
-                                    <Typography>-</Typography>
+                                    <ArrowBackIosNewIcon />
                                 </Grid>
                                 <Grid item>
                                     <MeltaTooltip title={value.title}>
@@ -372,6 +373,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 </Grid>
             }
             onHover={(isHover) => setIsHoverOnCard(isHover)}
+            isDisabled={isDisabledView || entityTemplate.disabled}
         />
     );
 };
@@ -594,67 +596,19 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                         color: theme.palette.primary.main,
                                                     }}
                                                 />
-                                                <ViewingCard
-                                                    width={250}
-                                                    title={
-                                                        <Grid
-                                                            container
-                                                            direction="row"
-                                                            justifyContent="space-between"
-                                                            minWidth="232px"
-                                                            alignItems="center"
-                                                            paddingLeft="20px"
-                                                            flexWrap="nowrap"
-                                                        >
-                                                            <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                                                                <Grid item>
-                                                                    <EntityTemplateColor
-                                                                        entityTemplateColor={getEntityTemplateColor(entityTemplate)}
-                                                                        style={{ height: '18px' }}
-                                                                    />
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    {entityTemplate.iconFileId ? (
-                                                                        <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
-                                                                    ) : (
-                                                                        <AppRegistrationIcon
-                                                                            style={{ ...workspace.metadata.iconSize }}
-                                                                            fontSize="small"
-                                                                        />
-                                                                    )}
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <MeltaTooltip title={childTemplate.displayName}>
-                                                                        <Typography
-                                                                            style={{
-                                                                                fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
-                                                                                color: theme.palette.primary.main,
-                                                                                fontWeight: '400',
-                                                                                textOverflow: 'ellipsis',
-                                                                                whiteSpace: 'nowrap',
-                                                                                overflow: 'hidden',
-                                                                                width: '130px',
-                                                                            }}
-                                                                        >
-                                                                            {childTemplate.displayName}
-                                                                        </Typography>
-                                                                    </MeltaTooltip>
-                                                                </Grid>
-                                                            </Grid>
-                                                        </Grid>
-                                                    }
-                                                    expendedCard={
-                                                        <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
-                                                            <Grid item container justifyContent="space-between">
-                                                                <Grid item flexBasis="27%" color={theme.palette.primary.main}>
-                                                                    <Typography>{i18next.t('category')}</Typography>
-                                                                </Grid>
-                                                                <Grid item flexBasis="70%">
-                                                                    {entityTemplate.category.displayName}
-                                                                </Grid>
-                                                            </Grid>
-                                                        </Grid>
-                                                    }
+                                                <EntityTemplateCard
+                                                    entityTemplate={{
+                                                        ...entityTemplate,
+                                                        _id: childTemplate._id,
+                                                        displayName: childTemplate.displayName,
+                                                    }}
+                                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                    setAddActionsDialogState={setAddActionsDialogState}
+                                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                    setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                                    entityHasWritePermission={false}
+                                                    isDisabledView={false}
                                                 />
                                             </Grid>
                                         ))}
@@ -691,73 +645,25 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             <SubdirectoryArrowLeft
                                                 sx={{
                                                     position: 'absolute',
-                                                    left: '10px',
+                                                    left: '6px',
                                                     top: '50%',
                                                     transform: 'translateY(-50%)',
                                                     color: theme.palette.primary.main,
                                                 }}
                                             />
-                                            <ViewingCard
-                                                width={250}
-                                                title={
-                                                    <Grid
-                                                        container
-                                                        direction="row"
-                                                        justifyContent="space-between"
-                                                        minWidth="232px"
-                                                        alignItems="center"
-                                                        paddingLeft="20px"
-                                                        flexWrap="nowrap"
-                                                    >
-                                                        <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                                                            <Grid item>
-                                                                <EntityTemplateColor
-                                                                    entityTemplateColor={getEntityTemplateColor(parentTemplate)}
-                                                                    style={{ height: '18px' }}
-                                                                />
-                                                            </Grid>
-                                                            <Grid item>
-                                                                {parentTemplate.iconFileId ? (
-                                                                    <CustomIcon iconUrl={parentTemplate.iconFileId} height="24px" width="24px" />
-                                                                ) : (
-                                                                    <AppRegistrationIcon
-                                                                        style={{ ...workspace.metadata.iconSize }}
-                                                                        fontSize="small"
-                                                                    />
-                                                                )}
-                                                            </Grid>
-                                                            <Grid item>
-                                                                <MeltaTooltip title={childTemplate.displayName}>
-                                                                    <Typography
-                                                                        style={{
-                                                                            fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
-                                                                            color: theme.palette.primary.main,
-                                                                            fontWeight: '400',
-                                                                            textOverflow: 'ellipsis',
-                                                                            whiteSpace: 'nowrap',
-                                                                            overflow: 'hidden',
-                                                                            width: '130px',
-                                                                        }}
-                                                                    >
-                                                                        {childTemplate.displayName}
-                                                                    </Typography>
-                                                                </MeltaTooltip>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </Grid>
-                                                }
-                                                expendedCard={
-                                                    <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
-                                                        <Grid item container justifyContent="space-between">
-                                                            <Grid item flexBasis="27%" color={theme.palette.primary.main}>
-                                                                <Typography>{i18next.t('category')}</Typography>
-                                                            </Grid>
-                                                            <Grid item flexBasis="70%">
-                                                                {parentTemplate.category.displayName}
-                                                            </Grid>
-                                                        </Grid>
-                                                    </Grid>
-                                                }
+                                            <EntityTemplateCard
+                                                entityTemplate={{
+                                                    ...parentTemplate,
+                                                    _id: childTemplate._id,
+                                                    displayName: childTemplate.displayName,
+                                                }}
+                                                setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                setAddActionsDialogState={setAddActionsDialogState}
+                                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                                entityHasWritePermission={false}
+                                                isDisabledView={true}
                                             />
                                         </Grid>
                                     ))}
