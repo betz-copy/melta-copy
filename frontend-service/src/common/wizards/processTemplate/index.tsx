@@ -41,6 +41,7 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
         properties: ProcessTemplatePropertyByType[];
         attachmentProperties: ProcessTemplatePropertyByType[];
         reviewers: IUser[];
+        disableAddingReviewers?: boolean;
         icon?: fileDetails;
     }>;
 }

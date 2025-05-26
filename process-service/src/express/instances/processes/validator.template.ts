@@ -9,6 +9,7 @@ import {
     InstanceProperties,
     UpdateProcessReqBody,
     ValidationError,
+    IMongoStepInstance,
 } from '@microservices/shared';
 import ajv from '../../../utils/ajv';
 import { InstancePropertiesValidationError } from '../../error';
@@ -36,7 +37,11 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
         }
     }
 
-    validateReviewersNotInTemplate(instanceStepReviewersByTemplateStepIds: Record<string, string[]>, stepTemplates: IMongoStepTemplate[]) {
+    validateReviewersNotInTemplate(
+        instanceStepReviewersByTemplateStepIds: Record<string, string[]>,
+        stepTemplates: IMongoStepTemplate[],
+        stepInstances: IMongoStepInstance[],
+    ) {
         Object.entries(instanceStepReviewersByTemplateStepIds).forEach(([templateStepId, reviewers]) => {
             const stepTemplate = stepTemplates.find((currStepTemplate) => String(currStepTemplate._id) === templateStepId);
 
@@ -45,6 +50,14 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
             if (stepTemplate.reviewers.some((templateReviewer) => reviewers.includes(templateReviewer))) {
                 throw new ValidationError('reviewer already in template');
             }
+
+            if (stepTemplate.disableAddingReviewers) {
+                const currStepInstance = stepInstances.find((step) => step.templateId === templateStepId);
+                const currReviewers = currStepInstance ? currStepInstance.reviewers : stepTemplate.reviewers;
+
+                if (reviewers.some((reviewer) => !currReviewers.includes(reviewer)))
+                    throw new ValidationError(`not allowed to add reviewers to step ${templateStepId}`);
+            }
         });
     }
 
@@ -52,9 +65,12 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
         const { templateId, details, steps }: CreateProcessReqBody = req.body;
 
         const template = await this.processTemplateManager.getProcessTemplateById(templateId, false);
-        const stepTemplates = await this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps);
 
-        this.validateReviewersNotInTemplate(steps, stepTemplates);
+        if (steps) {
+            const stepTemplates = await this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps);
+
+            this.validateReviewersNotInTemplate(steps, stepTemplates, []);
+        }
         this.validateInstanceProperties(details, template.details.properties);
     }
 
@@ -75,7 +91,7 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
                 instanceStepsWithTemplateStepIds[step.templateId] = steps[step._id];
             });
 
-            this.validateReviewersNotInTemplate(instanceStepsWithTemplateStepIds, stepTemplates);
+            this.validateReviewersNotInTemplate(instanceStepsWithTemplateStepIds, stepTemplates, stepInstances);
         }
 
         if (details) {

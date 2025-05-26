@@ -111,6 +111,7 @@ const processTemplateObjectToProcessTemplateForm = (
                 name: step.iconFileId,
             } as fileDetails,
             reviewers: step.reviewers,
+            disableAddingReviewers: step.disableAddingReviewers,
         });
     });
 
@@ -232,6 +233,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             _id: step._id!,
             properties: stepSchema,
             displayName: step.displayName,
+            disableAddingReviewers: step.disableAddingReviewers,
             iconFileId: !step.icon || step.icon!.file instanceof File || step.icon.name === '' ? null : step.icon!.file.name!,
             name: step.name,
             propertiesOrder: stepPropertiesOrder,

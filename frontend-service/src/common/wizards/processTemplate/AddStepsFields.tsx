@@ -60,6 +60,7 @@ const addStepsFieldsSchema = Yup.object({
                 icon: Yup.object({
                     name: Yup.string().nullable(true).optional(),
                 }),
+                disableAddingReviewers: Yup.boolean().nullable(true).optional(),
                 name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
                 displayName: Yup.string().required(i18next.t('validation.required')),
             }),
@@ -233,6 +234,8 @@ const FieldBlockStepWarper = ({
                                     errors={errors}
                                     isEditMode={isEditMode}
                                     areThereAnyInstances={areThereAnyInstances}
+                                    disableAddingReviewersFieldName={`steps[${index}].disableAddingReviewers`}
+                                    isDisableAddingReviewers={step.disableAddingReviewers || false}
                                 />
                             </Grid>
                             <Grid item>
