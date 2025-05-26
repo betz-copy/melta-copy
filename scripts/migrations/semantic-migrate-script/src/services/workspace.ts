@@ -42,6 +42,10 @@ export interface IMetadata {
         bulk: number;
     };
     unitFieldSplitDepth: number;
+    simba: {
+        usersInfoTemplateId: string;
+        carsInfoTemplateId: string;
+    };
 }
 export interface IWorkspace {
     _id: string;

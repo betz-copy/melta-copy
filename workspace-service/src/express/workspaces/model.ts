@@ -32,6 +32,10 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             bulk: { type: Number },
         },
         unitFieldSplitDepth: { type: Number },
+        simba: {
+            usersInfoTemplateId: { type: String },
+            carsInfoTemplateId: { type: String },
+        },
     },
     { _id: false },
 );

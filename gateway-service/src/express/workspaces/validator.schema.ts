@@ -30,6 +30,10 @@ const metadataSchema = Joi.object({
         bulk: Joi.number(),
     }).optional(),
     unitFieldSplitDepth: Joi.number(),
+    simba: Joi.object({
+        usersInfoTemplateId: Joi.string(),
+        carsInfoTemplateId: Joi.string(),
+    }).optional(),
 }).optional();
 
 const workspaceSchema = Joi.object({

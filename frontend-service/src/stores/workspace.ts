@@ -35,6 +35,10 @@ export const defaultMetadata = {
         bulk: 5,
     },
     unitFieldSplitDepth: 2,
+    simba: {
+        usersInfoTemplateId: '',
+        carsInfoTemplateId: '',
+    },
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

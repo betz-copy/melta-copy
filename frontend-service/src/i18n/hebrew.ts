@@ -1451,6 +1451,10 @@ export default {
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
+        simba: {
+            usersInfoTemplateId: 'ID תבנית משתמשים',
+            carsInfoTemplateId: 'ID תבנית רכבים',
+        },
     },
     createChildTemplateDialog: {
         templateTitle: 'יצירת תבנית בן',
