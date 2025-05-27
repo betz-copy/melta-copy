@@ -9,6 +9,7 @@ export interface IBasicChart {
     filter?: IGraphFilterBodyBatch;
     templateId?: string;
     createdBy?: string;
+    usedInDashboard?: boolean;
 }
 
 export interface IChart extends IBasicChart {

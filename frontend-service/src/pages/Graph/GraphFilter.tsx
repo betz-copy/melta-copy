@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Autocomplete, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -58,6 +58,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const [filterField, setFilterField] = useState<IGraphFilterBody['filterField']>(filter?.filterField || undefined);
     const [fullView, setFullView] = useState<boolean>(true);
     const [inputValue, setInputValue] = useState<string>('');
+
+    console.log({ filteringraphfilter: filter, selectedTemplate, selectedProperty, filterField });
+
     const options = templateOptions.filter((option) => graphEntityTemplateIds.includes(option._id));
     const properties = selectedTemplate?.properties.properties;
     const filterProperties = properties
@@ -101,6 +104,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleSelectProperty = (newProperty: string | null) => {
+        console.log({ newProperty });
+
         setSelectedProperty(newProperty);
 
         if (!newProperty) {

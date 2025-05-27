@@ -13,7 +13,7 @@ export interface TableMetaData {
     templateId: string;
     columns: string[];
     columnsOrder: string[];
-    filters: string;
+    filter: string;
     name: string;
     description: string;
 }
@@ -37,12 +37,12 @@ export interface DashboardItemBase {
 
 export interface ChartDashboardItem extends DashboardItemBase {
     type: DashboardItemType.Chart;
-    metaData: ChartMetaData;
+    metaData: string;
 }
 
 export interface IframeDashboardItem extends DashboardItemBase {
     type: DashboardItemType.Iframe;
-    metaData: IframeMetaData;
+    metaData: string;
 }
 
 export interface TableDashboardItem extends DashboardItemBase {

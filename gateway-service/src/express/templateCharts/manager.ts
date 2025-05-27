@@ -33,7 +33,11 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
     }
 
     async getChartById(chartId: string) {
-        return this.service.getChartById(chartId);
+        const chart = await this.service.getChartById(chartId);
+        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems([chartId]);
+        const usedInDashboard = (dashboardChartsItems[chartId] ?? []).length > 0;
+
+        return { ...chart, usedInDashboard };
     }
 
     hasPermissionToRelatedTemplate(
@@ -105,8 +109,11 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
+        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems(allowedCharts.map(({ _id }) => _id));
+
         const GeneratedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
             ...chart,
+            usedInDashboard: (dashboardChartsItems[chart._id] ?? []).length > 0,
             chart: generatedChartsMap.get(chart._id.toString())!,
         }));
 

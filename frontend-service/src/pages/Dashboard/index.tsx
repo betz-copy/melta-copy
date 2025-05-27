@@ -4,9 +4,10 @@ import { QueryClient, useMutation, useQuery, useQueryClient } from 'react-query'
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
+import { useLocation } from 'wouter';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
-import { MongoDashboardItemPopulated } from '../../interfaces/dashboard';
+import { DashboardItemType, MongoDashboardItemPopulated } from '../../interfaces/dashboard';
 import { deleteDashboardItem, getDashboardItems } from '../../services/dashboardService';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardItemViewPage } from './DashboardItemViewPage';
@@ -15,9 +16,11 @@ import { AddDashboardItem } from './AddDashboardItem';
 import { LocalStorage } from '../../utils/localStorage';
 import { ErrorToast } from '../../common/ErrorToast';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import { ConfirmEditCommonItem } from './Dialogs';
 
 const Dashboard: React.FC = () => {
     const queryClient = useQueryClient();
+    const [_, navigate] = useLocation();
 
     const [layout, setLayout] = useState<LayoutItem[]>([]);
     const [isHoverOnCard, setIsHoverOnCard] = useState<number | null>(null);
@@ -28,6 +31,18 @@ const Dashboard: React.FC = () => {
     }>({
         isDialogOpen: false,
         chartId: null,
+    });
+
+    const [editDashboardItemDialogState, setEditDashboardItemDialogState] = useState<{
+        isDialogOpen: boolean;
+        chartId: string | null;
+        templateId: string | null;
+        type: DashboardItemType | null;
+    }>({
+        isDialogOpen: false,
+        chartId: null,
+        templateId: null,
+        type: null,
     });
 
     const { data: dashboardItems, isLoading } = useQuery({
@@ -54,6 +69,17 @@ const Dashboard: React.FC = () => {
             },
         },
     );
+
+    const onEditYes = () => {
+        if (editDashboardItemDialogState.type === 'chart') {
+            // `${currentLocation}/${_id}/chart`, { state: { isChartPage: true } })
+            navigate(`/charts/${editDashboardItemDialogState.templateId}/${editDashboardItemDialogState.chartId}/chart`, {
+                state: { isDashboardPage: true },
+            });
+        } else if (editDashboardItemDialogState.type === 'iframe') {
+            navigate(`/iframe/${editDashboardItemDialogState.chartId}`);
+        }
+    };
 
     if (isLoading) return <CircularProgress />;
 
@@ -90,6 +116,28 @@ const Dashboard: React.FC = () => {
                                 indexInGrid={index}
                                 isHoverOnCard={isHoverOnCard}
                                 onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
+                                onEdit={() => {
+                                    console.log('Edit chart:', chart);
+
+                                    // Navigate to edit page or open edit modal
+                                    if (chart.type === 'chart') {
+                                        setEditDashboardItemDialogState({
+                                            chartId: chart.metaData._id,
+                                            isDialogOpen: true,
+                                            type: chart.type,
+                                            templateId: chart.metaData.templateId,
+                                        });
+                                    } else if (chart.type === 'table') {
+                                        navigate(`/table/${chart._id}`);
+                                    } else {
+                                        setEditDashboardItemDialogState({
+                                            chartId: chart.metaData._id,
+                                            isDialogOpen: true,
+                                            type: chart.type,
+                                            templateId: null,
+                                        });
+                                    }
+                                }}
                             />
                         </div>
                     ))
@@ -105,6 +153,21 @@ const Dashboard: React.FC = () => {
                 handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}
                 onYes={() => deleteDashboardItemMutateAsync(deleteChartDialogState.chartId!)}
                 isLoading={isDeleteDashboardItemLoading}
+            />
+            {/* <AreYouSureDialog
+                open={editDashboardItemDialogState.isDialogOpen}
+                handleClose={() => setEditDashboardItemDialogState({ isDialogOpen: false, chartId: null })}
+                onYes={onEditYes}
+                isLoading={isDeleteDashboardItemLoading}
+                yesTitle={i18next.t('dashboard.continueEdit')}
+                noTitle={i18next.t('dashboard.back')}
+                title={i18next.t('dashboard.charts.onEditDialog.title')}
+                body={i18next.t('dashboard.charts.onEditDialog.body')}
+            /> */}
+            <ConfirmEditCommonItem
+                isDialogOpen={editDashboardItemDialogState.isDialogOpen}
+                handleClose={() => setEditDashboardItemDialogState({ isDialogOpen: false, chartId: null, templateId: null, type: null })}
+                onEditYes={onEditYes}
             />
         </Grid>
     );

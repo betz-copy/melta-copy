@@ -309,8 +309,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
     );
 
     columnDefs.sort((a, b) => {
-        console.log({ a, b });
-
         if (!a.field || !b.field) return 0;
 
         const orderA = defaultColumnsOrder[a.field]?.order;

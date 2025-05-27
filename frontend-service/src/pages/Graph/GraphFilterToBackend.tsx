@@ -8,6 +8,8 @@ export interface IGraphFilterToBackendBody {
 }
 
 export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): IGraphFilterToBackendBody['filter'] => {
+    console.log({ filterModel });
+
     const groupedByTemplate = Object.values(filterModel).reduce(
         (acc: Record<string, IFilterOfTemplate[]>, { selectedTemplate, selectedProperty, filterField }) => {
             const { _id, properties } = selectedTemplate;
@@ -27,6 +29,8 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
     );
 
     const templateFilterRecord = Object.entries(groupedByTemplate).map(([template, filters]) => [template, { filter: { $and: filters } }]);
+
+    console.log({ templateFilterRecord });
 
     return Object.fromEntries(templateFilterRecord);
 };
@@ -148,6 +152,7 @@ export const FilterOfGraphToFilterRecord = (
     template: IMongoEntityTemplatePopulated,
 ): IGraphFilterBodyBatch => {
     const parsedFilters: IGraphFilterBodyBatch = {};
+    console.log({ filterModel });
 
     if (!filterModel || !filterModel.$and || !Array.isArray(filterModel.$and)) return {};
 
@@ -162,6 +167,8 @@ export const FilterOfGraphToFilterRecord = (
             };
         });
     });
+
+    console.log({ parsedFilters });
 
     return parsedFilters;
 };

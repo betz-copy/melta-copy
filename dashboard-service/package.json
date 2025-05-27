@@ -17,6 +17,7 @@
   "author": "Alexander Gurevich",
   "license": "ISC",
   "dependencies": {
+    "@types/lodash.groupby": "^4.6.9",
     "axios": "^1.7.4",
     "dotenv": "^16.4.5",
     "elastic-apm-node": "^4.7.3",
@@ -26,6 +27,7 @@
     "helmet": "^7.1.0",
     "http-status-codes": "^2.3.0",
     "joi": "^17.13.3",
+    "lodash.groupby": "^4.6.0",
     "mongoose": "^8.5.3",
     "morgan": "^1.10.0",
     "typescript-actions": "npm:typescript@^5.5.4",

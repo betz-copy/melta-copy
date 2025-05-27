@@ -10,6 +10,8 @@ dashboardRouter.post('/', controller.createDashboardItem);
 
 dashboardRouter.get('/:dashboardItemId', controller.getDashboardItemById);
 
+dashboardRouter.post('/relatedItems', controller.getDashboardRelatedItems);
+
 dashboardRouter.put('/:dashboardItemId', controller.editDashboardItem);
 
 dashboardRouter.delete('/:dashboardItemId', controller.deleteDashboardItem);

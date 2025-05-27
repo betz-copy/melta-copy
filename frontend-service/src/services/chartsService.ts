@@ -1,15 +1,17 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { ChartsAndGenerator, IBasicChart, IChart } from '../interfaces/charts';
+import { ChartsAndGenerator, IChart } from '../interfaces/charts';
 
 const { charts } = environment.api;
 
-export const createChart = async (newChart: IBasicChart) => {
-    const { data } = await axios.post<IChart>(charts, newChart);
+type ChartWithStringFilter = Omit<IChart, 'filter'> & { filter?: string };
+
+export const createChart = async (newChart: ChartWithStringFilter, toDashboard: boolean = false) => {
+    const { data } = await axios.post<IChart>(charts, { chart: newChart, toDashboard });
     return data;
 };
 
-export const editChart = async (chartId: string, updatedChart: IChart) => {
+export const editChart = async (chartId: string, updatedChart: ChartWithStringFilter) => {
     const { _id, createdAt, updatedAt, ...restChart } = updatedChart;
 
     const { data } = await axios.put<IChart>(`${charts}/${chartId}`, restChart);
@@ -23,6 +25,11 @@ export const getChartById = async (chartId: string) => {
 
 export const getChartByTemplateId = async (templateId: string, textSearch?: string) => {
     const { data } = await axios.post<ChartsAndGenerator[]>(`${charts}/by-template/${templateId}`, { textSearch });
+    return data;
+};
+
+export const getChartsByUserId = async (templateId: string, textSearch?: string) => {
+    const { data } = await axios.post<IChart[]>(`${charts}/by-user/${templateId}`, { textSearch });
     return data;
 };
 

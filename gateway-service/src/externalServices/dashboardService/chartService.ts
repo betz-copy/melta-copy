@@ -82,6 +82,7 @@ type GeneratorChart = { x: any; y: number }[];
 
 export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;
+    usedInDashboard?: boolean;
 }
 
 export class ChartService extends DefaultExternalServiceApi {

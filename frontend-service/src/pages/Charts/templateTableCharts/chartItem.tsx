@@ -1,20 +1,20 @@
 import { Box } from '@mui/material';
 import React from 'react';
-import { useLocation } from 'wouter';
 import { ChartsAndGenerator, IChartType } from '../../../interfaces/charts';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
-import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
 import { HighchartGenerator } from '../chartGenerator.tsx/HighChartgenerator';
-import { useDarkModeStore } from '../../../stores/darkMode';
+import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
 
 interface ChartItemProps {
     chartDetails: ChartsAndGenerator;
     isHoverOnCard: number | null;
     indexInGrid: number;
     onDelete: () => void;
+    onEdit: () => void;
 }
 
 const ChartItem: React.FC<ChartItemProps> = ({
@@ -22,13 +22,13 @@ const ChartItem: React.FC<ChartItemProps> = ({
     isHoverOnCard,
     indexInGrid,
     onDelete,
+    onEdit,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore();
-    const [currentLocation, navigate] = useLocation();
 
     return (
-        <Box style={{ width: '100%', height: '100%', position: 'relative' }} onClick={() => navigate(`${currentLocation}/${_id}/chart`)}>
+        <Box style={{ width: '100%', height: '100%', position: 'relative' }}>
             <Box
                 className="drag-handle"
                 style={{
@@ -58,6 +58,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
                 >
                     <CardMenu
                         onDeleteClick={onDelete}
+                        onEditClick={onEdit}
                         disabledProps={{
                             isDeleteDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
                             isEditDisabled: false,

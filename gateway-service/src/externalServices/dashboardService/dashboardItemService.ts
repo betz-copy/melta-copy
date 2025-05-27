@@ -67,8 +67,13 @@ export class DashboardItemService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchDashboardItems(textSearch?: string) {
+    async searchDashboardItems(textSearch?: string): Promise<MongoDashboardItemPopulated[]> {
         const { data } = await this.api.post<MongoDashboardItemPopulated[]>('/search', { textSearch });
+        return data;
+    }
+
+    async getDashboardRelatedItems(relatedIds: string[]): Promise<Record<string, MongoDashboardItemPopulated[]>> {
+        const { data } = await this.api.post<Record<string, MongoDashboardItemPopulated[]>>('/relatedItems', { relatedIds });
         return data;
     }
 }

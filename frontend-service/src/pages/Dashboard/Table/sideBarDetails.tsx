@@ -6,6 +6,7 @@ import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../common/wizards';
 import { TableMetaData } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { getTemplateProperties } from '../../../utils/dashboard/formik';
 
 const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
     const theme = useTheme();
@@ -17,7 +18,10 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, t
             <Grid item>
                 <Autocomplete
                     value={values.templateId || null}
-                    onChange={(_e, newValue) => setFieldValue('templateId', newValue || null)}
+                    onChange={(_e, newValue) => {
+                        setFieldValue('templateId', newValue || null);
+                        setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
+                    }}
                     options={Array.from(entityTemplates.keys())}
                     getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
                     renderInput={(params) => <TextField {...params} label={i18next.t('entity')} fullWidth />}
@@ -47,7 +51,6 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, t
 
                         <Grid item>
                             <TextField
-                                id="description"
                                 name="description"
                                 multiline
                                 label={i18next.t('charts.description')}

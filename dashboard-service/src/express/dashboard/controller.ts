@@ -17,6 +17,10 @@ class DashboardController extends DefaultController<DashboardItem, DashboardMana
         res.json(await this.manager.getDashboardItemById(dashboardItemId));
     }
 
+    async getDashboardRelatedItems(req: Request, res: Response) {
+        res.json(await this.manager.getDashboardRelatedItems(req.body.relatedIds));
+    }
+
     async editDashboardItem(req: Request, res: Response) {
         const { dashboardItemId } = req.params;
         res.json(await this.manager.editDashboardItem(dashboardItemId, req.body));

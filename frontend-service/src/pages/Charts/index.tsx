@@ -2,9 +2,10 @@ import { CircularProgress, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
+import { on } from 'events';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
@@ -18,12 +19,14 @@ import { AddNewChartButton } from './templateTableCharts/AddNewChartButton';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { LocalStorage } from '../../utils/localStorage';
 import { ErrorToast } from '../../common/ErrorToast';
+import { ConfirmDeleteCommonItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 
 const { chartsOrderKey } = environment.charts;
 
 const ChartsPage: React.FC = () => {
     const { templateId } = useParams();
     const queryClient = useQueryClient();
+    const [currentLocation, navigate] = useLocation();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
 
@@ -31,6 +34,14 @@ const ChartsPage: React.FC = () => {
     const [layout, setLayout] = useState<LayoutItem[]>([]);
     const [isHoverOnCard, setIsHoverOnCard] = useState<number | null>(null);
     const [deleteChartDialogState, setDeleteChartDialogState] = useState<{
+        isDialogOpen: boolean;
+        chartId: string | null;
+        usedInDashboard?: boolean;
+    }>({
+        isDialogOpen: false,
+        chartId: null,
+    });
+    const [editChartDialogState, setEditChartDialogState] = useState<{
         isDialogOpen: boolean;
         chartId: string | null;
     }>({
@@ -59,6 +70,8 @@ const ChartsPage: React.FC = () => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
         },
     });
+
+    const onEditChartYes = (chartId: string) => navigate(`${currentLocation}/${chartId}/chart`, { state: { isDashboardPage: false } });
 
     if (isLoading) return <CircularProgress />;
 
@@ -93,9 +106,16 @@ const ChartsPage: React.FC = () => {
                         >
                             <ChartItem
                                 chartDetails={chart}
-                                onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
+                                onDelete={() =>
+                                    setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true, usedInDashboard: chart.usedInDashboard })
+                                }
                                 isHoverOnCard={isHoverOnCard}
                                 indexInGrid={index}
+                                onEdit={() =>
+                                    chart.usedInDashboard
+                                        ? setEditChartDialogState({ chartId: chart._id, isDialogOpen: true })
+                                        : onEditChartYes(chart._id)
+                                }
                             />
                         </div>
                     ))
@@ -106,11 +126,18 @@ const ChartsPage: React.FC = () => {
                 }}
                 textSearch={textSearch}
             />
-            <AreYouSureDialog
-                open={deleteChartDialogState.isDialogOpen}
+
+            <ConfirmDeleteCommonItem
+                isDialogOpen={deleteChartDialogState.isDialogOpen}
                 handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}
-                onYes={() => deleteChartMutateAsync(deleteChartDialogState.chartId!)}
+                onDeleteYes={() => deleteChartMutateAsync(deleteChartDialogState.chartId!)}
                 isLoading={isDeleteChartLoading}
+                usedInDashboard={deleteChartDialogState.usedInDashboard}
+            />
+            <ConfirmEditCommonItem
+                onEditYes={() => onEditChartYes(editChartDialogState.chartId!)}
+                handleClose={() => setEditChartDialogState({ isDialogOpen: false, chartId: null })}
+                isDialogOpen={editChartDialogState.isDialogOpen}
             />
         </Grid>
     );

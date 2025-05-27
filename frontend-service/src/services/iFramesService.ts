@@ -27,18 +27,19 @@ const getIFrameById = async (id: string) => {
     return data;
 };
 
-const createIFrame = async (newIFrame: IFrameWizardValues) => {
+const createIFrame = async (newIFrame: IFrameWizardValues, toDashboard: boolean = false) => {
     const formData = new FormData();
-    const { name, url, categoryIds, placeInSideBar } = newIFrame;
-    if (newIFrame.icon) {
-        formData.append('file', newIFrame.icon.file as File);
+    const { name, url, categoryIds, placeInSideBar, icon } = newIFrame;
+
+    if (icon) {
+        formData.append('file', icon.file as File);
     }
     formData.append('name', name);
     formData.append('url', url);
     formData.append('categoryIds', JSON.stringify(categoryIds));
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
-    const { data } = await axios.post<IMongoIFrame>(iFrames, formData);
+    const { data } = await axios.post<IMongoIFrame>(iFrames, formData, { params: { toDashboard } });
     return data;
 };
 
@@ -64,7 +65,7 @@ const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     formData.append('categoryIds', JSON.stringify(categoryIds));
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
-    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
+    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData, { params: { toDashboard: false } });
     return data;
 };
 

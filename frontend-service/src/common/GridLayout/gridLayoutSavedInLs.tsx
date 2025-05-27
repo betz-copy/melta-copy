@@ -48,6 +48,23 @@ const LocalStorageGridLayout = <T extends any[]>({ items, localStorageKey, gener
         if (textSearch) savedLayout.filter((l) => items.some((item) => item._id === l.i));
     }, [items, textSearch]);
 
+    const handleScroll = () => {
+        console.log('hiiii');
+
+        const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
+        if (nearBottom) {
+            // const newItems = generateLayoutItems(layout.length, 4);
+            // setLayout((prev) => [...prev, ...newItems]);
+
+            console.log({ nearBottom });
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [layout]);
+
     const handleLayoutChange = (newLayout: LayoutItem[]) => {
         const savedLayout = getSavedLayout();
 

@@ -7,6 +7,8 @@ import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { TopBarGrid } from '../../common/TopBar';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { useUserStore } from '../../stores/user';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 const DashboardHeader: React.FC<{
     setTextSearch: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -15,6 +17,7 @@ const DashboardHeader: React.FC<{
     AddNewItem: React.FC;
 }> = ({ setTextSearch, resetLayout, title, AddNewItem }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
     const theme = useTheme();
 
     return (
@@ -58,10 +61,11 @@ const DashboardHeader: React.FC<{
                             </Typography>
                         </IconButtonWithPopover>
                     </Grid>
-                    <Grid item>
-                        {/* <AddDashboardItem /> */}
-                        <AddNewItem />
-                    </Grid>
+                    {isWorkspaceAdmin(currentUser.currentWorkspacePermissions) && (
+                        <Grid item>
+                            <AddNewItem />
+                        </Grid>
+                    )}
                 </Grid>
             </Grid>
         </TopBarGrid>

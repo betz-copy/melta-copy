@@ -52,8 +52,12 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
             <Box display="flex" flexDirection="column" style={{ paddingLeft: '10px' }}>
                 <Box zIndex="100">
                     {filters?.map((key) => {
+                        console.log({ key, filterRecord, filter: filterRecord?.[key] });
+
                         return (
                             <GraphFilter
+                                // todo: try other solution
+                                // key={JSON.stringify(filterRecord?.[key])}
                                 key={key}
                                 filterKey={key}
                                 templateOptions={templateOptions}

@@ -35,6 +35,7 @@ const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
 const Charts = lazy(() => import('../Charts'));
+const Iframe1 = lazy(() => import('../Dashboard/Iframe'));
 const Chart = lazy(() => import('../Dashboard/Chart'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
@@ -62,10 +63,6 @@ export const MeltaRoutesInner: React.FC = () => {
     const [match] = useRoute('/entity/:entityId/graph');
 
     const { setIsOpen, setCurrentStep } = useTour();
-
-    const previousRoute = useRef<string | null>(null);
-
-    console.log({ route: previousRoute.current });
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -153,10 +150,6 @@ export const MeltaRoutesInner: React.FC = () => {
         if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates)) setOpenMeltaUpdates(true);
     }, []);
 
-    useEffect(() => {
-        previousRoute.current = location;
-    }, [location]);
-
     const handleClose = () => {
         setOpenMeltaUpdates(false);
         LocalStorage.set(environment.meltaUpdatesShown, JSON.stringify(config?.meltaUpdates));
@@ -211,7 +204,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/charts/:templateId?/:chartId?/chart">
                                 {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
-                                <Chart prevPath={previousRoute.current} />
+                                <Chart />
                                 {/* </ChartsProtectedRoute> */}
                             </Route>
 
@@ -224,6 +217,12 @@ export const MeltaRoutesInner: React.FC = () => {
                             <Route path="/table/:tableId?">
                                 {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
                                 <Table />
+                                {/* </ChartsProtectedRoute> */}
+                            </Route>
+
+                            <Route path="/iframe/:iframeId?">
+                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
+                                <Iframe1 />
                                 {/* </ChartsProtectedRoute> */}
                             </Route>
 

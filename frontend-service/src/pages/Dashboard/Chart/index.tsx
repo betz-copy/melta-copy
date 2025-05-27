@@ -1,68 +1,113 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useEffect } from 'react';
-import i18next from 'i18next';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { useLocation, useParams } from 'wouter';
-import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { IChart } from '../../../interfaces/charts';
-import { StepType } from '../../../common/wizards';
-import { DashboardItem } from '../pages';
-import { chartValidationSchema, initialValues } from '../../../utils/charts/getChartAxes';
-import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
-import { ChartSideBar } from '../../Charts/ChartPage/ChartSideBar';
-import { BodyComponent } from './BodyCompenent';
-import { ChartMetaData, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { getChartById } from '../../../services/chartsService';
-import { createDashboardItem, deleteDashboardItem, editDashboardItem } from '../../../services/dashboardService';
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation, useParams } from 'wouter';
+import { CircularProgress } from '@mui/material';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { StepType } from '../../../common/wizards';
+import { IChart, IPermission } from '../../../interfaces/charts';
+import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
+import { createChart, editChart, getChartById } from '../../../services/chartsService';
+import { createDashboardItem, deleteDashboardItem } from '../../../services/dashboardService';
+import { chartValidationSchema, initialValues } from '../../../utils/charts/getChartAxes';
+import { ChartSideBar } from '../../Charts/ChartPage/ChartSideBar';
+import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
+import { DashboardItem } from '../DashboardItem';
+import { BodyComponent } from './BodyCompenent';
+import { useUserStore } from '../../../stores/user';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
+import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
+import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
 
 const Chart: React.FC = () => {
     const { templateId, chartId } = useParams<{ templateId?: string; chartId?: string }>();
     const [_, navigate] = useLocation();
-    const queryClient = useQueryClient();
+    const isDashboardPage: boolean = window.history.state?.isDashboardPage ?? false;
 
-    const { data: chart, isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
+    const currentUser = useUserStore((state) => state.user);
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const { data: chart, isLoading: isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
         enabled: !!chartId,
     });
 
-    const { isChartPage } = window.history.state;
+    const template = chart && entityTemplates.get(chart?.templateId!);
 
-    const [viewMode, setViewMode] = React.useState<ViewMode>(chartId ? ViewMode.Edit : ViewMode.Add);
+    const [viewMode, setViewMode] = useState<ViewMode>(chartId ? ViewMode.ReadOnly : ViewMode.Add);
+    const [filters, setFilters] = useState<number[]>([]);
+    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
+
+    const updateFilters = (filter: string) => {
+        const parsedFilter = JSON.parse(filter as unknown as string);
+        const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template!);
+
+        setFilterRecord(formattedFilter);
+        setFilters(Object.keys(formattedFilter).map(Number));
+    };
 
     useEffect(() => {
-        if (chartId && chart) setViewMode(ViewMode.ReadOnly);
+        if (chart && chartId) setViewMode(ViewMode.ReadOnly);
     }, [chartId, chart]);
 
-    const { isLoading, mutateAsync } = useMutation(
-        (chartData: IChart) =>
-            viewMode === ViewMode.Edit
-                ? editDashboardItem(chartId!, { type: DashboardItemType.Chart, metaData: chartData as ChartMetaData })
-                : createDashboardItem({ type: DashboardItemType.Chart, metaData: chartData } as ChartMetaData),
+    useEffect(() => {
+        if (chart && template && chart.filter) updateFilters(chart.filter as unknown as string);
+    }, [chart, template]);
 
-        {
-            onSuccess: async (data) => {
-                if (viewMode === ViewMode.Edit) {
-                    queryClient.invalidateQueries(['getChart', chartId]);
-                    setViewMode(ViewMode.ReadOnly);
-                } else {
-                    navigate(`/charts/${templateId}/${data._id}/chart`, { state: { isChartPage } });
-                }
+    const { isLoading, mutateAsync } = useMutation({
+        mutationFn: async (chartData: IChart) => {
+            const baseChart = {
+                ...chartData,
+                createdBy: currentUser._id,
+                filter: filterDocumentToFilterBackend(chartData.templateId!, chartData.filter),
+            };
 
-                toast.success(i18next.t(viewMode === ViewMode.Edit ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
-            },
-            onError: (error: AxiosError) => {
-                toast.error(
-                    <ErrorToast
-                        axiosError={error}
-                        defaultErrorMessage={
-                            ViewMode.Edit ? i18next.t('wizard.entityTemplate.failedToEdit') : i18next.t('wizard.entityTemplate.failedToCreate')
-                        }
-                    />,
-                );
-            },
+            if (viewMode === ViewMode.Edit && chartId) {
+                return editChart(chartId, baseChart);
+            }
+
+            // Add existing chart to dashboard
+            if (chartData._id)
+                return createDashboardItem({
+                    type: DashboardItemType.Chart,
+                    metaData: chartData._id,
+                });
+
+            return createChart(baseChart, isDashboardPage);
         },
-    );
+        onSuccess: async (data, chartData) => {
+            if (viewMode === ViewMode.Edit) {
+                await queryClient.invalidateQueries(['getChart', chartId]);
+                setViewMode(ViewMode.ReadOnly);
+
+                updateFilters(data.filter);
+            } else {
+                const newChartId = chartData._id || data._id;
+                const newTemplateId = chartData.templateId || data.templateId;
+
+                navigate(`/charts/${newTemplateId}/${newChartId}/chart`, {
+                    state: { isDashboardPage },
+                });
+            }
+
+            toast.success(i18next.t(viewMode === ViewMode.Edit ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
+        },
+
+        onError: (error: AxiosError) => {
+            toast.error(
+                <ErrorToast
+                    axiosError={error}
+                    defaultErrorMessage={
+                        ViewMode.Edit ? i18next.t('wizard.entityTemplate.failedToEdit') : i18next.t('wizard.entityTemplate.failedToCreate')
+                    }
+                />,
+            );
+        },
+    });
 
     const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(chartId!), {
         onSuccess: () => {
@@ -77,27 +122,36 @@ const Chart: React.FC = () => {
     const steps: StepType<IChart>[] = [
         {
             label: i18next.t('charts.generalDetails'),
-            component: (props) => <ChartSideBar {...props} />,
+            component: (props) => <ChartSideBar {...props} isDashboardPage={isDashboardPage} viewMode={viewMode} />,
             validationSchema: chartValidationSchema,
         },
         {
             label: i18next.t('charts.filterDetails'),
-            component: (props) => <FilterSideBar {...props} />,
+            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} {...props} />,
             validationSchema: undefined,
         },
     ];
 
+    if (isLoadingGetChart) return <CircularProgress />;
+
     return (
         <DashboardItem<IChart>
-            title="הוספת תרשים"
-            backPath={{ path: isChartPage ? `/charts/${templateId}` : '/', title: isChartPage ? 'עמוד תרשימים ' : 'מסך ראשי' }}
+            title={viewMode === ViewMode.Add ? 'הוספת תרשים' : 'עריכת תרשים'}
+            backPath={{
+                path: isDashboardPage ? '/' : `/charts/${templateId}`,
+                title: isDashboardPage ? 'מסך ראשי' : `${entityTemplates.get(templateId as string)!.displayName} עמוד תרשימים `,
+            }}
             onDelete={deleteMutateAsync}
             steps={steps}
-            initialValues={initialValues}
+            initialValues={{
+                ...(chart || (isDashboardPage ? { ...initialValues, permission: IPermission.Protected } : { ...initialValues, templateId })),
+                filter: filterRecord,
+            }}
             bodyComponent={(props) => <BodyComponent {...props} />}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
             viewMode={{ value: viewMode, set: setViewMode }}
+            onReset={(_values, _formikHelpers) => setFilters(Object.keys(filterRecord).map(Number))}
         />
     );
 };

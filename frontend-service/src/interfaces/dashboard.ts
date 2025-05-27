@@ -1,6 +1,6 @@
-import { IChart } from './charts';
+import { ChartsAndGenerator, IChart } from './charts';
 import { IGraphFilterBodyBatch } from './entities';
-import { IFrame } from './iFrames';
+import { IFrame, IMongoIFrame } from './iFrames';
 
 export enum DashboardItemType {
     Table = 'table',
@@ -40,12 +40,12 @@ export type DashboardItem = TableItem | ChartItem | IframeItem;
 
 export interface ChartItemPopulated {
     type: DashboardItemType.Chart;
-    metaData: IChart;
+    metaData: ChartsAndGenerator;
 }
 
 export interface IframeItemPopulated {
     type: DashboardItemType.Iframe;
-    metaData: IFrame;
+    metaData: IMongoIFrame;
 }
 
 export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItemPopulated;

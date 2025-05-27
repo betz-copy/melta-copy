@@ -11,7 +11,7 @@ const TableMetaDataSchema = new mongoose.Schema(
         description: { type: String },
         columns: { type: [String] },
         columnsOrder: { type: [String] },
-        filters: { type: String },
+        filter: { type: String },
     },
     { _id: false },
 );

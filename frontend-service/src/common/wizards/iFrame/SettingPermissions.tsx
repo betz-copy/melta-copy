@@ -14,6 +14,8 @@ const settingIFramesPermissionsSchema = {
 };
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors }) => {
+    console.log({ values, errors });
+
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const currentUser = useUserStore((state) => state.user);
@@ -39,7 +41,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     }, [selectedCategories]);
 
     return (
-        <Card variant="outlined" sx={{ width: '27%' }}>
+        <Card variant="outlined">
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
                 <FormGroup>

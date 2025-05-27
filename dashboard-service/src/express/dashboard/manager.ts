@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 // import { FilterQuery } from 'mongoose';
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
+import groupBy from 'lodash.groupby';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotFoundError, ServiceError } from '../error';
@@ -9,8 +10,8 @@ import DashboardItemSchema from './model';
 import { escapeRegExp } from '../../utils';
 import { ChartManager } from '../charts/manager';
 import IFrameManager from '../iFrames/manager';
-
-require('../charts/model'); // This registers the 'charts' model
+import { IMongoChart } from '../charts/interface';
+import { IMongoIframe } from '../iFrames/interface';
 
 export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
     chartsManager: ChartManager;
@@ -31,6 +32,33 @@ export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
             .orFail(new NotFoundError(`Dashboard item with id ${dashboardItemId} not found`))
             .lean()
             .exec();
+    }
+
+    // async getDashboardRelatedItem(relatedId: string) {
+    //     return this.model.find({ metaData: relatedId }).populate('metaData').lean().exec();
+    // }
+
+    async getDashboardRelatedItems(relatedIds: string[]) {
+        const objectIds = relatedIds.map((id) => new Types.ObjectId(id));
+
+        const items = await this.model
+            .find({ metaData: { $in: objectIds } })
+            .populate('metaData')
+            .lean()
+            .exec();
+
+        return groupBy(items, (item) => {
+            if (item.type === 'chart') {
+                const chart = item.metaData as unknown as IMongoChart;
+                return chart._id.toString();
+            }
+            if (item.type === 'iframe') {
+                const iframe = item.metaData as unknown as IMongoIframe;
+                return iframe._id.toString();
+            }
+
+            return item.metaData.templateId.toString();
+        });
     }
 
     async searchDashboardItems(textSearch?: string) {
@@ -94,6 +122,7 @@ export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
     }
 
     async createDashboardItem(dashboardItem: DashboardItem) {
+        console.dir({ dashboardItem });
         return this.model.create(dashboardItem);
     }
 

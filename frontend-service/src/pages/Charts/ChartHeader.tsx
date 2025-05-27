@@ -57,7 +57,7 @@ const ChartHeader: React.FC<{
                 <IconButtonWithPopover
                     popoverText={i18next.t('charts.actions.addChart')}
                     iconButtonProps={{
-                        onClick: () => navigate(`${currentLocation}/chart`, { state: { isChartPage: true } }),
+                        onClick: () => navigate(`${currentLocation}/chart`, { state: { isDashboardPage: false } }),
                     }}
                     style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '150px', height: '35px' }}
                 >
