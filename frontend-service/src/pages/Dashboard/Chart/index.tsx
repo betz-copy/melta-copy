@@ -10,7 +10,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { IChart, IPermission } from '../../../interfaces/charts';
 import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { createChart, editChart, getChartById } from '../../../services/chartsService';
+import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
 import { createDashboardItem, deleteDashboardItem } from '../../../services/dashboardService';
 import { chartValidationSchema, initialValues } from '../../../utils/charts/getChartAxes';
 import { ChartSideBar } from '../../Charts/ChartPage/ChartSideBar';
@@ -56,6 +56,7 @@ const Chart: React.FC = () => {
 
     useEffect(() => {
         if (chart && template && chart.filter) updateFilters(chart.filter as unknown as string);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chart, template]);
 
     const { isLoading, mutateAsync } = useMutation({
@@ -109,15 +110,18 @@ const Chart: React.FC = () => {
         },
     });
 
-    const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(chartId!), {
-        onSuccess: () => {
-            navigate('/');
-            toast.success(i18next.t('charts.actions.deletedSuccessfully'));
+    const { mutateAsync: deleteMutateAsync } = useMutation(
+        () => (isDashboardPage ? deleteDashboardItem(chartId!) : deleteChart(chartId!, chart?.usedInDashboard)),
+        {
+            onSuccess: () => {
+                navigate('/');
+                toast.success(i18next.t('charts.actions.deletedSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
+            },
         },
-        onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
-        },
-    });
+    );
 
     const steps: StepType<IChart>[] = [
         {
@@ -152,6 +156,8 @@ const Chart: React.FC = () => {
             submitFunction={(values) => mutateAsync(values)}
             viewMode={{ value: viewMode, set: setViewMode }}
             onReset={(_values, _formikHelpers) => setFilters(Object.keys(filterRecord).map(Number))}
+            type={DashboardItemType.Chart}
+            chartPageProps={{ isChartPage: !isDashboardPage, usedInDashboard: chart?.usedInDashboard }}
         />
     );
 };

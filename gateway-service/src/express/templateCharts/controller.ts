@@ -29,10 +29,10 @@ export class ChartController extends DefaultController<ChartManager> {
     }
 
     async updateChart(req: Request, res: Response) {
-        res.json(await this.manager.updateChart(req.params.chartId, req.body));
+        res.json(await this.manager.updateChart(req.params.chartId, req.body, req.query.deleteReferenceDashboardItems as boolean | undefined));
     }
 
     async deleteChart(req: Request, res: Response) {
-        res.json(await this.manager.deleteChart(req.params.chartId));
+        res.json(await this.manager.deleteChart(req.params.chartId, req.query.deleteReferenceDashboardItems as boolean | undefined));
     }
 }

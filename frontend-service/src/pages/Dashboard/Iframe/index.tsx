@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import { DashboardItem } from '../DashboardItem';
 import { IFrame as Iframetype } from '../../../interfaces/iFrames';
-import { ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { createIFrame, getIFrameById, updateIFrame } from '../../../services/iFramesService';
 import { StepType } from '../../../common/wizards';
 import { SideBarDetails } from './sideBarDetails';
@@ -86,6 +86,7 @@ const Iframe1: React.FC = () => {
                 value: viewMode,
                 set: setViewMode,
             }}
+            type={DashboardItemType.Iframe}
         />
     );
 };

@@ -76,4 +76,9 @@ export class DashboardItemService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<Record<string, MongoDashboardItemPopulated[]>>('/relatedItems', { relatedIds });
         return data;
     }
+
+    async deleteDashboardItemByRelatedItem(relatedId: string): Promise<MongoDashboardItemPopulated[]> {
+        const { data } = await this.api.delete<MongoDashboardItemPopulated[]>(`/relatedItem/${relatedId}`);
+        return data;
+    }
 }

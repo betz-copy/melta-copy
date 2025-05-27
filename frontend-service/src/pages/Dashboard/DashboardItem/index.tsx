@@ -4,7 +4,7 @@ import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import { DashboardItemHeader } from './DashboardItemHeader';
 import { DashboardItemSideBar } from './DashboardItemSideBar';
 import { StepComponentHelpers, StepType } from '../../../common/wizards';
-import { DashboardItemData, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemData, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 
 interface DashboardItemProps<T extends DashboardItemData> {
     initialValues: T;
@@ -20,6 +20,11 @@ interface DashboardItemProps<T extends DashboardItemData> {
     backPath: { path: string; title: string };
     onDelete: () => void;
     bodyComponent: (formikProps: FormikProps<T>, helpers?: StepComponentHelpers) => JSX.Element;
+    type: DashboardItemType;
+    chartPageProps?: {
+        isChartPage: boolean;
+        usedInDashboard?: boolean;
+    };
 }
 
 const DashboardItem = <T extends DashboardItemData>({
@@ -33,6 +38,8 @@ const DashboardItem = <T extends DashboardItemData>({
     submitFunction,
     onReset,
     viewMode,
+    type,
+    chartPageProps,
 }: DashboardItemProps<T>) => {
     console.log({ initialValues });
 
@@ -52,7 +59,15 @@ const DashboardItem = <T extends DashboardItemData>({
         >
             {(formikProps: FormikProps<T>) => (
                 <Form>
-                    <DashboardItemHeader title={title} backPath={backPath} onDelete={onDelete} isLoading={isLoading} viewMode={viewMode} />
+                    <DashboardItemHeader
+                        title={title}
+                        backPath={backPath}
+                        onDelete={onDelete}
+                        isLoading={isLoading}
+                        viewMode={viewMode}
+                        type={type}
+                        chartPageProps={chartPageProps}
+                    />
 
                     <Grid container height="94.7vh" wrap="nowrap">
                         <Grid item flexGrow={1} overflow="auto">

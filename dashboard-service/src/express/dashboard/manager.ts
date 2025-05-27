@@ -5,7 +5,7 @@ import groupBy from 'lodash.groupby';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotFoundError, ServiceError } from '../error';
-import { DashboardItem } from './interface';
+import { DashboardItem, DashboardItemType } from './interface';
 import DashboardItemSchema from './model';
 import { escapeRegExp } from '../../utils';
 import { ChartManager } from '../charts/manager';
@@ -48,16 +48,13 @@ export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
             .exec();
 
         return groupBy(items, (item) => {
-            if (item.type === 'chart') {
-                const chart = item.metaData as unknown as IMongoChart;
-                return chart._id.toString();
-            }
-            if (item.type === 'iframe') {
-                const iframe = item.metaData as unknown as IMongoIframe;
-                return iframe._id.toString();
+            const { type, metaData } = item;
+
+            if (type === DashboardItemType.Chart || type === DashboardItemType.Iframe) {
+                return (metaData as unknown as IMongoChart | IMongoIframe)._id.toString();
             }
 
-            return item.metaData.templateId.toString();
+            return metaData.templateId.toString();
         });
     }
 
@@ -122,7 +119,6 @@ export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
     }
 
     async createDashboardItem(dashboardItem: DashboardItem) {
-        console.dir({ dashboardItem });
         return this.model.create(dashboardItem);
     }
 
@@ -138,5 +134,11 @@ export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
 
     async deleteDashboardItem(dashboardItemId: string) {
         return this.model.findByIdAndDelete(dashboardItemId).lean().exec();
+    }
+
+    async deleteDashboardItemByRelatedItem(dashboardItemId: string) {
+        const objectId = new Types.ObjectId(dashboardItemId);
+
+        return this.model.deleteMany({ metaData: objectId }).lean().exec();
     }
 }

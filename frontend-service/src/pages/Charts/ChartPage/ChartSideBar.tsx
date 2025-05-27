@@ -19,13 +19,14 @@ import React, { useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../common/wizards';
-import { IBasicChart, IChart, IPermission } from '../../../interfaces/charts';
+import { IChart, IPermission } from '../../../interfaces/charts';
+import { ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
-import { ChartTypesEdit } from './ChartTypesEdit';
-import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
 import { initialValues } from '../../../utils/charts/getChartAxes';
-import { ViewMode } from '../../../interfaces/dashboard';
+import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
+import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
+import { ChartTypesEdit } from './ChartTypesEdit';
 
 const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -38,6 +39,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
     console.log({ isDashboardPage, values });
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
+    const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
 
     console.log({ values, chartMode });
 
@@ -153,7 +155,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                         disabled={false}
                                     />
                                 </Grid>
-
+                                {/* ask if not to show it in dashboard page in create/ edit */}
                                 <Grid item container direction="column" spacing={2}>
                                     <Grid item>
                                         <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
@@ -170,7 +172,10 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                             sx={{ height: '35px' }}
                                             value={values.permission}
                                             onChange={(_event, permission: IPermission) => {
-                                                if (permission !== null) setFieldValue('permission', permission);
+                                                if (permission === null) return;
+                                                if (values.usedInDashboard && values.permission === IPermission.Protected)
+                                                    setPermissionDialogWarningOpen(true);
+                                                else setFieldValue('permission', permission);
                                             }}
                                             // disabled={
                                             //     edit &&
@@ -202,6 +207,15 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                     )}
                 </>
             )}
+
+            <ConfirmEditPermissionCommonItem
+                isDialogOpen={permissionDialogWarningOpen}
+                handleClose={() => setPermissionDialogWarningOpen(false)}
+                onEditYes={() => {
+                    setFieldValue('permission', IPermission.Private);
+                    setPermissionDialogWarningOpen(false);
+                }}
+            />
         </Grid>
     );
 };

@@ -164,11 +164,17 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return createdChart;
     }
 
-    async updateChart(chartId: string, updatedChart: IChart) {
+    async updateChart(chartId: string, updatedChart: IChart, deleteReferenceDashboardItems: boolean = false) {
+        if (deleteReferenceDashboardItems) {
+            await this.DashboardItemService.deleteDashboardItemByRelatedItem(chartId);
+        }
         return this.service.updateChart(chartId, updatedChart);
     }
 
-    async deleteChart(chartId: string) {
+    async deleteChart(chartId: string, deleteReferenceDashboardItems: boolean = false) {
+        if (deleteReferenceDashboardItems) {
+            await this.DashboardItemService.deleteDashboardItemByRelatedItem(chartId);
+        }
         return this.service.deleteChart(chartId);
     }
 }

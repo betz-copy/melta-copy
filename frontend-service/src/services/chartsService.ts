@@ -1,6 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { ChartsAndGenerator, IChart } from '../interfaces/charts';
+import { ChartsAndGenerator, IChart, IPermission } from '../interfaces/charts';
 
 const { charts } = environment.api;
 
@@ -12,9 +12,15 @@ export const createChart = async (newChart: ChartWithStringFilter, toDashboard: 
 };
 
 export const editChart = async (chartId: string, updatedChart: ChartWithStringFilter) => {
-    const { _id, createdAt, updatedAt, ...restChart } = updatedChart;
+    const { _id, usedInDashboard, createdAt, updatedAt, ...restChart } = updatedChart;
 
-    const { data } = await axios.put<IChart>(`${charts}/${chartId}`, restChart);
+    const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IPermission.Private;
+
+    const { data } = await axios.put<IChart>(`${charts}/${chartId}`, restChart, {
+        params: {
+            deleteReferenceDashboardItems,
+        },
+    });
     return data;
 };
 
@@ -33,7 +39,11 @@ export const getChartsByUserId = async (templateId: string, textSearch?: string)
     return data;
 };
 
-export const deleteChart = async (chartId: string) => {
-    const { data } = await axios.delete<IChart>(`${charts}/${chartId}`);
+export const deleteChart = async (chartId: string, usedInDashboard?: boolean) => {
+    const { data } = await axios.delete<IChart>(`${charts}/${chartId}`, {
+        params: {
+            deleteReferenceDashboardItems: usedInDashboard,
+        },
+    });
     return data;
 };

@@ -1,12 +1,12 @@
-import { Check, Close, Delete, Edit } from '@mui/icons-material';
+import { Check, Close, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
-import { ViewMode } from '../../../interfaces/dashboard';
+import { ConfirmDeleteDashboardItem } from '../Dialogs';
 
 interface DashboardItemHeaderProps {
     title: string;
@@ -17,16 +17,21 @@ interface DashboardItemHeaderProps {
         value: ViewMode;
         set: React.Dispatch<React.SetStateAction<ViewMode>>;
     };
+    type: DashboardItemType;
+    chartPageProps?: {
+        isChartPage: boolean;
+        usedInDashboard?: boolean;
+    };
 }
 
-const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPath, onDelete, isLoading, viewMode }) => {
+const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPath, onDelete, type, chartPageProps, isLoading, viewMode }) => {
     /// todo:check edit permissin: only for admin
     const hasPermission = true;
     // todo: add loading spinner
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
 
     return (
         <Box
@@ -62,7 +67,6 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
                     </Typography>
                 </Grid>
             </Box>
-
             <Box display="flex" alignItems="center" gap="10px">
                 {viewMode.value === ViewMode.ReadOnly && hasPermission && (
                     <IconButtonWithPopover
@@ -126,20 +130,15 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
                 )}
             </Box>
 
-            <AreYouSureDialog
-                open={deleteDialogOpen}
-                title="בחרת למחוק את התרשים"
-                body="התרשים ימחק מהמסך הראשי עבורך ועבור כל מי שמורשה לצפות בו. למחוק את התרשים?"
+            <ConfirmDeleteDashboardItem
+                isDialogOpen={deleteDialogOpen}
                 handleClose={() => setDeleteDialogOpen(false)}
-                noTitle="חזרה לעריכה"
-                yesTitle={
-                    <Grid container alignItems="center" justifyContent="center" style={{ gap: '5px' }}>
-                        <Delete />
-                        מחיקה
-                    </Grid>
-                }
-                onYes={onDelete}
+                onDeleteYes={onDelete}
+                type={type}
+                isLoading={isLoading}
+                chartPageProps={chartPageProps}
             />
+            {/* <deleteDialog open={deleteDialogOpen} /> */}
         </Box>
     );
 };

@@ -34,6 +34,11 @@ class DashboardController extends DefaultController<DashboardItem, DashboardMana
     async getChartsByTemplateId(req: Request, res: Response) {
         res.json(await this.manager.searchDashboardItems(req.body.textSearch));
     }
+
+    async deleteDashboardItemByRelatedItem(req: Request, res: Response) {
+        const { relatedId } = req.params;
+        res.json(await this.manager.deleteDashboardItemByRelatedItem(relatedId));
+    }
 }
 
 export default DashboardController;

@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
-import { TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemType, TableMetaData, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../services/dashboardService';
 import { dashboardInitialValues, tableDetailsSchema, tableMetaDataToBackend } from '../../../utils/dashboard/formik';
@@ -123,6 +123,7 @@ const Table: React.FC = () => {
                 set: setViewMode,
             }}
             onReset={(_values, _formikHelpers) => setFilters(Object.keys(filterRecord).map(Number))}
+            type={DashboardItemType.Table}
         />
     );
 };

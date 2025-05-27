@@ -1,11 +1,11 @@
 import { CircularProgress, Grid } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { useLocation, useParams } from 'wouter';
 import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
-import { on } from 'events';
+import { useLocation, useParams } from 'wouter';
+import { ErrorToast } from '../../common/ErrorToast';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
@@ -13,13 +13,11 @@ import { ChartsAndGenerator } from '../../interfaces/charts';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
-import { DashboardHeader } from '../Dashboard/DashboardHeader';
-import ChartItem from './templateTableCharts/chartItem';
-import { AddNewChartButton } from './templateTableCharts/AddNewChartButton';
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { LocalStorage } from '../../utils/localStorage';
-import { ErrorToast } from '../../common/ErrorToast';
+import { DashboardHeader } from '../Dashboard/DashboardHeader';
 import { ConfirmDeleteCommonItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
+import { AddNewChartButton } from './templateTableCharts/AddNewChartButton';
+import ChartItem from './templateTableCharts/chartItem';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -55,21 +53,24 @@ const ChartsPage: React.FC = () => {
         initialData: [],
     });
 
-    const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation((id: string) => deleteChart(id), {
-        onSuccess: (data) => {
-            toast.success(i18next.t('charts.actions.deletedSuccessfully'));
-            setDeleteChartDialogState({ isDialogOpen: false, chartId: null });
+    const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation(
+        ({ id, usedInDashboard }: { id: string; usedInDashboard?: boolean }) => deleteChart(id, usedInDashboard),
+        {
+            onSuccess: (data) => {
+                toast.success(i18next.t('charts.actions.deletedSuccessfully'));
+                setDeleteChartDialogState({ isDialogOpen: false, chartId: null });
 
-            const updatedLayout = layout.filter((item) => item.i !== data._id);
-            LocalStorage.set(`${chartsOrderKey}${templateId}`, updatedLayout);
-            setLayout(updatedLayout);
+                const updatedLayout = layout.filter((item) => item.i !== data._id);
+                LocalStorage.set(`${chartsOrderKey}${templateId}`, updatedLayout);
+                setLayout(updatedLayout);
 
-            queryClient.invalidateQueries(['getCharts', templateId, textSearch]);
+                queryClient.invalidateQueries(['getCharts', templateId, textSearch]);
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
+            },
         },
-        onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
-        },
-    });
+    );
 
     const onEditChartYes = (chartId: string) => navigate(`${currentLocation}/${chartId}/chart`, { state: { isDashboardPage: false } });
 
@@ -96,7 +97,6 @@ const ChartsPage: React.FC = () => {
                                 borderRadius: '7px',
                                 position: 'relative',
                                 overflow: 'hidden',
-                                // cursor: 'pointer',
                                 direction: 'rtl',
                                 padding: '20px 10px',
                             }}
@@ -130,10 +130,13 @@ const ChartsPage: React.FC = () => {
             <ConfirmDeleteCommonItem
                 isDialogOpen={deleteChartDialogState.isDialogOpen}
                 handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}
-                onDeleteYes={() => deleteChartMutateAsync(deleteChartDialogState.chartId!)}
+                onDeleteYes={() =>
+                    deleteChartMutateAsync({ id: deleteChartDialogState.chartId!, usedInDashboard: deleteChartDialogState.usedInDashboard })
+                }
                 isLoading={isDeleteChartLoading}
                 usedInDashboard={deleteChartDialogState.usedInDashboard}
             />
+
             <ConfirmEditCommonItem
                 onEditYes={() => onEditChartYes(editChartDialogState.chartId!)}
                 handleClose={() => setEditChartDialogState({ isDialogOpen: false, chartId: null })}
