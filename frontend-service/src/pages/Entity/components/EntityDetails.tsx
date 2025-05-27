@@ -324,6 +324,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}
                                         disabled={isEntityDisabled}
                                         justifyContent="flex-end"
+                                        templateId={expandedEntity.entity.templateId}
                                     />
                                 </Grid>
                             ) : null}

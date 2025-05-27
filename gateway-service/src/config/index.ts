@@ -196,6 +196,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
+    hebrew: { yes: 'כן', no: 'לא' },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
         entityTemplateHasOutgoingRelationships: 'TEMPLATE_HAS_OUTGOING_RELATIONSHIPS',
