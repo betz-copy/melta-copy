@@ -8,9 +8,9 @@ import i18next from 'i18next';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
-import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 
 const StepsApproversBlock: React.FC<
     StepsGenericBlockProps & {

@@ -879,6 +879,8 @@ export default {
         existingDisplayName: 'שם תצוגה קיים',
         fieldNameExists: 'קיים שם שדה באנגלית זהה',
         fieldTitleExists: 'קיים שם שדה לתצוגה זהה',
+        groupNameExists: 'קיים שם קבוצה באנגלית זהה',
+        groupTitleExists: 'קיים שם קבוצה לתצוגה זהה',
         fieldExist: 'שדה זה קיים במערכת',
         attachmentFieldNameExists: 'קיים שם קובץ באנגלית זהה',
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
@@ -886,7 +888,6 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
-        uniqueGroupName: 'קיים שם קבוצה באנגלית זהה',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },
     propertyTypes: {

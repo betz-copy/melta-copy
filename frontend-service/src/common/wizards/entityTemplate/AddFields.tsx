@@ -15,8 +15,10 @@ import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesServi
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { ItemTypes, FieldBlockDND, getFieldData } from './FieldBlock';
+import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
+import { getFieldData } from './fieldBlock/propertiesTypes';
+import { ItemTypes } from './fieldBlock/interfaces';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -165,6 +167,13 @@ type AddFieldsDNDProps = Pick<
 > &
     Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'>;
 
+export enum PropertiesTypes {
+    properties = 'properties',
+    archiveProperties = 'archiveProperties',
+    attachmentProperties = 'attachmentProperties',
+    detailsProperties = 'detailsProperties',
+}
+
 export const FieldBlockWrapper = ({
     itemId,
     index,
@@ -209,12 +218,7 @@ export const FieldBlockWrapper = ({
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
-    const getNewValues = (
-        indexesInTypes: { index: number; type: 'properties' | 'attachmentProperties' | 'archiveProperties'; groupIndex?: number }[],
-        field,
-        value: any,
-        currentValues: any,
-    ) => {
+    const getNewValues = (indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[], field, value: any, currentValues: any) => {
         const displayValuesCopy = { ...currentValues };
 
         indexesInTypes.forEach(({ index, type, groupIndex }) => {
@@ -317,7 +321,7 @@ export const FieldBlockWrapper = ({
         return { propertyIndex: -1, propertyGroupIndex: -1 };
     };
 
-    const archive = (index: number, propertyType: 'properties' | 'attachmentProperties' | 'archiveProperties', groupIndex?: number) => {
+    const archive = (index: number, propertyType: PropertiesTypes, groupIndex?: number) => {
         setValues((prevDisplayValues) => {
             const archivedProperty = getFieldData(prevDisplayValues[propertyType], index, groupIndex);
             const wasArchived = archivedProperty.archive;
@@ -333,14 +337,18 @@ export const FieldBlockWrapper = ({
                     );
 
                     if (propertyIndex !== -1) indexesToUpdate.push({ index: propertyIndex, type: propertyType, groupIndex: propertyGroupIndex });
-                    else if (propertyType === 'archiveProperties') {
+                    else if (propertyType === PropertiesTypes.archiveProperties) {
                         const { propertyIndex: archivedPropertyIndex, propertyGroupIndex: archivedPropertyGroupIndex } = getUserFieldsIndexesUndo(
                             prevDisplayValues.properties,
                             archivedProperty,
                             'archive',
                         );
                         if (archivedPropertyIndex !== -1)
-                            indexesToUpdate.push({ index: archivedPropertyIndex, type: 'properties', groupIndex: archivedPropertyGroupIndex });
+                            indexesToUpdate.push({
+                                index: archivedPropertyIndex,
+                                type: PropertiesTypes.properties,
+                                groupIndex: archivedPropertyGroupIndex,
+                            });
                     }
                 }
 
@@ -353,7 +361,7 @@ export const FieldBlockWrapper = ({
 
                 indexesToUpdate.push(
                     ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
-                        const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'properties';
+                        const propType = PropertiesTypes.properties;
 
                         return {
                             index: propertyIndex || -1,
@@ -367,7 +375,7 @@ export const FieldBlockWrapper = ({
 
                 indexesToUpdate.push(
                     ...archivedIndexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
-                        const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'archiveProperties';
+                        const propType = PropertiesTypes.archiveProperties;
 
                         return {
                             index: propertyIndex ?? -1,
@@ -382,23 +390,10 @@ export const FieldBlockWrapper = ({
         });
     };
 
-    const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<
-        {
-            index: number;
-            type: 'properties' | 'attachmentProperties' | 'archiveProperties';
-            groupIndex?: number;
-        }[]
-    >([]);
-
-    const onDeleteSure = (setShowAreUSureDialogForRemoveProperty: (val: boolean) => void) => {
-        setShowAreUSureDialogForRemoveProperty(false);
-        setValues((prevDisplayValues) => getNewValues(selectedIndexesToRemove, 'deleted', true, prevDisplayValues));
-    };
-
     const remove = (
         index: number,
         isNewProperty: Boolean,
-        propertyType: 'properties' | 'attachmentProperties' | 'archiveProperties',
+        propertyType: PropertiesTypes,
         setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
         groupIndex?: number,
     ) => {
@@ -418,7 +413,7 @@ export const FieldBlockWrapper = ({
                     );
 
                     if (propertyIndex !== -1) indexesToUpdate.push({ index: propertyIndex, type: propertyType, groupIndex: propertyGroupIndex });
-                    else if (propertyType === 'archiveProperties') {
+                    else if (propertyType === PropertiesTypes.archiveProperties) {
                         const { propertyIndex: archivedPropertyIndex, propertyGroupIndex: archivedPropertyGroupIndex } = getUserFieldsIndexesUndo(
                             prevDisplayValues.properties,
                             removedProperty,
@@ -426,7 +421,11 @@ export const FieldBlockWrapper = ({
                         );
 
                         if (archivedPropertyIndex !== -1)
-                            indexesToUpdate.push({ index: archivedPropertyIndex, type: 'properties', groupIndex: archivedPropertyGroupIndex });
+                            indexesToUpdate.push({
+                                index: archivedPropertyIndex,
+                                type: PropertiesTypes.properties,
+                                groupIndex: archivedPropertyGroupIndex,
+                            });
                     }
                 }
 
@@ -440,7 +439,7 @@ export const FieldBlockWrapper = ({
                     const indexesArray = getUserFieldsIndexesDo(prevDisplayValues.properties, removedProperty);
                     indexesToUpdate.push(
                         ...indexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
-                            const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'properties';
+                            const propType = PropertiesTypes.properties;
                             return {
                                 index: propertyIndex ?? -1,
                                 type: propType,
@@ -453,7 +452,7 @@ export const FieldBlockWrapper = ({
 
                     indexesToUpdate.push(
                         ...archivedIndexesArray.map(({ propertyIndex, propertyGroupIndex }) => {
-                            const propType: 'properties' | 'archiveProperties' | 'attachmentProperties' = 'archiveProperties';
+                            const propType = PropertiesTypes.archiveProperties;
 
                             return {
                                 index: propertyIndex ?? -1,
@@ -469,7 +468,7 @@ export const FieldBlockWrapper = ({
             }
 
             const values = valuesCopy[propertyType];
-            let removedField;
+            let removedField: CommonFormInputProperties;
             if (groupIndex !== undefined) {
                 const group = values[groupIndex] as GroupProperty;
                 if (!group || !group.fields) return;
@@ -498,6 +497,19 @@ export const FieldBlockWrapper = ({
             }
             return values;
         });
+    };
+
+    const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<
+        {
+            index: number;
+            type: PropertiesTypes;
+            groupIndex?: number;
+        }[]
+    >([]);
+
+    const onDeleteSure = (setShowAreUSureDialogForRemoveProperty: (val: boolean) => void) => {
+        setShowAreUSureDialogForRemoveProperty(false);
+        setValues((prevDisplayValues) => getNewValues(selectedIndexesToRemove, 'deleted', true, prevDisplayValues));
     };
 
     const getTitle = (id: string): string => {

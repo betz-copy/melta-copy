@@ -168,8 +168,8 @@ const addAttachmentProperties = (
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
 
-    const { properties: extractDetailsProperties } = extractProperties(detailsProperties) as ExtractedProcessProps;
-    const { properties: extractDetailsAttachmentProperties } = extractProperties(detailsAttachmentProperties) as ExtractedProcessProps;
+    const { properties: extractDetailsProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsProperties);
+    const { properties: extractDetailsAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsAttachmentProperties);
 
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
@@ -206,8 +206,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        const { properties: extractStepProperties } = extractProperties(step.properties) as ExtractedProcessProps;
-        const { properties: extractStepAttachmentProperties } = extractProperties(step.attachmentProperties) as ExtractedProcessProps;
+        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.properties);
+        const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.attachmentProperties);
 
         extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
             if (!deleted) {

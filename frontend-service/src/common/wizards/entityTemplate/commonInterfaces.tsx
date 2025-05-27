@@ -9,6 +9,7 @@ export interface FieldGroupData {
     displayName: string;
     id: string;
 }
+
 export interface CommonFormInputProperties {
     name: string;
     title: string;

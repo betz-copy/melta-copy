@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { ProcessTemplateWizardValues } from './index';
 import { searchProcessesRequest } from '../../../services/processesService';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
-import { FieldBlock } from '../entityTemplate/FieldBlock';
+import { FieldBlock } from '../entityTemplate/fieldBlock/FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
 import { StepComponentProps } from '..';
@@ -17,6 +17,7 @@ export const fieldDetailsSchema = Yup.object({
     type: Yup.string().oneOf(['field']).required(),
     data: propertiesBaseSchema.required(),
 });
+
 const addDetailsFieldsSchema = Yup.object({
     detailsProperties: Yup.array()
         .of(fieldDetailsSchema)

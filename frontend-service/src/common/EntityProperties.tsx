@@ -372,6 +372,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     entityTemplates,
     showByGroups = false,
 }) => {
+    const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
+
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
@@ -380,14 +382,16 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
             (propertyKey) =>
-                entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
-                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId' &&
-                entityTemplate.properties.properties[propertyKey].format !== 'signature',
+                getCurrProperty(propertyKey).format !== 'fileId' &&
+                getCurrProperty(propertyKey).items?.format !== 'fileId' &&
+                getCurrProperty(propertyKey).format !== 'signature',
         );
     } else
-        propertiesOrderedToShow = displayArchiveProperties
-            ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.properties.properties[propertyKey].archive)
-            : entityTemplate.propertiesOrder.filter((propertyKey) => !entityTemplate.properties.properties[propertyKey].archive);
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>
+            (getCurrProperty(propertyKey).comment && getCurrProperty(propertyKey).hideFromDetailsPage) || displayArchiveProperties
+                ? getCurrProperty(propertyKey).archive
+                : !getCurrProperty(propertyKey).archive,
+        );
 
     const alreadyRenderedGroups = new Set<string>();
 

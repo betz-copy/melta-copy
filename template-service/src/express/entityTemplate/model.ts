@@ -12,6 +12,7 @@ const FieldGroupSchema = new mongoose.Schema(
         displayName: {
             type: String,
             required: true,
+            unique: true,
         },
         fields: {
             type: [String],

@@ -14,7 +14,6 @@ import {
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
-import { ProcessTemplateFormInputProperties } from '../../common/wizards/processTemplate';
 
 const { entityTemplates } = environment.api;
 
@@ -34,9 +33,14 @@ export const stringFormats = [
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
-export type ExtractedEntityProps = {
-    properties: EntityTemplateFormInputProperties[];
+type ExtractedProps<T> = {
+    properties: T[];
     propertiesPath: Record<string, string>;
+};
+
+type AttachmentOrArchiveProperties = {
+    type: 'field';
+    data: EntityTemplateFormInputProperties;
 };
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -55,8 +59,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         ...restOfEntityTemplate
     } = entityTemplate;
 
-    const attachmentProperties: { type: 'field'; data: EntityTemplateFormInputProperties }[] = [];
-    const archiveProperties: { type: 'field'; data: EntityTemplateFormInputProperties }[] = [];
+    const attachmentProperties: AttachmentOrArchiveProperties[] = [];
+    const archiveProperties: AttachmentOrArchiveProperties[] = [];
     const propertiesArray: PropertyItem[] = [];
     const usedFields = new Set();
     const fieldToGroup = {};
@@ -67,7 +71,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         });
     });
 
-    // eslint-disable-next-line consistent-return
     const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
         let type = value.format || value.type;
@@ -197,54 +200,47 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 };
 
 const updateFieldGroupsOrder = (updatedProperties: EntityTemplateFormInputProperties[], propertiesOrder: string[]) => {
-    const properties = updatedProperties.filter((property) => !property.archive);
-    const groupMap = new Map();
+    const groupMap = new Map<string, { name: string; displayName: string; fields: string[] }>();
 
-    for (const property of properties) {
-        const { fieldGroup } = property;
+    updatedProperties.forEach((property) => {
+        const { fieldGroup, name, archive, deleted } = property;
 
-        if (fieldGroup?.name && !property.deleted) {
-            if (!groupMap.has(fieldGroup.name)) {
-                groupMap.set(fieldGroup.name, {
-                    name: fieldGroup.name,
-                    displayName: fieldGroup.displayName,
-                    fields: [],
-                });
-            }
-            groupMap.get(fieldGroup.name).fields.push(property.name);
+        if (archive || deleted || !fieldGroup?.name) return;
+
+        if (!groupMap.has(fieldGroup.name)) {
+            groupMap.set(fieldGroup.name, {
+                name: fieldGroup.name,
+                displayName: fieldGroup.displayName,
+                fields: [],
+            });
         }
-    }
+
+        groupMap.get(fieldGroup.name)!.fields.push(name);
+    });
 
     const fieldGroups = Array.from(groupMap.values());
 
-    for (const group of fieldGroups) {
-        group.fields.sort((a, b) => {
-            const indexA = propertiesOrder.indexOf(a.name);
-            const indexB = propertiesOrder.indexOf(b.name);
-            return indexA - indexB;
-        });
-    }
+    fieldGroups.forEach((group) => {
+        group.fields.sort((a, b) => propertiesOrder.indexOf(a) - propertiesOrder.indexOf(b));
+    });
 
     return fieldGroups;
 };
 
-export const extractProperties = (
-    items: any,
+export const extractProperties = <T>(
+    items: Array<{ type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }>,
     propertyPath?: string,
-): {
-    properties: (EntityTemplateFormInputProperties | ProcessTemplateFormInputProperties)[];
-    propertiesPath: Record<string, string>;
-} => {
-    const properties: (EntityTemplateFormInputProperties | ProcessTemplateFormInputProperties)[] = [];
+): ExtractedProps<T> => {
+    const properties: T[] = [];
     const propertiesPath: Record<string, string> = {};
 
     items.forEach((item, index) => {
         if (item.type === 'field') {
-            properties.push(item.data);
+            properties.push(item.data as T);
             if (propertyPath) propertiesPath[item.data.id] = `${propertyPath}[${index}].data`;
         } else if (item.type === 'group') {
             item.fields.forEach((field, idx) => {
-                properties.push(field);
+                properties.push(field as T);
                 if (propertyPath) propertiesPath[field.id] = `${propertyPath}[${index}].fields[${idx}]`;
             });
         }
@@ -288,9 +284,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
     let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
 
-    const { properties: extractPropertiesData } = extractProperties(properties) as ExtractedEntityProps;
-    const { properties: extractArchiveProperties } = extractProperties(archiveProperties) as ExtractedEntityProps;
-    const { properties: extractAttachmentPropertiesData } = extractProperties(attachmentProperties) as ExtractedEntityProps;
+    const { properties: extractPropertiesData } = extractProperties<EntityTemplateFormInputProperties>(properties);
+    const { properties: extractArchiveProperties } = extractProperties<EntityTemplateFormInputProperties>(archiveProperties);
+    const { properties: extractAttachmentPropertiesData } = extractProperties<EntityTemplateFormInputProperties>(attachmentProperties);
 
     const updatedFieldsGroups = updateFieldGroupsOrder(extractPropertiesData, propertiesOrder);
 

@@ -2,8 +2,7 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
-import { ExtractedEntityProps, extractGroups, extractProperties } from '../services/templates/enitityTemplatesService';
-import { ExtractedProcessProps } from '../services/templates/processTemplatesService';
+import { extractGroups, extractProperties } from '../services/templates/enitityTemplatesService';
 import { GroupProperty } from '../common/wizards/entityTemplate/commonInterfaces';
 
 export const regexSchema = Yup.string().test('is-regex', (value, context) => {
@@ -28,12 +27,15 @@ type PropertiesType = 'normal' | 'attachment';
 const addDuplicateFieldsError = (
     fieldPath: string,
     duplicateFieldType: PropertiesType,
-    inputType: 'name' | 'title',
+    inputType: 'name' | 'title' | 'displayName',
     context: Yup.TestContext,
     errors: Yup.ValidationError[],
+    groupTest: boolean = false,
 ) => {
     const message = i18next.t(
-        `validation.${duplicateFieldType === 'normal' ? 'field' : 'attachmentField'}${inputType === 'name' ? 'Name' : 'Title'}Exists`,
+        `validation.${duplicateFieldType === 'normal' ? (groupTest ? 'group' : 'field') : 'attachmentField'}${
+            inputType === 'name' ? 'Name' : 'Title'
+        }Exists`,
     );
     const path = `${fieldPath}.${inputType}`;
 
@@ -60,17 +62,18 @@ const testFields = (
 
             if (!shouldCompare) return;
 
-            const compareAndAddError = (key: 'name' | 'title', condition: boolean) => {
+            const compareAndAddError = (key: 'name' | 'title' | 'displayName', condition: boolean) => {
                 if (condition) {
-                    addDuplicateFieldsError(properties1Path[field1.id], properties2Type, key, context, errors);
-                    addDuplicateFieldsError(properties2Path[field2.id], properties1Type, key, context, errors);
+                    addDuplicateFieldsError(properties1Path[field1.id], properties2Type, key, context, errors, groupTest);
+                    addDuplicateFieldsError(properties2Path[field2.id], properties1Type, key, context, errors, groupTest);
                 }
             };
 
             compareAndAddError('name', field1.name === field2.name);
-            if (!groupTest) {
-                compareAndAddError('title', field1.title === field2.title);
-            }
+            compareAndAddError(
+                groupTest ? 'displayName' : 'title',
+                field1[groupTest ? 'displayName' : 'title'] === field2[groupTest ? 'displayName' : 'title'],
+            );
         });
     });
 };
@@ -102,11 +105,11 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
     if (!value) return true;
 
     const errors: Yup.ValidationError[] = [];
-    const { properties, propertiesPath } = extractProperties(value.properties, 'properties') as ExtractedEntityProps;
-    const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties(
+    const { properties, propertiesPath } = extractProperties<EntityTemplateFormInputProperties>(value.properties, 'properties');
+    const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties<EntityTemplateFormInputProperties>(
         value.attachmentProperties,
         'attachmentProperties',
-    ) as ExtractedEntityProps;
+    );
 
     const { groupsProperties, groupsPath } = extractGroups(value.properties);
     validateProperties(properties, context, errors);
@@ -126,14 +129,11 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
 export const processTemplateUniquePropertiesDetails = (value, context: Yup.TestContext) => {
     if (!value) return true;
     const errors: Yup.ValidationError[] = [];
-    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties(
-        value.detailsProperties,
-        'detailsProperties',
-    ) as ExtractedProcessProps;
-    const { properties: attachmentProperties, propertiesPath: attachmentPropertiesPath } = extractProperties(
+    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties<ProcessTemplateFormInputProperties>(value.detailsProperties, 'detailsProperties');
+    const { properties: attachmentProperties, propertiesPath: attachmentPropertiesPath } = extractProperties<ProcessTemplateFormInputProperties>(
         value.detailsAttachmentProperties,
         'detailsAttachmentProperties',
-    ) as ExtractedProcessProps;
+    );
 
     testFields(detailsProperties, 'normal', detailsPropertiesPath, detailsProperties, 'normal', detailsPropertiesPath, context, errors);
     testFields(
@@ -159,11 +159,11 @@ export const processTemplateUniquePropertiesSteps = (value, context: Yup.TestCon
     const { steps } = value;
     const errors: Yup.ValidationError[] = [];
     steps.forEach((step, index) => {
-        const { properties, propertiesPath } = extractProperties(step.properties, `steps[${index}].properties`) as ExtractedProcessProps;
-        const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties(
+        const { properties, propertiesPath } = extractProperties<ProcessTemplateFormInputProperties>(step.properties, `steps[${index}].properties`);
+        const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties<ProcessTemplateFormInputProperties>(
             step.attachmentProperties,
             `steps[${index}].attachmentProperties`,
-        ) as ExtractedProcessProps;
+        );
         testFields(properties, 'normal', propertiesPath, properties, 'normal', propertiesPath, context, errors);
         testFields(attachmentProperties, 'attachment', attachmentPath, attachmentProperties, 'attachment', attachmentPath, context, errors);
         testFields(properties, 'normal', propertiesPath, attachmentProperties, 'attachment', attachmentPath, context, errors);

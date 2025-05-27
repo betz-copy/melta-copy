@@ -15,10 +15,11 @@ import { StepComponentProps } from '../index';
 import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
-import { FieldBlockAccordion, ItemTypes, FieldBlockDND } from '../entityTemplate/FieldBlock';
+import { FieldBlockDND } from '../entityTemplate/fieldBlock/FieldBlock';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { FieldBlockAccordion, ItemTypes } from '../entityTemplate/fieldBlock/interfaces';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -109,7 +110,6 @@ const FieldBlockStepWarper = ({
             if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
             moveItem(dragIndex, hoverIndex);
-            // eslint-disable-next-line no-param-reassign
             item.index = hoverIndex;
         },
     });
@@ -311,11 +311,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                 </div>
                             )}
                             <MeltaTooltip
-                                title={
-                                    isEditMode && areThereAnyInstances
-                                        ? i18next.t('wizard.processTemplate.blockAdd')
-                                        : i18next.t('wizard.processTemplate.addStep')
-                                }
+                                title={i18next.t(`wizard.processTemplate.${isEditMode && areThereAnyInstances ? 'blockAdd' : 'addStep'}`)}
                                 placement="top"
                             >
                                 <span>

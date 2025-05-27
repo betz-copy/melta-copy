@@ -80,7 +80,6 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
-
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {
