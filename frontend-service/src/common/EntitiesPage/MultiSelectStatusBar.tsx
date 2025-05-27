@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IDeleteEntityBody, IEntity, IMultipleSelect } from '../../interfaces/entities';
+import { IDeleteEntityBody, IMultipleSelect } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
@@ -160,13 +160,14 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     };
 
     const handleClose = (renderData: boolean) => {
-        setOpenEditDialog((prev) => !prev);
+        setOpenEditDialog(false);
         setStepsData({ succeededEntities: [], failedEntities: [] });
         setSelectedFields({});
         setInitialValuePropsToFilter({});
         setWasDirty(false);
         setExternalErrors({ files: false, unique: {}, action: '' });
         setEntityData(undefined);
+        setCreateOrUpdateWithRuleBreachDialogState(false);
         if (renderData) {
             api.refreshServerSide();
 
@@ -385,7 +386,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 <ActionOnEntityWithRuleBreachDialog
                     isLoadingActionOnEntity={isMultipleUpdateLoading}
                     handleClose={() => {
-                        setCreateOrUpdateWithRuleBreachDialogState(false);
+                        handleClose(false);
                     }}
                     doActionEntity={async () => {
                         const entityWithIgnoreRules = {};
@@ -422,8 +423,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                         attachmentsProperties: {},
                     }}
                     onCreateRuleBreachRequest={() => {
-                        setCreateOrUpdateWithRuleBreachDialogState(false);
-                        setOpenEditDialog(false);
+                        handleClose(true)
                     }}
                 />
             )}
