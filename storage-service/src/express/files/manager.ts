@@ -1,11 +1,10 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
-import { config } from '../../config';
+import { ServiceError, UploadedFile } from '@microservices/shared';
+import config from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
-import { ServiceError } from '../error';
 import { generate32CharUUID, generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
-import { UploadedFile } from './interface';
 
 const {
     rabbit,
@@ -13,7 +12,7 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export class FilesManager extends DefaultManagerMinio {
+class FilesManager extends DefaultManagerMinio {
     async makeBuckets() {
         const bucketExists = await this.minioClient.bucketExists();
         if (!bucketExists) await this.minioClient.makeBucket();
@@ -125,7 +124,7 @@ export class FilesManager extends DefaultManagerMinio {
     }
 
     private buildNameWithId(file?: UploadedFile): string {
-        return `${generate32CharUUID()}${file?.originalname!}`;
+        return `${generate32CharUUID()}${file!.originalname}`;
     }
 
     private async streamToBuffer(stream: Stream): Promise<Buffer> {
@@ -138,3 +137,5 @@ export class FilesManager extends DefaultManagerMinio {
         });
     }
 }
+
+export default FilesManager;

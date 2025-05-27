@@ -1,19 +1,20 @@
-import config from '../config';
-import { IAction, IBrokenRule } from '../instance/action/interface';
 import {
+    IAction,
+    IBrokenRule,
     IEntity,
     IEntityWithDirectRelationships,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
-} from '../instance/entity/interface';
+} from '@microservices/shared';
+import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 
 const {
     instanceService: { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute },
 } = config;
 
-export class InstanceService extends DefaultExternalServiceApi {
+class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
@@ -51,3 +52,5 @@ export class InstanceService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default InstancesService;

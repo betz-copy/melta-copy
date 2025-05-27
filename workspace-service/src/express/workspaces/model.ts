@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-import { config } from '../../config';
-import { BadRequestError } from '../error';
-import { Colors, IMetadata, IWorkspace } from './interface';
+import { BadRequestError, Colors, IMetadata, IWorkspace } from '@microservices/shared';
+import config from '../../config';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
 const MetadataSchema = new mongoose.Schema<IMetadata>(
@@ -87,4 +86,6 @@ WorkspacesSchema.post('findOneAndUpdate', handleMongooseDuplicateKeyError);
 
 WorkspacesSchema.index({ name: 1, path: 1, type: 1 }, { unique: true });
 
-export const WorkspacesModel = mongoose.model<IWorkspace>(config.mongo.workspacesCollectionName, WorkspacesSchema);
+const WorkspacesModel = mongoose.model<IWorkspace>(config.mongo.workspacesCollectionName, WorkspacesSchema);
+
+export default WorkspacesModel;

@@ -7,7 +7,7 @@ import { HighlightText } from '../HighlightText';
 interface IOverflowWrapperProps<T> {
     items: T[];
     getItemKey: (item: T) => React.Key;
-    renderItem: (item: T) => React.JSX.Element;
+    renderItem: (item: T, index: number) => React.JSX.Element;
     files?: T[];
     containerStyle?: React.CSSProperties;
     propertyToDisplayInTooltip?: string;
@@ -51,7 +51,7 @@ const OverflowWrapper = <T extends any>({
                     }
 
                     // if (displayedItemsWidth + itemWidth >= containerWidth - 30) {
-                    if (itemWidth >= availableSpace - 30) {
+                    if (itemWidth >= availableSpace - overflowButtonWidth) {
                         break;
                     }
 
@@ -83,7 +83,7 @@ const OverflowWrapper = <T extends any>({
             {visibleItems.map((item, index) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <Grid ref={itemRefs.current[index]} item key={`${getItemKey(item)}/${index}`}>
-                    {renderItem(item)}
+                    {renderItem(item, index)}
                 </Grid>
             ))}
             {overflowItems.length > 0 && (

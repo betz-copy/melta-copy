@@ -1,5 +1,6 @@
 import Joi from 'joi';
-import { excelTemplateSchema, ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
+import { fileSchema, MongoIdSchema } from '@microservices/shared';
+import { excelTemplateSchema, ExtendedJoi } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 import config from '../../config';
 
@@ -100,7 +101,7 @@ export const exportEntitiesSchema = Joi.object({
 export const exportEntityToDocumentSchema = Joi.object({
     body: {
         documentTemplateId: Joi.string().required(),
-        entityProperties: Joi.object(),
+        entity: Joi.object(),
     },
     query: {},
     params: {},

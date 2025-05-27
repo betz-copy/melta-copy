@@ -1,10 +1,17 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
+import {
+    ActionsLog,
+    IMongoRelationshipTemplate,
+    IBrokenRule,
+    IRelationship,
+    IActivityLog,
+    NotFoundError,
+    BadRequestError,
+} from '@microservices/shared';
 import config from '../../config';
-import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
@@ -14,13 +21,10 @@ import {
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { EntityManager } from '../entities/manager';
-import { BadRequestError, NotFoundError } from '../error';
-import { IBrokenRule } from '../rules/interfaces';
+import EntityManager from '../entities/manager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import { IRelationship } from './interfaces';
 
-export class RelationshipManager extends DefaultManagerNeo4j {
+class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     private activityLogProducer: ActivityLogProducer;
@@ -333,3 +337,5 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         );
     }
 }
+
+export default RelationshipManager;

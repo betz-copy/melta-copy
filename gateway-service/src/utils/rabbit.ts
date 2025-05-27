@@ -1,19 +1,22 @@
 import { menash } from 'menashmq';
+import { IUser, INotificationMetadata, NotificationType, logger } from '@microservices/shared';
 import config from '../config';
-import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
+// eslint-disable-next-line import/extensions
+import MailManager from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
-import { UsersManager } from '../express/users/manager';
-import { IUser } from '../externalServices/userService/interfaces/users';
-import logger from './logger/logsLogger';
-import { MailManager } from './mailNotifications';
+import UsersManager from '../express/users/manager';
 
 const {
     rabbit,
     service: { workspaceIdHeaderName },
 } = config;
 
-export class RabbitManager {
-    constructor(private workspaceId: string) {}
+class RabbitManager {
+    private workspaceId: string;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+    }
 
     async createNotification<
         NotificationMetadata extends INotificationMetadata,
@@ -55,3 +58,5 @@ export class RabbitManager {
             });
     }
 }
+
+export default RabbitManager;

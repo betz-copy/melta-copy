@@ -1,12 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
-import './form.css';
 import MultipleSelect from '../MultipleSelect';
+import './form.css';
 
 const nums = new Set(['number', 'integer']);
 
-function processValue(schema: any, value: any) {
+const processValue = (schema: any, value: any) => {
     const { type, items } = schema;
     if (value === null) return undefined;
     if (type === 'array' && items && nums.has(items.type)) {
@@ -27,7 +27,7 @@ function processValue(schema: any, value: any) {
         }
     }
     return value;
-}
+};
 
 const RjfsSelectWidget = ({
     schema,

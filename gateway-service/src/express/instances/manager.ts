@@ -8,59 +8,57 @@ import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
-import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
+
 import {
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IUpdateEntityMetadata,
+    IAction,
+    IBrokenRule,
     ISearchEntitiesByLocationBody,
     ICountSearchResult,
-    IDeleteBody,
+    IDeleteEntityBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchSort,
-    ITemplateSearchBody,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
-} from '../../externalServices/instanceService/interfaces/entities';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import {
-    ActionTypes,
-    IAction,
-    IBrokenRule,
+    ITemplateSearchBody,
     IBrokenRuleEntity,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
     IFailedEntity,
-    IUpdateEntityMetadata,
-} from '../../externalServices/ruleBreachService/interfaces';
-import { StorageService } from '../../externalServices/storageService';
-import {
-    EntityTemplateService,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-} from '../../externalServices/templates/entityTemplateService';
+    IRelationship,
+    logger,
+    IExportEntitiesBody,
+    ISemanticSearchResult,
+    BadRequestError,
+    UploadedFile,
+} from '@microservices/shared';
+import config from '../../config';
+import InstancesService from '../../externalServices/instanceService';
+import StorageService from '../../externalServices/storageService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
-import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
-import { IExportEntitiesBody } from './interfaces';
-import { RabbitManager } from '../../utils/rabbit';
+import RabbitManager from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
-import { WorkspaceService } from '../workspaces/service';
-import { UploadedFile } from '../../utils/busboy/interface';
+import WorkspaceService from '../workspaces/service';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
 import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
+import { PreviewService } from '../../externalServices/previewService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
-export class InstancesManager extends DefaultManagerProxy<InstancesService> {
+class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
 
     private storageService: StorageService;
@@ -73,6 +71,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private workspaceId: string;
 
+    private previewService: PreviewService;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
@@ -81,6 +81,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
+        this.previewService = new PreviewService(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -199,6 +200,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 skip,
                 limit: searchEntitiesChunkSize,
                 entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
+                showRelationships: true,
+                sort: [],
             });
             entities.push(...chunk);
         }
@@ -240,7 +243,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter,
-                sort,
+                showRelationships: false,
+                sort: sort || [],
                 entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
             });
             styleAWorksheet(
@@ -266,6 +270,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 acc[key] = { ...value, serialCurrent: serialStarters[key] + succeededIndex };
                 return acc;
             }, {});
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
@@ -394,7 +399,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         });
         if (isTemplateUpdated) {
-            const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
+            const { category, _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...restOfEntityTemplate } = entityTemplate;
             await this.entityTemplateService.updateEntityTemplate(entityTemplate._id, {
                 ...restOfEntityTemplate,
                 category: category._id,
@@ -490,12 +495,18 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async exportEntityToDocumentTemplate({
         documentTemplateId,
-        entityProperties,
+        entity: { templateId, properties },
     }: {
         documentTemplateId: string;
-        entityProperties: IEntity['properties'];
+        entity: IEntity;
     }) {
-        return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
+        return patchDocumentAsStream(
+            await this.storageService.downloadFile(documentTemplateId),
+            properties,
+            entityTemplate,
+            async (path: string, contentType?: string) => this.previewService.getFilePreview(path, contentType),
+        );
     }
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
@@ -776,13 +787,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return fileIdsToRemove;
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         const template = await this.entityTemplateService.getEntityTemplateById(deleteBody.templateId);
 
         if (template.disabled) throw new BadRequestError('cannot delete entities with disabled template');
         if (!deleteBody.selectAll) {
             const entities = await Promise.all(
-                (deleteBody as IDeleteBody<false>).idsToInclude!.map((entityId) => this.service.getEntityInstanceById(entityId)),
+                (deleteBody as IDeleteEntityBody<false>).idsToInclude!.map((entityId) => this.service.getEntityInstanceById(entityId)),
             );
             const disabledEntity = entities.find((entity) => entity.properties.disabled === true);
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
@@ -986,3 +997,5 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 }
+
+export default InstancesManager;

@@ -123,7 +123,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
             placement="top"
             title={
                 relatedEntityTemplate.propertiesPreview.length === 0 ? (
-                    <Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
+                    <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
                 ) : (
                     <EntityPropertiesInternal
                         properties={entity.properties}
