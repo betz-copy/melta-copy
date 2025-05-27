@@ -30,19 +30,17 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
-    console.log({ values });
+    const selectedEntityTemplatePropOptions = useMemo(() => {
+        if (!selectedEntityTemplate?.properties) return [];
+        const { required, properties } = selectedEntityTemplate.properties;
 
-    const selectedEntityTemplatePropOptions = useMemo(
-        () =>
-            Object.entries(selectedEntityTemplate?.properties?.properties || {})
-                .filter(
-                    ([key, _prop]) =>
-                        selectedEntityTemplate?.properties.required.includes(key) &&
-                        selectedEntityTemplate?.properties?.properties[key].format !== 'signature',
-                )
-                .map(([key, prop]) => ({ key, title: prop.title })),
-        [selectedEntityTemplate],
-    );
+        return Object.entries(properties)
+            .filter(([key, prop]) => required.includes(key) && prop.format !== 'signature')
+            .map(([key, prop]) => ({
+                key,
+                title: prop.title,
+            }));
+    }, [selectedEntityTemplate]);
 
     const filterInitialValues: IFilterRelationReference = {
         filterProperty: '',
@@ -55,26 +53,33 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
         let newFilterField: IAGGridFilter;
 
-        if (filterType === 'text') {
-            newFilterField = {
-                ...(current as IAGGridTextFilter),
-                ...(updatedFields as Partial<IAGGridTextFilter>),
-                filterType: 'text',
-            };
-        } else if (filterType === 'number') {
-            newFilterField = {
-                ...(current as IAGGidNumberFilter),
-                ...(updatedFields as Partial<IAGGidNumberFilter>),
-                filterType: 'number',
-            };
-        } else if (filterType === 'date') {
-            newFilterField = {
-                ...(current as IAGGridDateFilter),
-                ...(updatedFields as Partial<IAGGridDateFilter>),
-                filterType: 'date',
-            };
-        } else {
-            throw new Error(`Unsupported filterType: ${filterType}`);
+        switch (filterType) {
+            case 'text':
+                newFilterField = {
+                    ...(current as IAGGridTextFilter),
+                    ...(updatedFields as Partial<IAGGridTextFilter>),
+                    filterType: 'text',
+                };
+                break;
+
+            case 'number':
+                newFilterField = {
+                    ...(current as IAGGidNumberFilter),
+                    ...(updatedFields as Partial<IAGGidNumberFilter>),
+                    filterType: 'number',
+                };
+                break;
+
+            case 'date':
+                newFilterField = {
+                    ...(current as IAGGridDateFilter),
+                    ...(updatedFields as Partial<IAGGridDateFilter>),
+                    filterType: 'date',
+                };
+                break;
+
+            default:
+                throw new Error(`Unsupported filterType: ${filterType}`);
         }
 
         const updatedFilter: IFilterRelationReference = {
@@ -167,7 +172,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                             const isRemovingStart = isStartDate && !field.dateTo;
                             const isRemovingEnd = !isStartDate && !field.dateFrom;
                             if (isRemovingStart || isRemovingEnd) {
-                                // remove the whole filter if both dates are empty
                                 handleRemoveFilter(index);
                                 return;
                             }

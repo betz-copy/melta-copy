@@ -1450,11 +1450,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate),
         );
 
-        // eslint-disable-next-line no-console
-        console.log('here');
-        // eslint-disable-next-line no-console
-        console.dir(restOfEntityTemplate, { depth: null });
-
         const entityTemplateToUpdate: Omit<IEntityTemplate, 'disabled'> = {
             ...restOfEntityTemplate,
             category: restOfEntityTemplate.category._id,

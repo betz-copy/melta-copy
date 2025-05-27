@@ -102,8 +102,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                       relatedTemplateField: value.relationshipReference.relatedTemplateField,
                       filters: value.relationshipReference.filters
                           ? SearchFilterToFilterRelationList(
-                                parseFilters(value.relationshipReference.filters),
                                 value.relationshipReference.relatedTemplateId,
+                                parseFilters(value.relationshipReference.filters),
                             )
                           : undefined,
                   }

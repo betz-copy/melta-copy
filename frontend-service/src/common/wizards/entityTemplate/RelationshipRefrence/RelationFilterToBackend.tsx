@@ -9,7 +9,20 @@ import {
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
 import { IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
 
-export const filterRelationFieldToFilterOfTemplate = (field: string, fieldFilter: IAGGridFilter): IFilterOfTemplate => {
+const filterFieldToValue: Record<keyof IFilterOfField, string> = {
+    $eq: 'equals',
+    $ne: 'notEqual',
+    $gt: 'greaterThan',
+    $gte: 'greaterThanOrEqual',
+    $lt: 'lessThan',
+    $lte: 'lessThanOrEqual',
+    $in: 'inRange',
+    $not: 'not',
+    $rgx: 'contains',
+    $eqi: 'equals',
+};
+
+const relationFieldFilterToFilterOfTemplate = (field: string, fieldFilter: IAGGridFilter): IFilterOfTemplate => {
     switch (fieldFilter.filterType) {
         case 'text':
             return textFilterToFilterOfTemplate(field, fieldFilter);
@@ -26,26 +39,13 @@ export const filterRelationListToSearchFilter = (filterModel: IFilterRelationRef
     if (filterModel.length === 0) return undefined;
 
     const filters: IFilterOfTemplate[] = filterModel.map(({ filterProperty, filterField }) => {
-        if (!filterProperty || !filterField) return {}; // Skip invalid
-        return filterRelationFieldToFilterOfTemplate(filterProperty, filterField);
+        if (!filterProperty || !filterField) return {};
+        return relationFieldFilterToFilterOfTemplate(filterProperty, filterField);
     });
 
     return {
         $and: filters,
     };
-};
-
-const filterFieldToValue: Record<keyof IFilterOfField, string> = {
-    $eq: 'equals',
-    $ne: 'notEqual',
-    $gt: 'greaterThan',
-    $gte: 'greaterThanOrEqual',
-    $lt: 'lessThan',
-    $lte: 'lessThanOrEqual',
-    $in: 'inRange',
-    $not: 'not',
-    $rgx: 'contains',
-    $eqi: 'equals',
 };
 
 const handleRegexFilter = (filterValue: string): IAGGridTextFilter | null => {
@@ -96,8 +96,8 @@ const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFi
     } as IAGGridDateFilter;
 };
 
-const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEntitySingleProperty | undefined): IAGGridFilter | null => {
-    if (!property) return null; // early exit if property is undefined
+const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property?: IEntitySingleProperty): IAGGridFilter | null => {
+    if (!property) return null;
 
     const { type, format } = property;
 
@@ -106,8 +106,6 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEn
     const filterValue = fieldFilter[filterKey];
 
     const filterType = filterFieldToValue[filterKey];
-
-    // console.log({ filterValue }, { filterKey });
 
     switch (type) {
         case 'string':
@@ -144,17 +142,13 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEn
 };
 
 // New function to handle relation filter conversion
-export const SearchFilterToFilterRelationList = (filterModel: ISearchFilter | undefined, relatedTemplateId: string): IFilterRelationReference[] => {
+export const SearchFilterToFilterRelationList = (relatedTemplateId: string, filterModel?: ISearchFilter): IFilterRelationReference[] => {
+    if (!filterModel || !filterModel.$and || !Array.isArray(filterModel.$and)) return [];
+
     const relationFilters: IFilterRelationReference[] = [];
-
-    console.log('start parse', { filterModel });
-
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const relatedTemplate = entityTemplates.get(relatedTemplateId)!;
-
-    if (!filterModel || !filterModel.$and || !Array.isArray(filterModel.$and)) return relationFilters;
 
     filterModel.$and.forEach((filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
@@ -171,8 +165,6 @@ export const SearchFilterToFilterRelationList = (filterModel: ISearchFilter | un
             }
         });
     });
-
-    console.log('end parse', { relationFilters });
 
     return relationFilters;
 };
