@@ -253,7 +253,7 @@ export const extractProperties = <T>(
 };
 
 export const extractGroups = (
-    properties: any,
+    properties: PropertyItem[],
 ): {
     groupsProperties: (GroupProperty & { index: number })[];
     groupsPath: Record<string, string>;

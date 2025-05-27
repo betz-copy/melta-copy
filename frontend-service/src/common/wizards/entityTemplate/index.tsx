@@ -67,7 +67,8 @@ export interface EntityTemplateFormInputProperties {
     color?: string;
 }
 
-export type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
+type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
+
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,

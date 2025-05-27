@@ -556,9 +556,9 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                         <Grid>
                             {orderedItems.map((item, index) => {
                                 if (
-                                    propertiesType === PropertiesTypes.properties ||
-                                    propertiesType === PropertiesTypes.detailsProperties ||
-                                    propertiesType === PropertiesTypes.archiveProperties
+                                    [PropertiesTypes.properties, PropertiesTypes.detailsProperties, PropertiesTypes.archiveProperties].includes(
+                                        propertiesType as PropertiesTypes,
+                                    )
                                 )
                                     return (
                                         <Box key={item.type === 'group' ? item.id : item.data.id} sx={{ marginBottom: 0.5 }}>

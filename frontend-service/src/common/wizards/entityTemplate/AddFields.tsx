@@ -218,7 +218,7 @@ export const FieldBlockWrapper = ({
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
-    const getNewValues = (indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[], field, value: any, currentValues: any) => {
+    const getNewValues = (indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[], field:'deleted'|'archive', value: boolean, currentValues: any) => {
         const displayValuesCopy = { ...currentValues };
 
         indexesInTypes.forEach(({ index, type, groupIndex }) => {
@@ -228,15 +228,11 @@ export const FieldBlockWrapper = ({
                     ...group.fields[index],
                     [field]: value,
                 };
-                if (field === 'name' && group.fields[index].type === 'comment')
-                    group.fields[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
             } else if (index !== -1 && !groupIndex) {
                 displayValuesCopy[type][index].data = {
                     ...displayValuesCopy[type][index].data,
                     [field]: value,
                 };
-                if (field === 'name' && displayValuesCopy[type][index].type === 'comment')
-                    displayValuesCopy[type][index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
             }
         });
 
