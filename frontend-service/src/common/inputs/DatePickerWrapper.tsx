@@ -50,7 +50,17 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             label={label}
             value={value}
             onChange={onChange}
-            renderInput={(params) => <TextField {...params} size="small" sx={sx} style={{ boxSizing: 'border-box', width: '100%' }} />}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    size="small"
+                    sx={{
+                        boxSizing: 'border-box',
+                        width: '100%',
+                        ...sx,
+                    }}
+                />
+            )}
             InputProps={{
                 style: {
                     // eslint-disable-next-line no-nested-ternary

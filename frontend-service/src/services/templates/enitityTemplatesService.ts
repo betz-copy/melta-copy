@@ -515,9 +515,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
 
-    console.log('in update entity template req frontend');
-    console.dir({ entityTemplate }, { depth: null });
-
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
             formData.append('file', updatedEntityTemplate.icon.file);

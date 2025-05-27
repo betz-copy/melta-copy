@@ -26,9 +26,11 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     touched,
     errors,
 }) => {
-    const { values, setFieldValue } = useFormikContext<any>();
+    const { values, setFieldValue } = useFormikContext();
     const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
+
+    console.log({ values });
 
     const selectedEntityTemplatePropOptions = useMemo(
         () =>

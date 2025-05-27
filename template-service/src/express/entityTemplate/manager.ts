@@ -80,13 +80,22 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model.find().lean().exec();
     }
 
-    getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
-        return this.model
+    async getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
+        const targetTemplate: IEntityTemplatePopulated = (await this.model
             .findById<IEntityTemplatePopulated>(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
-            .exec() as Promise<IEntityTemplatePopulated>;
+            .exec()) as IEntityTemplatePopulated;
+
+        Object.entries(targetTemplate.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
+            }
+        });
+
+        return targetTemplate;
     }
 
     getTemplatesByCategory(category: string) {
@@ -233,8 +242,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
         }
 
-        console.log('In transaction');
-
         const updatedEntityTemplate = await this.model
             .findByIdAndUpdate(id, entityTemplateToUpdate, {
                 new: true,
@@ -277,8 +284,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
             }
         });
-
-        console.dir({ updatedTemplateData }, { depth: null });
 
         const currentEntityTemplate = await this.getTemplateById(id);
 

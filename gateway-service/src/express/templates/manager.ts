@@ -1144,6 +1144,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     removeBasicFields(template: IMongoEntityTemplatePopulated) {
         const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = template;
+        Object.entries(template.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
+            }
+        });
+
         return rest;
     }
 
@@ -1409,6 +1416,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         const currentRelationshipTemplate: IMongoRelationshipTemplate =
             await this.relationshipTemplateService.getRelationshipTemplateById(relationshipTemplateId);
+
         const { sourceEntityId, destinationEntityId } = currentRelationshipTemplate;
 
         const addFieldToSrcEntity = relationshipReference.relatedTemplateId === destinationEntityId;
@@ -1441,6 +1449,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled' | '_createdAt' | '_updatedAt' | '_id'> = this.removeBasicFields(
             await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate),
         );
+
+        // eslint-disable-next-line no-console
+        console.log('here');
+        // eslint-disable-next-line no-console
+        console.dir(restOfEntityTemplate, { depth: null });
 
         const entityTemplateToUpdate: Omit<IEntityTemplate, 'disabled'> = {
             ...restOfEntityTemplate,

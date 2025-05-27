@@ -21,7 +21,6 @@ interface DateFilterInputProps {
 const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFilterTypeChange, handleDateChange, entityFilter, readOnly }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === 'inRange';
-    console.log({ readOnly });
 
     const inputStyle = darkMode
         ? undefined
@@ -36,7 +35,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
             justifyContent="start"
             direction={isInRangeType || !entityFilter ? 'column' : 'row'}
             spacing={1}
-            style={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
+            sx={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
         >
             <Grid item xs={isInRangeType ? 12 : 5}>
                 <TypeSelectFilter

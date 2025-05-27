@@ -107,6 +107,8 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEn
 
     const filterType = filterFieldToValue[filterKey];
 
+    // console.log({ filterValue }, { filterKey });
+
     switch (type) {
         case 'string':
         case 'boolean': {
@@ -114,6 +116,12 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEn
 
             if (filterKey === '$rgx' && typeof filterValue === 'string') {
                 const regexFilter = handleRegexFilter(filterValue);
+                if (regexFilter) return regexFilter;
+            }
+
+            if (filterKey === '$not' && filterValue && typeof filterValue === 'object') {
+                const regexValue = filterValue['$rgx'];
+                const regexFilter = handleRegexFilter(regexValue);
                 if (regexFilter) return regexFilter;
             }
 
@@ -139,6 +147,8 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEn
 export const SearchFilterToFilterRelationList = (filterModel: ISearchFilter | undefined, relatedTemplateId: string): IFilterRelationReference[] => {
     const relationFilters: IFilterRelationReference[] = [];
 
+    console.log('start parse', { filterModel });
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
@@ -161,6 +171,8 @@ export const SearchFilterToFilterRelationList = (filterModel: ISearchFilter | un
             }
         });
     });
+
+    console.log('end parse', { relationFilters });
 
     return relationFilters;
 };
