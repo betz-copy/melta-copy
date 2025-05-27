@@ -25,7 +25,7 @@ import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import SelectUserFieldDialog from './SelectUserFieldDialog';
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { createEntityChildTemplateRequest } from '../../../services/templates/entityChildTemplatesService';
+import { createEntityChildTemplateRequest, updateEntityChildTemplateRequest } from '../../../services/templates/entityChildTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
@@ -45,33 +45,90 @@ const CreateChildTemplateDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-}> = ({ open, handleClose, entityTemplate }) => {
+    childTemplate?: IEntityChildTemplate;
+}> = ({ open, handleClose, entityTemplate, childTemplate }) => {
     if (!entityTemplate) return null;
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
-    // const allChildTemplates = queryClient.getQueryData<Map<string, IMongoChildEntityTemplate>>('getChildEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
     const [selectedUserField, setSelectedUserField] = useState<string | null>(null);
     const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
-    const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState(false);
-    const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(false);
+    const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState(childTemplate?.isFilterByCurrentUser || false);
+    const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(childTemplate?.isFilterByUserUnit || false);
     const [selectedCategories, setSelectedCategories] = useState<IMongoCategory[]>([]);
-    const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(ViewType.categoryPage);
+    const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(childTemplate?.viewType || ViewType.categoryPage);
     const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
 
     useEffect(() => {
         if (entityTemplate) {
             const initialFields: ITemplateFieldsFilters = {};
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-                initialFields[key] = { selected: false, fieldValue: value };
+                const isSelected = childTemplate ? key in childTemplate.properties : false;
+                initialFields[key] = {
+                    selected: isSelected,
+                    fieldValue: value,
+                    ...(childTemplate?.properties[key]?.defaultValue && { defaultValue: childTemplate.properties[key].defaultValue }),
+                };
             });
             setTemplateFieldsFilters(initialFields);
-            setSelectedCategories(entityTemplate.category ? [entityTemplate.category] : []);
+            setSelectedCategories(
+                childTemplate?.categories
+                    ? childTemplate.categories.map((id) => categories.get(id)!).filter(Boolean)
+                    : entityTemplate.category
+                    ? [entityTemplate.category]
+                    : [],
+            );
         }
-    }, [entityTemplate]);
+    }, [entityTemplate, childTemplate, categories]);
+
+    useEffect(() => {
+        if (childTemplate) {
+            const chips: IFieldChip[] = [];
+            Object.entries(childTemplate.properties).forEach(([fieldName, prop]) => {
+                if (prop.filters) {
+                    try {
+                        const parsedFilters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                        if (parsedFilters.$and) {
+                            parsedFilters.$and.forEach((filter: any) => {
+                                const fieldKey = Object.keys(filter)[0];
+                                const filterValue = filter[fieldKey];
+
+                                // Create a user-friendly display value
+                                let displayValue = '';
+                                if (filterValue.$rgx) {
+                                    displayValue = `מכיל: ${filterValue.$rgx.replace(/\.\*/g, '')}`;
+                                } else if (filterValue.$eq !== undefined) {
+                                    displayValue = `שווה ל: ${filterValue.$eq}`;
+                                } else if (filterValue.$in) {
+                                    displayValue = `אחד מ: ${filterValue.$in.join(', ')}`;
+                                }
+
+                                chips.push({
+                                    fieldName,
+                                    chipType: 'filter',
+                                    value: displayValue,
+                                    filterType: filterValue,
+                                });
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing filters:', e);
+                    }
+                }
+                if (prop.defaultValue !== undefined) {
+                    chips.push({
+                        fieldName,
+                        chipType: 'default',
+                        value: `ברירת מחדל: ${prop.defaultValue}`,
+                    });
+                }
+            });
+            setFieldChips(chips);
+        }
+    }, [childTemplate]);
 
     const userFields = useMemo(() => {
         return entityTemplate
@@ -91,30 +148,66 @@ const CreateChildTemplateDialog: React.FC<{
         [entityTemplate],
     );
 
-    const { mutateAsync: createEntityChildTemplate } = useMutation((template: IEntityChildTemplate) => createEntityChildTemplateRequest(template), {
-        onSuccess: (data) => {
-            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prevData) => prevData!.set(data._id, data));
-            toast.success(i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'));
+    const { mutateAsync: handleEntityChildTemplate } = useMutation<IMongoChildEntityTemplate, AxiosError, IEntityChildTemplate>(
+        (template: IEntityChildTemplate) => {
+            if (childTemplate) {
+                return updateEntityChildTemplateRequest(template._id!, template);
+            }
+            return createEntityChildTemplateRequest(template);
+        },
+        {
+            onSuccess: (data) => {
+                // Immediately update the cache with optimistic data
+                queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prevData) => {
+                    const newMap = new Map(prevData || new Map());
+                    newMap.set(data._id, data);
+                    return newMap;
+                });
 
-            handleClose();
+                // Force refetch all related queries to ensure data consistency
+                Promise.all([
+                    queryClient.invalidateQueries('getChildEntityTemplates'),
+                    queryClient.invalidateQueries('getEntityTemplates'),
+                    queryClient.invalidateQueries('searchEntityTemplates'),
+                ]).then(() => {
+                    // Ensure the queries are refetched before closing
+                    toast.success(
+                        childTemplate
+                            ? i18next.t('createChildTemplateDialog.succeededToUpdateEntityChildTemplate')
+                            : i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'),
+                    );
+                    handleClose();
+                });
+            },
+            onError: (err: AxiosError) => {
+                toast.error(
+                    <ErrorToast
+                        axiosError={err}
+                        defaultErrorMessage={
+                            childTemplate
+                                ? i18next.t('createChildTemplateDialog.failedToUpdateEntityChildTemplate')
+                                : i18next.t('createChildTemplateDialog.failedToCreateEntityChildTemplate')
+                        }
+                    />,
+                );
+            },
         },
-        onError: (err: AxiosError) => {
-            toast.error(
-                <ErrorToast axiosError={err} defaultErrorMessage={i18next.t('createChildTemplateDialog.failedToCreateEntityChildTemplate')} />,
-            );
-        },
-    });
+    );
 
     if (!entityTemplate || !categories || !allTemplates) return null;
 
     const templateValues = Array.from(allTemplates.values());
-    const existingNames = templateValues.map((t) => t.name);
-    const existingDisplayNames = templateValues.map((t) => t.displayName);
+    const existingNames = templateValues.filter((t) => !childTemplate || t._id !== childTemplate._id).map((t) => t.name);
+    const existingDisplayNames = templateValues.filter((t) => !childTemplate || t._id !== childTemplate._id).map((t) => t.displayName);
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
             <Formik
-                initialValues={{ name: '', displayName: '', description: '' }}
+                initialValues={{
+                    name: childTemplate ? childTemplate.name.split('_')[1] : '',
+                    displayName: childTemplate ? childTemplate.displayName.split('-')[1] : '',
+                    description: childTemplate?.description || '',
+                }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description }) => {
                     const fullName = `${entityTemplate.name}_${name}`;
@@ -148,7 +241,7 @@ const CreateChildTemplateDialog: React.FC<{
                         properties[fieldName] = childProp;
                     });
 
-                    const newChildTemplate: IEntityChildTemplate = {
+                    const baseTemplate = {
                         name: fullName,
                         displayName: fullDisplayName,
                         description,
@@ -156,18 +249,23 @@ const CreateChildTemplateDialog: React.FC<{
                         categories: selectedCategories.map((c) => c._id),
                         properties,
                         disabled: false,
-                        actions: entityTemplate.actions,
                         viewType: childTemplateViewType,
                         isFilterByCurrentUser: childTemplateFilterByCurrentUser,
                         isFilterByUserUnit: childTemplateFilterByUserUnit,
                     };
 
-                    await createEntityChildTemplate(newChildTemplate);
+                    const newChildTemplate = childTemplate ? { ...baseTemplate, _id: childTemplate._id } : baseTemplate;
+
+                    await handleEntityChildTemplate(newChildTemplate as IEntityChildTemplate);
                 }}
             >
                 {({ values, handleChange, touched, errors }) => (
                     <Form>
-                        <DialogTitle>{`${i18next.t('createChildTemplateDialog.templateTitle')}- ${entityTemplate.displayName}`}</DialogTitle>
+                        <DialogTitle>
+                            {childTemplate
+                                ? `${i18next.t('createChildTemplateDialog.editTitle')}- ${entityTemplate.displayName}`
+                                : `${i18next.t('createChildTemplateDialog.templateTitle')}- ${entityTemplate.displayName}`}
+                        </DialogTitle>
                         <DialogContent>
                             <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
                                 <Grid container item spacing={2}>
@@ -405,8 +503,11 @@ const CreateChildTemplateDialog: React.FC<{
                             </Grid>
                         </DialogContent>
                         <DialogActions>
+                            <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
                             <Button type="submit" variant="contained">
-                                {i18next.t('actions.create')}
+                                {childTemplate
+                                    ? i18next.t('createChildTemplateDialog.buttons.update')
+                                    : i18next.t('createChildTemplateDialog.buttons.create')}
                             </Button>
                         </DialogActions>
                     </Form>

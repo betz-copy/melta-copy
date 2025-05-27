@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -45,6 +45,7 @@ import { checkUserTemplatePermission } from '../../../utils/permissions/instance
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -89,6 +90,7 @@ interface EntityTemplateCardProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
+            childTemplate?: IEntityChildTemplate;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -196,41 +198,75 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </MeltaTooltip>
                         </Grid>
                     </Grid>
-                    <Grid item container flexBasis="10%">
+                    <Grid item container flexBasis="10%" alignItems="center" justifyContent="flex-end">
                         {isHoverOnCard && !isDisabledView && (
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onOptionsIconClick={async () => {
+                                    if (childTemplates?.get(entityTemplate._id)) {
+                                        return;
+                                    }
                                     await checkEntityTemplateHasEntities([entityTemplate]);
                                 }}
                                 onEditClick={() => {
-                                    setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
+                                    if (childTemplates?.get(entityTemplate._id)) {
+                                        const childTemplate = childTemplates.get(entityTemplate._id)!;
+                                        setAddChildTemplateDialogState({
+                                            isWizardOpen: true,
+                                            entityTemplate: {
+                                                ...entityTemplate,
+                                                _id: childTemplate.fatherTemplateId,
+                                            },
+                                            childTemplate,
+                                        });
+                                    } else {
+                                        setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
+                                    }
                                     setIsHoverOnCard(false);
                                 }}
-                                onDuplicateClick={() => {
-                                    setEntityTemplateWizardDialogState({
-                                        isWizardOpen: true,
-                                        entityTemplate: {
-                                            ...defaultEntityTemplatePopulated,
-                                            properties,
-                                            propertiesOrder,
-                                            propertiesPreview,
-                                            propertiesTypeOrder,
-                                            uniqueConstraints,
-                                        },
-                                    });
-                                    setIsHoverOnCard(false);
-                                }}
+                                onDuplicateClick={
+                                    childTemplates?.get(entityTemplate._id)
+                                        ? undefined
+                                        : () => {
+                                              setEntityTemplateWizardDialogState({
+                                                  isWizardOpen: true,
+                                                  entityTemplate: {
+                                                      ...defaultEntityTemplatePopulated,
+                                                      properties,
+                                                      propertiesOrder,
+                                                      propertiesPreview,
+                                                      propertiesTypeOrder,
+                                                      uniqueConstraints,
+                                                  },
+                                              });
+                                              setIsHoverOnCard(false);
+                                          }
+                                }
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
-                                onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
-                                onDisableClick={() => {
-                                    updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled });
-                                    setIsHoverOnCard(false);
-                                }}
-                                onAddChildTemplateClick={() => {
-                                    setAddChildTemplateDialogState({ isWizardOpen: true, entityTemplate });
-                                    setIsHoverOnCard(false);
-                                }}
+                                onAddActionsClick={
+                                    childTemplates?.get(entityTemplate._id)
+                                        ? undefined
+                                        : () => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })
+                                }
+                                onDisableClick={
+                                    childTemplates?.get(entityTemplate._id)
+                                        ? undefined
+                                        : () => {
+                                              updateEntityTemplateStatusAsync({
+                                                  entityTemplateId: entityTemplate._id,
+                                                  disabled: !entityTemplate.disabled,
+                                              });
+                                              setIsHoverOnCard(false);
+                                          }
+                                }
+                                onAddChildTemplateClick={
+                                    childTemplates?.get(entityTemplate._id)
+                                        ? undefined
+                                        : () => {
+                                              setAddChildTemplateDialogState({ isWizardOpen: true, entityTemplate });
+                                              setIsHoverOnCard(false);
+                                          }
+                                }
                                 disabledProps={{
                                     disableForReadPermissions: !entityHasWritePermission,
                                     isDeleteDisabled: isDeleteButtonDisabled,
@@ -239,6 +275,55 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     tooltipTitle: entityTemplateCardTooltip(),
                                 }}
                             />
+                        )}
+                        {childTemplates?.get(entityTemplate._id) && (
+                            <MeltaTooltip
+                                title={
+                                    <div>
+                                        <Typography variant="body2">{childTemplates.get(entityTemplate._id)?.description}</Typography>
+                                        <Grid container spacing={1} sx={{ mt: 1 }}>
+                                            {childTemplates.get(entityTemplate._id)?.isFilterByUserUnit && (
+                                                <Grid item>
+                                                    <ColoredEnumChip
+                                                        color="#2CB93A"
+                                                        label={i18next.t('createChildTemplateDialog.permissionsPage.unit')}
+                                                    />
+                                                </Grid>
+                                            )}
+                                            {childTemplates.get(entityTemplate._id)?.isFilterByCurrentUser && (
+                                                <Grid item>
+                                                    <ColoredEnumChip
+                                                        color="#0072C6"
+                                                        label={i18next.t('createChildTemplateDialog.permissionsPage.user')}
+                                                    />
+                                                </Grid>
+                                            )}
+                                            {childTemplates.get(entityTemplate._id)?.viewType === 'userPage' && (
+                                                <Grid item>
+                                                    <ColoredEnumChip
+                                                        color="#CF9030"
+                                                        label={i18next.t('createChildTemplateDialog.permissionsPage.userPage')}
+                                                    />
+                                                </Grid>
+                                            )}
+                                        </Grid>
+                                    </div>
+                                }
+                            >
+                                <InfoOutlined
+                                    sx={{
+                                        fontSize: '16px',
+                                        color: theme.palette.primary.main,
+                                        opacity: 0.7,
+                                        cursor: 'help',
+                                        position: 'absolute',
+                                        right: '8px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        marginRight: isHoverOnCard ? '32px' : '8px',
+                                    }}
+                                />
+                            </MeltaTooltip>
                         )}
                     </Grid>
                 </Grid>
@@ -273,6 +358,51 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     </Typography>
                                 </MeltaTooltip>
                             </Grid>
+                            <Grid item>
+                                <MeltaTooltip
+                                    title={
+                                        <div>
+                                            <Typography variant="body2">{childTemplate.description}</Typography>
+                                            <Grid container spacing={1} sx={{ mt: 1 }}>
+                                                {childTemplate.isFilterByUserUnit && (
+                                                    <Grid item>
+                                                        <ColoredEnumChip
+                                                            color="#2CB93A"
+                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.unit')}
+                                                        />
+                                                    </Grid>
+                                                )}
+                                                {childTemplate.isFilterByCurrentUser && (
+                                                    <Grid item>
+                                                        <ColoredEnumChip
+                                                            color="#0072C6"
+                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.user')}
+                                                        />
+                                                    </Grid>
+                                                )}
+                                                {childTemplate.viewType === 'userPage' && (
+                                                    <Grid item>
+                                                        <ColoredEnumChip
+                                                            color="#CF9030"
+                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.userPage')}
+                                                        />
+                                                    </Grid>
+                                                )}
+                                            </Grid>
+                                        </div>
+                                    }
+                                >
+                                    <InfoOutlined
+                                        sx={{
+                                            fontSize: '16px',
+                                            color: theme.palette.primary.main,
+                                            opacity: 0.7,
+                                            cursor: 'help',
+                                            ml: 1,
+                                        }}
+                                    />
+                                </MeltaTooltip>
+                            </Grid>
                         </Grid>
                     ))}
                     <Grid item container justifyContent="space-between">
@@ -285,7 +415,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
-                                    <ArrowBackIosNewIcon />
+                                    <ArrowBackIosNewIcon sx={{ fontSize: '12px' }} />
                                 </Grid>
                                 <Grid item>
                                     <MeltaTooltip title={value.title}>
@@ -319,7 +449,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
-                                    <Typography>-</Typography>
+                                    <ArrowBackIosNewIcon sx={{ fontSize: '12px' }} />
                                 </Grid>
                                 <Grid item>
                                     <MeltaTooltip title={key}>
@@ -405,6 +535,7 @@ interface CategoryEntitiesBoxProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
+            childTemplate?: IEntityChildTemplate;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -724,6 +855,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
+        childTemplate?: IEntityChildTemplate;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -935,6 +1067,7 @@ const EntityTemplatesRow: React.FC = () => {
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}
+                childTemplate={addChildTemplateDialogState.childTemplate}
             />
         </Grid>
     );

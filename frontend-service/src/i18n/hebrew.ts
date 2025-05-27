@@ -1501,5 +1501,10 @@ export default {
         },
         succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
         childTemplates: 'תבניות בן',
+        buttons: {
+            create: 'צור תבנית בן',
+            update: 'עדכן תבנית בן',
+            cancel: 'ביטול',
+        },
     },
 };

@@ -58,15 +58,12 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
             .exec();
     }
 
-    async createChildTemplate(templateData: Omit<IEntityChildTemplate, 'disabled'>) {
-        const stringPropertiesFilters = Object.fromEntries(
-            Object.entries(templateData.properties).map(([key, value]) => [key, { ...value, filters: JSON.stringify(value.filters) }]),
-        );
+    async createChildTemplate(childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate> {
+        return await this.model.create(childTemplate);
+    }
 
-        const createdEntityChildTemplate = await this.model.create({ ...templateData, properties: stringPropertiesFilters });
-        return (await createdEntityChildTemplate.populate<Pick<IEntityChildTemplatePopulated, 'categories'>>('categories')).populate<
-            Pick<IEntityChildTemplatePopulated, 'fatherTemplateId'>
-        >('fatherTemplateId');
+    async updateChildTemplate(id: string, childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate | null> {
+        return await this.model.findByIdAndUpdate(id, childTemplate, { new: true });
     }
 }
 

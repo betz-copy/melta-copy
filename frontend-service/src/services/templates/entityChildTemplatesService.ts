@@ -9,9 +9,14 @@ const createEntityChildTemplateRequest = async (newEntityChildTemplate: IEntityC
     return data;
 };
 
+const updateEntityChildTemplateRequest = async (id: string, childTemplate: IEntityChildTemplate) => {
+    const { data } = await axios.put<IMongoChildEntityTemplate>(`${entityChildTemplates}/${id}`, childTemplate);
+    return data;
+};
+
 const getAllEntityChildTemplatesRequest = async () => {
     const { data } = await axios.get<IMongoChildEntityTemplate[]>(entityChildTemplates);
     return data;
 };
 
-export { createEntityChildTemplateRequest, getAllEntityChildTemplatesRequest };
+export { createEntityChildTemplateRequest, updateEntityChildTemplateRequest, getAllEntityChildTemplatesRequest };

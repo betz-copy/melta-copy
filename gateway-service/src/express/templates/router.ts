@@ -29,6 +29,7 @@ import {
     updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
+    updateEntityChildTemplateSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -240,6 +241,13 @@ templatesRouter.get(
     '/child',
     ValidateRequest(getAllChildTemplatesSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.put(
+    '/child/:id',
+    ValidateRequest(updateEntityChildTemplateSchema),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     TemplatesServiceProxy,
 );
 

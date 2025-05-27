@@ -36,6 +36,20 @@ const childTemplatePropertySchema = Joi.object({
     filters: searchFilterSchema,
 });
 
+const childEntityTemplateSchema = {
+    name: variableNameValidation.required(),
+    displayName: Joi.string().required(),
+    description: Joi.string(),
+    fatherTemplateId: MongoIdSchema.required(),
+    categories: Joi.array().items(MongoIdSchema).required(),
+    properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    disabled: Joi.boolean().default(false),
+    actions: Joi.string(),
+    viewType: Joi.string().valid('categoryPage', 'userPage').required(),
+    isFilterByCurrentUser: Joi.boolean().default(false),
+    isFilterByUserUnit: Joi.boolean().default(false),
+};
+
 // POST /api/templates/child/search
 export const searchEntityChildTemplatesSchema = Joi.object({
     query: {},
@@ -60,18 +74,18 @@ export const getAllChildTemplatesSchema = Joi.object({
 // POST /api/templates/child
 export const createEntityChildTemplateSchema = Joi.object({
     body: {
-        name: variableNameValidation.required(),
-        displayName: Joi.string().required(),
-        description: Joi.string(),
-        fatherTemplateId: MongoIdSchema.required(),
-        categories: Joi.array().items(MongoIdSchema).required(),
-        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
-        disabled: Joi.boolean().default(false),
-        actions: Joi.string(),
-        viewType: Joi.string().valid('categoryPage', 'userPage').required(),
-        isFilterByCurrentUser: Joi.boolean().default(false),
-        isFilterByUserUnit: Joi.boolean().default(false),
+        ...childEntityTemplateSchema,
     },
     query: {},
     params: {},
+});
+
+export const updateEntityChildTemplateSchema = Joi.object({
+    body: {
+        ...childEntityTemplateSchema,
+    },
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
 });
