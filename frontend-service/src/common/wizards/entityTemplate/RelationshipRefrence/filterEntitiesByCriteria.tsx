@@ -13,6 +13,8 @@ import { SelectFilterInput } from '../../../inputs/FilterInputs/SelectFilterInpu
 
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
+    value: CommonFormInputProperties;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
     touched?: FormikTouched<CommonFormInputProperties>;
@@ -21,13 +23,14 @@ interface FilterEntitiesByCriteriaProps {
 
 export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> = ({
     name,
+    value,
+    setFieldValue,
     selectedEntityTemplate,
     initialValue,
     touched,
     errors,
 }) => {
-    const { values, setFieldValue } = useFormikContext();
-    const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
+    const filters: IFilterRelationReference[] = useMemo(() => getIn(value, name) || [], [value, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
     const selectedEntityTemplatePropOptions = useMemo(() => {
@@ -89,18 +92,32 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
         const newFiltersArray = [...filters];
         newFiltersArray[index] = updatedFilter;
+        const newValues = {
+            ...value.relationshipReference,
+            filters: newFiltersArray,
+        };
 
-        setFieldValue(name, newFiltersArray);
+        setFieldValue('relationshipReference', newValues);
     };
 
     const handleAddFilter = () => {
         const updatedFilters = [...filters, filterInitialValues];
-        setFieldValue(name, updatedFilters);
+        const newValues = {
+            ...value.relationshipReference,
+            filters: updatedFilters,
+        };
+
+        setFieldValue('relationshipReference', newValues);
     };
 
     const handleRemoveFilter = (index: number) => {
         const updatedFilters = filters.filter((_, i) => i !== index);
-        setFieldValue(name, updatedFilters);
+        const newValues = {
+            ...value.relationshipReference,
+            filters: updatedFilters,
+        };
+
+        setFieldValue('relationshipReference', newValues);
     };
 
     const initializedFilterField: Record<string, IAGGridFilter> = {
@@ -266,7 +283,12 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                             filterField: newFilterField,
                                         };
 
-                                        setFieldValue(name, newFiltersArray);
+                                        const newValues = {
+                                            ...value.relationshipReference,
+                                            filters: newFiltersArray,
+                                        };
+
+                                        setFieldValue('relationshipReference', newValues);
                                     }}
                                     isOptionEqualToValue={(option, val) => option.key === val.key}
                                     value={getSelectedFilterPropTitle}

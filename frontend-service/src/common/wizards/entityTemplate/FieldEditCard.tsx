@@ -1523,7 +1523,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                     {value.type === 'relationshipReference' && supportRelationshipReference && supportFilterRelationList && (
                                         <FilterEntitiesByCriteria
-                                            name={`properties[${index}].relationshipReference.filters`}
+                                            name={`relationshipReference.filters`}
+                                            value={value}
+                                            setFieldValue={setFieldValue}
                                             selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}
                                             initialValue={initialValue}
                                             errors={errors}
