@@ -119,12 +119,13 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                             top: '0',
                             right: '0',
                             zIndex: 1,
-                            background: darkMode ? '#383838' : '#fff',
+                            background: darkMode ? '#1e1e1e' : '#fff',
                             padding: '0 8px',
                             transition: 'top 0.3s',
                             transform: 'translate(-14px,-9px) scale(0.75)',
                             transformOrigin: 'top-right',
                             color: showLabel ? globalTheme.palette.primary.main : '#9398C2',
+                            fontSize: '14px',
                         }}
                         shrink={readonly || undefined}
                     >

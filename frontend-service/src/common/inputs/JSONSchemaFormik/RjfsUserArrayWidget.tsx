@@ -36,7 +36,7 @@ const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
             isError={rawErrors.length > 0}
             displayValue={inputValue}
             onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
-            currentUsers={currentUsers.map((user) => user.fullName)}
+            currentUsers={currentUsers}
             onRemove={(index) => {
                 const removedUser = currentUsers[index];
                 const currentUsersCopy = currentUsers;

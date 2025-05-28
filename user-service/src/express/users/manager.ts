@@ -93,7 +93,6 @@ class UsersManager {
 
         if (userData.roleIds && userData.roleIds?.length > 0)
             await RolesManager.getRoleById(userData.roleIds[0]); // Validate role exists
-        // TODO: fix it for other workspaces
         else await PermissionsManager.syncCompactPermissions(baseUser._id, RelatedPermission.User, permissions);
 
         return this.baseUserToUser(baseUser);

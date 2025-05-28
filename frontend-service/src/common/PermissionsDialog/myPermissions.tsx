@@ -201,7 +201,9 @@ const MyPermissions: React.FC<{
             }}
         >
             {(formikProps: FormikProps<IUser>) => {
-                const formikRole = workspaceRoles?.find((role) => formikProps.values.roleIds?.includes(role._id));
+                const { values, touched, errors, handleBlur, setValues, setFieldValue, isSubmitting, initialValues } = formikProps;
+                const formikRole = workspaceRoles?.find((role) => values.roleIds?.includes(role._id));
+
                 return (
                     <Form>
                         <DialogTitle>
@@ -218,35 +220,35 @@ const MyPermissions: React.FC<{
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <UserAutocomplete
                                     mode={existingUser ? 'internal' : 'external'}
-                                    value={formikProps.values}
-                                    onChange={(_e, chosenUser) => formikProps.setValues(chosenUser ?? defaultEmptyUser)}
-                                    onBlur={formikProps.handleBlur}
+                                    value={values}
+                                    onChange={(_e, chosenUser) => setValues(chosenUser ?? defaultEmptyUser)}
+                                    onBlur={handleBlur}
                                     readOnly={mode === 'view'}
                                     disabled={mode === 'edit'}
-                                    isError={Boolean(formikProps.touched.fullName && formikProps.errors.fullName)}
-                                    helperText={formikProps.touched.fullName ? formikProps.errors.fullName : ''}
+                                    isError={Boolean(touched.fullName && errors.fullName)}
+                                    helperText={touched.fullName ? errors.fullName : ''}
                                     isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
                                     enableClear={mode === 'create'}
                                 />
                             </Box>
 
-                            {(mode !== 'view' || formikProps.values.roleIds) && (
+                            {(mode !== 'view' || values.roleIds) && (
                                 <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                     <RoleAutocomplete
                                         value={formikRole}
                                         options={workspaceRoles}
                                         onChange={(_e, chosenRole) => {
-                                            const currentRoleIds = formikProps.values.roleIds ?? [];
+                                            const currentRoleIds = values.roleIds ?? [];
                                             const updatedRoleIds = currentRoleIds.filter((id) => id !== prevRole?._id);
                                             if (chosenRole?._id) updatedRoleIds.push(chosenRole._id);
 
-                                            formikProps.setFieldValue('roleIds', updatedRoleIds);
-                                            formikProps.setFieldValue('permissions', chosenRole?.permissions ?? {});
+                                            setFieldValue('roleIds', updatedRoleIds);
+                                            setFieldValue('permissions', chosenRole?.permissions ?? {});
                                         }}
-                                        onBlur={formikProps.handleBlur}
+                                        onBlur={handleBlur}
                                         readOnly={mode === 'view'}
-                                        isError={Boolean(formikProps.touched.roleIds && formikProps.errors.roleIds)}
-                                        helperText={formikProps.touched.roleIds ? formikProps.errors.roleIds : ''}
+                                        isError={Boolean(touched.roleIds && errors.roleIds)}
+                                        helperText={touched.roleIds ? errors.roleIds : ''}
                                         enableClear={mode !== 'view'}
                                         refetch={searchRolesOptionsDebounced}
                                     />
@@ -270,15 +272,15 @@ const MyPermissions: React.FC<{
                                         <Button
                                             type="submit"
                                             disabled={
-                                                formikProps.isSubmitting ||
-                                                didPermissionsChange(formikProps.initialValues.permissions, formikProps.values.permissions) ||
-                                                userHasNoPermissions(formikProps.values.permissions[workspace._id])
+                                                isSubmitting ||
+                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
+                                                userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"
                                         >
                                             {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                             {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
-                                            {formikProps.isSubmitting && <CircularProgress size={20} />}
+                                            {isSubmitting && <CircularProgress size={20} />}
                                         </Button>
                                     )}
                                 </Grid>
