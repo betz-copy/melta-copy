@@ -26,11 +26,10 @@ const DeletePermissionsDialog: React.FC<{
         {
             onError: (error: any) => {
                 console.error('failed to delete permission. error:', error);
-                if (error.response.data.metadata.message.includes(`can't remove role if there is users connected`))
-                    toast.error(i18next.t(`permissions.failedToDeleteRoleCauseConnectedToUsers`));
-                else toast.error(i18next.t(`permissions.failedToDelete${uppercasePermissionType}`));
+                const isUserConnected = error.response.data.metadata.code.includes(`can't remove role: user connected`);
+                toast.error(i18next.t(`permissions.failedToDelete${uppercasePermissionType}${isUserConnected ? 'CauseConnectedToUsers' : ''}`));
             },
-            onSuccess: (_data) => {
+            onSuccess: () => {
                 onSuccess();
                 toast.success(i18next.t(`permissions.succeededToDelete${uppercasePermissionType}`));
             },

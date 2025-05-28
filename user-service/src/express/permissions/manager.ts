@@ -77,7 +77,7 @@ class PermissionsManager {
                 ) &&
                 (await UsersManager.getUsersConnectedToRole(relatedId)).length > 0
             )
-                throw new ValidationError(`can't remove role if there is users connected`);
+                throw new ValidationError(`can't remove role if there is users connected`, { code: `can't remove role: user connected` });
         }
 
         const updatedWorkspacesIds: string[] = [];
