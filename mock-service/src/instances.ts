@@ -1,7 +1,7 @@
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import axios from 'axios';
-import { IRelationship, IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IRelationship, IMongoEntityTemplate, IMongoRelationshipTemplate, IUniqueConstraintOfTemplate } from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
 import createAxiosInstance from './utils/axios';
@@ -12,6 +12,7 @@ const limit = pLimit(config.requestLimit);
 const {
     url,
     createEntityRoute,
+    updateConstraintsOfTemplateRoute,
     maxNumberOfEntities,
     minNumberOfEntities,
     createRelationshipRoute,
@@ -26,6 +27,7 @@ export const createInstances = async (
     entityTemplates: IMongoEntityTemplate[],
     chance: Chance.Chance,
     fileId: string,
+    maxEntitiesPerTemplate?: number,
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
@@ -48,7 +50,7 @@ export const createInstances = async (
 
     const promises = entityTemplates
         .map((entityTemplate) => {
-            return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
+            return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxEntitiesPerTemplate || maxNumberOfEntities }) }, () =>
                 limit(() =>
                     axiosInstance.post(url + createEntityRoute, {
                         properties: JSONSchemaFaker.generate(entityTemplate.properties),
@@ -126,4 +128,16 @@ export const isInstanceServiceAlive = async () => {
     const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
+};
+
+export const updateConstraintsOfTemplate = async (
+    workspaceId: string,
+    templateId: string,
+    constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
+    const { data } = await axiosInstance.put(`${url}${updateConstraintsOfTemplateRoute}/${templateId}`, constraints);
+
+    return data;
 };

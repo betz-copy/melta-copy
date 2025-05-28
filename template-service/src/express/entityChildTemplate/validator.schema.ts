@@ -75,3 +75,22 @@ export const createEntityChildTemplateSchema = Joi.object({
     query: {},
     params: {},
 });
+
+// GET /api/templates/child/:id
+export const getChildTemplateByIdSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// GET /api/templates/child/search-by-user
+export const searchEntityChildTemplatesByUserSchema = Joi.object({
+    query: {},
+    body: {
+        kartoffelId: Joi.string().required(),
+        childTemplateId: Joi.string().required(),
+    },
+    params: {},
+});

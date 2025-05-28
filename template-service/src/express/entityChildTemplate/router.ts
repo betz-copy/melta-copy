@@ -1,7 +1,12 @@
 import { createController, ValidateRequest } from '@microservices/shared';
 import { Router } from 'express';
 import EntityChildTemplateController from './controller';
-import { searchEntityChildTemplatesSchema, getAllChildTemplatesSchema, createEntityChildTemplateSchema } from './validator.schema';
+import {
+    searchEntityChildTemplatesSchema,
+    getAllChildTemplatesSchema,
+    createEntityChildTemplateSchema,
+    getChildTemplateByIdSchema,
+} from './validator.schema';
 
 const entityChildTemplateRouter: Router = Router();
 
@@ -12,5 +17,7 @@ entityChildTemplateRouter.post('/search', ValidateRequest(searchEntityChildTempl
 entityChildTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), controller.getAllChildTemplates);
 
 entityChildTemplateRouter.post('/', ValidateRequest(createEntityChildTemplateSchema), controller.createEntityChildTemplate);
+
+entityChildTemplateRouter.get('/:id', ValidateRequest(getChildTemplateByIdSchema), controller.getChildTemplateById);
 
 export default entityChildTemplateRouter;
