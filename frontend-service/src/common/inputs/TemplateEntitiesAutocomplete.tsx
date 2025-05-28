@@ -4,7 +4,7 @@ import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
-import { InfoOutlined } from '@mui/icons-material';
+import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
@@ -138,16 +138,36 @@ const TemplateEntitiesAutocomplete: React.FC<{
             getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    error={isError}
-                    fullWidth
-                    helperText={helperText}
-                    label={label}
-                    InputProps={{ ...params.InputProps, readOnly, endAdornment: readOnly ? undefined : params.InputProps.endAdornment }}
-                />
-            )}
+            popupIcon={<ExpandMore />}
+            renderInput={(params) => {
+                const relProperty = value?.properties[showField];
+
+                return (
+                    <TextField
+                        {...params}
+                        error={isError}
+                        fullWidth
+                        helperText={helperText}
+                        label={label}
+                        InputProps={{
+                            ...params.InputProps,
+                            readOnly,
+                            endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
+                            startAdornment: relProperty ? (
+                                <RelationshipReferenceView
+                                    entity={String(relProperty)}
+                                    relatedTemplateId={value.templateId}
+                                    relatedTemplateField={showField}
+                                />
+                            ) : undefined,
+                            inputProps: {
+                                ...params.inputProps,
+                                style: relProperty ? { display: 'none' } : {},
+                            },
+                        }}
+                    />
+                );
+            }}
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
@@ -167,11 +187,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                 return (
                     <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
-                        <Grid container justifyContent="space-between" direction="row" spacing={1}>
+                        <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
                             {displayOptionValues.map((displayOptionValue, index) => (
                                 <Grid item key={displayOptionValue} xs={4} overflow="hidden">
                                     <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
+                                        <Typography color={index > 0 ? '#9398C2' : '#53566E'} overflow="hidden" fontSize="14px">
                                             {displayOptionValue}
                                         </Typography>
                                     </MeltaTooltip>
@@ -193,7 +213,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                         )
                                     }
                                 >
-                                    <InfoOutlined sx={{ color: '#166BD4' }} />
+                                    <InfoOutlined sx={{ color: '#9398C2' }} />
                                 </MeltaTooltip>
                             </Grid>
                         </Grid>
