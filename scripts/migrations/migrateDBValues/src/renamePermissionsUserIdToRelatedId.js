@@ -20,7 +20,26 @@ const renameUserIdToRelatedId = async () => {
 
     const collection = db.collection(mongo.targetCollection);
 
+    const indexes = await collection.indexes();
+    const indexToDrop = indexes.find((index) => {
+        const keys = index.key;
+        return keys.userId === 1 && keys.type === 1 && keys.workspaceId === 1 && index.unique;
+    });
+    if (indexToDrop) {
+        await collection.dropIndex(indexToDrop.name);
+        await collection.dropIndex('userId_1');
+        console.log(`Dropped index: ${indexToDrop.name}`);
+    }
+
     const result = await collection.updateMany({ userId: { $exists: true } }, [{ $set: { relatedId: '$userId' } }, { $unset: 'userId' }]);
+
+    await collection.createIndex(
+        { relatedId: 1, type: 1, workspaceId: 1 },
+        {
+            unique: true,
+        },
+    );
+    console.log('Created new index on field "relatedId".');
 
     console.log(`${result.modifiedCount} documents updated in ${mongo.targetDatabase}.${mongo.targetCollection}`);
 };
