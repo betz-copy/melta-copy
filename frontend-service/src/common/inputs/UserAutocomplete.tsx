@@ -83,6 +83,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
+    const isValueExist = value && value.fullName.length > 0;
 
     return (
         <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
@@ -134,12 +135,12 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                             required,
                             readOnly,
                             endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
-                            startAdornment: value ? (
+                            startAdornment: isValueExist ? (
                                 <Chip avatar={<UserAvatar user={value} size={25} bgColor="1E2775" />} label={value.fullName} />
                             ) : undefined,
                             inputProps: {
                                 ...params.inputProps,
-                                style: value ? { display: 'none' } : {},
+                                style: isValueExist ? { display: 'none' } : {},
                             },
                         }}
                         InputLabelProps={{
