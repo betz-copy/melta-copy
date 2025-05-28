@@ -10,7 +10,7 @@ import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../EntityProperties';
-// import RelationshipReferenceView from '../RelationshipReferenceView';
+import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
 import { locationConverterToString } from '../../utils/map/convert';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
@@ -125,7 +125,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
     ];
 
     const convertPropertyToString = (property: any): string | undefined => {
-        console.log(property);
         if (typeof property === 'object') {
             if (property.location) {
                 return property.coordinateSystem === CoordinateSystem.UTM
@@ -137,19 +136,18 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     const parsedArray = property.map((prop) => {
                         const parsed = JSON.parse(prop);
 
-                        return `${parsed.fullName} - ${parsed.hierarchy}`;
+                        return parsed.fullName;
                     });
-                    return parsedArray.toString();
+                    return parsedArray.join(', ');
                 } catch {
-                    return property.toString();
+                    return property.join(', ');
                 }
             } else if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
                 // user when editing entity
-                return `${property.fullName} - ${property.hierarchy}`;
+                return property.fullName;
             } else if (property.fullNames && property.mails && property.hierarchies && property.ids && property.jobTitles) {
                 // user array when editing entity
-                const userStrings = property.fullNames.map((fullName, index) => `${fullName} - ${property.hierarchies[index]}`);
-                return userStrings.join(', ');
+                return property.fullNames.join(', ');
             } else {
                 return property.toString();
             }
@@ -159,7 +157,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             // user when creating entity from scratch
             const parsedUser = JSON.parse(property);
 
-            return typeof parsedUser === 'object' ? `${parsedUser.fullName} - ${parsedUser.hierarchy}` : parsedUser;
+            return typeof parsedUser === 'object' ? parsedUser.fullName : parsedUser;
         } catch {
             return property;
         }
@@ -205,7 +203,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                             endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                             startAdornment: relProperty ? (
                                 <RelationshipReferenceView
-                                    entity={String(relProperty)}
+                                    entity={convertPropertyToString(relProperty) || String(relProperty)}
                                     relatedTemplateId={value.templateId}
                                     relatedTemplateField={showField}
                                 />

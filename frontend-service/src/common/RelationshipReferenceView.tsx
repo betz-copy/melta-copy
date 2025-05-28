@@ -62,7 +62,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
 
     if (typeof entity === 'string') {
         return (
-            <Grid display="inline-block">
+            <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'}>
                 <ColoredEnumChip
                     key={entity}
                     label={entity}
@@ -96,7 +96,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
             relatedEntityTemplate.properties.properties[relatedTemplateField].type === 'array' &&
             relatedEntityTemplate.properties.properties[relatedTemplateField]?.items?.format === 'user'
         ) {
-            return entity.properties[relatedTemplateField].fullNames.join(', ');
+            return entity.properties[relatedTemplateField].map((user) => user.fullName).join(', ');
         } else {
             return entity.properties[relatedTemplateField];
         }
@@ -105,68 +105,70 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
     const field = relationshipObjectToField();
 
     return (
-        <MeltaTooltip
-            PopperProps={{
-                sx: {
-                    [`& .${tooltipClasses.tooltip}`]: {
-                        fontSize: '1rem',
-                        color: '#F2F4FA',
-                        backgroundColor: '#F2F4FA !important',
-                        boxShadow: 10,
+        <Grid>
+            <MeltaTooltip
+                PopperProps={{
+                    sx: {
+                        [`& .${tooltipClasses.tooltip}`]: {
+                            fontSize: '1rem',
+                            color: '#F2F4FA',
+                            backgroundColor: '#F2F4FA !important',
+                            boxShadow: 10,
+                        },
                     },
-                },
-            }}
-            slotProps={{
-                arrow: { style: { color: '#F2F4FA' } },
-            }}
-            arrow
-            placement="top"
-            title={
-                relatedEntityTemplate.propertiesPreview.length === 0 ? (
-                    <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
-                ) : (
-                    <EntityPropertiesInternal
-                        properties={entity.properties}
-                        entityTemplate={relatedEntityTemplate}
-                        showPreviewPropertiesOnly
-                        mode="normal"
-                        textWrap
-                    />
-                )
-            }
-        >
-            <Link
-                href={`/entity/${entity.properties._id}`}
-                style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                }}
+                slotProps={{
+                    arrow: { style: { color: '#F2F4FA' } },
+                }}
+                arrow
+                placement="top"
+                title={
+                    relatedEntityTemplate.propertiesPreview.length === 0 ? (
+                        <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
+                    ) : (
+                        <EntityPropertiesInternal
+                            properties={entity.properties}
+                            entityTemplate={relatedEntityTemplate}
+                            showPreviewPropertiesOnly
+                            mode="normal"
+                            textWrap
+                        />
+                    )
+                }
             >
-                <Grid display="inline-block">
-                    <ColoredEnumChip
-                        key={field}
-                        label={field}
-                        color={entityTemplateColor}
-                        icon={
-                            relatedEntityTemplate.iconFileId ? (
-                                <CustomIcon
-                                    iconUrl={relatedEntityTemplate.iconFileId}
-                                    height={height}
-                                    width={width}
-                                    color={theme.palette.primary.main}
-                                />
-                            ) : (
-                                <DefaultEntityTemplateIcon
-                                    sx={{
-                                        color: theme.palette.primary.main,
-                                        height,
-                                        width,
-                                    }}
-                                />
-                            )
-                        }
-                        searchValue={searchValue}
-                    />
-                </Grid>
-            </Link>
-        </MeltaTooltip>
+                <Link
+                    href={`/entity/${entity.properties._id}`}
+                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                >
+                    <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'} width={'100%'}>
+                        <ColoredEnumChip
+                            key={field}
+                            label={field}
+                            color={entityTemplateColor}
+                            icon={
+                                relatedEntityTemplate.iconFileId ? (
+                                    <CustomIcon
+                                        iconUrl={relatedEntityTemplate.iconFileId}
+                                        height={height}
+                                        width={width}
+                                        color={theme.palette.primary.main}
+                                    />
+                                ) : (
+                                    <DefaultEntityTemplateIcon
+                                        sx={{
+                                            color: theme.palette.primary.main,
+                                            height,
+                                            width,
+                                        }}
+                                    />
+                                )
+                            }
+                            searchValue={searchValue}
+                        />
+                    </Grid>
+                </Link>
+            </MeltaTooltip>
+        </Grid>
     );
 };
 

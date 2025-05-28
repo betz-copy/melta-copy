@@ -101,6 +101,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     );
 
     const formatFieldsForExport = (): IEntityExpanded => {
+        // the copy is created so it wouldn't change the original expandedEntity.
         const expandedCopy = structuredClone(expandedEntity);
 
         for (const [fieldKey, field] of Object.entries(entityTemplate.properties.properties)) {
@@ -127,8 +128,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     }
                 }
             } else if (field?.format === 'user') {
+                // Sometimes and somewhere user is sent as a stringified JSON.
                 expandedCopy.entity.properties[fieldKey] = JSON.parse(expandedCopy.entity.properties[fieldKey]);
             } else if (field.type === 'array' && field.items?.format === 'user') {
+                // Sometimes and somewhere users are sent as an array of stringified JSONs, and sometimes as an object with arrays of each user field.
                 const parsed = expandedCopy.entity.properties[fieldKey].map((field) => JSON.parse(field));
 
                 expandedCopy.entity.properties[fieldKey] = {
@@ -141,22 +144,28 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             }
 
             const expandedField = expandedCopy.entity.properties?.[fieldKey];
-            if (expandedField.location) {
+
+            if (expandedField?.location) {
                 expandedCopy.entity.properties[fieldKey] =
                     expandedField.coordinateSystem === CoordinateSystem.UTM
                         ? locationConverterToString(expandedField.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                         : expandedField.location;
             } else if (
-                expandedField.fullName &&
-                expandedField.mail &&
-                (expandedField.id || expandedField._id) &&
-                expandedField.hierarchy &&
-                expandedField.jobTitle
+                expandedField?.fullName &&
+                expandedField?.mail &&
+                (expandedField?.id || expandedField?._id) &&
+                expandedField?.hierarchy &&
+                expandedField?.jobTitle
             ) {
                 expandedCopy.entity.properties[fieldKey] = expandedField.fullName;
-            } else if (expandedField.fullNames && expandedField.mails && expandedField.ids && expandedField.hierarchies && expandedField.jobTitles) {
-                const userStrings = expandedField.fullNames.map((fullName) => fullName);
-                expandedCopy.entity.properties[fieldKey] = userStrings.join(', ');
+            } else if (
+                expandedField?.fullNames &&
+                expandedField?.mails &&
+                expandedField?.ids &&
+                expandedField?.hierarchies &&
+                expandedField?.jobTitles
+            ) {
+                expandedCopy.entity.properties[fieldKey] = expandedField.fullNames;
             }
         }
 
