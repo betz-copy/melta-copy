@@ -23,6 +23,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { FieldGroupData, PropertyItem } from './commonInterfaces';
 
 const { errorCodes } = environment;
 
@@ -60,18 +61,22 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
+    fieldGroup?: FieldGroupData;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
 }
+
+type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
+
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
         'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
-    properties: EntityTemplateFormInputProperties[];
-    attachmentProperties: EntityTemplateFormInputProperties[];
-    archiveProperties: EntityTemplateFormInputProperties[];
+    properties: PropertyItem[];
+    attachmentProperties: EntityTemplatePropertyByType[];
+    archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
@@ -177,11 +182,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     return;
                 }
 
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
 
                 console.error('failed to create/update entity template. error', error);
             },

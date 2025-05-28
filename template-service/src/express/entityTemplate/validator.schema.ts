@@ -6,6 +6,7 @@ import {
     orderPropertiesSchema,
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
+    innerFieldGroupsSchema,
     stringFormats,
 } from './joi.helper';
 
@@ -21,6 +22,7 @@ const entityTemplateSchema = {
     enumPropertiesColors: enumPropertiesColorsSchema,
     documentTemplatesIds: Joi.array().items(Joi.string()),
     mapSearchProperties: Joi.array().items(Joi.string()),
+    fieldGroups: innerFieldGroupsSchema,
 };
 
 // POST /api/entities/templates/searchByFormat

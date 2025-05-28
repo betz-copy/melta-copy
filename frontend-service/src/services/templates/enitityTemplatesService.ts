@@ -12,7 +12,7 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
-import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { entityTemplates } = environment.api;
@@ -33,6 +33,16 @@ export const stringFormats = [
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
+type ExtractedProps<T> = {
+    properties: T[];
+    propertiesPath: Record<string, string>;
+};
+
+type AttachmentOrArchiveProperties = {
+    type: 'field';
+    data: EntityTemplateFormInputProperties;
+};
+
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
     const {
@@ -45,16 +55,24 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         documentTemplatesIds,
         propertiesTypeOrder,
         mapSearchProperties,
+        fieldGroups,
         ...restOfEntityTemplate
     } = entityTemplate;
 
-    const propertiesArray: EntityTemplateFormInputProperties[] = [];
-    const attachmentProperties: EntityTemplateFormInputProperties[] = [];
-    const archiveProperties: EntityTemplateFormInputProperties[] = [];
+    const attachmentProperties: AttachmentOrArchiveProperties[] = [];
+    const archiveProperties: AttachmentOrArchiveProperties[] = [];
+    const propertiesArray: PropertyItem[] = [];
+    const usedFields = new Set();
+    const fieldToGroup = {};
+    fieldGroups?.forEach((group) => {
+        const id = uuid();
+        group.fields.forEach((fieldName) => {
+            fieldToGroup[fieldName] = { ...group, id };
+        });
+    });
 
-    propertiesOrder.forEach((key) => {
+    const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
-
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
         else if (value.enum) type = 'enum';
@@ -92,17 +110,61 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
+            fieldGroup: !value.archive ? fieldGroup : undefined,
             hideFromDetailsPage: value.hideFromDetailsPage || undefined,
             comment: value.comment,
             color: value.color,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
-            attachmentProperties.push(property);
-        } else if (value.archive) {
-            archiveProperties.push(property);
-        } else {
-            propertiesArray.push(property);
+            attachmentProperties.push({
+                type: 'field',
+                data: property,
+            });
+            return undefined;
+        }
+        if (value.archive) {
+            archiveProperties.push({ type: 'field', data: property });
+            return undefined;
+        }
+        return property;
+    };
+
+    propertiesOrder.forEach((key) => {
+        if (!usedFields.has(key)) {
+            const group = fieldToGroup[key];
+            if (group) {
+                let existingGroup = propertiesArray.find((item) => item.type === 'group' && item.name === group.name) as GroupProperty;
+                const { name, displayName, id } = group;
+
+                if (!existingGroup) {
+                    existingGroup = {
+                        type: 'group',
+                        name,
+                        displayName,
+                        id,
+                        fields: [],
+                    };
+                    propertiesArray.push(existingGroup);
+                }
+                for (const groupedField of group.fields) {
+                    if (!usedFields.has(groupedField)) {
+                        const propertyDetails = propertyData(groupedField, { name, displayName, id });
+                        if (propertyDetails) {
+                            existingGroup.fields.push(propertyDetails);
+                            usedFields.add(groupedField);
+                        }
+                    }
+                }
+            } else {
+                const propertyDetails = propertyData(key);
+                if (propertyDetails)
+                    propertiesArray.push({
+                        type: 'field',
+                        data: propertyDetails,
+                    });
+                usedFields.add(key);
+            }
         }
     });
 
@@ -121,6 +183,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             uniqueConstraints,
             documentTemplatesIds: documentTemplates,
             propertiesTypeOrder,
+            fieldGroups,
         };
     }
 
@@ -132,12 +195,81 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         uniqueConstraints,
         documentTemplatesIds: documentTemplates,
         propertiesTypeOrder,
+        fieldGroups,
     };
 };
 
+const updateFieldGroupsOrder = (updatedProperties: EntityTemplateFormInputProperties[], propertiesOrder: string[]) => {
+    const groupMap = new Map<string, { name: string; displayName: string; fields: string[] }>();
+
+    updatedProperties.forEach((property) => {
+        const { fieldGroup, name, archive, deleted } = property;
+
+        if (archive || deleted || !fieldGroup?.name) return;
+
+        if (!groupMap.has(fieldGroup.name)) {
+            groupMap.set(fieldGroup.name, {
+                name: fieldGroup.name,
+                displayName: fieldGroup.displayName,
+                fields: [],
+            });
+        }
+
+        groupMap.get(fieldGroup.name)!.fields.push(name);
+    });
+
+    const fieldGroups = Array.from(groupMap.values());
+
+    fieldGroups.forEach((group) => {
+        group.fields.sort((a, b) => propertiesOrder.indexOf(a) - propertiesOrder.indexOf(b));
+    });
+
+    return fieldGroups;
+};
+
+export const extractProperties = <T>(
+    items: Array<{ type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }>,
+    propertyPath?: string,
+): ExtractedProps<T> => {
+    const properties: T[] = [];
+    const propertiesPath: Record<string, string> = {};
+
+    items.forEach((item, index) => {
+        if (item.type === 'field') {
+            properties.push(item.data as T);
+            if (propertyPath) propertiesPath[item.data.id] = `${propertyPath}[${index}].data`;
+        } else if (item.type === 'group') {
+            item.fields.forEach((field, idx) => {
+                properties.push(field as T);
+                if (propertyPath) propertiesPath[field.id] = `${propertyPath}[${index}].fields[${idx}]`;
+            });
+        }
+    });
+
+    return {
+        properties,
+        propertiesPath,
+    };
+};
+
+export const extractGroups = (
+    properties: PropertyItem[],
+): {
+    groupsProperties: (GroupProperty & { index: number })[];
+    groupsPath: Record<string, string>;
+} => {
+    const groupsProperties = properties.map((item, index) => ({ ...item, index })).filter((item) => item.type === 'group');
+
+    const groupsPath = Object.fromEntries(groupsProperties.map(({ id, index }) => [id, `properties[${index}]`]));
+
+    return {
+        groupsProperties,
+        groupsPath,
+    };
+};
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
-    // change to support file types
-    const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
+    const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
+        values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
@@ -152,7 +284,13 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
     let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
 
-    properties.forEach(
+    const { properties: extractPropertiesData } = extractProperties<EntityTemplateFormInputProperties>(properties);
+    const { properties: extractArchiveProperties } = extractProperties<EntityTemplateFormInputProperties>(archiveProperties);
+    const { properties: extractAttachmentPropertiesData } = extractProperties<EntityTemplateFormInputProperties>(attachmentProperties);
+
+    const updatedFieldsGroups = updateFieldGroupsOrder(extractPropertiesData, propertiesOrder);
+
+    extractPropertiesData.forEach(
         ({
             id,
             name,
@@ -250,7 +388,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (isEditMode) {
                 schema.properties[name] = {
                     ...schema.properties[name],
-                    isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
+                    isNewPropNameEqualDeletedPropName: extractPropertiesData.some((property) => property.id !== id && property.name === name),
                 };
             }
             propertiesOrder.push(name);
@@ -271,7 +409,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         },
     );
 
-    archiveProperties.forEach(
+    extractArchiveProperties.forEach(
         ({
             id,
             name,
@@ -298,6 +436,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             hideFromDetailsPage,
             color,
             comment,
+            expandedUserField,
         }) => {
             if (deleted) return;
             if (type === 'comment' && !comment) return;
@@ -349,12 +488,13 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                       }
                     : undefined,
                 comment,
+                expandedUserField,
             };
 
             if (isEditMode) {
                 schema.properties[name] = {
                     ...schema.properties[name],
-                    isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
+                    isNewPropNameEqualDeletedPropName: extractPropertiesData.some((property) => property.id !== id && property.name === name),
                 };
             }
 
@@ -376,7 +516,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         },
     );
 
-    attachmentProperties.forEach(({ id, name, title, required, type, deleted }) => {
+    extractAttachmentPropertiesData.forEach(({ id, name, title, required, type, deleted }) => {
         if (deleted) return;
 
         if (type === 'multipleFiles') {
@@ -400,7 +540,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (isEditMode) {
             schema.properties[name] = {
                 ...schema.properties[name],
-                isNewPropNameEqualDeletedPropName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                isNewPropNameEqualDeletedPropName: extractAttachmentPropertiesData.some((property) => property.id !== id && property.name === name),
             };
         }
 
@@ -421,6 +561,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         enumPropertiesColors,
         uniqueConstraints: restOfProperties.uniqueConstraints || [],
         mapSearchProperties,
+        fieldGroups: updatedFieldsGroups,
     };
 };
 
@@ -475,6 +616,7 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
@@ -489,6 +631,7 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
+
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
@@ -536,6 +679,8 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
+
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
