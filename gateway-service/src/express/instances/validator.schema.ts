@@ -101,7 +101,7 @@ export const exportEntitiesSchema = Joi.object({
 export const exportEntityToDocumentSchema = Joi.object({
     body: {
         documentTemplateId: Joi.string().required(),
-        entityProperties: Joi.object(),
+        entity: Joi.object(),
     },
     query: {},
     params: {},

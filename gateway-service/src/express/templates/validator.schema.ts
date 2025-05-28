@@ -72,6 +72,7 @@ export const createEntityTemplateSchema = Joi.object({
         enumPropertiesColors: ExtendedJoi.stringToObject(),
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
+        fieldGroups: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {},
@@ -119,6 +120,7 @@ export const updateEntityTemplateSchema = Joi.object({
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         documentTemplatesIds: ExtendedJoi.stringToArray(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
+        fieldGroups: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {

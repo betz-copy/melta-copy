@@ -30,7 +30,7 @@
         "lint": "npm run lint --workspaces --if-present",
         "prettier": "npm run prettier --workspaces --if-present",
         "clean": "rimraf ./**/dist",
-        "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules ./**/package-lock.json",
+        "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules ./**/package-lock.json ./package-lock.json",
         "start-ui": "npm run -w frontend-service start:docker",
         "migrate": "npm run clean:all && npm install && npm run build -w shared && npm run start-ui"
     },
