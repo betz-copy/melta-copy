@@ -366,9 +366,15 @@ interface CategoryEntitiesBoxProps {
 }
 
 const orderTemplatesInCategory = (templatesOrder: string[], templates: IMongoEntityTemplatePopulated[]): IMongoEntityTemplatePopulated[] => {
-    const idToTemplateMap = keyBy(templates, (t) => t._id.toString());
+    if (templatesOrder) {
+        const idToTemplateMap = keyBy(templates, (t) => t._id.toString());
 
-    return templatesOrder.map((id) => idToTemplateMap[id]).filter((template): template is IMongoEntityTemplatePopulated => template !== undefined);
+        return templatesOrder
+            .map((id) => idToTemplateMap[id])
+            .filter((template): template is IMongoEntityTemplatePopulated => template !== undefined);
+    }
+
+    return templates;
 };
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
