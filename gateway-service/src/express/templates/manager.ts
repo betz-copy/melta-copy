@@ -268,9 +268,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
         try {
-            const config = await this.getConfigByType(ConfigTypes.CATEGORY_ORDER, permissionsOfUserId);
-            console.log(config);
-            categoryOrder = config as IMongoCategoryOrderConfig;
+            const workspaceConfig = await this.getConfigByType(ConfigTypes.CATEGORY_ORDER, permissionsOfUserId);
+            categoryOrder = workspaceConfig as IMongoCategoryOrderConfig;
         } catch {
             categoryOrder = null;
         }

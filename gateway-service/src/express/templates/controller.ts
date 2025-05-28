@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
+import { ConfigTypes } from '@microservices/shared';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { TemplatesManager } from './manager';
@@ -9,7 +10,6 @@ import {
     RequestWithSearchRuleTemplateBody,
 } from '../../externalServices/templates/relationshipsTemplateService';
 import config from '../../config';
-import { ConfigTypes } from 'shared/dist';
 
 const { userDoesntExistUnderReq } = config.templateService;
 

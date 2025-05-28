@@ -16,11 +16,11 @@ export const createEntityTemplates = async (workspaceId: string, entityTemplates
     const results: IMongoEntityTemplate[] = [];
 
     for (const entityTemplate of entityTemplatesToCreate) {
-        const categoryId = categories.find(category => category.name === entityTemplate.category.name)?._id;
-        const response = await axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {...entityTemplate, category: categoryId})
+        const categoryId = categories.find((category) => category.name === entityTemplate.category.name)?._id;
+        const response = await axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, { ...entityTemplate, category: categoryId });
 
-        results.push(response.data)
+        results.push(response.data);
     }
 
-    return results
+    return results;
 };

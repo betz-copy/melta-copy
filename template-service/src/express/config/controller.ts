@@ -12,7 +12,6 @@ class ConfigController extends DefaultController<IMongoBaseConfig, ConfigManager
     }
 
     async getConfigByType(req: Request, res: Response) {
-        console.log(req.params);
         res.json(await this.manager.getConfigByType(req.params.type as ConfigTypes));
     }
 

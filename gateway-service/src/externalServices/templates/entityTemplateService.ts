@@ -159,15 +159,15 @@ class EntityTemplateService extends TemplatesManagerService {
 
         // Because in the future the config collection could store different types of configs that might need different permissions,
         // I think the best way to account for that is by checking for each type separately, because config types aren't created by users.
-        return data.map((config) => {
-            if (config.type === ConfigTypes.CATEGORY_ORDER) {
-                const categoryOrder = config as IMongoCategoryOrderConfig;
+        return data.map((workspaceConfig) => {
+            if (workspaceConfig.type === ConfigTypes.CATEGORY_ORDER) {
+                const categoryOrder = workspaceConfig as IMongoCategoryOrderConfig;
                 return permissionsOfUserId.admin
                     ? categoryOrder
                     : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
             }
 
-            return config;
+            return workspaceConfig;
         });
     }
 
