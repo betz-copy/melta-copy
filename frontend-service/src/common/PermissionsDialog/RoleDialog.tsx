@@ -47,17 +47,17 @@ const RoleDialog: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
-    Array.from(entityTemplates.values()).forEach((entity) => {
+    Array.from(entityTemplates.values()).forEach((template) => {
         const category: CategoryWithTemplates = {
-            entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
-            ...entity.category,
+            entityTemplates: dialogPermissionData.get(template.category._id)?.entityTemplates || [],
+            ...template.category,
         };
         const displayEntity: entityTemplatePermissionDialog = {
-            id: entity._id,
-            name: entity.displayName,
+            id: template._id,
+            name: template.displayName,
         };
         category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
-        dialogPermissionData.set(entity.category._id, category);
+        dialogPermissionData.set(template.category._id, category);
     });
 
     const { mutate: createRole } = useMutation((formRole: IRole) => createRoleRequest(formRole.name, formRole.permissions), {
@@ -125,6 +125,7 @@ const RoleDialog: React.FC<{
             }}
         >
             {(formikProps: FormikProps<IRole>) => {
+                const { values, touched, errors, handleBlur, setFieldValue, isSubmitting, initialValues } = formikProps;
                 return (
                     <Form>
                         <DialogTitle>
@@ -141,11 +142,9 @@ const RoleDialog: React.FC<{
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <TextField
                                     fullWidth
-                                    value={formikProps.values.name}
-                                    onChange={({ target: { value: newValue } }) => {
-                                        formikProps.setFieldValue('name', newValue);
-                                    }}
-                                    onBlur={formikProps.handleBlur}
+                                    value={values.name}
+                                    onChange={({ target: { value: newValue } }) => setFieldValue('name', newValue)}
+                                    onBlur={handleBlur}
                                     label={i18next.t('permissions.roleHeaderName')}
                                     InputLabelProps={{
                                         shrink: mode === 'view' || undefined,
@@ -161,8 +160,8 @@ const RoleDialog: React.FC<{
                                         },
                                     }}
                                     disabled={mode === 'edit'}
-                                    error={Boolean(formikProps.touched.name && formikProps.errors.name)}
-                                    helperText={formikProps.touched.name ? formikProps.errors.name : ''}
+                                    error={Boolean(touched.name && errors.name)}
+                                    helperText={touched.name ? errors.name : ''}
                                 />
                             </Box>
 
@@ -182,15 +181,15 @@ const RoleDialog: React.FC<{
                                         <Button
                                             type="submit"
                                             disabled={
-                                                formikProps.isSubmitting ||
-                                                didPermissionsChange(formikProps.initialValues.permissions, formikProps.values.permissions) ||
-                                                userHasNoPermissions(formikProps.values.permissions[workspace._id])
+                                                isSubmitting ||
+                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
+                                                userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"
                                         >
                                             {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                             {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
-                                            {formikProps.isSubmitting && <CircularProgress size={20} />}
+                                            {isSubmitting && <CircularProgress size={20} />}
                                         </Button>
                                     )}
                                 </Grid>

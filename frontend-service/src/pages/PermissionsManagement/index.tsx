@@ -20,13 +20,13 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
         roles: <RolesRow />,
     };
 
+    const permissionTab =
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ||
+        currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write;
+
     const tabsPermissionsMapping: Record<string, boolean> = {
-        users:
-            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ||
-            currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write,
-        roles:
-            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ||
-            currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write,
+        users: permissionTab,
+        roles: permissionTab,
     };
 
     return (

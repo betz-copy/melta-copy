@@ -24,8 +24,8 @@ const MeltaTabs: React.FC<{
         });
     }, [tabValue, trackPageView]);
 
-    const defaultTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
-
+    const allowedTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
+    const isCurrTab = (tabName: string) => tabValue === tabName;
     return (
         <Box
             sx={{
@@ -39,19 +39,17 @@ const MeltaTabs: React.FC<{
                 <Grid container direction="column">
                     <Grid item>
                         <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
-                            {defaultTabs.map((tabName) => (
+                            {allowedTabs.map((tabName) => (
                                 <Tab
                                     key={tabName}
                                     label={i18next.t(tabName)}
                                     value={tabName}
                                     wrapped
                                     style={{
-                                        fontWeight: tabValue === tabName ? '600' : '400',
+                                        fontWeight: isCurrTab(tabName) ? '600' : '400',
                                         fontSize: '16px',
                                         fontFamily: 'Rubik',
-                                    }}
-                                    sx={{
-                                        borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
+                                        borderBottom: isCurrTab(tabName) ? `2px solid ${theme.palette.primary.main}` : '',
                                     }}
                                 />
                             ))}
