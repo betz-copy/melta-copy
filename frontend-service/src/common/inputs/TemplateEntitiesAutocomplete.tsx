@@ -132,11 +132,15 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     : property.location;
             } else if (Array.isArray(property)) {
                 try {
-                    // user array when creating entity from scratch
+                    // user array
                     const parsedArray = property.map((prop) => {
-                        const parsed = JSON.parse(prop);
+                        if (prop?.fullName) {
+                            return prop.fullName;
+                        } else {
+                            const parsed = JSON.parse(prop);
 
-                        return parsed.fullName;
+                            return parsed.fullName;
+                        }
                     });
                     return parsedArray.join(', ');
                 } catch {
@@ -145,9 +149,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
             } else if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
                 // user when editing entity
                 return property.fullName;
-            } else if (property.fullNames && property.mails && property.hierarchies && property.ids && property.jobTitles) {
-                // user array when editing entity
-                return property.fullNames.join(', ');
             } else {
                 return property.toString();
             }
@@ -176,14 +177,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
-            getOptionLabel={(option) => {
-                // if (typeof option.properties[showField] === 'object') {
-                //     return convertPropertyToString(option.properties[showField]);
-                // }
-
-                // return option.properties[showField].toString() || option.properties._id.toString();
-                return convertPropertyToString(option.properties[showField]) || option.properties._id.toString();
-            }}
+            getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}
@@ -220,16 +214,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
 
-                    // return typeof property === 'object'
-                    //     ? // <RelationshipReferenceView
-                    //       //     key={key}
-                    //       //     entity={property}
-                    //       //     relatedTemplateId={property.relatedTemplateId}
-                    //       //     // relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
-                    //       //     relatedTemplateField={showField}
-                    //       // />
-                    //       convertPropertyToString(property)
-                    //     : property;
                     return convertPropertyToString(property);
                 });
 

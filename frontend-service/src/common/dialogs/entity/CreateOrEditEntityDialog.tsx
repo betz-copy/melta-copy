@@ -309,6 +309,7 @@ const CreateOrEditEntityDetails: React.FC<{
         <Formik<EntityWizardValues>
             initialValues={initialValues}
             onSubmit={async (values, formikHelpers) => {
+                console.log(values);
                 formikHelpers.setTouched({});
                 await mutationPromiseToastify(values);
                 if (!draftId) return;
