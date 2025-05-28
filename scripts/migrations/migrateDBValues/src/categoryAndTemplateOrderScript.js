@@ -36,21 +36,6 @@ export const getTemplateIds = (categoryId) => {
     ];
 };
 
-// export const setTemplateOrder = (categoryId, templateIds) => {
-//     return [
-//         {
-//             $match: {
-//                 _id: categoryId,
-//             },
-//         },
-//         {
-//             $set: {
-//                 templatesOrder: templateIds,
-//             },
-//         },
-//     ];
-// };
-
 // MIGRATION SCRIPT
 
 const connectToMongo = async () => {
@@ -68,7 +53,6 @@ const listDatabasesWithMongoose = async () => {
 };
 
 const getDBCategoryIds = async (db) => {
-    //   const db = mongoose.connection.client.db(dbName);
     const collections = await db.listCollections().toArray();
     const collectionNames = collections.map((col) => col.name);
 
@@ -77,7 +61,6 @@ const getDBCategoryIds = async (db) => {
 
         const pipeline = getCategoryIds;
         const results = await db.collection(mongo.categoriesCollection).aggregate(pipeline).toArray();
-
         return results.map((document) => document.id);
     }
 
@@ -94,21 +77,10 @@ const getDBTemplateIds = async (db, categoryId) => {
         const pipeline = getTemplateIds(categoryId);
         const results = await db.collection(mongo.templatesCollection).aggregate(pipeline).toArray();
 
-        return results;
+        return results.map((document) => document.id);
     }
 
     return null;
-};
-
-const createCategoryOrder = (db, categoryIds) => {
-    try {
-        return db.collection(mongo.configsCollection).insertOne({
-            type: 'categoryOrder',
-            order: categoryIds,
-        });
-    } catch (error) {
-        console.log(`Failed to create categoryOrder at workspace ${db.databaseName}`);
-    }
 };
 
 const setTemplateOrderDB = async (dbName, categoryId, templateIds) => {
@@ -118,10 +90,7 @@ const setTemplateOrderDB = async (dbName, categoryId, templateIds) => {
 
     if (collectionNames.includes(mongo.categoriesCollection)) {
         console.log(`Applying setTemplateOrder aggregation to category ${categoryId} at ${db.databaseName}.${mongo.categoriesCollection}`);
-
-        // const pipeline = setTemplateOrder(categoryId, templateIds);
         try {
-            // await db.collection(mongo.categoriesCollection).aggregate(pipeline);
             await db.collection(mongo.categoriesCollection).updateOne({ _id: new ObjectId(categoryId) }, { $set: { templatesOrder: templateIds } });
         } catch (error) {
             console.error(`Failed to add templateOrder to category ${categoryId}, error: ${error}`);
@@ -155,8 +124,6 @@ const setCategoryAndTemplateOrder = async (dbList) => {
             }
         }),
     );
-
-    // console.log('Created category orders:', categoryOrder);
 };
 
 const main = async () => {
@@ -174,5 +141,5 @@ const main = async () => {
 };
 
 main().then(() => {
-    console.log('unique constraints all serial numbers in neo and mongo');
+    console.log('Successfully created template and category orders in Mongo');
 });
