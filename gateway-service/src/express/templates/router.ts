@@ -30,6 +30,7 @@ import {
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
     updateEntityChildTemplateSchema,
+    deleteEntityChildTemplateSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -247,7 +248,14 @@ templatesRouter.get(
 templatesRouter.put(
     '/child/:id',
     ValidateRequest(updateEntityChildTemplateSchema),
-    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.delete(
+    '/child/:id',
+    ValidateRequest(deleteEntityChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     TemplatesServiceProxy,
 );
 

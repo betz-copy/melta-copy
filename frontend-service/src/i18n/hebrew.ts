@@ -1,3 +1,4 @@
+import { update } from 'lodash';
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
@@ -1454,6 +1455,7 @@ export default {
     },
     createChildTemplateDialog: {
         templateTitle: 'יצירת תבנית בן',
+        updateTemplateTitle: 'עריכת תבנית בן',
         templateName: 'שם תבנית בן באנגלית',
         templateDisplayName: 'שם תצוגת תבנית בן',
         templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
@@ -1494,12 +1496,14 @@ export default {
             byUser: 'משתמש',
         },
         failedToCreateEntityChildTemplate: 'נכשל ליצור תבנית ישות בן',
+        failedToUpdateEntityChildTemplate: 'נכשל לעדכן תבנית ישות בן',
         permissionsPage: {
             unit: 'יחידה',
             user: 'משתמש',
             userPage: 'עמוד לקוח',
         },
         succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
+        succeededToUpdateEntityChildTemplate: 'תבנית בן עודכנה בהצלחה',
         childTemplates: 'תבניות בן',
         buttons: {
             create: 'צור תבנית בן',

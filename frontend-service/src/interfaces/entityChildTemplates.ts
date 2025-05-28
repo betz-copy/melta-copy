@@ -30,7 +30,6 @@ export interface IChildTemplateProperty {
 }
 
 export interface IEntityChildTemplate {
-    _id: string;
     name: string;
     displayName: string;
     description: string;
@@ -43,7 +42,11 @@ export interface IEntityChildTemplate {
     isFilterByUserUnit: boolean;
 }
 
-export type IEntityChildTemplateMap = Map<string, IEntityChildTemplate>;
+export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
+    _id: string;
+}
+
+export type IEntityChildTemplateMap = Map<string, IMongoChildEntityTemplate>;
 
 export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;
@@ -51,10 +54,6 @@ export interface ITemplateFieldsFilters {
 
 export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories'> {
     categories: IMongoCategory[];
-}
-
-export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
-    _id: string;
 }
 
 export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplatePopulated {

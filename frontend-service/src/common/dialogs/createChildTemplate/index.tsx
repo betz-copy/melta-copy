@@ -204,8 +204,8 @@ const CreateChildTemplateDialog: React.FC<{
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
             <Formik
                 initialValues={{
-                    name: childTemplate ? childTemplate.name.split('_')[1] : '',
-                    displayName: childTemplate ? childTemplate.displayName.split('-')[1] : '',
+                    name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
+                    displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}

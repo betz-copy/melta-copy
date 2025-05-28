@@ -89,3 +89,11 @@ export const updateEntityChildTemplateSchema = Joi.object({
         id: MongoIdSchema.required(),
     },
 });
+
+export const deleteEntityChildTemplateSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});

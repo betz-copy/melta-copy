@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined, FilterList } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -19,7 +19,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { IEntityChildTemplateMap, IEntityChildTemplate } from '../../../interfaces/entityChildTemplates';
+import { IEntityChildTemplateMap, IEntityChildTemplate, IMongoChildEntityTemplate } from '../../../interfaces/entityChildTemplates';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
@@ -46,6 +46,8 @@ import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
+import { deleteEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
+import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -66,6 +68,34 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
         hide: [],
     },
 };
+
+const getChildTemplateChips = (childTemplate: IEntityChildTemplate) => {
+    const chips: Array<{ color: string; label: string }> = [];
+
+    if (childTemplate.isFilterByUserUnit) {
+        chips.push({
+            color: '#2CB93A',
+            label: i18next.t('createChildTemplateDialog.permissionsPage.unit'),
+        });
+    }
+
+    if (childTemplate.isFilterByCurrentUser) {
+        chips.push({
+            color: '#0072C6',
+            label: i18next.t('createChildTemplateDialog.permissionsPage.user'),
+        });
+    }
+
+    if (childTemplate.viewType === 'userPage') {
+        chips.push({
+            color: '#CF9030',
+            label: i18next.t('createChildTemplateDialog.permissionsPage.userPage'),
+        });
+    }
+
+    return chips;
+};
+
 interface EntityTemplateCardProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     setEntityTemplateWizardDialogState: React.Dispatch<
@@ -90,7 +120,7 @@ interface EntityTemplateCardProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IEntityChildTemplate;
+            childTemplate?: IMongoChildEntityTemplate;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -104,6 +134,7 @@ interface EntityTemplateCardProps {
     >;
     entityHasWritePermission: boolean;
     isDisabledView?: boolean;
+    isChildTemplate?: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -115,10 +146,21 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     updateEntityTemplateStatusAsync,
     entityHasWritePermission,
     isDisabledView = false,
+    isChildTemplate = false,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+
+    const hasWritePermission = useMemo(() => {
+        if (isChildTemplate) {
+            const childTemplate = childTemplates?.get(entityTemplate._id);
+            if (!childTemplate) return false;
+            return checkUserChildTemplatePermission(currentUser.currentWorkspacePermissions, childTemplate, PermissionScope.write);
+        }
+        return entityHasWritePermission;
+    }, [isChildTemplate, entityTemplate._id, childTemplates, currentUser, entityHasWritePermission]);
 
     const childTemplatesList = useMemo(() => {
         if (!childTemplates) return [];
@@ -143,11 +185,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             return count > 0;
         });
 
-        setIsDeleteButtonDisabled(!entityHasWritePermission || templatesHaveEntities);
+        setIsDeleteButtonDisabled(!hasWritePermission || templatesHaveEntities);
     };
 
     const entityTemplateCardTooltip = () => {
-        if (!entityHasWritePermission) return i18next.t('systemManagement.entityTemplateEditDisabled');
+        if (!hasWritePermission) return i18next.t('systemManagement.entityTemplateEditDisabled');
         if (entityTemplate.disabled) return i18next.t('systemManagement.disabledEntityTemplate');
         if (isDeleteButtonDisabled) return i18next.t('systemManagement.cannotDeleteWithEntities');
         return '';
@@ -171,6 +213,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
                             <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
+                            {/* <FilterList fontSize="small" sx={{ fontSize: '14px' }} /> */}
                         </Grid>
 
                         <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
@@ -268,10 +311,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                           }
                                 }
                                 disabledProps={{
-                                    disableForReadPermissions: !entityHasWritePermission,
+                                    disableForReadPermissions: !hasWritePermission,
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
-                                    isEditDisabled: entityTemplate.disabled || !entityHasWritePermission,
+                                    isEditDisabled: entityTemplate.disabled || !hasWritePermission,
                                     tooltipTitle: entityTemplateCardTooltip(),
                                 }}
                             />
@@ -282,30 +325,12 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     <div>
                                         <Typography variant="body2">{childTemplates.get(entityTemplate._id)?.description}</Typography>
                                         <Grid container spacing={1} sx={{ mt: 1 }}>
-                                            {childTemplates.get(entityTemplate._id)?.isFilterByUserUnit && (
-                                                <Grid item>
-                                                    <ColoredEnumChip
-                                                        color="#2CB93A"
-                                                        label={i18next.t('createChildTemplateDialog.permissionsPage.unit')}
-                                                    />
-                                                </Grid>
-                                            )}
-                                            {childTemplates.get(entityTemplate._id)?.isFilterByCurrentUser && (
-                                                <Grid item>
-                                                    <ColoredEnumChip
-                                                        color="#0072C6"
-                                                        label={i18next.t('createChildTemplateDialog.permissionsPage.user')}
-                                                    />
-                                                </Grid>
-                                            )}
-                                            {childTemplates.get(entityTemplate._id)?.viewType === 'userPage' && (
-                                                <Grid item>
-                                                    <ColoredEnumChip
-                                                        color="#CF9030"
-                                                        label={i18next.t('createChildTemplateDialog.permissionsPage.userPage')}
-                                                    />
-                                                </Grid>
-                                            )}
+                                            {childTemplates.get(entityTemplate._id) &&
+                                                getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
+                                                    <Grid item key={index}>
+                                                        <ColoredEnumChip color={chip.color} label={chip.label} />
+                                                    </Grid>
+                                                ))}
                                         </Grid>
                                     </div>
                                 }
@@ -337,7 +362,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </Typography>
                         </Grid>
                     )}
-                    {childTemplatesList.map((childTemplate) => (
+                    {childTemplatesList.map((childTemplate: IMongoChildEntityTemplate) => (
                         <Grid key={childTemplate._id} item container gap="10px" alignItems="center">
                             <Grid item>
                                 <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ marginRight: '10px' }} />
@@ -535,7 +560,7 @@ interface CategoryEntitiesBoxProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IEntityChildTemplate;
+            childTemplate?: IMongoChildEntityTemplate;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -584,10 +609,10 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const categoryChildTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return [];
 
-        const allChildTemplates = Array.from(childTemplates.values());
+        const allChildTemplates = Array.from(childTemplates.values()) as IMongoChildEntityTemplate[];
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
-        return allChildTemplates.filter((child: IEntityChildTemplate) => {
+        return allChildTemplates.filter((child) => {
             return child.categories.includes(currentCategoryId);
         });
     }, [childTemplates, entityTemplatesWithCategory.category._id]);
@@ -681,7 +706,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                 );
 
                                 const templateChildTemplates = categoryChildTemplates.filter(
-                                    (child: IEntityChildTemplate) => child.fatherTemplateId === entityTemplate._id,
+                                    (child: IMongoChildEntityTemplate) => child.fatherTemplateId === entityTemplate._id,
                                 );
 
                                 return (
@@ -705,12 +730,13 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                             entityHasWritePermission={entityHasWritePermission}
                                                             isDisabledView={false}
+                                                            isChildTemplate={false}
                                                         />
                                                     )}
                                                 </Grid>
                                             )}
                                         </Draggable>
-                                        {templateChildTemplates.map((childTemplate: IEntityChildTemplate) => (
+                                        {templateChildTemplates.map((childTemplate: IMongoChildEntityTemplate) => (
                                             <Grid
                                                 key={childTemplate._id}
                                                 sx={{
@@ -740,6 +766,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                     entityHasWritePermission={false}
                                                     isDisabledView={false}
+                                                    isChildTemplate={true}
                                                 />
                                             </Grid>
                                         ))}
@@ -762,9 +789,10 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                             entityHasWritePermission={false}
                                             isDisabledView={true}
+                                            isChildTemplate={false}
                                         />
                                     </Grid>
-                                    {childTemplatesForParent.map((childTemplate: IEntityChildTemplate) => (
+                                    {childTemplatesForParent.map((childTemplate: IMongoChildEntityTemplate) => (
                                         <Grid
                                             key={childTemplate._id}
                                             sx={{
@@ -786,7 +814,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityTemplate={{
                                                     ...parentTemplate,
                                                     _id: childTemplate._id,
-                                                    displayName: childTemplate.displayName,
+                                                    displayName: parentTemplate.disabled ? parentTemplate.displayName : childTemplate.displayName,
                                                 }}
                                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -795,6 +823,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                 entityHasWritePermission={false}
                                                 isDisabledView={true}
+                                                isChildTemplate={true}
                                             />
                                         </Grid>
                                     ))}
@@ -855,7 +884,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
-        childTemplate?: IEntityChildTemplate;
+        childTemplate?: IMongoChildEntityTemplate;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -917,6 +946,36 @@ const EntityTemplatesRow: React.FC = () => {
             },
         },
     );
+
+    const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteEntityChildTemplate(id), {
+        onSuccess: async () => {
+            queryClient.invalidateQueries('getChildEntityTemplates');
+            queryClient.invalidateQueries('getEntityTemplates');
+            setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
+            toast.success(i18next.t('entityTemplatesRow.succeededToDeleteEntityTemplate'));
+        },
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage="Failed to delete child template" />);
+        },
+    });
+
+    const handleDelete = async () => {
+        const templateId = deleteEntityTemplateDialogState.entityTemplateId;
+        if (!templateId) return;
+
+        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+        const isChildTemplate = childTemplates?.has(templateId);
+
+        try {
+            if (isChildTemplate) {
+                await deleteChildTemplateMutateAsync(templateId);
+            } else {
+                await deleteTemplateMutateAsync(templateId);
+            }
+        } catch (error) {
+            console.error('Failed to delete child entity template:', error);
+        }
+    };
 
     const { mutateAsync } = useMutation(
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
@@ -1052,8 +1111,10 @@ const EntityTemplatesRow: React.FC = () => {
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}
+                title={i18next.t('entityTemplatesRow.areYouSureDeleteEntityTemplate')}
+                body={i18next.t('entityTemplatesRow.areYouSureDeleteEntityTemplateContent')}
                 handleClose={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
-                onYes={() => deleteTemplateMutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
+                onYes={handleDelete}
                 isLoading={deleteTemplateIsLoading}
             />
             <CodeEditorDialog

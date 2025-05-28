@@ -23,6 +23,10 @@ class EntityChildTemplateController extends DefaultController<IMongoEntityChildT
     async updateEntityChildTemplate(req: Request, res: Response) {
         res.json(await this.manager.updateChildTemplate(req.params.id, req.body));
     }
+
+    async deleteEntityChildTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deleteChildTemplate(req.params.id));
+    }
 }
 
 export default EntityChildTemplateController;

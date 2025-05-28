@@ -4,19 +4,24 @@ import { environment } from '../../globals';
 
 const { entityChildTemplates } = environment.api;
 
-const createEntityChildTemplateRequest = async (newEntityChildTemplate: IEntityChildTemplate) => {
+const createEntityChildTemplate = async (newEntityChildTemplate: IEntityChildTemplate) => {
     const { data } = await axios.post<IMongoChildEntityTemplate>(entityChildTemplates, newEntityChildTemplate);
     return data;
 };
 
-const updateEntityChildTemplateRequest = async (id: string, childTemplate: IEntityChildTemplate) => {
+const updateEntityChildTemplate = async (id: string, childTemplate: IEntityChildTemplate) => {
     const { data } = await axios.put<IMongoChildEntityTemplate>(`${entityChildTemplates}/${id}`, childTemplate);
     return data;
 };
 
-const getAllEntityChildTemplatesRequest = async () => {
+const getAllEntityChildTemplates = async () => {
     const { data } = await axios.get<IMongoChildEntityTemplate[]>(entityChildTemplates);
     return data;
 };
 
-export { createEntityChildTemplateRequest, updateEntityChildTemplateRequest, getAllEntityChildTemplatesRequest };
+const deleteEntityChildTemplate = async (id: string) => {
+    const { data } = await axios.delete<IMongoChildEntityTemplate>(`${entityChildTemplates}/${id}`);
+    return data;
+};
+
+export { createEntityChildTemplate, updateEntityChildTemplate, getAllEntityChildTemplates, deleteEntityChildTemplate };

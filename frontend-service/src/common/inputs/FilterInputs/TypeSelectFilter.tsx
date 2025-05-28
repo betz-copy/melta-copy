@@ -20,7 +20,7 @@ interface TypeSelectFilterProps {
 }
 
 const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type }) => {
-    console.log({ filterField, filterOptions });
+    console.log({ filterField });
     return (
         <StyledFilterInput
             fullWidth

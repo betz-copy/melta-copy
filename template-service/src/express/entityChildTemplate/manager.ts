@@ -59,11 +59,15 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
     }
 
     async createChildTemplate(childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate> {
-        return await this.model.create(childTemplate);
+        return this.model.create(childTemplate);
     }
 
     async updateChildTemplate(id: string, childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate | null> {
-        return await this.model.findByIdAndUpdate(id, childTemplate, { new: true });
+        return this.model.findByIdAndUpdate(id, childTemplate, { new: true });
+    }
+
+    async deleteChildTemplate(id: string): Promise<IMongoEntityChildTemplate | null> {
+        return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Entity Template not found'));
     }
 }
 
