@@ -80,7 +80,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onMutate() {
                 onClose();
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
