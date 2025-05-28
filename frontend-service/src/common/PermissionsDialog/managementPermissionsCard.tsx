@@ -6,14 +6,14 @@ import { MeltaCheckbox } from '../MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
 import { BlueTitle } from '../BlueTitle';
 
-type ManagementCheckboxProps = { disabled: boolean; viewMode: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
+type ManagementCheckboxProps = {
+    disabled: boolean;
+    viewMode: boolean;
+    isChecked: (property: string) => boolean;
+    onChange: (checked: boolean, property: string, isManagement?: boolean) => void;
+};
 
-const ManagementPermissionsCard: React.FC<{
-    permissionsManagement: ManagementCheckboxProps;
-    templatesManagement: ManagementCheckboxProps;
-    rulesManagement: ManagementCheckboxProps;
-    processesManagement: ManagementCheckboxProps;
-}> = ({ permissionsManagement, templatesManagement, rulesManagement, processesManagement }) => {
+const ManagementPermissionsCard: React.FC<ManagementCheckboxProps> = ({ disabled, viewMode, isChecked, onChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
@@ -31,64 +31,48 @@ const ManagementPermissionsCard: React.FC<{
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.permissionsManagement') as string}
                         labelPlacement="end"
-                        disabled={permissionsManagement.disabled}
+                        disabled={disabled}
                         control={
-                            permissionsManagement.viewMode ? (
-                                <PermissionViewIcon checked={permissionsManagement.checked} />
+                            viewMode ? (
+                                <PermissionViewIcon checked={isChecked('permissions')} />
                             ) : (
-                                <MeltaCheckbox
-                                    checked={permissionsManagement.checked}
-                                    onChange={permissionsManagement.onChange}
-                                    disabled={permissionsManagement.disabled}
-                                />
+                                <MeltaCheckbox checked={isChecked('permissions')} onChange={(_e, checked) => {onChange(checked, 'permissions', true)}} disabled={disabled} />
                             )
                         }
                     />
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.templatesManagement') as string}
                         labelPlacement="end"
-                        disabled={templatesManagement.disabled}
+                        disabled={disabled}
                         control={
-                            templatesManagement.viewMode ? (
-                                <PermissionViewIcon checked={templatesManagement.checked} />
+                            viewMode ? (
+                                <PermissionViewIcon checked={isChecked('templates')} />
                             ) : (
-                                <MeltaCheckbox
-                                    checked={templatesManagement.checked}
-                                    onChange={templatesManagement.onChange}
-                                    disabled={permissionsManagement.disabled}
-                                />
+                                <MeltaCheckbox checked={isChecked('templates')} onChange={(_e, checked) => onChange(checked, 'templates')} disabled={disabled} />
                             )
                         }
                     />
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.rulesManagement') as string}
                         labelPlacement="end"
-                        disabled={rulesManagement.disabled}
+                        disabled={disabled}
                         control={
-                            rulesManagement.viewMode ? (
-                                <PermissionViewIcon checked={rulesManagement.checked} />
+                            viewMode ? (
+                                <PermissionViewIcon checked={isChecked('rules')} />
                             ) : (
-                                <MeltaCheckbox
-                                    checked={rulesManagement.checked}
-                                    onChange={rulesManagement.onChange}
-                                    disabled={permissionsManagement.disabled}
-                                />
+                                <MeltaCheckbox checked={isChecked('rules')} onChange={(_e, checked) => onChange(checked, 'rules')} disabled={disabled} />
                             )
                         }
                     />
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.processesManagement') as string}
                         labelPlacement="end"
-                        disabled={processesManagement.disabled}
+                        disabled={disabled}
                         control={
-                            processesManagement.viewMode ? (
-                                <PermissionViewIcon checked={processesManagement.checked} />
+                            viewMode ? (
+                                <PermissionViewIcon checked={isChecked('processes')} />
                             ) : (
-                                <MeltaCheckbox
-                                    checked={processesManagement.checked}
-                                    onChange={processesManagement.onChange}
-                                    disabled={permissionsManagement.disabled}
-                                />
+                                <MeltaCheckbox checked={isChecked('processes')} onChange={(_e, checked) => onChange(checked, 'processes')} disabled={disabled} />
                             )
                         }
                     />

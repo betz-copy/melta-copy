@@ -41,6 +41,10 @@ const ManagePermissions: React.FC<{
         );
     };
 
+    const isPropertyChecked = (property: string) => {
+        return currentPermissions?.[property]?.scope === PermissionScope.write || currentPermissions?.admin?.scope === PermissionScope.write;
+    };
+
     return (
         <>
             {(!(
@@ -53,48 +57,56 @@ const ManagePermissions: React.FC<{
                 currentPermissions?.admin?.scope === PermissionScope.write) && (
                 <Box>
                     <ManagementPermissionsCard
-                        permissionsManagement={{
-                            checked:
-                                currentPermissions?.permissions?.scope === PermissionScope.write ||
-                                currentPermissions?.admin?.scope === PermissionScope.write,
-                            onChange:
-                                mode === 'view'
-                                    ? () => {}
-                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked, true),
-                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                            viewMode: mode === 'view',
-                        }}
-                        templatesManagement={{
-                            checked:
-                                currentPermissions?.templates?.scope === PermissionScope.write ||
-                                currentPermissions?.admin?.scope === PermissionScope.write,
-                            onChange:
-                                mode === 'view'
-                                    ? () => {}
-                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.templates`, checked),
-                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                            viewMode: mode === 'view',
-                        }}
-                        rulesManagement={{
-                            checked:
-                                currentPermissions?.rules?.scope === PermissionScope.write ||
-                                currentPermissions?.admin?.scope === PermissionScope.write,
-                            onChange:
-                                mode === 'view' ? () => {} : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.rules`, checked),
-                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                            viewMode: mode === 'view',
-                        }}
-                        processesManagement={{
-                            checked:
-                                currentPermissions?.processes?.scope === PermissionScope.write ||
-                                currentPermissions?.admin?.scope === PermissionScope.write,
-                            onChange:
-                                mode === 'view'
-                                    ? () => {}
-                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.processes`, checked),
-                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                            viewMode: mode === 'view',
-                        }}
+                        viewMode={mode === 'view'}
+                        isChecked={isPropertyChecked}
+                        onChange={
+                            mode === 'view'
+                                ? () => {}
+                                : ( checked, property, permissionsManagement) => handleManagementPermissionCheck(`${permissionsPath}.${property}`, checked, permissionsManagement)
+                        }
+                        disabled={disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write}
+                        // permissionsManagement={{
+                        //     checked:
+                        //         currentPermissions?.permissions?.scope === PermissionScope.write ||
+                        //         currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     onChange:
+                        //         mode === 'view'
+                        //             ? () => {}
+                        //             : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked, true),
+                        //     disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     viewMode: mode === 'view',
+                        // }}
+                        // templatesManagement={{
+                        //     checked:
+                        //         currentPermissions?.templates?.scope === PermissionScope.write ||
+                        //         currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     onChange:
+                        //         mode === 'view'
+                        //             ? () => {}
+                        //             : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.templates`, checked),
+                        //     disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     viewMode: mode === 'view',
+                        // }}
+                        // rulesManagement={{
+                        //     checked:
+                        //         currentPermissions?.rules?.scope === PermissionScope.write ||
+                        //         currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     onChange:
+                        //         mode === 'view' ? () => {} : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.rules`, checked),
+                        //     disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     viewMode: mode === 'view',
+                        // }}
+                        // processesManagement={{
+                        //     checked:
+                        //         currentPermissions?.processes?.scope === PermissionScope.write ||
+                        //         currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     onChange:
+                        //         mode === 'view'
+                        //             ? () => {}
+                        //             : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.processes`, checked),
+                        //     disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                        //     viewMode: mode === 'view',
+                        // }}
                     />
                 </Box>
             )}
