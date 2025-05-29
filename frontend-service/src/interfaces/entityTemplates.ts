@@ -1,6 +1,6 @@
 import { FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
-import { IFieldsGroup, IUniqueConstraintOfTemplate } from './entities';
+import { IFieldsGroup, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -31,6 +31,7 @@ export interface IEntitySingleProperty {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+        filters?: ISearchFilter | string;
     };
     expandedUserField?: {
         relatedUserField: string;

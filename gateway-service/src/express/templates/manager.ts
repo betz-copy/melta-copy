@@ -3,6 +3,7 @@
 import _, { groupBy } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
+import _omit from 'lodash/omit';
 import lodashUniqby from 'lodash.uniqby';
 import { StatusCodes } from 'http-status-codes';
 import {
@@ -1082,7 +1083,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
-                    if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
+                    if (
+                        value.relationshipReference &&
+                        !_isEqual(_omit(value.relationshipReference, 'filters'), _omit(newValue.relationshipReference, 'filters'))
+                    )
                         throw new BadRequestError('can not change relationship reference fields');
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
                     if (isSingularToPlural) propertiesKeysToPluralize.push(key);
@@ -1175,6 +1179,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     removeBasicFields(template: IMongoEntityTemplatePopulated) {
         const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = template;
+        Object.entries(template.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
+            }
+        });
+
         return rest;
     }
 
@@ -1440,6 +1451,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         const currentRelationshipTemplate: IMongoRelationshipTemplate =
             await this.relationshipTemplateService.getRelationshipTemplateById(relationshipTemplateId);
+
         const { sourceEntityId, destinationEntityId } = currentRelationshipTemplate;
 
         const addFieldToSrcEntity = relationshipReference.relatedTemplateId === destinationEntityId;

@@ -24,6 +24,9 @@ import { environment } from '../../../globals';
 import { ImageWithDisable } from '../../ImageWithDisable';
 import { Switches } from './Property/Switches';
 import { PropertiesTypes } from './Property/PropertyTypes';
+import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { FilterEntitiesByCriteria } from './RelationshipRefrence/filterEntitiesByCriteria';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -60,6 +63,7 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
+    supportFilterRelationList?: boolean;
     supportComment?: boolean;
     userPropertiesInTemplate?: string[];
     onDuplicateKartoffelField?: (fieldIndex: number, groupIndex?: number) => void;
@@ -100,12 +104,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
+    supportFilterRelationList,
     supportComment,
     userPropertiesInTemplate = [],
     onDuplicateKartoffelField,
     groupIndex,
     propertiesType,
 }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const isComment = value.type === 'comment';
 
     const name = `properties[${index}].name`;
@@ -582,6 +590,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                 )}
                             </Grid>
+                            {value.type === 'relationshipReference' && supportRelationshipReference && (
+                                <FilterEntitiesByCriteria
+                                    name={`relationshipReference.filters`}
+                                    value={value}
+                                    setFieldValue={setFieldValue}
+                                    selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}
+                                    initialValue={initialValue}
+                                    errors={errors}
+                                    touched={touched}
+                                />
+                            )}
                         </Grid>
                     </Grid>
                 </CardContent>
