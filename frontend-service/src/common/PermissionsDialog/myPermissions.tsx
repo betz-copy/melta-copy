@@ -1,0 +1,304 @@
+import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { Form, Formik, FormikProps } from 'formik';
+import i18next from 'i18next';
+import _cloneDeep from 'lodash.clonedeep';
+import _isEqual from 'lodash.isequal';
+import React from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import * as Yup from 'yup';
+import _debounce from 'lodash.debounce';
+
+import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { createUserRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest, updateUserRoleIdsRequest } from '../../services/userService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
+import UserAutocomplete from '../inputs/UserAutocomplete';
+
+import {
+    CategoryWithTemplates,
+    didPermissionsChange,
+    entityTemplatePermissionDialog,
+    userHasNoPermissions,
+} from '../../utils/permissions/permissionOfUserDialog';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import ManagePermissions from './managePermissions';
+import { BlueTitle } from '../BlueTitle';
+import RoleAutocomplete from '../inputs/RoleAutocomplete';
+import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
+
+const MyPermissions: React.FC<{
+    handleClose: () => void;
+    mode: 'create' | 'edit' | 'view';
+    existingUser?: IUser;
+    onSuccess?: (user?: IUser) => void;
+}> = ({ handleClose, mode, existingUser, onSuccess }) => {
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const defaultEmptyUser = {
+        _id: '',
+        fullName: '',
+        jobTitle: '',
+        hierarchy: '',
+        mail: '',
+        profile: '',
+        preferences: {
+            darkMode: false,
+        },
+        externalMetadata: {
+            kartoffelId: '',
+            digitalIdentitySource: '',
+        },
+        permissions: {},
+        displayName: '',
+    } as IUser;
+
+    const queryClient = useQueryClient();
+    const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
+
+    Array.from(entityTemplates.values()).forEach((entity) => {
+        const category: CategoryWithTemplates = {
+            entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
+            ...entity.category,
+        };
+        const displayEntity: entityTemplatePermissionDialog = {
+            id: entity._id,
+            name: entity.displayName,
+        };
+        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
+        dialogPermissionData.set(entity.category._id, category);
+    });
+
+    const { mutate: createUser } = useMutation(
+        (formUser: IUser) =>
+            createUserRequest(
+                formUser.externalMetadata.kartoffelId,
+                formUser.externalMetadata.digitalIdentitySource,
+                formUser.permissions,
+                workspace._id,
+                formUser.roleIds,
+            ),
+        {
+            onError: (error) => {
+                console.error('failed to upsert permission. error:', error);
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries('allIFrames');
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
+                handleClose();
+                onSuccess?.();
+            },
+        },
+    );
+
+    const { mutate: updateUserRoleId } = useMutation(
+        (formUser: IUser) => updateUserRoleIdsRequest(formUser._id, workspace._id, formUser.permissions, formUser.roleIds),
+        {
+            onError: (error) => {
+                console.error('failed to upsert permission. error:', error);
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+            },
+            onSuccess: (newUser) => {
+                onSuccess?.(newUser);
+                queryClient.invalidateQueries('allIFrames');
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+                handleClose();
+            },
+        },
+    );
+
+    const { mutateAsync: deletePermissionsOfUser } = useMutation(
+        () => syncPermissionsRequest(existingUser!._id, RelatedPermission.User, { [workspace._id]: deletePermissions }, true),
+        {
+            onError: (error) => {
+                console.error('failed to delete personal permissions. error:', error);
+                toast.error(i18next.t('permissions.failedToDeleteUser'));
+            },
+        },
+    );
+
+    const { mutate: syncUserPermissions } = useMutation(
+        async (formUser: IUser) => {
+            return syncPermissionsRequest(formUser._id, RelatedPermission.User, {
+                [workspace._id]: {
+                    ...formUser.permissions[workspace._id],
+                },
+            });
+        },
+        {
+            onError: (error) => {
+                console.error('failed to upsert permission. error:', error);
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+            },
+            onSuccess: (newPermissions) => {
+                if (!existingUser) return;
+
+                onSuccess?.({ ...existingUser, permissions: newPermissions });
+
+                if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                    setUser({
+                        ...currentUser,
+                        permissions: { ...currentUser.permissions, ...newPermissions },
+                        currentWorkspacePermissions: newPermissions[workspace._id],
+                    });
+                }
+
+                queryClient.invalidateQueries('allIFrames');
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+                handleClose();
+            },
+        },
+    );
+
+    const { data: workspaceRoles, refetch: searchRolesOptions } = useQuery(
+        ['getAllWorkspaceRolesRequest', existingUser],
+        () => getAllWorkspaceRolesRequest([workspace._id]),
+        {
+            enabled: !!workspace,
+            staleTime: Infinity,
+            cacheTime: Infinity,
+            retry: false,
+        },
+    );
+
+    const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
+
+    const prevRole = workspaceRoles?.find((role) => existingUser?.roleIds?.includes(role._id));
+
+    return (
+        <Formik
+            initialValues={existingUser ? _cloneDeep(existingUser) : defaultEmptyUser}
+            validationSchema={Yup.object({
+                fullName: Yup.string().nullable().required(i18next.t('validation.required')),
+            }).unknown(true)}
+            validate={(formUser: IUser) => {
+                if (mode === 'create' && allUsers?.some(({ _id }) => _id === formUser._id)) {
+                    return { fullName: i18next.t('permissions.permissionsOfUserDialog.userAlreadyExistOnCreateMessage') };
+                }
+
+                return {};
+            }}
+            onSubmit={(formUser) => {
+                const currentRole = workspaceRoles?.find((role) => formUser.roleIds?.includes(role._id));
+
+                if (mode === 'create') createUser(formUser);
+                else if (prevRole == undefined && currentRole === undefined)
+                    syncUserPermissions(formUser); // update personal permissions (without roles)
+                else {
+                    if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
+                    updateUserRoleId(formUser); // role changed, added or deleted
+                }
+            }}
+        >
+            {(formikProps: FormikProps<IUser>) => {
+                const { values, touched, errors, handleBlur, setValues, setFieldValue, isSubmitting, initialValues } = formikProps;
+                const formikRole = workspaceRoles?.find((role) => values.roleIds?.includes(role._id));
+
+                return (
+                    <Form>
+                        <DialogTitle>
+                            {mode !== 'view' && (
+                                <BlueTitle
+                                    title={i18next.t(`permissions.permissionsOfUserDialog.${mode}Title`)}
+                                    component="h6"
+                                    variant="h6"
+                                    style={{ fontWeight: 600 }}
+                                />
+                            )}
+                        </DialogTitle>
+                        <DialogContent>
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
+                                <UserAutocomplete
+                                    mode={existingUser ? 'internal' : 'external'}
+                                    value={values}
+                                    onChange={(_e, chosenUser, reason) => {
+                                        if (reason === 'clear') {
+                                            setValues(defaultEmptyUser);
+                                            return;
+                                        }
+                                        setValues(chosenUser ?? defaultEmptyUser);
+                                    }}
+                                    onBlur={handleBlur}
+                                    readOnly={mode === 'view'}
+                                    disabled={mode === 'edit'}
+                                    isError={Boolean(touched.fullName && errors.fullName)}
+                                    helperText={touched.fullName ? errors.fullName : ''}
+                                    isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
+                                    enableClear={mode === 'create'}
+                                />
+                            </Box>
+
+                            {(mode !== 'view' || values.roleIds) && (
+                                <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
+                                    <RoleAutocomplete
+                                        value={formikRole}
+                                        options={workspaceRoles}
+                                        onChange={(_e, chosenRole, reason) => {
+                                            if (reason === 'clear') {
+                                                setFieldValue('roleIds', []);
+                                                setFieldValue('permissions', existingUser?.permissions ?? {});
+                                                return;
+                                            }
+
+                                            const currentRoleIds = values.roleIds ?? [];
+                                            const updatedRoleIds = currentRoleIds.filter((id) => id !== prevRole?._id);
+                                            if (chosenRole?._id) updatedRoleIds.push(chosenRole._id);
+                                            setFieldValue('roleIds', updatedRoleIds);
+                                            setFieldValue('permissions', chosenRole?.permissions ?? {});
+                                        }}
+                                        onBlur={handleBlur}
+                                        readOnly={mode === 'view'}
+                                        isError={Boolean(touched.roleIds && errors.roleIds)}
+                                        helperText={touched.roleIds ? errors.roleIds : ''}
+                                        enableClear={mode !== 'view'}
+                                        refetch={searchRolesOptionsDebounced}
+                                    />
+                                </Box>
+                            )}
+
+                            {/* dont show management permissions to regular user (if dont have at all) */}
+                            <ManagePermissions
+                                mode={mode}
+                                dialogPermissionData={dialogPermissionData}
+                                formikProps={formikProps as FormikProps<PermissionData>}
+                                workspace={workspace}
+                                disableCheckboxes={!!formikRole}
+                            />
+                        </DialogContent>
+
+                        <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
+                            <Grid container justifyContent="space-between" marginTop="15px">
+                                <Grid>
+                                    {mode !== 'view' && (
+                                        <Button
+                                            type="submit"
+                                            disabled={
+                                                isSubmitting ||
+                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
+                                                userHasNoPermissions(values.permissions[workspace._id])
+                                            }
+                                            variant="contained"
+                                        >
+                                            {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                                            {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
+                                            {isSubmitting && <CircularProgress size={20} />}
+                                        </Button>
+                                    )}
+                                </Grid>
+                            </Grid>
+                        </DialogActions>
+                    </Form>
+                );
+            }}
+        </Formik>
+    );
+};
+export default MyPermissions;

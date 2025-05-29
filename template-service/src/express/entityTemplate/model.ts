@@ -7,12 +7,10 @@ const FieldGroupSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
-            unique: true,
         },
         displayName: {
             type: String,
             required: true,
-            unique: true,
         },
         fields: {
             type: [String],
@@ -88,6 +86,8 @@ const EntityTemplateSchema = new mongoose.Schema(
 );
 
 EntityTemplateSchema.index({ displayName: 'text' });
+EntityTemplateSchema.index({ 'fieldGroups.name': 1, name: 1 }, { unique: true });
+EntityTemplateSchema.index({ 'fieldGroups.displayName': 1, name: 1 }, { unique: true });
 
 EntityTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);

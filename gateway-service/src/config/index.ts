@@ -129,8 +129,9 @@ const config = {
     },
     userService: {
         url: env.get('USER_SERVICE_URL').required().asString(),
-        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
-        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+        usersRoute: env.get('USER_SERVICE_USERS_BASE_ROUTE').default('/api/users').asString(),
+        rolesRoute: env.get('USER_SERVICE_ROLES_BASE_ROUTE').default('/api/roles').asString(),
+        permissionsRoute: env.get('USER_SERVICE_PERMISSION_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
         profilePathPattern: env

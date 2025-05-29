@@ -34,7 +34,7 @@
         "statusBarItem.remoteForeground": "#e7e7e7"
     },
     "peacock.color": "#007fff",
-    "cSpell.words": ["ECEF", "epsg", "hemi", "melta"],
+    "cSpell.words": ["ECEF", "epsg", "hemi", "kartoffel", "melta"],
     "files.exclude": {
         // "**/node_modules": true,
         // "**/dist": true

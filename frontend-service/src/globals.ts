@@ -23,6 +23,7 @@ export const environment = {
         preview: '/preview',
         permissions: '/permissions',
         users: '/users',
+        roles: '/users/roles',
         activityLog: '/activity-log',
         notifications: '/notifications',
         ruleBreachesRequests: '/rule-breaches/requests',

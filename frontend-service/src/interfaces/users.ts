@@ -2,6 +2,7 @@ import { AdvancedFilterModel, FilterModel, SortModelItem } from '@ag-grid-commun
 import fileDetails from './fileDetails';
 import { NotificationType } from './notifications';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
+import { IRole } from './roles';
 
 export interface IBaseUser {
     _id: string;
@@ -21,7 +22,19 @@ export interface IBaseUser {
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
+    roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
+}
+
+export interface IUserPopulated extends Omit<IUser, 'roleIds'> {
+    roles?: IRole[];
+}
+
+export type PermissionData = IUser | IRole;
+
+export enum RelatedPermission {
+    User = 'user',
+    Role = 'role',
 }
 
 export interface IMongoUser extends IUser {

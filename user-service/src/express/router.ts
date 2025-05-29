@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import rolesRouter from './roles/router';
 import permissionsRouter from './permissions/router';
 import usersRouter from './users/router';
 
 const appRouter = Router();
 
 appRouter.use('/api/permissions', permissionsRouter);
+appRouter.use('/api/roles', rolesRouter);
 appRouter.use('/api/users', usersRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
