@@ -105,7 +105,6 @@ const MultipleSelect: React.FC<{
                     <TextField
                         {...textFieldProps}
                         {...params}
-                        required={required}
                         autoFocus={autofocus}
                         onBlur={onBlur}
                         onFocus={onFocus}
