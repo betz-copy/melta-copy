@@ -7,6 +7,10 @@ import {
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISubCompactPermissions,
+    IMongoCategoryOrderConfig,
+    IMongoBaseConfig,
+    ConfigTypes,
+    ICategoryOrderConfig,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -16,7 +20,7 @@ const {
     service: { workspaceIdHeaderName },
     templateService: {
         baseRoute,
-        entities: { baseEntitiesRoute, baseCategoriesRoute },
+        entities: { baseEntitiesRoute, baseCategoriesRoute, baseConfigRoute },
     },
 } = config;
 
@@ -62,6 +66,19 @@ class EntityTemplateService extends TemplatesManagerService {
 
     async getCategoryById(categoryId: string) {
         const { data } = await this.api.get<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
+
+        return data;
+    }
+
+    async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(
+            `${baseCategoriesRoute}/templatesOrder/${templateId}`,
+            {
+                newIndex,
+                srcCategoryId,
+                newCategoryId,
+            },
+        );
 
         return data;
     }
@@ -132,6 +149,52 @@ class EntityTemplateService extends TemplatesManagerService {
 
     async deleteEntityTemplate(entityTemplateId: string) {
         const { data } = await this.api.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
+
+        return data;
+    }
+
+    // config
+    async getConfigs(permissionsOfUserId: ISubCompactPermissions) {
+        const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
+
+        // Because in the future the config collection could store different types of configs that might need different permissions,
+        // I think the best way to account for that is by checking for each type separately, because config types aren't created by users.
+        return data.map((workspaceConfig) => {
+            if (workspaceConfig.type === ConfigTypes.CATEGORY_ORDER) {
+                const categoryOrder = workspaceConfig as IMongoCategoryOrderConfig;
+                return permissionsOfUserId.admin
+                    ? categoryOrder
+                    : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
+            }
+
+            return workspaceConfig;
+        });
+    }
+
+    async getConfigByType(type: ConfigTypes, permissionsOfUserId: ISubCompactPermissions) {
+        const { data } = await this.api.get<IMongoBaseConfig>(`${baseConfigRoute}/${type}`);
+
+        if (type === ConfigTypes.CATEGORY_ORDER) {
+            const categoryOrder = data as IMongoCategoryOrderConfig;
+            return permissionsOfUserId.admin
+                ? categoryOrder
+                : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
+        }
+
+        return data;
+    }
+
+    async updateOrderConfig(configId: string, newIndex: number, item: string) {
+        const { data } = await this.api.put<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}/${configId}`, {
+            newIndex,
+            item,
+        });
+
+        return data;
+    }
+
+    async createOrderConfig(configData: ICategoryOrderConfig) {
+        const { data } = await this.api.post<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}`, configData);
 
         return data;
     }

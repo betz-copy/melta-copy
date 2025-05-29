@@ -10,8 +10,11 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IMongoBaseConfig,
     IMongoCategory,
     IMongoEntityTemplatePopulated,
+    IMongoCategoryOrderConfig,
+    ICategoryOrderConfig,
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
@@ -42,6 +45,7 @@ import {
     ISearchFilter,
     UploadedFile,
     logger,
+    ConfigTypes,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -262,7 +266,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
+        let categoryOrder: IMongoCategoryOrderConfig | null;
+        try {
+            const workspaceConfig = await this.getConfigByType(ConfigTypes.CATEGORY_ORDER, permissionsOfUserId);
+            categoryOrder = workspaceConfig as IMongoCategoryOrderConfig;
+        } catch {
+            categoryOrder = null;
+        }
+
         return {
+            categoryOrder,
             categories: allAllowedCategories,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
@@ -382,6 +395,27 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.entityTemplateService.updateCategory(id, updatedData);
+    }
+
+    async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        return this.entityTemplateService.updateCategoryTemplatesOrder(templateId, newIndex, srcCategoryId, newCategoryId);
+    }
+
+    // config
+    async getAllConfigs(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']): Promise<IMongoBaseConfig[]> {
+        return this.entityTemplateService.getConfigs(permissionsOfUserId);
+    }
+
+    async getConfigByType(type: ConfigTypes, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']): Promise<IMongoBaseConfig> {
+        return this.entityTemplateService.getConfigByType(type, permissionsOfUserId);
+    }
+
+    async updateCategoryOrderConfig(configId: string, newIndex: number, item: string): Promise<IMongoCategoryOrderConfig> {
+        return this.entityTemplateService.updateOrderConfig(configId, newIndex, item);
+    }
+
+    async createCategoryOrderConfig(configData: ICategoryOrderConfig): Promise<IMongoCategoryOrderConfig> {
+        return this.entityTemplateService.createOrderConfig(configData);
     }
 
     // entity templates

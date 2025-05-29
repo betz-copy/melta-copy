@@ -1,9 +1,8 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import React from 'react';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
 import { IUser } from '../../interfaces/users';
-import { MeltaTooltip } from '../MeltaTooltip';
 
 interface UserArrayInputProps extends IUserAutocomplete {
     currentUsers: string[] | IUser[];
@@ -25,10 +24,6 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
     overrideSx,
     readOnly,
 }) => {
-    const maxVisible = 3;
-    const visibleUsers = currentUsers.slice(0, maxVisible);
-    const hiddenUsers = currentUsers.slice(maxVisible);
-
     return (
         <Box>
             <Grid marginBottom={2}>

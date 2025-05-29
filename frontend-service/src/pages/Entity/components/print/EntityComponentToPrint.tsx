@@ -73,6 +73,7 @@ const EntityComponentToPrint: React.FC<{
                     mode="normal"
                     textWrap
                     isPrintingMode
+                    showByGroups
                 />
             </Box>
             <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />

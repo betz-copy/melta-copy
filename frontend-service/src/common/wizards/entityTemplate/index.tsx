@@ -12,9 +12,10 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { mapTemplates } from '../../../utils/templates';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
@@ -23,6 +24,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { FieldGroupData, PropertyItem } from './commonInterfaces';
 
 const { errorCodes } = environment;
 
@@ -60,18 +62,22 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
+    fieldGroup?: FieldGroupData;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
 }
+
+type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
+
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
         'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
-    properties: EntityTemplateFormInputProperties[];
-    attachmentProperties: EntityTemplateFormInputProperties[];
-    archiveProperties: EntityTemplateFormInputProperties[];
+    properties: PropertyItem[];
+    attachmentProperties: EntityTemplatePropertyByType[];
+    archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
@@ -116,10 +122,21 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchEntityTemplates']);
+
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
+                    try {
+                        queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
+                            const newCategoryMap = new Map(categories!);
+                            newCategoryMap.set(data.category._id, data.category);
+
+                            return newCategoryMap;
+                        });
+                    } catch (error) {
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                    }
                 }
 
                 try {
@@ -128,6 +145,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
+
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
                 handleClose();
@@ -177,11 +195,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     return;
                 }
 
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
 
                 console.error('failed to create/update entity template. error', error);
             },

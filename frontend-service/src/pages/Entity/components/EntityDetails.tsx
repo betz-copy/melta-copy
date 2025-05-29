@@ -348,7 +348,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             </Grid>
                         </Grid>
 
-                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column" spacing={2}>
+                        <Grid item container justifyContent="space-between" alignItems="stretch" flexDirection="column" spacing={2}>
                             <Grid item width="100%">
                                 <EntityProperties
                                     entityTemplate={entityTemplate}
