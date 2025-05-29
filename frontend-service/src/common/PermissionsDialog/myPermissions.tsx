@@ -219,7 +219,13 @@ const MyPermissions: React.FC<{
                                 <UserAutocomplete
                                     mode={existingUser ? 'internal' : 'external'}
                                     value={values}
-                                    onChange={(_e, chosenUser) => setValues(chosenUser ?? defaultEmptyUser)}
+                                    onChange={(_e, chosenUser, reason) => {
+                                        if (reason === 'clear') {
+                                            setValues(defaultEmptyUser);
+                                            return;
+                                        }
+                                        setValues(chosenUser ?? defaultEmptyUser);
+                                    }}
                                     onBlur={handleBlur}
                                     readOnly={mode === 'view'}
                                     disabled={mode === 'edit'}
@@ -238,7 +244,7 @@ const MyPermissions: React.FC<{
                                         onChange={(_e, chosenRole, reason) => {
                                             if (reason === 'clear') {
                                                 setFieldValue('roleIds', []);
-                                                setFieldValue('permissions', existingUser?.permissions);
+                                                setFieldValue('permissions', existingUser?.permissions ?? {});
                                                 return;
                                             }
 
