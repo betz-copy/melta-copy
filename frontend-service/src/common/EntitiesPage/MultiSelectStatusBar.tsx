@@ -20,13 +20,13 @@ import { LoadEntitiesTables } from '../wizards/excel/excelSteps/LoadEntitiesTabl
 import { StepType, Wizard } from '../wizards';
 import { EntityWizardValues } from '../dialogs/entity';
 import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';
-import ActionOnEntityWithRuleBreachDialog, { IBrokenRuleEntity } from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { ajvValidate } from '../inputs/JSONSchemaFormik';
 import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsPropertiesSchema';
-import { IFailedEntity } from '../../interfaces/excel';
+import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
