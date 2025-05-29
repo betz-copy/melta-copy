@@ -52,32 +52,27 @@ export const loadEntitiesRequest = async (
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: formData.append(
-                'properties',
-                JSON.stringify(
-                    mapValues(entity.properties, (property, key) => {
-                        switch (template.properties.properties[key]?.format) {
-                            case 'relationshipReference':
-                                return property?.properties._id;
-                            case 'location': {
-                                if (!property) return undefined;
-                                const location = JSON.parse(property);
+            properties: mapValues(entity.properties, (property, key) => {
+                switch (template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = JSON.parse(property);
 
-                                if (location.coordinateSystem === CoordinateSystem.UTM)
-                                    return JSON.stringify({
-                                        location: locationConverterToString(location.location),
-                                        coordinateSystem: location.coordinateSystem,
-                                    });
-                                return JSON.stringify(location);
-                            }
-                            case 'signature':
-                                return undefined;
-                            default:
-                                return property;
-                        }
-                    }),
-                ),
-            ),
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature':
+                        return undefined;
+                    default:
+                        return property;
+                }
+            }),
             ignoredRules: entity.ignoredRules,
         }));
 

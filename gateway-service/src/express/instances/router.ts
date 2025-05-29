@@ -20,7 +20,7 @@ import {
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     loadEntitiesSchema,
-    editExcelSchema,
+    editManyEntitiesByExcelSchema,
     updateMultipleEntitiesSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -104,7 +104,7 @@ InstancesRouter.put(
     '/entities/editManyEntitiesByExcel',
     busboyMiddleware,
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(editExcelSchema),
+    ValidateRequest(editManyEntitiesByExcelSchema),
     InstancesControllerMiddleware.editManyEntitiesByExcel,
 );
 
