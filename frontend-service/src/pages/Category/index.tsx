@@ -27,9 +27,10 @@ const Category: React.FC = () => {
                 currentUser.currentWorkspacePermissions?.admin?.scope),
     );
 
+    const authorizedTemplatesIds = new Set(authorizedTemplates.map((template) => template._id));
     const [categoryTemplatesId, setCategoryTemplatesId] = useLocalStorage<string[]>(
         `tableOrder-${categoryId}`,
-        authorizedTemplates.map((template) => template._id),
+        category.templatesOrder.filter((templateId) => authorizedTemplatesIds.has(templateId)),
     );
 
     const categoryTemplates = categoryTemplatesId
