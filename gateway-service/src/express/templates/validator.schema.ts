@@ -36,6 +36,7 @@ const childTemplatePropertySchema = Joi.object({
     format: Joi.string(),
     defaultValue: Joi.any(),
     filters: searchFilterSchema,
+    isEditableByUser: Joi.boolean(),
 });
 
 // POST /api/templates/categories

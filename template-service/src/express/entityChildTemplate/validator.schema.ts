@@ -38,6 +38,7 @@ const childTemplatePropertySchema = Joi.object({
         if (value) return JSON.stringify(value);
         return value;
     }),
+    isEditableByUser: Joi.boolean(),
 });
 
 const childEntityTemplateSchema = {

@@ -73,6 +73,7 @@ const CreateChildTemplateDialog: React.FC<{
                     selected: isSelected,
                     fieldValue: value,
                     ...(childTemplate?.properties[key]?.defaultValue && { defaultValue: childTemplate.properties[key].defaultValue }),
+                    ...(childTemplate?.properties[key]?.isEditableByUser && { isEditableByUser: childTemplate.properties[key].isEditableByUser }),
                 };
             });
             setTemplateFieldsFilters(initialFields);
@@ -269,6 +270,14 @@ const CreateChildTemplateDialog: React.FC<{
                 return true;
             }
 
+            if (childTemplateViewType === ViewType.userPage) {
+                const originalIsEditableByUser = prop.isEditableByUser || false;
+                const currentIsEditableByUser = currentField.isEditableByUser || false;
+                if (originalIsEditableByUser !== currentIsEditableByUser) {
+                    return true;
+                }
+            }
+
             const currentFilters = fieldChips
                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
                 .map((chip) => chip.filterType);
@@ -349,6 +358,10 @@ const CreateChildTemplateDialog: React.FC<{
                             type,
                             ...(format && { format }),
                         };
+
+                        if (childTemplateViewType === ViewType.userPage) {
+                            childProp.isEditableByUser = fieldConfig.isEditableByUser || false;
+                        }
 
                         const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
 
@@ -460,6 +473,21 @@ const CreateChildTemplateDialog: React.FC<{
                                                     onChange={(e) => {
                                                         const { value } = e.target;
                                                         setChildTemplateViewType(value as ViewType);
+
+                                                        if (value === ViewType.categoryPage) {
+                                                            setTemplateFieldsFilters((prev) => {
+                                                                const newFilters = { ...prev };
+                                                                Object.keys(newFilters).forEach((key) => {
+                                                                    if (newFilters[key].isEditableByUser) {
+                                                                        newFilters[key] = {
+                                                                            ...newFilters[key],
+                                                                            isEditableByUser: false,
+                                                                        };
+                                                                    }
+                                                                });
+                                                                return newFilters;
+                                                            });
+                                                        }
                                                     }}
                                                     row
                                                 >

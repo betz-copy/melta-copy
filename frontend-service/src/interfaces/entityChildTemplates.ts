@@ -7,6 +7,7 @@ export interface IFieldFilter {
     selected: boolean;
     filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
     defaultValue?: string | number | boolean | Date | string[];
+    isEditableByUser?: boolean;
 }
 
 export interface IFieldChip {
@@ -31,6 +32,7 @@ export interface IChildTemplateProperty {
     format?: string;
     defaultValue?: any;
     filters?: string | Record<string, unknown>;
+    isEditableByUser?: boolean;
 }
 
 export interface IEntityChildTemplate {

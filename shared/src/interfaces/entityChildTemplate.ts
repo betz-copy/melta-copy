@@ -13,6 +13,7 @@ export interface IEntityChildTemplateProperty {
     format?: string;
     defaultValue?: string | number | boolean | Date | string[];
     filters?: Record<string, unknown>;
+    isEditableByUser?: boolean;
 }
 
 export interface IEntityChildTemplate {
