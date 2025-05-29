@@ -7,18 +7,18 @@ import config from './config/index.js';
 const { mongo } = config;
 
 const renameUserIdToRelatedId = async () => {
-    const db = mongoose.connection.client.db(mongo.targetDatabase);
+    const db = mongoose.connection.client.db(mongo.globalDatabase);
     const collections = await db.listCollections().toArray();
     const collectionNames = collections.map((col) => col.name);
 
-    if (!collectionNames.includes(mongo.targetCollection)) {
-        console.warn(`Collection ${mongo.targetCollection} not found in database ${mongo.targetDatabase}`);
+    if (!collectionNames.includes(mongo.permissionsCollection)) {
+        console.warn(`Collection ${mongo.permissionsCollection} not found in database ${mongo.globalDatabase}`);
         return;
     }
 
-    console.log(`Updating ${mongo.targetDatabase}.${mongo.targetCollection}`);
+    console.log(`Updating ${mongo.globalDatabase}.${mongo.permissionsCollection}`);
 
-    const collection = db.collection(mongo.targetCollection);
+    const collection = db.collection(mongo.permissionsCollection);
 
     const indexes = await collection.indexes();
     const indexToDrop = indexes.find((index) => {
@@ -41,7 +41,7 @@ const renameUserIdToRelatedId = async () => {
     );
     console.log('Created new index on field "relatedId".');
 
-    console.log(`${result.modifiedCount} documents updated in ${mongo.targetDatabase}.${mongo.targetCollection}`);
+    console.log(`${result.modifiedCount} documents updated in ${mongo.globalDatabase}.${mongo.permissionsCollection}`);
 };
 
 const connectToMongo = async () => {
