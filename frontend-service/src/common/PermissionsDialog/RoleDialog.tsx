@@ -59,6 +59,17 @@ const RoleDialog: React.FC<{
         dialogPermissionData.set(template.category._id, category);
     });
 
+    const { data: workspaceRoles, refetch: refetchWorkspaceRoles } = useQuery(
+        ['getAllWorkspaceRolesRequest', workspace],
+        () => getAllWorkspaceRolesRequest([workspace._id]),
+        {
+            enabled: !!workspace,
+            staleTime: Infinity,
+            cacheTime: Infinity,
+            retry: false,
+        },
+    );
+
     const { mutate: createRole } = useMutation((formRole: IRole) => createRoleRequest(formRole.name, formRole.permissions), {
         onError: (error: any) => {
             console.error('failed to upsert permission. error:', error);
@@ -74,6 +85,7 @@ const RoleDialog: React.FC<{
         onSuccess: () => {
             onSuccess?.();
             queryClient.invalidateQueries('allIFrames');
+            refetchWorkspaceRoles();
             toast.success(i18next.t('permissions.permissionsOfRoleDialog.succeededToCreatePermission'));
             handleClose();
         },
@@ -105,21 +117,11 @@ const RoleDialog: React.FC<{
                     });
                 }
 
+                refetchWorkspaceRoles();
                 queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfRoleDialog.succeededToUpdatePermission'));
                 handleClose();
             },
-        },
-    );
-
-    const { data: workspaceRoles, refetch: refetchWorkspaceRoles } = useQuery(
-        ['getAllWorkspaceRolesRequest', workspace],
-        () => getAllWorkspaceRolesRequest([workspace._id]),
-        {
-            enabled: !!workspace,
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            retry: false,
         },
     );
 
@@ -203,7 +205,6 @@ const RoleDialog: React.FC<{
                                                 userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"
-                                            onClick={() => refetchWorkspaceRoles}
                                         >
                                             {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                             {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
