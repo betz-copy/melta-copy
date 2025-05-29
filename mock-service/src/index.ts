@@ -147,16 +147,13 @@ const main = async () => {
 
     console.log('Creating simba entity templates');
 
-    const createdSimbaEntityTemplates: IMongoEntityTemplate[] = [];
     const createdSimbaDriverTemplate = (await createEntityTemplates(simbaWorkspace._id, simbaEntityTemplates.slice(0, 1), createdSimbaCategories))[0];
-    createdSimbaEntityTemplates.push(createdSimbaDriverTemplate);
     await updateConstraintsOfTemplate(simbaWorkspace._id, createdSimbaDriverTemplate._id, {
         requiredConstraints: ['full_name'],
         uniqueConstraints: [],
     });
     simbaEntityTemplates[1].properties.properties.parents.relationshipReference!.relatedTemplateId = createdSimbaDriverTemplate._id;
     const createdSimbaCarTemplate = (await createEntityTemplates(simbaWorkspace._id, simbaEntityTemplates.slice(1, 2), createdSimbaCategories))[0];
-    createdSimbaEntityTemplates.push(createdSimbaCarTemplate);
 
     console.log('Creating simba relationship templates');
 
@@ -165,13 +162,10 @@ const main = async () => {
 
     await getRelationshipTemplateById(simbaWorkspace._id, createdSimbaCarTemplateRelationshipTemplateId);
 
-    const carTemplate = createdSimbaEntityTemplates.find(({ name }) => name === 'car')!;
-    const driverTemplate = createdSimbaEntityTemplates.find(({ name }) => name === 'driver')!;
-
     const simbaWorkspaceMetadata = {
         simba: {
-            usersInfoTemplateId: driverTemplate._id,
-            carsInfoTemplateId: carTemplate._id,
+            usersInfoTemplateId: createdSimbaDriverTemplate._id,
+            carsInfoTemplateId: createdSimbaCarTemplate._id,
         },
     };
 
@@ -181,27 +175,13 @@ const main = async () => {
 
     console.log('Creating simba drivers entities');
 
-    const createdSimbaDriverInstances = await createInstances(
-        simbaWorkspace._id,
-        userIds[0],
-        createdSimbaEntityTemplates.filter(({ name }) => name === 'driver'),
-        chance,
-        exampleFileId,
-        1,
-    );
+    const createdSimbaDriverInstances = await createInstances(simbaWorkspace._id, userIds[0], [createdSimbaDriverTemplate], chance, exampleFileId, 1);
 
     console.log('Creating simba cars entities');
 
     JSONSchemaFaker.format('relationshipReference', (_value) => createdSimbaDriverInstances[0].createdEntity.properties._id);
 
-    await createInstances(
-        simbaWorkspace._id,
-        userIds[0],
-        createdSimbaEntityTemplates.filter(({ name }) => name === 'car'),
-        chance,
-        exampleFileId,
-        10,
-    );
+    await createInstances(simbaWorkspace._id, userIds[0], [createdSimbaCarTemplate], chance, exampleFileId, 10);
 
     console.log('Creating simba relationships');
 
