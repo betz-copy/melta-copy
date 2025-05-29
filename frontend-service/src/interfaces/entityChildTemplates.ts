@@ -30,29 +30,23 @@ export interface IChildTemplateProperty {
 }
 
 export interface IEntityChildTemplate {
-    _id: string;
     name: string;
     displayName: string;
     description: string;
-    categories: string[]; // Array of category IDs
+    categories: IMongoCategory['_id'][];
+    properties: Record<string, IChildTemplateProperty>;
     fatherTemplateId: string;
-    properties: Record<
-        string,
-        {
-            title: string;
-            type: string;
-            format?: string;
-        }
-    >;
     disabled: boolean;
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
 }
 
-export type IEntityChildTemplateMap = Map<string, IEntityChildTemplate>;
+export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
+    _id: string;
+}
+
+export type IEntityChildTemplateMap = Map<string, IMongoChildEntityTemplate>;
 
 export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;
@@ -61,10 +55,6 @@ export interface ITemplateFieldsFilters {
 export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
     categories: IMongoCategory[];
     fatherTemplateId: IMongoEntityTemplatePopulated;
-}
-
-export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
-    _id: string;
 }
 
 export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplatePopulated {

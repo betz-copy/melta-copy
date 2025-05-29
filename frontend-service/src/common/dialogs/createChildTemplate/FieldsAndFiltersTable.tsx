@@ -16,6 +16,7 @@ interface IFieldsAndFiltersTableProps {
     viewType: 'categoryPage' | 'userPage';
     fieldChips: IFieldChip[];
     setFieldChips: React.Dispatch<React.SetStateAction<IFieldChip[]>>;
+    onCheckboxChange: (fieldName: string, checked: boolean) => void;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
@@ -25,6 +26,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     viewType,
     fieldChips,
     setFieldChips,
+    onCheckboxChange,
 }) => {
     const [addFilterToField, setAddFilterToField] = React.useState<string | null>(null);
     const [dialogType, setDialogType] = React.useState<'filter' | 'default' | 'editByUser' | null>(null);
@@ -51,6 +53,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         if (!entityTemplate) return;
 
         const { format, type: fieldType } = entityTemplate.properties.properties[newProperty];
+        const existingFilter = templateFieldsFilters[newProperty]?.filterField;
+
+        if (existingFilter) {
+            addFilterToFieldHandler(existingFilter, newProperty);
+            return;
+        }
 
         const initializedFilterField: Record<string, IFieldFilter['filterField']> = {
             'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -98,9 +106,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     disabled={isRequired}
                                                     onChange={(e) => {
                                                         if (isRequired) return;
-                                                        const newFieldFilters = { ...templateFieldsFilters };
-                                                        newFieldFilters[fieldName].selected = e.target.checked;
-                                                        setTemplateFieldsFilters(newFieldFilters);
+                                                        onCheckboxChange(fieldName, e.target.checked);
                                                     }}
                                                 />
                                             }
@@ -122,18 +128,29 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
                                                 .map((chip, index) => {
                                                     const filterTypeLabel = 'type' in chip.filterType! ? chip.filterType.type : '';
-                                                    const filterValue =
-                                                        'filter' in chip.filterType!
-                                                            ? chip.filterType.filter
-                                                            : 'values' in chip.filterType!
-                                                            ? chip.filterType.values.join(', ')
-                                                            : 'dateFrom' in chip.filterType!
-                                                            ? chip.filterType.dateFrom?.toString()
-                                                            : '';
+                                                    let filterValue = '';
+
+                                                    if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
+                                                        filterValue = String(chip.filterType.filter);
+                                                    } else if ('values' in chip.filterType! && Array.isArray(chip.filterType.values)) {
+                                                        filterValue = chip.filterType.values.join(', ');
+                                                    } else if ('dateFrom' in chip.filterType!) {
+                                                        if (chip.filterType.dateFrom) {
+                                                            filterValue = new Date(chip.filterType.dateFrom).toLocaleDateString();
+                                                        }
+                                                        if (chip.filterType.dateTo) {
+                                                            filterValue += ` - ${new Date(chip.filterType.dateTo).toLocaleDateString()}`;
+                                                        }
+                                                    }
+
                                                     return (
                                                         <Grid item key={`${fieldName}-filter-${index}`}>
                                                             <ColoredEnumChip
-                                                                label={`${i18next.t(`filters.${filterTypeLabel}`)} : ${filterValue}`}
+                                                                label={
+                                                                    filterValue
+                                                                        ? `${i18next.t(`filters.${filterTypeLabel}`)}: ${filterValue}`
+                                                                        : i18next.t(`filters.${filterTypeLabel}`)
+                                                                }
                                                                 onDelete={() => {
                                                                     setFieldChips((prev) =>
                                                                         prev.filter(

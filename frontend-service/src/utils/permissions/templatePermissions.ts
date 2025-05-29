@@ -4,6 +4,8 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { IMongoRule } from '../../interfaces/rules';
 import { ICurrentUser } from '../../interfaces/users';
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IEntityChildTemplate } from '../../interfaces/entityChildTemplates';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
@@ -140,4 +142,18 @@ export const updateUserPermissionForCategory = (newCategory: IMongoCategory, cur
             [workspaceId]: updatedPermissions,
         },
     };
+};
+
+export const checkUserChildTemplatePermission = (
+    userPermissions: ISubCompactPermissions,
+    childTemplate: IEntityChildTemplate,
+    scope: PermissionScope,
+): boolean => {
+    if (userPermissions.admin?.scope === PermissionScope.write) {
+        return true;
+    }
+
+    return childTemplate.categories.some((categoryId) => {
+        return userPermissions.instances?.categories[categoryId]?.scope === scope;
+    });
 };

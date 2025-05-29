@@ -326,3 +326,31 @@ export const createEntityChildTemplateSchema = Joi.object({
     query: {},
     params: {},
 });
+
+export const updateEntityChildTemplateSchema = Joi.object({
+    body: {
+        name: Joi.string().required(),
+        displayName: Joi.string().required(),
+        description: Joi.string(),
+        fatherTemplateId: MongoIdSchema.required(),
+        categories: Joi.array().items(MongoIdSchema).required(),
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+        disabled: Joi.boolean().default(false),
+        actions: Joi.string(),
+        viewType: Joi.string().valid('categoryPage', 'userPage').required(),
+        isFilterByCurrentUser: Joi.boolean().default(false),
+        isFilterByUserUnit: Joi.boolean().default(false),
+    },
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+export const deleteEntityChildTemplateSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});

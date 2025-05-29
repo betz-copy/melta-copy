@@ -6,6 +6,8 @@ import {
     getAllChildTemplatesSchema,
     createEntityChildTemplateSchema,
     getChildTemplateByIdSchema,
+    updateEntityChildTemplateSchema,
+    deleteEntityChildTemplateSchema,
 } from './validator.schema';
 
 const entityChildTemplateRouter: Router = Router();
@@ -19,5 +21,9 @@ entityChildTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), 
 entityChildTemplateRouter.post('/', ValidateRequest(createEntityChildTemplateSchema), controller.createEntityChildTemplate);
 
 entityChildTemplateRouter.get('/:id', ValidateRequest(getChildTemplateByIdSchema), controller.getChildTemplateById);
+
+entityChildTemplateRouter.put('/:id', ValidateRequest(updateEntityChildTemplateSchema), controller.updateEntityChildTemplate);
+
+entityChildTemplateRouter.delete('/:id', ValidateRequest(deleteEntityChildTemplateSchema), controller.deleteEntityChildTemplate);
 
 export default entityChildTemplateRouter;
