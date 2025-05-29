@@ -5,6 +5,7 @@ import UserService from '../../externalServices/userService';
 import UsersManager from '../users/manager';
 import { ShragaUser } from '../../utils/express/passport';
 import { AuthenticationManager } from './manager';
+import WorkspaceService from '../workspaces/service';
 
 const { accessTokenName } = config.authentication.shragaAuthentication;
 
@@ -18,10 +19,12 @@ class AuthenticationController {
 
         let token: string;
         if (RelayState?.includes(config.authentication.shragaAuthentication.simbaEndURL)) {
+            const simbaWorkspace = await WorkspaceService.getFile(config.authentication.shragaAuthentication.simbaEndURL);
+
             token = AuthenticationManager.createAccessToken({
                 id: config.authentication.shragaAuthentication.simbaId,
                 kartoffelId: id,
-                simbaWorkspaceId: config.frontendConfig.simbaWorkspaceId,
+                simbaWorkspaceId: simbaWorkspace._id,
             });
         } else {
             token = AuthenticationManager.createAccessToken({ id: user?._id || config.authentication.shragaAuthentication.unauthorizedId });

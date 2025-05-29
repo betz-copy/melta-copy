@@ -14,6 +14,7 @@ import templatesRouter from './templates/router';
 import usersRouter from './users/router';
 import workspaceRouter from './workspaces/router';
 import ChartsRouter from './templateCharts/router';
+import simbaRouter from './simba/router';
 
 const apiRouter = Router();
 
@@ -75,5 +76,7 @@ apiRouter.use('/iframes', iFramesRouter);
 apiRouter.use('/charts', ChartsRouter);
 
 apiRouter.use('/workspaces', workspaceRouter);
+
+apiRouter.use('/simba', simbaRouter);
 
 export default apiRouter;

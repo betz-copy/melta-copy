@@ -1,5 +1,5 @@
 import { IAGGridSetFilter, IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter } from '../utils/agGrid/interfaces';
-import { IEntitySingleProperty } from './entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoCategory } from './categories';
 
 export interface IFieldFilter {
@@ -58,8 +58,9 @@ export interface ITemplateFieldsFilters {
     [key: string]: IFieldFilter;
 }
 
-export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories'> {
+export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
     categories: IMongoCategory[];
+    fatherTemplateId: IMongoEntityTemplatePopulated;
 }
 
 export interface IMongoChildEntityTemplate extends IEntityChildTemplate {

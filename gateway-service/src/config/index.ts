@@ -55,7 +55,7 @@ const config = {
         },
         meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
         meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
-        simbaWorkspaceId: env.get('SIMBA_WORKSPACE_ID').default('68343b9d6582858895fb9831').asString(),
+        simbaWorkspaceId: env.get('SIMBA_WORKSPACE_ID').default('68347c4b1652e05582afa8b8').asString(),
     },
 
     authentication: {

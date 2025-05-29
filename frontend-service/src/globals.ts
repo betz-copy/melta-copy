@@ -10,6 +10,7 @@ export const environment = {
         categories: '/templates/categories',
         entityTemplates: '/templates/entities',
         entityChildTemplates: '/templates/child',
+        simbaRoutes: '/simba',
         relationshipTemplates: '/templates/relationships',
         rules: '/templates/rules',
         entities: '/instances/entities',
