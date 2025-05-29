@@ -5,10 +5,10 @@ import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntitiesTable } from './EntitiesTable';
 import { IEntity } from '../../../../interfaces/entities';
-import { ITablesData } from '../../../../interfaces/excel';
+import { IStatusEntitiesTables } from '../../../../interfaces/excel';
 
 export const LoadEntitiesTables: React.FC<{
-    tablesData: ITablesData;
+    tablesData: IStatusEntitiesTables;
     template: IMongoEntityTemplatePopulated;
     onDownload?: (brokenRulesEntities?: boolean) => Promise<any>;
     isLoadingDownload?: boolean;

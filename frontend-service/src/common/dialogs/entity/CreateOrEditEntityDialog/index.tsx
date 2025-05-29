@@ -20,7 +20,7 @@ import useMutationHandler from './useMutationHandler';
 import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import EditProps from './EditProps';
 
-const { errorCodes, signaturePrefix } = environment;
+const { signaturePrefix } = environment;
 
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
     const templateFilesProperties = pickBy(
@@ -84,14 +84,18 @@ const CreateOrEditEntityDetails: React.FC<{
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
-    const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
+
     const isEditMode = actionType === ActionTypes.UpdateEntity;
 
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { shouldNavigateToEntityPage } = workspace.metadata;
+
+    const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     const initialValues = useMemo(() => {
-        if (isEditMode) {
-            return convertIEntityToEntityWizardValues(payload, entityTemplate, initialTemplateFileKeys);
-        }
+        if (isEditMode) return convertIEntityToEntityWizardValues(payload, entityTemplate, initialTemplateFileKeys);
         if (initialCurrValues) return initialCurrValues;
+
         return {
             properties: {
                 disabled: false,
@@ -101,20 +105,14 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [payload, entityTemplate, initialTemplateFileKeys]);
 
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { shouldNavigateToEntityPage } = workspace.metadata;
-
     const [isLoading, mutationPromiseToastify] = useMutationHandler(
         externalErrors,
         shouldNavigateToEntityPage,
         entityTemplate,
         mutationProps,
         setExternalErrors,
-        errorCodes,
         setCreateOrUpdateWithRuleBreachDialogState,
     );
-
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
         entityTemplate,

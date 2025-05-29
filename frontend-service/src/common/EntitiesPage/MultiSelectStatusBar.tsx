@@ -183,7 +183,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         {
             label: i18next.t('wizard.entity.multipleUpdate.editPropertiesTitle'),
             description: i18next.t('wizard.entity.multipleUpdate.editPropertiesDescription'),
-            // eslint-disable-next-line react/no-unstable-nested-components
             component: (props) => {
                 return (
                     <EditProps
@@ -235,7 +234,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         },
         {
             label: i18next.t('wizard.entity.multipleUpdate.summeryTitle'),
-            // eslint-disable-next-line react/no-unstable-nested-components
             component: (props) => {
                 return (
                     <Box sx={{ width: '100%', marginLeft: '4vw', marginY: '2vh' }}>
@@ -248,7 +246,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                             textWrap
                         />
                         <Box>
-                            <Typography sx={{ marginY: '3vh', color: '#9398C2', fontSize: '18px' }}>
+                            <Typography sx={{ marginY: '3vh', color: '#9398C2', fontSize: '16px' }}>
                                 {`${i18next.t('wizard.entity.multipleUpdate.entitiesAmount')}:`}
                                 <Typography component="span" variant="body2" sx={{ marginLeft: '10px', color: darkMode ? '#dcdde2' : '#53566E' }}>
                                     {selectedRowCount}
@@ -260,7 +258,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             },
             stepperActions: {
                 next: {
-                    text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                     onClick: async (props) => {
                         const undefinedProperties = Object.keys(props.properties).filter((property) => props.properties[property] === undefined);
                         setEntityData({ propertiesToChange: props, propertiesToRemove: undefinedProperties });
@@ -277,7 +274,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         },
         {
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
-            // eslint-disable-next-line react/no-unstable-nested-components
             component: (props) => {
                 return (
                     <LoadEntitiesTables
@@ -303,11 +299,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 <Grid item>
                     <TableButton
                         iconButtonWithPopoverProps={{
-                            popoverText: i18next.t(
-                                workspaceAdmin
-                                    ? 'entitiesTableOfTemplate.deleteWithRelationshipReferenceWarn'
-                                    : 'entitiesTableOfTemplate.deleteWithRelationshipWarn',
-                            ),
+                            popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
                             iconButtonProps: {
                                 onClick: () => setOpenDeleteDialog(true),
                                 sx: {
@@ -364,36 +356,29 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
             <Wizard
                 open={openEditDialog}
-                handleClose={() => {
-                    handleClose(false);
-                }}
+                handleClose={() => handleClose(false)}
                 initialValues={initialValues}
                 isEditMode
                 title={i18next.t('wizard.entity.multipleUpdate.title')}
                 steps={steps}
                 isLoading={isMultipleUpdateLoading}
-                submitFunction={async () => {
-                    if (isBrokenRules) {
-                        setCreateOrUpdateWithRuleBreachDialogState(true);
-                    } else {
-                        handleClose(true);
-                    }
-                }}
+                submitFunction={async () => (isBrokenRules ? setCreateOrUpdateWithRuleBreachDialogState(true) : handleClose(true))}
                 direction="column"
             />
 
             {createOrUpdateWithRuleBreachDialogState && isBrokenRules && (
                 <ActionOnEntityWithRuleBreachDialog
                     isLoadingActionOnEntity={isMultipleUpdateLoading}
-                    handleClose={() => {
-                        handleClose(false);
-                    }}
+                    handleClose={() => handleClose(false)}
                     doActionEntity={async () => {
                         const entityWithIgnoreRules = {};
                         stepsData?.brokenRulesEntities?.forEach((rule) => {
-                            if (entityWithIgnoreRules[rule.entities[0].properties._id])
-                                entityWithIgnoreRules[rule.entities[0].properties._id].push(...rule.rawBrokenRules);
-                            else entityWithIgnoreRules[rule.entities[0].properties._id] = rule.rawBrokenRules;
+                            const entityId = rule.entities?.[0]?.properties?._id;
+
+                            if (entityId) {
+                                if (entityWithIgnoreRules[entityId]) entityWithIgnoreRules[entityId].push(...rule.rawBrokenRules);
+                                else entityWithIgnoreRules[entityId] = rule.rawBrokenRules;
+                            }
                         });
 
                         if (entityData)
@@ -411,20 +396,9 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     }}
                     actionType={ActionTypes.UpdateMultipleEntities}
                     brokenRulesEntity={stepsData?.brokenRulesEntities ?? []}
-                    onUpdatedRuleBlock={(brokenRules) => {
-                        setStepsData((prevState) => ({
-                            ...prevState,
-                            brokenRules,
-                        }));
-                    }}
-                    entityFormData={{
-                        template,
-                        properties: { ...entityData?.propertiesToChange.properties, disabled: false },
-                        attachmentsProperties: {},
-                    }}
-                    onCreateRuleBreachRequest={() => {
-                        handleClose(true)
-                    }}
+                    onUpdatedRuleBlock={(brokenRules) => setStepsData((prevState) => ({...prevState, brokenRules }))}
+                    entityFormData={{template, properties: { ...entityData?.propertiesToChange.properties, disabled: false }, attachmentsProperties: {}}}
+                    onCreateRuleBreachRequest={() => handleClose(true)}
                 />
             )}
         </Grid>

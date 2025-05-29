@@ -13,6 +13,14 @@ import { updateEntityRequestForMultiple, createEntityRequest } from '../../../..
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
+import { environment } from '../../../../globals';
+
+const { errorCodes } = environment;
+
+type MutateAsyncFn = (args: {
+  newEntityData: EntityWizardValues;
+  ignoredRules?: IRuleBreach['brokenRules'];
+}) => Promise<IEntity>;
 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
@@ -20,12 +28,11 @@ const useMutationHandler = (
     entityTemplate: IMongoEntityTemplatePopulated,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
-    errorCodes,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
-    let mutateAsync;
+    let mutateAsync: MutateAsyncFn | undefined;
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -147,7 +154,7 @@ const useMutationHandler = (
                         render({ data }: { data?: IEntity }) {
                             return (
                                 <Grid display="flex" alignItems="center">
-                                    <span>{i18next.t(`wizard.entity.${isUpdate ? 'editedSuccessfully' : 'createdSuccessfully'}`)}</span>
+                                    <span>{i18next.t(`wizard.entity.${isUpdate ? 'edited' : 'created'}Successfully`)}</span>
                                     {data?.properties?._id && (
                                         <Button variant="text" onClick={() => navigate(`/entity/${data.properties._id}`)} sx={{ marginRight: '5px' }}>
                                             {i18next.t('entityPage.linkToEntityPage')}
@@ -161,7 +168,7 @@ const useMutationHandler = (
                         render({ data }: { data?: IEntity }) {
                             return (
                                 <Grid display="flex" alignItems="center">
-                                    <span>{i18next.t(`wizard.entity.${isUpdate ? 'failedToEdit' : 'failedToCreate'}`)}</span>
+                                    <span>{i18next.t(`wizard.entity.failedTo${isUpdate ? 'Edit' : 'Create'}`)}</span>
                                     <Button
                                         variant="text"
                                         onClick={() => {

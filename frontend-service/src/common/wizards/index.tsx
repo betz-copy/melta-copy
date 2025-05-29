@@ -107,11 +107,11 @@ const Wizard = <T extends object>({
                 <Formik
                     initialValues={initialValues}
                     validationSchema={
-                        steps?.[activeStep]?.validationSchema instanceof Yup.ObjectSchema
+                        steps[activeStep].validationSchema instanceof Yup.ObjectSchema
                             ? steps[activeStep].validationSchema
-                            : Yup.object(steps?.[activeStep]?.validationSchema as ObjectShape)
+                            : Yup.object(steps[activeStep].validationSchema as ObjectShape)
                     }
-                    validate={steps?.[activeStep]?.validate}
+                    validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
                             await submitFunction(values);
@@ -134,7 +134,7 @@ const Wizard = <T extends object>({
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
                             />
-                            {steps?.[activeStep]?.stepperActions?.disable !== 'all' && (
+                            {steps[activeStep].stepperActions?.disable !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>
                                     <StepperActions
                                         step={steps[activeStep]}

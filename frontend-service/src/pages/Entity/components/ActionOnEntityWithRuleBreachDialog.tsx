@@ -29,6 +29,7 @@ import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesSe
 import { environment } from '../../../globals';
 import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+import { IBrokenRuleEntity } from '../../../interfaces/excel';
 
 const { errorCodes } = environment;
 
@@ -70,17 +71,6 @@ const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData
         entity: currEntity,
         updatedFields,
     };
-};
-
-export type IBrokenRuleEntity = {
-    rawBrokenRules: IBrokenRule[];
-    brokenRules: IBrokenRulePopulated[];
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
-    rawActions: IAction[];
-    entities: { properties: IEntity['properties'] }[];
 };
 
 type BaseActionProps = {
@@ -184,7 +174,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
     } else if (actionType === ActionTypes.UpdateMultipleEntities) {
         actionMetadataPopulated =
             entities?.map((entity) =>
-                getUpdateEntityActionMetadata({ properties: entity.properties, templateId: entityFormData.template._id }, entityFormData),
+                getUpdateEntityActionMetadata({ properties: entity.properties as IEntity['properties'], templateId: entityFormData.template._id }, entityFormData),
             ) || [];
 
         actionMetadataWithoutFiles = (actionMetadataPopulated || [])?.map((actionMetadata) => {

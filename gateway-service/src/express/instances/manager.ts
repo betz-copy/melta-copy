@@ -363,6 +363,28 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
+    private convertEntities(template, key, property) {
+        switch (template.properties.properties[key]?.format) {
+            case 'relationshipReference':
+                return property?.properties._id;
+            case 'location': {
+                if (!property) return undefined;
+                const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
+                if (location.coordinateSystem === CoordinateSystem.UTM)
+                    return JSON.stringify({
+                        location: locationConverterToString(location.location),
+                        coordinateSystem: location.coordinateSystem,
+                    });
+                return JSON.stringify(location);
+            }
+            case 'signature':
+                return undefined;
+            default:
+                return property;
+        }
+    }
+
     async updateMultipleEntities(
         updatedInstanceData: IEntity,
         propertiesToRemove: string[],
@@ -375,31 +397,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
-        const data = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
+        const expandedEntities = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
         const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
 
         const handleUpdateEntity = async (entity: IEntity) => {
-            const convertedProperties = mapValues(entity.properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    default:
-                        return property;
-                }
-            });
+            const convertedProperties = mapValues(entity.properties, (property, key) => this.convertEntities(template, key, property));
 
             const propToUpdate: IEntity = {
                 properties: omit({ ...convertedProperties, ...updatedInstanceData.properties }, propertiesToRemove),
@@ -422,7 +424,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         };
 
-        await Promise.all(data!.map(async ({ entity }) => handleUpdateEntity(entity)));
+        await Promise.all(expandedEntities!.map(async ({ entity }) => handleUpdateEntity(entity)));
         succeededEntities.push(...results);
 
         return { succeededEntities, failedEntities, brokenRulesEntities: allBrokenRulesEntities };

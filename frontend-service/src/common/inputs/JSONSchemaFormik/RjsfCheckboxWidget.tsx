@@ -34,7 +34,7 @@ const RjsfCheckboxWidget = ({
 
     return (
         <Box display="flex" alignItems="center">
-            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} checked={value} />
+            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} checked={Boolean(value)} />
             <Typography>{label}</Typography>
         </Box>
     );

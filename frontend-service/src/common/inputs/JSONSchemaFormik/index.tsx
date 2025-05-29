@@ -161,6 +161,7 @@ const getComponent = (
                 </InputAccordion>
             );
         };
+        
         const MemoWrapped = memo(WrappedComponent);
         const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => <MemoWrapped {...props} />;
 

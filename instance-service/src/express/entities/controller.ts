@@ -34,7 +34,7 @@ class EntityController extends DefaultController<EntityManager> {
 
     async getSelectedEntities(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        const { templateId, showRelationships, ...rest } = req.body;
+        const { _templateId, showRelationships, ...rest } = req.body;
 
         res.json(await this.manager.getSelectedEntities(rest, entityTemplate, showRelationships));
     }

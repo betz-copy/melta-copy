@@ -404,13 +404,6 @@ export const ActionInfo: React.FC<{
                         failedProperties={failedProperties}
                     />
                 )}
-                {/* {actionType === ActionTypes.UpdateMultipleEntities && (
-                    <UpdateMultipleEntitiesActionInfo
-                        actionMetadata={actionMetadata as IUpdateMultipleEntitiesMetadataPopulated}
-                        isCompact={isCompact}
-                        failedProperties={failedProperties}
-                    />
-                )} */}
                 {actionType === ActionTypes.UpdateStatus && (
                     <UpdateEntityStatusActionInfo
                         actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}

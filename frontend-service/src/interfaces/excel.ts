@@ -42,7 +42,7 @@ export interface ITablesResults {
     brokenRulesEntities?: IBrokenRuleEntity;
 }
 
-export interface ITablesData {
+export interface IStatusEntitiesTables {
     succeededEntities: ICreateEntityMetadata[];
     failedEntities: IFailedEntity[];
     brokenRulesEntities?: IBrokenRuleEntity['entities'];
