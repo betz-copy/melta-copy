@@ -1,6 +1,6 @@
-import { IFilterRelationReference } from '../common/wizards/entityTemplate/commonInterfaces';
+import { FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
+import { IFieldsGroup, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -38,6 +38,7 @@ export interface IEntitySingleProperty {
         kartoffelField: string;
     };
     archive?: boolean;
+    fieldGroup?: FieldGroupData;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
@@ -63,6 +64,7 @@ export interface IEntityTemplate {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

@@ -7,6 +7,11 @@ export interface IRelationshipReference {
     relatedTemplateField: string;
     filters?: IFilterRelationReference[];
 }
+export interface FieldGroupData {
+    name: string;
+    displayName: string;
+    id: string;
+}
 
 export interface CommonFormInputProperties {
     name: string;
@@ -37,10 +42,23 @@ export interface CommonFormInputProperties {
     archive?: boolean;
     identifier?: boolean;
     mapSearch?: boolean;
+    fieldGroup?: FieldGroupData;
     comment?: string;
     hideFromDetailsPage?: boolean;
     color?: string;
 }
+
+export interface FieldProperty {
+    type: 'field';
+    data: CommonFormInputProperties;
+}
+
+export interface GroupProperty extends FieldGroupData {
+    type: 'group';
+    fields: CommonFormInputProperties[];
+}
+
+export type PropertyItem = FieldProperty | GroupProperty;
 
 export interface ConvertToRelationshipFieldFormInputProperties {
     fieldName: string;

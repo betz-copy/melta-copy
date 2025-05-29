@@ -8,7 +8,12 @@ import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplat
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
         ? Array.from(categories.keys())
-        : Object.keys(currentUser.currentWorkspacePermissions?.instances?.categories ?? {});
+        : Object.keys(currentUser.currentWorkspacePermissions?.instances?.categories ?? {}).sort((a, b) => {
+              // this sort function is because instances?.categories is NOT NECESSARILY the showing order (the order stored in the DB under configs)
+              // categories is guaranteed to be sorted, because the way it gets mapped, hence why receiving categoryOrder is redundant.
+              const categoryIds = new Map(Array.from(categories.keys()).map((id, index) => [id, index]));
+              return (categoryIds.get(a) ?? Infinity) - (categoryIds.get(b) ?? Infinity);
+          });
 
     return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)!).filter((category) => category !== undefined);
 };

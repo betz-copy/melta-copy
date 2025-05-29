@@ -485,7 +485,6 @@ const Entity: React.FC = () => {
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <TabList
-                                        style={{ height: '60px' }}
                                         variant="scrollable"
                                         scrollButtons="auto"
                                         onChange={(_event, newValue) => setSelectedTabId(newValue)}

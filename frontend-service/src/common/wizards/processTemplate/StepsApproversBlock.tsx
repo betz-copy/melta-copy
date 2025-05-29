@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import React from 'react';
-import { AccordionDetails, AccordionSummary, Box, Grid, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Switch, Typography } from '@mui/material';
 import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
@@ -8,11 +8,16 @@ import i18next from 'i18next';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
-import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 
-const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors, touched }) => {
+const StepsApproversBlock: React.FC<
+    StepsGenericBlockProps & {
+        disableAddingReviewersFieldName: string;
+        isDisableAddingReviewers: boolean;
+    }
+> = ({ title, values, propIndex, errors, touched, setFieldValue, disableAddingReviewersFieldName, isDisableAddingReviewers }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -44,7 +49,7 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                                 </Grid>
                                 <Grid container spacing={1}>
                                     {values.steps[propIndex].reviewers.map((user, index) => (
-                                        <CreateUserCard key={user._id} userName={user.displayName} userIndex={index} remove={() => remove(index)} />
+                                        <CreateUserCard key={user._id} user={user} userIndex={index} remove={() => remove(index)} />
                                     ))}
                                 </Grid>
                                 {errorsOfStep?.reviewers === i18next.t('validation.oneField') && (
@@ -55,6 +60,20 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                             </Box>
                         )}
                     </FieldArray>
+
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                id="disableAddApprovers"
+                                name="disableAddApprovers"
+                                onChange={(_e, checked) => {
+                                    setFieldValue(disableAddingReviewersFieldName, checked);
+                                }}
+                                checked={isDisableAddingReviewers}
+                            />
+                        }
+                        label={i18next.t('wizard.processTemplate.blockAddingApprovers')}
+                    />
                 </AccordionDetails>
             </FieldBlockAccordion>
         </Grid>

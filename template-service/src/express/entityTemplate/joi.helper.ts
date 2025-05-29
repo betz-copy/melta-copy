@@ -225,6 +225,13 @@ export const innerPropertiesSchema = Joi.object()
         return value;
     });
 
+export const innerFieldGroupsSchema = Joi.array().items(
+    Joi.object({
+        name: Joi.string().required(),
+        displayName: Joi.string().required(),
+        fields: Joi.array().items(Joi.string()).unique().required(),
+    }),
+);
 const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: string[], helpers) => {
     const { properties } = helpers.state.ancestors[0].properties;
     const propertiesKeys = Object.keys(properties);

@@ -20,6 +20,7 @@ import { createRelationshipTemplates } from './templates/relationshipTemplates';
 import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
+import { createCategoryOrder } from './templates/config';
 import { createCharts } from './templateCharts';
 
 const main = async () => {
@@ -79,6 +80,8 @@ const main = async () => {
     console.log('Creating workspaces');
 
     const mainWorkspace = await createWorkspaces(getWorkspacesToCreate());
+
+    await createCategoryOrder(mainWorkspace._id, []);
 
     console.log('Creating categories');
 
