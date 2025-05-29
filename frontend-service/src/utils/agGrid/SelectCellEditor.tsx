@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Autocomplete, TextField, Box, Grid, Typography } from '@mui/material';
+import { Autocomplete, TextField, Box } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
-import { HighlightText } from '../HighlightText';
 import OverflowWrapper from './OverflowWrapper';
 
 interface SelectCellEditorProps {

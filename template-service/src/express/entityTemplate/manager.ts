@@ -7,12 +7,14 @@ import {
     IMongoEntityTemplate,
     IRelationshipTemplate,
     NotFoundError,
+    IMongoCategory,
 } from '@microservices/shared';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { withTransaction } from '../../utils/mongoose';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
+import CategoryManager from '../category/manager';
 import EntityTemplateSchema from './model';
 
 export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {
@@ -20,10 +22,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     private relationshipTemplateManager: RelationshipTemplateManager;
 
+    private categoryManager: CategoryManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
         this.globalSearchIndexCreator = new GlobalSearchIndexCreator(workspaceId);
         this.relationshipTemplateManager = new RelationshipTemplateManager(workspaceId);
+        this.categoryManager = new CategoryManager(workspaceId);
     }
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
@@ -161,6 +166,10 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
+        const { templatesOrder } = entityTemplate.category;
+        templatesOrder.push(entityTemplate._id.toString());
+        await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder });
+
         await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
 
         return entityTemplate;
@@ -181,6 +190,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     }
                 }),
             );
+
+            const category: IMongoCategory = await this.categoryManager.getCategoryById(deletedEntityTemplate.category);
+            const index: number = category.templatesOrder.indexOf(id);
+
+            if (index !== -1) {
+                category.templatesOrder.splice(index, 1);
+            }
+
+            await this.categoryManager.updateCategory(category._id, { templatesOrder: category.templatesOrder });
         });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnDeleteTemplate(id);
@@ -333,6 +351,14 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
+            .orFail(new NotFoundError('Entity Template not found'))
+            .lean()
+            .exec();
+    }
+
+    async updateEntityTemplateCategory(tempId: string, categoryId: string) {
+        return this.model
+            .findByIdAndUpdate(tempId, { category: categoryId }, { new: true })
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();

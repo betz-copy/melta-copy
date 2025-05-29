@@ -56,7 +56,8 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import WorkspaceService from '../workspaces/service';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
-import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, classifyEntityErrors } from '../../utils/excel';
+import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
+import { PreviewService } from '../../externalServices/previewService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -73,6 +74,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private workspaceId: string;
 
+    private previewService: PreviewService;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
@@ -81,6 +84,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
+        this.previewService = new PreviewService(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -560,12 +564,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async exportEntityToDocumentTemplate({
         documentTemplateId,
-        entityProperties,
+        entity: { templateId, properties },
     }: {
         documentTemplateId: string;
-        entityProperties: IEntity['properties'];
+        entity: IEntity;
     }) {
-        return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
+        return patchDocumentAsStream(
+            await this.storageService.downloadFile(documentTemplateId),
+            properties,
+            entityTemplate,
+            async (path: string, contentType?: string) => this.previewService.getFilePreview(path, contentType),
+        );
     }
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {

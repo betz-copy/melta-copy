@@ -480,8 +480,8 @@ export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocatio
     return data;
 };
 
-export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
-    const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
+export const exportEntityToDocumentRequest = async (documentTemplateId: string, entity: IEntity) => {
+    const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entity }, { responseType: 'blob' });
     return data;
 };
 

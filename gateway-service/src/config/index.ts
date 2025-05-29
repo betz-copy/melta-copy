@@ -81,6 +81,7 @@ const config = {
         entities: {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+            baseConfigRoute: env.get('TEMPLATE_SERVICE_CONFIG_BASE_ROUTE').default('/api/templates/config').asString(),
         },
         relationships: {
             baseRelationshipsRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_BASE_ROUTE').default('/api/templates/relationships').asString(),
@@ -196,6 +197,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
+    hebrew: { yes: 'כן', no: 'לא' },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
         entityTemplateHasOutgoingRelationships: 'TEMPLATE_HAS_OUTGOING_RELATIONSHIPS',

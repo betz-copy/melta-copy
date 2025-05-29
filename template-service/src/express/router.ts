@@ -4,6 +4,7 @@ import relationshipTemplateRouter from './relationshipTemplate/router';
 import ruleRouter from './rule/router';
 import entityTemplateRouter from './entityTemplate/router';
 import categoryRouter from './category/router';
+import configRouter from './config/router';
 
 const appRouter = Router();
 
@@ -11,6 +12,7 @@ appRouter.use('/api/templates/relationships', relationshipTemplateRouter);
 appRouter.use('/api/templates/rules', ruleRouter);
 appRouter.use('/api/templates/entities', entityTemplateRouter);
 appRouter.use('/api/templates/categories', categoryRouter);
+appRouter.use('/api/templates/config', configRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');

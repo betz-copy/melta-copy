@@ -9,6 +9,7 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
         name: '',
         displayName: '',
         color: '',
+        templatesOrder: [],
     },
     properties: {
         properties: {},
