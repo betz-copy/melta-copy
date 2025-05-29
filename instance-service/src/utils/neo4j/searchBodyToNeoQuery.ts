@@ -241,6 +241,20 @@ const filterOfFieldToNeoQuery = (
             default:
                 throw new Error(`missing implementation for filter type "${filterType}" of filter of field`);
         }
+
+        if (fieldTemplate.format === 'user') {
+            // TODO: yona - refactor this to be more generic
+            const userIdFilterString = simplePartFilterOfFieldToNeoQuery(
+                `\`${field}.id_userField\``,
+                filterType as '$eq' | '$ne' | '$rgx' | '$gt' | '$gte' | '$lt' | '$lte' | '$not',
+                filterRhs,
+                `${parametersParentVariableName}.\`${filterType}\``,
+                fieldTemplate,
+            );
+
+            partFilterOfFieldQuery.cypherQuery = `(${partFilterOfFieldQuery.cypherQuery}) OR (${userIdFilterString.cypherQuery})`;
+        }
+
         return { cypherQuery: partFilterOfFieldQuery.cypherQuery, parameters: { [filterType]: partFilterOfFieldQuery.parameters } };
     });
 

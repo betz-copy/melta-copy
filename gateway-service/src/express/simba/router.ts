@@ -1,38 +1,35 @@
-import { fixRequestBody, createProxyMiddleware } from 'http-proxy-middleware';
 import { Router } from 'express';
-import config from '../../config';
+import { createController, ValidateRequest } from '@microservices/shared';
+import SimbaController from './controller';
+import { getInstancesByTemplateIdSchema, getAllTemplatesSchema, getEntityChildTemplateByIdSchema } from './validator.schema';
+import SimbaValidator, { validateSimbaHeaders } from './middlewares';
 
-const {
-    templateService: {
-        url: templateServiceUrl,
-        requestTimeout: templateServiceRequestTimeout,
-        entities: { baseChildTemplatesRoute },
-    },
-    instanceService: { url: instanceServiceUrl, requestTimeout: instanceServiceRequestTimeout },
-} = config;
+const SimbaRouter: Router = Router();
 
-const simbaRouter: Router = Router();
+const SimbaControllerMiddleware = createController(SimbaController);
+const SimbaValidatorMiddleware = createController(SimbaValidator, true);
 
-const simbaTemplateProxy = createProxyMiddleware({
-    target: `${templateServiceUrl}${baseChildTemplatesRoute}`,
-    changeOrigin: true,
-    on: {
-        proxyReq: fixRequestBody,
-    },
-    proxyTimeout: templateServiceRequestTimeout,
-});
+SimbaRouter.use(validateSimbaHeaders);
 
-const simbaEntityProxy = createProxyMiddleware({
-    target: `${instanceServiceUrl}${baseChildTemplatesRoute}`,
-    changeOrigin: true,
-    on: {
-        proxyReq: fixRequestBody,
-    },
-    proxyTimeout: instanceServiceRequestTimeout,
-});
+SimbaRouter.get(
+    '/all',
+    ValidateRequest(getAllTemplatesSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.getAllTemplates,
+);
 
-simbaRouter.get('/:id', simbaTemplateProxy);
+SimbaRouter.get(
+    '/templates/child/:templateId',
+    ValidateRequest(getEntityChildTemplateByIdSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.getEntityChildTemplateById,
+);
 
-simbaRouter.post('/user', simbaEntityProxy);
+SimbaRouter.post(
+    '/entities/:templateId',
+    ValidateRequest(getInstancesByTemplateIdSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.getInstancesByTemplateId,
+);
 
-export default simbaRouter;
+export default SimbaRouter;

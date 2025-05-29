@@ -1,8 +1,8 @@
 import axios from '../../axios';
-import { IEntityChildTemplate, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../interfaces/entityChildTemplates';
+import { IEntityChildTemplate, IMongoChildEntityTemplate } from '../../interfaces/entityChildTemplates';
 import { environment } from '../../globals';
 
-const { entityChildTemplates, simbaRoutes } = environment.api;
+const { entityChildTemplates } = environment.api;
 
 const createEntityChildTemplate = async (newEntityChildTemplate: IEntityChildTemplate) => {
     const { data } = await axios.post<IMongoChildEntityTemplate>(entityChildTemplates, newEntityChildTemplate);
@@ -19,20 +19,9 @@ const getAllEntityChildTemplates = async () => {
     return data;
 };
 
-const getEntityChildTemplateByIdRequest = async (id: string) => {
-    const { data } = await axios.get<IMongoChildEntityTemplatePopulated>(`${simbaRoutes}/${id}`);
-    return data;
-};
-
 const deleteEntityChildTemplate = async (id: string) => {
     const { data } = await axios.delete<IMongoChildEntityTemplate>(`${entityChildTemplates}/${id}`);
     return data;
 };
 
-export {
-    createEntityChildTemplate,
-    updateEntityChildTemplate,
-    getAllEntityChildTemplates,
-    deleteEntityChildTemplate,
-    getEntityChildTemplateByIdRequest,
-};
+export { createEntityChildTemplate, updateEntityChildTemplate, getAllEntityChildTemplates, deleteEntityChildTemplate };

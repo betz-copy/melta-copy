@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { AuthService } from '../../services/authService';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getEntityChildTemplateByIdRequest } from '../../services/templates/entityChildTemplatesService';
+import { getCurrentUserEntity, getEntityChildTemplateByIdRequest } from '../../services/simbaService';
 import { getById } from '../../services/workspacesService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 
@@ -30,12 +30,7 @@ const SimbaClientPage: React.FC = () => {
 
     const { data: currentUserFromSimba } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.fatherTemplateId._id, user?.kartoffelId],
-        queryFn: () =>
-            searchEntitiesOfTemplateRequest(usersInfoChildTemplate?.fatherTemplateId._id || '', {
-                skip: 0,
-                limit: 1,
-                filter: { $and: { disabled: { $eq: false }, 'user._id': { $eq: user?.kartoffelId! } } },
-            }),
+        queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.fatherTemplateId._id || '', user?.kartoffelId!),
         enabled: !!usersInfoChildTemplate?.fatherTemplateId._id,
     });
 
