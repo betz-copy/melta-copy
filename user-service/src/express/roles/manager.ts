@@ -1,6 +1,14 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IRole, IUserAgGridRequest, IBaseRole, RelatedPermission, NotFoundError } from '@microservices/shared';
+import {
+    ISubCompactPermissions,
+    IRole,
+    IUserAgGridRequest,
+    IBaseRole,
+    RelatedPermission,
+    NotFoundError,
+    ValidationError,
+} from '@microservices/shared';
 import RolesModel from './model';
 import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
@@ -107,6 +115,9 @@ class RolesManager {
     }
 
     static async createRole({ permissions, ...roleData }: Omit<IRole, '_id'>): Promise<IRole> {
+        const workspaceIds = Object.keys(permissions);
+        const workspaceRoles = await this.getAllWorkspaceRoles(workspaceIds);
+        if (workspaceRoles.find((workspaceRole) => workspaceRole.name === roleData.name)) throw new ValidationError('role name needs to be unique');
         const baseRole = (await RolesModel.create(roleData)).toObject();
 
         await PermissionsManager.syncCompactPermissions(baseRole._id, RelatedPermission.Role, permissions);

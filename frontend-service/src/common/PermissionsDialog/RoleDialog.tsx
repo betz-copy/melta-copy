@@ -60,9 +60,16 @@ const RoleDialog: React.FC<{
     });
 
     const { mutate: createRole } = useMutation((formRole: IRole) => createRoleRequest(formRole.name, formRole.permissions), {
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('failed to upsert permission. error:', error);
-            toast.error(i18next.t('permissions.permissionsOfRoleDialog.failedToCreatePermissionsOfRole'));
+            const uniqueRoleNameError = error.response.data.metadata.message === 'role name needs to be unique';
+            toast.error(
+                i18next.t(
+                    `permissions.permissionsOfRoleDialog.${
+                        uniqueRoleNameError ? 'userAlreadyExistOnCreateMessage' : 'failedToCreatePermissionsOfRole'
+                    }`,
+                ),
+            );
         },
         onSuccess: () => {
             onSuccess?.();
