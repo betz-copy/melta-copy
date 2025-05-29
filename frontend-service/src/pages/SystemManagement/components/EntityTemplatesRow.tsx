@@ -195,11 +195,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         return '';
     };
 
-    // useEffect(() => {
-    //     if (isChildTemplate) {
-    //         checkEntityTemplateHasEntities([entityTemplate]);
-    //     }
-    // }, [isChildTemplate, entityTemplate]);
 
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
