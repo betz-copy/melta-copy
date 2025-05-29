@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
-import { IMongoEntityTemplate } from '@microservices/shared';
+import { AxiosError } from 'axios';
 import config from './config';
 import { createGantts } from './gantts';
 import { createInstances, createRelationshipInstances, isInstanceServiceAlive, updateConstraintsOfTemplate } from './instances';
@@ -9,6 +9,7 @@ import categories from './mocks/categories';
 import entityTemplates from './mocks/entityTemplates';
 import simbaCategories from './mocks/simba/categories';
 import simbaEntityTemplates from './mocks/simba/entityTemplates';
+import { driverEntityChildTemplate, carEntityChildTemplate } from './mocks/simba/entityChildTemplates';
 // import simbaRelationshipTemplates from './mocks/simba/relationshipTemplates';
 import getProcessTemplateToCreate from './mocks/processTemplates';
 import relationshipTemplates from './mocks/relationshipTemplates';
@@ -25,6 +26,7 @@ import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive, updateWorkspaceMetadata } from './workspaces';
 import { createCharts } from './templateCharts';
+import { createEntityChildTemplate } from './templates/entityChildTemplates';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -155,6 +157,18 @@ const main = async () => {
     simbaEntityTemplates[1].properties.properties.parents.relationshipReference!.relatedTemplateId = createdSimbaDriverTemplate._id;
     const createdSimbaCarTemplate = (await createEntityTemplates(simbaWorkspace._id, simbaEntityTemplates.slice(1, 2), createdSimbaCategories))[0];
 
+    console.log('Creating simba entity child templates');
+
+    const createdSimbaDriverEntityChildTemplate = await createEntityChildTemplate(
+        simbaWorkspace._id,
+        driverEntityChildTemplate,
+        createdSimbaDriverTemplate,
+    );
+    const createdSimbaCarEntityChildTemplate = await createEntityChildTemplate(simbaWorkspace._id, carEntityChildTemplate, createdSimbaCarTemplate);
+
+    console.log('createdSimbaDriverEntityChildTemplate', createdSimbaDriverEntityChildTemplate);
+    console.log('createdSimbaCarEntityChildTemplate', createdSimbaCarEntityChildTemplate);
+
     console.log('Creating simba relationship templates');
 
     const createdSimbaCarTemplateRelationshipTemplateId =
@@ -173,17 +187,34 @@ const main = async () => {
 
     await updateWorkspaceMetadata(simbaWorkspace._id, simbaWorkspaceMetadata);
 
-    console.log('Creating simba drivers entities');
+    try {
+        console.log('Creating simba drivers entities');
+        const createdSimbaDriverInstances = await createInstances(
+            simbaWorkspace._id,
+            userIds[0],
+            [createdSimbaDriverTemplate],
+            chance,
+            exampleFileId,
+            1,
+        );
+        console.log('createdSimbaDriverInstances', createdSimbaDriverInstances);
 
-    const createdSimbaDriverInstances = await createInstances(simbaWorkspace._id, userIds[0], [createdSimbaDriverTemplate], chance, exampleFileId, 1);
+        console.log('Creating simba cars entities');
 
-    console.log('Creating simba cars entities');
+        JSONSchemaFaker.format('relationshipReference', (_value) => createdSimbaDriverInstances[0].createdEntity.properties._id);
 
-    JSONSchemaFaker.format('relationshipReference', (_value) => createdSimbaDriverInstances[0].createdEntity.properties._id);
-
-    await createInstances(simbaWorkspace._id, userIds[0], [createdSimbaCarTemplate], chance, exampleFileId, 10);
-
-    console.log('Creating simba relationships');
+        await createInstances(
+            simbaWorkspace._id,
+            userIds[0],
+            [createdSimbaCarTemplate],
+            chance,
+            exampleFileId,
+            10,
+            createdSimbaDriverInstances[0].createdEntity.properties._id,
+        );
+    } catch (error) {
+        console.log('error creating simba driver/car instances', (error as AxiosError).response?.data);
+    }
 
     console.log('Finished simba');
 };

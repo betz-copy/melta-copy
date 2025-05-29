@@ -1,7 +1,12 @@
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import axios from 'axios';
-import { IRelationship, IMongoEntityTemplate, IMongoRelationshipTemplate, IUniqueConstraintOfTemplate } from '@microservices/shared';
+import {
+    IRelationship,
+    IMongoRelationshipTemplate,
+    IUniqueConstraintOfTemplate,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
 import createAxiosInstance from './utils/axios';
@@ -24,10 +29,11 @@ const {
 export const createInstances = async (
     workspaceId: string,
     userId: string,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     chance: Chance.Chance,
     fileId: string,
     maxEntitiesPerTemplate?: number,
+    relationshipReferenceTemplateId?: string,
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
@@ -47,6 +53,10 @@ export const createInstances = async (
             mail: 't25458789sh@jello.com',
         });
     });
+
+    if (relationshipReferenceTemplateId) {
+        JSONSchemaFaker.format('relationshipReference', (_value) => relationshipReferenceTemplateId);
+    }
 
     const promises = entityTemplates
         .map((entityTemplate) => {

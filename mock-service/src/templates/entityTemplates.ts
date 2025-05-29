@@ -1,4 +1,4 @@
-import { IEntityTemplate, IMongoEntityTemplate, IMongoCategory } from '@microservices/shared';
+import { IEntityTemplate, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 
@@ -15,7 +15,7 @@ export const createEntityTemplates = async (workspaceId: string, entityTemplates
     const axiosInstance = createAxiosInstance(workspaceId);
 
     const promises = entityTemplatesToCreate.map((entityTemplate) => {
-        return axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
+        return axiosInstance.post<IMongoEntityTemplateWithConstraintsPopulated>(url + createEntityTemplateRoute, {
             ...entityTemplate,
             category: categories.find((category) => category.name === entityTemplate.category.name)?._id,
         });

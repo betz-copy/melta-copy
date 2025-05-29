@@ -26,6 +26,9 @@ const config = {
             createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
             getRelationshipTemplateRoute: env.get('GET_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
         },
+        entityChildTemplates: {
+            createEntityChildTemplateRoute: env.get('CREATE_ENTITY_CHILD_TEMPLATE_ROUTE').default('/api/templates/child').asString(),
+        },
     },
     processService: {
         url: env.get('PROCESS_SERVICE_URL').required().asString(),
