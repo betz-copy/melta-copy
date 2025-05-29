@@ -58,7 +58,7 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
                 }}
                 onInputChange={(_e, newValue, reason) => {
                     onDisplayValueChange?.(_e, newValue, reason);
-                    if (reason === 'input') refetch();
+                    if (reason === 'input' && newValue.length >= 1) refetch();
                 }}
                 disabled={disabled}
                 getOptionLabel={(option) => option.name}

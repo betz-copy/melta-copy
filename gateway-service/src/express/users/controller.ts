@@ -55,8 +55,8 @@ class UsersController {
     }
 
     static async syncPermissions(req: Request, res: Response) {
-        const { permissionType, permissions } = req.body;
-        res.json(await UsersManager.syncUserPermissions(req.params.relatedId, permissionType, permissions));
+        const { permissionType, permissions, dontDeleteUser } = req.body;
+        res.json(await UsersManager.syncUserPermissions(req.params.relatedId, permissionType, permissions, dontDeleteUser));
     }
 
     static async deletePermissionsFromMetadata(req: Request, res: Response) {

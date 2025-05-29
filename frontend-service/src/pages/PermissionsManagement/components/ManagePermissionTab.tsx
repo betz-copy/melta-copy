@@ -20,10 +20,10 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
 
     const [deleteDialogState, setDeleteDialogState] = useState<{
         isDialogOpen: boolean;
-        relatedId: string | null;
+        roleOrUser: PermissionData | null;
     }>({
         isDialogOpen: false,
-        relatedId: null,
+        roleOrUser: null,
     });
 
     const [editDialogState, setEditDialogState] = useState<{
@@ -79,7 +79,7 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
                             ref={permissionsTableRef}
                             permissionType={permissionType}
                             categories={Array.from(categories.values())}
-                            onDeletePermissions={({ _id }) => setDeleteDialogState({ isDialogOpen: true, relatedId: _id })}
+                            onDeletePermissions={(roleOrUser) => setDeleteDialogState({ isDialogOpen: true, roleOrUser })}
                             onEditPermissions={(roleOrUser) => {
                                 const { roles, ...restOfUser } = roleOrUser as IUserPopulated;
                                 const roleIds = roles?.map((role) => role._id);
@@ -98,9 +98,9 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
             </Grid>
             <DeletePermissionsDialog
                 isOpen={deleteDialogState.isDialogOpen}
-                relatedId={deleteDialogState.relatedId}
+                roleOrUser={deleteDialogState.roleOrUser}
                 permissionType={permissionType}
-                handleClose={() => setDeleteDialogState({ isDialogOpen: false, relatedId: null })}
+                handleClose={() => setDeleteDialogState({ isDialogOpen: false, roleOrUser: null })}
                 onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
             />
             <PermissionsDialog

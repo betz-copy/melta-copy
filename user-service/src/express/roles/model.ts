@@ -15,8 +15,6 @@ const RoleSchema = new Schema(
     { timestamps: true, versionKey: false },
 );
 
-RoleSchema.index({ name: 1, workspaceId: 1, type: 1 }, { unique: true });
-
 const RolesModel = model<IRole>(rolesCollectionName, RoleSchema);
 
 export default RolesModel;

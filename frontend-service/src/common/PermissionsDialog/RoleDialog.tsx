@@ -4,13 +4,13 @@ import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
 import _isEqual from 'lodash.isequal';
 import React from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
-import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { PermissionData, RelatedPermission } from '../../interfaces/users';
 import { IRole } from '../../interfaces/roles';
-import { createRoleRequest, syncPermissionsRequest } from '../../services/userService';
+import { createRoleRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -42,7 +42,6 @@ const RoleDialog: React.FC<{
     } as IRole;
 
     const queryClient = useQueryClient();
-    const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
@@ -106,15 +105,26 @@ const RoleDialog: React.FC<{
         },
     );
 
+    const { data: workspaceRoles, refetch: refetchWorkspaceRoles } = useQuery(
+        ['getAllWorkspaceRolesRequest', workspace],
+        () => getAllWorkspaceRolesRequest([workspace._id]),
+        {
+            enabled: !!workspace,
+            staleTime: Infinity,
+            cacheTime: Infinity,
+            retry: false,
+        },
+    );
+
     return (
         <Formik
             initialValues={existingRole ? _cloneDeep(existingRole) : defaultEmptyRole}
             validationSchema={Yup.object({
                 name: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
-            validate={(formRole: IRole) => {
-                if (mode === 'create' && allUsers?.some(({ _id }) => _id === formRole.name)) {
-                    return { fullName: i18next.t('permissions.permissionsOfRoleDialog.userAlreadyExistOnCreateMessage') };
+            validate={({ name }: IRole) => {
+                if (mode === 'create' && workspaceRoles?.find((role) => role.name === name)) {
+                    return { name: i18next.t('permissions.permissionsOfRoleDialog.userAlreadyExistOnCreateMessage') };
                 }
 
                 return {};
@@ -186,6 +196,7 @@ const RoleDialog: React.FC<{
                                                 userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"
+                                            onClick={() => refetchWorkspaceRoles}
                                         >
                                             {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                             {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}

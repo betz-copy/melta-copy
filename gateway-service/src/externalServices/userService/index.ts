@@ -73,11 +73,13 @@ class UserService {
         relatedId: string,
         permissionType: RelatedPermission,
         permissions: ICompactNullablePermissions | ICompactPermissions,
+        dontDeleteUser?: boolean,
     ): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, {
             relatedId,
             permissionType,
             permissions,
+            dontDeleteUser,
         });
         return data;
     }

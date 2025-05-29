@@ -22,6 +22,7 @@ export const syncCompactPermissionsRequestSchema = joi.object({
         relatedId: mongoIdSchema.required(),
         permissionType: joi.string().valid(RelatedPermission.User, RelatedPermission.Role).required(),
         permissions: CompactNullablePermissionsSchema.required(),
+        dontDeleteUser: joi.boolean(),
     },
     params: {},
 });

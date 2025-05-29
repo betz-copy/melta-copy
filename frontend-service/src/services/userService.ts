@@ -79,15 +79,20 @@ export const updateUserExternalMetadataRequest = async (userId: string, kartoffe
 export const updateUserRoleIdsRequest = async (
     userId: string,
     workspaceId: string,
-    permissions: IUser['permissions'],
+    permissions:ICompactNullablePermissions,
     roleIds?: IUser['roleIds'],
 ) => {
     const { data } = await axios.patch<IUser>(`${users}/${userId}/roleIds`, { workspaceId, roleIds, permissions });
     return data;
 };
 
-export const syncPermissionsRequest = async (relatedId: string, permissionType: RelatedPermission, permissions: ICompactNullablePermissions) => {
-    const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, { permissionType, permissions });
+export const syncPermissionsRequest = async (
+    relatedId: string,
+    permissionType: RelatedPermission,
+    permissions: ICompactNullablePermissions,
+    dontDeleteUser?: boolean,
+) => {
+    const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, { permissionType, permissions, dontDeleteUser });
     return data;
 };
 

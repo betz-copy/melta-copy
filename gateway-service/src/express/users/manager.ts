@@ -86,6 +86,11 @@ class UsersManager {
         if (prevRole && roleIds?.includes(prevRole._id) && updatedRole && roleIds?.includes(updatedRole._id))
             throw new BadRequestError('only one role per workspace to user');
 
+        const newRoleIdsSet = new Set(existingUser.roleIds);
+        if (prevRole) newRoleIdsSet.delete(prevRole._id);
+        if (updatedRole) newRoleIdsSet.add(updatedRole._id);
+        const updatedRoleIds = Array.from(newRoleIdsSet);
+
         if (updatedRole === undefined) {
             // adding personal permissions
             const newUser = await UserService.updateUser(userId, { roleIds });
@@ -93,7 +98,7 @@ class UsersManager {
             return { ...newUser, permissions: newPermissions };
         }
 
-        return UserService.updateUser(userId, { roleIds });
+        return UserService.updateUser(userId, { roleIds: updatedRoleIds });
     }
 
     private static validateDigitalIdentity(
@@ -175,8 +180,9 @@ class UsersManager {
         relatedId: string,
         permissionType: RelatedPermission,
         permissions: ICompactNullablePermissions,
+        dontDeleteUser?: boolean,
     ): Promise<ICompactPermissions> {
-        return UserService.syncPermissions(relatedId, permissionType, permissions);
+        return UserService.syncPermissions(relatedId, permissionType, permissions, dontDeleteUser);
     }
 
     static async deletePermissionsFromMetadata(

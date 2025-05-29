@@ -60,23 +60,24 @@ class PermissionsManager {
         relatedId: string,
         permissionType: RelatedPermission,
         permissionsCompact: ICompactNullablePermissions | ICompactPermissions,
+        dontDeleteUser?: boolean,
     ): Promise<ICompactPermissions> {
+        const isDeletePermission =
+            Object.values(permissionsCompact).every(
+                (permission) =>
+                    permission === null ||
+                    (permission.permissions === null &&
+                        permission.rules === null &&
+                        permission.instances === null &&
+                        permission.processes === null &&
+                        permission.templates === null),
+            ) && !dontDeleteUser;
+
         if (permissionType === RelatedPermission.User)
             await UsersManager.getUserById(relatedId); // Validate user exists
         else {
             await RolesManager.getRoleById(relatedId); // Validate role exists
-            if (
-                Object.values(permissionsCompact).every(
-                    (permission) =>
-                        permission === null ||
-                        (permission.permissions === null &&
-                            permission.rules === null &&
-                            permission.instances === null &&
-                            permission.processes === null &&
-                            permission.templates === null),
-                ) &&
-                (await UsersManager.getUsersConnectedToRole(relatedId)).length > 0
-            )
+            if (isDeletePermission && (await UsersManager.getUsersConnectedToRole(relatedId)).length > 0)
                 throw new ValidationError(`can't remove role if there is users connected`, { code: `can't remove role: user connected` });
         }
 
@@ -107,10 +108,13 @@ class PermissionsManager {
         });
 
         const allRelatedPermissions = await this.getCompactPermissionsOfRelatedId(relatedId, undefined, permissionType);
-        if (Object.keys(allRelatedPermissions).length === 0) {
+        if (Object.keys(allRelatedPermissions).length === 0 && isDeletePermission) {
             // no permissions of role or user and it can be deleted from collection
-            if (permissionType === RelatedPermission.User) UsersManager.deleteUserById(relatedId);
-            else RolesManager.deleteRoleById(relatedId);
+            if (permissionType === RelatedPermission.Role) RolesManager.deleteRoleById(relatedId);
+            else {
+                const user = await UsersManager.getUserById(relatedId);
+                if (user.roleIds?.length === 0) UsersManager.deleteUserById(relatedId);
+            }
         }
 
         return Object.fromEntries(Object.entries(allRelatedPermissions).filter(([key]) => updatedWorkspacesIds.includes(key)));

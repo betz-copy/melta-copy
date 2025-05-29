@@ -26,6 +26,7 @@ import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
+import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -115,10 +116,7 @@ const MyPermissions: React.FC<{
     );
 
     const { mutateAsync: deletePermissionsOfUser } = useMutation(
-        () =>
-            syncPermissionsRequest(existingUser!._id, RelatedPermission.User, {
-                [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
-            }),
+        () => syncPermissionsRequest(existingUser!._id, RelatedPermission.User, { [workspace._id]: deletePermissions }, true),
         {
             onError: (error) => {
                 console.error('failed to delete personal permissions. error:', error);
@@ -237,11 +235,16 @@ const MyPermissions: React.FC<{
                                     <RoleAutocomplete
                                         value={formikRole}
                                         options={workspaceRoles}
-                                        onChange={(_e, chosenRole) => {
+                                        onChange={(_e, chosenRole, reason) => {
+                                            if (reason === 'clear') {
+                                                setFieldValue('roleIds', []);
+                                                setFieldValue('permissions', existingUser?.permissions);
+                                                return;
+                                            }
+
                                             const currentRoleIds = values.roleIds ?? [];
                                             const updatedRoleIds = currentRoleIds.filter((id) => id !== prevRole?._id);
                                             if (chosenRole?._id) updatedRoleIds.push(chosenRole._id);
-
                                             setFieldValue('roleIds', updatedRoleIds);
                                             setFieldValue('permissions', chosenRole?.permissions ?? {});
                                         }}

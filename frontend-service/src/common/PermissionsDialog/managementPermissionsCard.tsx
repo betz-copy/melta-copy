@@ -1,4 +1,4 @@
-import { Box, CheckboxProps, FormControlLabel, FormGroup } from '@mui/material';
+import { Box, FormControlLabel, FormGroup } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -6,15 +6,46 @@ import { MeltaCheckbox } from '../MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
 import { BlueTitle } from '../BlueTitle';
 
-type ManagementCheckboxProps = {
+interface ManagementPermissionsCardProps {
     disabled: boolean;
     viewMode: boolean;
-    isChecked: (property: string) => boolean;
+    isChecked: (property: managementTypes) => boolean;
     onChange: (checked: boolean, property: string, isManagement?: boolean) => void;
+}
+
+export type managementTypes = 'permissions' | 'templates' | 'rules' | 'processes';
+
+interface ManagementCheckboxProps extends ManagementPermissionsCardProps {
+    type: managementTypes;
+    permissionsManagement: boolean;
+}
+
+const ManagementCheckbox: React.FC<ManagementCheckboxProps> = ({ type, onChange, isChecked, disabled, viewMode, permissionsManagement }) => {
+    return (
+        <FormControlLabel
+            label={i18next.t(`permissions.permissionsOfUserDialog.${type}Management`)}
+            labelPlacement="end"
+            disabled={disabled}
+            control={
+                viewMode ? (
+                    <PermissionViewIcon checked={isChecked(type)} />
+                ) : (
+                    <MeltaCheckbox
+                        checked={isChecked(type)}
+                        onChange={(_e, checked) => {
+                            onChange(checked, type, permissionsManagement);
+                        }}
+                        disabled={disabled}
+                    />
+                )
+            }
+        />
+    );
 };
 
-const ManagementPermissionsCard: React.FC<ManagementCheckboxProps> = ({ disabled, viewMode, isChecked, onChange }) => {
+const ManagementPermissionsCard: React.FC<ManagementPermissionsCardProps> = ({ disabled, viewMode, isChecked, onChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const managementTypesArray = ['permissions', 'templates', 'rules', 'processes'] as const;
 
     return (
         <Box sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
@@ -28,54 +59,17 @@ const ManagementPermissionsCard: React.FC<ManagementCheckboxProps> = ({ disabled
                     />
                 </Box>
                 <FormGroup row sx={{ marginTop: '5px', justifyContent: 'center' }}>
-                    <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.permissionsManagement') as string}
-                        labelPlacement="end"
-                        disabled={disabled}
-                        control={
-                            viewMode ? (
-                                <PermissionViewIcon checked={isChecked('permissions')} />
-                            ) : (
-                                <MeltaCheckbox checked={isChecked('permissions')} onChange={(_e, checked) => {onChange(checked, 'permissions', true)}} disabled={disabled} />
-                            )
-                        }
-                    />
-                    <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.templatesManagement') as string}
-                        labelPlacement="end"
-                        disabled={disabled}
-                        control={
-                            viewMode ? (
-                                <PermissionViewIcon checked={isChecked('templates')} />
-                            ) : (
-                                <MeltaCheckbox checked={isChecked('templates')} onChange={(_e, checked) => onChange(checked, 'templates')} disabled={disabled} />
-                            )
-                        }
-                    />
-                    <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.rulesManagement') as string}
-                        labelPlacement="end"
-                        disabled={disabled}
-                        control={
-                            viewMode ? (
-                                <PermissionViewIcon checked={isChecked('rules')} />
-                            ) : (
-                                <MeltaCheckbox checked={isChecked('rules')} onChange={(_e, checked) => onChange(checked, 'rules')} disabled={disabled} />
-                            )
-                        }
-                    />
-                    <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.processesManagement') as string}
-                        labelPlacement="end"
-                        disabled={disabled}
-                        control={
-                            viewMode ? (
-                                <PermissionViewIcon checked={isChecked('processes')} />
-                            ) : (
-                                <MeltaCheckbox checked={isChecked('processes')} onChange={(_e, checked) => onChange(checked, 'processes')} disabled={disabled} />
-                            )
-                        }
-                    />
+                    {managementTypesArray.map((managementType) => (
+                        <ManagementCheckbox
+                            key={managementType}
+                            type={managementType}
+                            disabled={disabled}
+                            viewMode={viewMode}
+                            isChecked={isChecked}
+                            onChange={onChange}
+                            permissionsManagement={managementType == 'permissions'}
+                        />
+                    ))}
                 </FormGroup>
             </Box>
         </Box>
