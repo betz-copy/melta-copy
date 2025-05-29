@@ -251,8 +251,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         marginTop: isDrawerOpen ? '0.5rem' : '0.25rem',
                     }}
                 >
-                    {Array.from(
-                        categories.values(),
+                    {Array.from(categories.values()).map(
                         (category) =>
                             Boolean(
                                 currentUser.currentWorkspacePermissions.admin ||

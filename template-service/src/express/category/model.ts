@@ -18,6 +18,10 @@ const CategorySchema = new mongoose.Schema(
         color: {
             type: String,
         },
+        templatesOrder: {
+            type: [String],
+            default: [],
+        },
     },
     {
         timestamps: true,

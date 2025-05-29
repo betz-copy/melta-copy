@@ -15,12 +15,15 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getAllConfigsSchema,
     getCategoriesSchema,
+    getConfigByTypeSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
+    updateCategoryTempOrderSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
@@ -81,6 +84,37 @@ templatesRouter.post(
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchCategories,
 );
+
+templatesRouter.patch(
+    '/categories/templatesOrder/:templateId',
+    ValidateRequest(updateCategoryTempOrderSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryTemplatesOrder,
+);
+
+// config
+
+templatesRouter.get(
+    `/config/all`,
+    ValidateRequest(getAllConfigsSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getAllConfigs,
+);
+
+templatesRouter.get(
+    '/config/:type',
+    ValidateRequest(getConfigByTypeSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getConfigByType,
+);
+
+templatesRouter.put(
+    '/config/categoryOrder/:configId',
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryOrderConfig,
+);
+
+templatesRouter.post('/config/categoryOrder', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.createOrderConfig);
 
 // entities (templates)
 templatesRouter.put(
