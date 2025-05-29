@@ -16,6 +16,10 @@ export interface IFieldChip {
     value: string | number | boolean | Date | string[];
 }
 
+export interface ITemplateFieldsFilters {
+    [key: string]: IFieldFilter;
+}
+
 export enum ViewType {
     categoryPage = 'categoryPage',
     userPage = 'userPage',
@@ -25,17 +29,17 @@ export interface IChildTemplateProperty {
     title: string;
     type: string;
     format?: string;
-    filters?: Record<string, unknown>;
-    defaultValue?: string | number | boolean | Date | string[];
+    defaultValue?: any;
+    filters?: string | Record<string, unknown>;
 }
 
 export interface IEntityChildTemplate {
     name: string;
     displayName: string;
-    description: string;
-    categories: IMongoCategory['_id'][];
-    properties: Record<string, IChildTemplateProperty>;
+    description?: string;
     fatherTemplateId: string;
+    categories: string[];
+    properties: Record<string, IChildTemplateProperty>;
     disabled: boolean;
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
@@ -44,13 +48,11 @@ export interface IEntityChildTemplate {
 
 export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
     _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export type IEntityChildTemplateMap = Map<string, IMongoChildEntityTemplate>;
-
-export interface ITemplateFieldsFilters {
-    [key: string]: IFieldFilter;
-}
 
 export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories'> {
     categories: IMongoCategory[];

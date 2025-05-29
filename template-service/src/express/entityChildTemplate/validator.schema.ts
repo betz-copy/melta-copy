@@ -33,7 +33,11 @@ const childTemplatePropertySchema = Joi.object({
     type: Joi.string().required(),
     format: Joi.string(),
     defaultValue: Joi.any(),
-    filters: searchFilterSchema,
+    filters: searchFilterSchema.custom((value) => {
+        // todo: upgrade mongo version up to 5 and then delete that convert
+        if (value) return JSON.stringify(value);
+        return value;
+    }),
 });
 
 const childEntityTemplateSchema = {
