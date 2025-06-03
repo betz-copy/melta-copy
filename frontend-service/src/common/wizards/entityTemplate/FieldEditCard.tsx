@@ -8,6 +8,7 @@ import {
     Archive,
     Unarchive,
     AddLocationAlt,
+    FileCopy,
     WrongLocation,
     Add as AddIcon,
 } from '@mui/icons-material';
@@ -21,7 +22,6 @@ import { arrayTypes } from '../../../services/templates/enitityTemplatesService'
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
-import { ImageWithDisable } from '../../ImageWithDisable';
 import { Switches } from './Property/Switches';
 import { PropertiesTypes } from './Property/PropertyTypes';
 import { useQueryClient } from 'react-query';
@@ -431,7 +431,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
                                                 <Box>
                                                     <IconButton onClick={() => onDuplicateKartoffelField?.(index, groupIndex)}>
-                                                        <ImageWithDisable srcPath="/icons/duplicate.svg" style={{ width: '22px', height: '22px' }} />
+                                                        <FileCopy />
                                                     </IconButton>
                                                 </Box>
                                             </MeltaTooltip>
