@@ -210,7 +210,7 @@ const UpdateTextValue: React.FC<{
 
         const { type, format } = entityTemplateProperties[fieldName];
 
-        return type === 'string' && format === 'fileId';
+        return (type === 'string' && format === 'fileId') || format === 'signature';
     };
 
     const isArrayOfFileIds = (): boolean => {
