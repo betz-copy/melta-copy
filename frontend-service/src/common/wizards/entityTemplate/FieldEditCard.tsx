@@ -63,7 +63,6 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
-    supportFilterRelationList?: boolean;
     supportComment?: boolean;
     userPropertiesInTemplate?: string[];
     onDuplicateKartoffelField?: (fieldIndex: number, groupIndex?: number) => void;
@@ -104,7 +103,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
-    supportFilterRelationList,
     supportComment,
     userPropertiesInTemplate = [],
     onDuplicateKartoffelField,
