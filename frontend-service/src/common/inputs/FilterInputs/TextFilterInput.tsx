@@ -15,6 +15,8 @@ interface TextFilterProps {
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
+    errors?: any;
+    touched?: any;
 }
 
 const TextFilterInput: React.FC<TextFilterProps> = ({
@@ -24,9 +26,17 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
+    errors,
+    touched,
 }) => {
     return (
-        <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
+        <Grid
+            container
+            justifyContent="center"
+            direction={entityFilter ? 'row' : 'column'}
+            spacing={1}
+            sx={{ height: 'fit-content', display: 'flex', flexWrap: 'nowrap' }}
+        >
             <Grid item xs={entityFilter ? 5 : 12}>
                 <TypeSelectFilter
                     filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
@@ -48,6 +58,9 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                     fullWidth
                     type={type}
                     value={filterField?.filter ?? ''}
+                    disabled={readOnly}
+                    error={Boolean(touched && errors?.filter)}
+                    helperText={touched ? errors?.filter : ''}
                     onChange={(e) => {
                         const { value } = e.target;
 

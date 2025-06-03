@@ -4,7 +4,7 @@ import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
 import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
 import { commentColors } from '../../../inputs/JSONSchemaFormik/RjsfCommentWidget';
-import { IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import SelectAutocomplete from '../../../inputs/SelectAutocomplete';
@@ -63,17 +63,25 @@ export const Switches: React.FC<SwitchesProps> = ({
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
     const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
 
-    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
-        const properties = template.properties?.properties || {};
+    // TODO: when upgrading the mongo version to v5, update the types and delete the (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[] type
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce(
+        (acc: (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[], template) => {
+            const properties = template.properties?.properties || {};
 
-        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
-            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+            const references = Object.values(properties).reduce(
+                (refAcc: (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[], property) => {
+                    if (property.format === 'relationshipReference' && property.relationshipReference)
+                        refAcc.push(property.relationshipReference);
+                    
+                    return refAcc;
+                },
+                [],
+            );
 
-            return refAcc;
-        }, []);
-
-        return acc.concat(references);
-    }, []);
+            return acc.concat(references);
+        },
+        [],
+    );
 
     const disableRemoveRequire = Boolean(
         relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,

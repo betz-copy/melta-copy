@@ -7,11 +7,11 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
-import { ICompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoUser } from '../../interfaces/users';
-import { syncUserPermissionsRequest } from '../../services/userService';
+import { IMongoUser, RelatedPermission } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';
+import { ICompactPermissions } from '../../interfaces/permissions/permissions';
+import { syncPermissionsRequest } from '../../services/userService';
 
 interface IPermissionsDialogCardProps {
     user: IMongoUser;
@@ -36,7 +36,7 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
     const queryClient = useQueryClient();
 
     const { mutate: handlePermissionsDelete } = useMutation({
-        mutationFn: () => syncUserPermissionsRequest(user._id, { [workspaceId]: { admin: null } }),
+        mutationFn: () => syncPermissionsRequest(user._id, RelatedPermission.User, { [workspaceId]: { admin: null } }),
         onSuccess: () => {
             queryClient.invalidateQueries(usersQueryKey);
         },

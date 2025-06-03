@@ -23,6 +23,7 @@ export const environment = {
         preview: '/preview',
         permissions: '/permissions',
         users: '/users',
+        roles: '/users/roles',
         activityLog: '/activity-log',
         notifications: '/notifications',
         ruleBreachesRequests: '/rule-breaches/requests',
@@ -244,6 +245,7 @@ export const environment = {
     },
     filterOptions: {
         string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
+        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
         number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
         date: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
     },

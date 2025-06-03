@@ -31,6 +31,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText?: string;
     size?: 'small' | 'medium';
     style?: React.CSSProperties;
+    relationFilters?: string;
 }> = ({
     template,
     showField,
@@ -46,11 +47,28 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText,
     size,
     style,
+    relationFilters,
 }) => {
     const { cacheBlockSize } = environment.agGrid;
 
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
+
+    const parseAndAddDisabled = (filters: string) => {
+        const jsonFilters = JSON.parse(filters);
+
+        const disabledCondition = { disabled: { $eq: false } };
+
+        if (jsonFilters.$and && Array.isArray(jsonFilters.$and)) {
+            return {
+                $and: [...jsonFilters.$and, disabledCondition],
+            };
+        }
+
+        return {
+            $and: [jsonFilters, disabledCondition],
+        };
+    };
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
@@ -58,7 +76,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             return searchEntitiesOfTemplateRequest(template._id!, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
-                filter: { $and: { disabled: { $eq: false } } },
+                filter: relationFilters ? parseAndAddDisabled(relationFilters) : { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
             });
         },

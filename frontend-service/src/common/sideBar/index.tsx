@@ -31,13 +31,14 @@ import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { MeltaIcon } from '../MeltaIcon';
-import PermissionsOfUserDialog from '../permissionsOfUserDialog';
+import PermissionsDialog from '../PermissionsDialog';
 import { NavButton } from './NavButton';
 import { NotificationsButton } from './notifications/NotificationsButton';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
+import { RelatedPermission } from '../../interfaces/users';
 
 interface SideBarProps {
     toggleDrawer: () => any;
@@ -541,11 +542,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
             </Grid>
 
-            <PermissionsOfUserDialog
+            <PermissionsDialog
+                permissionType={RelatedPermission.User}
                 isOpen={isMyPermissionsDialogOpen}
                 mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
-                existingUser={currentUser}
+                roleOrUser={currentUser}
             />
 
             <NotificationsScreen

@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { PermissionScope, PermissionType, ISubCompactPermissions, createController } from '@microservices/shared';
+import { PermissionScope, PermissionType, ISubCompactPermissions, createController, RelatedPermission } from '@microservices/shared';
 import { typedObjectEntries } from '.';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
 import WorkspaceService from '../express/workspaces/service';
@@ -18,7 +18,7 @@ export class Authorizer extends DefaultController {
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
         workspaceHierarchyIds.push(this.workspaceId);
 
-        const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
+        const userPermissions = await UserService.getRelatedPermissions(userId, RelatedPermission.User, workspaceHierarchyIds);
 
         const hierarcyId = workspaceHierarchyIds.find((id) => Boolean(userPermissions[id]));
 
@@ -96,7 +96,7 @@ export class Authorizer extends DefaultController {
 
     async userIsRootAdmin(req: Request) {
         const rootWorkspace = await WorkspaceManager.getFile('/');
-        const userPermissions = await UserService.getUserPermissions(req.user!.id, [rootWorkspace._id]);
+        const userPermissions = await UserService.getRelatedPermissions(req.user!.id, RelatedPermission.User, [rootWorkspace._id]);
 
         const rootPermissions = userPermissions[rootWorkspace._id];
 

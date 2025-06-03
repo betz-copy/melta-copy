@@ -7,7 +7,7 @@ export const StyledFilterInput = styled(TextField)(({ theme }) => ({
     },
     '& .MuiInputBase-input': {
         color: theme.palette.mode === 'dark' ? undefined : ' rgba(83, 86, 110, 1)',
-        fontSize: '14px',
+        fontSize: '1rem',
         fontWeight: '400',
     },
     '& fieldset': {
