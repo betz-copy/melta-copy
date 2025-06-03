@@ -91,10 +91,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={(_e, newValue, reason) => {
-                    if (newValue) {
-                        setInputValue(newValue.displayName);
-                        onChange?.(_e, newValue, reason);
-                    }
+                    if (newValue) setInputValue(newValue.displayName);
+                    onChange?.(_e, newValue, reason);
                 }}
                 popupIcon={<ExpandMore />}
                 onInputChange={(_e, newValue, reason) => {

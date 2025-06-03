@@ -1,11 +1,12 @@
 import { IMongoCategory } from './category';
-import { IUniqueConstraintOfTemplate } from './entity';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
     relationshipTemplateDirection: 'outgoing' | 'incoming';
     relatedTemplateId: string;
     relatedTemplateField: string;
+    filters?: ISearchFilter | string;
 }
 
 export interface IEntitySingleProperty {
