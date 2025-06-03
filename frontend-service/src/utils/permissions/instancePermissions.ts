@@ -1,6 +1,6 @@
 import _cloneDeep from 'lodash.clonedeep';
 import { PermissionScope } from '../../interfaces/permissions';
-import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/roles/permissions';
 import { IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
 

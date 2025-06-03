@@ -39,12 +39,12 @@ import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../../MeltaCheckbox';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../../MeltaTooltip';
-import RelationshipReferenceField from '.././RelationshipReferenceField';
 import KartoffelUserField from '.././KartoffelUserField';
 import { getInitialValue, useMuiRteTheme } from '../../../inputs/JSONSchemaFormik/RjsfTextAreaWidget';
 import { CommonFormInputProperties } from '../commonInterfaces';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/enitityTemplatesService';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import RelationshipReferenceField from '../RelationshipRefrence/RelationshipReferenceField';
 
 enum dateNotificationOptions {
     day = 1,
