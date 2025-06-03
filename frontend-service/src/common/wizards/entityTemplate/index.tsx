@@ -92,7 +92,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         name: '',
         displayName: '',
         icon: undefined,
-        category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [], },
+        category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [] },
         disabled: false,
         properties: [],
         archiveProperties: [],
