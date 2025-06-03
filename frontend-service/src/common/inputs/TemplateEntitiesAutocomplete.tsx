@@ -130,28 +130,32 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 return property.coordinateSystem === CoordinateSystem.UTM
                     ? locationConverterToString(property.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                     : property.location;
-            } else if (Array.isArray(property)) {
+            }
+
+            if (Array.isArray(property)) {
                 try {
                     // user array
                     const parsedArray = property.map((prop) => {
                         if (prop?.fullName) {
                             return prop.fullName;
-                        } else {
-                            const parsed = JSON.parse(prop);
-
-                            return parsed.fullName;
                         }
+
+                        const parsed = JSON.parse(prop);
+
+                        return parsed.fullName;
                     });
                     return parsedArray.join(', ');
                 } catch {
                     return property.join(', ');
                 }
-            } else if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
+            }
+
+            if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
                 // user when editing entity
                 return property.fullName;
-            } else {
-                return property.toString();
             }
+
+            return property.toString();
         }
 
         try {

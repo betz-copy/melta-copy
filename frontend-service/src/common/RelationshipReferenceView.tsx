@@ -90,26 +90,30 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
             return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
                 ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? ''
                 : entity.properties[relatedTemplateField].location;
-        } else if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'user') {
+        }
+
+        if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'user') {
             const userProperty = entity.properties[relatedTemplateField];
             try {
                 return JSON.parse(userProperty).fullName;
             } catch {
                 return userProperty.fullName;
             }
-        } else if (
+        }
+
+        if (
             relatedEntityTemplate.properties.properties[relatedTemplateField].type === 'array' &&
             relatedEntityTemplate.properties.properties[relatedTemplateField]?.items?.format === 'user'
         ) {
             const usersProperty = entity.properties[relatedTemplateField];
             if (Array.isArray(usersProperty)) {
                 return entity.properties[relatedTemplateField].map((user) => JSON.parse(user).fullName).join(', ');
-            } else {
-                return usersProperty.fullNames.join(', ');
             }
-        } else {
-            return entity?.properties[relatedTemplateField] ?? entity;
+
+            return usersProperty.fullNames.join(', ');
         }
+
+        return entity?.properties[relatedTemplateField] ?? entity;
     };
 
     const field = relationshipObjectToField();
