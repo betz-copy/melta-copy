@@ -902,7 +902,6 @@ class EntityManager extends DefaultManagerNeo4j {
                         if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
                             // user
                             fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
-                            // relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
                         } else if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
                             // User arrays are stored in arrays for each field, (i.e. ids: [id1, id2 ...])
                             // so we want to convert them into an array of users (i.e. [{id: id1 ...}, {id: id2 ...} ...])
