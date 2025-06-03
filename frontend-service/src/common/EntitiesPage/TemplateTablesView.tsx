@@ -96,6 +96,29 @@ const TemplateTablesViewResults = forwardRef<
                         const childTemplateProperties = Object.fromEntries(
                             Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
                         ) as Record<string, IEntitySingleProperty>;
+
+                        const defaultFilter = childTemplate.properties
+                            ? Object.entries(childTemplate.properties).reduce((acc, [key, prop]) => {
+                                  if (prop.filters) {
+                                      const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                                      if (filters.$and) {
+                                          acc[key] = {
+                                              $and: filters.$and
+                                                  .map((f: any) => {
+                                                      if (f.destination?.$eq) return { $eq: f.destination.$eq };
+                                                      if (f.destination?.$rgx) return { $rgx: f.destination.$rgx };
+                                                      return null;
+                                                  })
+                                                  .filter(Boolean),
+                                          };
+                                      } else {
+                                          acc[key] = filters;
+                                      }
+                                  }
+                                  return acc;
+                              }, {} as Record<string, unknown>)
+                            : {};
+
                         const { children, ...childTemplatePopulated } = {
                             ...template,
                             displayName: childTemplate.displayName,
@@ -119,6 +142,7 @@ const TemplateTablesViewResults = forwardRef<
                                     quickFilterText={searchInput}
                                     page={pageType}
                                     setUpdatedEntities={setUpdatedEntities}
+                                    defaultFilter={defaultFilter}
                                 />
                             </Grid>
                         );

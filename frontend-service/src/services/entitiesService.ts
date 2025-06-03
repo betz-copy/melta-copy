@@ -26,6 +26,7 @@ import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { IEntityChildTemplate } from '../interfaces/entityChildTemplates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -161,39 +162,28 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
+export const createEntityRequest = async (
+    entity: EntityWizardValues,
+    ignoredRules?: IRuleBreach['brokenRules'],
+    childTemplate?: IEntityChildTemplate,
+) => {
     const formData = new FormData();
-    const templateProperties = entity.template.properties.properties;
-    const filesToUpload: any = [];
-    const fileUploadPromises: Promise<[string, File]>[] = [];
 
-    Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
-        if (Array.isArray(value)) {
-            value.forEach((file, index) => {
-                if (file instanceof File && entity.template.properties.properties[key].items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
-                } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
-                }
-            });
-        } else {
-            filesToUpload.push([`${key}`, value]);
-        }
-    });
+    const propertiesWithDefaults = childTemplate
+        ? Object.entries(entity.template.properties.properties).reduce((acc, [key, prop]) => {
+              if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
+                  acc[key] = childTemplate.properties[key].defaultValue;
+              } else {
+                  acc[key] = entity.properties[key];
+              }
+              return acc;
+          }, {} as Record<string, any>)
+        : entity.properties;
 
-    Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
-        if (templateProperties[key]?.format === 'signature' && value)
-            fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
-    });
-    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
-
-    filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as Blob);
-    });
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(entity.properties, (property, key) => {
+            mapValues(propertiesWithDefaults, (property, key) => {
                 switch (entity.template.properties.properties[key]?.format) {
                     case 'relationshipReference':
                         return property?.properties._id;

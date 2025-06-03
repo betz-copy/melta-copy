@@ -40,6 +40,7 @@ import {
 } from '../../../interfaces/entityChildTemplates';
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
+import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 
 const CreateChildTemplateDialog: React.FC<{
     open: boolean;
@@ -72,6 +73,7 @@ const CreateChildTemplateDialog: React.FC<{
                     selected: isSelected,
                     fieldValue: value,
                     ...(childTemplate?.properties[key]?.defaultValue && { defaultValue: childTemplate.properties[key].defaultValue }),
+                    ...(childTemplate?.properties[key]?.isEditableByUser && { isEditableByUser: childTemplate.properties[key].isEditableByUser }),
                 };
             });
             setTemplateFieldsFilters(initialFields);
@@ -109,16 +111,44 @@ const CreateChildTemplateDialog: React.FC<{
                                     value = fieldValue.$in.join(', ');
                                 }
 
+                                const fieldTemplate = entityTemplate.properties.properties[fieldName];
+                                const filterTypeObj: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter = (() => {
+                                    if (fieldValue.$in) {
+                                        return {
+                                            filterType: 'set',
+                                            values: fieldValue.$in as (string | null)[],
+                                        };
+                                    }
+
+                                    if (fieldTemplate.type === 'number') {
+                                        return {
+                                            filterType: 'number',
+                                            type: filterType as IAGGidNumberFilter['type'],
+                                            filter: typeof value === 'string' ? parseFloat(value) : value,
+                                        };
+                                    }
+
+                                    if (fieldTemplate.format === 'date' || fieldTemplate.format === 'date-time') {
+                                        return {
+                                            filterType: 'date',
+                                            type: filterType as IAGGridDateFilter['type'],
+                                            dateFrom: value,
+                                            dateTo: null,
+                                        };
+                                    }
+
+                                    return {
+                                        filterType: 'text',
+                                        type: filterType as IAGGridTextFilter['type'],
+                                        filter: String(value),
+                                    };
+                                })();
+
                                 chips.push({
                                     fieldName,
                                     chipType: 'filter',
                                     value: `${i18next.t(`filters.${filterType}`)}: ${value}`,
-                                    filterType: {
-                                        type: filterType,
-                                        ...(fieldValue.$rgx && { filter: value }),
-                                        ...(fieldValue.$eq !== undefined && { filter: value }),
-                                        ...(fieldValue.$in && { values: fieldValue.$in }),
-                                    },
+                                    filterType: filterTypeObj,
                                 });
                             });
                         }
@@ -240,17 +270,32 @@ const CreateChildTemplateDialog: React.FC<{
                 return true;
             }
 
-            const originalFilters = prop.filters ? (typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters) : undefined;
+            if (childTemplateViewType === ViewType.userPage) {
+                const originalIsEditableByUser = prop.isEditableByUser || false;
+                const currentIsEditableByUser = currentField.isEditableByUser || false;
+                if (originalIsEditableByUser !== currentIsEditableByUser) {
+                    return true;
+                }
+            }
+
             const currentFilters = fieldChips
                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
                 .map((chip) => chip.filterType);
 
-            if ((originalFilters === undefined && currentFilters.length > 0) || (originalFilters !== undefined && currentFilters.length === 0)) {
-                return true;
-            }
+            const hasFilters = currentFilters.length > 0;
+            const hadFilters = !!prop.filters;
 
-            if (originalFilters?.$and?.length !== currentFilters.length) {
-                return true;
+            if (hasFilters !== hadFilters) return true;
+
+            if (hasFilters && hadFilters) {
+                const originalFilters = prop.filters;
+                const currentFilterObj = {
+                    $and: currentFilters.map((filter) => {
+                        const filterResult = filterModelToFilterOfTemplatePerField(currentField.fieldValue, fieldName, filter!);
+                        return filterResult;
+                    }),
+                };
+                return JSON.stringify(originalFilters) !== JSON.stringify(currentFilterObj);
             }
 
             return false;
@@ -294,13 +339,13 @@ const CreateChildTemplateDialog: React.FC<{
             <Formik
                 initialValues={{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
-                    displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}_`, '') : '',
+                    displayName: childTemplate ? childTemplate.displayName : '',
                     description: childTemplate?.description || '',
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description }) => {
                     const fullName = `${entityTemplate.name}_${name}`;
-                    const fullDisplayName = `${entityTemplate.displayName}_${displayName}`;
+                    const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
                     const properties: IEntityChildTemplate['properties'] = {};
@@ -314,6 +359,10 @@ const CreateChildTemplateDialog: React.FC<{
                             ...(format && { format }),
                         };
 
+                        if (childTemplateViewType === ViewType.userPage) {
+                            childProp.isEditableByUser = fieldConfig.isEditableByUser || false;
+                        }
+
                         const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
 
                         if (filterChips.length > 0) {
@@ -321,7 +370,7 @@ const CreateChildTemplateDialog: React.FC<{
                                 const filter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!);
                                 return filter;
                             });
-                            childProp.filters = { filters: JSON.stringify({ $and: filtersArray }) };
+                            childProp.filters = { $and: filtersArray };
                         }
 
                         if ('defaultValue' in fieldConfig && fieldConfig.defaultValue !== undefined) {
@@ -333,7 +382,7 @@ const CreateChildTemplateDialog: React.FC<{
 
                     const baseTemplate: IEntityChildTemplate = {
                         name: fullName,
-                        displayName: fullDisplayName,
+                        displayName: displayNameToUse,
                         description,
                         fatherTemplateId: entityTemplate._id,
                         categories: selectedCategories.map((c) => c._id),
@@ -352,7 +401,6 @@ const CreateChildTemplateDialog: React.FC<{
                 }}
             >
                 {({ values, handleChange, touched, errors }) => {
-                    // Effect for tracking description changes
                     React.useEffect(() => {
                         if (!childTemplate) return;
 
@@ -396,9 +444,9 @@ const CreateChildTemplateDialog: React.FC<{
                                                 onChange={(e) => handleChange({ target: { name: 'displayName', value: e.target.value.trimStart() } })}
                                                 error={touched.displayName && Boolean(errors.displayName)}
                                                 helperText={touched.displayName && errors.displayName}
-                                                // InputProps={{
-                                                //     startAdornment: <InputAdornment position="start">{entityTemplate.displayName}-</InputAdornment>,
-                                                // }}
+                                                InputProps={{
+                                                    startAdornment: <InputAdornment position="start">{entityTemplate.displayName}-</InputAdornment>,
+                                                }}
                                                 disabled={!!childTemplate}
                                             />
                                         </Grid>
@@ -425,6 +473,21 @@ const CreateChildTemplateDialog: React.FC<{
                                                     onChange={(e) => {
                                                         const { value } = e.target;
                                                         setChildTemplateViewType(value as ViewType);
+
+                                                        if (value === ViewType.categoryPage) {
+                                                            setTemplateFieldsFilters((prev) => {
+                                                                const newFilters = { ...prev };
+                                                                Object.keys(newFilters).forEach((key) => {
+                                                                    if (newFilters[key].isEditableByUser) {
+                                                                        newFilters[key] = {
+                                                                            ...newFilters[key],
+                                                                            isEditableByUser: false,
+                                                                        };
+                                                                    }
+                                                                });
+                                                                return newFilters;
+                                                            });
+                                                        }
                                                     }}
                                                     row
                                                 >
@@ -506,9 +569,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                         const original = entityTemplate?.category;
                                                         if (!original) return;
 
-                                                        const newSelection = newVal.some((category) => category._id === original._id)
-                                                            ? newVal
-                                                            : [original, ...newVal];
+                                                        const hasOriginalCategory = newVal.some((category) => category._id === original._id);
+                                                        const newSelection = hasOriginalCategory ? newVal : [original, ...newVal];
 
                                                         setSelectedCategories(newSelection);
                                                     }}

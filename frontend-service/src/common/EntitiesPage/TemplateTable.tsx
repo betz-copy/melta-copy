@@ -18,6 +18,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { FilterModel } from '@ag-grid-community/core';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -55,8 +56,9 @@ const TemplateTable = forwardRef<
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        defaultFilter?: FilterModel;
     }
->(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
@@ -403,6 +405,7 @@ const TemplateTable = forwardRef<
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     multipleSelect={multipleSelect}
+                    defaultFilter={defaultFilter}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
