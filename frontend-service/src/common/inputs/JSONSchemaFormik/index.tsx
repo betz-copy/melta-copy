@@ -147,7 +147,7 @@ const getComponent = (
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
             if (schema.format === 'comment') {
-                return <Component {...props}/>;
+                return <Component {...props} />;
             }
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
@@ -155,7 +155,6 @@ const getComponent = (
             useEffect(() => {
                 checkboxProps.onCheckboxChange(name, checked);
             }, [checked, name]);
-
 
             return (
                 <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>

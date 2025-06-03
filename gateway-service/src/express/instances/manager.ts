@@ -37,8 +37,6 @@ import {
     ISemanticSearchResult,
     BadRequestError,
     UploadedFile,
-    // CoordinateSystem,
-    // locationConverterToString,
     IMultipleSelect,
 } from '@microservices/shared';
 import config from '../../config';

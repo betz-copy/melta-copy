@@ -104,11 +104,10 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 setStepsData(data);
             },
             onError: (error: AxiosError) => {
-                if(error.response?.status === 413) {
+                if (error.response?.status === 413) {
                     toast.error(i18next.t('errorCodes.FILES_TOO_BIG'));
                     setExternalErrors((prev) => ({ ...prev, files: true }));
-                }
-                else toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                } else toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
@@ -235,11 +234,21 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     <Box sx={{ width: '100%', paddingLeft: '4vw', paddingY: '2vh' }}>
                         <EntityPropertiesInternal
                             entityTemplate={template}
-                            properties={{ ...props.values?.properties, ...props.values?.attachmentsProperties, createdAt: '', updatedAt: '', _id: '' }}
+                            properties={{
+                                ...props.values?.properties,
+                                ...props.values?.attachmentsProperties,
+                                createdAt: '',
+                                updatedAt: '',
+                                _id: '',
+                            }}
                             mode="normal"
                             darkMode={darkMode}
-                            overridePropertiesToShow={[...Object.keys(props.values?.properties ?? {}).filter((key) => selectedFields[key]), ...Object.keys(props.values?.attachmentsProperties ?? {})]}
+                            overridePropertiesToShow={[
+                                ...Object.keys(props.values?.properties ?? {}).filter((key) => selectedFields[key]),
+                                ...Object.keys(props.values?.attachmentsProperties ?? {}),
+                            ]}
                             textWrap
+                            preview
                         />
                         <Box>
                             <Typography sx={{ marginY: '3vh', color: '#9398C2', fontSize: '16px' }}>
@@ -265,7 +274,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                         setEntityData({
                             propertiesToChange: { ...props, properties: allSelectedProperties },
                             propertiesToRemove: undefinedProperties,
-                        });                        
+                        });
 
                         await updateMultipleMutation({
                             newEntityData: props,

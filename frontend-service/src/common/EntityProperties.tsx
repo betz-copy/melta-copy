@@ -32,8 +32,15 @@ interface FormatOptions {
     pureString?: boolean;
 }
 
-export const formatToString = (value: any, property: IEntitySingleProperty, key?: string, options: FormatOptions = {}, hideProps: string[] = []) => {
-    const { format, type: valueType } = property;
+export const formatToString = (
+    value: any,
+    property: IEntitySingleProperty,
+    key?: string,
+    preview?: boolean,
+    options: FormatOptions = {},
+    hideProps: string[] = [],
+) => {
+    const { format, type: valueType, title } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
     if (value === null || value === undefined) return '-';
@@ -46,7 +53,16 @@ export const formatToString = (value: any, property: IEntitySingleProperty, key?
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'comment') return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId' || format === 'signature') return <OpenPreview fileId={value} download={isPrintingMode} />;
+        if (format === 'fileId' || format === 'signature') {
+            return (
+                <OpenPreview
+                    fileId={value}
+                    download={isPrintingMode}
+                    defaultFileName={format === 'signature' ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
+                    disabled={preview}
+                />
+            );
+        }
         if (format === 'relationshipReference') {
             return pureString ? (
                 value.properties[property.relationshipReference!.relatedTemplateField!]
@@ -139,6 +155,7 @@ interface IEntityPropertiesProps {
     showDivider?: boolean;
     dividerTitle?: string;
     entityTemplates?: IEntityTemplateMap;
+    preview?: boolean;
 }
 
 export const getPropertyColor = (
@@ -170,6 +187,7 @@ type PropertiesDetailsProps = {
     pureString?: boolean;
     searchedText?: string;
     darkMode?: boolean;
+    preview?: boolean;
 };
 
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
@@ -187,6 +205,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     searchedText,
     innerStyle,
     textWrap,
+    preview,
 }) => {
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
     return (
@@ -207,6 +226,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     propertyValue,
                     propertySchema,
                     propertyKey,
+                    preview,
                     {
                         keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                         isPrintingMode,
@@ -227,7 +247,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
 
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
 
-                let innerContent;
+                let innerContent: string | JSX.Element | undefined;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
                 else if (containsHtmlTags)
                     innerContent = viewFirstLineOfLongText
@@ -239,7 +259,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 else if (format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                 else innerContent = stringFormatValue;
 
-                let titleContent;
+                let titleContent: string | JSX.Element | undefined;
                 if (hideFieldsToDisplay.includes(propertyKey) || format === 'fileId') titleContent = '';
                 else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
                 else titleContent = innerContent;
@@ -379,6 +399,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     dividerTitle,
     entityTemplates,
     showByGroups = false,
+    preview = false,
 }) => {
     const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
 
@@ -457,6 +478,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 searchedText={searchedText}
                                                 innerStyle={innerStyle}
                                                 textWrap={textWrap}
+                                                preview={preview}
                                             />
                                         </Grid>
                                     </Box>
@@ -482,6 +504,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     searchedText={searchedText}
                                     innerStyle={innerStyle}
                                     textWrap={textWrap}
+                                    preview={preview}
                                 />
                             );
                         }
@@ -504,6 +527,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         searchedText={searchedText}
                         innerStyle={innerStyle}
                         textWrap={textWrap}
+                        preview={preview}
                     />
                 )}
             </Grid>

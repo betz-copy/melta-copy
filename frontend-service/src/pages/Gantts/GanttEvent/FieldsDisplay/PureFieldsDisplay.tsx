@@ -45,7 +45,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                         ...textStyle,
                                     }}
                                 >
-                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], property, field, {
+                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], property, field, undefined, {
                                         pureString: true,
                                     })}`}
                                 </Typography>

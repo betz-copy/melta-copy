@@ -57,7 +57,7 @@ const EntitiesPage: React.FC<{
 
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
-    
+
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
             updatedEntities.forEach((entity) => {

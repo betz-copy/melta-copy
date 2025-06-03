@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { environment } from '../../globals';
 import fileDetails from '../../interfaces/fileDetails';
-import { ProcessTemplateFormInputProperties, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
+import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import {
     IMongoProcessTemplatePopulated,
     ICreateProcessTemplateBody,
@@ -27,8 +27,8 @@ const processTemplateObjectToProcessTemplateForm = (
 ): ProcessTemplateWizardValues | undefined => {
     if (!processTemplate) return undefined;
     const { details, steps, ...restOfProcessTemplate } = processTemplate;
-    const detailsPropertiesArray: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
-    const detailsAttachmentProperties: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
+    const detailsPropertiesArray: ProcessTemplatePropertyByType[] = [];
+    const detailsAttachmentProperties: ProcessTemplatePropertyByType[] = [];
     const stepsForm: ProcessTemplateWizardValues['steps'] = [];
 
     details.propertiesOrder.forEach((key) => {
@@ -64,8 +64,8 @@ const processTemplateObjectToProcessTemplateForm = (
         }
     });
     steps.forEach((step) => {
-        const stepsPropertiesArray: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
-        const stepsAttachmentProperties: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
+        const stepsPropertiesArray: ProcessTemplatePropertyByType[] = [];
+        const stepsAttachmentProperties: ProcessTemplatePropertyByType[] = [];
         step.propertiesOrder.forEach((key) => {
             const value = step.properties.properties[key];
 

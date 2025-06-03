@@ -177,7 +177,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 getUpdateEntityActionMetadata({ properties: entity.properties as IEntity['properties'], templateId: entityFormData.template._id }, entityFormData),
             ) || [];
 
-        actionMetadataWithoutFiles = (actionMetadataPopulated as IUpdateMultipleEntitiesMetadataPopulated || [])?.map((actionMetadata) => {
+        actionMetadataWithoutFiles = (actionMetadataPopulated || [])?.map((actionMetadata) => {
             return {
                 entityId: actionMetadata.entity!.properties._id,
                 updatedFields: pickBy(actionMetadata.updatedFields, (value) => !(value instanceof File)),
