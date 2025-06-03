@@ -16,6 +16,7 @@ import { CacheProvider } from '@emotion/react';
 import { Topbar } from './Topbar';
 import { IKartoffelUser } from '../../interfaces/users';
 import UserInfoCard from './UserInfoCard';
+import TemplateTablesView from '../../common/EntitiesPage/TemplateTablesView';
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -118,6 +119,15 @@ const SimbaClientPage: React.FC = () => {
                                         <ContactInfoCard />
                                     </Grid>
                                     <Grid container item xs={12} justifyContent="center"></Grid>
+                                </Grid>
+                                <Grid container item xs={12} justifyContent="center">
+                                    <TemplateTablesView
+                                        templates={[]}
+                                        searchInput={''}
+                                        pageType={'simba'}
+                                        semanticSearch={false}
+                                        setUpdatedEntities={() => {}}
+                                    />
                                 </Grid>
                             </Box>
                         </Suspense>
