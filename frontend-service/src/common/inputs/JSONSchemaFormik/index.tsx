@@ -125,12 +125,9 @@ const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): Er
 
 const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
     const merged = { ...errors1 };
-    // eslint-disable-next-line no-restricted-syntax
     for (const key in errors2) {
-        // eslint-disable-next-line no-prototype-builtins
         if (errors2.hasOwnProperty(key)) {
             if (!merged[key]) merged[key] = errors2[key];
-            // eslint-disable-next-line no-underscore-dangle
             else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
         }
     }
@@ -147,7 +144,11 @@ const getComponent = (
     if (checkboxProps) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
             const { label, disabled, name, value, schema, onChange } = props;
-            const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));            
+            const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
+
+            if (schema.format === 'comment') {
+                return <Component {...props}/>;
+            }
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 
@@ -155,13 +156,14 @@ const getComponent = (
                 checkboxProps.onCheckboxChange(name, checked);
             }, [checked, name]);
 
+
             return (
                 <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>
                     <Component {...props} />
                 </InputAccordion>
             );
         };
-        
+
         const MemoWrapped = memo(WrappedComponent);
         const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => <MemoWrapped {...props} />;
 
@@ -348,7 +350,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             onChange={({ formData }) => {
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
-                        // eslint-disable-next-line no-param-reassign
                         formData[key] = undefined;
                     }
                 });

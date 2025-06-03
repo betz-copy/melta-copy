@@ -16,7 +16,7 @@ import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { ErrorToast } from '../ErrorToast';
 import { TableButton } from '../TableButton';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
-import { LoadEntitiesTables } from '../wizards/excel/excelSteps/LoadEntitiesTables';
+import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntitiesTables';
 import { StepType, Wizard } from '../wizards';
 import { EntityWizardValues } from '../dialogs/entity';
 import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';
@@ -103,8 +103,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             onSuccess: (data) => {
                 setStepsData(data);
             },
-            onError: () => {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+            onError: (error: AxiosError) => {
+                if(error.response?.status === 413) {
+                    toast.error(i18next.t('errorCodes.FILES_TOO_BIG'));
+                    setExternalErrors((prev) => ({ ...prev, files: true }));
+                }
+                else toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
@@ -204,6 +208,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                         isEditMode
                         showCloseButton={false}
                         initialValues={initialValues}
+                        showTitle={false}
                     />
                 );
             },
@@ -260,10 +265,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                         setEntityData({
                             propertiesToChange: { ...props, properties: allSelectedProperties },
                             propertiesToRemove: undefinedProperties,
-                        });
-
-                        console.log(props);
-                        
+                        });                        
 
                         await updateMultipleMutation({
                             newEntityData: props,
@@ -279,7 +281,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
             component: (props) => {
                 return (
-                    <LoadEntitiesTables
+                    <StatusEntitiesTables
                         {...props}
                         tablesData={{ ...stepsData, brokenRulesEntities: stepsData?.brokenRulesEntities?.map((rule) => rule.entities[0]) ?? [] }}
                         template={template}
@@ -362,7 +364,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 handleClose={() => handleClose(false)}
                 initialValues={initialValues}
                 isEditMode
-                title={i18next.t('wizard.entity.multipleUpdate.title')}
+                title={`${i18next.t('wizard.entity.multipleUpdate.title')} - ${template.displayName}`}
                 steps={steps}
                 isLoading={isMultipleUpdateLoading}
                 submitFunction={async () => (isBrokenRules ? setCreateOrUpdateWithRuleBreachDialogState(true) : handleClose(true))}

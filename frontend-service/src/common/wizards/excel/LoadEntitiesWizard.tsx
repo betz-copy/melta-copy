@@ -14,7 +14,7 @@ import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
-import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
@@ -178,7 +178,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
             component: (props) => {
                 return (
-                    <LoadEntitiesTables
+                    <StatusEntitiesTables
                         {...props}
                         tablesData={{ ...stepsData.data, brokenRulesEntities: stepsData.data.brokenRulesEntities?.entities || [] }}
                         template={template!}

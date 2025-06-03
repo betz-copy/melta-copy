@@ -367,7 +367,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    private convertEntities(template, key, property) {
+    private convertEntities(template: IMongoEntityTemplatePopulated, key: string, property: any) {
         switch (template.properties.properties[key]?.format) {
             case 'relationshipReference':
                 return property?.properties._id;

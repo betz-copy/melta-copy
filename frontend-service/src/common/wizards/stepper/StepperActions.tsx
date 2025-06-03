@@ -26,7 +26,7 @@ const StepperActions = <T extends object>({
     return (
         <Grid container justifyContent="space-between" padding="0px 25px">
             <Grid item>
-                {step?.stepperActions?.disable !== 'back' && (
+                {step.stepperActions?.disable !== 'back' && (
                     <Button
                         variant="outlined"
                         onClick={() => {

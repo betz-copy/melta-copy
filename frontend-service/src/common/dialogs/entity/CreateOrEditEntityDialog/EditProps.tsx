@@ -17,31 +17,32 @@ import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog
 import { Draft } from '../draftWarningDialog/index';
 
 const EditProps: React.FC<{
-    setFieldValue: FormikHelpers<EntityWizardValues>['setFieldValue'];
     values: FormikState<EntityWizardValues>['values'];
+    setFieldValue: FormikHelpers<EntityWizardValues>['setFieldValue'];
+    initialValues: FormikComputedProps<EntityWizardValues>['initialValues'];
     errors: FormikState<EntityWizardValues>['errors'];
     touched: FormikState<EntityWizardValues>['touched'];
     setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
-    initialValues: FormikComputedProps<EntityWizardValues>['initialValues'];
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     initialValuePropsToFilter: Record<string, any>;
-    multipleSelectionProps?: {
-        selectedFields: Record<string, boolean>;
-        setSelectedFields: Dispatch<SetStateAction<Record<string, boolean>>>;
-    };
     isMultipleSelection: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
-    createOrUpdateDraftDebounced?: DebouncedFunc<(newValues: EntityWizardValues, newDraftId: string) => void>;
-    draftId?: string;
     wasDirty: boolean;
     setWasDirty: Dispatch<React.SetStateAction<boolean>>;
     externalErrors: IExternalErrors;
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>;
     isEditMode: boolean;
-    currentDraft?: Draft;
     showCloseButton: boolean;
-    setIsDraftDialogOpen?: Dispatch<SetStateAction<boolean>>;
     handleClose?: () => void;
+    multipleSelectionProps?: {
+        selectedFields: Record<string, boolean>;
+        setSelectedFields: Dispatch<SetStateAction<Record<string, boolean>>>;
+    };
+    draftId?: string;
+    currentDraft?: Draft;
+    createOrUpdateDraftDebounced?: DebouncedFunc<(newValues: EntityWizardValues, newDraftId: string) => void>;
+    setIsDraftDialogOpen?: Dispatch<SetStateAction<boolean>>;
+    showTitle?: boolean;
 }> = ({
     setFieldValue,
     values,
@@ -65,17 +66,16 @@ const EditProps: React.FC<{
     showCloseButton,
     setIsDraftDialogOpen,
     handleClose,
+    showTitle = true,
 }) => {
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const schema = filterFieldsFromPropertiesSchema(values.template.properties, multipleSelectionProps?.selectedFields);
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
     }, []);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+
     useEffect(() => {
         schema.required.forEach((field) => {
             const fieldPropertiesEnum = schema.properties[field].enum;
@@ -88,36 +88,30 @@ const EditProps: React.FC<{
                 setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
             }
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values.template]);
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const absoluteDirty = useMemo(() => {
         // textarea/long-text causes the field to first be undefined, setting dirty to true,
         // so we check for dirty manually while ignoring these fields
         // (if the value changes it won't be undefined and it will consider it dirty)
+        const isSignatureField = (key: string) => values.template.properties.properties[key]?.format === 'signature';
         const valuePropsToFilter = { ...values.properties };
-        Object.keys(valuePropsToFilter).forEach((key) => {
-            const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
-            return valuePropsToFilter[key] === undefined || isSignatureField ? delete valuePropsToFilter[key] : {};
-        });
+        Object.keys(valuePropsToFilter).forEach((key) =>
+            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {},
+        );
 
-        Object.keys(initialValuePropsToFilter).forEach((key) => {
-            const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
-            // eslint-disable-next-line no-param-reassign
-            return initialValuePropsToFilter[key] === undefined || isSignatureField ? delete initialValuePropsToFilter[key] : {};
-        });
+        Object.keys(initialValuePropsToFilter).forEach((key) =>
+            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {},
+        );
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
     }, [initialValues, values]);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+
     useEffect(() => {
         if (!absoluteDirty || !draftId || !createOrUpdateDraftDebounced) return;
         createOrUpdateDraftDebounced(values, draftId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [absoluteDirty, values, draftId]);
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         if (absoluteDirty && !wasDirty) setWasDirty(true);
     }, [absoluteDirty]);
@@ -159,9 +153,7 @@ const EditProps: React.FC<{
         <JSONSchemaFormik
             schema={schema}
             values={values}
-            setValues={(propertiesValues) => {
-                return setFieldValue('properties', propertiesValues);
-            }}
+            setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
             errors={errors.properties ?? {}}
             uniqueErrors={{ ...externalErrors.unique }}
             touched={touched.properties ?? {}}
@@ -221,16 +213,18 @@ const EditProps: React.FC<{
             <Grid container flexDirection="column">
                 <Box width="100%">
                     <Grid item container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
-                        <Grid item>
-                            <BlueTitle
-                                title={`${isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')} ${
-                                    values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
-                                }`}
-                                component="h6"
-                                variant="h6"
-                                style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
-                            />
-                        </Grid>
+                        {showTitle && (
+                            <Grid item>
+                                <BlueTitle
+                                    title={`${i18next.t(`actions.${isEditMode ? 'edit' : 'create'}ment`)} ${
+                                        values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
+                                    }`}
+                                    component="h6"
+                                    variant="h6"
+                                    style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
+                                />
+                            </Grid>
+                        )}
 
                         {currentDraft && (
                             <Grid item container xs={8} justifyContent="right">
@@ -246,9 +240,7 @@ const EditProps: React.FC<{
                             <Grid item>
                                 <IconButton
                                     onClick={() => (wasDirty ? setIsDraftDialogOpen?.(true) : handleClose?.())}
-                                    sx={{
-                                        color: (theme) => theme.palette.primary.main,
-                                    }}
+                                    sx={{ color: (theme) => theme.palette.primary.main }}
                                 >
                                     <CloseIcon />
                                 </IconButton>

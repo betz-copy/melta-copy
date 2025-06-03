@@ -19,8 +19,8 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
-import { locationConverterToString } from '../utils/map/convert';
-import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { extractUtmLocation, locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -70,10 +70,18 @@ export const formatToString = (value: any, property: IEntitySingleProperty, key?
             );
         }
     }
-    if (format === 'location')
-        return value.coordinateSystem === CoordinateSystem.UTM
-            ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-            : value.location;
+    if (format === 'location') {
+        const convertLocation = (value: LocationData) =>
+            value.coordinateSystem === CoordinateSystem.UTM && !extractUtmLocation(value.location)
+                ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                : value.location;
+
+        if (typeof value === 'string') {
+            if (value.includes('location')) return convertLocation(JSON.parse(value));
+            else return value;
+        }
+        return convertLocation(value);
+    }
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
@@ -206,6 +214,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     },
                     entityTemplate.properties.hide,
                 );
+
                 if (!stringFormatValue) return undefined;
 
                 const propertyValueColor = getPropertyColor(
@@ -299,7 +308,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
-                                    // eslint-disable-next-line no-nested-ternary
                                     width: comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
@@ -373,9 +381,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     showByGroups = false,
 }) => {
     const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
-
-    console.log({properties, overridePropertiesToShow, entityTemplate});
-    
 
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {

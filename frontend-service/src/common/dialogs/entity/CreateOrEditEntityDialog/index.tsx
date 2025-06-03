@@ -152,7 +152,6 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
                 }, [initialCurrValues]);

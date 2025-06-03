@@ -7,7 +7,7 @@ import { EntitiesTable } from './EntitiesTable';
 import { IEntity } from '../../../../interfaces/entities';
 import { IStatusEntitiesTables } from '../../../../interfaces/excel';
 
-export const LoadEntitiesTables: React.FC<{
+export const StatusEntitiesTables: React.FC<{
     tablesData: IStatusEntitiesTables;
     template: IMongoEntityTemplatePopulated;
     onDownload?: (brokenRulesEntities?: boolean) => Promise<any>;

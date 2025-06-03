@@ -4,21 +4,25 @@ import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
+
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
 ): IMongoEntityTemplatePopulated['properties'] => {
+    const getProperty = (key: string) => schema.properties[key];
+
     return {
         ...schema,
         properties: pickBy(
             schema?.properties,
+
             (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId' && !value.archive,
         ),
         required:
             schema?.required?.filter(
                 (requiredKey) =>
-                    schema.properties[requiredKey]?.format !== 'fileId' &&
-                    schema.properties[requiredKey]?.format !== 'entityReference' &&
-                    schema.properties[requiredKey]?.items?.format !== 'fileId' &&
-                    schema.properties[requiredKey]?.serialCurrent === undefined &&
+                    getProperty(requiredKey)?.format !== 'fileId' &&
+                    getProperty(requiredKey)?.format !== 'entityReference' &&
+                    getProperty(requiredKey)?.items?.format !== 'fileId' &&
+                    getProperty(requiredKey)?.serialCurrent === undefined &&
                     (!fieldsToFilter || !!fieldsToFilter?.[requiredKey]),
             ) ?? [],
     };
