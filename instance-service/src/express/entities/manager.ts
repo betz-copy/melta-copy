@@ -361,6 +361,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
+
         return {
             fixedField: {
                 ...relatedEntityFixProperties,
@@ -891,7 +892,25 @@ class EntityManager extends DefaultManagerNeo4j {
                 }
 
                 if (innerKeys[1] === 'properties') {
-                    relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
+                    if (innerKeys[3]) {
+                        let fourthKey = innerKeys[3];
+                        // currently only user and user array should have a 4th key
+                        if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]]) {
+                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = {};
+                        }
+
+                        if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
+                            // user
+                            fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
+                        } else if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+                            // User arrays are stored in arrays for each field, (i.e. ids: [id1, id2 ...])
+                            // so we want to convert them into an array of users (i.e. [{id: id1 ...}, {id: id2 ...} ...])
+                            fourthKey = innerKeys[3].replace(`${config.neo4j.usersFieldsPropertySuffix}`, '');
+                        }
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
+                    } else {
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
+                    }
                 } else if (innerKeys[1] === 'templateId') {
                     relatedEntities[innerKeys[0]].templateId = value;
                 }
