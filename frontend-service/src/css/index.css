@@ -2,12 +2,6 @@ body {
     background-color: #1e2775 !important;
 }
 
-#simba-box {
-    background-image: url(/images/simba-background.png), rgba(255, 255, 255, 0.6);
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
 @font-face {
     font-family: 'Rubik';
     font-weight: 100;

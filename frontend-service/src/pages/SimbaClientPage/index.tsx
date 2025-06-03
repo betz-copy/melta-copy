@@ -4,25 +4,18 @@ import { AuthService } from '../../services/authService';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import { getCurrentUserEntity, getEntityChildTemplateByIdRequest } from '../../services/simbaService';
 import { getById } from '../../services/workspacesService';
-import { Box, Card, CardContent, CssBaseline, Grid, useTheme } from '@mui/material';
-import { EntityProperties } from '../../common/EntityProperties';
+import { Box, CssBaseline, Grid } from '@mui/material';
 import { MainBox } from '../../Main.styled';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { EntityTemplateColor } from '../../common/EntityTemplateColor';
-import { CustomIcon } from '../../common/CustomIcon';
-import { BlueTitle } from '../../common/BlueTitle';
-import { getEntityTemplateColor } from '../../utils/colors';
-import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import '../../css/index.css';
 
-import { EntityDates } from '../Entity/components/EntityDates';
-import { ContactInfoCard } from './contactInfoCard';
+import { ContactInfoCard } from './ContactInfoCard';
 import { prefixer } from 'stylis';
 import createCache from '@emotion/cache';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
-import { Topbar } from './topbar';
+import { Topbar } from './Topbar';
 import { IKartoffelUser } from '../../interfaces/users';
+import UserInfoCard from './UserInfoCard';
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -32,10 +25,7 @@ const cacheRtl = createCache({
 const SimbaClientPage: React.FC = () => {
     const user = AuthService.getUser();
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
-    const workspace = useWorkspaceStore((state) => state.workspace);
     const pageScrollTargetRef = useRef<HTMLElement | null>(null);
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const theme = useTheme();
 
     const {
         data: fetchedWorkspace,
@@ -46,18 +36,15 @@ const SimbaClientPage: React.FC = () => {
         queryFn: () => getById(user?.simbaWorkspaceId || ''),
     });
 
-    // Always call hooks at the top level
-    const usersInfoTemplateId = workspace?.metadata?.simba?.usersInfoTemplateId;
+    const usersInfoTemplateId = fetchedWorkspace?.metadata?.simba?.usersInfoTemplateId;
     const { data: usersInfoChildTemplate } = useQuery({
         queryKey: ['entityChildTemplate', usersInfoTemplateId],
         queryFn: () => getEntityChildTemplateByIdRequest(usersInfoTemplateId || ''),
-        enabled: !!usersInfoTemplateId, // Only run if ID is available
     });
 
     const { data: currentUserFromSimba } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.fatherTemplateId._id, user?.kartoffelId],
         queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.fatherTemplateId._id || '', user?.kartoffelId!),
-        enabled: !!usersInfoChildTemplate?.fatherTemplateId._id,
     });
 
     console.log(currentUserFromSimba);
@@ -74,7 +61,7 @@ const SimbaClientPage: React.FC = () => {
     if (isLoadingWorkspace) {
         return <div>Loading...</div>;
     }
-    if (isErrorWorkspace || !workspace) {
+    if (isErrorWorkspace) {
         return <div>Error</div>;
     }
     if (!usersInfoChildTemplate || !currentUserFromSimba) {
@@ -83,20 +70,35 @@ const SimbaClientPage: React.FC = () => {
 
     const currentUser: IKartoffelUser = JSON.parse(currentUserFromSimba.properties.full_name);
 
-    const entityTemplateColor = getEntityTemplateColor(usersInfoChildTemplate.fatherTemplateId);
-    const { height, width } = workspace!.metadata!.iconSize!;
-
     return (
         <CacheProvider value={cacheRtl}>
             <CssBaseline />
             <>
                 <MainBox
-                    id="simba-box"
                     ref={(ref: HTMLElement | null) => {
                         pageScrollTargetRef.current = ref;
                     }}
-                    style={{ overflowY: 'hidden', overflowX: 'hidden' }}
+                    style={{
+                        overflowY: 'hidden',
+                        overflowX: 'hidden',
+                        position: 'relative',
+                        zIndex: 1,
+                    }}
                 >
+                    <Box
+                        component="img"
+                        src="/images/simba-background.png"
+                        sx={{
+                            width: '45%',
+                            opacity: 0.3,
+                            position: 'absolute',
+                            top: '55%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            pointerEvents: 'none',
+                            zIndex: -1,
+                        }}
+                    />
                     <Box>
                         <Suspense fallback={<div />}>
                             <Topbar currentUser={currentUser} />
@@ -110,90 +112,12 @@ const SimbaClientPage: React.FC = () => {
                             >
                                 <Grid container p="20px" gap={1} alignItems="top" justifyContent="space-evenly">
                                     <Grid item xs={8}>
-                                        <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
-                                            <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
-                                                <Grid item minWidth="fit-content">
-                                                    <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
-                                                </Grid>
-                                                <Grid
-                                                    item
-                                                    minWidth="fit-content"
-                                                    sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
-                                                >
-                                                    {usersInfoChildTemplate.fatherTemplateId.iconFileId ? (
-                                                        <CustomIcon
-                                                            iconUrl={usersInfoChildTemplate.fatherTemplateId.iconFileId}
-                                                            height={height}
-                                                            width={width}
-                                                            color={theme.palette.primary.main}
-                                                        />
-                                                    ) : (
-                                                        <DefaultEntityTemplateIcon
-                                                            sx={{
-                                                                color: theme.palette.primary.main,
-                                                                height,
-                                                                width,
-                                                            }}
-                                                        />
-                                                    )}
-                                                </Grid>
-                                                <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                                                    <BlueTitle
-                                                        style={{
-                                                            minWidth: 'fit-content',
-                                                            whiteSpace: 'nowrap',
-                                                            overflow: 'hidden',
-                                                            fontWeight: '500',
-                                                            fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
-                                                        }}
-                                                        title={usersInfoChildTemplate.fatherTemplateId.displayName}
-                                                        component="h5"
-                                                        variant="h5"
-                                                    />
-                                                </Grid>
-                                            </Grid>
-                                        </Grid>
-                                        <Card
-                                            style={{
-                                                background: darkMode ? '#171717' : 'white',
-                                                borderRadius: '10px',
-                                                boxShadow: '-2px 2px 6px 0px #1e27754d',
-                                            }}
-                                            sx={{ mt: 1 }}
-                                        >
-                                            <CardContent sx={{ '&:last-child': { padding: 0, mt: 1 } }}>
-                                                <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
-                                                    <Grid item height="40%">
-                                                        <EntityProperties
-                                                            entityTemplate={usersInfoChildTemplate!.fatherTemplateId}
-                                                            properties={currentUserFromSimba.properties}
-                                                            style={{
-                                                                flexDirection: 'row',
-                                                                flexWrap: 'wrap',
-                                                                rowGap: '20px',
-                                                                columnGap: '20px',
-                                                                alignItems: 'center',
-                                                                width: '100%',
-                                                                maxHeight: '200px',
-                                                            }}
-                                                            innerStyle={{ width: '32%', maxHeight: '50px' }}
-                                                            textWrap
-                                                            mode="normal"
-                                                        />
-                                                    </Grid>
-                                                    <Grid container item justifyContent="space-between">
-                                                        <EntityDates
-                                                            createdAt={currentUserFromSimba.properties.createdAt}
-                                                            updatedAt={currentUserFromSimba.properties.updatedAt}
-                                                        />
-                                                    </Grid>
-                                                </Grid>
-                                            </CardContent>
-                                        </Card>
+                                        <UserInfoCard currentUserFromSimba={currentUserFromSimba} usersInfoChildTemplate={usersInfoChildTemplate} />
                                     </Grid>
                                     <Grid item xs={3}>
                                         <ContactInfoCard />
                                     </Grid>
+                                    <Grid container item xs={12} justifyContent="center"></Grid>
                                 </Grid>
                             </Box>
                         </Suspense>
