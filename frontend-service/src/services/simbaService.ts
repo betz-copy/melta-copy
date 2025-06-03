@@ -1,6 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { ISearchResult } from '../interfaces/entities';
+import { ISearchEntitiesOfTemplateBody, ISearchResult } from '../interfaces/entities';
 import { IMongoChildEntityTemplatePopulated } from '../interfaces/entityChildTemplates';
 
 const { simbaRoutes } = environment.api;
@@ -27,4 +27,18 @@ const getCurrentUserEntity = async (templateId: string, kartoffelId: string) => 
     return data.entities[0].entity;
 };
 
-export { getEntityChildTemplateByIdRequest, getAllTemplates, getCurrentUserEntity };
+const countEntitiesOfTemplate = async (templateId: string) => {
+    const { data } = await axios.get<number>(`${simbaRoutes}/entities/count/${templateId}`);
+    return data;
+};
+
+const getEntitiesOfTemplate = async (templateId: string, kartoffelId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
+    const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/${templateId}`, {
+        kartoffelId,
+        ...searchBody,
+    });
+
+    return data.entities;
+};
+
+export { getEntityChildTemplateByIdRequest, getAllTemplates, getCurrentUserEntity, countEntitiesOfTemplate, getEntitiesOfTemplate };

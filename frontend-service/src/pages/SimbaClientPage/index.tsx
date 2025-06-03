@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { AuthService } from '../../services/authService';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getCurrentUserEntity, getEntityChildTemplateByIdRequest } from '../../services/simbaService';
+import { getAllTemplates, getCurrentUserEntity, getEntityChildTemplateByIdRequest } from '../../services/simbaService';
 import { getById } from '../../services/workspacesService';
 import { Box, CssBaseline, Grid } from '@mui/material';
 import { MainBox } from '../../Main.styled';
@@ -49,6 +49,14 @@ const SimbaClientPage: React.FC = () => {
     });
 
     console.log(currentUserFromSimba);
+
+    const { data: allTemplates } = useQuery({
+        queryKey: ['allTemplates', currentUserFromSimba?.properties.full_name._id],
+        queryFn: () => getAllTemplates(),
+        enabled: !!usersInfoChildTemplate,
+    });
+
+    console.log(allTemplates);
 
     useEffect(() => {
         if (fetchedWorkspace) {
@@ -121,13 +129,15 @@ const SimbaClientPage: React.FC = () => {
                                     <Grid container item xs={12} justifyContent="center"></Grid>
                                 </Grid>
                                 <Grid container item xs={12} justifyContent="center">
-                                    <TemplateTablesView
-                                        templates={[]}
-                                        searchInput={''}
-                                        pageType={'simba'}
-                                        semanticSearch={false}
-                                        setUpdatedEntities={() => {}}
-                                    />
+                                    {allTemplates && (
+                                        <TemplateTablesView
+                                            templates={allTemplates.map((template) => template.fatherTemplateId)}
+                                            searchInput={''}
+                                            pageType={'simba'}
+                                            semanticSearch={false}
+                                            setUpdatedEntities={() => {}}
+                                        />
+                                    )}
                                 </Grid>
                             </Box>
                         </Suspense>
