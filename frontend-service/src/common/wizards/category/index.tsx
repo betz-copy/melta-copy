@@ -26,7 +26,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
     initialStep = 0,
-    initialValues = { name: '', displayName: '', icon: undefined, color: '' },
+    initialValues = { name: '', displayName: '', icon: undefined, color: '', templatesOrder: [] },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
