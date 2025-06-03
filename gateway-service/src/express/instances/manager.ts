@@ -5,7 +5,7 @@
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
-import { Dictionary } from 'lodash';
+import { Dictionary, mapValues, omit } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 
@@ -37,6 +37,7 @@ import {
     ISemanticSearchResult,
     BadRequestError,
     UploadedFile,
+    IMultipleSelect,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -53,7 +54,7 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import WorkspaceService from '../workspaces/service';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
-import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
+import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, classifyEntityErrors } from '../../utils/excel';
 import { PreviewService } from '../../externalServices/previewService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
@@ -91,7 +92,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (files.length === 0) {
             return { props, files: {} };
         }
-
         const fileIds = await this.storageService.uploadFiles(files);
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
@@ -117,7 +117,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 if (Array.isArray(props[key])) {
                     props[key] = [...props[key], ...filesToUpload[key]];
                 } else {
-                    props[key] = [props[key], ...filesToUpload[key]];
+                    props[key] = filesToUpload[key];
                 }
             } else if (props) {
                 props[key] = filesToUpload[key];
@@ -305,7 +305,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                 succeededEntities.push(result);
             } catch (error) {
-                handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
@@ -352,7 +352,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId, true, true);
                 results.push(result);
             } catch (error) {
-                handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
@@ -363,6 +363,67 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
+    }
+
+    private convertEntities(template: IMongoEntityTemplatePopulated, key: string, property: any) {
+        switch (template.properties.properties[key]?.format) {
+            case 'relationshipReference':
+                return property?.properties._id;
+            case 'location': {
+                if (!property) return undefined;
+                const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+                return JSON.stringify(location);
+            }
+            case 'signature':
+                return undefined;
+            default:
+                return property;
+        }
+    }
+
+    async updateMultipleEntities(
+        updatedInstanceData: IEntity,
+        propertiesToRemove: string[],
+        entitiesToUpdate: IMultipleSelect<boolean>,
+        files: UploadedFile[],
+        ignoredRules: Record<string, IBrokenRule[]>,
+        userId: string,
+    ) {
+        const failedEntities: IFailedEntity[] = [];
+        const succeededEntities: IEntity[] = [];
+        const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const results: IEntity[] = [];
+        const expandedEntities = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
+        const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
+
+        const handleUpdateEntity = async (entity: IEntity) => {
+            const convertedProperties = mapValues(entity.properties, (property, key) => this.convertEntities(template, key, property));
+
+            const propToUpdate: IEntity = {
+                properties: omit({ ...convertedProperties, ...updatedInstanceData.properties }, propertiesToRemove),
+                templateId: updatedInstanceData.templateId,
+            };
+
+            try {
+                const result = await this.updateEntityInstance(
+                    entity.properties._id,
+                    propToUpdate,
+                    files,
+                    ignoredRules[entity.properties._id] || [],
+                    userId,
+                    true,
+                    false,
+                );
+                results.push(result);
+            } catch (error) {
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
+            }
+        };
+
+        await Promise.all(expandedEntities!.map(async ({ entity }) => handleUpdateEntity(entity)));
+        succeededEntities.push(...results);
+
+        return { succeededEntities, failedEntities, brokenRulesEntities: allBrokenRulesEntities };
     }
 
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {

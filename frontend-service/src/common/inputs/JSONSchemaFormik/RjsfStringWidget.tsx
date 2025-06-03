@@ -31,6 +31,8 @@ const RjsfTextWidget = ({
     registry,
     color,
     propertyReadOnly,
+    hideError,
+    hideLabel,
     ...textFieldProps
 }: WidgetProps) => {
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +73,7 @@ const RjsfTextWidget = ({
             fullWidth
             id={id}
             placeholder={placeholder}
-            label={displayLabel ? label || schema.title : false}
+            label={!hideLabel && (displayLabel ? label || schema.title : false)}
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
@@ -79,7 +81,7 @@ const RjsfTextWidget = ({
             inputProps={{ readOnly: readonly }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}
-            error={rawErrors.length > 0}
+            error={!hideError && rawErrors.length > 0}
             onChange={_onChange}
             onBlur={_onBlur}
             onFocus={_onFocus}
@@ -102,6 +104,8 @@ const RjsfTextWidget = ({
                     ) : null,
             }}
             dir={getTextDirection(value, schema)}
+            data-hide-error={hideError}
+            data-hide-label={hideLabel}
         />
     );
 };

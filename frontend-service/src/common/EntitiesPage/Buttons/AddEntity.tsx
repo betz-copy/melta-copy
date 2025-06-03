@@ -3,11 +3,13 @@ import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { TableButton } from '../../TableButton';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -37,6 +39,18 @@ const AddEntityButton: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
     const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
+
+    const handleSuccess = (entity: IEntity) => {
+        onSuccessCreate?.(entity);
+        setUpdatedEntities?.(
+            Object.values(entity.properties).filter(
+                (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
+            ),
+        );
+
+        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
+        setExternalErrors({ files: false, unique: {}, action: '' });
+    };
 
     return (
         <>
@@ -68,34 +82,26 @@ const AddEntityButton: React.FC<{
                 maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
             >
                 <CreateOrEditEntityDetails
-                    isEditMode={false}
+                    mutationProps={{
+                        actionType: ActionTypes.CreateEntity,
+                        payload: undefined,
+                        onError: (currEntityValues) =>
+                            setAddEntityWizardState((prev) => ({
+                                ...prev,
+                                isOpen: true,
+                                initialStep: 1,
+                                initialCurrValues: currEntityValues,
+                            })),
+
+                        onSuccess: handleSuccess,
+                    }}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues}
-                    onSuccessUpdate={(entity) => {
-                        setUpdatedEntities?.(
-                            Object.values(entity.properties).filter(
-                                (property): property is IEntity =>
-                                    typeof property === 'object' && 'templateId' in property && 'properties' in property,
-                            ),
-                        );
-
-                        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                    }}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    onError={(currEntityValues) =>
-                        setAddEntityWizardState((prev) => ({
-                            ...prev,
-                            isOpen: true,
-                            initialStep: 1,
-                            initialCurrValues: currEntityValues,
-                        }))
-                    }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
-                    onSuccessCreate={onSuccessCreate}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />

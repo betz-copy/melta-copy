@@ -14,18 +14,20 @@ import {
     IGraphFilterBodyBatch,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
+    IMultipleSelect,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
 } from '../interfaces/entities';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import urlToFile from '../common/fileConversions';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -50,32 +52,27 @@ export const loadEntitiesRequest = async (
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: formData.append(
-                'properties',
-                JSON.stringify(
-                    mapValues(entity.properties, (property, key) => {
-                        switch (template.properties.properties[key]?.format) {
-                            case 'relationshipReference':
-                                return property?.properties._id;
-                            case 'location': {
-                                if (!property) return undefined;
-                                const location = JSON.parse(property);
+            properties: mapValues(entity.properties, (property, key) => {
+                switch (template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = JSON.parse(property);
 
-                                if (location.coordinateSystem === CoordinateSystem.UTM)
-                                    return JSON.stringify({
-                                        location: locationConverterToString(location.location),
-                                        coordinateSystem: location.coordinateSystem,
-                                    });
-                                return JSON.stringify(location);
-                            }
-                            case 'signature':
-                                return undefined;
-                            default:
-                                return property;
-                        }
-                    }),
-                ),
-            ),
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature':
+                        return undefined;
+                    default:
+                        return property;
+                }
+            }),
             ignoredRules: entity.ignoredRules,
         }));
 
@@ -131,7 +128,7 @@ export const editManyEntitiesByExcelRequest = async (
     }));
     formData.append('entities', JSON.stringify(entitiesArray));
 
-    const { data } = await axios.post(`${entities}/editManyEntitiesByExcel`, formData);
+    const { data } = await axios.put(`${entities}/editManyEntitiesByExcel`, formData);
 
     return data;
 };
@@ -231,10 +228,9 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
     return data;
 };
 
-export const updateEntityRequestForMultiple = async (
-    entityId: string,
+const getBodyForUpdateRequest = async (
     newEntityData: EntityWizardValues,
-    ignoredRules?: IRuleBreach['brokenRules'],
+    ignoredRules?: IRuleBreach['brokenRules'] | Record<string, IBrokenRule[]>,
 ) => {
     const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
@@ -275,6 +271,7 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     }
+
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => {
@@ -332,7 +329,34 @@ export const updateEntityRequestForMultiple = async (
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
 
+    return formData;
+};
+
+export const updateEntityRequestForMultiple = async (
+    entityId: string,
+    newEntityData: EntityWizardValues,
+    ignoredRules?: IRuleBreach['brokenRules'],
+) => {
+    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
+
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    return data;
+};
+
+export const updateMultipleEntitiesRequest = async (
+    entitiesToUpdate: IMultipleSelect<boolean>,
+    newEntityData: EntityWizardValues,
+    propertiesToRemove: string[],
+    ignoredRules?: Record<string, IBrokenRule[]>,
+) => {
+    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
+    formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
+    formData.append('propertiesToRemove', JSON.stringify(propertiesToRemove || []));
+
+    const { data } = await axios.put<IUpdateMultipleEntitiesResponse>(`${entities}/bulk`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 

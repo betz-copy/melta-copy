@@ -290,6 +290,7 @@ export const environment = {
     avatarIconPath: '/icons/profileAvatar/',
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     fileExtensions: {
+        defaultImage: 'png',
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],

@@ -74,7 +74,7 @@ export const useMuiRteTheme = (error?: boolean, globalTheme?: Theme, showLabel?:
     };
 };
 
-const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
+const RjsfTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
     const { toPrint } = options;
 
     const [editorValue, setEditorValue] = useState(getInitialValue(value));
@@ -148,4 +148,4 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
     );
 };
 
-export default RjfsTextAreaWidget;
+export default RjsfTextAreaWidget;

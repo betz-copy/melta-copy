@@ -28,7 +28,7 @@ export interface ProcessTemplateFormInputProperties {
     deleted?: boolean | undefined;
 }
 
-type ProcessTemplatePropertyByType = { type: 'field'; data: ProcessTemplateFormInputProperties };
+export type ProcessTemplatePropertyByType = { type: 'field'; data: ProcessTemplateFormInputProperties };
 
 export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplatePropertyByType[];

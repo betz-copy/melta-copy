@@ -20,7 +20,8 @@ import {
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     loadEntitiesSchema,
-    editExcelSchema,
+    editManyEntitiesByExcelSchema,
+    updateMultipleEntitiesSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -99,12 +100,21 @@ InstancesRouter.post(
     InstancesControllerMiddleware.getChangedEntitiesFromExcel,
 );
 
-InstancesRouter.post(
+InstancesRouter.put(
     '/entities/editManyEntitiesByExcel',
     busboyMiddleware,
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(editExcelSchema),
+    ValidateRequest(editManyEntitiesByExcelSchema),
     InstancesControllerMiddleware.editManyEntitiesByExcel,
+);
+
+InstancesRouter.put(
+    '/entities/bulk',
+    busboyMiddleware,
+    ValidateRequest(updateMultipleEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
+    InstancesValidatorMiddleware.validateUserCanIgnoreRulesMultipleUpdate,
+    InstancesControllerMiddleware.updateMultipleEntities,
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
@@ -142,7 +152,7 @@ InstancesRouter.post(
 InstancesRouter.post(
     '/entities/delete/bulk',
     ValidateRequest(deleteEntityInstancesSchema),
-    InstancesValidatorMiddleware.validateUserCanDeleteEntityInstances,
+    InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
     InstancesControllerMiddleware.deleteEntityInstances,
 );
 InstancesRouter.patch(

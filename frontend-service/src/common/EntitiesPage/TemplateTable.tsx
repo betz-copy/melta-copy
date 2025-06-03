@@ -31,7 +31,8 @@ import { checkUserTemplatePermission } from '../../utils/permissions/instancePer
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
@@ -41,6 +42,7 @@ import { LoadExcelButton } from './Buttons/LoadExcel';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const {
     loadExcel: { excelExtension },
@@ -55,8 +57,9 @@ const TemplateTable = forwardRef<
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
->(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, setUpdatedTemplateIds }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
@@ -435,28 +438,35 @@ const TemplateTable = forwardRef<
                     }}
                     menuRowButtonProps={userHasWritePermissions}
                     refetch={() => entitiesTableRef.current?.refreshServerSide()}
+                    setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
 
             <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    isEditMode={editDialog.isEditMode}
+                    mutationProps={{
+                        ...(editDialog.isEditMode
+                            ? {
+                                  actionType: ActionTypes.UpdateEntity,
+                                  payload: editDialog.entity!,
+                              }
+                            : { actionType: ActionTypes.CreateEntity, payload: undefined }),
+                        onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
+                        onSuccess: (entity: IEntity) => {
+                            if (editDialog.isEditMode) {
+                                entitiesTableRef.current?.updateRowDataClientSide(entity);
+                                setUpdatedEntities?.(
+                                    Object.values(entity.properties).filter(
+                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
+                                    ),
+                                );
+                            } else entitiesTableRef.current?.refreshServerSide();
+                            setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                            setExternalErrors(initializedExternalErrors);
+                        },
+                    }}
                     entityTemplate={template}
                     initialCurrValues={editDialog.wizardValues}
-                    entityToUpdate={editDialog.entity!}
-                    onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
-                    onSuccessUpdate={(entity) => {
-                        if (editDialog.isEditMode) {
-                            entitiesTableRef.current?.updateRowDataClientSide(entity);
-                            setUpdatedEntities?.(
-                                Object.values(entity.properties).filter(
-                                    (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
-                                ),
-                            );
-                        } else entitiesTableRef.current?.refreshServerSide();
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors(initializedExternalErrors);
-                    }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}

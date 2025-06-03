@@ -80,7 +80,6 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     const steps: StepType<CategoryWizardValues>[] = [
         {
             label: i18next.t('wizard.category.chooseName'),
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             component: (props, { isEditMode }) => <CreateCategoryName {...props} isEditMode={isEditMode} />,
             validationSchema: useCreateCategoryNameSchema(currentCategoryId),
         },

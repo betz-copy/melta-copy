@@ -1,6 +1,15 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { IMongoEntityTemplatePopulated, IRule, PermissionScope, IAction, IRelationship, ForbiddenError, ServiceError } from '@microservices/shared';
+import {
+    IMongoEntityTemplatePopulated,
+    IRule,
+    PermissionScope,
+    IAction,
+    IRelationship,
+    ForbiddenError,
+    ServiceError,
+    IBrokenRule,
+} from '@microservices/shared';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
@@ -121,7 +130,7 @@ class InstancesValidator extends DefaultController {
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
-    async validateUserCanDeleteEntityInstances(req: Request) {
+    async validateUserCanWriteBulkEntityInstances(req: Request) {
         const { templateId } = req.body;
 
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
@@ -231,7 +240,16 @@ class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
+        await this.validateEnforcementRules(user, ignoredRules);
+    }
 
+    async validateUserCanIgnoreRulesMultipleUpdate(req: Request) {
+        const { ignoredRules } = req.body;
+        const { user } = req;
+        await this.validateEnforcementRules(user, Object.values(ignoredRules).flat() as IBrokenRule[]);
+    }
+
+    private async validateEnforcementRules(user: Express.User | undefined, ignoredRules: IBrokenRule[]) {
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);

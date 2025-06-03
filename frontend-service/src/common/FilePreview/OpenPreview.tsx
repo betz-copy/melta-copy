@@ -66,12 +66,16 @@ const OpenPreview: React.FC<{
     onClick?: () => Promise<void>;
     searchValue?: string;
     entityFileIdsWithTexts?: ISemanticSearchResult[string][string];
-}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts }) => {
-    const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
+    defaultFileName?: string;
+    disabled?: boolean;
+}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts, defaultFileName, disabled }) => {
+    const fileName = defaultFileName ?? (typeof fileId === 'string' ? getFileName(fileId) : fileId.name);
+
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 
     const handleButtonClick = async () => {
+        if (disabled) return;
         setOpen(true);
     };
 

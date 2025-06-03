@@ -34,6 +34,20 @@ export const updateEntityInstanceSchema = Joi.object({
     files: Joi.array().items(fileSchema),
 });
 
+// PUT /api/instances/entities/bulk
+export const updateMultipleEntitiesSchema = Joi.object({
+    body: Joi.object({
+        templateId: Joi.string().required(),
+        properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
+        ignoredRules: ExtendedJoi.stringToObject().default({}),
+        entitiesToUpdate: ExtendedJoi.stringToObject(),
+        propertiesToRemove: ExtendedJoi.stringToArray().items(Joi.string()).default([]),
+    }).unknown(true),
+    query: {},
+    params: {},
+    files: Joi.array().items(fileSchema),
+});
+
 // PATCH /api/instances/entities/:id/status
 export const updateEntityStatusSchema = Joi.object({
     body: Joi.object({
@@ -234,6 +248,16 @@ export const loadEntitiesSchema = Joi.object({
     params: {},
 });
 
+// POST /api/instances/entities/getChangedEntitiesFromExcel
+export const getChangedEntitiesFromExcelSchema = Joi.object({
+    body: {
+        file: excelTemplateSchema,
+        templateId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});
+
 // POST /api/instances/entities/editReadExcel
 export const editReadExcelSchema = Joi.object({
     body: {
@@ -244,12 +268,21 @@ export const editReadExcelSchema = Joi.object({
     params: {},
 });
 
-// POST /api/instances/entities/editExcel
-export const editExcelSchema = Joi.object({
+// POST /api/instances/entities/editManyEntitiesByExcel
+export const editManyEntitiesByExcelSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
-        entities: ExtendedJoi.stringToArray({ templateId: Joi.string(), properties: Joi.object() }).default([]),
-        ignoredRules: ExtendedJoi.stringToArray(brokenRuleSchema),
+        entities: ExtendedJoi.stringToArray(
+            Joi.array()
+                .items(
+                    Joi.object({
+                        templateId: Joi.string().required(),
+                        properties: Joi.object().required(),
+                        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+                    }),
+                )
+                .default([]),
+        ),
     },
     query: {},
     params: {},

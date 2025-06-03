@@ -144,6 +144,11 @@ export class EntityValidator extends DefaultController {
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
+    async validateTemplateExistence(req: Request) {
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
+        addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+    }
+
     async validateConstraintsOfTemplate(req: Request) {
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
 

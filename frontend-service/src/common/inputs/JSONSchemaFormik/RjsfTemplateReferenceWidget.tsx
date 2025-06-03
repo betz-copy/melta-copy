@@ -7,7 +7,7 @@ import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 
-const RjfsTemplateReferenceWidget = ({
+const RjsfTemplateReferenceWidget = ({
     id,
     required,
     disabled,
@@ -71,4 +71,4 @@ const RjfsTemplateReferenceWidget = ({
     );
 };
 
-export default RjfsTemplateReferenceWidget;
+export default RjsfTemplateReferenceWidget;

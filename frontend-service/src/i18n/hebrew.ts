@@ -512,6 +512,7 @@ export default {
         color: 'בחר צבע',
         failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
         date: 'בחר תאריך',
+        disabledField: 'לא ניתן לעדכן ערך זה',
         category: {
             createTitle: 'יצירת קטגוריה',
             updateTitle: 'עריכת קטגוריה',
@@ -759,6 +760,13 @@ export default {
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
+            },
+            multipleUpdate: {
+                title: 'עריכת ישויות',
+                editPropertiesTitle: 'ערוך מאפיינים',
+                editPropertiesDescription: 'לא ניתן לערוך ערכים ייחודים',
+                summeryTitle: 'סיכום עריכה',
+                entitiesAmount: 'כמות ישויות לעריכה',
             },
             editExcel: { title: 'עריכת טבלה מתוך קובץ', failedReadExcel: 'קריאת קובץ נכשלה' },
         },

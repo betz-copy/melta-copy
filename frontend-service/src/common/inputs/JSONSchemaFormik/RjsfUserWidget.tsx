@@ -4,7 +4,7 @@ import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../../interfaces/users';
 
-const RjfsUserWidget = ({
+const RjsfUserWidget = ({
     disabled,
     label,
     value,
@@ -67,4 +67,4 @@ const RjfsUserWidget = ({
     );
 };
 
-export default RjfsUserWidget;
+export default RjsfUserWidget;
