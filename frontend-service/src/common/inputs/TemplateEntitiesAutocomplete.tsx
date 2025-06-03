@@ -197,7 +197,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
                             endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                             startAdornment: relProperty ? (
                                 <RelationshipReferenceView
-                                    entity={convertPropertyToString(relProperty) || String(relProperty)}
+                                    // entity={convertPropertyToString(relProperty) || String(relProperty)}
+                                    entity={value}
                                     relatedTemplateId={value.templateId}
                                     relatedTemplateField={showField}
                                 />

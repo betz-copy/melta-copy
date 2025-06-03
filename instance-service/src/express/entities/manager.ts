@@ -896,30 +896,33 @@ class EntityManager extends DefaultManagerNeo4j {
                         let fourthKey = innerKeys[3];
                         // currently only user and user array should have a 4th key
                         if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]]) {
-                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = innerKeys[3].endsWith(config.neo4j.usersFieldsPropertySuffix)
-                                ? []
-                                : {};
+                            // relatedEntities[innerKeys[0]].properties[innerKeys[2]] = innerKeys[3].endsWith(config.neo4j.usersFieldsPropertySuffix)
+                            //     ? []
+                            //     : {};
+                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = {};
                         }
 
                         if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
                             // user
                             fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
-                            relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
+                            // relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
                         } else if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
                             // User arrays are stored in arrays for each field, (i.e. ids: [id1, id2 ...])
                             // so we want to convert them into an array of users (i.e. [{id: id1 ...}, {id: id2 ...} ...])
-                            fourthKey = innerKeys[3].replace(`s${config.neo4j.usersFieldsPropertySuffix}`, '');
-                            if (fourthKey === 'hierarchie') fourthKey = 'hierarchy';
+                            fourthKey = innerKeys[3].replace(`${config.neo4j.usersFieldsPropertySuffix}`, '');
+                            // if (fourthKey === 'hierarchie') fourthKey = 'hierarchy';
 
-                            value.forEach((val, index) => {
-                                if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]][index]) {
-                                    relatedEntities[innerKeys[0]].properties[innerKeys[2]][index] = {};
-                                }
-                                relatedEntities[innerKeys[0]].properties[innerKeys[2]][index][fourthKey] = val;
-                            });
-                        } else {
-                            relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
+                            // value.forEach((val, index) => {
+                            //     if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]][index]) {
+                            //         relatedEntities[innerKeys[0]].properties[innerKeys[2]][index] = {};
+                            //     }
+                            //     relatedEntities[innerKeys[0]].properties[innerKeys[2]][index][fourthKey] = val;
+                            // });
                         }
+                        // else {
+                        //     relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
+                        // }
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
                     } else {
                         relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
                     }

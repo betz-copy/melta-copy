@@ -91,14 +91,24 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                 ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? ''
                 : entity.properties[relatedTemplateField].location;
         } else if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'user') {
-            return entity.properties[relatedTemplateField].fullName;
+            const userProperty = entity.properties[relatedTemplateField];
+            try {
+                return JSON.parse(userProperty).fullName;
+            } catch {
+                return userProperty.fullName;
+            }
         } else if (
             relatedEntityTemplate.properties.properties[relatedTemplateField].type === 'array' &&
             relatedEntityTemplate.properties.properties[relatedTemplateField]?.items?.format === 'user'
         ) {
-            return entity.properties[relatedTemplateField].map((user) => user.fullName).join(', ');
+            const usersProperty = entity.properties[relatedTemplateField];
+            if (Array.isArray(usersProperty)) {
+                return entity.properties[relatedTemplateField].map((user) => JSON.parse(user).fullName).join(', ');
+            } else {
+                return usersProperty.fullNames.join(', ');
+            }
         } else {
-            return entity.properties[relatedTemplateField];
+            return entity?.properties[relatedTemplateField] ?? entity;
         }
     };
 
