@@ -374,6 +374,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 }) => {
     const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
 
+    console.log({properties, overridePropertiesToShow, entityTemplate});
+    
+
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));

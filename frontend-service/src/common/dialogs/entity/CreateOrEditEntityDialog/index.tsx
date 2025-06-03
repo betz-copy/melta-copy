@@ -93,7 +93,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     const initialValues = useMemo(() => {
-        if (isEditMode) return convertIEntityToEntityWizardValues(payload, entityTemplate, initialTemplateFileKeys);
+        if (isEditMode) return convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys);
         if (initialCurrValues) return initialCurrValues;
 
         return {
@@ -206,6 +206,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         ...values.properties,
                                                     }}
                                                     documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                    templateId={values.template._id}
                                                 />
                                             ) : (
                                                 <Grid item xs={6}>

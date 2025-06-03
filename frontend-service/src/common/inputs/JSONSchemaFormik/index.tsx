@@ -147,7 +147,7 @@ const getComponent = (
     if (checkboxProps) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
             const { label, disabled, name, value, schema, onChange } = props;
-            const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
+            const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));            
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 

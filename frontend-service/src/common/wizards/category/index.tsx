@@ -26,7 +26,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
     initialStep = 0,
-    initialValues = { name: '', displayName: '', icon: undefined, color: '' },
+    initialValues = { name: '', displayName: '', icon: undefined, color: '', templatesOrder: [] },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
@@ -80,7 +80,6 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     const steps: StepType<CategoryWizardValues>[] = [
         {
             label: i18next.t('wizard.category.chooseName'),
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             component: (props, { isEditMode }) => <CreateCategoryName {...props} isEditMode={isEditMode} />,
             validationSchema: useCreateCategoryNameSchema(currentCategoryId),
         },

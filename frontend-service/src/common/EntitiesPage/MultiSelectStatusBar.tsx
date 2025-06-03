@@ -220,15 +220,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
             stepperActions: {
                 disable: 'back',
-                next: {
-                    onClick: (props, action) => {
-                        const allSelectedProperties = { disabled: false };
-                        Object.entries(selectedFields).forEach(([key, value]) => {
-                            if (value) allSelectedProperties[key] = props.properties[key];
-                        });
-                        action.setValues({ ...props, properties: allSelectedProperties });
-                    },
-                },
             },
             invisibleBeforeStep: true,
         },
@@ -236,13 +227,13 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             label: i18next.t('wizard.entity.multipleUpdate.summeryTitle'),
             component: (props) => {
                 return (
-                    <Box sx={{ width: '100%', marginLeft: '4vw', marginY: '2vh' }}>
+                    <Box sx={{ width: '100%', paddingLeft: '4vw', paddingY: '2vh' }}>
                         <EntityPropertiesInternal
                             entityTemplate={template}
-                            properties={{ ...props.values?.properties, createdAt: '', updatedAt: '', _id: '' }}
+                            properties={{ ...props.values?.properties, ...props.values?.attachmentsProperties, createdAt: '', updatedAt: '', _id: '' }}
                             mode="normal"
                             darkMode={darkMode}
-                            overridePropertiesToShow={Object.keys(props.values?.properties || {})}
+                            overridePropertiesToShow={[...Object.keys(props.values?.properties ?? {}).filter((key) => selectedFields[key]), ...Object.keys(props.values?.attachmentsProperties ?? {})]}
                             textWrap
                         />
                         <Box>
@@ -259,8 +250,20 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             stepperActions: {
                 next: {
                     onClick: async (props) => {
-                        const undefinedProperties = Object.keys(props.properties).filter((property) => props.properties[property] === undefined);
-                        setEntityData({ propertiesToChange: props, propertiesToRemove: undefinedProperties });
+                        const allSelectedProperties = { disabled: false };
+
+                        Object.entries(selectedFields).forEach(([key, value]) => {
+                            if (value) allSelectedProperties[key] = props.properties[key];
+                        });
+
+                        const undefinedProperties = Object.keys(allSelectedProperties).filter((property) => props.properties[property] === undefined);
+                        setEntityData({
+                            propertiesToChange: { ...props, properties: allSelectedProperties },
+                            propertiesToRemove: undefinedProperties,
+                        });
+
+                        console.log(props);
+                        
 
                         await updateMultipleMutation({
                             newEntityData: props,
@@ -396,8 +399,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     }}
                     actionType={ActionTypes.UpdateMultipleEntities}
                     brokenRulesEntity={stepsData?.brokenRulesEntities ?? []}
-                    onUpdatedRuleBlock={(brokenRules) => setStepsData((prevState) => ({...prevState, brokenRules }))}
-                    entityFormData={{template, properties: { ...entityData?.propertiesToChange.properties, disabled: false }, attachmentsProperties: {}}}
+                    onUpdatedRuleBlock={(brokenRules) => setStepsData((prevState) => ({ ...prevState, brokenRules }))}
+                    entityFormData={{
+                        template,
+                        properties: { ...entityData?.propertiesToChange.properties, disabled: false },
+                        attachmentsProperties: {},
+                    }}
                     onCreateRuleBreachRequest={() => handleClose(true)}
                 />
             )}

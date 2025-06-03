@@ -12,7 +12,6 @@ import { IEntity } from '../../../interfaces/entities';
 import {
     ActionTypes,
     IAction,
-    IActionMetadataPopulated,
     IActionPopulated,
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
@@ -23,7 +22,7 @@ import {
     IUpdateMultipleEntitiesMetadata,
     IUpdateMultipleEntitiesMetadataPopulated,
 } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule, IBrokenRulePopulated, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { environment } from '../../../globals';
@@ -130,6 +129,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                   brokenRules: componentProps?.brokenRules ?? [],
                   actions: componentProps?.actions ?? [],
                   rawActions: componentProps?.rawActions ?? [],
+                  entities: [],
               };
 
     let actionMetadataWithoutFiles: ICreateEntityMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateMultipleEntitiesMetadata;
@@ -177,7 +177,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 getUpdateEntityActionMetadata({ properties: entity.properties as IEntity['properties'], templateId: entityFormData.template._id }, entityFormData),
             ) || [];
 
-        actionMetadataWithoutFiles = (actionMetadataPopulated || [])?.map((actionMetadata) => {
+        actionMetadataWithoutFiles = (actionMetadataPopulated as IUpdateMultipleEntitiesMetadataPopulated || [])?.map((actionMetadata) => {
             return {
                 entityId: actionMetadata.entity!.properties._id,
                 updatedFields: pickBy(actionMetadata.updatedFields, (value) => !(value instanceof File)),

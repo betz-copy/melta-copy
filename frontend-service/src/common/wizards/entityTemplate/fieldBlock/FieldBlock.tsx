@@ -141,8 +141,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                     },
                 };
 
-                if (field === 'name' && displayValuesCopy[index].data.type === 'comment')
-                    displayValuesCopy[index].data.title = `${i18next.t('propertyTypes.comment')}-${value}`;
+                if (field === 'name' && (displayValuesCopy[index] as FieldProperty).data.type === 'comment')
+                    (displayValuesCopy[index] as FieldProperty).data.title = `${i18next.t('propertyTypes.comment')}-${value}`;
             }
         });
 

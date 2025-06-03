@@ -37,8 +37,8 @@ import {
     ISemanticSearchResult,
     BadRequestError,
     UploadedFile,
-    CoordinateSystem,
-    locationConverterToString,
+    // CoordinateSystem,
+    // locationConverterToString,
     IMultipleSelect,
 } from '@microservices/shared';
 import config from '../../config';
@@ -56,7 +56,7 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import WorkspaceService from '../workspaces/service';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
-import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
+import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, classifyEntityErrors } from '../../utils/excel';
 import { PreviewService } from '../../externalServices/previewService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
@@ -374,12 +374,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             case 'location': {
                 if (!property) return undefined;
                 const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
-
-                if (location.coordinateSystem === CoordinateSystem.UTM)
-                    return JSON.stringify({
-                        location: locationConverterToString(location.location),
-                        coordinateSystem: location.coordinateSystem,
-                    });
                 return JSON.stringify(location);
             }
             case 'signature':

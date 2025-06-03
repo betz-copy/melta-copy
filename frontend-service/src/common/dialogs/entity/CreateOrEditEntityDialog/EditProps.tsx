@@ -136,9 +136,20 @@ const EditProps: React.FC<{
             setFieldValue(`properties.${field}`, undefined);
         }
 
+        const relatedUserFields = {};
+
+        if (schema.properties[field].format === 'user') {
+            Object.entries(schema.properties).forEach(([key, value]) => {
+                if (value.format === 'kartoffelUserField' && value.expandedUserField?.relatedUserField === field) {
+                    relatedUserFields[key] = checked;
+                }
+            });
+        }
+
         multipleSelectionProps?.setSelectedFields((prev) => ({
             ...prev,
             [field]: checked,
+            ...relatedUserFields,
         }));
     };
 
