@@ -1,6 +1,6 @@
 import isEqualWith from 'lodash.isequalwith';
 import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/roles/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 import { IMongoCategory } from '../../interfaces/categories';
 

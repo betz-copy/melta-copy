@@ -379,7 +379,7 @@ export const FieldBlockWrapper = ({
     const archive = (index: number, propertyType: PropertiesTypes, groupIndex?: number) => {
         setValues((prevDisplayValues) => {
             const archivedProperty = getFieldData(prevDisplayValues[propertyType], index, groupIndex);
-            const wasArchived = archivedProperty.archive;
+            const wasArchived = archivedProperty?.archive;
 
             if (wasArchived) {
                 const indexesToUpdate = [{ index, type: propertyType, groupIndex }];
@@ -419,7 +419,7 @@ export const FieldBlockWrapper = ({
                         const propType = PropertiesTypes.properties;
 
                         return {
-                            index: propertyIndex || -1,
+                            index: propertyIndex ?? -1,
                             type: propType,
                             groupIndex: propertyGroupIndex,
                         };

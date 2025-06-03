@@ -12,6 +12,8 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { EntityPropertiesInternal } from '../EntityProperties';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
+import { locationConverterToString } from '../../utils/map/convert';
+import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -140,6 +142,50 @@ const TemplateEntitiesAutocomplete: React.FC<{
             : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
     ];
 
+    const convertPropertyToString = (property: any): string | undefined => {
+        if (typeof property === 'object') {
+            if (property.location) {
+                return property.coordinateSystem === CoordinateSystem.UTM
+                    ? locationConverterToString(property.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                    : property.location;
+            }
+
+            if (Array.isArray(property)) {
+                try {
+                    // user array
+                    const parsedArray = property.map((prop) => {
+                        if (prop?.fullName) {
+                            return prop.fullName;
+                        }
+
+                        const parsed = JSON.parse(prop);
+
+                        return parsed.fullName;
+                    });
+                    return parsedArray.join(', ');
+                } catch {
+                    return property.join(', ');
+                }
+            }
+
+            if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
+                // user when editing entity
+                return property.fullName;
+            }
+
+            return property.toString();
+        }
+
+        try {
+            // user when creating entity from scratch
+            const parsedUser = JSON.parse(property);
+
+            return typeof parsedUser === 'object' ? parsedUser.fullName : parsedUser;
+        } catch {
+            return property;
+        }
+    };
+
     return (
         <Autocomplete
             value={value}
@@ -153,7 +199,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
-            getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
+            getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}
@@ -172,11 +218,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                             readOnly,
                             endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                             startAdornment: relProperty ? (
-                                <RelationshipReferenceView
-                                    entity={String(relProperty)}
-                                    relatedTemplateId={value.templateId}
-                                    relatedTemplateField={showField}
-                                />
+                                <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
                             ) : undefined,
                             inputProps: {
                                 ...params.inputProps,
@@ -189,18 +231,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
-                    const templateProperty = template.properties.properties[key];
 
-                    return typeof property === 'object' ? (
-                        <RelationshipReferenceView
-                            key={key}
-                            entity={property}
-                            relatedTemplateId={property.templateId}
-                            relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
-                        />
-                    ) : (
-                        property
-                    );
+                    return convertPropertyToString(property);
                 });
 
                 return (
