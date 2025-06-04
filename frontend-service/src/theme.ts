@@ -14,6 +14,7 @@ const basicTheme: ThemeOptions = {
                 root: {
                     '& .MuiInputBase-root': {
                         borderRadius: '10px',
+                        color: '#53566E',
                     },
 
                     '& fieldset': {

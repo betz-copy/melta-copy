@@ -27,6 +27,7 @@ import { initialValues } from '../../../utils/charts/getChartAxes';
 import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
 import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
+import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 
 const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -44,8 +45,57 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
     console.log({ values, chartMode });
 
     return (
-        <Grid container direction="column" spacing={3} wrap="nowrap">
-            {isDashboardPage && viewMode === ViewMode.Add && (
+        <Grid container direction="column" width="100%">
+            <Grid item>
+                <Grid container direction="column" spacing={2} marginTop={1}>
+                    <Grid item>
+                        <ReadOnlyTextField
+                            name="name"
+                            label={i18next.t('charts.name')}
+                            placeholder={i18next.t('charts.name')}
+                            value={values.name}
+                            onChange={handleChange}
+                            error={touched.name && Boolean(errors.name)}
+                            helperText={touched.name && errors.name}
+                            variant={viewMode === ViewMode.ReadOnly ? 'standard' : 'outlined'}
+                            sx={{ width: '100%' }}
+                            readOnly={viewMode === ViewMode.ReadOnly}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <TextField
+                            id="description"
+                            name="description"
+                            multiline
+                            label={i18next.t('charts.description')}
+                            placeholder={i18next.t('charts.description')}
+                            value={values.description || (viewMode === ViewMode.ReadOnly ? '-' : '')}
+                            onChange={handleChange}
+                            error={touched.description && Boolean(errors.description)}
+                            helperText={touched.description && errors.description}
+                            variant={viewMode === ViewMode.ReadOnly ? 'standard' : 'outlined'}
+                            maxRows={4}
+                            sx={{ width: '100%' }}
+                            InputProps={{
+                                readOnly: viewMode === ViewMode.ReadOnly,
+                                disableUnderline: viewMode === ViewMode.ReadOnly,
+                                style: { textOverflow: 'ellipsis' },
+                            }}
+                        />
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <Grid item>
+                <ChartTypesEdit
+                    formik={props}
+                    formikValues={values}
+                    entityTemplate={entityTemplates.get(values.templateId || '')!}
+                    disabled={viewMode === ViewMode.ReadOnly}
+                />
+            </Grid>
+
+            <Grid container direction="column" marginTop={2} spacing={2}>
                 <Grid item>
                     <Autocomplete
                         value={values.templateId || null}
@@ -57,7 +107,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                         sx={{ width: 295 }}
                     />
                 </Grid>
-            )}
+            </Grid>
 
             {values.templateId && (
                 <>
