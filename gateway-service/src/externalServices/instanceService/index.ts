@@ -191,14 +191,6 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getRelationshipsByUserEntityId(templateIds: string[], userEntityId: string) {
-        const { data } = await this.api.post<IRelationship[]>(`${baseRelationshipsRoute}/user-entity-id`, {
-            templateIds,
-            userEntityId,
-        });
-        return data;
-    }
-
     async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
         const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
             templateIds,

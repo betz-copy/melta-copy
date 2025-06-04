@@ -563,7 +563,7 @@ export const searchWithRelationshipsToNeoQuery = (
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
-    const { entityIdsToInclude, entityIdsToExclude, ...restOfSearchBody } = searchBody;
+    const { entityIdsToInclude, entityIdsToExclude, userEntityId, ...restOfSearchBody } = searchBody;
 
     if (calculateOverallCount) {
         return searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, entityIdsToExclude, true, globalSearchIndexes);
@@ -586,6 +586,7 @@ export const searchWithRelationshipsToNeoQuery = (
         WITH node, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
         
         OPTIONAL MATCH (node)-[relationship]-(otherEntity)
+        ${userEntityId ? `WHERE otherEntity._id = $userEntityId` : ''}
         WHERE shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
 
         WITH node, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities

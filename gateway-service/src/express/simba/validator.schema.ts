@@ -54,3 +54,22 @@ export const countEntitiesOfTemplatesByUserEntityIdSchema = Joi.object({
         userEntityId: Joi.string().required(),
     },
 });
+
+// POST /api/simba/entities/search/template/:templateId
+export const searchEntitiesOfTemplateSchema = Joi.object({
+    query: {},
+    body: {
+        userEntityId: Joi.string().optional(),
+        skip: Joi.number().optional(),
+        limit: Joi.number().optional(),
+        textSearch: Joi.string().optional(),
+        filter: Joi.object().optional(),
+        showRelationships: Joi.array().items(MongoIdSchema).optional(),
+        sort: Joi.array()
+            .items(Joi.object({ field: Joi.string().required(), sort: Joi.string().required() }))
+            .optional(),
+    },
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});

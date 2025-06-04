@@ -8,6 +8,7 @@ import {
     getAllRelationshipTemplatesSchema,
     countEntitiesOfTemplatesByUserEntityIdSchema,
     getAllSimbaTemplatesSchema,
+    searchEntitiesOfTemplateSchema,
 } from './validator.schema';
 import SimbaValidator, { validateSimbaHeaders } from './middlewares';
 
@@ -58,6 +59,13 @@ SimbaRouter.post(
     ValidateRequest(countEntitiesOfTemplatesByUserEntityIdSchema),
     SimbaValidatorMiddleware.validateUserCanAccessSimba,
     SimbaControllerMiddleware.countEntitiesOfTemplatesByUserEntityId,
+);
+
+SimbaRouter.post(
+    '/entities/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.searchEntitiesOfTemplate,
 );
 
 export default SimbaRouter;

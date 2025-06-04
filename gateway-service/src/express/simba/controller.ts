@@ -30,6 +30,10 @@ class SimbaController extends DefaultController<SimbaManager> {
     async countEntitiesOfTemplatesByUserEntityId(req: Request, res: Response) {
         res.json(await this.manager.countEntitiesOfTemplatesByUserEntityId(req.body.templateIds, req.body.userEntityId));
     }
+
+    async searchEntitiesOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
+    }
 }
 
 export default SimbaController;

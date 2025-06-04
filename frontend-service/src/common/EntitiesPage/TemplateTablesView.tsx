@@ -15,7 +15,7 @@ import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
-type TemplateTablesViewResultsRef = {
+export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 

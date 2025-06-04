@@ -63,6 +63,7 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { searchEntitiesOfTemplateSimbaRequest } from '../../services/simbaService';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -93,6 +94,8 @@ export const getDatasource = <Data extends any = EntityData>(
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
     defaultFilter?: ISearchFilter,
+    pageType?: string,
+    kartoffelId?: string,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -107,15 +110,26 @@ export const getDatasource = <Data extends any = EntityData>(
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
             const { result: data, err } = await trycatch(() =>
-                searchEntitiesOfTemplateRequest(
-                    template._id,
-                    agGridToSearchEntitiesOfTemplateRequest(
-                        { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
-                        template,
-                        // tableCount, // comment out  waiting for Itay
-                        defaultFilter,
-                    ),
-                ),
+                pageType === 'simba'
+                    ? searchEntitiesOfTemplateSimbaRequest(
+                          template._id,
+                          kartoffelId!,
+                          agGridToSearchEntitiesOfTemplateRequest(
+                              { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                              template,
+                              // tableCount, // comment out  waiting for Itay
+                              defaultFilter,
+                          ),
+                      )
+                    : searchEntitiesOfTemplateRequest(
+                          template._id,
+                          agGridToSearchEntitiesOfTemplateRequest(
+                              { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                              template,
+                              // tableCount, // comment out  waiting for Itay
+                              defaultFilter,
+                          ),
+                      ),
             );
 
             if (err || !data) {
@@ -148,6 +162,8 @@ export const getRowModelProps = <Data extends any = EntityData>(
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
     defaultFilter?: ISearchFilter,
+    pageType?: string,
+    kartoffelId?: string,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -160,7 +176,15 @@ export const getRowModelProps = <Data extends any = EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], defaultFilter),
+        serverSideDatasource: getDatasource<IConnection>(
+            template,
+            quickFilterText,
+            datasourceOnFail,
+            rowData as IConnection[],
+            defaultFilter,
+            pageType,
+            kartoffelId,
+        ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -680,7 +704,19 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances, defaultFilter),
+            () =>
+                getRowModelProps(
+                    rowModelType,
+                    template,
+                    rowData,
+                    pageRowCount!,
+                    quickFilterText,
+                    datasourceOnFail,
+                    hasInstances,
+                    defaultFilter,
+                    saveStorageProps.pageType,
+                    kartoffelId,
+                ),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
         );
 

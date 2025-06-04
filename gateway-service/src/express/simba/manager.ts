@@ -1,4 +1,4 @@
-import { NotFoundError } from '@microservices/shared';
+import { ISearchEntitiesOfTemplateBody, NotFoundError } from '@microservices/shared';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -75,14 +75,14 @@ class SimbaManager extends DefaultManagerProxy<null> {
         return entityChildTemplate;
     }
 
-    async getRelationshipsByUserEntityId(relationshipTemplateIds: string[], userEntityId: string) {
-        const relationships = await this.instancesService.getRelationshipsByUserEntityId(relationshipTemplateIds, userEntityId);
-        return relationships;
-    }
-
     async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
         const count = await this.instancesService.countEntitiesOfTemplatesByUserEntityId(templateIds, userEntityId);
         return count;
+    }
+
+    async searchEntitiesOfTemplate(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+        const entities = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, searchBody);
+        return entities;
     }
 }
 

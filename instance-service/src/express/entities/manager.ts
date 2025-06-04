@@ -698,6 +698,7 @@ class EntityManager extends DefaultManagerNeo4j {
             sort: searchBody.sort ?? [],
             entityIdsToInclude: searchBody.entityIdsToInclude,
             entityIdsToExclude: searchBody.entityIdsToExclude,
+            userEntityId: searchBody.userEntityId,
         };
 
         const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
