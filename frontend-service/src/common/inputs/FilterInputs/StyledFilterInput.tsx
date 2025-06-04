@@ -13,7 +13,7 @@ const ReadOnlyTextField: React.FC<ReadOnlyTextFieldProps> = ({ readOnly = false,
             variant={readOnly ? 'standard' : 'outlined'}
             InputProps={{
                 ...InputProps,
-                readOnly: readOnly,
+                readOnly,
                 disableUnderline: true,
                 style: {
                     textOverflow: 'ellipsis',
