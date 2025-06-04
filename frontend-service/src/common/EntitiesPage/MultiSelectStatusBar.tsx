@@ -244,7 +244,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                             mode="normal"
                             darkMode={darkMode}
                             overridePropertiesToShow={[
-                                ...Object.keys(props.values?.properties ?? {}).filter((key) => selectedFields[key]),
+                                ...Object.keys(selectedFields ?? {}).filter((key) => selectedFields[key]),
                                 ...Object.keys(props.values?.attachmentsProperties ?? {}),
                             ]}
                             textWrap

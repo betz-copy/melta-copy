@@ -8,7 +8,7 @@ import { promises as fsp } from 'fs';
 import { Dictionary, mapValues, omit } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
-
+import pMap from 'p-map';
 import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
@@ -396,7 +396,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const expandedEntities = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
         const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
 
-        const handleUpdateEntity = async (entity: IEntity) => {
+        const handleUpdateEntity = async (entityWithDirectRelationships: IEntityWithDirectRelationships) => {
+            const { entity } = entityWithDirectRelationships;
             const convertedProperties = mapValues(entity.properties, (property, key) => this.convertEntities(template, key, property));
 
             const propToUpdate: IEntity = {
@@ -420,7 +421,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         };
 
-        await Promise.all(expandedEntities!.map(async ({ entity }) => handleUpdateEntity(entity)));
+        await pMap(expandedEntities, handleUpdateEntity, { concurrency: 5 });
         succeededEntities.push(...results);
 
         return { succeededEntities, failedEntities, brokenRulesEntities: allBrokenRulesEntities };
