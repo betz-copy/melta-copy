@@ -10,12 +10,12 @@ export enum IPermission {
 }
 
 export interface TableMetaData {
+    name: string;
+    description: string;
     templateId: string;
     columns: string[];
     columnsOrder: string[];
-    filter: string;
-    name: string;
-    description: string;
+    filter?: string;
 }
 
 export interface IframeMetaData {

@@ -30,13 +30,24 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
 
         const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 
-        if (ids) return ids?.map((id) => filteredIFrames.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
+        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems(filteredIFrames.map(({ _id }) => _id));
 
-        return filteredIFrames;
+        const allFilteredIframes = filteredIFrames.map((iframe) => ({
+            ...iframe,
+            usedInDashboard: (dashboardChartsItems[iframe._id] ?? []).length > 0,
+        }));
+
+        if (ids) return ids?.map((id) => allFilteredIframes.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
+
+        return allFilteredIframes;
     }
 
     async getIFrameById(iFrameId: string) {
-        return this.service.getIFrameById(iFrameId);
+        const iframe = await this.service.getIFrameById(iFrameId);
+        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems([iFrameId]);
+        const usedInDashboard = (dashboardChartsItems[iFrameId] ?? []).length > 0;
+
+        return { ...iframe, usedInDashboard };
     }
 
     async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile, toDashboard: boolean = false) {
@@ -54,7 +65,10 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
         return createdIframe;
     }
 
-    deleteIFrame(iFrameId: string) {
+    async deleteIFrame(iFrameId: string, deleteReferenceDashboardItems: boolean = false) {
+        if (deleteReferenceDashboardItems) {
+            await this.DashboardItemService.deleteDashboardItemByRelatedItem(iFrameId);
+        }
         return this.service.deleteIFrame(iFrameId);
     }
 

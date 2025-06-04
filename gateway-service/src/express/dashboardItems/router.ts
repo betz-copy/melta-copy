@@ -4,6 +4,15 @@ import config from '../../config';
 import { createWorkspacesController } from '../../utils/express';
 import { DashboardController } from './controller';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import {
+    createDashboardRequestSchema,
+    deleteDashboardItemRequestSchema,
+    editDashboardItemRequestSchema,
+    getDashboardItemByIdRequestSchema,
+    searchDashboardItemsRequestSchema,
+} from './validator.schema';
+import ValidateRequest from '../../utils/joi';
+import { DashboardValidator } from './middlewares';
 
 const {
     dashboardService: { url, baseRoute, requestTimeout, dashboard },
@@ -21,16 +30,41 @@ const dashboardItemsServiceProxy = createProxyMiddleware({
 const dashboardItemsRouter: Router = Router();
 
 const DashboardControllerMiddleware = createWorkspacesController(DashboardController);
-// const DashboarValidatorMiddleware = createWorkspacesController(GanttsValidator, true);
+const DashboardValidatorMiddleware = createWorkspacesController(DashboardValidator, true);
 
-dashboardItemsRouter.post('/', dashboardItemsServiceProxy);
+dashboardItemsRouter.post(
+    '/',
+    ValidateRequest(createDashboardRequestSchema),
+    DashboardValidatorMiddleware.validateUserCanCreateDashboard,
+    dashboardItemsServiceProxy,
+);
 
-dashboardItemsRouter.get('/:dashboardItemId', dashboardItemsServiceProxy);
+dashboardItemsRouter.get(
+    '/:dashboardItemId',
+    ValidateRequest(getDashboardItemByIdRequestSchema),
+    DashboardValidatorMiddleware.validateUserCanGetDashboardById,
+    dashboardItemsServiceProxy,
+);
 
-dashboardItemsRouter.put('/:dashboardItemId', dashboardItemsServiceProxy);
+dashboardItemsRouter.put(
+    '/:dashboardItemId',
+    ValidateRequest(editDashboardItemRequestSchema),
+    DashboardValidatorMiddleware.validateUserCanUpdateDashboard,
+    dashboardItemsServiceProxy,
+);
 
-dashboardItemsRouter.delete('/:dashboardItemId', dashboardItemsServiceProxy);
+dashboardItemsRouter.delete(
+    '/:dashboardItemId',
+    ValidateRequest(deleteDashboardItemRequestSchema),
+    DashboardValidatorMiddleware.validateUserCanDeleteDashboard,
+    dashboardItemsServiceProxy,
+);
 
-dashboardItemsRouter.post('/search', AuthorizerControllerMiddleware.userHasSomePermissions, DashboardControllerMiddleware.searchDashboardItems);
+dashboardItemsRouter.post(
+    '/search',
+    ValidateRequest(searchDashboardItemsRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    DashboardControllerMiddleware.searchDashboardItems,
+);
 
 export default dashboardItemsRouter;

@@ -25,7 +25,7 @@ export class ChartController extends DefaultController<ChartManager> {
     }
 
     async createChart(req: Request, res: Response) {
-        res.json(await this.manager.createChart(req.body.chart, req.body.toDashboard));
+        res.json(await this.manager.createChart(req.body, req.query.toDashboard as boolean | undefined));
     }
 
     async updateChart(req: Request, res: Response) {

@@ -7,7 +7,7 @@ const { charts } = environment.api;
 type ChartWithStringFilter = Omit<IChart, 'filter'> & { filter?: string };
 
 export const createChart = async (newChart: ChartWithStringFilter, toDashboard: boolean = false) => {
-    const { data } = await axios.post<IChart>(charts, { chart: newChart, toDashboard });
+    const { data } = await axios.post<IChart>(charts, newChart, { params: { toDashboard } });
     return data;
 };
 

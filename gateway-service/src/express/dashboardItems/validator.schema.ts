@@ -1,6 +1,6 @@
 import Joi from 'joi';
-import { DashboardItemType } from './interface';
-import { searchFilterSchema } from '../../utils/formik';
+import { DashboardItemType } from '../../externalServices/dashboardService/dashboardItemService';
+import { searchFilterSchema } from '../templateCharts/validator.schema';
 
 const TableMetaDataSchema = Joi.object({
     name: Joi.string().required(),
@@ -8,11 +8,7 @@ const TableMetaDataSchema = Joi.object({
     templateId: Joi.string().required(),
     columns: Joi.array().items(Joi.string().required()).min(1).required(),
     columnsOrder: Joi.array().items(Joi.string()).required(),
-    filter: searchFilterSchema.custom((value) => {
-        // todo: upgrade mongo version up to 5 and then delete that convert
-        if (value) return JSON.stringify(value);
-        return value;
-    }),
+    filter: searchFilterSchema,
 });
 
 const dashboardSchema = Joi.object({
@@ -71,22 +67,4 @@ export const searchDashboardItemsRequestSchema = Joi.object({
     },
     query: {},
     params: {},
-});
-
-// POST /api/dashboard/relatedItems
-export const getRelatedDashboardItemsRequestSchema = Joi.object({
-    body: {
-        relatedIds: Joi.array().items(Joi.string().required()).min(1).required(),
-    },
-    query: {},
-    params: {},
-});
-
-// DELETE /api/dashboard/relatedItem/:relatedId
-export const deleteDashboardItemByRelatedItemRequestSchema = Joi.object({
-    body: {},
-    query: {},
-    params: {
-        relatedId: Joi.string().required(),
-    },
 });

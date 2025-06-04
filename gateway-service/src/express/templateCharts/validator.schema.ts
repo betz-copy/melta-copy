@@ -27,7 +27,7 @@ const filterOfFieldSchema = Joi.object({
     .id('filterOfField');
 
 const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-const searchFilterSchema = Joi.object({
+export const searchFilterSchema = Joi.object({
     $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
@@ -104,8 +104,8 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
 
 // POST /api/charts
 export const createChartRequestSchema = Joi.object({
-    body: { chart: chartSchema.required(), toDashboard: Joi.bool() },
-    query: {},
+    body: chartSchema.required(),
+    query: { toDashboard: Joi.bool() },
     params: {},
 });
 

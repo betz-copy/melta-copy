@@ -3,7 +3,7 @@ import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import IFramesController from './controller';
 import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { createIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
+import { createIFrameSchema, deleteIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { IFramesValidator } from './middlewares';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
@@ -52,6 +52,7 @@ iFramesRouter.put(
 );
 iFramesRouter.delete(
     '/:iFrameId',
+    ValidateRequest(deleteIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanDeleteIFrame,
     IframesServiceProxy,

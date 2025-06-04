@@ -1,23 +1,37 @@
 import { Router } from 'express';
 import { createController } from '../../utils/express';
 import DashboardController from './controller';
+import ValidateRequest from '../../utils/joi';
+import {
+    createDashboardRequestSchema,
+    deleteDashboardItemByRelatedItemRequestSchema,
+    deleteDashboardItemRequestSchema,
+    editDashboardItemRequestSchema,
+    getDashboardItemByIdRequestSchema,
+    getRelatedDashboardItemsRequestSchema,
+    searchDashboardItemsRequestSchema,
+} from './validator.schema';
 
 const dashboardRouter: Router = Router();
 
 const controller = createController(DashboardController);
 
-dashboardRouter.get('/:dashboardItemId', controller.getDashboardItemById);
+dashboardRouter.get('/:dashboardItemId', ValidateRequest(getDashboardItemByIdRequestSchema), controller.getDashboardItemById);
 
-dashboardRouter.post('/', controller.createDashboardItem);
+dashboardRouter.post('/', ValidateRequest(createDashboardRequestSchema), controller.createDashboardItem);
 
-dashboardRouter.post('/search', controller.getChartsByTemplateId);
+dashboardRouter.post('/search', ValidateRequest(searchDashboardItemsRequestSchema), controller.searchDashboardItems);
 
-dashboardRouter.post('/relatedItems', controller.getDashboardRelatedItems);
+dashboardRouter.post('/relatedItems', ValidateRequest(getRelatedDashboardItemsRequestSchema), controller.getDashboardRelatedItems);
 
-dashboardRouter.put('/:dashboardItemId', controller.editDashboardItem);
+dashboardRouter.put('/:dashboardItemId', ValidateRequest(editDashboardItemRequestSchema), controller.editDashboardItem);
 
-dashboardRouter.delete('/:dashboardItemId', controller.deleteDashboardItem);
+dashboardRouter.delete('/:dashboardItemId', ValidateRequest(deleteDashboardItemRequestSchema), controller.deleteDashboardItem);
 
-dashboardRouter.delete('/relatedItem/:relatedId', controller.deleteDashboardItemByRelatedItem);
+dashboardRouter.delete(
+    '/relatedItem/:relatedId',
+    ValidateRequest(deleteDashboardItemByRelatedItemRequestSchema),
+    controller.deleteDashboardItemByRelatedItem,
+);
 
 export default dashboardRouter;

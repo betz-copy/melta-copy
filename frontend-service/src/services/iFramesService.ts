@@ -43,8 +43,12 @@ const createIFrame = async (newIFrame: IFrameWizardValues, toDashboard: boolean 
     return data;
 };
 
-const deleteIFrame = async (iFrameId: string) => {
-    const { data } = await axios.delete<IMongoIFrame>(`${iFrames}/${iFrameId}`);
+const deleteIFrame = async (iFrameId: string, usedInDashboard?: boolean) => {
+    const { data } = await axios.delete<IMongoIFrame>(`${iFrames}/${iFrameId}`, {
+        params: {
+            deleteReferenceDashboardItems: usedInDashboard,
+        },
+    });
     return data;
 };
 
@@ -65,7 +69,7 @@ const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     formData.append('categoryIds', JSON.stringify(categoryIds));
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
-    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData, { params: { toDashboard: false } });
+    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
     return data;
 };
 
