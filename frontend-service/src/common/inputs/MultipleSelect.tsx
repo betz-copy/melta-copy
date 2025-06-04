@@ -47,7 +47,6 @@ const MultipleSelect: React.FC<{
     selectedValue,
     onChange,
     textFieldProps,
-    required,
     autofocus,
     onBlur,
     onFocus,
