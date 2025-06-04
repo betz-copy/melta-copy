@@ -13,6 +13,7 @@ export interface IMetadata {
     shouldNavigateToEntityPage: boolean;
     isDrawerOpen: boolean;
     flowCube: boolean;
+    isDashboardHomePage: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;

@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { Route, Switch, useLocation, useRoute } from 'wouter';
+import { Redirect, Route, Switch, useLocation, useRoute } from 'wouter';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
@@ -53,7 +53,7 @@ const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
 export const MeltaRoutesInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { isDrawerOpen } = workspace.metadata;
+    const { isDrawerOpen, isDashboardHomePage } = workspace.metadata;
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(isDrawerOpen);
     const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
@@ -279,10 +279,28 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <Unavailable setTitle={setTitle} />
                             </Route>
 
-                            <Route path="/">
+                            <Route path="/dashboard">
                                 <Dashboard />
-                                {/* <GlobalSearch /> */}
                             </Route>
+
+                            <Route path="/search">
+                                <GlobalSearch />
+                            </Route>
+
+                            <Route path="/">
+                                <Redirect to={isDashboardHomePage ? '/dashboard' : '/search'} />
+                            </Route>
+                            {/* 
+                            <Route path="/">
+                                {(() => {
+                                    const urlSearchParams = new URLSearchParams(window.location.search);
+                                    const hasSearchParams = urlSearchParams.get('search') !== null;
+
+                                    if (hasSearchParams) return <GlobalSearch />;
+
+                                    return isDashboardHomePage ? <Dashboard /> : <GlobalSearch />;
+                                })()}
+                            </Route> */}
 
                             <Route path="*">
                                 <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />
