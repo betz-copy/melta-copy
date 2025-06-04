@@ -1,6 +1,30 @@
-import { styled, TextField } from '@mui/material';
+import { styled, TextField, TextFieldProps } from '@mui/material';
+import React from 'react';
 
-export const StyledFilterInput = styled(TextField)(({ theme }) => ({
+type ReadOnlyTextFieldProps = TextFieldProps & {
+    readOnly?: boolean;
+};
+
+const ReadOnlyTextField: React.FC<ReadOnlyTextFieldProps> = ({ readOnly = false, InputProps, value, ...rest }) => {
+    return (
+        <TextField
+            {...rest}
+            value={value || (readOnly ? '-' : '')}
+            variant={readOnly ? 'standard' : 'outlined'}
+            InputProps={{
+                ...InputProps,
+                readOnly: readOnly,
+                disableUnderline: true,
+                style: {
+                    textOverflow: 'ellipsis',
+                    ...(InputProps?.style || {}),
+                },
+            }}
+        />
+    );
+};
+
+export const StyledFilterInput = styled(ReadOnlyTextField)(({ theme }) => ({
     '& .MuiInputBase-root': {
         borderRadius: '7px',
         backgroundColor: theme.palette.mode === 'dark' ? undefined : 'white',
@@ -18,3 +42,4 @@ export const StyledFilterInput = styled(TextField)(({ theme }) => ({
         color: '#9398C2',
     },
 }));
+export { ReadOnlyTextField };

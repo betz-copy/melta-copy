@@ -38,12 +38,6 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
 
             <Grid item xs={entityFilter ? 7 : 12}>
                 <StyledFilterInput
-                    inputProps={{
-                        readOnly,
-                        style: {
-                            textOverflow: 'ellipsis',
-                        },
-                    }}
                     size="small"
                     fullWidth
                     type={type}
@@ -61,6 +55,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                             Boolean(filterField !== undefined && filterField.type && value !== undefined && value !== ''),
                         );
                     }}
+                    readOnly={readOnly}
                 />
             </Grid>
         </Grid>

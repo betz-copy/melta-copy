@@ -12,7 +12,7 @@ import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInpu
 import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
 import { MultipleUserFilterInput } from '../../common/inputs/FilterInputs/MultipleUserFilterInput';
 import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
-import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
+import { ReadOnlyTextField, StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -192,6 +192,18 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     const renderFilterInput = () => {
         if (!(selectedProperty && selectedTemplate)) return null;
+
+        if (readOnly)
+            return (
+                <Grid container direction="row" flexWrap="nowrap">
+                    <Grid item>
+                        <ReadOnlyTextField label="field" value={selectedProperty} readOnly />
+                    </Grid>
+                    <Grid item>
+                        <ReadOnlyTextField label="filter" value={`${filterField?.filterType} 5`} readOnly />
+                    </Grid>
+                </Grid>
+            );
         const { format, enum: propEnum, type, items } = selectedTemplate.properties.properties[selectedProperty];
         // no files in graph filter
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
@@ -264,20 +276,20 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         );
     };
 
+    let backgroundColor = '#EBEFFA33';
+    if (entityFilter && !readOnly) backgroundColor = darkMode ? '#4a4a5033' : '#EBEFFA33';
+    else backgroundColor = darkMode ? '#121212' : 'white';
+
     return (
         <>
             <Grid
                 sx={{
                     borderRadius: '10px',
-                    ...(entityFilter
-                        ? {
-                              backgroundColor: darkMode ? '#4a4a5033' : '#EBEFFA33',
-                          }
-                        : {
-                              boxShadow: '0px 2px 1px -1px  #1E27754D',
-                              marginBottom: '5px',
-                              backgroundColor: darkMode ? '#121212' : 'white',
-                          }),
+                    ...(!entityFilter && {
+                        boxShadow: '0px 2px 1px -1px  #1E27754D',
+                        marginBottom: '5px',
+                    }),
+                    backgroundColor,
                 }}
             >
                 {!entityFilter && (
@@ -353,7 +365,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     </Grid>
                 )}
                 <Grid display={fullView ? undefined : 'none'}>
-                    {selectedTemplate && (
+                    {selectedTemplate && !readOnly && (
                         <Grid
                             item
                             sx={{
@@ -364,38 +376,40 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             }}
                         >
                             {!entityFilter && <Divider sx={{ width: '90%', margin: 'auto', border: '1px 0px 0px 0px' }} />}
-                            <Autocomplete
-                                popupIcon={<IoIosArrowDown size="15px" />}
-                                clearIcon={<CloseIcon sx={{ fontSize: '16px' }} />}
-                                size="small"
-                                sx={{
-                                    width: '90%',
-                                    ...(entityFilter ? { marginLeft: '5%' } : { margin: 'auto', paddingBottom: '10px' }),
-                                }}
-                                value={selectedProperty}
-                                onChange={(_event, newValue) => handleSelectProperty(newValue)}
-                                options={filterProperties}
-                                getOptionLabel={(option) =>
-                                    selectedTemplate?.properties.properties[option] ? selectedTemplate.properties.properties[option].title : ''
-                                }
-                                renderInput={(params) => (
-                                    <StyledFilterInput
-                                        {...params}
-                                        variant="outlined"
-                                        sx={{ borderRadius: '5px' }}
-                                        label={entityFilter ? i18next.t('charts.field') : undefined}
-                                    />
-                                )}
-                                readOnly={readOnly}
-                                getOptionDisabled={(option) => {
-                                    const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
-                                    if (propertyTemplate?.format === 'relationshipReference') {
-                                        const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                                        return !entityTemplates?.get(relatedTemplateId);
+                            {!readOnly && (
+                                <Autocomplete
+                                    popupIcon={<IoIosArrowDown size="15px" />}
+                                    clearIcon={<CloseIcon sx={{ fontSize: '16px' }} />}
+                                    size="small"
+                                    sx={{
+                                        width: '90%',
+                                        ...(entityFilter ? { marginLeft: '5%' } : { margin: 'auto', paddingBottom: '10px' }),
+                                    }}
+                                    value={selectedProperty}
+                                    onChange={(_event, newValue) => handleSelectProperty(newValue)}
+                                    options={filterProperties}
+                                    getOptionLabel={(option) =>
+                                        selectedTemplate?.properties.properties[option] ? selectedTemplate.properties.properties[option].title : ''
                                     }
-                                    return false;
-                                }}
-                            />
+                                    renderInput={(params) => (
+                                        <StyledFilterInput
+                                            {...params}
+                                            variant="outlined"
+                                            sx={{ borderRadius: '5px' }}
+                                            label={entityFilter ? i18next.t('charts.field') : undefined}
+                                        />
+                                    )}
+                                    readOnly={readOnly}
+                                    getOptionDisabled={(option) => {
+                                        const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
+                                        if (propertyTemplate?.format === 'relationshipReference') {
+                                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                                            return !entityTemplates?.get(relatedTemplateId);
+                                        }
+                                        return false;
+                                    }}
+                                />
+                            )}
                             {entityFilter && !readOnly && (
                                 <IconButton onClick={handleFilterErasion}>
                                     <CloseIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
