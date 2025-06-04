@@ -102,15 +102,19 @@ const TemplateTablesViewResults = forwardRef<
                                   if (prop.filters) {
                                       const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
                                       if (filters.$and) {
-                                          acc[key] = {
-                                              $and: filters.$and
-                                                  .map((f: any) => {
-                                                      if (f.destination?.$eq) return { $eq: f.destination.$eq };
-                                                      if (f.destination?.$rgx) return { $rgx: f.destination.$rgx };
-                                                      return null;
-                                                  })
-                                                  .filter(Boolean),
-                                          };
+                                          const transformedFilters = filters.$and
+                                              .map((filter: any) => {
+                                                  const fieldFilter = filter[key];
+                                                  if (fieldFilter) {
+                                                      return { [key]: fieldFilter };
+                                                  }
+                                                  return null;
+                                              })
+                                              .filter(Boolean);
+
+                                          if (transformedFilters.length > 0) {
+                                              acc = { $and: transformedFilters };
+                                          }
                                       } else {
                                           acc[key] = filters;
                                       }
