@@ -1,4 +1,4 @@
-import { Fields, FieldSettings, ImmutableTree, SimpleField } from '@react-awesome-query-builder/mui';
+import { Fields, ImmutableTree, Field } from '@react-awesome-query-builder/mui';
 import lodashFindLast from 'lodash.findlast';
 import lodashIsEqual from 'lodash.isequal';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -18,7 +18,7 @@ const formatField = (
     key: string,
     value: IEntitySingleProperty,
     entityTemplate: IMongoEntityTemplatePopulated,
-    fieldEntries: [string, SimpleField<FieldSettings>][],
+    fieldEntries: [string, Field][],
     options: { hideForCompare?: boolean },
     initials?: { key: string; label: string },
     variableNameSuffix: string = '',
@@ -76,7 +76,7 @@ const entityTemplateToFieldsConfig = (
     initials?: { key: string; label: string },
     variableNameSuffix: string = '',
 ) => {
-    const fieldEntries: [string, SimpleField][] = [];
+    const fieldEntries: [string, Field][] = [];
     Object.entries(addDefaultFieldsToTemplate(entityTemplate).properties.properties).forEach(([key, value]) => {
         if (value.format === 'relationshipReference' && value.relationshipReference) {
             const relTemplateId = value.relationshipReference!.relatedTemplateId;
@@ -100,7 +100,7 @@ const getRelationshipFieldsConfigOfRule = (
         relationshipTemplate: IMongoRelationshipTemplatePopulated;
         otherEntityTemplate: IMongoEntityTemplatePopulated;
     }[],
-    aggregationsContext: { existingAggregationVariables: Required<IVariable>[]; existingFieldsInUpperScopes: Record<string, SimpleField> },
+    aggregationsContext: { existingAggregationVariables: Required<IVariable>[]; existingFieldsInUpperScopes: Record<string, Field> },
     existingAggregationVariablesInTree: Required<IVariable>[],
 ) => {
     return Object.fromEntries(

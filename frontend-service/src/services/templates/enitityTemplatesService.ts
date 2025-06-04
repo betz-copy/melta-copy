@@ -276,7 +276,9 @@ export const extractGroups = (
     groupsProperties: (GroupProperty & { index: number })[];
     groupsPath: Record<string, string>;
 } => {
-    const groupsProperties = properties.map((item, index) => ({ ...item, index })).filter((item) => item.type === 'group');
+    const groupsProperties: (GroupProperty & { index: number })[] = properties
+        .map((item, index) => ({ ...item, index }))
+        .filter((item) => item.type === 'group') as (GroupProperty & { index: number })[];
 
     const groupsPath = Object.fromEntries(groupsProperties.map(({ id, index }) => [id, `properties[${index}]`]));
 
@@ -285,6 +287,7 @@ export const extractGroups = (
         groupsPath,
     };
 };
+
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
         values;
