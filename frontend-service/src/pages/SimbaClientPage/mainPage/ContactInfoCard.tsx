@@ -1,8 +1,8 @@
 import React from 'react';
 import { Card, CardContent, Typography, Grid, Link } from '@mui/material';
 import i18next from 'i18next';
-import hebrew from '../../i18n/hebrew';
-import { getPropertyColor } from '../../common/EntityProperties';
+import hebrew from '../../../i18n/hebrew';
+import { getPropertyColor } from '../../../common/EntityProperties';
 import { Chat as ChatIcon, Mail as MailIcon } from '@mui/icons-material';
 
 const ContactInfoCard: React.FC = () => {
@@ -56,4 +56,4 @@ const ContactInfoCard: React.FC = () => {
     );
 };
 
-export { ContactInfoCard };
+export default ContactInfoCard;

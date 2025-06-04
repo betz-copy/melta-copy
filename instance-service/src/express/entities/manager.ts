@@ -769,6 +769,20 @@ class EntityManager extends DefaultManagerNeo4j {
         });
     }
 
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const query = `
+            UNWIND $templateIds AS templateId
+            MATCH (s) -[r]-> (d)
+            WHERE labels(s)[0] = templateId AND d._id = $userEntityId
+            RETURN templateId, count(s) as count
+        `;
+
+        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
+            templateIds,
+            userEntityId,
+        });
+    }
+
     searchRelatedEntitiesOfEntitiesInTransaction(
         entityIds: string[],
         entityTemplateId: string,

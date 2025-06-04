@@ -44,6 +44,10 @@ class RelationshipController extends DefaultController<RelationshipManager> {
         res.json(await this.manager.getRelationshipsByIds(req.body.ids));
     }
 
+    async getRelationshipsByUserEntityId(req: Request, res: Response) {
+        res.json(await this.manager.getRelationshipsByUserEntityId(req.body.relationshipTemplateIds, req.body.userEntityId));
+    }
+
     async deleteRelationshipById(req: Request, res: Response) {
         res.json(await this.manager.deleteRelationshipById(req.params.id, req.body.ignoredRules, req.body.userId));
     }

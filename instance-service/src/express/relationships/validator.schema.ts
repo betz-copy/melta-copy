@@ -85,3 +85,13 @@ export const getRelationshipsByEntitiesAndTemplate = Joi.object({
     },
     params: {},
 });
+
+// POST /api/instances/relationships/user-entity-id
+export const getRelationshipsByUserEntityIdRequestSchema = Joi.object({
+    body: {
+        relationshipTemplateIds: Joi.array().items(Joi.string()).required(),
+        userEntityId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});

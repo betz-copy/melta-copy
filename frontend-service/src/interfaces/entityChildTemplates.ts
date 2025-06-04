@@ -68,3 +68,5 @@ export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate
 export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplatePopulated {
     _id: string;
 }
+
+export type IEntityChildTemplateMapPopulated = Map<string, IMongoChildEntityTemplatePopulated>;

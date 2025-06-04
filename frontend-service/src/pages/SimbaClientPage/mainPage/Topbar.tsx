@@ -1,10 +1,10 @@
 import React from 'react';
 import { Typography, Grid, Divider } from '@mui/material';
 import i18next from 'i18next';
-import { CustomImage } from '../../common/CustomIcon';
-import { IKartoffelUser } from '../../interfaces/users';
-import UserAvatar from '../../common/UserAvatar';
-import { NotificationsButton } from '../../common/sideBar/notifications/NotificationsButton';
+import { CustomImage } from '../../../common/CustomIcon';
+import { IKartoffelUser } from '../../../interfaces/users';
+import UserAvatar from '../../../common/UserAvatar';
+import { NotificationsButton } from '../../../common/sideBar/notifications/NotificationsButton';
 
 interface ITopbarProps {
     currentUser: IKartoffelUser;

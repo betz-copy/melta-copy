@@ -9,6 +9,7 @@ import {
     getRelationshipsByIdsRequestSchema,
     getRelationshipsCountRequestSchema,
     updateRelationshipByIdRequestSchema,
+    getRelationshipsByUserEntityIdRequestSchema,
 } from './validator.schema';
 import RelationshipValidator from './validator.template';
 
@@ -28,5 +29,10 @@ relationshipRouter.post(
 );
 relationshipRouter.delete('/:id', ValidateRequest(deleteRelationshipByIdRequestSchema), relationshipController.deleteRelationshipById);
 relationshipRouter.put('/:id', ValidateRequest(updateRelationshipByIdRequestSchema), relationshipController.updateRelationshipPropertiesById);
+relationshipRouter.post(
+    '/user-entity-id',
+    ValidateRequest(getRelationshipsByUserEntityIdRequestSchema),
+    relationshipController.getRelationshipsByUserEntityId,
+);
 
 export default relationshipRouter;

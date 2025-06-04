@@ -7,7 +7,6 @@ import {
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISubCompactPermissions,
-    IMongoEntityChildTemplate,
     IEntityChildTemplatePopulated,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
@@ -139,7 +138,7 @@ class EntityTemplateService extends TemplatesManagerService {
     }
 
     async getAllChildTemplates() {
-        const { data } = await this.api.get<IMongoEntityChildTemplate[]>(`${baseChildTemplatesRoute}`);
+        const { data } = await this.api.get<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
 
         return data;
     }

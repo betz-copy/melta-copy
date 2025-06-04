@@ -1,16 +1,16 @@
 import React from 'react';
 import { CardContent, useTheme, Grid, Card } from '@mui/material';
-import { EntityTemplateColor } from '../../common/EntityTemplateColor';
-import { BlueTitle } from '../../common/BlueTitle';
-import { CustomIcon } from '../../common/CustomIcon';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { getEntityTemplateColor } from '../../utils/colors';
-import { IMongoChildEntityTemplatePopulated } from '../../interfaces/entityChildTemplates';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { BlueTitle } from '../../../common/BlueTitle';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { getEntityTemplateColor } from '../../../utils/colors';
+import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { EntityProperties } from '../../common/EntityProperties';
-import { EntityDates } from '../Entity/components/EntityDates';
-import { IEntity } from '../../interfaces/entities';
+import { EntityProperties } from '../../../common/EntityProperties';
+import { EntityDates } from '../../Entity/components/EntityDates';
+import { IEntity } from '../../../interfaces/entities';
 
 interface IUserInfoCardProps {
     currentUserFromSimba: IEntity;

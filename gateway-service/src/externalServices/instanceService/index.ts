@@ -113,6 +113,9 @@ class InstancesService extends DefaultExternalServiceApi {
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
+        // eslint-disable-next-line no-console
+        console.log('data', data);
+
         return data;
     }
 
@@ -185,6 +188,22 @@ class InstancesService extends DefaultExternalServiceApi {
             ids: relationshipIds,
         });
 
+        return data;
+    }
+
+    async getRelationshipsByUserEntityId(templateIds: string[], userEntityId: string) {
+        const { data } = await this.api.post<IRelationship[]>(`${baseRelationshipsRoute}/user-entity-id`, {
+            templateIds,
+            userEntityId,
+        });
+        return data;
+    }
+
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
+            templateIds,
+            userEntityId,
+        });
         return data;
     }
 
