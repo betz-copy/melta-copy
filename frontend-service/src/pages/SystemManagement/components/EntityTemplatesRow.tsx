@@ -195,7 +195,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         return '';
     };
 
-
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
     return (
@@ -436,7 +435,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
                         </Grid>
                     </Grid>
-                    {Object.entries(entityTemplate.properties.properties)
+                    {Object.entries(
+                        childTemplates?.get(entityTemplate._id)
+                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            : entityTemplate.properties?.properties || {},
+                    )
                         .filter(([, value]) => !isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
@@ -470,7 +473,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
                         </Grid>
                     </Grid>
-                    {Object.entries(entityTemplate.properties.properties)
+                    {Object.entries(
+                        childTemplates?.get(entityTemplate._id)
+                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            : entityTemplate.properties?.properties || {},
+                    )
                         .filter(([, value]) => isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
