@@ -52,24 +52,15 @@ const countEntitiesOfTemplatesByUserEntityId = async (templateIds: string[], use
     return data;
 };
 
-// const getEntitiesOfTemplate = async (templateId: string, kartoffelId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
-//     const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/${templateId}`, {
-//         kartoffelId,
-//         ...searchBody,
-//     });
-
-//     return data;
-// };
-
 const getAllRelationshipsTemplatesByUserTemplateId = async (userTemplateId: string) => {
     const { data } = await axios.get<IMongoRelationshipTemplate[]>(`${simbaRoutes}/relationships/${userTemplateId}`);
 
     return data;
 };
 
-const searchEntitiesOfTemplateSimbaRequest = async (templateId: string, kartoffelId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
+const searchEntitiesOfTemplateSimbaRequest = async (templateId: string, simbaUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
     const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/search/template/${templateId}`, {
-        kartoffelId,
+        userEntityId: simbaUserEntityId,
         ...searchBody,
     });
     return data;
@@ -81,7 +72,6 @@ export {
     getAllSimbaTemplates,
     getCurrentUserEntity,
     countEntitiesOfTemplatesByUserEntityId,
-    // getEntitiesOfTemplate,
     getAllRelationshipsTemplatesByUserTemplateId,
     searchEntitiesOfTemplateSimbaRequest,
 };

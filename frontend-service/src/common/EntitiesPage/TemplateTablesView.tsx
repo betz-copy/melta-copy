@@ -98,25 +98,28 @@ const TemplateTablesViewResults = forwardRef<
                         ) as Record<string, IEntitySingleProperty>;
 
                         const defaultFilter = childTemplate.properties
-                            ? Object.entries(childTemplate.properties).reduce((acc, [key, prop]) => {
-                                  if (prop.filters) {
-                                      const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                                      if (filters.$and) {
-                                          acc[key] = {
-                                              $and: filters.$and
-                                                  .map((f: any) => {
-                                                      if (f.destination?.$eq) return { $eq: f.destination.$eq };
-                                                      if (f.destination?.$rgx) return { $rgx: f.destination.$rgx };
-                                                      return null;
-                                                  })
-                                                  .filter(Boolean),
-                                          };
-                                      } else {
-                                          acc[key] = filters;
+                            ? Object.entries(childTemplate.properties).reduce(
+                                  (acc, [key, prop]) => {
+                                      if (prop.filters) {
+                                          const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                                          if (filters.$and) {
+                                              acc[key] = {
+                                                  $and: filters.$and
+                                                      .map((f: any) => {
+                                                          if (f.destination?.$eq) return { $eq: f.destination.$eq };
+                                                          if (f.destination?.$rgx) return { $rgx: f.destination.$rgx };
+                                                          return null;
+                                                      })
+                                                      .filter(Boolean),
+                                              };
+                                          } else {
+                                              acc[key] = filters;
+                                          }
                                       }
-                                  }
-                                  return acc;
-                              }, {} as Record<string, unknown>)
+                                      return acc;
+                                  },
+                                  { $and: { disabled: { $eq: false } } } as Record<string, unknown>,
+                              )
                             : {};
 
                         const { children, ...childTemplatePopulated } = {

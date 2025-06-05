@@ -168,6 +168,7 @@ const searchByTemplateSchema = {
         )
         .unique('field')
         .default([]),
+    userEntityId: Joi.string().optional(),
 };
 
 export const chartSchema = Joi.object({

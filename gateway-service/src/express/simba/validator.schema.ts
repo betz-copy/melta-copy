@@ -62,12 +62,10 @@ export const searchEntitiesOfTemplateSchema = Joi.object({
         userEntityId: Joi.string().optional(),
         skip: Joi.number().optional(),
         limit: Joi.number().optional(),
-        textSearch: Joi.string().optional(),
+        textSearch: Joi.string().allow(''),
         filter: Joi.object().optional(),
-        showRelationships: Joi.array().items(MongoIdSchema).optional(),
-        sort: Joi.array()
-            .items(Joi.object({ field: Joi.string().required(), sort: Joi.string().required() }))
-            .optional(),
+        showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+        sort: Joi.any(),
     },
     params: {
         templateId: MongoIdSchema.required(),
