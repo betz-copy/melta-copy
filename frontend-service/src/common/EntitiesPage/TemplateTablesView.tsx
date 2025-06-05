@@ -15,7 +15,7 @@ import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
-type TemplateTablesViewResultsRef = {
+export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
@@ -96,6 +96,36 @@ const TemplateTablesViewResults = forwardRef<
                         const childTemplateProperties = Object.fromEntries(
                             Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
                         ) as Record<string, IEntitySingleProperty>;
+
+                        const defaultFilter = childTemplate.properties
+                            ? Object.entries(childTemplate.properties).reduce(
+                                  (acc, [key, prop]) => {
+                                      if (prop.filters) {
+                                          const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                                          if (filters.$and) {
+                                              const transformedFilters = filters.$and
+                                                  .map((filter: any) => {
+                                                      const fieldFilter = filter[key];
+                                                      if (fieldFilter) {
+                                                          return { [key]: fieldFilter };
+                                                      }
+                                                      return null;
+                                                  })
+                                                  .filter(Boolean);
+
+                                              if (transformedFilters.length > 0) {
+                                                  acc = { $and: transformedFilters };
+                                              }
+                                          } else {
+                                              acc[key] = filters;
+                                          }
+                                      }
+                                      return acc;
+                                  },
+                                  { $and: { disabled: { $eq: false } } } as Record<string, unknown>,
+                              )
+                            : {};
+
                         const { children, ...childTemplatePopulated } = {
                             ...template,
                             displayName: childTemplate.displayName,
@@ -119,6 +149,7 @@ const TemplateTablesViewResults = forwardRef<
                                     quickFilterText={searchInput}
                                     page={pageType}
                                     setUpdatedEntities={setUpdatedEntities}
+                                    defaultFilter={defaultFilter}
                                 />
                             </Grid>
                         );

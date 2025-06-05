@@ -61,13 +61,26 @@ export const createInstances = async (
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxEntitiesPerTemplate || maxNumberOfEntities }) }, () =>
-                limit(() =>
-                    axiosInstance.post(url + createEntityRoute, {
-                        properties: JSONSchemaFaker.generate(entityTemplate.properties),
+                limit(() => {
+                    let entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+
+                    if (entityTemplate.name === 'driver') {
+                        while (
+                            typeof entityProperties !== 'object' ||
+                            entityProperties === null ||
+                            Array.isArray(entityProperties) ||
+                            !('full_name' in entityProperties)
+                        ) {
+                            entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+                        }
+                    }
+
+                    return axiosInstance.post(url + createEntityRoute, {
+                        properties: entityProperties,
                         templateId: entityTemplate._id,
                         userId,
-                    }),
-                ),
+                    });
+                }),
             );
         })
         .flat();

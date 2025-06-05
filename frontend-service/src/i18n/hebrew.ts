@@ -1,4 +1,3 @@
-import { update } from 'lodash';
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
@@ -104,6 +103,34 @@ export default {
         addActions: 'הוספת פעולות',
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
+    },
+    simbaClientPage: {
+        contactInfoCard: {
+            title: 'פרטי קשר ומידע רלוונטי',
+            contacts: [
+                {
+                    role: 'רמ"ד תחבורה במנהלת',
+                    name: 'אריה שיים',
+                    hichatLink: 'https://www.hichat.com/ariehshayim',
+                    mailLink: 'mailto:arieh.shayim@simba.co.il',
+                },
+                {
+                    role: 'קצין בטיחות בתעבורה',
+                    name: 'רמי מגלשווילי',
+                    hichatLink: 'https://www.hichat.com/ramimgalchovil',
+                    mailLink: 'mailto:rami.galchovil@simba.co.il',
+                },
+                {
+                    role: 'תקלות מערכת',
+                    name: 'עדי סאקופסקי',
+                    hichatLink: 'https://www.hichat.com/adysakofsky',
+                    mailLink: 'mailto:adi.sakofsky@simba.co.il',
+                },
+            ],
+        },
+        topbar: {
+            title: 'בוקר טוב',
+        },
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',

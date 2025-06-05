@@ -7,6 +7,7 @@ export const environment = {
         login: '/api/auth/login',
         config: '/config',
         getAllTemplates: '/templates/all',
+        getAllSimbaTemplates: '/simba/templates/all',
         categories: '/templates/categories',
         entityTemplates: '/templates/entities',
         entityChildTemplates: '/templates/child',

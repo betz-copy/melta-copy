@@ -435,7 +435,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
                         </Grid>
                     </Grid>
-                    {Object.entries(entityTemplate.properties.properties)
+                    {Object.entries(
+                        childTemplates?.get(entityTemplate._id)
+                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            : entityTemplate.properties?.properties || {},
+                    )
                         .filter(([, value]) => !isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
@@ -469,7 +473,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
                         </Grid>
                     </Grid>
-                    {Object.entries(entityTemplate.properties.properties)
+                    {Object.entries(
+                        childTemplates?.get(entityTemplate._id)
+                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            : entityTemplate.properties?.properties || {},
+                    )
                         .filter(([, value]) => isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
@@ -632,6 +640,19 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         return result;
     }, [childTemplates, entityTemplates, entityTemplatesWithCategory, categoryChildTemplates]);
 
+    // Get child templates that should appear in this category
+    const categoryChildTemplatesFiltered = useMemo(() => {
+        return categoryChildTemplates.filter((child) => {
+            // If this is the parent template's category, always show the child
+            const parentTemplate = entityTemplates?.get(child.fatherTemplateId);
+            if (parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
+                return true;
+            }
+            // If this is one of the child's selected categories, show it enabled
+            return child.categories.includes(entityTemplatesWithCategory.category._id);
+        });
+    }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
+
     return (
         <Droppable droppableId={entityTemplatesWithCategory.category._id}>
             {(provided) => (
@@ -705,8 +726,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     PermissionScope.write,
                                 );
 
-                                const templateChildTemplates = categoryChildTemplates.filter(
-                                    (child: IMongoChildEntityTemplate) => child.fatherTemplateId === entityTemplate._id,
+                                const templateChildTemplates = categoryChildTemplatesFiltered.filter(
+                                    (child) => child.fatherTemplateId === entityTemplate._id,
                                 );
 
                                 return (
@@ -764,8 +785,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     setAddActionsDialogState={setAddActionsDialogState}
                                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                                     setAddChildTemplateDialogState={setAddChildTemplateDialogState}
-                                                    entityHasWritePermission={false}
-                                                    isDisabledView={false}
+                                                    entityHasWritePermission={entityHasWritePermission}
+                                                    isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
                                                     isChildTemplate={true}
                                                 />
                                             </Grid>
@@ -775,7 +796,9 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                             })}
 
                         {Array.from(disabledParentTemplates.values()).map((parentTemplate) => {
-                            const childTemplatesForParent = categoryChildTemplates.filter((child) => child.fatherTemplateId === parentTemplate._id);
+                            const childTemplatesForParent = categoryChildTemplatesFiltered.filter(
+                                (child) => child.fatherTemplateId === parentTemplate._id,
+                            );
 
                             return (
                                 <React.Fragment key={parentTemplate._id}>
@@ -798,7 +821,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             sx={{
                                                 pl: 4,
                                                 position: 'relative',
-                                                opacity: 0.6,
+                                                opacity: childTemplate.categories.includes(entityTemplatesWithCategory.category._id) ? 1 : 0.6,
                                             }}
                                         >
                                             <SubdirectoryArrowLeft
@@ -822,7 +845,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                                 setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                 entityHasWritePermission={false}
-                                                isDisabledView={true}
+                                                isDisabledView={!childTemplate.categories.includes(entityTemplatesWithCategory.category._id)}
                                                 isChildTemplate={true}
                                             />
                                         </Grid>

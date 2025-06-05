@@ -156,8 +156,8 @@ class TemplatesValidator extends DefaultController {
                 return next();
             }
 
-            const hasWritePermission = childTemplate.categories.some((categoryId) => {
-                return req.permissionsOfUserId?.instances?.categories[categoryId]?.scope === PermissionScope.write;
+            const hasWritePermission = childTemplate.categories.some((category) => {
+                return req.permissionsOfUserId?.instances?.categories[category._id]?.scope === PermissionScope.write;
             });
 
             if (!hasWritePermission) {

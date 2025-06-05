@@ -180,22 +180,32 @@ export const filterModelToFilterOfTemplatePerField = (
     field: string,
     fieldFilter: IAGGridFilterModel[keyof IAGGridFilterModel],
 ) => {
+    let filter;
     switch (fieldFilter.filterType) {
         case 'text':
-            if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
-            return textFilterToFilterOfTemplate(field, fieldFilter);
+            if (fieldTemplate.format === 'fileId') {
+                filter = textFilterOfFileToFilterTemplate(field, fieldFilter);
+            } else {
+                filter = textFilterToFilterOfTemplate(field, fieldFilter);
+            }
+            break;
         case 'number':
-            return numberFilterToFilterOfTemplate(field, fieldFilter);
+            filter = numberFilterToFilterOfTemplate(field, fieldFilter);
+            break;
         case 'date':
             if (fieldTemplate.format === 'date') {
-                return dateFilterToFilterOfTemplate(field, fieldFilter);
+                filter = dateFilterToFilterOfTemplate(field, fieldFilter);
+            } else {
+                filter = dateTimeFilterToFilterOfTemplate(field, fieldFilter);
             }
-            return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
+            break;
         case 'set':
-            return setFilterToFilterOfTemplate(field, fieldFilter);
+            filter = setFilterToFilterOfTemplate(field, fieldFilter);
+            break;
         default:
             throw new Error('Invalid supported ag-grid filter type');
     }
+    return filter;
 };
 
 export const filterModelToFilterOfTemplate = (
@@ -204,12 +214,15 @@ export const filterModelToFilterOfTemplate = (
 ): ISearchEntitiesOfTemplateBody['filter'] => {
     const entityTemplateWithDefaultFields = addDefaultFieldsToTemplate(entityTemplate);
 
-    const queries = Object.keys(filterModel).map((field) => {
-        const fieldFilter = filterModel[field];
-
+    const queries = Object.entries(filterModel).flatMap(([field, fieldFilter]) => {
         const fieldTemplate = entityTemplateWithDefaultFields.properties.properties[field];
+        const filter = filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
 
-        return filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
+        if (filter[field] && filter[field].$and) {
+            return filter[field].$and.map((condition: any) => ({ [field]: condition }));
+        }
+
+        return [filter];
     });
 
     return queries.length > 0 ? { $and: queries } : undefined;

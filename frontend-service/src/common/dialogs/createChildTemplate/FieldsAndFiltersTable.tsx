@@ -248,7 +248,18 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                     {viewType === 'userPage' && (
                                         <Grid item xs={3} sx={{ textAlign: 'center' }}>
-                                            <MeltaCheckbox />
+                                            <MeltaCheckbox
+                                                checked={templateFieldsFilters[fieldName]?.isEditableByUser || false}
+                                                disabled={!fieldFilter.selected}
+                                                onChange={(e) => {
+                                                    const newFieldFilters = { ...templateFieldsFilters };
+                                                    newFieldFilters[fieldName] = {
+                                                        ...newFieldFilters[fieldName],
+                                                        isEditableByUser: e.target.checked,
+                                                    };
+                                                    setTemplateFieldsFilters(newFieldFilters);
+                                                }}
+                                            />
                                         </Grid>
                                     )}
                                 </Grid>
