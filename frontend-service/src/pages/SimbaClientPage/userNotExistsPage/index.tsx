@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import hebrew from '../../../i18n/hebrew';
+import i18next from 'i18next';
 
 const UserNotExistsPage: React.FC = () => {
     const contacts = hebrew.simbaClientPage.contactInfoCard.contacts;
@@ -22,13 +23,13 @@ const UserNotExistsPage: React.FC = () => {
                 >
                     <Grid item>
                         <Typography fontSize="24px" color="#1E2775" fontWeight="300">
-                            לא מצאנו אותך ברשימת הנהגים שלנו
+                            {i18next.t('simbaClientPage.userNotExistsPage.title')}
                         </Typography>
                         <Typography fontSize="40px" color="#1E2775" fontWeight="600">
-                            נראה כי אין ברשותך רישיון פעיל
+                            {i18next.t('simbaClientPage.userNotExistsPage.subTitle')}
                         </Typography>
                         <Typography sx={{ marginTop: '40px' }} fontWeight="500" fontSize="20px" color="#1E2775">
-                            מה ברצונך לעשות?
+                            {i18next.t('simbaClientPage.userNotExistsPage.texts.whatWouldYouLikeToDo')}
                         </Typography>
                         <Grid item container marginTop="20px" flexWrap="nowrap" gap="25px">
                             <Grid item marginTop="4px">
@@ -37,14 +38,12 @@ const UserNotExistsPage: React.FC = () => {
                             <Grid item container flexDirection="column">
                                 <Grid item>
                                     <Typography fontWeight="400" fontSize="20px" color="#1E2775">
-                                        יש לי רישיון אבל הוא לא בתוקף
+                                        {i18next.t('simbaClientPage.userNotExistsPage.texts.userHaveUnactiveLicense.title')}
                                     </Typography>
                                 </Grid>
                                 <Grid item marginTop="7px">
                                     <Typography fontWeight="400" fontSize="16px" color="#53566E">
-                                        ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית
-                                        נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב
-                                        שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי
+                                        {i18next.t('simbaClientPage.userNotExistsPage.texts.userHaveUnactiveLicense.description')}
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -56,14 +55,12 @@ const UserNotExistsPage: React.FC = () => {
                             <Grid item container flexDirection="column">
                                 <Grid item>
                                     <Typography fontWeight="400" fontSize="20px" color="#1E2775">
-                                        אני רוצה להוציא רישיון צבאי
+                                        {i18next.t('simbaClientPage.userNotExistsPage.texts.userDontHaveLicense.title')}
                                     </Typography>
                                 </Grid>
                                 <Grid item marginTop="7px">
                                     <Typography fontWeight="400" fontSize="16px" color="#53566E">
-                                        ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית
-                                        נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב
-                                        שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי
+                                        {i18next.t('simbaClientPage.userNotExistsPage.texts.userDontHaveLicense.description')}
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -71,14 +68,14 @@ const UserNotExistsPage: React.FC = () => {
                         <Grid container item gap="20px" flexWrap="nowrap" paddingTop="20px" marginLeft="45px">
                             <Grid item width="fit-content">
                                 <Typography width="fit-content" fontWeight="500" fontSize="16px" color="#1E2775" sx={{ textWrap: 'nowrap' }}>
-                                    להגשת בקשה לרישיון צבאי ע”י מפקד:
+                                    {i18next.t('simbaClientPage.userNotExistsPage.recieveLicenseRequest')}
                                 </Typography>
                             </Grid>
                             <Grid item container>
                                 <a href="/files/temp-try2.pdf" download="מכתב-נחיצות.pdf">
                                     <Grid container item alignItems="center">
                                         <Typography fontWeight="400" fontSize="16px" color="#1E2775">
-                                            מכתב נחיצות.pdf
+                                            {i18next.t('simbaClientPage.userNotExistsPage.neededLetter')}
                                         </Typography>
                                         <FileDownloadOutlinedIcon sx={{ width: '20px', height: '20px', fontWeight: '400' }} color="primary" />
                                     </Grid>
@@ -97,7 +94,7 @@ const UserNotExistsPage: React.FC = () => {
                 </Grid>
                 <Grid item>
                     <Typography fontWeight="500" fontSize="14px" color="#1E2775" sx={{ textWrap: 'nowrap' }}>
-                        למידע נוסף ניתן לפנות ל:
+                        {i18next.t('simbaClientPage.userNotExistsPage.forMoreInfo')}
                     </Typography>
                 </Grid>
                 {contacts.map((contact) => (
