@@ -14,8 +14,8 @@ import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTe
 import { IKartoffelUser } from '../../interfaces/users';
 import { Topbar } from './mainPage/Topbar';
 import { useSimbaUserStore } from '../../stores/simbaUser';
-import UserNotExistsPage from './userNotExistsPage';
 
+const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
 const SimbaMainPage = lazy(() => import('./mainPage'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
 
@@ -34,15 +34,20 @@ const SimbaClientPageInner: React.FC = () => {
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
-    const { data: currentUserFromSimba, isLoading: isLoadingCurrentUserFromSimba } = useQuery({
+    const { data: currentUserFromSimba } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.fatherTemplateId._id, user?.kartoffelId],
         queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.fatherTemplateId._id || '', user?.kartoffelId!),
+        onError: () => {
+            navigate('/simba/user-not-exists');
+        },
     });
 
     const currentUser: IKartoffelUser = JSON.parse(currentUserFromSimba?.properties.full_name || '{}');
 
     useEffect(() => {
-        setSimbaUser({ ...currentUser }, currentUserFromSimba!);
+        if (currentUserFromSimba) {
+            setSimbaUser({ ...currentUser }, currentUserFromSimba!);
+        }
     }, [currentUser, setSimbaUser, currentUserFromSimba]);
 
     const pageScrollTargetRef = useRef<HTMLElement | null>(null);
@@ -103,8 +108,6 @@ const SimbaClientPageInner: React.FC = () => {
         }
     }, [entityMatch, entityParams, trackPageView]);
 
-    if (isLoadingCurrentUserFromSimba) return <UserNotExistsPage />;
-
     return (
         <>
             <MainBox
@@ -138,6 +141,9 @@ const SimbaClientPageInner: React.FC = () => {
                         <Switch>
                             <Route path="simba/test.mlt">
                                 <SimbaMainPage />
+                            </Route>
+                            <Route path="simba/user-not-exists">
+                                <UserNotExistsPage />
                             </Route>
                             <Route path="*">
                                 <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />

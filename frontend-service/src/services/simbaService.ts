@@ -38,7 +38,7 @@ const getCurrentUserEntity = async (templateId: string, kartoffelId: string) => 
     });
 
     if (data.entities.length === 0) {
-        return null;
+        throw new Error('User not exists in simba');
     }
 
     return data.entities[0].entity;

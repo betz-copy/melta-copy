@@ -5,6 +5,7 @@ import hebrew from '../../../i18n/hebrew';
 
 const UserNotExistsPage: React.FC = () => {
     const contacts = hebrew.simbaClientPage.contactInfoCard.contacts;
+    console.log('UserNotExistsPage');
 
     return (
         <Grid container flexDirection="column" height="100vh" width="100%" padding="50px" sx={{ backgroundColor: 'white' }} flexWrap="nowrap">
