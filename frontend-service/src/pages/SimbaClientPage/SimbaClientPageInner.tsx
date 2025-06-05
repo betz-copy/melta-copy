@@ -14,6 +14,7 @@ import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTe
 import { IKartoffelUser } from '../../interfaces/users';
 import { Topbar } from './mainPage/Topbar';
 import { useSimbaUserStore } from '../../stores/simbaUser';
+import UserNotExistsPage from './userNotExistsPage';
 
 const SimbaMainPage = lazy(() => import('./mainPage'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
@@ -33,7 +34,7 @@ const SimbaClientPageInner: React.FC = () => {
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
-    const { data: currentUserFromSimba } = useQuery({
+    const { data: currentUserFromSimba, isLoading: isLoadingCurrentUserFromSimba } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.fatherTemplateId._id, user?.kartoffelId],
         queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.fatherTemplateId._id || '', user?.kartoffelId!),
     });
@@ -101,6 +102,8 @@ const SimbaClientPageInner: React.FC = () => {
             });
         }
     }, [entityMatch, entityParams, trackPageView]);
+
+    if (isLoadingCurrentUserFromSimba) return <UserNotExistsPage />;
 
     return (
         <>

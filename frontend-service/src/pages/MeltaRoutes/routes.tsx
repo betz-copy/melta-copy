@@ -28,7 +28,6 @@ import { MeltaUpdates } from '../../MeltaUpdates';
 import { BackendConfigState } from '../../services/backendConfigService';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
-const SimbaPage = lazy(() => import('../Simba'));
 const Category = lazy(() => import('../Category'));
 const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
@@ -263,10 +262,6 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/unavailable">
                                 <Unavailable setTitle={setTitle} />
-                            </Route>
-
-                            <Route path="/simba">
-                                <SimbaPage />
                             </Route>
 
                             <Route path="/">

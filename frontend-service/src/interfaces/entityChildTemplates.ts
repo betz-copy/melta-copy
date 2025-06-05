@@ -56,10 +56,6 @@ export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
 
 export type IEntityChildTemplateMap = Map<string, IMongoChildEntityTemplate>;
 
-export interface ITemplateFieldsFilters {
-    [key: string]: IFieldFilter;
-}
-
 export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
     categories: IMongoCategory[];
     fatherTemplateId: IMongoEntityTemplatePopulated;

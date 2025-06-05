@@ -39,7 +39,7 @@ const ContactInfoCard: React.FC = () => {
                                         <Typography color={propertyValueColor}>{contact.name}</Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item display="flex" direction="row" gap={1}>
+                                <Grid item display="flex" gap={1}>
                                     <Link href={contact.hichatLink}>
                                         <ChatIcon />
                                     </Link>

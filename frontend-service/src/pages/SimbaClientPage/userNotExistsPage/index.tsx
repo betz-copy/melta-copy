@@ -1,24 +1,11 @@
-/* eslint-disable react/no-array-index-key */
 import React from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import hebrew from '../../../i18n/hebrew';
 
-const contacts = [
-    {
-        title: 'תקלות מערכת',
-        name: 'עדי סקומסקי',
-    },
-    {
-        title: 'תקלות מערכת',
-        name: 'איב גורליק',
-    },
-    {
-        title: 'קצין רכב ספיר',
-        name: 'דניאל פרץ',
-    },
-];
+const UserNotExistsPage: React.FC = () => {
+    const contacts = hebrew.simbaClientPage.contactInfoCard.contacts;
 
-const SimbaPage: React.FC<{}> = ({}) => {
     return (
         <Grid container flexDirection="column" height="100vh" width="100%" padding="50px" sx={{ backgroundColor: 'white' }} flexWrap="nowrap">
             <Grid item container height="100%">
@@ -113,10 +100,10 @@ const SimbaPage: React.FC<{}> = ({}) => {
                     </Typography>
                 </Grid>
                 {contacts.map((contact) => (
-                    <Grid item container alignItems="center" width="fit-content" gap="10px">
+                    <Grid key={contact.name} item container alignItems="center" width="fit-content" gap="10px">
                         <Grid item>
                             <Typography fontWeight="400" fontSize="14px" color="#787C9E">
-                                {contact.title}
+                                {contact.role}
                             </Typography>
                         </Grid>
                         <Grid item>
@@ -139,4 +126,4 @@ const SimbaPage: React.FC<{}> = ({}) => {
     );
 };
 
-export default SimbaPage;
+export default UserNotExistsPage;
