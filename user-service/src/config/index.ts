@@ -10,6 +10,7 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         permissionsCollectionName: env.get('MONGO_PERMISSIONS_COLLECTION_NAME').default('permissions').asString(),
         usersCollectionName: env.get('MONGO_USERS_COLLECTION_NAME').default('users').asString(),
+        rolesCollectionName: env.get('MONGO_ROLES_COLLECTION_NAME').default('roles').asString(),
         maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(10000).asIntPositive(),
         connectionOptions: {
             maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(), // Maximum time (in ms) that a connection can be idle before being closed

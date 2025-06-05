@@ -27,8 +27,9 @@ const TemplateTablesViewResults = forwardRef<
         pageSize?: number;
         pageType: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
->(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
+>(({ templates, searchInput, pageType, setUpdatedEntities, setUpdatedTemplateIds }, ref) => {
     const queryClient = useQueryClient();
 
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
@@ -90,6 +91,7 @@ const TemplateTablesViewResults = forwardRef<
                         quickFilterText={searchInput}
                         page={pageType}
                         setUpdatedEntities={setUpdatedEntities}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     />
                     {template.children.map((childTemplate) => {
                         const childTemplatePropertiesList = Object.keys(childTemplate.properties);
@@ -185,6 +187,7 @@ export interface TemplateTablesViewProps {
     pageType: string;
     semanticSearch: boolean;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export interface TemplateTablesViewRef {
@@ -193,7 +196,7 @@ export interface TemplateTablesViewRef {
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
-    ({ templates, searchInput, pageType, setUpdatedEntities, semanticSearch }, ref) => {
+    ({ templates, searchInput, pageType, setUpdatedEntities, setUpdatedTemplateIds, semanticSearch }, ref) => {
         const { setSteps } = useTour();
         const {
             data: templatesFilteredByCount,
@@ -240,6 +243,7 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
                         searchInput={searchInput}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     />
                 )}
             </Grid>

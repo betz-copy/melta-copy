@@ -46,6 +46,11 @@ export interface IRequiredConstraint {
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
+export interface IFieldsGroup {
+    name: string;
+    displayName: string;
+    fields: string[];
+}
 export interface IUniqueConstraintOfTemplate {
     groupName: string;
     properties: string[];
@@ -193,22 +198,23 @@ export interface IGraphFilterBodyBatch {
 }
 
 export interface IDeleteEntityBodyBase {
-    selectAll: boolean;
     templateId: string;
     deleteAllRelationships?: boolean;
 }
 
-export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & {
+export type IMultipleSelect<T extends boolean = boolean> = {
     selectAll: T;
 } & (T extends true
-        ? {
-              idsToExclude?: string[];
-              filter?: ISearchEntitiesOfTemplateBody['filter'];
-              textSearch?: string;
-          }
-        : {
-              idsToInclude: string[];
-          });
+    ? {
+          idsToExclude?: string[];
+          filter?: ISearchEntitiesOfTemplateBody['filter'];
+          textSearch?: string;
+      }
+    : {
+          idsToInclude: string[];
+      });
+
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
 export type EntityData = IEntity | IFailedEntity;
 

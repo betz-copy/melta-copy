@@ -16,6 +16,8 @@ import {
     ISemanticSearchResult,
     ISearchEntitiesByLocationBody,
     IChartBody,
+    IMultipleSelect,
+    IEntityWithDirectRelationships,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -112,6 +114,16 @@ class InstancesService extends DefaultExternalServiceApi {
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async getEntitiesWithDirectRelationships(searchBody: IMultipleSelect<boolean>, templateId: string) {
+        const { data } = await this.api.post<IEntityWithDirectRelationships[]>(`${baseEntitiesRoute}/get/multiple-select`, {
+            ...searchBody,
+            templateId,
+            showRelationships: false,
+        });
 
         return data;
     }

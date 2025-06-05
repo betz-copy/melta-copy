@@ -182,7 +182,7 @@ export const getEntityForRelationshipInfo = (
                 required: [],
                 type: 'object',
             },
-            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty' },
+            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty', templatesOrder: [] },
             disabled: false,
             displayName: '---',
             name: '---',

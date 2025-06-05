@@ -1,6 +1,6 @@
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IFormula } from '../../interfaces/rules/formula';
 import { FunctionObject, ValueType } from './interfaces';
 import { IArgument, IConstant, IPropertyOfVariable, IVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/formula/argument';
@@ -78,6 +78,16 @@ export class RuleSerializer {
         };
     };
 
+    private static getValueType = (property: IEntitySingleProperty): ValueType => {
+        if (property.type === 'array') throw new Error('array not supported in formulas! sorry!'); // todo: block in UI too, or support it
+        if (property.type !== 'string') return property.type;
+
+        if (property.format === 'date') return 'date';
+        if (property.format === 'date-time') return 'datetime';
+
+        return 'text';
+    };
+
     private static getEquationValueType = (argument: IPropertyOfVariable): ValueType => {
         const { variable, property: propertyName } = argument;
 
@@ -89,12 +99,14 @@ export class RuleSerializer {
         const template = RuleSerializer.entityTemplates.get(entityTemplateId)!;
         const property = template.properties.properties[propertyName];
 
-        if (property.type === 'array') throw new Error('array not supported in formulas! sorry!'); // todo: block in UI too, or support it
-        if (property.type !== 'string') return property.type;
-
-        if (property.format === 'date') return 'date';
-        if (property.format === 'date-time') return 'datetime';
-        return 'text';
+        if (property.format === 'relationshipReference' && property.relationshipReference) {
+            const relTemplateId = property.relationshipReference!.relatedTemplateId;
+            const relTemplateKey = property.relationshipReference.relatedTemplateField;
+            const refTemplate = RuleSerializer.entityTemplates.get(relTemplateId)!;
+            const relProperty = refTemplate?.properties.properties[relTemplateKey];
+            return this.getValueType(relProperty);
+        }
+        return this.getValueType(property);
     };
 
     private static rhsArgumentSerializer = (

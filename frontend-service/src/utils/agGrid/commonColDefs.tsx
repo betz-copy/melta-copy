@@ -411,7 +411,6 @@ export const enumColDef = <Data extends any = EntityData>(
             options: values,
             multiple: false,
             colorsOptions: enumColorOptions,
-            overrideSx: { width: '100%', height: '100%' },
         },
     };
 };
@@ -469,7 +468,6 @@ export const enumArrayColDef = <Data extends any = EntityData>(
             options: values,
             multiple: true,
             colorsOptions: enumColorOptions,
-            overrideSx: { width: '100%', height: '100%' },
         },
     };
 };
@@ -540,7 +538,13 @@ export const userArrayColDef = <Data extends any = IEntity>(
             if (!props.value) return '';
             return (
                 <OverflowWrapper
-                    items={props.value.map((val) => JSON.parse(val))}
+                    items={props.value.map((val) => {
+                        try {
+                            return JSON.parse(val);
+                        } catch {
+                            return JSON.parse(JSON.stringify(val));
+                        }
+                    })}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>

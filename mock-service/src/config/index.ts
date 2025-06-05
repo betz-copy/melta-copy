@@ -8,8 +8,8 @@ const config = {
     seed: env.get('SEED').asFloat(),
     usersService: {
         url: env.get('USER_SERVICE_URL').required().asString(),
-        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
-        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+        usersRoute: env.get('USER_SERVICE_USERS_BASE_ROUTE').default('/api/users').asString(),
+        permissionsRoute: env.get('USER_SERVICE_PERMISSION_BASE_ROUTE').default('/api/permissions').asString(),
         isAliveRoute: env.get('USER_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
         managersKartoffelIds: env.get('USER_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
     },
@@ -23,6 +23,9 @@ const config = {
         relationships: {
             createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
             createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
+        },
+        config: {
+            createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/categoryOrder').asString(),
         },
     },
     processService: {

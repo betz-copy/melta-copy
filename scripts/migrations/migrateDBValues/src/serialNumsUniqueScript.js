@@ -97,12 +97,14 @@ const getDBSerialNumbers = async (dbName) => {
   const collections = await db.listCollections().toArray();
   const collectionNames = collections.map((col) => col.name);
 
-  if (collectionNames.includes(mongo.targetCollection)) {
-    console.log(`Applying aggregation to ${dbName}.${mongo.targetCollection}`);
+  if (collectionNames.includes(mongo.templatesCollection)) {
+    console.log(
+      `Applying aggregation to ${dbName}.${mongo.templatesCollection}`
+    );
 
     const pipeline = getSerialPropsAggregation;
     const results = await db
-      .collection(mongo.targetCollection)
+      .collection(mongo.templatesCollection)
       .aggregate(pipeline)
       .toArray();
 

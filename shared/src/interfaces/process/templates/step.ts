@@ -5,6 +5,7 @@ export interface IStepTemplate extends IProcessDetails {
     name: string;
     displayName: string;
     reviewers: string[];
+    disableAddingReviewers?: boolean;
     iconFileId: string | null;
 }
 

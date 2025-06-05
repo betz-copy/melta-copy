@@ -7,12 +7,17 @@ import {
     IPermission,
     ISubCompactPermissions,
     RecursiveNullable,
+    RelatedPermission,
+    IUser,
+    IUserPopulated,
+    ValidationError,
 } from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
 import UsersManager from '../users/manager';
 import { SinglePermissionOfTypePerUserError } from './errors';
 import PermissionsModel from './model';
+import RolesManager from '../roles/manager';
 
 class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]): Promise<ICompactPermissions> {
@@ -28,8 +33,22 @@ class PermissionsManager {
         return compactPermissions;
     }
 
-    static async getCompactPermissionsOfUser(userId: string, workspaceIds?: string[]): Promise<ICompactPermissions> {
-        const query: FilterQuery<IPermission> = { userId };
+    static async populateUserRoles(user: IUser): Promise<IUserPopulated> {
+        const { roleIds, ...restOfUser } = user;
+        return { ...restOfUser, roles: await RolesManager.getRolesByIds(roleIds ?? []) };
+    }
+
+    static async getCompactPermissionsOfRelatedId(
+        relatedId: string,
+        workspaceIds?: string[],
+        permissionType: RelatedPermission = RelatedPermission.User,
+    ): Promise<ICompactPermissions> {
+        const query: FilterQuery<IPermission> = {};
+
+        if (permissionType === RelatedPermission.User) {
+            const user = await UsersManager.getUserById(relatedId, workspaceIds, false);
+            query.relatedId = { $in: user.roleIds && user.roleIds.length > 0 ? [...user.roleIds, relatedId] : [relatedId] };
+        } else query.relatedId = relatedId;
 
         if (workspaceIds) query.workspaceId = { $in: workspaceIds };
 
@@ -37,11 +56,30 @@ class PermissionsManager {
         return this.getCompactPermissions(permissions);
     }
 
-    static async syncCompactPermissionsOfUser(
-        userId: string,
+    static async syncCompactPermissions(
+        relatedId: string,
+        permissionType: RelatedPermission,
         permissionsCompact: ICompactNullablePermissions | ICompactPermissions,
+        dontDeleteUser?: boolean,
     ): Promise<ICompactPermissions> {
-        await UsersManager.getUserById(userId); // Validate user exists
+        const isDeletePermission =
+            Object.values(permissionsCompact).every(
+                (permission) =>
+                    permission === null ||
+                    (permission.permissions === null &&
+                        permission.rules === null &&
+                        permission.instances === null &&
+                        permission.processes === null &&
+                        permission.templates === null),
+            ) && !dontDeleteUser;
+
+        if (permissionType === RelatedPermission.User)
+            await UsersManager.getUserById(relatedId); // Validate user exists
+        else {
+            await RolesManager.getRoleById(relatedId); // Validate role exists
+            if (isDeletePermission && (await UsersManager.getUsersConnectedToRole(relatedId)).length > 0)
+                throw new ValidationError(`can't remove role if there is users connected`, { code: `can't remove role: user connected` });
+        }
 
         const updatedWorkspacesIds: string[] = [];
 
@@ -50,7 +88,7 @@ class PermissionsManager {
 
             typedObjectEntries(permissionsCompact).forEach(([workspaceId, subCompactPermission]) => {
                 if (subCompactPermission === null) {
-                    actions.push(PermissionsModel.deleteMany({ userId, workspaceId }, { session }).lean().exec());
+                    actions.push(PermissionsModel.deleteMany({ relatedId, workspaceId }, { session }).lean().exec());
                     return;
                 }
 
@@ -58,22 +96,32 @@ class PermissionsManager {
 
                 typedObjectEntries(subCompactPermission).forEach(([type, metadata]) => {
                     if (metadata === null) {
-                        actions.push(PermissionsModel.deleteOne({ userId, type, workspaceId }, { session }).lean().exec());
+                        actions.push(PermissionsModel.deleteOne({ relatedId, type, workspaceId }, { session }).lean().exec());
                         return;
                     }
 
-                    actions.push(PermissionsModel.updateOne({ userId, type, workspaceId }, { metadata }, { upsert: true, session }).lean().exec());
+                    actions.push(PermissionsModel.updateOne({ relatedId, type, workspaceId }, { metadata }, { upsert: true, session }).lean().exec());
                 });
             });
 
             await Promise.all(actions);
         });
 
-        return this.getCompactPermissionsOfUser(userId, updatedWorkspacesIds);
+        const allRelatedPermissions = await this.getCompactPermissionsOfRelatedId(relatedId, undefined, permissionType);
+        if (Object.keys(allRelatedPermissions).length === 0 && isDeletePermission) {
+            // no permissions of role or user and it can be deleted from collection
+            if (permissionType === RelatedPermission.Role) RolesManager.deleteRoleById(relatedId);
+            else {
+                const user = await UsersManager.getUserById(relatedId);
+                if (user.roleIds?.length === 0) UsersManager.deleteUserById(relatedId);
+            }
+        }
+
+        return Object.fromEntries(Object.entries(allRelatedPermissions).filter(([key]) => updatedWorkspacesIds.includes(key)));
     }
 
     static async deletePermissionsFromMetadata(
-        query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+        query: Pick<IPermission, 'type' | 'workspaceId'> & { relatedId?: IPermission['relatedId'] },
         metadata: RecursiveNullable<ISubCompactPermissions>,
     ): Promise<void> {
         await PermissionsModel.updateMany(query, { $unset: flattenObject(metadata[query.type]!, ['metadata']) })

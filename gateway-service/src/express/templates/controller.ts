@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
+import { ConfigTypes } from '@microservices/shared';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { TemplatesManager } from './manager';
@@ -53,6 +54,36 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.getAllAllowedCategories(permissionsOfUserId));
+    }
+
+    async updateCategoryTemplatesOrder(req: Request, res: Response) {
+        const { srcCategoryId, newCategoryId, newIndex }: { srcCategoryId: string; newCategoryId: string; newIndex: number } = req.body;
+
+        res.json(await this.manager.updateCategoryTemplatesOrder(req.params.templateId, newIndex, srcCategoryId, newCategoryId));
+    }
+
+    // config
+    async getAllConfigs(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.getAllConfigs(permissionsOfUserId));
+    }
+
+    async getConfigByType(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.getConfigByType(req.params.type as ConfigTypes, permissionsOfUserId));
+    }
+
+    async updateCategoryOrderConfig(req: Request, res: Response) {
+        const { newIndex, item }: { newIndex: number; item: string } = req.body;
+        res.json(await this.manager.updateCategoryOrderConfig(req.params.configId, newIndex, item));
+    }
+
+    async createOrderConfig(req: Request, res: Response) {
+        res.json(await this.manager.createCategoryOrderConfig(req.body));
     }
 
     // entityTemplates

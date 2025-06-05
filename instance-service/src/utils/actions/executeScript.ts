@@ -108,6 +108,8 @@ const manipulateOnExecutionOutput = async (
 
                 if (value.serialCurrent && currentEntity.properties[name] !== propertyValue)
                     throw new ValidationError("can't change serial number properties");
+
+                if (value.format === 'location') entityAfterManipulations.properties[name] = JSON.stringify(propertyValue);
             });
 
             entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);

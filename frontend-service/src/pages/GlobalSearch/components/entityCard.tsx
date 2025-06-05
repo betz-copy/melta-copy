@@ -8,7 +8,7 @@ import { useLocation } from 'wouter';
 import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import OpenPreview from '../../../common/FilePreview/OpenPreview';
 import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
@@ -30,6 +30,8 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { HighlightText } from '../../../utils/HighlightText';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -528,24 +530,25 @@ const EntityCard: React.FC<EntityCardProps> = ({
             </Grid>
             <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    isEditMode
-                    entityTemplate={entityTemplate}
-                    entityToUpdate={entity}
-                    initialCurrValues={editDialog.wizardValues}
-                    onSuccessUpdate={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                        refetchQuery?.();
+                    mutationProps={{
+                        actionType: ActionTypes.UpdateEntity,
+                        payload: entity,
+                        onError: (currEntityValues) =>
+                            setEditDialog({
+                                isOpen: true,
+                                wizardValues: currEntityValues,
+                            }),
+                        onSuccess: () => {
+                            setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                            setExternalErrors({ files: false, unique: {}, action: '' });
+                            refetchQuery?.();
+                        },
                     }}
+                    entityTemplate={entityTemplate}
+                    initialCurrValues={editDialog.wizardValues}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    onError={(currEntityValues) =>
-                        setEditDialog({
-                            isOpen: true,
-                            wizardValues: currEntityValues,
-                        })
-                    }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

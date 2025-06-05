@@ -19,7 +19,6 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -32,6 +31,7 @@ import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -485,7 +485,6 @@ const Entity: React.FC = () => {
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <TabList
-                                        style={{ height: '60px' }}
                                         variant="scrollable"
                                         scrollButtons="auto"
                                         onChange={(_event, newValue) => setSelectedTabId(newValue)}

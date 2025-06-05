@@ -6,11 +6,13 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoChildEntityTemplate } from '../../interfaces/entityChildTemplates';
+import { IMongoCategoryOrderConfig } from '../../interfaces/config';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 
 export type GetAllTemplatesType = {
     categories: IMongoCategory[];
+    categoryOrder: IMongoCategoryOrderConfig;
     entityTemplates: IMongoEntityTemplatePopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
     processTemplates: IMongoProcessTemplatePopulated[];
