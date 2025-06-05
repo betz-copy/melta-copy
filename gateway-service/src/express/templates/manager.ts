@@ -262,7 +262,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
-        const allowedEntityChildTemplates = await this.entityTemplateService.getAllChildTemplates();
+        const entityChildTemplatesPopulated = await this.entityTemplateService.getAllChildTemplates();
+        const allowedEntityChildTemplates = entityChildTemplatesPopulated.map((childTemplate) => {
+            return {
+                ...childTemplate,
+                categories: childTemplate.categories.map((category) => category._id),
+                fatherTemplateId: childTemplate.fatherTemplateId._id,
+            };
+        });
 
         return {
             categories: allAllowedCategories,
