@@ -105,8 +105,8 @@ const RjsfSelectWidget = ({
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
-            rawErrors={rawErrors}
-            label={label || schema.title}
+            rawErrors={!hideError ? rawErrors: []}
+            label={!hideLabel ? label || schema.title : undefined}
             color={color}
             value={value}
         />

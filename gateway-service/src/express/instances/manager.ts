@@ -396,8 +396,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const expandedEntities = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
         const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
 
-        const handleUpdateEntity = async (entityWithDirectRelationships: IEntityWithDirectRelationships) => {
-            const { entity } = entityWithDirectRelationships;
+        const handleUpdateEntity = async ({ entity }: IEntityWithDirectRelationships) => {
             const convertedProperties = mapValues(entity.properties, (property, key) => this.convertEntities(template, key, property));
 
             const propToUpdate: IEntity = {
