@@ -115,7 +115,7 @@ const TemplateTablesViewResults = forwardRef<
                                               .filter(Boolean);
 
                                           if (transformedFilters.length > 0) {
-                                              acc = { $and: transformedFilters };
+                                              acc = { $or: transformedFilters };
                                           }
                                       } else {
                                           acc[key] = filters;
