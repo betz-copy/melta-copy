@@ -7,11 +7,14 @@ import {
     createEntityChildTemplateSchema,
     updateEntityChildTemplateSchema,
     deleteEntityChildTemplateSchema,
+    updateEntityTemplateActionSchema,
 } from './validator.schema';
+import EntityChildTemplateValidator from './validatior.template';
 
 const entityChildTemplateRouter: Router = Router();
 
 const controller = createController(EntityChildTemplateController);
+const validatorController = createController(EntityChildTemplateValidator, true);
 
 entityChildTemplateRouter.post('/search', ValidateRequest(searchEntityChildTemplatesSchema), controller.searchEntityChildTemplates);
 
@@ -22,5 +25,12 @@ entityChildTemplateRouter.post('/', ValidateRequest(createEntityChildTemplateSch
 entityChildTemplateRouter.put('/:id', ValidateRequest(updateEntityChildTemplateSchema), controller.updateEntityChildTemplate);
 
 entityChildTemplateRouter.delete('/:id', ValidateRequest(deleteEntityChildTemplateSchema), controller.deleteEntityChildTemplate);
+
+entityChildTemplateRouter.patch(
+    '/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    validatorController.validateActionCode,
+    controller.updateEntityTemplateAction,
+);
 
 export default entityChildTemplateRouter;

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined, FilterList } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -20,7 +20,13 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { IEntityChildTemplateMap, IEntityChildTemplate, IMongoChildEntityTemplate } from '../../../interfaces/entityChildTemplates';
+import {
+    IEntityChildTemplateMap,
+    entityTemplateType,
+    templateItem,
+    IEntityChildTemplate,
+    IMongoChildEntityTemplate,
+} from '../../../interfaces/entityChildTemplates';
 import { updateCategoryRequest, updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
@@ -114,7 +120,7 @@ interface EntityTemplateCardProps {
     setAddActionsDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: templateItem | null;
         }>
     >;
     setAddChildTemplateDialogState: React.Dispatch<
@@ -174,7 +180,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints,fieldGroups } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups } = entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
@@ -287,11 +293,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                           }
                                 }
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
-                                onAddActionsClick={
-                                    childTemplates?.get(entityTemplate._id)
-                                        ? undefined
-                                        : () => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })
-                                }
+                                onAddActionsClick={() => {
+                                    setAddActionsDialogState({
+                                        isWizardOpen: true,
+                                        entityTemplate: isChildTemplate
+                                            ? { type: entityTemplateType.Child, metaData: childTemplates!.get(entityTemplate._id)! }
+                                            : { type: entityTemplateType.Parent, metaData: entityTemplate },
+                                    });
+                                }}
                                 onDisableClick={
                                     childTemplates?.get(entityTemplate._id)
                                         ? undefined
@@ -562,7 +571,7 @@ interface CategoryEntitiesBoxProps {
     setAddActionsDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: templateItem | null;
         }>
     >;
     setAddChildTemplateDialogState: React.Dispatch<
@@ -911,7 +920,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [addActionsToEntityTemplateDialogState, setAddActionsToEntityTemplateDialogState] = useState<{
         isWizardOpen: boolean;
-        entityTemplate: IMongoEntityTemplatePopulated | null;
+        entityTemplate: templateItem | null;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -1211,7 +1220,7 @@ const EntityTemplatesRow: React.FC = () => {
             <CodeEditorDialog
                 open={addActionsToEntityTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
+                templateItem={addActionsToEntityTemplateDialogState.entityTemplate}
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />

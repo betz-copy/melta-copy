@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { DefaultController } from '@microservices/shared';
+import { DefaultController, fetchPropertyFromRequest } from '@microservices/shared';
 import { IMongoEntityChildTemplate } from './interface';
 import EntityChildTemplateManager from './manager';
 
@@ -26,6 +26,13 @@ class EntityChildTemplateController extends DefaultController<IMongoEntityChildT
 
     async deleteEntityChildTemplate(req: Request, res: Response) {
         res.json(await this.manager.deleteChildTemplate(req.params.id));
+    }
+
+    async updateEntityTemplateAction(req: Request, res: Response) {
+        const { templateId: id } = req.params;
+        const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
+
+        res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
     }
 }
 

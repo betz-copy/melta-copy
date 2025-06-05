@@ -10,7 +10,7 @@ import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
@@ -18,6 +18,8 @@ import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
+import { entityTemplateType, IEntityChildTemplateMap, templateItem } from '../../../../interfaces/entityChildTemplates';
+import { getFullChildTemplateProperties } from '../../../../utils/entityChildTemplates';
 
 const {
     systemManagement: {
@@ -28,13 +30,19 @@ const {
 const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
+    templateItem: templateItem | null;
     searchText: string;
     categoriesToShow: IMongoCategory[];
-}> = ({ open, handleClose, entityTemplate, searchText, categoriesToShow }) => {
-    if (!entityTemplate) return null;
+    isChild?: boolean;
+}> = ({ open, handleClose, templateItem, searchText, categoriesToShow }) => {
+    console.log({ templateItem });
+
+    if (!templateItem) return null;
+
+    const { type, metaData: entityTemplate } = templateItem;
 
     const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [validationErrors, setValidationErrors] = useState(false);
     const [isImportUsing, setIsImportUsing] = useState(false);
@@ -46,7 +54,13 @@ const CodeEditorDialog: React.FC<{
         '/// To throw a custom error in your code, use the following syntax:',
         '// throw new CustomError("Your error message")',
         '',
-        `${generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name, queryClient)}`,
+        `${generateInterfaceWithRelationships(
+            type === entityTemplateType.Parent
+                ? entityTemplate.properties.properties
+                : getFullChildTemplateProperties(entityTemplate, entityTemplates!.get(entityTemplate.fatherTemplateId)!),
+            entityTemplate.name,
+            queryClient,
+        )}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',
@@ -62,7 +76,7 @@ const CodeEditorDialog: React.FC<{
 
     const { mutateAsync, isLoading } = useMutation(
         () => {
-            return updateActionToEntity(entityTemplate._id, editorValue);
+            return updateActionToEntity(entityTemplate._id, editorValue, type === entityTemplateType.Child);
         },
         {
             onError: (err: AxiosError) => {
@@ -70,10 +84,14 @@ const CodeEditorDialog: React.FC<{
             },
             onSuccess: (data) => {
                 const { actions } = data;
-
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
-                );
+                if (type === entityTemplateType.Parent)
+                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                        entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    );
+                else
+                    queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (entityTemplateMap) =>
+                        entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    );
 
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));

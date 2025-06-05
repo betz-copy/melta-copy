@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import { IMongoCategory } from './category';
-import { IMongoEntityTemplate } from './entityTemplate';
+import { IEntitySingleProperty, IEntityTemplatePopulated, IMongoEntityTemplate } from './entityTemplate';
 
 export enum ViewType {
     categoryPage = 'categoryPage',
@@ -38,3 +38,28 @@ export interface IEntityChildTemplatePopulated extends Omit<IMongoEntityChildTem
     fatherTemplateId: IMongoEntityTemplate;
     categories: IMongoCategory[];
 }
+
+export interface IEntityChildTemplatePropertiesPopulated extends Omit<IEntityChildTemplatePopulated, 'properties'> {
+    properties: Record<string, IEntitySingleProperty>;
+}
+
+export enum entityTemplateType {
+    Child = 'Child',
+    Parent = 'Parent',
+}
+
+export interface entityTemplateBase {
+    type: entityTemplateType;
+}
+
+export interface ChildTemplate extends entityTemplateBase {
+    type: entityTemplateType.Child;
+    metaData: IEntityChildTemplatePropertiesPopulated;
+}
+
+export interface ParentTemplate extends entityTemplateBase {
+    type: entityTemplateType.Parent;
+    metaData: IEntityTemplatePopulated;
+}
+
+export type templateItem = ChildTemplate | ParentTemplate;

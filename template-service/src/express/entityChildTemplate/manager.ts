@@ -69,6 +69,15 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
     async deleteChildTemplate(id: string): Promise<IMongoEntityChildTemplate | null> {
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Entity Template not found'));
     }
+
+    async updateEntityTemplateAction(id: string, actions: string) {
+        return this.model
+            .findByIdAndUpdate(id, { actions }, { new: true })
+            .populate('categories')
+            .orFail(new NotFoundError('Entity Child Template not found'))
+            .lean()
+            .exec();
+    }
 }
 
 export default EntityChildTemplateManager;

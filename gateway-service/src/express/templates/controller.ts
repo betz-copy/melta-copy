@@ -119,6 +119,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         );
     }
 
+    async updateEntityTemplateAction(req: Request, res: Response) {
+        const { actions, isChildTemplate } = req.body;
+        res.json(await this.manager.updateEntityTemplateAction(req.params.templateId, actions, isChildTemplate));
+    }
+
     async updateEntityTemplateStatus(req: Request, res: Response) {
         res.json(await this.manager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
