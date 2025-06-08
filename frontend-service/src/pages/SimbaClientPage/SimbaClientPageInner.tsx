@@ -4,7 +4,7 @@ import { AuthService } from '../../services/authService';
 import { useQuery, useQueryClient } from 'react-query';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { useScrollTrigger, debounce, Box } from '@mui/material';
+import { useScrollTrigger, debounce, Box, Grid } from '@mui/material';
 import { environment } from '../../globals';
 import { MainBox } from '../../Main.styled';
 import ScrollToTop from '../../ScrollToTop';
@@ -14,6 +14,7 @@ import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTe
 import { IKartoffelUser } from '../../interfaces/users';
 import { Topbar } from './mainPage/Topbar';
 import { useSimbaUserStore } from '../../stores/simbaUser';
+import { LoadingAnimation } from '../../common/LoadingAnimation';
 
 const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
 const SimbaMainPage = lazy(() => import('./mainPage'));
@@ -34,7 +35,11 @@ const SimbaClientPageInner: React.FC = () => {
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
-    const { data: currentUserFromSimba } = useQuery({
+    const {
+        isLoading,
+        data: currentUserFromSimba,
+        isError,
+    } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.fatherTemplateId._id, user?.kartoffelId],
         queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.fatherTemplateId._id || '', user?.kartoffelId!),
         onError: () => {
@@ -108,6 +113,13 @@ const SimbaClientPageInner: React.FC = () => {
         }
     }, [entityMatch, entityParams, trackPageView]);
 
+    if (isLoading)
+        return (
+            <Grid width="100%" justifyContent="center">
+                <LoadingAnimation isLoading={isLoading} />;
+            </Grid>
+        );
+
     return (
         <>
             <MainBox
@@ -124,13 +136,13 @@ const SimbaClientPageInner: React.FC = () => {
             >
                 <Box>
                     <Suspense fallback={<div />}>
-                        <Topbar currentUser={currentUser} />
+                        {!isError && <Topbar currentUser={currentUser} />}
                         <Switch>
-                            <Route path="simba/test.mlt">
-                                <SimbaMainPage />
-                            </Route>
                             <Route path="simba/user-not-exists">
                                 <UserNotExistsPage />
+                            </Route>
+                            <Route path="simba/test.mlt">
+                                <SimbaMainPage />
                             </Route>
                             <Route path="*">
                                 <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />
