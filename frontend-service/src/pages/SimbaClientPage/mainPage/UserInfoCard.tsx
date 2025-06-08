@@ -36,7 +36,6 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
             )
             .slice(0, Math.max(9 - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
     ];
-    console.log({ currentUserFromSimba, first10PropsKeys: first9PropsKeys });
 
     return (
         <>
