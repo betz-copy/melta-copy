@@ -306,6 +306,7 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={editExcelTooltip}
+                        childTemplateId={childTemplateId}
                     >
                         <EditNote
                             fontSize="small"
@@ -321,6 +322,7 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={loadExcelTooltip}
+                        childTemplateId={childTemplateId}
                     >
                         <Upload
                             fontSize="small"

@@ -23,9 +23,10 @@ import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/Cr
 
 const { excelExtension } = environment.loadExcel;
 
-const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
+const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTemplateId?: string }> = ({
     open,
     handleClose,
+    childTemplateId,
     initialValues = {},
     initialStep = 1,
     isEditMode = false,
@@ -82,7 +83,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editManyEntitiesByExcelRequest(template!, entities);
+            return editManyEntitiesByExcelRequest(template!, entities, childTemplateId);
         },
         {
             async onSuccess(data) {
@@ -98,7 +99,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editManyEntitiesByExcelRequest(template!, entities);
+            return editManyEntitiesByExcelRequest(template!, entities, childTemplateId);
         },
         {
             async onSuccess(data) {

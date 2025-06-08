@@ -39,6 +39,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 
 export const loadEntitiesRequest = async (
     template: IMongoEntityTemplatePopulated,
+    childTemplateId?: string,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -48,6 +49,10 @@ export const loadEntitiesRequest = async (
             formData.append(key, value as Blob);
         });
     formData.append('templateId', template._id);
+
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
@@ -100,11 +105,16 @@ export const getChangedEntitiesFromExcelRequest = async (templateId: string, fil
 export const editManyEntitiesByExcelRequest = async (
     template: IMongoEntityTemplatePopulated,
     entitiesToUpdate: IEntityWithIgnoredRules[],
+    childTemplateId?: string,
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', template._id);
+
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,

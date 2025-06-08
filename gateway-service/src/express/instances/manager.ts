@@ -282,7 +282,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     };
 
-    async loadEntities(templateId: string, userId: string, files?: UploadedFile[], insertBrokenEntities?: IEntityWithIgnoredRules[]) {
+    async loadEntities(
+        templateId: string,
+        userId: string,
+        childTemplateId?: string,
+        files?: UploadedFile[],
+        insertBrokenEntities?: IEntityWithIgnoredRules[],
+    ) {
         let entities = insertBrokenEntities;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
@@ -301,7 +307,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
-                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, undefined, serialNumbers); // TODO: fix childTemplateId in excels
+                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 
                 succeededEntities.push(result);
             } catch (error) {
@@ -341,7 +347,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { entities, failedEntities };
     }
 
-    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], userId: string) {
+    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], userId: string, childTemplateId?: string) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
@@ -355,7 +361,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     [],
                     entity.ignoredRules || [],
                     userId,
-                    undefined, // TODO: fix childTemplateId in edit many entities
+                    childTemplateId,
                     true,
                     true,
                 );

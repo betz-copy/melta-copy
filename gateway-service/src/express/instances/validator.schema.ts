@@ -245,6 +245,7 @@ export const loadEntitiesSchema = Joi.object({
                 .default([]),
         ),
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {},
@@ -274,6 +275,7 @@ export const editReadExcelSchema = Joi.object({
 export const editManyEntitiesByExcelSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
         entities: ExtendedJoi.stringToArray(
             Joi.array()
                 .items(
