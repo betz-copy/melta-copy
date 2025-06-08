@@ -11,9 +11,17 @@ interface ReviewerSelectorProps {
     onAdd: (newReviewer: IUser, reviewers: IUser[]) => void;
     onRemove: (removedReviewer: IUser, reviewers: IUser[]) => void;
     isViewMode?: boolean;
+    disableAddingReviewers?: boolean;
 }
 
-export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReviewers = [], reviewers, onAdd, onRemove, isViewMode = false }) => {
+export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({
+    forcedReviewers = [],
+    reviewers,
+    onAdd,
+    onRemove,
+    isViewMode = false,
+    disableAddingReviewers = false,
+}) => {
     const [displayValue, setDisplayValue] = React.useState('');
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -21,7 +29,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
 
     return (
         <Grid container direction="column" paddingBottom={2} paddingLeft={2} spacing={2}>
-            {!isViewMode && (
+            {!isViewMode && !disableAddingReviewers && (
                 <Grid item paddingBottom="1rem" paddingRight={2}>
                     <UserAutocomplete
                         mode="internal"
@@ -48,7 +56,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                 flexWrap="nowrap"
                 sx={{
                     overflowY: 'auto',
-                    maxHeight: !isViewMode ? '110px' : '130px',
+                    maxHeight: isViewMode || disableAddingReviewers ? '190px' : '110px',
                     '&::-webkit-scrollbar': {
                         width: '3px',
                     },

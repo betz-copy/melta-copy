@@ -16,6 +16,8 @@ import {
     ISemanticSearchResult,
     ISearchEntitiesByLocationBody,
     IChartBody,
+    IMultipleSelect,
+    IEntityWithDirectRelationships,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -115,6 +117,16 @@ class InstancesService extends DefaultExternalServiceApi {
 
         // eslint-disable-next-line no-console
         console.log('data', data);
+
+        return data;
+    }
+
+    async getEntitiesWithDirectRelationships(searchBody: IMultipleSelect<boolean>, templateId: string) {
+        const { data } = await this.api.post<IEntityWithDirectRelationships[]>(`${baseEntitiesRoute}/get/multiple-select`, {
+            ...searchBody,
+            templateId,
+            showRelationships: false,
+        });
 
         return data;
     }

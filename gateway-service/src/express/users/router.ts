@@ -12,11 +12,19 @@ import {
     searchExternalUsersRequestSchema,
     searchUsersByPermissionsSchema,
     searchUsersRequestSchema,
-    syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
     getKartoffelUserProfileRequestSchema,
     getKartoffelUserByIdSchema,
+    getRoleByIdRequestSchema,
+    searchRolesRequestSchema,
+    createRoleRequestSchema,
+    updateRoleRequestSchema,
+    searchRolesByPermissionsSchema,
+    syncPermissionsRequestSchema,
+    updateUserRoleIdsRequestSchema,
+    userRoleWorkspaceRequestSchema,
+    getAllWorkspaceRolesSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -51,6 +59,13 @@ usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapC
 
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
+usersRouter.patch(
+    '/:userId/roleIds',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(updateUserRoleIdsRequestSchema),
+    wrapController(UsersController.updateUserRoleIds),
+);
+
 usersRouter.post(
     '/',
     AuthorizerControllerMiddleware.userCanWritePermissions,
@@ -73,10 +88,10 @@ usersRouter.patch(
 );
 
 usersRouter.post(
-    '/:userId/permissions/sync',
+    '/:relatedId/permissions/sync',
     AuthorizerControllerMiddleware.userCanWritePermissions,
-    ValidateRequest(syncUserPermissionsRequestSchema),
-    wrapController(UsersController.syncUserPermissions),
+    ValidateRequest(syncPermissionsRequestSchema),
+    wrapController(UsersController.syncPermissions),
 );
 
 usersRouter.patch(
@@ -87,5 +102,35 @@ usersRouter.patch(
 );
 
 usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy);
+
+usersRouter.get('/roles/:roleId', ValidateRequest(getRoleByIdRequestSchema), wrapController(UsersController.getRoleById));
+
+usersRouter.post('/roles/search-ids', ValidateRequest(searchRolesRequestSchema), wrapController(UsersController.searchRoleIds));
+
+usersRouter.post('/roles/search', ValidateRequest(searchRolesRequestSchema), wrapController(UsersController.searchRoles));
+
+usersRouter.post(
+    '/roles',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(createRoleRequestSchema),
+    wrapController(UsersController.createRole),
+);
+
+usersRouter.patch(
+    '/roles/:roleId',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(updateRoleRequestSchema),
+    wrapController(UsersController.updateRole),
+);
+
+usersRouter.post(
+    '/userRoleWorkspace/:workspaceId',
+    ValidateRequest(userRoleWorkspaceRequestSchema),
+    wrapController(UsersController.getUserRolePerWorkspace),
+);
+
+usersRouter.post('/roles/workspaces', ValidateRequest(getAllWorkspaceRolesSchema), wrapController(UsersController.getAllWorkspaceRoles));
+
+usersRouter.get('/roles/search/:workspaceId', ValidateRequest(searchRolesByPermissionsSchema), UserManagerProxy);
 
 export default usersRouter;

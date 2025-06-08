@@ -43,6 +43,8 @@ export interface IUpdateEntityMetadata {
     updatedFields: Record<string, any>;
 }
 
+export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
+
 export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
@@ -64,13 +66,16 @@ export interface IUpdateEntityMetadataPopulated {
     updatedFields: Record<string, any>;
 }
 
+export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}
+
 export type IActionMetadata =
     | ICreateRelationshipMetadata
     | IDeleteRelationshipMetadata
     | ICreateEntityMetadata
     | IDuplicateEntityMetadata
     | IUpdateEntityMetadata
-    | IUpdateEntityStatusMetadata;
+    | IUpdateEntityStatusMetadata
+    | IUpdateMultipleEntitiesMetadata;
 
 export type IActionMetadataPopulated =
     | ICreateRelationshipMetadataPopulated
@@ -78,7 +83,8 @@ export type IActionMetadataPopulated =
     | ICreateEntityMetadataPopulated
     | IDuplicateEntityMetadataPopulated
     | IUpdateEntityMetadataPopulated
-    | IUpdateEntityStatusMetadataPopulated;
+    | IUpdateEntityStatusMetadataPopulated
+    | IUpdateMultipleEntitiesMetadataPopulated;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
@@ -87,6 +93,7 @@ export enum ActionTypes {
     DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
+    UpdateMultipleEntities = 'update-multiple-entities',
 }
 
 export interface IAction {

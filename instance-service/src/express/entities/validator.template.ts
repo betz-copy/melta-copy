@@ -145,6 +145,11 @@ export class EntityValidator extends DefaultController {
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
+    async validateTemplateExistence(req: Request) {
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
+        addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+    }
+
     async validateConstraintsOfTemplate(req: Request) {
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
 
@@ -539,7 +544,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             return;
         }
         if (type === 'string' && format === 'location') {
-            const location = JSON.parse(propertyValue);
+            const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
             normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
             normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;

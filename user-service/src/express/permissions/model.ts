@@ -4,9 +4,9 @@ import config from '../../config';
 
 const { permissionsCollectionName } = config.mongo;
 
-const PermissionSchema = new Schema(
+export const PermissionSchema = new Schema(
     {
-        userId: {
+        relatedId: {
             type: String,
             required: true,
             index: true,
@@ -30,7 +30,7 @@ const PermissionSchema = new Schema(
     { timestamps: true, versionKey: false },
 );
 
-PermissionSchema.index({ userId: 1, workspaceId: 1, type: 1 }, { unique: true });
+PermissionSchema.index({ relatedId: 1, workspaceId: 1, type: 1 }, { unique: true });
 
 const PermissionsModel = model<IPermission>(permissionsCollectionName, PermissionSchema);
 

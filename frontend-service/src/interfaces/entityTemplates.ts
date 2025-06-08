@@ -1,5 +1,6 @@
+import { FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
-import { IUniqueConstraintOfTemplate } from './entities';
+import { IFieldsGroup, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -30,12 +31,14 @@ export interface IEntitySingleProperty {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+        filters?: ISearchFilter | string;
     };
     expandedUserField?: {
         relatedUserField: string;
         kartoffelField: string;
     };
     archive?: boolean;
+    fieldGroup?: FieldGroupData;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
@@ -61,6 +64,7 @@ export interface IEntityTemplate {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

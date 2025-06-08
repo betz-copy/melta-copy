@@ -33,7 +33,7 @@ class UsersController {
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {
-        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId));
+        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId, req.query.search as string | undefined));
     }
 }
 

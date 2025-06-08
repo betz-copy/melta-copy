@@ -25,6 +25,7 @@ import { createRelationshipTemplates, getRelationshipTemplateById } from './temp
 import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive, updateWorkspaceMetadata } from './workspaces';
+import { createCategoryOrder } from './templates/config';
 import { createCharts } from './templateCharts';
 import { createEntityChildTemplate } from './templates/entityChildTemplates';
 
@@ -87,6 +88,8 @@ const main = async () => {
     const mainWorkspaces = await createWorkspaces(getWorkspacesToCreate());
 
     const mainWorkspace = mainWorkspaces.find(({ name }) => name === 'operational')!;
+
+    await createCategoryOrder(mainWorkspace._id, []);
 
     console.log('Creating categories');
 

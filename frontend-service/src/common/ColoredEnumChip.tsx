@@ -42,7 +42,7 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, 
             deleteIcon={deleteIcon}
             sx={{
                 height: '25px',
-                borderRadius: '6px',
+                borderRadius: '5px',
                 border: 0,
                 fontWeight: shouldHighlight ? 700 : 400,
                 color: textColor,

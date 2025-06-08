@@ -10,15 +10,22 @@
     max-width: 100%;
 } */
 
-.has-field-child {
+.half-width-field {
     width: 50%;
     max-width: 50% !important;
 }
 
-.has-bigger-field-child {
-    width: '100%';
-    max-width: '100%';
+.full-width-field {
+    width: 100%;
+    max-width: 100%;
+}
+
+.direction-rtl {
     direction: rtl;
+}
+
+.no-padding-top{
+    padding-top: 0px !important;
 }
 
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
@@ -36,4 +43,9 @@
 
 .MuiPickersToolbar-penIconButton {
     right: 265px !important;
+}
+
+.rjsf-text-input-override input[type='number'] {
+    direction: ltr !important;
+    text-align: right;
 }

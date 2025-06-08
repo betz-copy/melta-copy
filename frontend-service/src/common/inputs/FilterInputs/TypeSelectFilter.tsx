@@ -42,6 +42,7 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
             SelectProps={{
                 IconComponent: IoIosArrowDown,
             }}
+            disabled={readOnly}
         >
             {filterOptions[type].map((option: string) => (
                 <MenuItem key={option} value={option}>

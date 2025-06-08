@@ -93,6 +93,13 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
             }
             if (value.format && value.format === 'kartoffelUserField') {
                 relatedUserFieldsOfkartoffelFields.push(value.expandedUserField?.relatedUserField || '');
+                if (!value.expandedUserField?.relatedUserField)
+                    throw new BadRequestError('kartoffelField derived from user field that does not exist');
+
+                const relateUserField = properties[value.expandedUserField?.relatedUserField];
+
+                if (relateUserField && relateUserField.archive && !value.archive)
+                    throw new BadRequestError('Cannot archive user field that have unarchived kartoffelField');
             }
         });
 

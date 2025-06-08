@@ -11,9 +11,19 @@ interface SelectFilterInputProps {
     readOnly: boolean;
     isBooleanSelect?: boolean;
     enumOptions?: string[];
+    error?: boolean;
+    helperText?: string | undefined;
 }
 
-const SelectFilterInput: React.FC<SelectFilterInputProps> = ({ filterField, handleFilterFieldChange, enumOptions, readOnly, isBooleanSelect }) => {
+const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
+    filterField,
+    handleFilterFieldChange,
+    enumOptions,
+    readOnly,
+    isBooleanSelect,
+    error,
+    helperText,
+}) => {
     const options = isBooleanSelect
         ? [
               { option: true, label: i18next.t('booleanOptions.yes') },
@@ -29,6 +39,9 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({ filterField, hand
                 fullWidth
                 value={filterField?.filter ?? ''}
                 onChange={(e) => handleFilterFieldChange({ filterType: 'text', type: 'equals', filter: e.target.value } as IAGGridTextFilter)}
+                disabled={readOnly}
+                error={error}
+                helperText={helperText}
                 inputProps={{
                     readOnly,
                     style: {

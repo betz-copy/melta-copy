@@ -10,12 +10,13 @@ const {
 
 export const createCategories = async (workspaceId: string, categories: ICategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
+    const results: IMongoCategory[] = [];
 
-    const promises = categories.map((category) => {
-        return axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
-    });
+    for (const category of categories) {
+        const response = await axiosInstance.post<IMongoCategory>(url + createCategoryRoute, { ...category, templatesOrder: undefined });
 
-    const results = await Promise.all(promises);
+        results.push(response.data);
+    }
 
-    return results.map((result) => result.data);
+    return results;
 };

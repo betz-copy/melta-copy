@@ -13,7 +13,12 @@ const basicTheme: ThemeOptions = {
             styleOverrides: {
                 root: {
                     '& .MuiInputBase-root': {
-                        borderRadius: '10px',
+                        borderRadius: '7px',
+                        fontSize: '14px',
+                        textOverflow: 'ellipsis',
+                        '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {
+                            display: 'none',
+                        },
                     },
                     '& fieldset': {
                         borderColor: '#CCCFE5',
@@ -21,6 +26,7 @@ const basicTheme: ThemeOptions = {
                     },
                     '& label': {
                         color: '#9398C2',
+                        fontSize: '14px',
                     },
                 },
             },

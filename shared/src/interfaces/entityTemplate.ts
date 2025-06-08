@@ -1,11 +1,12 @@
 import { IMongoCategory } from './category';
-import { IUniqueConstraintOfTemplate } from './entity';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
     relationshipTemplateDirection: 'outgoing' | 'incoming';
     relatedTemplateId: string;
     relatedTemplateField: string;
+    filters?: ISearchFilter | string;
 }
 
 export interface IEntitySingleProperty {
@@ -61,6 +62,11 @@ export interface IProperties {
 
 export type IEnumPropertiesColors = Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
 
+interface IFieldsGroup {
+    name: string;
+    displayName: string;
+    fields: string[];
+}
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -75,6 +81,7 @@ export interface IEntityTemplate {
     actions?: string;
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

@@ -85,6 +85,7 @@ const config = {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
             baseChildTemplatesRoute: env.get('TEMPLATE_SERVICE_CHILD_TEMPLATES_BASE_ROUTE').default('/api/templates/child').asString(),
+            baseConfigRoute: env.get('TEMPLATE_SERVICE_CONFIG_BASE_ROUTE').default('/api/templates/config').asString(),
         },
         relationships: {
             baseRelationshipsRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_BASE_ROUTE').default('/api/templates/relationships').asString(),
@@ -132,8 +133,9 @@ const config = {
     },
     userService: {
         url: env.get('USER_SERVICE_URL').required().asString(),
-        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
-        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+        usersRoute: env.get('USER_SERVICE_USERS_BASE_ROUTE').default('/api/users').asString(),
+        rolesRoute: env.get('USER_SERVICE_ROLES_BASE_ROUTE').default('/api/roles').asString(),
+        permissionsRoute: env.get('USER_SERVICE_PERMISSION_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
         profilePathPattern: env
@@ -200,6 +202,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
+    hebrew: { yes: 'כן', no: 'לא' },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
         entityTemplateHasOutgoingRelationships: 'TEMPLATE_HAS_OUTGOING_RELATIONSHIPS',

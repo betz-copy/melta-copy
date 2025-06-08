@@ -12,14 +12,14 @@ import { editManyEntitiesByExcelRequest, getChangedEntitiesFromExcelRequest, exp
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
-import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
 import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -218,9 +218,9 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
             component: (props) => {
                 return (
-                    <LoadEntitiesTables
+                    <StatusEntitiesTables
                         {...props}
-                        tablesData={stepsData.data}
+                        tablesData={{ ...stepsData.data, brokenRulesEntities: stepsData.data.brokenRulesEntities?.entities || [] }}
                         template={template!}
                         onDownload={(brokenRulesEntities?: boolean) => {
                             return exportTemplateToExcel({

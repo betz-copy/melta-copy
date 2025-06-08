@@ -30,7 +30,13 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
           };
 
     return (
-        <Grid container justifyContent="center" direction={isInRangeType || !entityFilter ? 'column' : 'row'} spacing={2}>
+        <Grid
+            container
+            justifyContent="start"
+            direction={isInRangeType || !entityFilter ? 'column' : 'row'}
+            spacing={1}
+            sx={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
+        >
             <Grid item xs={isInRangeType ? 12 : 5}>
                 <TypeSelectFilter
                     filterField={filterField as IAGGridDateFilter}
@@ -40,7 +46,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
                 />
             </Grid>
 
-            <Grid item xs={isInRangeType ? 12 : 7}>
+            <Grid item xs={isInRangeType ? 12 : 7} boxSizing="border-box" width="86%">
                 {isInRangeType ? (
                     <DateRange
                         onStartDateChange={(newValue) => handleDateChange(newValue, true)}

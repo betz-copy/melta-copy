@@ -2,6 +2,24 @@ import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
+const FieldGroupSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true,
+        },
+        displayName: {
+            type: String,
+            required: true,
+        },
+        fields: {
+            type: [String],
+            required: true,
+        },
+    },
+    { _id: false },
+);
+
 const EntityTemplateSchema = new mongoose.Schema(
     {
         name: {
@@ -56,6 +74,9 @@ const EntityTemplateSchema = new mongoose.Schema(
         mapSearchProperties: {
             type: [String],
         },
+        fieldGroups: {
+            type: [FieldGroupSchema],
+        },
     },
     {
         timestamps: true,
@@ -65,6 +86,8 @@ const EntityTemplateSchema = new mongoose.Schema(
 );
 
 EntityTemplateSchema.index({ displayName: 'text' });
+EntityTemplateSchema.index({ 'fieldGroups.name': 1, name: 1 }, { unique: true });
+EntityTemplateSchema.index({ 'fieldGroups.displayName': 1, name: 1 }, { unique: true });
 
 EntityTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);

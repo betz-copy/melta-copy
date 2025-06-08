@@ -3,6 +3,7 @@
 import _, { groupBy } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
+import _omit from 'lodash/omit';
 import lodashUniqby from 'lodash.uniqby';
 import { StatusCodes } from 'http-status-codes';
 import {
@@ -10,8 +11,11 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IMongoBaseConfig,
     IMongoCategory,
     IMongoEntityTemplatePopulated,
+    IMongoCategoryOrderConfig,
+    ICategoryOrderConfig,
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
@@ -42,6 +46,8 @@ import {
     ISearchFilter,
     UploadedFile,
     logger,
+    RelatedPermission,
+    ConfigTypes,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -271,7 +277,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             };
         });
 
+        let categoryOrder: IMongoCategoryOrderConfig | null;
+        try {
+            const workspaceConfig = await this.getConfigByType(ConfigTypes.CATEGORY_ORDER, permissionsOfUserId);
+            categoryOrder = workspaceConfig as IMongoCategoryOrderConfig;
+        } catch {
+            categoryOrder = null;
+        }
+
         return {
+            categoryOrder,
             categories: allAllowedCategories,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
@@ -328,7 +343,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                   },
               };
 
-        await UsersManager.syncUserPermissions(userId, {
+        await UsersManager.syncUserPermissions(userId, RelatedPermission.User, {
             [this.workspaceId]: updatedPermissions,
         });
     }
@@ -394,6 +409,27 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.updateCategory(id, updatedData);
     }
 
+    async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        return this.entityTemplateService.updateCategoryTemplatesOrder(templateId, newIndex, srcCategoryId, newCategoryId);
+    }
+
+    // config
+    async getAllConfigs(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']): Promise<IMongoBaseConfig[]> {
+        return this.entityTemplateService.getConfigs(permissionsOfUserId);
+    }
+
+    async getConfigByType(type: ConfigTypes, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']): Promise<IMongoBaseConfig> {
+        return this.entityTemplateService.getConfigByType(type, permissionsOfUserId);
+    }
+
+    async updateCategoryOrderConfig(configId: string, newIndex: number, item: string): Promise<IMongoCategoryOrderConfig> {
+        return this.entityTemplateService.updateOrderConfig(configId, newIndex, item);
+    }
+
+    async createCategoryOrderConfig(configData: ICategoryOrderConfig): Promise<IMongoCategoryOrderConfig> {
+        return this.entityTemplateService.createOrderConfig(configData);
+    }
+
     // entity templates
     private populateTemplateConstraints(
         entityTemplate: IMongoEntityTemplatePopulated,
@@ -435,7 +471,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const categoryScope = instances?.categories?.[categoryId]?.scope;
 
         if (admin || categoryScope === PermissionScope.write) {
-            await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: permissionsOfUserId });
+            await UsersManager.syncUserPermissions(userId, RelatedPermission.User, { [this.workspaceId]: permissionsOfUserId });
             return;
         }
 
@@ -458,7 +494,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             },
         };
 
-        await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: updatedPermissions });
+        await UsersManager.syncUserPermissions(userId, RelatedPermission.User, { [this.workspaceId]: updatedPermissions });
     }
 
     async searchEntityTemplates(
@@ -1057,7 +1093,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
-                    if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
+                    if (
+                        value.relationshipReference &&
+                        !_isEqual(_omit(value.relationshipReference, 'filters'), _omit(newValue.relationshipReference, 'filters'))
+                    )
                         throw new BadRequestError('can not change relationship reference fields');
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
                     if (isSingularToPlural) propertiesKeysToPluralize.push(key);
@@ -1150,6 +1189,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     removeBasicFields(template: IMongoEntityTemplatePopulated) {
         const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = template;
+        Object.entries(template.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
+            }
+        });
+
         return rest;
     }
 
@@ -1415,6 +1461,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         const currentRelationshipTemplate: IMongoRelationshipTemplate =
             await this.relationshipTemplateService.getRelationshipTemplateById(relationshipTemplateId);
+
         const { sourceEntityId, destinationEntityId } = currentRelationshipTemplate;
 
         const addFieldToSrcEntity = relationshipReference.relatedTemplateId === destinationEntityId;

@@ -19,11 +19,14 @@ import {
     getAllChildTemplatesSchema,
     getCategoriesSchema,
     searchEntityChildTemplatesSchema,
+    getAllConfigsSchema,
+    getConfigByTypeSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
+    updateCategoryTempOrderSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
@@ -87,6 +90,37 @@ templatesRouter.post(
     templatesControllerMiddleware.searchCategories,
 );
 
+templatesRouter.patch(
+    '/categories/templatesOrder/:templateId',
+    ValidateRequest(updateCategoryTempOrderSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryTemplatesOrder,
+);
+
+// config
+
+templatesRouter.get(
+    `/config/all`,
+    ValidateRequest(getAllConfigsSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getAllConfigs,
+);
+
+templatesRouter.get(
+    '/config/:type',
+    ValidateRequest(getConfigByTypeSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getConfigByType,
+);
+
+templatesRouter.put(
+    '/config/categoryOrder/:configId',
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryOrderConfig,
+);
+
+templatesRouter.post('/config/categoryOrder', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.createOrderConfig);
+
 // entities (templates)
 templatesRouter.put(
     '/entities/update-enum-field/:id',
@@ -101,7 +135,7 @@ templatesRouter.patch(
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
 templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
-templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates); // todo shirel
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',
     busboyMiddleware,

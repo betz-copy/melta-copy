@@ -36,11 +36,25 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
-        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.file!));
+        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.files?.[0] || req.file!));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {
         res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
+    }
+
+    async updateMultipleEntities(req: Request, res: Response) {
+        const { ignoredRules, entitiesToUpdate, propertiesToRemove, ...instanceData } = req.body;
+        res.json(
+            await this.manager.updateMultipleEntities(
+                instanceData,
+                propertiesToRemove,
+                entitiesToUpdate,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+            ),
+        );
     }
 
     async updateEntityInstance(req: Request, res: Response) {
@@ -119,7 +133,7 @@ class InstancesController extends DefaultController<InstancesManager> {
         res.send(
             await this.manager.exportEntityToDocumentTemplate({
                 documentTemplateId: req.query.documentTemplateId as string,
-                entityProperties: (await this.manager.service.getEntityInstanceById(req.params.entityId)).properties,
+                entity: await this.manager.service.getEntityInstanceById(req.params.entityId),
             }),
         );
     }
