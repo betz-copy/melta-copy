@@ -373,6 +373,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
         updateOnlyGivenProps: Joi.boolean().default(false),
+        childTemplateId: Joi.string().optional(),
     },
     query: {},
     params: {

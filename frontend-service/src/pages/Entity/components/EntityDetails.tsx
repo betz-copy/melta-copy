@@ -36,9 +36,10 @@ import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import LocationPreview from '../../Map/LocationPreview';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded; childTemplateId?: string }> = ({
     entityTemplate,
     expandedEntity,
+    childTemplateId
 }) => {
     const { entity } = expandedEntity;
     const [_, navigate] = useLocation();
@@ -166,6 +167,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     });
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
+                childTemplateId={childTemplateId}
             />
         );
     }
@@ -229,7 +231,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(`/entity/${entity.properties._id}/duplicate`, {
+                                                navigate(`/entity/${entity.properties._id}/duplicate?childTemplateId=${childTemplateId}`, {
                                                     state: { entityTemplate, expandedEntity, currentEntityTemplate },
                                                 });
                                             }

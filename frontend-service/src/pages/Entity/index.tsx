@@ -32,6 +32,7 @@ import { RelationshipIcon } from './RelationshipIcon';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -349,6 +350,9 @@ const Entity: React.FC = () => {
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
+    const [searchParams, _setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
+
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -464,7 +468,7 @@ const Entity: React.FC = () => {
             <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
+                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} childTemplateId={childTemplateId} />
                 </Grid>
                 {categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
@@ -484,11 +488,7 @@ const Entity: React.FC = () => {
                         <Grid item>
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList
-                                        variant="scrollable"
-                                        scrollButtons="auto"
-                                        onChange={(_event, newValue) => setSelectedTabId(newValue)}
-                                    >
+                                    <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>
                                         {categoriesWithConnectionsTemplates.map(
                                             ({ category: { _id, displayName, iconFileId }, relationshipCount }) => (
                                                 <Tab

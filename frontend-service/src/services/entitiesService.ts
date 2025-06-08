@@ -221,6 +221,7 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
 const getBodyForUpdateRequest = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'] | Record<string, IBrokenRule[]>,
+    childTemplateId?: string,
 ) => {
     const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
@@ -315,6 +316,10 @@ const getBodyForUpdateRequest = async (
 
     formData.append('templateId', newEntityData.template._id);
 
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
+
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
@@ -326,8 +331,9 @@ export const updateEntityRequestForMultiple = async (
     entityId: string,
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
+    childTemplateId?: string,
 ) => {
-    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
+    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules, childTemplateId);
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -353,7 +359,12 @@ export const updateMultipleEntitiesRequest = async (
     return data;
 };
 
-export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
+export const duplicateEntityRequest = async (
+    entityId: string,
+    newEntityData: EntityWizardValues,
+    ignoredRules?: IRuleBreach['brokenRules'],
+    childTemplateId?: string,
+) => {
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
@@ -425,6 +436,10 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     );
 
     formData.append('templateId', newEntityData.template._id);
+
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));

@@ -1567,6 +1567,7 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
         userId?: string,
+        childTemplateId?: string,
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
@@ -1574,14 +1575,14 @@ class EntityManager extends DefaultManagerNeo4j {
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
-        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
-            const actions = await this.buildActionsArray(
-                IEntityCrudAction.onUpdateEntity,
-                entityProperties,
-                entityTemplate,
-                userId,
-                unPopulatedEntity,
-            );
+        let template = entityTemplate;
+        if (childTemplateId) {
+            const childTemplate = await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId);
+            template = { ...entityTemplate, actions: childTemplate.actions };
+        }
+
+        if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
+            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedEntity);
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
@@ -1593,13 +1594,13 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
+                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, template);
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
                     id,
                     entityProperties,
-                    entityTemplate,
+                    template,
                     transaction,
                     userId,
                     convertToRelationshipField,

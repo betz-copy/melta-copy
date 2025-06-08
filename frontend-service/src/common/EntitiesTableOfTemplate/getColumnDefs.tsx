@@ -31,6 +31,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    childTemplateId?: string;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -60,6 +61,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
 
 export const getColumnDefs = <Data extends any = EntityData>({
     template,
+    childTemplateId,
     getRowId,
     getEntityPropertiesData,
     onNavigateToRow,
@@ -345,7 +347,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}?childTemplateId=${childTemplateId}`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -425,7 +427,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
+                                        navigate(`/entity/${getRowId(data)}/duplicate?childTemplateId=${childTemplateId}`, {
                                             state: { entityTemplate: template, expandedEntity: { entity: data } },
                                         });
                                     }}

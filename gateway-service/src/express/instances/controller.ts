@@ -66,7 +66,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async updateEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
 
         res.json(
             await this.manager.updateEntityInstance(
@@ -75,6 +75,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }
@@ -98,7 +99,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async duplicateEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
         res.json(
             await this.manager.duplicateEntityInstance(
                 req.params.id,
@@ -106,6 +107,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }

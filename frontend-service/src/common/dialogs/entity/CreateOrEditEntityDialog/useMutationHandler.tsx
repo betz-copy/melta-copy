@@ -83,7 +83,7 @@ const useMutationHandler = (
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules),
+            updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);
