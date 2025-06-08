@@ -100,7 +100,7 @@ const TemplateTablesViewResults = forwardRef<
                         ) as Record<string, IEntitySingleProperty>;
 
                         const defaultFilter = childTemplate.properties
-                            ? Object.entries(childTemplate.properties).reduce((acc, [key, prop]) => {
+                            ? Object.entries(childTemplate.properties).reduce((acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
                                   if (prop.filters) {
                                       const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
                                       if (filters.$and) {
@@ -115,14 +115,16 @@ const TemplateTablesViewResults = forwardRef<
                                               .filter(Boolean);
 
                                           if (transformedFilters.length > 0) {
-                                              acc = { $or: transformedFilters };
+                                              if (!acc.$and) acc.$and = [];
+                                              acc.$and = [...acc.$and, ...transformedFilters];
                                           }
                                       } else {
-                                          acc[key] = filters;
+                                          if (!acc.$and) acc.$and = [];
+                                          acc.$and.push({ [key]: filters });
                                       }
                                   }
                                   return acc;
-                              }, {} as Record<string, unknown>)
+                              }, {} as { $and?: Array<Record<string, unknown>> })
                             : {};
 
                         const { children, ...childTemplatePopulated } = {
