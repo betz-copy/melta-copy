@@ -76,6 +76,7 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
 }
 
 export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
+    entityChildTemplates: any;
     _id: string;
 }
 

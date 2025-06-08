@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 import { ICategoryMap } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
 import { IUser } from '../../interfaces/users';
-import { createUserRequest, syncUserPermissionsRequest } from '../../services/userService';
+import { createUserRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -20,8 +20,6 @@ import {
     getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
 import UserAutocomplete from '../inputs/UserAutocomplete';
-import InstancesPermissionsCard from './instancesPermissionsCard';
-import ManagementPermissionsCard from './managementPermissionsCard';
 import {
     CategoryWithTemplates,
     didPermissionsChange,
@@ -31,6 +29,8 @@ import {
 } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import ManagementPermissionsCard from '../PermissionsDialog/managementPermissionsCard';
+import InstancesPermissionsCard from '../PermissionsDialog/instancesPermissionsCard';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -101,7 +101,12 @@ const MyPermissions: React.FC<{
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
-            createUserRequest(formUser.externalMetadata.kartoffelId, formUser.externalMetadata.digitalIdentitySource, formUser.permissions),
+            createUserRequest(
+                formUser.externalMetadata.kartoffelId,
+                formUser.externalMetadata.digitalIdentitySource,
+                formUser.permissions,
+                workspace._id,
+            ),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
