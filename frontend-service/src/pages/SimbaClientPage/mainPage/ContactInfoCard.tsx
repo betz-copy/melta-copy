@@ -3,7 +3,6 @@ import { Card, CardContent, Typography, Grid, Link, IconButton } from '@mui/mate
 import i18next from 'i18next';
 import hebrew from '../../../i18n/hebrew';
 import { getPropertyColor } from '../../../common/EntityProperties';
-import { Chat as ChatIcon, Mail as MailIcon } from '@mui/icons-material';
 
 const ContactInfoCard: React.FC = () => {
     const contacts = hebrew.simbaClientPage.contactInfoCard.contacts;
@@ -12,7 +11,7 @@ const ContactInfoCard: React.FC = () => {
 
     return (
         <>
-            <Typography variant="h6" align="center" fontWeight={700} color="primary" gutterBottom sx={{ fontSize: '1.1rem' }}>
+            <Typography variant="h6" align="center" fontWeight={700} color="primary" gutterBottom sx={{ fontSize: '1.1rem' }} >
                 {i18next.t('simbaClientPage.contactInfoCard.title')}
             </Typography>
             <Card sx={{ mt: 1, borderRadius: '16px', boxShadow: '-2px 2px 6px 0px #1e27754d' }}>
@@ -30,7 +29,6 @@ const ContactInfoCard: React.FC = () => {
                                     borderRadius: '8px',
                                     mb: 1,
                                     px: 2,
-                                    py: 1,
                                 }}
                             >
                                 <Grid item container display="flex" direction="row" justifyContent="space-between" gap={1}>

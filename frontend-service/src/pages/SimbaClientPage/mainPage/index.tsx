@@ -29,11 +29,11 @@ const SimbaMainPage: React.FC = () => {
                     paddingLeft: '30px',
                 }}
             >
-                <Grid container p="20px" gap={1} alignItems="top" justifyContent="space-evenly">
-                    <Grid item xs={8}>
+                <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
+                    <Grid item width="70%">
                         <UserInfoCard currentUserFromSimba={simbaUserEntity} usersInfoChildTemplate={usersInfoChildTemplate} />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item width="28%">
                         <ContactInfoCard />
                     </Grid>
                     <Grid container item xs={12} justifyContent="center"></Grid>

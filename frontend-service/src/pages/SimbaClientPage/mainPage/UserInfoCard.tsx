@@ -24,6 +24,20 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
 
     const entityTemplateColor = getEntityTemplateColor(usersInfoChildTemplate.fatherTemplateId);
     const { height, width } = workspace!.metadata!.iconSize!;
+
+    const first9PropsKeys: string[] = [
+        ...usersInfoChildTemplate.fatherTemplateId.propertiesPreview,
+        ...usersInfoChildTemplate.fatherTemplateId.propertiesOrder
+            .filter(
+                (property) =>
+                    !usersInfoChildTemplate.fatherTemplateId.propertiesPreview.includes(property) &&
+                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].format !== 'fileId' &&
+                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].items?.format !== 'fileId',
+            )
+            .slice(0, Math.max(9 - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
+    ];
+    console.log({ currentUserFromSimba, first10PropsKeys: first9PropsKeys });
+
     return (
         <>
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -79,21 +93,20 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
                             <EntityProperties
                                 entityTemplate={usersInfoChildTemplate!.fatherTemplateId}
                                 properties={currentUserFromSimba.properties}
+                                overridePropertiesToShow={first9PropsKeys}
                                 style={{
                                     flexDirection: 'row',
                                     flexWrap: 'wrap',
-                                    rowGap: '20px',
                                     columnGap: '20px',
                                     alignItems: 'center',
                                     width: '100%',
-                                    maxHeight: '200px',
                                 }}
                                 innerStyle={{ width: '32%', maxHeight: '50px' }}
                                 textWrap
                                 mode="normal"
                             />
                         </Grid>
-                        <Grid container item justifyContent="space-between">
+                        <Grid container item justifyContent="space-between" paddingTop="25px">
                             <EntityDates
                                 createdAt={currentUserFromSimba.properties.createdAt}
                                 updatedAt={currentUserFromSimba.properties.updatedAt}
