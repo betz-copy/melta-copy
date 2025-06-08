@@ -463,16 +463,3 @@ export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
         templateId: Joi.string().required(),
     },
 });
-
-/**
- * POST /api/instances/entities/search-by-user
- */
-export const searchDataByUserRequestSchema = Joi.object({
-    body: {
-        kartoffelId: Joi.string().required(),
-        childTemplateId: Joi.string().required(),
-        userFieldName: Joi.string().required(),
-    },
-    query: {},
-    params: {},
-});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, Grid, Link } from '@mui/material';
+import { Card, CardContent, Typography, Grid, Link, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import hebrew from '../../../i18n/hebrew';
 import { getPropertyColor } from '../../../common/EntityProperties';
@@ -41,10 +41,14 @@ const ContactInfoCard: React.FC = () => {
                                 </Grid>
                                 <Grid item display="flex" gap={1}>
                                     <Link href={contact.hichatLink}>
-                                        <ChatIcon />
+                                        <IconButton>
+                                            <img src="/icons/hi-chat-icon.svg"></img>
+                                        </IconButton>
                                     </Link>
                                     <Link href={contact.mailLink} style={{ textDecoration: 'none' }}>
-                                        <MailIcon />
+                                        <IconButton>
+                                            <img src="/icons/outlook-icon.svg"></img>
+                                        </IconButton>
                                     </Link>
                                 </Grid>
                             </Grid>

@@ -3,9 +3,6 @@ import { createController, ValidateRequest } from '@microservices/shared';
 import SimbaController from './controller';
 import {
     getInstancesByTemplateIdSchema,
-    getAllTemplatesSchema,
-    getEntityChildTemplateByIdSchema,
-    getAllRelationshipTemplatesSchema,
     countEntitiesOfTemplatesByUserEntityIdSchema,
     getAllSimbaTemplatesSchema,
     searchEntitiesOfTemplateSchema,
@@ -19,32 +16,11 @@ const SimbaValidatorMiddleware = createController(SimbaValidator, true);
 
 SimbaRouter.use(validateSimbaHeaders);
 
-SimbaRouter.get(
-    '/all',
-    ValidateRequest(getAllTemplatesSchema),
-    SimbaValidatorMiddleware.validateUserCanAccessSimba,
-    SimbaControllerMiddleware.getAllTemplates,
-);
-
 SimbaRouter.post(
     '/templates/all',
     ValidateRequest(getAllSimbaTemplatesSchema),
     SimbaValidatorMiddleware.validateUserCanAccessSimba,
     SimbaControllerMiddleware.getAllSimbaTemplates,
-);
-
-SimbaRouter.get(
-    '/relationships/:templateId',
-    ValidateRequest(getAllRelationshipTemplatesSchema),
-    SimbaValidatorMiddleware.validateUserCanAccessSimba,
-    SimbaControllerMiddleware.getAllRelationshipTemplates,
-);
-
-SimbaRouter.get(
-    '/templates/child/:templateId',
-    ValidateRequest(getEntityChildTemplateByIdSchema),
-    SimbaValidatorMiddleware.validateUserCanAccessSimba,
-    SimbaControllerMiddleware.getEntityChildTemplateById,
 );
 
 SimbaRouter.post(

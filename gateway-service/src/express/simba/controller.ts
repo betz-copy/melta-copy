@@ -7,24 +7,12 @@ class SimbaController extends DefaultController<SimbaManager> {
         super(new SimbaManager(workspaceId));
     }
 
-    async getAllTemplates(_req: Request, res: Response) {
-        res.json(await this.manager.getAllTemplates());
-    }
-
     async getAllSimbaTemplates(req: Request, res: Response) {
         res.json(await this.manager.getAllSimbaTemplates(req.body.usersInfoChildTemplateId));
     }
 
-    async getAllRelationshipTemplates(req: Request, res: Response) {
-        res.json(await this.manager.getAllRelationshipTemplates(req.params.templateId));
-    }
-
     async getInstancesByTemplateId(req: Request, res: Response) {
         res.json(await this.manager.getInstancesByTemplateId(req.params.templateId, req.body.kartoffelId));
-    }
-
-    async getEntityChildTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getEntityChildTemplateById(req.params.templateId));
     }
 
     async countEntitiesOfTemplatesByUserEntityId(req: Request, res: Response) {

@@ -22,16 +22,6 @@ const getAllSimbaTemplates = async (usersInfoChildTemplateId: string) => {
     return data;
 };
 
-const getEntityChildTemplateByIdRequest = async (id: string) => {
-    const { data } = await axios.get<IMongoChildEntityTemplatePopulated>(`${simbaRoutes}/templates/child/${id}`);
-    return data;
-};
-
-const getAllTemplates = async () => {
-    const { data } = await axios.get<IMongoChildEntityTemplatePopulated[]>(`${simbaRoutes}/all`);
-    return data;
-};
-
 const getCurrentUserEntity = async (templateId: string, kartoffelId: string) => {
     const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/${templateId}`, {
         kartoffelId,
@@ -52,12 +42,6 @@ const countEntitiesOfTemplatesByUserEntityId = async (templateIds: string[], use
     return data;
 };
 
-const getAllRelationshipsTemplatesByUserTemplateId = async (userTemplateId: string) => {
-    const { data } = await axios.get<IMongoRelationshipTemplate[]>(`${simbaRoutes}/relationships/${userTemplateId}`);
-
-    return data;
-};
-
 const searchEntitiesOfTemplateSimbaRequest = async (templateId: string, simbaUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
     const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/search/template/${templateId}`, {
         userEntityId: simbaUserEntityId,
@@ -66,12 +50,4 @@ const searchEntitiesOfTemplateSimbaRequest = async (templateId: string, simbaUse
     return data;
 };
 
-export {
-    getEntityChildTemplateByIdRequest,
-    getAllTemplates,
-    getAllSimbaTemplates,
-    getCurrentUserEntity,
-    countEntitiesOfTemplatesByUserEntityId,
-    getAllRelationshipsTemplatesByUserTemplateId,
-    searchEntitiesOfTemplateSimbaRequest,
-};
+export { getAllSimbaTemplates, getCurrentUserEntity, countEntitiesOfTemplatesByUserEntityId, searchEntitiesOfTemplateSimbaRequest };

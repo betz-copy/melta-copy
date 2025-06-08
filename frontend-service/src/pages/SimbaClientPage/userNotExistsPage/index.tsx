@@ -85,7 +85,7 @@ const UserNotExistsPage: React.FC = () => {
                     </Grid>
                 </Grid>
                 <Grid item height="100%" width="40%" sx={{ backgroundColor: '#4752B6', borderRadius: '0 15px 15px 0' }} alignContent="center">
-                    <img src="/icons/simba-logo.svg"></img>
+                    <img src="/icons/simba-logo-ltr.svg"></img>
                 </Grid>
             </Grid>
             <Grid item container alignItems="baseline" flexWrap="nowrap" justifyContent="space-between" paddingX="150px" marginTop="20px">

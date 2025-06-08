@@ -79,13 +79,6 @@ class RelationshipManager extends DefaultManagerNeo4j {
         );
     }
 
-    async getRelationshipsByUserEntityId(relationshipTemplateIds: string[], userEntityId: string) {
-        return this.neo4jClient.readTransaction(
-            `MATCH (s)-[r: \`${relationshipTemplateIds}\`]->(d) WHERE s._id = '${userEntityId}' OR d._id = '${userEntityId}' RETURN s, r, d`,
-            normalizeReturnedRelationship('multipleResponses'),
-        );
-    }
-
     async getRelationshipsCountByTemplateId(templateId: string) {
         return this.neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }

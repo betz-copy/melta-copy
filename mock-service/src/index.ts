@@ -169,9 +169,6 @@ const main = async () => {
     );
     const createdSimbaCarEntityChildTemplate = await createEntityChildTemplate(simbaWorkspace._id, carEntityChildTemplate, createdSimbaCarTemplate);
 
-    console.log('createdSimbaDriverEntityChildTemplate', createdSimbaDriverEntityChildTemplate);
-    console.log('createdSimbaCarEntityChildTemplate', createdSimbaCarEntityChildTemplate);
-
     console.log('Creating simba relationship templates');
 
     const createdSimbaCarTemplateRelationshipTemplateId =
@@ -200,8 +197,6 @@ const main = async () => {
             exampleFileId,
             1,
         );
-        console.log('createdSimbaDriverInstances', createdSimbaDriverInstances);
-
         console.log('Creating simba cars entities');
 
         JSONSchemaFaker.format('relationshipReference', (_value) => createdSimbaDriverInstances[0].createdEntity.properties._id);

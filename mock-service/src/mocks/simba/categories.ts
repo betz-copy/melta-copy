@@ -6,6 +6,7 @@ const categories: ICategory[] = [
         displayName: 'ראשי',
         color: '#B80000',
         iconFileId: null,
+        templatesOrder: [],
     },
 ];
 

@@ -44,7 +44,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
             .exec();
     }
 
-    getAllChildTemplates() {
+    getAllChildTemplates(): Promise<IEntityChildTemplatePopulated[]> {
         return this.model
             .find()
             .populate<Pick<IEntityChildTemplatePopulated, 'categories'>>('categories')

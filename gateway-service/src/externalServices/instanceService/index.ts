@@ -115,9 +115,6 @@ class InstancesService extends DefaultExternalServiceApi {
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
-        // eslint-disable-next-line no-console
-        console.log('data', data);
-
         return data;
     }
 

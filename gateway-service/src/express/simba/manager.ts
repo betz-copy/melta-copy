@@ -19,11 +19,6 @@ class SimbaManager extends DefaultManagerProxy<null> {
         this.relationshipTemplateService = new RelationshipsTemplateService(workspaceId);
     }
 
-    async getAllTemplates() {
-        const templates = await this.entityTemplateService.getAllChildTemplates();
-        return templates;
-    }
-
     async getAllSimbaTemplates(usersInfoChildTemplateId: string) {
         const childTemplates = await this.entityTemplateService.getAllChildTemplates();
 
@@ -50,15 +45,6 @@ class SimbaManager extends DefaultManagerProxy<null> {
         };
     }
 
-    async getAllRelationshipTemplates(userTemplateId: string) {
-        const [bySource, byDestination] = await Promise.all([
-            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [userTemplateId] }),
-            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: [userTemplateId] }),
-        ]);
-
-        return [...bySource, ...byDestination];
-    }
-
     async getInstancesByTemplateId(templateId: string, kartoffelId: string) {
         const instances = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
             skip: 0,
@@ -68,11 +54,6 @@ class SimbaManager extends DefaultManagerProxy<null> {
             sort: [],
         });
         return instances;
-    }
-
-    async getEntityChildTemplateById(templateId: string) {
-        const entityChildTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
-        return entityChildTemplate;
     }
 
     async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {

@@ -70,7 +70,7 @@ const config = {
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
             unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
             simbaId: env.get('SIMBA_ID').default('simba').asString(),
-            simbaEndURL: env.get('SIMBA_END_URL').default('/simba/test.mlt').asString(), //
+            simbaEndURL: env.get('SIMBA_END_URL').default('/simba/test.mlt').asString(), // TODO: yona - change to better unique url for simba end user
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB

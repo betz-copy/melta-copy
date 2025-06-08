@@ -114,27 +114,14 @@ const SimbaClientPageInner: React.FC = () => {
                 ref={(ref: HTMLElement | null) => {
                     pageScrollTargetRef.current = ref;
                 }}
-                style={{
-                    overflowY: 'hidden',
-                    overflowX: 'hidden',
-                    position: 'relative',
-                    zIndex: 1,
+                sx={{
+                    backgroundImage: 'url(/icons/simba-logo-rtl.svg)',
+                    backgroundSize: '90% 90%',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPositionX: 'center',
+                    backgroundPositionY: 'bottom',
                 }}
             >
-                <Box
-                    component="img"
-                    src="/images/simba-background.png"
-                    sx={{
-                        width: '45%',
-                        opacity: 0.3,
-                        position: 'absolute',
-                        top: '55%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        pointerEvents: 'none',
-                        zIndex: -1,
-                    }}
-                />
                 <Box>
                     <Suspense fallback={<div />}>
                         <Topbar currentUser={currentUser} />
