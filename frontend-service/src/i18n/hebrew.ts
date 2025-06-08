@@ -1,4 +1,3 @@
-import { update } from 'lodash';
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';

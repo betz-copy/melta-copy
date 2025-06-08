@@ -96,7 +96,16 @@ const TemplateTablesViewResults = forwardRef<
                     {template.children.map((childTemplate) => {
                         const childTemplatePropertiesList = Object.keys(childTemplate.properties);
                         const childTemplateProperties = Object.fromEntries(
-                            Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
+                            Object.entries(template.properties.properties)
+                                .filter(([key]) => childTemplatePropertiesList.includes(key))
+                                .map(([key, value]) => [
+                                    key,
+                                    {
+                                        ...value,
+                                        defaultValue: childTemplate.properties[key].defaultValue,
+                                        filters: childTemplate.properties[key].filters,
+                                    },
+                                ]),
                         ) as Record<string, IEntitySingleProperty>;
 
                         const defaultFilter = childTemplate.properties

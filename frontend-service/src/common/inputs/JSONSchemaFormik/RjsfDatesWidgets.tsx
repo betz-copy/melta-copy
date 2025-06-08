@@ -38,12 +38,13 @@ const getRjsfDateOrDateTimeWidget =
         formContext,
         registry,
         color,
+        options,
         ...textFieldProps
     }: WidgetProps) => {
         const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
         const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
-
-        const [currDate, setCurrDate] = React.useState<Date | null>(null);
+        const { defaultValue } = options;
+        const [currDate, setCurrDate] = React.useState<Date | null>(defaultValue as Date);
 
         useEffect(() => {
             if (value) setCurrDate(value);
