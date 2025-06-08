@@ -696,7 +696,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds },
+                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds, childTemplateId },
                 });
 
             return panels;

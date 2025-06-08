@@ -44,6 +44,7 @@ export const updateMultipleEntitiesSchema = Joi.object({
         ignoredRules: ExtendedJoi.stringToObject().default({}),
         entitiesToUpdate: ExtendedJoi.stringToObject(),
         propertiesToRemove: ExtendedJoi.stringToArray().items(Joi.string()).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: {},

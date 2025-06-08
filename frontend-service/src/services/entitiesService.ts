@@ -357,10 +357,15 @@ export const updateMultipleEntitiesRequest = async (
     newEntityData: EntityWizardValues,
     propertiesToRemove: string[],
     ignoredRules?: Record<string, IBrokenRule[]>,
+    childTemplateId?: string,
 ) => {
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
     formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
     formData.append('propertiesToRemove', JSON.stringify(propertiesToRemove || []));
+
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
 
     const { data } = await axios.put<IUpdateMultipleEntitiesResponse>(`${entities}/bulk`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

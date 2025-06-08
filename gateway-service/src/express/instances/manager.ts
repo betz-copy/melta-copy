@@ -403,6 +403,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         ignoredRules: Record<string, IBrokenRule[]>,
         userId: string,
+        childTemplateId?: string,
     ) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
@@ -426,7 +427,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     files,
                     ignoredRules[entity.properties._id] || [],
                     userId,
-                    undefined, // TODO: fix childTemplateId in excels
+                    childTemplateId,
                     true,
                     false,
                 );

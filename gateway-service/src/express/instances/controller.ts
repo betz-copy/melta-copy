@@ -55,7 +55,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async updateMultipleEntities(req: Request, res: Response) {
-        const { ignoredRules, entitiesToUpdate, propertiesToRemove, ...instanceData } = req.body;
+        const { ignoredRules, entitiesToUpdate, propertiesToRemove, childTemplateId, ...instanceData } = req.body;
         res.json(
             await this.manager.updateMultipleEntities(
                 instanceData,
@@ -64,6 +64,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }
