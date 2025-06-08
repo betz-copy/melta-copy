@@ -1,9 +1,11 @@
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, useTheme } from '@mui/material';
-import { FormikProps } from 'formik';
+import { FormikProps, FormikTouched } from 'formik';
 import React from 'react';
+import * as Yup from 'yup';
 import { StepType } from '../../../common/wizards';
 import { DashboardItemData } from '../../../interfaces/dashboard';
+import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
 interface DashboardItemSideBarProps<T extends DashboardItemData> {
     activeStep: number;
@@ -18,13 +20,41 @@ const DashboardItemSideBar = <T extends DashboardItemData>({
     steps,
     formikProps,
 }: DashboardItemSideBarProps<T>): React.ReactElement => {
-    console.log({ formikProps: formikProps.values });
-
     const theme = useTheme();
 
-    const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-        // to do: add validation
-        setActiveStep(Number(newValue));
+    const handleTabChange = async (_event: React.SyntheticEvent, newValue: number) => {
+        const currentStepSchema = steps[activeStep].validationSchema;
+        // await formikProps.validateForm();
+
+        // if (!currentStepSchema) {
+        //     setActiveStep(newValue);
+        //     return;
+        // }
+
+        // try {
+        //     await (currentStepSchema as Yup.ObjectSchema<any>).validate(formikProps.values, {
+        //         abortEarly: false,
+        //     });
+
+        //     setActiveStep(newValue);
+        // } catch (err) {
+        //     console.log('hiiiii');
+
+        //     console.log({ err });
+
+        //     formikProps.setTouched(
+        //         Object.keys(formikProps.values).reduce((acc, key) => {
+        //             acc[key] = true;
+        //             return acc;
+        //         }, {}),
+        //     );
+        // }
+        const allTouched = markTouched(formikProps.values);
+        await formikProps.setTouched(allTouched);
+
+        const errors = await formikProps.validateForm();
+
+        if (Object.keys(errors).length === 0) setActiveStep(newValue);
     };
 
     return (

@@ -5,6 +5,7 @@ import { DashboardItem, DashboardItemType, TableMetaData } from '../../interface
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfGraph } from '../../pages/Graph/GraphFilterToBackend';
 import { IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IFrame } from '../../interfaces/iFrames';
 
 export const tableDetailsSchema = Yup.object().shape({
     name: Yup.string().required(i18next.t('validation.required')),
@@ -26,6 +27,7 @@ export const getTemplateProperties = (entityTemplates: IEntityTemplateMap, templ
 
 export const dashboardInitialValues = {
     table: { templateId: '', name: '', description: '', columns: [], columnsOrder: [], filter: {} } as TableMetaData,
+    iframe: { name: '', url: '' } as IFrame,
 };
 
 export const tableMetaDataToBackend = (tableData: TableMetaData): DashboardItem => ({
@@ -34,13 +36,13 @@ export const tableMetaDataToBackend = (tableData: TableMetaData): DashboardItem 
         ...tableData,
         filter:
             tableData.filter && Object.keys(tableData.filter).length > 0
-                ? JSON.stringify(filterModelToFilterOfGraph(tableData.filter)[tableData.templateId].filter)
+                ? filterModelToFilterOfGraph(tableData.filter)[tableData.templateId].filter
                 : undefined,
     },
 });
 
 export const filterDocumentToFilterBackend = (templateId: string, filter?: IGraphFilterBodyBatch) =>
-    filter && Object.keys(filter).length > 0 ? JSON.stringify(filterModelToFilterOfGraph(filter)[templateId].filter) : undefined;
+    filter && Object.keys(filter).length > 0 ? filterModelToFilterOfGraph(filter)[templateId].filter : undefined;
 
 // export const tableMetaDataToBackend = (tableData: TableMetaData): DashboardItem => {
 //     console.log({ tableFilter: tableData.filter, hasfilter: tableData.filter && Object.keys(tableData.filter).length > 0 });

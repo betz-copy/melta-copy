@@ -17,7 +17,7 @@ import { useUserStore } from '../../stores/user';
 import { LocalStorage } from '../../utils/localStorage';
 import {
     CategoryProtectedRoute,
-    ChartsProtectedRoute,
+    DashboardProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
@@ -26,6 +26,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { environment } from '../../globals';
 import { MeltaUpdates } from '../../MeltaUpdates';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { DashboardItemType } from '../../interfaces/dashboard';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Dashboard = lazy(() => import('../Dashboard'));
@@ -203,27 +204,39 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/charts/:templateId?/:chartId?/chart">
-                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
-                                <Chart />
-                                {/* </ChartsProtectedRoute> */}
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Chart}
+                                >
+                                    <Chart />
+                                </DashboardProtectedRoute>
                             </Route>
 
                             <Route path="/charts/:templateId">
-                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
-                                <Charts />
-                                {/* </ChartsProtectedRoute> */}
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Chart}
+                                >
+                                    <Charts />
+                                </DashboardProtectedRoute>
                             </Route>
 
                             <Route path="/table/:tableId?">
-                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
-                                <Table />
-                                {/* </ChartsProtectedRoute> */}
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Table}
+                                >
+                                    <Table />
+                                </DashboardProtectedRoute>
                             </Route>
 
                             <Route path="/iframe/:iframeId?">
-                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
-                                <Iframe1 />
-                                {/* </ChartsProtectedRoute> */}
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Iframe}
+                                >
+                                    <Iframe1 />
+                                </DashboardProtectedRoute>
                             </Route>
 
                             <Route path="/gantts">

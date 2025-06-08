@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
 import { Card, Grid } from '@mui/material';
+import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { BlueTitle } from '../../../common/BlueTitle';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../common/wizards';
 import { TableMetaData } from '../../../interfaces/dashboard';
-import { BlueTitle } from '../../../common/BlueTitle';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
-import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
+import { IEntity } from '../../../interfaces/entities';
 
 const BodyComponent: React.FC<StepComponentProps<TableMetaData>> = ({ values }) => {
     const queryClient = useQueryClient();

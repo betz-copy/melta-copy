@@ -36,11 +36,9 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
         async () => {
             return exportEntitiesRequest({
                 fileName: `${template.displayName}${excelExtension}`,
-                // textSearch: quickFilterText,
                 templates: {
                     [template._id]: {
                         filter: metaData.filter && Object.keys(metaData.filter).length > 0 && JSON.parse(metaData.filter),
-                        // sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: metaData.columns ?? [],
                     },
                 },
@@ -59,7 +57,6 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const resizeChart = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
         const newHeight = containerRef.current.offsetHeight;
-        console.log({ newHeight });
 
         entitiesTableRef.current.resizeTableHeight(newHeight - 80);
     };

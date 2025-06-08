@@ -9,6 +9,7 @@ import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { DashboardItemType, TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../services/dashboardService';
 import { dashboardInitialValues, tableDetailsSchema, tableMetaDataToBackend } from '../../../utils/dashboard/formik';
@@ -17,7 +18,6 @@ import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 import { DashboardItem } from '../DashboardItem';
 import { BodyComponent } from './BodyCompenet';
 import { SideBarDetails } from './sideBarDetails';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 
 const Table: React.FC = () => {
     const { tableId } = useParams<{ tableId: string }>();
@@ -96,12 +96,12 @@ const Table: React.FC = () => {
     const steps: StepType<TableMetaData>[] = [
         {
             label: i18next.t('charts.generalDetails'),
-            component: (props) => <SideBarDetails {...props} />,
+            component: (props) => <SideBarDetails viewMode={viewMode} {...props} />,
             validationSchema: tableDetailsSchema,
         },
         {
             label: i18next.t('charts.filterDetails'),
-            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} {...props} />,
+            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} viewMode={viewMode} {...props} />,
             validationSchema: undefined,
         },
     ];
@@ -111,7 +111,7 @@ const Table: React.FC = () => {
     return (
         <DashboardItem<TableMetaData>
             title={viewMode === ViewMode.Add ? i18next.t('dashboard.tables.addTable') : i18next.t('dashboard.tables.editTable')}
-            backPath={{ path: '/', title: 'מסך ראשי' }}
+            backPath={{ path: '/dashboard', title: 'מסך ראשי' }}
             onDelete={deleteMutateAsync}
             steps={steps}
             initialValues={table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table}

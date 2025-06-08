@@ -1,30 +1,39 @@
-import { InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
+import { Divider, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
+import { InfoTypography } from '../../../common/Infotypography';
+import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
+import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { StepComponentProps } from '../../../common/wizards';
-import { TableMetaData } from '../../../interfaces/dashboard';
+import { TableMetaData, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getTemplateProperties } from '../../../utils/dashboard/formik';
 
-const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
-    const theme = useTheme();
+const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
+    const { values, errors, touched, handleChange, setFieldValue } = formikProps;
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     return (
         <Grid container direction="column" spacing={4}>
             <Grid item>
-                <Autocomplete
-                    value={values.templateId || null}
-                    onChange={(_e, newValue) => {
-                        setFieldValue('templateId', newValue || null);
-                        setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
-                    }}
+                <FormikAutoComplete
+                    formik={formikProps}
+                    formikField="templateId"
                     options={Array.from(entityTemplates.keys())}
+                    label={i18next.t('entity')}
+                    onChange={(newValue) => {
+                        setFieldValue('templateId', newValue || null);
+                        setFieldValue('columns', getTemplateProperties(entityTemplates, newValue as string));
+                    }}
                     getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
-                    renderInput={(params) => <TextField {...params} label={i18next.t('entity')} fullWidth />}
+                    multiple={false}
+                    readonly={viewMode === ViewMode.ReadOnly}
+                    popupIcon={<IoIosArrowDown fontSize="Medium" />}
+                    style={{ width: '100%' }}
                 />
             </Grid>
 
@@ -33,10 +42,9 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, t
                     <Grid item>
                         <Divider />
                     </Grid>
-
                     <Grid item container direction="column" spacing={2.5}>
                         <Grid item>
-                            <TextField
+                            <ReadOnlyTextField
                                 name="name"
                                 label={i18next.t('charts.name')}
                                 placeholder={i18next.t('charts.name')}
@@ -45,12 +53,12 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, t
                                 error={touched.name && Boolean(errors.name)}
                                 helperText={touched.name && errors.name}
                                 fullWidth
-                                inputProps={{ style: { textOverflow: 'ellipsis' } }}
+                                readOnly={viewMode === ViewMode.ReadOnly}
                             />
                         </Grid>
 
                         <Grid item>
-                            <TextField
+                            <ReadOnlyTextField
                                 name="description"
                                 multiline
                                 label={i18next.t('charts.description')}
@@ -59,26 +67,19 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData>> = ({ values, t
                                 onChange={handleChange}
                                 error={touched.description && Boolean(errors.description)}
                                 helperText={touched.description && errors.description}
-                                variant="outlined"
                                 fullWidth
                                 maxRows={4}
-                                inputProps={{ style: { textOverflow: 'ellipsis' } }}
+                                readOnly={viewMode === ViewMode.ReadOnly}
                             />
                         </Grid>
                     </Grid>
-
+                    {/* //to do : fix space */}
                     <Grid item container direction="column" spacing={2}>
-                        <Grid item container direction="row" alignItems="center" wrap="nowrap" gap={1.5}>
-                            <InfoOutlined style={{ color: theme.palette.primary.main }} />
-                            <Typography fontWeight={400} fontSize={14} color="#53566E">
-                                טבלה זו והמידע המוצג בה תופיע לכלל המשתמשים בהתאם להרשאותיהם
-                            </Typography>
+                        <Grid item>
+                            <InfoTypography text={i18next.t('dashboard.tables.permissionWarning')} />
                         </Grid>
-                        <Grid item container direction="row" alignItems="center" wrap="nowrap" gap={1.5}>
-                            <InfoOutlined style={{ color: theme.palette.primary.main }} />
-                            <Typography fontWeight={400} fontSize={14} color="#53566E">
-                                כל משתמש יוכל לשנות את מידות הטבלה במסך הבית
-                            </Typography>
+                        <Grid item>
+                            <InfoTypography text={i18next.t('dashboard.tables.changeTableSizeWarning')} />
                         </Grid>
                     </Grid>
                 </Grid>

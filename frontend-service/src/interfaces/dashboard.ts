@@ -1,3 +1,7 @@
+import React from 'react';
+import { FormikProps } from 'formik';
+import { ObjectShape } from 'yup/lib/object';
+import * as Yup from 'yup';
 import { ChartsAndGenerator, IChart } from './charts';
 import { IGraphFilterBodyBatch } from './entities';
 import { IFrame, IMongoIFrame } from './iFrames';
@@ -17,7 +21,7 @@ export interface TableMetaData {
     name: string;
     description: string;
     columns: string[];
-    columnsOrder: string[];
+    // columnsOrder: string[];
     filter?: IGraphFilterBodyBatch;
 }
 
@@ -66,3 +70,18 @@ export const isIframeItem = ({ type }: DashboardItem) => type === DashboardItemT
 export const isTableItem = ({ type }: DashboardItem) => type === DashboardItemType.Table;
 
 export type DashboardItemData = IChart | IFrame | TableMetaData;
+
+export interface TabStepComponentHelpers {
+    viewMode: ViewMode;
+}
+
+export type TabStepComponentProps<T extends object, helpers extends keyof TabStepComponentHelpers = never> = FormikProps<T> &
+    Pick<TabStepComponentHelpers, helpers>;
+
+export type TabStepType<T extends object> = {
+    label: string;
+    icon?: React.ReactNode;
+    description?: string;
+    component: (formikProps: FormikProps<T>, helpers?: TabStepComponentHelpers) => JSX.Element;
+    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
+};

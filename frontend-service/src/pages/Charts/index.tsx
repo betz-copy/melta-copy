@@ -10,12 +10,13 @@ import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedI
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
 import { ChartsAndGenerator } from '../../interfaces/charts';
+import { DashboardItemType } from '../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
 import { DashboardHeader } from '../Dashboard/DashboardHeader';
-import { ConfirmDeleteCommonItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
+import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 import { AddNewChartButton } from './templateTableCharts/AddNewChartButton';
 import ChartItem from './templateTableCharts/chartItem';
 
@@ -127,20 +128,22 @@ const ChartsPage: React.FC = () => {
                 textSearch={textSearch}
             />
 
-            <ConfirmDeleteCommonItem
+            <ConfirmDeleteDashboardItem
                 isDialogOpen={deleteChartDialogState.isDialogOpen}
                 handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}
                 onDeleteYes={() =>
                     deleteChartMutateAsync({ id: deleteChartDialogState.chartId!, usedInDashboard: deleteChartDialogState.usedInDashboard })
                 }
                 isLoading={isDeleteChartLoading}
-                usedInDashboard={deleteChartDialogState.usedInDashboard}
+                chartPageProps={{ isChartPage: true, usedInDashboard: deleteChartDialogState.usedInDashboard }}
+                type={DashboardItemType.Chart}
             />
 
             <ConfirmEditCommonItem
                 onEditYes={() => onEditChartYes(editChartDialogState.chartId!)}
                 handleClose={() => setEditChartDialogState({ isDialogOpen: false, chartId: null })}
                 isDialogOpen={editChartDialogState.isDialogOpen}
+                type={DashboardItemType.Chart}
             />
         </Grid>
     );

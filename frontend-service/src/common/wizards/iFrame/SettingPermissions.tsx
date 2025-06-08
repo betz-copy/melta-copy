@@ -8,14 +8,18 @@ import { IFrameWizardValues } from '.';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
+import { ViewMode } from '../../../interfaces/dashboard';
 
-const settingIFramesPermissionsSchema = {
+const settingIFramesPermissionsSchema = Yup.object({
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),
-};
+});
 
-const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors }) => {
-    console.log({ values, errors });
-
+const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues> & { viewMode?: ViewMode }> = ({
+    values,
+    touched,
+    errors,
+    viewMode,
+}) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const currentUser = useUserStore((state) => state.user);
@@ -41,43 +45,52 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     }, [selectedCategories]);
 
     return (
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ border: viewMode === ViewMode.ReadOnly ? 'none' : undefined }}>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
                 <FormGroup>
-                    <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
-                        control={
-                            <MeltaCheckbox
-                                checked={selectedCategories.length === allowedCategoriesIds.length}
-                                onChange={(e) => {
-                                    handleAllSelected(e.target.checked);
-                                }}
+                    {viewMode !== ViewMode.ReadOnly && (
+                        <>
+                            <FormControlLabel
+                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
+                                control={
+                                    <MeltaCheckbox
+                                        checked={selectedCategories.length === allowedCategoriesIds.length}
+                                        onChange={(e) => handleAllSelected(e.target.checked)}
+                                    />
+                                }
                             />
-                        }
-                    />
-                    <Divider />
-                    {Array.from(
-                        categories.values(),
-                        (currentCategory) =>
-                            allowedCategoriesIds.includes(currentCategory._id) && (
-                                <FormControlLabel
-                                    key={currentCategory._id}
-                                    sx={{ paddingLeft: 3 }}
-                                    label={currentCategory.displayName}
-                                    labelPlacement="end"
-                                    control={
-                                        <MeltaCheckbox
-                                            checked={selectedCategories.includes(currentCategory._id)}
-                                            onChange={() => {
-                                                handleCheckboxChange(currentCategory._id);
-                                            }}
-                                        />
-                                    }
-                                />
-                            ),
+                            <Divider />
+                        </>
                     )}
+
+                    {Array.from(categories.values(), (currentCategory) => {
+                        const isAllowed = allowedCategoriesIds.includes(currentCategory._id);
+                        const isSelected = selectedCategories.includes(currentCategory._id);
+
+                        if (!isAllowed) return null;
+
+                        if (viewMode === ViewMode.ReadOnly)
+                            return (
+                                isSelected && (
+                                    <Typography key={currentCategory._id} sx={{ pl: 3, py: 0.5 }}>
+                                        {currentCategory.displayName}
+                                    </Typography>
+                                )
+                            );
+
+                        return (
+                            <FormControlLabel
+                                key={currentCategory._id}
+                                sx={{ paddingLeft: 3 }}
+                                label={currentCategory.displayName}
+                                labelPlacement="end"
+                                control={<MeltaCheckbox checked={isSelected} onChange={() => handleCheckboxChange(currentCategory._id)} />}
+                            />
+                        );
+                    })}
                 </FormGroup>
+
                 {touched.categoryIds && errors.categoryIds && (
                     <Typography color="error" sx={{ mt: 2 }}>
                         {errors.categoryIds}

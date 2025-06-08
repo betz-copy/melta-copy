@@ -13,6 +13,7 @@ export const SelectAll = ({
     selectedOptionIds: string[];
     setSelectedOptionIds: (ids: string[]) => void;
     onClick?: () => void;
+    readonly?: boolean;
 }) => {
     return (
         <MenuItem

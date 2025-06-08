@@ -5,25 +5,29 @@ export interface DashboardItemCardProps {
     title: string;
     iconSrc?: string;
     onClick: () => void;
-    content: React.ReactNode;
+    imgSrc: string;
 }
 
-const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ onClick, title, content }) => {
+const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ onClick, title, imgSrc }) => {
     const theme = useTheme();
 
     return (
         <Card
             onClick={onClick}
-            style={{
+            sx={{
                 height: 'fit-content',
                 width: '90%',
                 boxShadow: '0px 2.03px 6.09px 0px #1E277533',
                 borderRadius: '20.3px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 16,
-                padding: 20,
+                gap: 2,
+                padding: 2.5,
                 cursor: 'pointer',
+                transition: 'box-shadow 0.3s ease',
+                '&:hover': {
+                    boxShadow: '0px 3px 10px 0px #1E27754D',
+                },
             }}
         >
             <Typography fontSize={14} fontWeight={700} color={theme.palette.primary.main}>
@@ -32,7 +36,7 @@ const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ onClick, title, c
 
             <Divider />
 
-            {content}
+            <img src={imgSrc} />
         </Card>
     );
 };

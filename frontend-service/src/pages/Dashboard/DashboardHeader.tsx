@@ -61,11 +61,9 @@ const DashboardHeader: React.FC<{
                             </Typography>
                         </IconButtonWithPopover>
                     </Grid>
-                    {isWorkspaceAdmin(currentUser.currentWorkspacePermissions) && (
-                        <Grid item>
-                            <AddNewItem />
-                        </Grid>
-                    )}
+                    <Grid item>
+                        <AddNewItem />
+                    </Grid>
                 </Grid>
             </Grid>
         </TopBarGrid>

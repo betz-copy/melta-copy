@@ -30,11 +30,12 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
 
         const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 
-        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems(filteredIFrames.map(({ _id }) => _id));
+        const dashboardIframesItems =
+            filteredIFrames.length > 0 ? await this.DashboardItemService.getDashboardRelatedItems(filteredIFrames.map(({ _id }) => _id)) : {};
 
         const allFilteredIframes = filteredIFrames.map((iframe) => ({
             ...iframe,
-            usedInDashboard: (dashboardChartsItems[iframe._id] ?? []).length > 0,
+            usedInDashboard: (dashboardIframesItems[iframe._id] ?? []).length > 0,
         }));
 
         if (ids) return ids?.map((id) => allFilteredIframes.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
@@ -44,8 +45,8 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
 
     async getIFrameById(iFrameId: string) {
         const iframe = await this.service.getIFrameById(iFrameId);
-        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems([iFrameId]);
-        const usedInDashboard = (dashboardChartsItems[iFrameId] ?? []).length > 0;
+        const dashboardIframesItems = await this.DashboardItemService.getDashboardRelatedItems([iFrameId]);
+        const usedInDashboard = (dashboardIframesItems[iFrameId] ?? []).length > 0;
 
         return { ...iframe, usedInDashboard };
     }

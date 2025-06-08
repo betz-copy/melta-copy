@@ -109,7 +109,8 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
-        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems(allowedCharts.map(({ _id }) => _id));
+        const dashboardChartsItems =
+            allowedCharts.length > 0 ? await this.DashboardItemService.getDashboardRelatedItems(allowedCharts.map(({ _id }) => _id)) : {};
 
         const GeneratedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
             ...chart,
@@ -129,20 +130,6 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         const charts = await this.getChartsByTemplateId(templateId, textSearch);
 
         const allowedCharts = await this.getChartsWithPermissions(charts, userId, permissionsOfUserId);
-
-        // const chartsData: IChartBody[] = allowedCharts.map(({ _id, type, metaData, filter }) => ({
-        //     _id,
-        //     ...getMetaDataAxes(type, metaData, filter),
-        // }));
-
-        // const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData);
-
-        // const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
-
-        // const GeneratedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
-        //     ...chart,
-        //     chart: generatedChartsMap.get(chart._id.toString())!,
-        // }));
 
         const GeneratedAndDataCharts = await this.generateCharts(allowedCharts, templateId);
 

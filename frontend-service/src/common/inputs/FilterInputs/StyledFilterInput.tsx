@@ -9,7 +9,7 @@ const ReadOnlyTextField: React.FC<ReadOnlyTextFieldProps> = ({ readOnly = false,
     return (
         <TextField
             {...rest}
-            value={value || (readOnly ? '-' : '')}
+            value={value ?? (readOnly ? '-' : '')}
             variant={readOnly ? 'standard' : 'outlined'}
             InputProps={{
                 ...InputProps,

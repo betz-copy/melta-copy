@@ -143,6 +143,9 @@ export const environment = {
         defaultColumnSizes: { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 },
         chartsOrderKey: 'chartsOrder_',
     },
+    dashboard: {
+        dashboardOrderKey: 'dashboardOrder',
+    },
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,

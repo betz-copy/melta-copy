@@ -1,11 +1,13 @@
 import { InfoOutlined } from '@mui/icons-material';
-import { Grid, TextField, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { StepComponentProps } from '../../../common/wizards';
+import { ViewMode } from '../../../interfaces/dashboard';
 import { IFrame } from '../../../interfaces/iFrames';
 
-const SideBarDetails: React.FC<StepComponentProps<IFrame>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
+const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode }> = ({ values, touched, errors, handleChange, viewMode }) => {
     const theme = useTheme();
 
     return (
@@ -13,7 +15,7 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame>> = ({ values, touched,
             <Grid item container direction="column" spacing={4}>
                 <Grid item container direction="column" spacing={2.5}>
                     <Grid item>
-                        <TextField
+                        <ReadOnlyTextField
                             name="name"
                             label={i18next.t('charts.name')}
                             placeholder={i18next.t('charts.name')}
@@ -22,12 +24,12 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame>> = ({ values, touched,
                             error={touched.name && Boolean(errors.name)}
                             helperText={touched.name && errors.name}
                             fullWidth
-                            inputProps={{ style: { textOverflow: 'ellipsis' } }}
+                            readOnly={viewMode === ViewMode.ReadOnly}
                         />
                     </Grid>
 
                     <Grid item>
-                        <TextField
+                        <ReadOnlyTextField
                             name="url"
                             label="קישור"
                             placeholder="קישור"
@@ -36,7 +38,8 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame>> = ({ values, touched,
                             error={touched.url && Boolean(errors.url)}
                             helperText={touched.url && errors.url}
                             fullWidth
-                            inputProps={{ style: { textOverflow: 'ellipsis' } }}
+                            readOnly={viewMode === ViewMode.ReadOnly}
+                            multiline
                         />
                     </Grid>
 

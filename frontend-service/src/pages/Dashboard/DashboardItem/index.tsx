@@ -56,30 +56,39 @@ const DashboardItem = <T extends DashboardItemData>({
             onReset={(values, formikHelpers) => {
                 onReset?.(values, formikHelpers);
             }}
+            validateOnMount
         >
-            {(formikProps: FormikProps<T>) => (
-                <Form>
-                    <DashboardItemHeader
-                        title={title}
-                        backPath={backPath}
-                        onDelete={onDelete}
-                        isLoading={isLoading}
-                        viewMode={viewMode}
-                        type={type}
-                        chartPageProps={chartPageProps}
-                    />
+            {(formikProps: FormikProps<T>) => {
+                const isValidForm = steps.every((step) =>
+                    step.validationSchema ? step.validationSchema.isValidSync(formikProps.values, { abortEarly: false }) : true,
+                );
 
-                    <Grid container height="94.7vh" wrap="nowrap">
-                        <Grid item flexGrow={1} overflow="auto">
-                            {bodyComponent(formikProps)}
-                        </Grid>
+                return (
+                    <Form>
+                        <DashboardItemHeader
+                            title={title}
+                            backPath={backPath}
+                            onDelete={onDelete}
+                            isLoading={isLoading}
+                            viewMode={viewMode}
+                            type={type}
+                            chartPageProps={chartPageProps}
+                            isValidForm={isValidForm}
+                            formikProps={formikProps}
+                        />
 
-                        <Grid item width="375px" flexShrink={0}>
-                            <DashboardItemSideBar activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} formikProps={formikProps} />
+                        <Grid container height="94.7vh" wrap="nowrap">
+                            <Grid item flexGrow={1} overflow="auto">
+                                {bodyComponent(formikProps)}
+                            </Grid>
+
+                            <Grid item width="375px" flexShrink={0}>
+                                <DashboardItemSideBar activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} formikProps={formikProps} />
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </Form>
-            )}
+                    </Form>
+                );
+            }}
         </Formik>
     );
 };

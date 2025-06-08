@@ -96,7 +96,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const { trackEvent, trackPageView } = useMatomo();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { iconSize } = workspace.metadata;
+    const { iconSize, isDashboardHomePage } = workspace.metadata;
     return (
         <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} data-tour="side-bar" style={{ zIndex: '1' }} sx={{ zIndex: '1' }}>
             <Grid container direction="column" wrap="nowrap" height="100%" sx={{ bgcolor: darkMode ? '#000' : theme.palette.primary.main }}>
@@ -132,7 +132,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                         <Button
                             onClick={() => {
-                                navigate('');
+                                navigate(isDashboardHomePage ? '/dashboard' : '/search');
                                 setActiveButton(null);
                             }}
                             style={{ width: '50px' }}
@@ -202,7 +202,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
                                     handleChangeActiveButton(true, 'search');
-                                    navigate(`?search=${searchValue}&viewMode=templates-tables-view`);
+                                    navigate(`/search?search=${searchValue}&viewMode=templates-tables-view`);
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"

@@ -131,7 +131,7 @@ const Chart: React.FC = () => {
         },
         {
             label: i18next.t('charts.filterDetails'),
-            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} {...props} />,
+            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} {...props} viewMode={viewMode} />,
             validationSchema: undefined,
         },
     ];
@@ -142,7 +142,7 @@ const Chart: React.FC = () => {
         <DashboardItem<IChart>
             title={viewMode === ViewMode.Add ? 'הוספת תרשים' : 'עריכת תרשים'}
             backPath={{
-                path: isDashboardPage ? '/' : `/charts/${templateId}`,
+                path: isDashboardPage ? '/dashboard' : `/charts/${templateId}`,
                 title: isDashboardPage ? 'מסך ראשי' : `${entityTemplates.get(templateId as string)!.displayName} עמוד תרשימים `,
             }}
             onDelete={deleteMutateAsync}

@@ -25,6 +25,7 @@ interface TreeProps<T extends {}> {
     showIcon?: boolean;
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
+    readonly?: boolean;
 }
 
 const Tree = <T extends {}>({
@@ -44,6 +45,7 @@ const Tree = <T extends {}>({
     parentInfersChildren = true,
     onDragEnd,
     showIcon,
+    readonly,
 }: TreeProps<T>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
         useTreeUtils(getItemId, parentInfersChildren, treeItems);
@@ -86,7 +88,7 @@ const Tree = <T extends {}>({
 
     return (
         <>
-            {selectAll && (
+            {selectAll && !readonly && (
                 <>
                     <SelectAll
                         allOptionIds={(flattenedTree ?? flattenTree(treeItems, getItemId)).map(getItemId)}
@@ -107,8 +109,6 @@ const Tree = <T extends {}>({
                 getItemLabel={getItemLabel}
                 selectedItems={selectedItemsIds}
                 onSelectedItemsChange={(_event, itemIds) => {
-                    console.log({ itemIds });
-
                     setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi));
                 }}
                 onExpandedItemsChange={(_event: React.SyntheticEvent, itemIds: string[]) => {
@@ -125,6 +125,7 @@ const Tree = <T extends {}>({
                 experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
                 onItemPositionChange={onDragEnd}
+                disableSelection={readonly}
             />
         </>
     );

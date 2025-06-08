@@ -1,22 +1,24 @@
 import { CircularProgress, Grid } from '@mui/material';
-import React, { useState } from 'react';
-import { QueryClient, useMutation, useQuery, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+import { ErrorToast } from '../../common/ErrorToast';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
+import { environment } from '../../globals';
 import { DashboardItemType, MongoDashboardItemPopulated } from '../../interfaces/dashboard';
 import { deleteDashboardItem, getDashboardItems } from '../../services/dashboardService';
+import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
+import { LocalStorage } from '../../utils/localStorage';
+import { AddDashboardItem } from './AddDashboardItem';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardItemViewPage } from './DashboardItemViewPage';
-import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
-import { AddDashboardItem } from './AddDashboardItem';
-import { LocalStorage } from '../../utils/localStorage';
-import { ErrorToast } from '../../common/ErrorToast';
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { ConfirmEditCommonItem } from './Dialogs';
+import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
+
+const { dashboardOrderKey } = environment.dashboard;
 
 const Dashboard: React.FC = () => {
     const queryClient = useQueryClient();
@@ -28,9 +30,11 @@ const Dashboard: React.FC = () => {
     const [deleteChartDialogState, setDeleteChartDialogState] = useState<{
         isDialogOpen: boolean;
         chartId: string | null;
+        type: DashboardItemType | null;
     }>({
         isDialogOpen: false,
         chartId: null,
+        type: null,
     });
 
     const [editDashboardItemDialogState, setEditDashboardItemDialogState] = useState<{
@@ -56,10 +60,10 @@ const Dashboard: React.FC = () => {
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('charts.actions.deletedSuccessfully'));
-                setDeleteChartDialogState({ isDialogOpen: false, chartId: null });
+                setDeleteChartDialogState({ isDialogOpen: false, chartId: null, type: null });
 
                 const updatedLayout = layout.filter((item) => item.i !== data._id);
-                LocalStorage.set('dashboard-layout', updatedLayout);
+                LocalStorage.set(dashboardOrderKey, updatedLayout);
                 setLayout(updatedLayout);
 
                 queryClient.invalidateQueries(['getDashboard', textSearch]);
@@ -72,7 +76,6 @@ const Dashboard: React.FC = () => {
 
     const onEditYes = () => {
         if (editDashboardItemDialogState.type === 'chart') {
-            // `${currentLocation}/${_id}/chart`, { state: { isChartPage: true } })
             navigate(`/charts/${editDashboardItemDialogState.templateId}/${editDashboardItemDialogState.chartId}/chart`, {
                 state: { isDashboardPage: true },
             });
@@ -88,16 +91,16 @@ const Dashboard: React.FC = () => {
             <DashboardHeader
                 setTextSearch={setTextSearch}
                 resetLayout={() => setLayout(generateLayoutDetails(dashboardItems ?? []).lg)}
-                title="תצוגת מערכת"
+                title={i18next.t('dashboard.systemView')}
                 AddNewItem={AddDashboardItem}
             />
             <LocalStorageGridLayout<MongoDashboardItemPopulated[]>
                 items={dashboardItems ?? []}
-                localStorageKey="dashboard-layout"
+                localStorageKey={dashboardOrderKey}
                 generateDom={() =>
-                    (dashboardItems ?? []).map((chart, index) => (
+                    (dashboardItems ?? []).map((dashboardItem, index) => (
                         <div
-                            key={chart._id}
+                            key={dashboardItem._id}
                             style={{
                                 background: 'white',
                                 border: '1px solid #CCCFE5',
@@ -112,28 +115,27 @@ const Dashboard: React.FC = () => {
                             data-grid={layout[index]}
                         >
                             <DashboardItemViewPage
-                                chartDetails={chart}
+                                chartDetails={dashboardItem}
                                 indexInGrid={index}
                                 isHoverOnCard={isHoverOnCard}
-                                onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
+                                onDelete={() =>
+                                    setDeleteChartDialogState({ chartId: dashboardItem._id, isDialogOpen: true, type: dashboardItem.type })
+                                }
                                 onEdit={() => {
-                                    console.log('Edit chart:', chart);
-
-                                    // Navigate to edit page or open edit modal
-                                    if (chart.type === 'chart') {
+                                    if (dashboardItem.type === 'chart') {
                                         setEditDashboardItemDialogState({
-                                            chartId: chart.metaData._id,
+                                            chartId: dashboardItem.metaData._id,
                                             isDialogOpen: true,
-                                            type: chart.type,
-                                            templateId: chart.metaData.templateId,
+                                            type: dashboardItem.type,
+                                            templateId: dashboardItem.metaData.templateId!,
                                         });
-                                    } else if (chart.type === 'table') {
-                                        navigate(`/table/${chart._id}`);
+                                    } else if (dashboardItem.type === 'table') {
+                                        navigate(`/table/${dashboardItem._id}`);
                                     } else {
                                         setEditDashboardItemDialogState({
-                                            chartId: chart.metaData._id,
+                                            chartId: dashboardItem.metaData._id,
                                             isDialogOpen: true,
-                                            type: chart.type,
+                                            type: dashboardItem.type,
                                             templateId: null,
                                         });
                                     }
@@ -148,26 +150,18 @@ const Dashboard: React.FC = () => {
                 }}
                 textSearch={textSearch}
             />
-            <AreYouSureDialog
-                open={deleteChartDialogState.isDialogOpen}
-                handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}
-                onYes={() => deleteDashboardItemMutateAsync(deleteChartDialogState.chartId!)}
-                isLoading={isDeleteDashboardItemLoading}
-            />
-            {/* <AreYouSureDialog
-                open={editDashboardItemDialogState.isDialogOpen}
-                handleClose={() => setEditDashboardItemDialogState({ isDialogOpen: false, chartId: null })}
-                onYes={onEditYes}
-                isLoading={isDeleteDashboardItemLoading}
-                yesTitle={i18next.t('dashboard.continueEdit')}
-                noTitle={i18next.t('dashboard.back')}
-                title={i18next.t('dashboard.charts.onEditDialog.title')}
-                body={i18next.t('dashboard.charts.onEditDialog.body')}
-            /> */}
             <ConfirmEditCommonItem
                 isDialogOpen={editDashboardItemDialogState.isDialogOpen}
                 handleClose={() => setEditDashboardItemDialogState({ isDialogOpen: false, chartId: null, templateId: null, type: null })}
                 onEditYes={onEditYes}
+                type={editDashboardItemDialogState.type}
+            />
+            <ConfirmDeleteDashboardItem
+                isDialogOpen={deleteChartDialogState.isDialogOpen}
+                handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null, type: null })}
+                onDeleteYes={() => deleteDashboardItemMutateAsync(deleteChartDialogState.chartId!)}
+                isLoading={isDeleteDashboardItemLoading}
+                type={deleteChartDialogState.type}
             />
         </Grid>
     );

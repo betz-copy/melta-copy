@@ -1,14 +1,21 @@
 import { Check, Close, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
-import { Link } from 'wouter';
+import { useLocation } from 'wouter';
+import { FormikProps } from 'formik';
+import { isEqual } from 'lodash';
+import i18next from 'i18next';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemData, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { useUserStore } from '../../../stores/user';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { ConfirmDeleteDashboardItem } from '../Dialogs';
+import { IChart } from '../../../interfaces/charts';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 
-interface DashboardItemHeaderProps {
+interface DashboardItemHeaderProps<T extends DashboardItemData> {
     title: string;
     backPath: { title: string; path: string };
     onDelete: () => void;
@@ -22,16 +29,70 @@ interface DashboardItemHeaderProps {
         isChartPage: boolean;
         usedInDashboard?: boolean;
     };
+    formikProps: FormikProps<T>;
+    isValidForm?: boolean;
 }
 
-const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPath, onDelete, type, chartPageProps, isLoading, viewMode }) => {
-    /// todo:check edit permissin: only for admin
-    const hasPermission = true;
-    // todo: add loading spinner
+const DashboardItemHeader = <T extends DashboardItemData>({
+    title,
+    backPath,
+    onDelete,
+    type,
+    chartPageProps,
+    isLoading,
+    viewMode,
+    isValidForm,
+    formikProps: { values, initialValues, resetForm },
+}: DashboardItemHeaderProps<T>): React.ReactElement => {
     const theme = useTheme();
+    const [, navigate] = useLocation();
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const currentUser = useUserStore((state) => state.user);
+    const hasAdminPermission = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
+    const hasPermissionChartPage =
+        chartPageProps?.isChartPage && type === DashboardItemType.Chart && (values as IChart).createdBy === currentUser._id;
+
+    const hasPermission = hasAdminPermission || hasPermissionChartPage;
+
+    const isSameObject = isEqual(values, initialValues);
+    const isDisabledForm = !isValidForm || isSameObject;
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+    const [confirmCancelChanges, setConfirmCancelChanges] = useState<{
+        isDialogOpen: boolean;
+        cancelType: 'reset' | 'back' | null;
+    }>({
+        isDialogOpen: false,
+        cancelType: null,
+    });
+
+    const confirmCancelChangesHandler = () => {
+        if (viewMode.value === ViewMode.Add || confirmCancelChanges.cancelType === 'back') {
+            navigate(backPath.path);
+        } else {
+            viewMode.set(ViewMode.ReadOnly);
+            resetForm();
+        }
+
+        setConfirmCancelChanges({ isDialogOpen: false, cancelType: null });
+    };
+
+    const handleBackNavigationClick = () => {
+        if (viewMode.value !== ViewMode.ReadOnly && !isSameObject) {
+            setConfirmCancelChanges({ isDialogOpen: true, cancelType: 'back' });
+        } else {
+            navigate(backPath.path);
+        }
+    };
+
+    const handleResetClick = () => {
+        if (viewMode.value === ViewMode.Edit && isSameObject) {
+            confirmCancelChangesHandler();
+            return;
+        }
+
+        setConfirmCancelChanges({ isDialogOpen: true, cancelType: 'reset' });
+    };
 
     return (
         <Box
@@ -50,11 +111,17 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
         >
             <Box display="flex" alignItems="center" gap="15px">
                 <Grid item>
-                    <Link href={backPath.path} style={{ textDecoration: 'none' }}>
-                        <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="14px">
-                            {backPath.title}
-                        </Typography>
-                    </Link>
+                    <Typography
+                        color={theme.palette.primary.main}
+                        fontWeight={400}
+                        component="h4"
+                        variant="h4"
+                        fontSize={14}
+                        onClick={handleBackNavigationClick}
+                        sx={{ cursor: 'pointer', textDecoration: 'none' }}
+                    >
+                        {backPath.title}
+                    </Typography>
                 </Grid>
                 <Grid item>
                     <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="14px">
@@ -83,12 +150,12 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
                     </IconButtonWithPopover>
                 )}
 
-                {viewMode.value !== ViewMode.ReadOnly && hasPermission && (
+                {((viewMode.value !== ViewMode.ReadOnly && hasPermission) || (viewMode.value === ViewMode.Add && chartPageProps?.isChartPage)) && (
                     <>
                         <IconButtonWithPopover
                             popoverText="ביטול"
                             iconButtonProps={{
-                                type: 'reset',
+                                onClick: () => handleResetClick(),
                             }}
                             style={{
                                 background: '#fcfeff',
@@ -108,10 +175,16 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
                             iconButtonProps={{
                                 type: 'submit',
                             }}
-                            style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '100px', height: '35px' }}
+                            style={{
+                                background: isDisabledForm ? '#F3F5F9' : theme.palette.primary.main,
+                                borderRadius: '7px',
+                                width: '100px',
+                                height: '35px',
+                            }}
+                            disabled={isDisabledForm}
                         >
-                            <Check htmlColor="white" />
-                            <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                            <Check htmlColor={isDisabledForm ? '#9B9DB6' : 'white'} />
+                            <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: isDisabledForm ? '#9B9DB6' : 'white' }}>
                                 שמירה
                             </Typography>
                         </IconButtonWithPopover>
@@ -119,12 +192,7 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
                 )}
 
                 {(viewMode.value === ViewMode.Edit || viewMode.value === ViewMode.ReadOnly) && hasPermission && (
-                    <Box
-                        style={{
-                            color: theme.palette.primary.main,
-                        }}
-                        onMouseDown={(e) => e.stopPropagation()}
-                    >
+                    <Box style={{ color: theme.palette.primary.main }} onMouseDown={(e) => e.stopPropagation()}>
                         <CardMenu onDeleteClick={() => setDeleteDialogOpen(true)} optionsIconStyle={{ color: theme.palette.primary.main }} />
                     </Box>
                 )}
@@ -138,7 +206,17 @@ const DashboardItemHeader: React.FC<DashboardItemHeaderProps> = ({ title, backPa
                 isLoading={isLoading}
                 chartPageProps={chartPageProps}
             />
-            {/* <deleteDialog open={deleteDialogOpen} /> */}
+            <AreYouSureDialog
+                open={confirmCancelChanges.isDialogOpen}
+                handleClose={() => setConfirmCancelChanges({ isDialogOpen: false, cancelType: null })}
+                onYes={confirmCancelChangesHandler}
+                title={i18next.t('dashboard.dialogs.cancel.title')}
+                body={i18next.t(`dashboard.dialogs.cancel.${viewMode.value === ViewMode.Add ? 'addMode' : 'editMode'}`, {
+                    type: i18next.t(`dashboard.itemType.${type}`),
+                })}
+                yesTitle={i18next.t('dashboard.dialogs.cancel.yesTitle')}
+                noTitle={i18next.t('dashboard.dialogs.cancel.noTitle')}
+            />
         </Box>
     );
 };

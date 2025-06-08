@@ -25,6 +25,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     handleFilterTypeChange,
     handleFilterFieldChange,
 }) => {
+    console.log('TextFilterInput', { filterField, type });
     return (
         <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
             <Grid item xs={entityFilter ? 5 : 12}>
@@ -41,7 +42,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                     size="small"
                     fullWidth
                     type={type}
-                    value={filterField?.filter ?? ''}
+                    value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
                     onChange={(e) => {
                         const { value } = e.target;
 

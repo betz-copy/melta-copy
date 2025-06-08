@@ -2,13 +2,17 @@ import { Add } from '@mui/icons-material';
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { useLocation } from 'wouter';
+import i18next from 'i18next';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import PopperSidebar from '../../../common/PopperSidebar';
 import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
 
 const AddDashboardItem: React.FC = () => {
     const theme = useTheme();
+    const currentUser = useUserStore((state) => state.user);
 
     const [_, navigate] = useLocation();
 
@@ -17,26 +21,28 @@ const AddDashboardItem: React.FC = () => {
 
     const itemsCards: DashboardItemCardProps[] = [
         {
-            title: 'טבלה',
+            title: i18next.t('dashboard.itemType.table'),
             onClick: () => navigate('/table'),
-            content: <img src="/icons/dashboardViews/table.svg" />,
+            imgSrc: '/icons/dashboardViews/table.svg',
         },
         {
-            title: 'תרשים',
+            title: i18next.t('dashboard.itemType.chart'),
             onClick: () => navigate('/charts/chart', { state: { isDashboardPage: true } }),
-            content: <img src="/icons/dashboardViews/chart.svg" />,
+            imgSrc: '/icons/dashboardViews/chart.svg',
         },
         {
-            title: 'קישור חיצוני',
+            title: i18next.t('dashboard.itemType.iframe'),
             onClick: () => navigate('/iframe'),
-            content: <img src="/icons/dashboardViews/iframe.svg" />,
+            imgSrc: '/icons/dashboardViews/iframe.svg',
         },
     ];
+
+    if (!isWorkspaceAdmin(currentUser.currentWorkspacePermissions)) return null;
 
     return (
         <>
             <IconButtonWithPopover
-                popoverText="הוספת כרטיסייה"
+                popoverText={i18next.t('dashboard.addCard')}
                 iconButtonProps={{
                     onClick: () => setOpenPopper((previousOpen) => !previousOpen),
                 }}
@@ -44,7 +50,7 @@ const AddDashboardItem: React.FC = () => {
             >
                 <Add htmlColor="white" />
                 <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
-                    הוספת כרטיסייה
+                    {i18next.t('dashboard.addCard')}
                 </Typography>
             </IconButtonWithPopover>
 
@@ -53,7 +59,7 @@ const AddDashboardItem: React.FC = () => {
                 setOpen={setOpenPopper}
                 title={
                     <Typography color={theme.palette.primary.main} fontWeight={600} fontSize={20}>
-                        הוספת כרטיסייה
+                        {i18next.t('dashboard.addCard')}
                     </Typography>
                 }
                 side="left"

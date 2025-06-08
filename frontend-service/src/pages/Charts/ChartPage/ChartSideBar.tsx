@@ -1,6 +1,7 @@
 import { Group as AllUsers, InfoOutlined, PermIdentity as PersonalIcon } from '@mui/icons-material';
 import {
     Autocomplete,
+    Box,
     Divider,
     FormControl,
     FormControlLabel,
@@ -28,6 +29,8 @@ import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
 import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
 import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -45,57 +48,8 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
     console.log({ values, chartMode });
 
     return (
-        <Grid container direction="column" width="100%">
-            <Grid item>
-                <Grid container direction="column" spacing={2} marginTop={1}>
-                    <Grid item>
-                        <ReadOnlyTextField
-                            name="name"
-                            label={i18next.t('charts.name')}
-                            placeholder={i18next.t('charts.name')}
-                            value={values.name}
-                            onChange={handleChange}
-                            error={touched.name && Boolean(errors.name)}
-                            helperText={touched.name && errors.name}
-                            variant={viewMode === ViewMode.ReadOnly ? 'standard' : 'outlined'}
-                            sx={{ width: '100%' }}
-                            readOnly={viewMode === ViewMode.ReadOnly}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <TextField
-                            id="description"
-                            name="description"
-                            multiline
-                            label={i18next.t('charts.description')}
-                            placeholder={i18next.t('charts.description')}
-                            value={values.description || (viewMode === ViewMode.ReadOnly ? '-' : '')}
-                            onChange={handleChange}
-                            error={touched.description && Boolean(errors.description)}
-                            helperText={touched.description && errors.description}
-                            variant={viewMode === ViewMode.ReadOnly ? 'standard' : 'outlined'}
-                            maxRows={4}
-                            sx={{ width: '100%' }}
-                            InputProps={{
-                                readOnly: viewMode === ViewMode.ReadOnly,
-                                disableUnderline: viewMode === ViewMode.ReadOnly,
-                                style: { textOverflow: 'ellipsis' },
-                            }}
-                        />
-                    </Grid>
-                </Grid>
-            </Grid>
-
-            <Grid item>
-                <ChartTypesEdit
-                    formik={props}
-                    formikValues={values}
-                    entityTemplate={entityTemplates.get(values.templateId || '')!}
-                    disabled={viewMode === ViewMode.ReadOnly}
-                />
-            </Grid>
-
-            <Grid container direction="column" marginTop={2} spacing={2}>
+        <Grid container direction="column" spacing={3} wrap="nowrap">
+            {isDashboardPage && viewMode === ViewMode.Add && (
                 <Grid item>
                     <Autocomplete
                         value={values.templateId || null}
@@ -107,8 +61,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                         sx={{ width: 295 }}
                     />
                 </Grid>
-            </Grid>
-
+            )}
             {values.templateId && (
                 <>
                     {isDashboardPage && viewMode === ViewMode.Add && (
@@ -163,7 +116,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                             )}
                             <Grid item container direction="column" spacing={2}>
                                 <Grid item>
-                                    <TextField
+                                    <ReadOnlyTextField
                                         id="name"
                                         name="name"
                                         label={i18next.t('charts.name')}
@@ -173,13 +126,11 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                         error={touched.name && Boolean(errors.name)}
                                         helperText={touched.name && errors.name}
                                         sx={{ width: 295 }}
-                                        inputProps={{
-                                            style: { textOverflow: 'ellipsis' },
-                                        }}
+                                        readOnly={viewMode === ViewMode.ReadOnly}
                                     />
                                 </Grid>
                                 <Grid item>
-                                    <TextField
+                                    <ReadOnlyTextField
                                         id="description"
                                         name="description"
                                         multiline
@@ -191,9 +142,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                         helperText={touched.description && errors.description}
                                         maxRows={4}
                                         sx={{ width: 295 }}
-                                        inputProps={{
-                                            style: { textOverflow: 'ellipsis' },
-                                        }}
+                                        readOnly={viewMode === ViewMode.ReadOnly}
                                     />
                                 </Grid>
 
@@ -202,7 +151,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                         formik={props}
                                         formikValues={values}
                                         entityTemplate={entityTemplates.get(values.templateId)!}
-                                        disabled={false}
+                                        disabled={viewMode === ViewMode.ReadOnly}
                                     />
                                 </Grid>
                                 {/* ask if not to show it in dashboard page in create/ edit */}
@@ -227,18 +176,27 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                                     setPermissionDialogWarningOpen(true);
                                                 else setFieldValue('permission', permission);
                                             }}
-                                            // disabled={
-                                            //     edit &&
-                                            //     values.createdBy !== currentUser.user._id &&
-                                            //     !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)
-                                            // }
+                                            disabled={
+                                                viewMode === ViewMode.ReadOnly ||
+                                                (viewMode === ViewMode.Edit &&
+                                                    values.createdBy !== currentUser.user._id &&
+                                                    !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions))
+                                            }
                                         >
-                                            <ToggleButton value={IPermission.Private}>
-                                                <PersonalIcon />
-                                            </ToggleButton>
-                                            <ToggleButton value={IPermission.Protected}>
-                                                <AllUsers />
-                                            </ToggleButton>
+                                            <MeltaTooltip title={i18next.t('charts.personal')}>
+                                                <Box>
+                                                    <ToggleButton value={IPermission.Private}>
+                                                        <PersonalIcon />
+                                                    </ToggleButton>
+                                                </Box>
+                                            </MeltaTooltip>
+                                            <MeltaTooltip title={i18next.t('charts.protected')}>
+                                                <Box>
+                                                    <ToggleButton value={IPermission.Protected}>
+                                                        <AllUsers />
+                                                    </ToggleButton>
+                                                </Box>
+                                            </MeltaTooltip>
                                         </ToggleButtonGroup>
                                     </Grid>
                                 </Grid>

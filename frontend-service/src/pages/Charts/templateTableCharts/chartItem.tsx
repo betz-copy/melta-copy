@@ -61,7 +61,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
                         onEditClick={onEdit}
                         disabledProps={{
                             isDeleteDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
-                            isEditDisabled: false,
+                            isEditDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
                             tooltipTitle: '',
                         }}
                     />

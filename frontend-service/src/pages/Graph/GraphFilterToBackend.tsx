@@ -8,8 +8,6 @@ export interface IGraphFilterToBackendBody {
 }
 
 export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): IGraphFilterToBackendBody['filter'] => {
-    console.log({ filterModel });
-
     const groupedByTemplate = Object.values(filterModel).reduce(
         (acc: Record<string, IFilterOfTemplate[]>, { selectedTemplate, selectedProperty, filterField }) => {
             const { _id, properties } = selectedTemplate;

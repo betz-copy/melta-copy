@@ -30,7 +30,7 @@ const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values }) => 
                     />
                     <Grid
                         style={{
-                            height: '100%',
+                            height: '93%',
                             width: '100%',
                             overflow: 'hidden',
                         }}

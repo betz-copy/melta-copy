@@ -7,7 +7,7 @@ const ConfirmDeleteDashboardItem: React.FC<{
     isDialogOpen: boolean;
     handleClose: () => void;
     onDeleteYes: () => void;
-    type: DashboardItemType;
+    type: DashboardItemType | null;
     chartPageProps?: {
         isChartPage: boolean;
         usedInDashboard?: boolean;
@@ -26,38 +26,18 @@ const ConfirmDeleteDashboardItem: React.FC<{
                 // eslint-disable-next-line no-nested-ternary
                 chartPageProps?.isChartPage
                     ? chartPageProps.usedInDashboard
-                        ? i18next.t('dashboard.charts.onDeleteDialog.body')
+                        ? i18next.t(`dashboard.dialogs.delete.body.${type}`)
                         : undefined
-                    : i18next.t('dashboard.dialogs.delete.body', { type: i18next.t(`dashboard.itemType.${type}`) })
+                    : i18next.t('dashboard.dialogs.delete.body.dashboard', { type: i18next.t(`dashboard.itemType.${type}`) })
             }
             isLoading={isLoading}
         />
     );
 };
 
-const ConfirmDeleteCommonItem: React.FC<{
-    isDialogOpen: boolean;
-    handleClose: () => void;
-    onDeleteYes: () => void;
-    usedInDashboard?: boolean;
-    isLoading?: boolean;
-}> = ({ isDialogOpen, handleClose, onDeleteYes, isLoading, usedInDashboard }) => {
-    return (
-        <AreYouSureDialog
-            open={isDialogOpen}
-            handleClose={handleClose}
-            onYes={onDeleteYes}
-            yesTitle={i18next.t('actions.delete')}
-            noTitle={i18next.t('dashboard.back')}
-            title={usedInDashboard ? i18next.t('dashboard.charts.onDeleteDialog.title') : undefined}
-            body={usedInDashboard ? i18next.t('dashboard.charts.onDeleteDialog.body') : undefined}
-            isLoading={isLoading}
-        />
-    );
-};
-
-const ConfirmEditCommonItem: React.FC<{ isDialogOpen: boolean; handleClose: () => void; onEditYes: () => void }> = ({
+const ConfirmEditCommonItem: React.FC<{ isDialogOpen: boolean; type: DashboardItemType | null; handleClose: () => void; onEditYes: () => void }> = ({
     isDialogOpen,
+    type,
     handleClose,
     onEditYes,
 }) => {
@@ -68,8 +48,8 @@ const ConfirmEditCommonItem: React.FC<{ isDialogOpen: boolean; handleClose: () =
             onYes={onEditYes}
             yesTitle={i18next.t('dashboard.continueEdit')}
             noTitle={i18next.t('dashboard.back')}
-            title={i18next.t('dashboard.charts.onEditDialog.title')}
-            body={i18next.t('dashboard.charts.onEditDialog.body')}
+            title={i18next.t('dashboard.dialogs.edit.title', { type: i18next.t(`dashboard.itemType.${type}`) })}
+            body={i18next.t(`dashboard.dialogs.edit.body.${type}`)}
         />
     );
 };
@@ -92,4 +72,4 @@ const ConfirmEditPermissionCommonItem: React.FC<{ isDialogOpen: boolean; handleC
     );
 };
 
-export { ConfirmEditCommonItem, ConfirmDeleteCommonItem, ConfirmDeleteDashboardItem, ConfirmEditPermissionCommonItem };
+export { ConfirmEditCommonItem, ConfirmDeleteDashboardItem, ConfirmEditPermissionCommonItem };

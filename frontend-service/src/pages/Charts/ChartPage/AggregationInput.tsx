@@ -8,6 +8,7 @@ import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
+import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 
 interface AxisInputProps {
     formik: FormikProps<IBasicChart>;
@@ -68,7 +69,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         </Typography>
                     </Grid>
                     <Grid item>
-                        <TextField
+                        <ReadOnlyTextField
                             label={`${i18next.t('charts.title')}`}
                             name={titleFormikField}
                             onChange={(e) => formik.setFieldValue(titleFormikField, e.target.value)}
@@ -78,12 +79,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                             helperText={titleError}
                             fullWidth
                             variant={readonly ? 'standard' : 'outlined'}
-                            inputProps={{
-                                readOnly: readonly,
-                                style: {
-                                    textOverflow: 'ellipsis',
-                                },
-                            }}
+                            readOnly={readonly}
                             sx={{ width: 295 }}
                         />
                     </Grid>
@@ -130,6 +126,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         multiple={false}
                         readonly={readonly}
                         popupIcon={<IoIosArrowDown fontSize="Medium" />}
+                        style={{ width: 295 }}
                     />
                 </Grid>
             )}

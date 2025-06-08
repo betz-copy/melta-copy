@@ -783,6 +783,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             initialWidth: 250,
                             suppressSizeToFit: true,
                             suppressHeaderFilterButton: disableFilter,
+                            suppressHeaderMenuButton: disableFilter,
                         }}
                         onGridReady={(params) => {
                             if (saveStorageProps.pageType) {
