@@ -3,6 +3,7 @@ export interface ICategory {
     displayName: string;
     iconFileId?: string;
     color: string;
+    templatesOrder: string[];
 }
 
 export interface IMongoCategory extends ICategory {

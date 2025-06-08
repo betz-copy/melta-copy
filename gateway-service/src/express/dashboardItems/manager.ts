@@ -1,11 +1,11 @@
 import _, { flatten, groupBy, keyBy, map, partition } from 'lodash';
+import { ISubCompactPermissions } from '@microservices/shared';
 import { DashboardItemService, DashboardItemType, MongoDashboardItemPopulated } from '../../externalServices/dashboardService/dashboardItemService';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { ChartManager } from '../templateCharts/manager';
+import ChartManager from '../templateCharts/manager';
 import TemplatesManager from '../templates/manager';
 
-export class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
+class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
     templateManager: TemplatesManager;
 
     constructor(private workspaceId: string) {
@@ -82,3 +82,5 @@ export class DashboardManager extends DefaultManagerProxy<DashboardItemService> 
         return this.sortItemsByCreatedDate(allItems);
     }
 }
+
+export default DashboardManager;

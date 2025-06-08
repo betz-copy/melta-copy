@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
+import { DefaultController } from '@microservices/shared';
 import { DashboardItem } from './interface';
-import { DashboardManager } from './manager';
+import DashboardManager from './manager';
 
 class DashboardController extends DefaultController<DashboardItem, DashboardManager> {
     constructor(workspaceId: string) {

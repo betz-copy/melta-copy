@@ -6,9 +6,9 @@ import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { PermissionScope } from '../interfaces/permissions';
-import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 import { DashboardItemType } from '../interfaces/dashboard';
+import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
     if (!isAllowed) {

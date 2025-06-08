@@ -91,8 +91,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             onError: (error, groupName) => {
                 const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
 
-                // eslint-disable-next-line no-console
-                console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
+                console.error(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
                 toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
             },
         },
@@ -260,7 +259,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             })
                         }
                         onQueryError={(error) => {
-                            console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
+                            console.error('failed to get notifications. error:', error);
                             toast.error(i18next.t('notifications.failedToGetNotifications'));
                         }}
                         endText={i18next.t('notifications.noNotificationsLeft')}

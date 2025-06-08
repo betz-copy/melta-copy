@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { defaultSchemaOptions, ruleBreachSchemaDefinition } from '../../utils/mongo/schemas/ruleBreach';
 
-export const RuleBreachRequestsSchema = new mongoose.Schema(
+const RuleBreachRequestsSchema = new mongoose.Schema(
     {
         ...ruleBreachSchemaDefinition,
         reviewerId: {
@@ -16,3 +16,5 @@ export const RuleBreachRequestsSchema = new mongoose.Schema(
     },
     defaultSchemaOptions,
 );
+
+export default RuleBreachRequestsSchema;

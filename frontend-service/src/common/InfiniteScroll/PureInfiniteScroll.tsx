@@ -51,6 +51,7 @@ export const PureInfiniteScroll = <T extends any>({
 
         observer.observe(currentShowMoreRef);
         return () => observer.unobserve(currentShowMoreRef);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showMoreRef, isFetchingNextPage, hasNextPage]);
 
     return (

@@ -1,13 +1,11 @@
 import { FilterQuery } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import { IChart, IMongoChart, IPermission } from './interface';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
+import { DefaultManagerMongo, IMongoChart, IChartPermission, IChart, NotFoundError, ServiceError } from '@microservices/shared';
 import ChartSchema from './model';
 import config from '../../config';
-import { NotFoundError, ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
 
-export class ChartManager extends DefaultManagerMongo<IMongoChart> {
+class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.chartsCollectionName, ChartSchema);
     }
@@ -33,7 +31,7 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
     async searchChartsByUser(userId: string, textSearch?: string) {
         const query: FilterQuery<IMongoChart> = {
             createdBy: userId,
-            permission: IPermission.Protected,
+            permission: IChartPermission.Protected,
             ...(textSearch && {
                 $or: [
                     { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },
@@ -63,3 +61,5 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
             .exec();
     }
 }
+
+export default ChartManager;

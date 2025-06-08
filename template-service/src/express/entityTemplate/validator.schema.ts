@@ -1,11 +1,13 @@
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import {
     enumPropertiesColorsSchema,
     innerPropertiesSchema,
     orderPropertiesSchema,
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
+    innerFieldGroupsSchema,
+    stringFormats,
 } from './joi.helper';
 
 const entityTemplateSchema = {
@@ -20,7 +22,19 @@ const entityTemplateSchema = {
     enumPropertiesColors: enumPropertiesColorsSchema,
     documentTemplatesIds: Joi.array().items(Joi.string()),
     mapSearchProperties: Joi.array().items(Joi.string()),
+    fieldGroups: innerFieldGroupsSchema,
 };
+
+// POST /api/entities/templates/searchByFormat
+export const searchEntityTemplatesByFormatSchema = Joi.object({
+    query: {},
+    body: {
+        format: Joi.string()
+            .valid(...stringFormats)
+            .required(),
+    },
+    params: {},
+});
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({

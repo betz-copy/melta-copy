@@ -1,8 +1,14 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import CategoriesController from './controller';
-import { createCategorySchema, deleteCategorySchema, getCategoriesSchema, getCategoryByIdSchema, updateCategorySchema } from './validator.schema';
+import {
+    changeTemplatesOrderSchema,
+    createCategorySchema,
+    deleteCategorySchema,
+    getCategoriesSchema,
+    getCategoryByIdSchema,
+    updateCategorySchema,
+} from './validator.schema';
 
 const categoryRouter: Router = Router();
 
@@ -17,5 +23,7 @@ categoryRouter.post('/', ValidateRequest(createCategorySchema), controller.creat
 categoryRouter.delete('/:categoryId', ValidateRequest(deleteCategorySchema), controller.deleteCategory);
 
 categoryRouter.put('/:categoryId', ValidateRequest(updateCategorySchema), controller.updateCategory);
+
+categoryRouter.patch('/templatesOrder/:templateId', ValidateRequest(changeTemplatesOrderSchema), controller.updateCategoryTemplatesOrder);
 
 export default categoryRouter;

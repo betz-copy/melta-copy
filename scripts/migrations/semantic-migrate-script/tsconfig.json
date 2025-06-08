@@ -18,9 +18,12 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
+    "paths": {
+      "@microservices/shared/*": ["./*/src"]
+    },
     "lib": ["ES2022"],
     "skipLibCheck": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "include": ["src/**/*"]
 }

@@ -1,15 +1,17 @@
-import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
+import { ExpandMore } from '@mui/icons-material';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
+import UserAvatar from '../UserAvatar';
 
-export interface IUserAutocomplete<TMode = 'internal' | 'external'> {
+export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     mode: TMode;
     value: IUser | null;
     displayValue?: string;
@@ -67,6 +69,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         ['searchUsers', mode, currentDisplayValue],
         () => {
             if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
+            if (mode === 'kartoffel') return searchExternalUsersRequest(currentDisplayValue, workspace._id, true);
             return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {
@@ -80,6 +83,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
+    const isValueExist = value && value.fullName.length > 0;
 
     return (
         <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
@@ -87,11 +91,10 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={(_e, newValue, reason) => {
-                    if (newValue) {
-                        setInputValue(newValue.displayName);
-                        onChange?.(_e, newValue, reason);
-                    }
+                    if (newValue) setInputValue(newValue.displayName);
+                    onChange?.(_e, newValue, reason);
                 }}
+                popupIcon={<ExpandMore />}
                 onInputChange={(_e, newValue, reason) => {
                     setInputValue(newValue);
                     onDisplayValueChange?.(_e, newValue, reason);
@@ -130,6 +133,13 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                             required,
                             readOnly,
                             endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
+                            startAdornment: isValueExist ? (
+                                <Chip avatar={<UserAvatar user={value} size={25} bgColor="1E2775" />} label={value.fullName} />
+                            ) : undefined,
+                            inputProps: {
+                                ...params.inputProps,
+                                style: isValueExist ? { display: 'none' } : {},
+                            },
                         }}
                         InputLabelProps={{
                             ...(params.InputLabelProps,

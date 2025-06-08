@@ -51,6 +51,7 @@ const EntitiesPage: React.FC<{
 
     const [searchInput, setSearchInput] = useState(search);
     const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
+    const [updatedTemplateIds, setUpdatedTemplateIds] = useState<string[]>([]);
 
     const queryClient = useQueryClient();
 
@@ -66,6 +67,16 @@ const EntitiesPage: React.FC<{
             });
         }
     }, [updatedEntities, viewMode]);
+
+    useEffect(() => {
+        if (Array.isArray(updatedTemplateIds) && viewMode !== 'cards-view') {
+            updatedTemplateIds.forEach((templateId) => {
+                const reference = templateTablesViewRef.current!.templateTablesRefs?.[templateId];
+
+                if (reference) reference.refreshServerSide();
+            });
+        }
+    }, [updatedTemplateIds, viewMode]);
 
     useEffect(() => {
         setSearchInput(search || '');
@@ -88,7 +99,7 @@ const EntitiesPage: React.FC<{
         },
         {
             onError(error) {
-                console.log('Failed to export tables', error);
+                console.error('Failed to export tables', error);
                 toast.error(i18next.t('failedToExportTables'));
             },
             onSuccess(data) {
@@ -168,6 +179,7 @@ const EntitiesPage: React.FC<{
                         semanticSearch={convertToBool(urlSearchParams.get('semanticSearch'))}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     />
                 )}
                 {viewMode === 'cards-view' && (

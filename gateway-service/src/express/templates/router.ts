@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
-import { TemplatesValidator } from './middlewares';
+import TemplatesValidator from './middlewares';
 import {
     convertToRelationshipFieldRequestSchema,
     createCategorySchema,
@@ -16,19 +15,22 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getAllConfigsSchema,
     getCategoriesSchema,
+    getConfigByTypeSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
+    updateCategoryTempOrderSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const {
     templateService: { url, requestTimeout, baseRoute },
@@ -45,8 +47,8 @@ const TemplatesServiceProxy = createProxyMiddleware({
 
 const templatesRouter: Router = Router();
 
-const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
-const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
+const templatesControllerMiddleware = createController(TemplatesController);
+const templatesValidatorMiddleware = createController(TemplatesValidator, true);
 
 // all needed categories
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
@@ -83,6 +85,37 @@ templatesRouter.post(
     templatesControllerMiddleware.searchCategories,
 );
 
+templatesRouter.patch(
+    '/categories/templatesOrder/:templateId',
+    ValidateRequest(updateCategoryTempOrderSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryTemplatesOrder,
+);
+
+// config
+
+templatesRouter.get(
+    `/config/all`,
+    ValidateRequest(getAllConfigsSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getAllConfigs,
+);
+
+templatesRouter.get(
+    '/config/:type',
+    ValidateRequest(getConfigByTypeSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getConfigByType,
+);
+
+templatesRouter.put(
+    '/config/categoryOrder/:configId',
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryOrderConfig,
+);
+
+templatesRouter.post('/config/categoryOrder', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.createOrderConfig);
+
 // entities (templates)
 templatesRouter.put(
     '/entities/update-enum-field/:id',
@@ -97,7 +130,7 @@ templatesRouter.patch(
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
 templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
-templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates); // todo shirel
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',
     busboyMiddleware,

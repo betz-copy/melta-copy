@@ -1,5 +1,6 @@
 import Joi from 'joi';
-import { ColorSchema, ExtendedJoi, fileSchema, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -21,6 +22,7 @@ export const updateCategorySchema = Joi.object({
         displayName: Joi.string(),
         iconFileId: Joi.string().allow(null),
         color: ColorSchema,
+        templatesOrder: ExtendedJoi.stringToArray(),
     },
     params: {
         id: MongoIdSchema.required(),
@@ -34,6 +36,19 @@ export const deleteCategorySchema = Joi.object({
     body: {},
     params: {
         id: MongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/templates/categories/templatesOrder/:templateId
+export const updateCategoryTempOrderSchema = Joi.object({
+    query: {},
+    body: {
+        newCategoryId: MongoIdSchema.required(),
+        srcCategoryId: MongoIdSchema.required(),
+        newIndex: Joi.number().required().min(0),
+    },
+    params: {
+        templateId: MongoIdSchema.required(),
     },
 });
 
@@ -57,6 +72,7 @@ export const createEntityTemplateSchema = Joi.object({
         enumPropertiesColors: ExtendedJoi.stringToObject(),
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
+        fieldGroups: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {},
@@ -104,6 +120,7 @@ export const updateEntityTemplateSchema = Joi.object({
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         documentTemplatesIds: ExtendedJoi.stringToArray(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
+        fieldGroups: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {
@@ -247,5 +264,47 @@ export const searchRulesRequestSchema = Joi.object({
         skip: Joi.number().integer().min(0).default(0),
     },
     query: {},
+    params: {},
+});
+
+// GET /api/templates/config/all
+export const getAllConfigsSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {},
+});
+
+// GET /api/templates/config/:type
+export const getConfigByTypeSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        type: Joi.string()
+            .valid(...Object.values(ConfigTypes))
+            .required(),
+    },
+});
+
+// PUT /api/templates/config/:configId
+export const updateOrderConfigSchema = Joi.object({
+    query: {},
+    body: {
+        newIndex: Joi.number().min(0).required(),
+        item: MongoIdSchema.required(),
+    },
+    params: {
+        configId: MongoIdSchema.required(),
+    },
+});
+
+// POST /api/templates/config
+export const createOrderConfigSchema = Joi.object({
+    query: {},
+    body: {
+        type: Joi.string()
+            .valid(...Object.values(ConfigTypes))
+            .required(),
+        order: Joi.array().items(MongoIdSchema),
+    },
     params: {},
 });

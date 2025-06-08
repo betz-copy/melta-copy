@@ -225,29 +225,51 @@ const semanticSearchResult = Joi.object().pattern(
     ),
 );
 
-// /**
-//  * POST /api/instances/entities/delete/bulk
-//  */
-const baseDeleteSchema = Joi.object({
-    selectAll: Joi.boolean().required(),
-    templateId: Joi.string().required(),
-    deleteAllRelationships: Joi.boolean(),
-});
-
-const selectAllSchema = baseDeleteSchema.keys({
-    selectAll: Joi.valid(true).required(),
+// * search body for multiple select
+const selectAllSchema = Joi.object({
     idsToExclude: Joi.array().items(Joi.string()),
     filter: searchFilterSchema,
     textSearch: Joi.string().allow(''),
 });
 
-const specificIdsSchema = baseDeleteSchema.keys({
-    selectAll: Joi.valid(false).required(),
+const specificIdsSchema = Joi.object({
     idsToInclude: Joi.array().items(Joi.string()).min(1).required(),
 });
 
+const multipleSelectSchema = Joi.object({
+    selectAll: Joi.boolean().required(),
+}).when(Joi.object({ selectAll: Joi.valid(true) }).unknown(), {
+    then: selectAllSchema,
+    otherwise: specificIdsSchema,
+});
+
+// /**
+//  * POST /api/instances/entities/delete/bulk
+//  */
+const baseDeleteSchema = Joi.object({
+    templateId: Joi.string().required(),
+    deleteAllRelationships: Joi.boolean(),
+    selectAll: Joi.boolean().required(),
+});
+
 export const deleteEntitiesByIdsRequestSchema = Joi.object({
-    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
+    body: baseDeleteSchema.concat(multipleSelectSchema),
+    query: {},
+    params: {},
+});
+
+// /**
+//  * POST /api/instances/entities/get/multiple-select
+//  */
+
+const baseUpdateSchema = Joi.object({
+    templateId: Joi.string().required(),
+    selectAll: Joi.boolean().required(),
+    showRelationships: Joi.boolean().default(false),
+});
+
+export const getSelectedEntitiesRequestSchema = Joi.object({
+    body: baseUpdateSchema.concat(multipleSelectSchema),
     query: {},
     params: {},
 });
@@ -347,8 +369,9 @@ export const updateEntityByIdRequestSchema = Joi.object({
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        userId: Joi.string().required(),
+        userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
+        updateOnlyGivenProps: Joi.boolean().default(false),
     },
     query: {},
     params: {

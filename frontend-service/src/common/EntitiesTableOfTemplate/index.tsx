@@ -24,15 +24,15 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import { DropResult } from 'react-beautiful-dnd';
 import { environment } from '../../globals';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -211,6 +211,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     disableFilter?: boolean;
     disableDragColumn?: boolean;
     columnsToShow?: string[];
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -260,6 +261,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultFilter,
             disableFilter = false,
             columnsToShow,
+            setUpdatedTemplateIds,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -271,7 +273,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const defaultVisibleColumnsRef = useRef<Record<string, boolean>>(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
-        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -298,6 +299,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             actions?: IActionPopulated[];
             rawActions?: IAction[];
         }>({ isOpen: false });
+
+        const filteredColumns = Object.keys(pickBy(template.properties.properties, (property) => property.comment === undefined));
 
         const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
@@ -484,12 +487,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             const { api } = params;
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
-            const templateKeys = Object.keys(template.properties.properties);
+
             const uniqKeys = ['disabled', 'createdAt', 'updatedAt'];
             const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix) && !uniqKeys.includes(key));
-            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
+            const isRemovedFields = defaultKeys.some((key) => !filteredColumns.includes(key));
 
-            if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
+            if (filteredColumns.length === defaultKeys.length && filteredColumns.every((key, index) => key === defaultKeys[index])) return;
 
             handleColumnsOrder(params);
 
@@ -500,9 +503,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            Object.keys(defaultColumnWidths).length > 0
-                ? api.autoSizeColumns(columnsKeys)
-                : api.autoSizeColumns(Object.keys(template.properties.properties));
+            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 
@@ -683,7 +684,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText },
+                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds },
                 });
 
             return panels;
@@ -860,11 +861,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
                             const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
+                            const isEmptyArray = params.newValue.length === 0;
                             const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
                                 // eslint-disable-next-line no-nested-ternary
-                                [params.column.getColId()]: isEmpty ? (isRequired ? undefined : '') : params.newValue,
+                                [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 

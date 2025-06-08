@@ -1,10 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
-import { BadRequestError, ServiceError } from '../../express/error';
-import { IConstraintsOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { IMongoRule } from '../../express/templates/rules/interfaces';
+import { IConstraintsOfTemplate, ServiceError, IRelationship, BadRequestError, IMongoRule, IEntitySingleProperty } from '@microservices/shared';
 import config from '../../config';
-import { IEntitySingleProperty } from '../../externalServices/templates/entityTemplateService';
 
 const { relationshipTemplateHasRules, moreThenOneRelationshipInstanceExist } = config.errorCodes;
 

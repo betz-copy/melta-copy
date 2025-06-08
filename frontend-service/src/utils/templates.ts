@@ -1,3 +1,4 @@
+import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
@@ -41,6 +42,18 @@ export const mapTemplates = <T extends Record<string, any> & { _id: string }>(te
 
     sortedTemplates.forEach((template) => {
         map.set(template._id, template);
+    });
+
+    return map;
+};
+
+export const mapCategories = (categories: IMongoCategory[], order: string[]): Map<string, IMongoCategory> => {
+    const map: Map<string, IMongoCategory> = new Map();
+
+    const sortedCategories = order.length > 0 ? categories.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id)) : categories;
+
+    sortedCategories.forEach((category) => {
+        map.set(category._id, category);
     });
 
     return map;

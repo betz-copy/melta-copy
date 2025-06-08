@@ -1,9 +1,9 @@
 import { Request } from 'express';
+import { ForbiddenError } from '@microservices/shared';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError } from '../error';
 
-export class DashboardValidator extends DefaultController {
+class DashboardValidator extends DefaultController {
     private authorizer: Authorizer;
 
     constructor(workspaceId: string) {
@@ -34,3 +34,5 @@ export class DashboardValidator extends DefaultController {
         return this.validateUserCanManipulateDashboard(req);
     }
 }
+
+export default DashboardValidator;

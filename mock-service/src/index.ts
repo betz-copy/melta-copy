@@ -4,12 +4,12 @@ import { JSONSchemaFaker } from 'json-schema-faker';
 import config from './config';
 import { createGantts } from './gantts';
 import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
-import { categories } from './mocks/categories';
-import { entityTemplates } from './mocks/entityTemplates';
-import { getProcessTemplateToCreate } from './mocks/processTemplates';
-import { relationshipTemplates } from './mocks/relationshipTemplates';
-import { getUsersToCreate } from './mocks/users';
-import { getWorkspacesToCreate } from './mocks/workspaces';
+import categories from './mocks/categories';
+import entityTemplates from './mocks/entityTemplates';
+import getProcessTemplateToCreate from './mocks/processTemplates';
+import relationshipTemplates from './mocks/relationshipTemplates';
+import getUsersToCreate from './mocks/users';
+import getWorkspacesToCreate from './mocks/workspaces';
 import { createProcessInstances } from './processInstances';
 import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
 import { isStorageServiceAlive, uploadFile } from './storageService';
@@ -20,6 +20,8 @@ import { createRelationshipTemplates } from './templates/relationshipTemplates';
 import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
+import { createCategoryOrder } from './templates/config';
+import { createCharts } from './templateCharts';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -79,6 +81,8 @@ const main = async () => {
 
     const mainWorkspace = await createWorkspaces(getWorkspacesToCreate());
 
+    await createCategoryOrder(mainWorkspace._id, []);
+
     console.log('Creating categories');
 
     const createdCategories = await createCategories(mainWorkspace._id, categories);
@@ -123,6 +127,10 @@ const main = async () => {
     console.log('Creating gantts');
 
     await createGantts(chance, mainWorkspace._id, createdEntityTemplates, createdRelationshipTemplates);
+
+    console.log('Creating charts');
+
+    await createCharts(mainWorkspace._id, createdEntityTemplates, userIds[0]);
 
     console.log('Finished');
 };

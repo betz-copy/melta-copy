@@ -4,7 +4,7 @@ import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
-import { InfoOutlined } from '@mui/icons-material';
+import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
@@ -12,6 +12,8 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { EntityPropertiesInternal } from '../EntityProperties';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
+import { locationConverterToString } from '../../utils/map/convert';
+import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -29,6 +31,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText?: string;
     size?: 'small' | 'medium';
     style?: React.CSSProperties;
+    relationFilters?: string;
 }> = ({
     template,
     showField,
@@ -44,11 +47,28 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText,
     size,
     style,
+    relationFilters,
 }) => {
     const { cacheBlockSize } = environment.agGrid;
 
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
+
+    const parseAndAddDisabled = (filters: string) => {
+        const jsonFilters = JSON.parse(filters);
+
+        const disabledCondition = { disabled: { $eq: false } };
+
+        if (jsonFilters.$and && Array.isArray(jsonFilters.$and)) {
+            return {
+                $and: [...jsonFilters.$and, disabledCondition],
+            };
+        }
+
+        return {
+            $and: [jsonFilters, disabledCondition],
+        };
+    };
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
@@ -56,7 +76,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             return searchEntitiesOfTemplateRequest(template._id!, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
-                filter: { $and: { disabled: { $eq: false } } },
+                filter: relationFilters ? parseAndAddDisabled(relationFilters) : { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
             });
         },
@@ -122,6 +142,50 @@ const TemplateEntitiesAutocomplete: React.FC<{
             : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
     ];
 
+    const convertPropertyToString = (property: any): string | undefined => {
+        if (typeof property === 'object') {
+            if (property.location) {
+                return property.coordinateSystem === CoordinateSystem.UTM
+                    ? locationConverterToString(property.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                    : property.location;
+            }
+
+            if (Array.isArray(property)) {
+                try {
+                    // user array
+                    const parsedArray = property.map((prop) => {
+                        if (prop?.fullName) {
+                            return prop.fullName;
+                        }
+
+                        const parsed = JSON.parse(prop);
+
+                        return parsed.fullName;
+                    });
+                    return parsedArray.join(', ');
+                } catch {
+                    return property.join(', ');
+                }
+            }
+
+            if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
+                // user when editing entity
+                return property.fullName;
+            }
+
+            return property.toString();
+        }
+
+        try {
+            // user when creating entity from scratch
+            const parsedUser = JSON.parse(property);
+
+            return typeof parsedUser === 'object' ? parsedUser.fullName : parsedUser;
+        } catch {
+            return property;
+        }
+    };
+
     return (
         <Autocomplete
             value={value}
@@ -135,43 +199,49 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
-            getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
+            getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    error={isError}
-                    fullWidth
-                    helperText={helperText}
-                    label={label}
-                    InputProps={{ ...params.InputProps, readOnly, endAdornment: readOnly ? undefined : params.InputProps.endAdornment }}
-                />
-            )}
+            popupIcon={<ExpandMore />}
+            renderInput={(params) => {
+                const relProperty = value?.properties[showField];
+
+                return (
+                    <TextField
+                        {...params}
+                        error={isError}
+                        fullWidth
+                        helperText={helperText}
+                        label={label}
+                        InputProps={{
+                            ...params.InputProps,
+                            readOnly,
+                            endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
+                            startAdornment: relProperty ? (
+                                <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
+                            ) : undefined,
+                            inputProps: {
+                                ...params.inputProps,
+                                style: relProperty ? { display: 'none' } : {},
+                            },
+                        }}
+                    />
+                );
+            }}
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
-                    const templateProperty = template.properties.properties[key];
 
-                    return typeof property === 'object' ? (
-                        <RelationshipReferenceView
-                            key={key}
-                            entity={property}
-                            relatedTemplateId={property.templateId}
-                            relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
-                        />
-                    ) : (
-                        property
-                    );
+                    return convertPropertyToString(property);
                 });
 
                 return (
                     <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
-                        <Grid container justifyContent="space-between" direction="row" spacing={1}>
+                        <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
                             {displayOptionValues.map((displayOptionValue, index) => (
                                 <Grid item key={displayOptionValue} xs={4} overflow="hidden">
                                     <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
+                                        <Typography color={index > 0 ? '#9398C2' : '#53566E'} overflow="hidden" fontSize="14px">
                                             {displayOptionValue}
                                         </Typography>
                                     </MeltaTooltip>
@@ -193,7 +263,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                         )
                                     }
                                 >
-                                    <InfoOutlined sx={{ color: '#166BD4' }} />
+                                    <InfoOutlined sx={{ color: '#9398C2' }} />
                                 </MeltaTooltip>
                             </Grid>
                         </Grid>

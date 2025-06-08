@@ -5,40 +5,38 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
-import { addPropertyToRequest } from '../../utils/express';
-import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
-import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
-import { ValidationError } from '../error';
 import {
+    IEntitySingleProperty,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IFilterOfField,
     IFilterOfTemplate,
-    IGetExpandedEntityBody,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     IUniqueConstraintOfTemplate,
-} from './interface';
-import { ActionErrors } from '../bulkActions/interface';
+    ActionErrors,
+    addPropertyToRequest,
+    CoordinateSystem,
+    ValidationError,
+} from '@microservices/shared';
+import { IGetExpandedEntityBody } from './interface';
+import config from '../../config';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
+import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
+import DefaultController from '../../utils/express/controller';
+import { trycatch } from '../../utils/lib';
+import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 
 const { neo4j, ajvCustomFormats } = config;
-
-enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
 
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
+ajv.addFormat('comment', ajvCustomFormats.commentFieldRegex);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -46,6 +44,7 @@ ajv.addFormat('user', {
         return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
     },
 });
+ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
 ajv.addFormat('location', {
@@ -69,11 +68,15 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -141,6 +144,11 @@ export class EntityValidator extends DefaultController {
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
+    async validateTemplateExistence(req: Request) {
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
+        addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+    }
+
     async validateConstraintsOfTemplate(req: Request) {
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
 
@@ -186,7 +194,7 @@ export class EntityValidator extends DefaultController {
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);
     }
 
-    private validateSimplePartFilterOfField(rhs: boolean | string | number | null, templateOfField: IEntitySingleProperty, path: string) {
+    private validateSimplePartFilterOfField(rhs: boolean | string | number | RegExp | null, templateOfField: IEntitySingleProperty, path: string) {
         if (rhs === null) return;
 
         const { type, format } = templateOfField;
@@ -535,7 +543,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             return;
         }
         if (type === 'string' && format === 'location') {
-            const location = JSON.parse(propertyValue);
+            const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
             normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
             normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;

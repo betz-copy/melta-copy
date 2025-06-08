@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { UsersManager } from './manager';
+import UsersManager from './manager';
 
-export class UsersController {
+class UsersController {
     static async getUserById(req: Request, res: Response) {
         res.json(await UsersManager.getUserById(req.params.id, req.body.workspaceIds));
     }
@@ -33,6 +33,8 @@ export class UsersController {
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {
-        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId));
+        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId, req.query.search as string | undefined));
     }
 }
+
+export default UsersController;

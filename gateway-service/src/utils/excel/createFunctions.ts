@@ -1,13 +1,11 @@
 /* eslint-disable no-param-reassign */
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity, CoordinateSystem, locationConverterToString } from '@microservices/shared';
 import config from '../../config/index';
-import { excelConfig } from './excelConfig';
-import { hexToARGB } from './colors';
+import excelConfig from './excelConfig';
+import hexToARGB from './colors';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
-import { CoordinateSystem, locationConverterToString } from './map';
 
 interface IExcelStyle {
     columnHeader: {
@@ -64,15 +62,17 @@ const createWorkbook = async (fileName: string) => {
 
 const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     const { propertyType } = excelConfig;
-    const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+    const type = propertyType[propertyTemplate.format ?? propertyTemplate.type];
 
     if (type === propertyType.string) {
         if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
         if (propertyTemplate.pattern) return `${propertyType.regex}`;
     }
-    if (type === propertyType.array && propertyTemplate.items?.type === 'string')
+    if (type === propertyType.array && propertyTemplate.items) {
+        if (propertyTemplate.items.format === 'user') return propertyType.users;
+        if (propertyTemplate.items.format === 'fileId') return propertyType.files;
         return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
-
+    }
     return type;
 };
 
@@ -127,7 +127,8 @@ const createWorksheet = async (
     const { properties } = template.properties;
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    let columnIndex = 0;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
         const shouldAddColumn = headersOnly ? isIncludedColumn(propertyTemplate) : displayColumns?.includes(propertyKey);
@@ -148,10 +149,9 @@ const createWorksheet = async (
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        if (headersOnly) {
-            const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
-            cell.note = type;
-        }
+
+        const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+        cell.note = type;
         cell.fill = {
             type: 'pattern',
             pattern: 'solid',

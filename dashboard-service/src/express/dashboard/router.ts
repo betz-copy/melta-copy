@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
+import { ValidateRequest, createController } from '@microservices/shared';
 import DashboardController from './controller';
-import ValidateRequest from '../../utils/joi';
 import {
     createDashboardRequestSchema,
     deleteDashboardItemByRelatedItemRequestSchema,

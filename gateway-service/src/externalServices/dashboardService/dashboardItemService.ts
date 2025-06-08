@@ -1,7 +1,6 @@
+import { IMongoChart, IMongoIframe } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IMongoChart } from './chartService';
-import { IMongoIframe } from './iframesService';
 
 const {
     dashboardService: { url, baseRoute, requestTimeout, dashboard },

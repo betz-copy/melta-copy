@@ -11,13 +11,13 @@ import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/en
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
-import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -80,7 +80,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onMutate() {
                 onClose();
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
@@ -179,9 +178,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
             component: (props) => {
                 return (
-                    <LoadEntitiesTables
+                    <StatusEntitiesTables
                         {...props}
-                        tablesData={stepsData.data}
+                        tablesData={{ ...stepsData.data, brokenRulesEntities: stepsData.data.brokenRulesEntities?.entities || [] }}
                         template={template!}
                         onDownload={(brokenRulesEntities?: boolean) => {
                             return exportTemplateToExcel({

@@ -1,7 +1,6 @@
 /* eslint-disable lines-between-class-members */
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
-import { IMongoCategory } from './interface';
+import { DefaultController, IMongoCategory } from '@microservices/shared';
 import CategoryManager from './manager';
 
 class CategoriesController extends DefaultController<IMongoCategory, CategoryManager> {
@@ -27,6 +26,12 @@ class CategoriesController extends DefaultController<IMongoCategory, CategoryMan
 
     async updateCategory(req: Request, res: Response) {
         res.json(await this.manager.updateCategory(req.params.categoryId, req.body));
+    }
+
+    async updateCategoryTemplatesOrder(req: Request, res: Response) {
+        const { srcCategoryId, newCategoryId, newIndex } = req.body;
+
+        res.json(await this.manager.updateCategoryTemplatesOrder(req.params.templateId, newCategoryId, srcCategoryId, newIndex));
     }
 }
 

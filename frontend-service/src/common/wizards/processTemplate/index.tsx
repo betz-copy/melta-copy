@@ -27,17 +27,21 @@ export interface ProcessTemplateFormInputProperties {
     required: boolean;
     deleted?: boolean | undefined;
 }
+
+export type ProcessTemplatePropertyByType = { type: 'field'; data: ProcessTemplateFormInputProperties };
+
 export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
-    detailsProperties: ProcessTemplateFormInputProperties[];
-    detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
+    detailsProperties: ProcessTemplatePropertyByType[];
+    detailsAttachmentProperties: ProcessTemplatePropertyByType[];
     steps: Array<{
         _id?: string;
         draggableId: string;
         name: string;
         displayName: string;
-        properties: ProcessTemplateFormInputProperties[];
-        attachmentProperties: ProcessTemplateFormInputProperties[];
+        properties: ProcessTemplatePropertyByType[];
+        attachmentProperties: ProcessTemplatePropertyByType[];
         reviewers: IUser[];
+        disableAddingReviewers?: boolean;
         icon?: fileDetails;
     }>;
 }

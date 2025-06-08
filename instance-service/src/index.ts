@@ -1,9 +1,9 @@
 import axios from 'axios';
 import 'elastic-apm-node/start';
 
+import { logger } from '@microservices/shared';
 import config from './config';
 import Server from './express/server';
-import logger from './utils/logger/logsLogger';
 import Neo4jClient from './utils/neo4j';
 import initializeRabbit from './utils/rabbit';
 

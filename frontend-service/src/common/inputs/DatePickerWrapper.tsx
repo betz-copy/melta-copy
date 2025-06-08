@@ -19,6 +19,7 @@ interface DatePickerWrapperProps {
     isStartDate?: boolean;
     directionIsRow?: boolean;
     readOnly?: boolean;
+    borderRadius?: string;
 }
 
 const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
@@ -32,11 +33,15 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     isStartDate = false,
     directionIsRow,
     readOnly = false,
+    borderRadius,
 }) => (
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
         adapterLocale={heLocale}
         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+        InputProps={{
+            style: {},
+        }}
     >
         <DatePicker
             inputFormat="dd/MM/yyyy"
@@ -45,16 +50,26 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             label={label}
             value={value}
             onChange={onChange}
-            renderInput={(params) => <TextField {...params} size="small" sx={sx} />}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    size="small"
+                    sx={{
+                        boxSizing: 'border-box',
+                        width: '100%',
+                        ...sx,
+                    }}
+                />
+            )}
             InputProps={{
                 style: {
                     // eslint-disable-next-line no-nested-ternary
-                    borderRadius: !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
-                    backgroundColor: sx ? 'white' : undefined,
+                    borderRadius: borderRadius || !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
                 },
             }}
             components={components}
             readOnly={readOnly}
+            disabled={readOnly}
         />
     </LocalizationProvider>
 );

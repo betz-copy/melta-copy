@@ -1,21 +1,23 @@
 import { Request, Response } from 'express';
-import { PermissionsManager } from './manager';
+import PermissionsManager from './manager';
 
-export class PermissionsController {
-    static async getCompactPermissionsOfUser(req: Request, res: Response) {
-        const { userId } = req.params;
-        const { workspaceIds } = req.body;
+class PermissionsController {
+    static async getCompactPermissions(req: Request, res: Response) {
+        const { relatedId } = req.params;
+        const { workspaceIds, permissionType } = req.body;
 
-        res.json(await PermissionsManager.getCompactPermissionsOfUser(userId, workspaceIds));
+        res.json(await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, workspaceIds, permissionType));
     }
 
-    static async syncCompactPermissionsOfUser(req: Request, res: Response) {
-        const { userId, permissions } = req.body;
+    static async syncCompactPermissions(req: Request, res: Response) {
+        const { relatedId, permissionType, permissions, dontDeleteUser } = req.body;
 
-        res.json(await PermissionsManager.syncCompactPermissionsOfUser(userId, permissions));
+        res.json(await PermissionsManager.syncCompactPermissions(relatedId, permissionType, permissions, dontDeleteUser));
     }
 
     static async deletePermissionsFromMetadata(req: Request, res: Response) {
         res.json(await PermissionsManager.deletePermissionsFromMetadata(req.body.query, req.body.metadata));
     }
 }
+
+export default PermissionsController;

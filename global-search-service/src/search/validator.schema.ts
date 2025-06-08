@@ -1,10 +1,11 @@
+/* eslint-disable import/prefer-default-export */
+import { IndexingAction } from '@microservices/shared';
 import Joi from 'joi';
-import { Action } from './interfaces';
 
 export const requestSchema = Joi.object({
-    action: Joi.valid(...Object.values(Action)).required(),
+    action: Joi.valid(...Object.values(IndexingAction)).required(),
     templateId: Joi.string().when('action', {
-        is: Action.upsertGlobalIndex,
+        is: IndexingAction.upsertGlobalIndex,
         then: Joi.forbidden(),
         otherwise: Joi.required(),
     }),

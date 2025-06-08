@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { iconFileSchema, MongoIdSchema } from '@microservices/shared';
 
 const iFrameSchema = Joi.object({
     name: Joi.string().required(),

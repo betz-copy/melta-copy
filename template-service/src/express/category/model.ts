@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export const CategorySchema = new mongoose.Schema(
+const CategorySchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -18,6 +18,10 @@ export const CategorySchema = new mongoose.Schema(
         color: {
             type: String,
         },
+        templatesOrder: {
+            type: [String],
+            default: [],
+        },
     },
     {
         timestamps: true,
@@ -26,3 +30,5 @@ export const CategorySchema = new mongoose.Schema(
 );
 
 CategorySchema.index({ displayName: 'text' });
+
+export default CategorySchema;

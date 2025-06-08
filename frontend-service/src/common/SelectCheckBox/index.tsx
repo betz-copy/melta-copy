@@ -153,6 +153,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
 
     const treeItems = useCallback(
         () => (groupsProps.useGroups && treeFunc ? treeFunc(groupsProps.groups, options, getOptionId) : options),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [getOptionId, JSON.stringify(groupsProps), options, treeFunc],
     );
 

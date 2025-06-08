@@ -1,19 +1,15 @@
-import { StatusCodes } from 'http-status-codes';
-// import { FilterQuery } from 'mongoose';
-import { FilterQuery, Types } from 'mongoose';
 import groupBy from 'lodash.groupby';
+import { StatusCodes } from 'http-status-codes';
+import { FilterQuery, Types } from 'mongoose';
+import { DefaultManagerMongo, NotFoundError, IMongoChart, IMongoIframe, ServiceError } from '@microservices/shared';
 import config from '../../config';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { NotFoundError, ServiceError } from '../error';
 import { DashboardItem, DashboardItemType } from './interface';
 import DashboardItemSchema from './model';
 import { escapeRegExp } from '../../utils';
-import { ChartManager } from '../charts/manager';
+import ChartManager from '../charts/manager';
 import IFrameManager from '../iFrames/manager';
-import { IMongoChart } from '../charts/interface';
-import { IMongoIframe } from '../iFrames/interface';
 
-export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
+class DashboardManager extends DefaultManagerMongo<DashboardItem> {
     chartsManager: ChartManager;
 
     iframeManager: IFrameManager;
@@ -142,3 +138,5 @@ export class DashboardManager extends DefaultManagerMongo<DashboardItem> {
         return this.model.deleteMany({ metaData: objectId }).lean().exec();
     }
 }
+
+export default DashboardManager;

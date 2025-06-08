@@ -87,7 +87,9 @@ export const getColumnDefs = <Data extends any = EntityData>({
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
 
-    const columnDefs = template.propertiesOrder.map((property) => {
+    const filteredProperties = template.propertiesOrder.filter((propertyOrder) => !template.properties.properties[propertyOrder].comment);
+
+    const columnDefs = filteredProperties.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;

@@ -1,20 +1,25 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { IAction } from '../../externalServices/ruleBreachService/interfaces';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import {
+    IMongoEntityTemplatePopulated,
+    IRule,
+    PermissionScope,
+    IAction,
+    IRelationship,
+    ForbiddenError,
+    ServiceError,
+    IBrokenRule,
+} from '@microservices/shared';
+import InstancesService from '../../externalServices/instanceService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError, ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
-import { IRule } from '../templates/rules/interfaces';
-import { InstancesManager } from './manager';
+import InstancesManager from './manager';
 
-export class InstancesValidator extends DefaultController {
+class InstancesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
 
     private instancesService: InstancesService;
@@ -125,7 +130,7 @@ export class InstancesValidator extends DefaultController {
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
-    async validateUserCanDeleteEntityInstances(req: Request) {
+    async validateUserCanWriteBulkEntityInstances(req: Request) {
         const { templateId } = req.body;
 
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
@@ -235,7 +240,16 @@ export class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
+        await this.validateEnforcementRules(user, ignoredRules);
+    }
 
+    async validateUserCanIgnoreRulesMultipleUpdate(req: Request) {
+        const { ignoredRules } = req.body;
+        const { user } = req;
+        await this.validateEnforcementRules(user, Object.values(ignoredRules).flat() as IBrokenRule[]);
+    }
+
+    private async validateEnforcementRules(user: Express.User | undefined, ignoredRules: IBrokenRule[]) {
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
@@ -251,3 +265,5 @@ export class InstancesValidator extends DefaultController {
         }
     }
 }
+
+export default InstancesValidator;

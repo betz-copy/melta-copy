@@ -9,7 +9,7 @@ import { BlueTitle } from '../../BlueTitle';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
-import RelationshipReferenceField from '../entityTemplate/RelationshipReferenceField';
+import RelationshipReferenceField from '../entityTemplate/RelationshipRefrence/RelationshipReferenceField';
 
 interface IConvertToRelationship {
     open: boolean;
@@ -81,6 +81,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                             formik.setFieldValue('fieldName', relationshipTemplate.name);
                             formik.setFieldValue('displayFieldName', relationshipTemplate.displayName);
                         }
+                        // eslint-disable-next-line react-hooks/exhaustive-deps
                     }, [relationshipTemplate]);
 
                     return (

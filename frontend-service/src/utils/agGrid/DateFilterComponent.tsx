@@ -4,7 +4,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import heLocale from 'date-fns/locale/he';
 import i18next from 'i18next';
 import React from 'react';
-import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjfsDatesWidgets';
+import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {

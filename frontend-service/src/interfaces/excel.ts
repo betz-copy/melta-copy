@@ -42,6 +42,12 @@ export interface ITablesResults {
     brokenRulesEntities?: IBrokenRuleEntity;
 }
 
+export interface IStatusEntitiesTables {
+    succeededEntities: ICreateEntityMetadata[];
+    failedEntities: IFailedEntity[];
+    brokenRulesEntities?: IBrokenRuleEntity['entities'];
+}
+
 export enum ExcelStepStatus {
     uploadExcel = 'uploadExcel',
     previewExcelRows = 'previewExcelRows',

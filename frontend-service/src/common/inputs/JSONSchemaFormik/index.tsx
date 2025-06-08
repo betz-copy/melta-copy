@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { useEffect } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -8,18 +8,23 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
-import { ErrorSchema, UiSchema } from '@rjsf/utils';
+import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
+import { cloneDeep } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
-import RjfsSelectWidget from './RjfsSelectWidget';
+import { RjsfDateWidget, RjsfDateTimeWidget } from './RjsfDatesWidgets';
+import RjsfSelectWidget from './RjsfSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
-import RjfsTextAreaWidget from './RjfsTextAreaWidget';
+import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import './form.css';
-import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
+import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-import RjfsUserWidget from './RjfsUserWidget';
-import RjfsUserArrayWidget from './RjfsUserArrayWidget';
-import RjfsSignatureWidget from './RjfsSignatureWidgets';
+import RjsfUserWidget from './RjsfUserWidget';
+import RjsfUserArrayWidget from './RjsfUserArrayWidget';
+import InputAccordion from './InputAccordion';
+import RjsfCheckboxWidget from './RjsfCheckboxWidget';
+import RjsfSignatureWidgets from './RjsfSignatureWidgets';
+import { IKartoffelUser } from '../../../interfaces/users';
+import RjsfCommentWidget from './RjsfCommentWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -46,6 +51,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
+    ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -56,6 +62,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
+    ajv.addFormat('comment', /.*/);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -64,7 +71,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'isDatePastAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
-    ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+    ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -73,15 +80,28 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         type: 'string',
     });
     ajv.addKeyword({
+        keyword: 'expandedUserField',
+        type: 'string',
+    });
+    ajv.addKeyword({
         keyword: 'serialCurrent',
     });
+    ajv.addKeyword({
+        keyword: 'comment',
+    });
+    ajv.addKeyword({
+        keyword: 'hideFromDetailsPage',
+    });
+    ajv.addKeyword({
+        keyword: 'color',
+    });
 
-    ajv.addKeyword('identifier', {
-        modifying: true,
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        validate: (_schema, data) => data !== undefined,
+    ajv.addKeyword({
+        keyword: 'identifier',
+        type: 'string',
+        schema: false,
+        validate: (dataToValidate) => dataToValidate !== undefined,
         errors: false,
-        keyword: '',
     });
 
     const schemaToValidate = {
@@ -90,9 +110,10 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
-    validateFunction(data);
 
+    validateFunction(data);
     const ajvErrors = validateFunction.errors ?? [];
+
     return ajvErrorsToFormikErrors(schema, ajvErrors);
 };
 
@@ -104,16 +125,51 @@ const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): Er
 
 const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
     const merged = { ...errors1 };
-    // eslint-disable-next-line no-restricted-syntax
     for (const key in errors2) {
-        // eslint-disable-next-line no-prototype-builtins
         if (errors2.hasOwnProperty(key)) {
             if (!merged[key]) merged[key] = errors2[key];
-            // eslint-disable-next-line no-underscore-dangle
             else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
         }
     }
     return merged;
+};
+
+const getComponent = (
+    Component: React.ComponentType<WidgetProps>,
+    checkboxProps?: {
+        isFieldChecked: (fieldName: string) => boolean;
+        onCheckboxChange: (fieldName: string, isChecked: boolean) => void;
+    },
+) => {
+    if (checkboxProps) {
+        const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
+            const { label, disabled, name, value, schema, onChange } = props;
+            const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
+
+            if (schema.format === 'comment') {
+                return <Component {...props} />;
+            }
+
+            if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
+
+            useEffect(() => {
+                checkboxProps.onCheckboxChange(name, checked);
+            }, [checked, name]);
+
+            return (
+                <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>
+                    <Component {...props} />
+                </InputAccordion>
+            );
+        };
+
+        const MemoWrapped = memo(WrappedComponent);
+        const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => <MemoWrapped {...props} />;
+
+        return getWrappedComponent;
+    }
+
+    return Component;
 };
 
 interface JSONSchemaFormFormikProps {
@@ -127,6 +183,10 @@ interface JSONSchemaFormFormikProps {
     isEditMode?: boolean;
     readonly?: boolean;
     toPrint?: boolean;
+    checkboxProps?: {
+        isFieldChecked: (fieldName: string) => boolean;
+        onCheckboxChange: (fieldName: string, isChecked: boolean) => void;
+    };
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -140,6 +200,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setFieldTouched,
     isEditMode = false,
     toPrint = false,
+    checkboxProps,
 }) => {
     useEffect(() => {
         // define 100% width to text-area field
@@ -147,8 +208,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
-            innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
+            const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
+            const classesToAdd: string[] = [];
+            classesToAdd.push(biggerFieldCss ? 'full-width-field' : 'half-width-field');
+            if (biggerFieldCss) classesToAdd.push('direction-rtl');
+            if (checkboxProps) classesToAdd.push('no-padding-top');
+
+            innerDiv.classList.add(...classesToAdd);
         });
     }, [values.template]);
 
@@ -159,15 +225,43 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
+    const Widgets = React.useMemo(
+        () => ({
+            CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
+            SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
+            DateWidget: getComponent(RjsfDateWidget, checkboxProps),
+            DateTimeWidget: getComponent(RjsfDateTimeWidget, checkboxProps),
+            TextWidget: getComponent(RjsfTextWidget, checkboxProps),
+            EmailWidget: getComponent(RjsfTextWidget, checkboxProps),
+            TextAreaWidget: getComponent(RjsfTextAreaWidget, checkboxProps),
+            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, checkboxProps),
+            LocationWidget: getComponent(RjsfLocationWidget, checkboxProps),
+            UserWidget: getComponent(RjsfUserWidget, checkboxProps),
+            UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
+            CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
+            SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
+        }),
+        [],
+    );
+
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
+                if (propertySchema.format === 'comment')
+                    return {
+                        'ui:options': {
+                            hide: schema.hide.includes(propertyKey),
+                        },
+                        'ui:classNames': 'fullWidth',
+                        'ui:widget': 'CommentWidget',
+                    };
                 if (propertySchema.format === 'signature')
                     return {
                         'ui:widget': 'SignatureWidget',
+                        'ui:classNames': 'fullWidth',
                     };
                 if (propertySchema.readOnly)
                     return {
@@ -203,12 +297,43 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'user') {
                     return {
                         'ui:widget': 'UserWidget',
+                        'ui:options': {
+                            globalValues: values,
+                            updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
+                                const userFieldsToUpdate = Object.keys(schema.properties).filter(
+                                    (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
+                                );
+
+                                const clonedValues = cloneDeep(curValues);
+
+                                const propertiesToUpdate = clonedValues.properties;
+
+                                userFieldsToUpdate.forEach((key) => {
+                                    const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
+                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
+                                });
+
+                                propertiesToUpdate[propertyKey] = user
+                                    ? JSON.stringify({
+                                          _id: user?._id || user?.id,
+                                          fullName: user?.fullName,
+                                          jobTitle: user?.jobTitle,
+                                          hierarchy: user?.hierarchy,
+                                          mail: user?.mail,
+                                      })
+                                    : undefined;
+
+                                setValues({
+                                    ...propertiesToUpdate,
+                                });
+                            },
+                        },
                     };
                 }
                 if (propertySchema.format === 'text-area')
                     return {
                         'ui:widget': 'TextAreaWidget',
-                        'ui:classNames': 'text-area',
+                        'ui:classNames': 'fullWidth',
                         'ui:options': { toPrint },
                     };
                 if (propertySchema.format === 'relationshipReference')
@@ -224,10 +349,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             onChange={({ formData }) => {
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
-                        // eslint-disable-next-line no-param-reassign
                         formData[key] = undefined;
                     }
                 });
+
                 setValues(formData);
             }}
             formData={values.properties}
@@ -244,19 +369,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             extraErrors={mergedErrors}
             tagName="div"
             readonly={readonly}
-            widgets={{
-                SelectWidget: RjfsSelectWidget,
-                DateWidget: RjfsDateWidget,
-                DateTimeWidget: RjfsDateTimeWidget,
-                TextWidget: RjsfTextWidget,
-                EmailWidget: RjsfTextWidget,
-                TextAreaWidget: RjfsTextAreaWidget,
-                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
-                LocationWidget: RjsfLocationWidget,
-                UserWidget: RjfsUserWidget,
-                UserArrayWidget: RjfsUserArrayWidget,
-                SignatureWidget: RjfsSignatureWidget,
-            }}
+            widgets={Widgets}
         >
             <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>

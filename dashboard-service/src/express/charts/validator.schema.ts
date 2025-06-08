@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
-import { IAggregationType, IChartType, IPermission } from './interface';
+import { IAggregationType, IChartType, IChartPermission, MongoIdSchema } from '@microservices/shared';
 import { searchFilterSchema } from '../../utils/formik';
 
 const aggregationSchema = Joi.object({
@@ -52,7 +51,7 @@ const chartSchema = Joi.object({
         return value;
     }),
     permission: Joi.string()
-        .valid(...Object.values(IPermission))
+        .valid(...Object.values(IChartPermission))
         .required(),
     createdBy: Joi.string().required(),
 });

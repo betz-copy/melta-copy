@@ -7,21 +7,49 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import config from '../../config';
-import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import {
     IEntitySingleProperty,
-    IEntityTemplate,
     IMongoEntityTemplate,
     IRelationshipReference,
-} from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+    IMongoRule,
+    ActionTypes,
+    ICreateEntityMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+    IAction,
+    IBrokenRule,
+    IConstraint,
+    IConstraintsOfTemplate,
+    IEntity,
+    IEntityWithDirectRelationships,
+    IRequiredConstraint,
+    ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
+    IRelationship,
+    IDeleteRelationshipReference,
+    IUpdatedFields,
+    ActionsLog,
+    IDeleteEntityBody,
+    IEntityTemplate,
+    ISemanticSearchResult,
+    ISearchEntitiesByLocationBody,
+    IActivityLog,
+    IChartBody,
+    NotFoundError,
+    ServiceError,
+    ValidationError,
+    BadRequestError,
+    IMultipleSelect,
+} from '@microservices/shared';
+import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
+import config from '../../config';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
-import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
@@ -41,42 +69,20 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
-import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
-import BulkActionManager from '../bulkActions/manager';
-import { BadRequestError, NotFoundError, ServiceError, ValidationError } from '../error';
-import { IDeleteRelationshipReference, IRelationship } from '../relationships/interfaces';
-import { RelationshipManager } from '../relationships/manager';
+import RelationshipManager from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
+import { IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import {
-    EntitiesIdsRulesReasonsMap,
-    IChartBody,
-    IConstraint,
-    IConstraintsOfTemplate,
-    IDeleteBody,
-    IEntity,
-    IEntityCrudAction,
-    IEntityWithDirectRelationships,
-    IExecutionOutput,
-    IGetExpandedEntityBody,
-    IRequiredConstraint,
-    ISearchBatchBody,
-    ISearchEntitiesByLocationBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    IUniqueConstraint,
-    IUniqueConstraintOfTemplate,
-    RunRuleReason,
-} from './interface';
+import BulkActionManager from '../bulkActions/manager';
+import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
-export class EntityManager extends DefaultManagerNeo4j {
+class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -99,6 +105,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     ) => {
         // sort relevant rules by each entity
         // entityId -> rules[], entityTemplateId
+
         const entitiesRelevantRulesMap = new Map<
             string,
             {
@@ -145,8 +152,10 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entitiesRelevantRulesMap = this.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
-        entitiesRelevantRulesMap.forEach(({ rules }, entityId) => {
-            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
+        entitiesRelevantRulesMap.forEach(async ({ rules }, entityId) => {
+            const entity = await this.getEntityById(entityId);
+            const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules, entityTemplate));
         });
 
         return (await Promise.all(ruleFailuresPromises)).flat();
@@ -165,7 +174,9 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const relevantRules = filterDependentRulesViaAggregation(rulesOfEntity, dependentRelationshipTemplateId, updatedProperties);
 
-        return runRulesOnEntity(transaction, entityId, relevantRules);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityTemplateId);
+
+        return runRulesOnEntity(transaction, entityId, relevantRules, entityTemplate);
     };
 
     throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
@@ -241,7 +252,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        userId: string,
+        userId?: string,
         duplicatedFromId?: string,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
@@ -291,13 +302,15 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
-        allActivityLogsToCreate.push({
-            action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
-            entityId: createdEntity.properties._id,
-            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
-            timestamp: new Date(),
-            userId,
-        });
+        if (userId) {
+            allActivityLogsToCreate.push({
+                action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
+                entityId: createdEntity.properties._id,
+                metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
+                timestamp: new Date(),
+                userId,
+            });
+        }
 
         return { createdEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
@@ -320,7 +333,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         relatedEntity: IEntity,
         originalEntityId: string,
         transaction: Transaction,
-        userId: string,
+        userId?: string,
     ) {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
@@ -349,6 +362,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
+
         return {
             fixedField: {
                 ...relatedEntityFixProperties,
@@ -422,8 +436,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async createOrDuplicateAction(
         metadata: ICreateEntityMetadata,
         transaction: Transaction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ) {
         const { properties, templateId } = metadata;
         const entityTemplate = entitiesTemplatesByIds.get(templateId)!;
@@ -434,8 +448,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async updateAction(
         metadata: IUpdateEntityMetadata,
         transaction: Transaction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ) {
         const { entityId } = metadata;
         const entity = await this.getEntityByIdInTransaction(entityId, transaction);
@@ -449,8 +463,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async executeEntityTemplateActionOnInstanceCrud(
         { actionType, actionMetadata }: IAction,
         crudAction: IEntityCrudAction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -460,15 +474,15 @@ export class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.DuplicateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.UpdateEntity]: async () => {
                         const { updatedEntity } = await this.updateAction(
                             actionMetadata as IUpdateEntityMetadata,
                             transaction,
-                            userId,
                             entitiesTemplatesByIds,
+                            userId,
                         );
                         return updatedEntity;
                     },
@@ -504,7 +518,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     actionType: ActionTypes.UpdateEntity,
                     actionMetadata: {
                         entityId: entity?.properties._id,
-                        updatedFields: this.getUpdatedProperties(entity?.properties!, properties, entityTemplate),
+                        updatedFields: this.getUpdatedProperties(entity?.properties ?? {}, properties, entityTemplate),
                         before: entity?.properties,
                     } as IUpdateEntityMetadata,
                 };
@@ -574,7 +588,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         crudAction: IEntityCrudAction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        userId: string,
+        userId?: string,
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
@@ -582,7 +596,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
-        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, userId, entitiesTemplatesByIds);
+        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, entitiesTemplatesByIds, userId);
 
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate, entitiesTemplatesByIds);
 
@@ -879,7 +893,25 @@ export class EntityManager extends DefaultManagerNeo4j {
                 }
 
                 if (innerKeys[1] === 'properties') {
-                    relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
+                    if (innerKeys[3]) {
+                        let fourthKey = innerKeys[3];
+                        // currently only user and user array should have a 4th key
+                        if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]]) {
+                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = {};
+                        }
+
+                        if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
+                            // user
+                            fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
+                        } else if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+                            // User arrays are stored in arrays for each field, (i.e. ids: [id1, id2 ...])
+                            // so we want to convert them into an array of users (i.e. [{id: id1 ...}, {id: id2 ...} ...])
+                            fourthKey = innerKeys[3].replace(`${config.neo4j.usersFieldsPropertySuffix}`, '');
+                        }
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
+                    } else {
+                        relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
+                    }
                 } else if (innerKeys[1] === 'templateId') {
                     relatedEntities[innerKeys[0]].templateId = value;
                 }
@@ -973,31 +1005,33 @@ export class EntityManager extends DefaultManagerNeo4j {
         return this.relationshipManager.deleteRelationshipByIdInTransaction(relationshipToDelete.properties._id, [], transaction);
     }
 
-    async getEntitiesWithDirectRelationshipsToDelete(
-        deleteBody: IDeleteBody,
+    async getSelectedEntities(
+        searchBody: IMultipleSelect<boolean>,
         entityTemplate: IMongoEntityTemplate,
+        showRelationships: boolean = true,
     ): Promise<IEntityWithDirectRelationships[]> {
-        const entitiesWithDirectRelationships: IEntityWithDirectRelationships[] = [];
+        const fullEntities: IEntityWithDirectRelationships[] = [];
 
-        if (deleteBody.selectAll) {
-            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteBody<true>;
+        if (searchBody.selectAll) {
+            const { idsToExclude, filter, textSearch = '' } = searchBody as IMultipleSelect<true>;
+
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
+                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
-            entitiesWithDirectRelationships.push(...entities);
+            fullEntities.push(...entities);
         } else {
-            const { idsToInclude } = deleteBody as IDeleteBody<false>;
+            const { idsToInclude } = searchBody as IMultipleSelect<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
+                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, showRelationships, entityIdsToInclude: idsToInclude },
                 entityTemplate,
             );
 
             const filteredEntities = entities.filter(({ entity }) => idsToInclude.includes(entity.properties._id));
-            entitiesWithDirectRelationships.push(...filteredEntities);
+            fullEntities.push(...filteredEntities);
         }
 
-        return entitiesWithDirectRelationships;
+        return fullEntities;
     }
 
     async getEntitiesToDeleteWithoutRelationships(
@@ -1112,15 +1146,14 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         let entityIdsToDelete: string[] = [];
         const { deleteAllRelationships, templateId } = deleteBody;
 
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-                const entitiesToDelete = await this.getEntitiesWithDirectRelationshipsToDelete(deleteBody, entityTemplate);
-
+                const entitiesToDelete = await this.getSelectedEntities(deleteBody, entityTemplate);
                 const allowedEntitiesToDelete = await this.getEntitiesToDeleteWithoutRelationships(
                     entitiesToDelete,
                     entityTemplate,
@@ -1216,9 +1249,12 @@ export class EntityManager extends DefaultManagerNeo4j {
         const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
             entityTemplateIds: [entity.templateId],
         });
+
         const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
 
-        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
 
     getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>
@@ -1260,6 +1296,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             ruleFailuresOfUpdatedEntityPromise,
             ruleFailuresOnNeighborsOfEntityPromise,
         ]);
+
         const ruleFailures = [...ruleFailuresOfUpdatedEntity, ...ruleFailuresOfNeighborsOfEntity];
 
         return ruleFailures;
@@ -1286,7 +1323,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     private removeBasicProperties(properties: Record<string, any>) {
-        const { createdAt, updatedAt, _id, disabled, ...rest } = properties;
+        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = properties;
         return rest;
     }
 
@@ -1417,22 +1454,20 @@ export class EntityManager extends DefaultManagerNeo4j {
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const defaultValues = { updatedAt: new Date().toISOString() };
+        const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
         if (entity.properties.disabled) {
             throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
         }
 
-        const updatedProperties = this.getKeysOfUpdatedProperties(
-            entity.properties,
-            { ...entityProperties, updatedAt: new Date().toISOString() },
-            entityTemplate,
-        );
+        const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
             entity,
             entityTemplate,
-            entityProperties,
+            propertiesToUpdate,
             updatedProperties,
             transaction,
             userId ?? '',
@@ -1443,7 +1478,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             transaction,
             `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
-                 SET e = $props 
+                 SET e = $props
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled
                  RETURN e`,
@@ -1527,7 +1562,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
-        userId: string,
+        userId?: string,
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
@@ -1548,16 +1583,13 @@ export class EntityManager extends DefaultManagerNeo4j {
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const updatedEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results);
+
             return { updatedEntity, actions: fixedActions };
         }
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(
-                    entity.properties,
-                    { ...entityProperties, updatedAt: new Date().toISOString() },
-                    entityTemplate,
-                );
+                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
@@ -1570,8 +1602,18 @@ export class EntityManager extends DefaultManagerNeo4j {
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-
-                throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+                throwIfActionCausedRuleFailures(
+                    ignoredRules,
+                    ruleFailuresBeforeAction,
+                    ruleFailuresAfterAction,
+                    [{}],
+                    [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: id, updatedFields: entityProperties, before: entity.properties },
+                        },
+                    ],
+                );
 
                 const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
                     this.activityLogProducer.createActivityLog(activityLogToCreate),
@@ -2082,3 +2124,5 @@ export class EntityManager extends DefaultManagerNeo4j {
     //     return Promise.all(Object.entries(templateCharts).map(([keyword$DataError, value]) => this.getChart(keyword$DataError, value)));
     // }
 }
+
+export default EntityManager;

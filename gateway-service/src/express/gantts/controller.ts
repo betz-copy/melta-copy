@@ -3,7 +3,7 @@ import { GanttManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
-export class GanttController extends DefaultController<GanttManager> {
+class GanttController extends DefaultController<GanttManager> {
     constructor(workspaceId: string) {
         super(new GanttManager(workspaceId));
     }
@@ -35,3 +35,5 @@ export class GanttController extends DefaultController<GanttManager> {
         res.json(await this.manager.updateGantt(req.params.ganttId, req.body, req.user!.id));
     }
 }
+
+export default GanttController;

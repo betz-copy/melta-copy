@@ -1,120 +1,34 @@
-import { TemplatesManagerService } from '.';
+import {
+    ICategory,
+    IMongoCategory,
+    IEntityTemplate,
+    IMongoEntityTemplate,
+    IMongoEntityTemplatePopulated,
+    ISearchEntityTemplatesBody,
+    IMongoRelationshipTemplate,
+    ISubCompactPermissions,
+    IMongoCategoryOrderConfig,
+    IMongoBaseConfig,
+    ConfigTypes,
+    ICategoryOrderConfig,
+} from '@microservices/shared';
+import TemplatesManagerService from '.';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { ISubCompactPermissions } from '../userService/interfaces/permissions/permissions';
-import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     service: { workspaceIdHeaderName },
     templateService: {
         baseRoute,
-        entities: { baseEntitiesRoute, baseCategoriesRoute },
+        entities: { baseEntitiesRoute, baseCategoriesRoute, baseConfigRoute },
     },
 } = config;
-
-export interface ICategory {
-    name: string;
-    displayName: string;
-    iconFileId: string | null;
-    color: string;
-}
-
-export interface IMongoCategory extends ICategory {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-export interface ISearchCategoriesBody {
-    search?: string;
-    ids?: string[];
-    limit?: number;
-    skip?: number;
-}
-
-export interface IEntitySingleProperty {
-    title: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature';
-    enum?: string[];
-    readOnly?: true;
-    identifier?: true;
-    items?: {
-        type: 'string';
-        enum?: string[];
-        format?: 'fileId' | 'user';
-    };
-    minItems?: 1;
-    uniqueItems?: true;
-    pattern?: string;
-    patternCustomErrorMessage?: string;
-    dateNotification?: number;
-    isDailyAlert?: boolean;
-    isDatePastAlert?: boolean;
-    calculateTime?: boolean;
-    serialStarter?: number;
-    serialCurrent?: number;
-    isNewPropNameEqualDeletedPropName?: boolean;
-    relationshipReference?: {
-        relationshipTemplateId?: string;
-        relationshipTemplateDirection: 'outgoing' | 'incoming';
-        relatedTemplateId: string;
-        relatedTemplateField: string;
-    };
-    archive?: boolean;
-}
-
-export interface IEntityTemplate {
-    name: string;
-    displayName: string;
-    category: string;
-    properties: {
-        type: 'object';
-        properties: Record<string, IEntitySingleProperty>;
-        hide: string[];
-    };
-    propertiesOrder: string[];
-    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
-    propertiesPreview: string[];
-    enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
-    disabled: boolean;
-    iconFileId: string | null;
-    actions?: string;
-    documentTemplatesIds?: string[];
-    mapSearchProperties?: string[];
-}
-
-export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
-    category: IMongoCategory;
-}
-
-export interface IMongoEntityTemplate extends IEntityTemplate {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface ISearchBody {
-    search?: string;
-    limit?: number;
-    skip?: number;
-}
-
-export interface ISearchEntityTemplatesBody extends ISearchBody {
-    ids?: string[];
-    categoryIds?: string[];
-}
 
 export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
     searchQuery: ISearchEntityTemplatesBody;
 }
 
-export class EntityTemplateService extends TemplatesManagerService {
+class EntityTemplateService extends TemplatesManagerService {
     // categories
     filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
         if (!usersPermissions.instances) {
@@ -152,6 +66,19 @@ export class EntityTemplateService extends TemplatesManagerService {
 
     async getCategoryById(categoryId: string) {
         const { data } = await this.api.get<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
+
+        return data;
+    }
+
+    async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(
+            `${baseCategoriesRoute}/templatesOrder/${templateId}`,
+            {
+                newIndex,
+                srcCategoryId,
+                newCategoryId,
+            },
+        );
 
         return data;
     }
@@ -225,4 +152,52 @@ export class EntityTemplateService extends TemplatesManagerService {
 
         return data;
     }
+
+    // config
+    async getConfigs(permissionsOfUserId: ISubCompactPermissions) {
+        const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
+
+        // Because in the future the config collection could store different types of configs that might need different permissions,
+        // I think the best way to account for that is by checking for each type separately, because config types aren't created by users.
+        return data.map((workspaceConfig) => {
+            if (workspaceConfig.type === ConfigTypes.CATEGORY_ORDER) {
+                const categoryOrder = workspaceConfig as IMongoCategoryOrderConfig;
+                return permissionsOfUserId.admin
+                    ? categoryOrder
+                    : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
+            }
+
+            return workspaceConfig;
+        });
+    }
+
+    async getConfigByType(type: ConfigTypes, permissionsOfUserId: ISubCompactPermissions) {
+        const { data } = await this.api.get<IMongoBaseConfig>(`${baseConfigRoute}/${type}`);
+
+        if (type === ConfigTypes.CATEGORY_ORDER) {
+            const categoryOrder = data as IMongoCategoryOrderConfig;
+            return permissionsOfUserId.admin
+                ? categoryOrder
+                : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
+        }
+
+        return data;
+    }
+
+    async updateOrderConfig(configId: string, newIndex: number, item: string) {
+        const { data } = await this.api.put<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}/${configId}`, {
+            newIndex,
+            item,
+        });
+
+        return data;
+    }
+
+    async createOrderConfig(configData: ICategoryOrderConfig) {
+        const { data } = await this.api.post<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}`, configData);
+
+        return data;
+    }
 }
+
+export default EntityTemplateService;

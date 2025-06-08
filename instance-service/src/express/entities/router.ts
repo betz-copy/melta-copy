@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import EntityController from './controller';
 import {
     countEntitiesOfTemplatesRequestSchema,
@@ -27,6 +26,7 @@ import {
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
     convertToRelationshipFieldRequestSchema,
+    getSelectedEntitiesRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -68,7 +68,6 @@ entityRouter.post(
     entityValidatorController.validateSearchBatchBody,
     entityController.searchEntitiesBatch,
 );
-
 entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation), entityController.searchEntitiesByLocation);
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
@@ -89,12 +88,21 @@ entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityCont
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityInstances);
+
+entityRouter.post(
+    '/get/multiple-select',
+    ValidateRequest(getSelectedEntitiesRequestSchema),
+    entityValidatorController.validateTemplateExistence,
+    entityController.getSelectedEntities,
+);
+
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),
     entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
 );
+
 entityRouter.patch(
     '/convertToRelationshipField',
     ValidateRequest(convertToRelationshipFieldRequestSchema),

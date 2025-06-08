@@ -1,12 +1,12 @@
+import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchEntityTemplatesBody, RelatedPermission } from '@microservices/shared';
 import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
-import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
-import { EntityTemplateService, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
-import { UserService } from '../../externalServices/userService';
+import InstancesService from '../../externalServices/instanceService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import UserService from '../../externalServices/userService';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import TemplatesManager from '../templates/manager';
-import { WorkspaceService } from '../workspaces/service';
+import WorkspaceService from '../workspaces/service';
 import { FlowFields, FlowParameters, IFlowAutoComplete } from './interfaces';
 import {
     convertArrayToFlowOptions,
@@ -19,7 +19,7 @@ import {
     makeLinkClickable,
 } from './utils';
 
-export class FlowCubeManager extends DefaultManagerProxy<null> {
+class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
 
     private entityTemplateService: EntityTemplateService;
@@ -72,7 +72,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             filter = { $and: filterAnd };
         }
 
-        return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
+        return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit, skip: 0, showRelationships: false, sort: [] };
     }
 
     async searchFlowCube(workspaceId: string, templateId: string, searchBody: Record<string, any>) {
@@ -98,7 +98,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             searchBody.search = body?.Parameters?.Value || body?.Value;
         }
 
-        const usersPermissions = await UserService.getUserPermissions(userId);
+        const usersPermissions = await UserService.getRelatedPermissions(userId, RelatedPermission.User);
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
         const filteredWorkspaces = await filterWorkspacesByPermissions(workspaces, usersPermissions);
 
@@ -202,3 +202,5 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return this.searchFlowCube(WorkspaceId, TemplateType, flowParameters);
     }
 }
+
+export default FlowCubeManager;

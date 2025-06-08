@@ -10,11 +10,13 @@ import { createCategoryRequest, updateCategoryRequest } from '../../../services/
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ErrorToast } from '../../ErrorToast';
+import { ConfigTypes, IMongoCategoryOrderConfig } from '../../../interfaces/config';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
+import { getConfigByTypeRequest } from '../../../services/templates/configService';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -24,7 +26,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
     initialStep = 0,
-    initialValues = { name: '', displayName: '', icon: undefined, color: '' },
+    initialValues = { name: '', displayName: '', icon: undefined, color: '', templatesOrder: [] },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
@@ -40,8 +42,26 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
                 ? updateCategoryRequest((initialValues as CategoryWizardValues & { _id: string })._id, category)
                 : createCategoryRequest(category),
         {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
+                if (!isEditMode) {
+                    const categoryOrder = queryClient.getQueryData<IMongoCategoryOrderConfig>('getCategoryOrder');
+
+                    if (categoryOrder) {
+                        queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', (categoryConfig) => {
+                            const { order } = categoryConfig!;
+                            order.push(data._id);
+
+                            return { ...categoryConfig!, order };
+                        });
+                    } else {
+                        queryClient.setQueryData<IMongoCategoryOrderConfig>(
+                            'getCategoryOrder',
+                            (await getConfigByTypeRequest(ConfigTypes.CATEGORY_ORDER)) as IMongoCategoryOrderConfig,
+                        );
+                    }
+                }
+
                 const updatedUserPermissions = updateUserPermissionForCategory(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
                 toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
@@ -60,7 +80,6 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     const steps: StepType<CategoryWizardValues>[] = [
         {
             label: i18next.t('wizard.category.chooseName'),
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             component: (props, { isEditMode }) => <CreateCategoryName {...props} isEditMode={isEditMode} />,
             validationSchema: useCreateCategoryNameSchema(currentCategoryId),
         },
