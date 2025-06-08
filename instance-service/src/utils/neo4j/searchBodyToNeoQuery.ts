@@ -289,41 +289,55 @@ const filterToNeoQuery = (
 
     let andQuery: CypherQueryWithParameters | null = null;
     if (Array.isArray($and)) {
-        const andNeoQueries = $and.map((currFilterOfTemplate, i) =>
-            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$and\`[${i}]`, entityTemplate),
-        );
-        andQuery = {
-            cypherQuery: andNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' AND '),
-            parameters: {
-                $and: andNeoQueries.map(({ parameters }) => parameters),
-            },
-        };
+        const andNeoQueries = $and
+            .map((currFilterOfTemplate, i) =>
+                filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$and\`[${i}]`, entityTemplate),
+            )
+            .filter((query) => query.cypherQuery);
+        if (andNeoQueries.length > 0) {
+            andQuery = {
+                cypherQuery: andNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' AND '),
+                parameters: {
+                    $and: andNeoQueries.map(({ parameters }) => parameters),
+                },
+            };
+        }
     } else if ($and) {
         const andSingleQuery = filterOfTemplateToNeoQuery($and, `${parametersParentVariableName}.\`$and\``, entityTemplate);
-        andQuery = {
-            cypherQuery: andSingleQuery.cypherQuery,
-            parameters: { $and: andSingleQuery.parameters },
-        };
+        if (andSingleQuery.cypherQuery) {
+            andQuery = {
+                cypherQuery: andSingleQuery.cypherQuery,
+                parameters: { $and: andSingleQuery.parameters },
+            };
+        }
     }
 
     let orQuery: CypherQueryWithParameters | null = null;
     if ($or) {
-        const orNeoQueries = $or.map((currFilterOfTemplate, i) =>
-            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$or\`[${i}]`, entityTemplate),
-        );
-        orQuery = {
-            cypherQuery: orNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
-            parameters: {
-                $or: orNeoQueries.map(({ parameters }) => parameters),
-            },
-        };
+        const orNeoQueries = $or
+            .map((currFilterOfTemplate, i) =>
+                filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$or\`[${i}]`, entityTemplate),
+            )
+            .filter((query) => query.cypherQuery);
+        if (orNeoQueries.length > 0) {
+            orQuery = {
+                cypherQuery: orNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
+                parameters: {
+                    $or: orNeoQueries.map(({ parameters }) => parameters),
+                },
+            };
+        }
     }
 
     const andCypherQuery = andQuery ? `(${andQuery.cypherQuery})` : '';
     const orCypherQuery = orQuery ? `(${orQuery.cypherQuery})` : '';
 
+    if (!andCypherQuery && !orCypherQuery) {
+        return { cypherQuery: '', parameters: {} };
+    }
+
     return {
-        cypherQuery: `${andCypherQuery}${andQuery && orQuery ? 'AND' : ''}${orCypherQuery}`,
+        cypherQuery: `${andCypherQuery}${andQuery && orQuery ? ' AND ' : ''}${orCypherQuery}`,
         parameters: { ...andQuery?.parameters, ...orQuery?.parameters },
     };
 };
@@ -344,6 +358,10 @@ export const templatesFilterToNeoQuery = (
             `${filterParamsVariableName}["${templateId}"]`,
             addDefaultFieldsToTemplate(entityTemplatesMap.get(templateId)!),
         );
+
+        if (!filterOfTemplateQuery.cypherQuery) {
+            return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
+        }
 
         return {
             cypherQuery: `node:\`${templateId}\` AND (${filterOfTemplateQuery.cypherQuery})`,
