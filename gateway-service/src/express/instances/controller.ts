@@ -11,8 +11,16 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async createEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id));
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
+        res.json(
+            await this.manager.createEntityInstance(
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+                childTemplateId,
+            ),
+        );
     }
 
     async exportEntities(req: Request, res: Response) {

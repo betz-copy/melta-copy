@@ -64,7 +64,7 @@ const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
                 message: (error as Error).message,
             });
 
-        throw new ValidationError(`Error executing VM code  of actions: ${error}`);
+        throw new ValidationError(`Error executing VM code of actions: ${error}`);
     }
 };
 

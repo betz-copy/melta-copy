@@ -70,6 +70,7 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
+    childTemplateId?: string;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -79,6 +80,7 @@ const CreateOrEditEntityDetails: React.FC<{
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
+    childTemplateId,
     showActionButtons = true,
 }) => {
     const { payload, actionType } = mutationProps;
@@ -104,6 +106,7 @@ const CreateOrEditEntityDetails: React.FC<{
             template: entityTemplate,
         };
     }, [payload, entityTemplate, initialTemplateFileKeys]);
+    console.log('aa', { entityTemplate });
 
     const [isLoading, mutationPromiseToastify] = useMutationHandler(
         externalErrors,
@@ -112,6 +115,7 @@ const CreateOrEditEntityDetails: React.FC<{
         mutationProps,
         setExternalErrors,
         setCreateOrUpdateWithRuleBreachDialogState,
+        childTemplateId,
     );
 
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(

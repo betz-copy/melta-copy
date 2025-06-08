@@ -10,10 +10,9 @@ class EntityController extends DefaultController<EntityManager> {
 
     async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+        const { properties, ignoredRules, userId, duplicatedFromId, childTemplateId } = req.body;
 
-        res.json(
-            await this.manager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId),
-        );
+        res.json(await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplateId));
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {

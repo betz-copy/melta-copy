@@ -17,10 +17,7 @@ import { environment } from '../../../../globals';
 
 const { errorCodes } = environment;
 
-type MutateAsyncFn = (args: {
-  newEntityData: EntityWizardValues;
-  ignoredRules?: IRuleBreach['brokenRules'];
-}) => Promise<IEntity>;
+type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) => Promise<IEntity>;
 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
@@ -29,6 +26,7 @@ const useMutationHandler = (
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
+    childTemplateId?: string,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
@@ -104,7 +102,7 @@ const useMutationHandler = (
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            createEntityRequest(newEntityData, ignoredRules),
+            createEntityRequest(newEntityData, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);

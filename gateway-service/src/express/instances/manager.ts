@@ -301,7 +301,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
-                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
+                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, undefined, serialNumbers); // TODO: fix childTemplateId in excels
 
                 succeededEntities.push(result);
             } catch (error) {
@@ -495,13 +495,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
+        childTemplateId?: string,
         serialNumbers?: Record<string, number>,
         createAlert: boolean = true,
     ) {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
         const { createdEntity, actions } = await this.service
-            .createEntityInstance({ properties, templateId }, ignoredRules, userId)
+            .createEntityInstance({ properties, templateId }, ignoredRules, userId, undefined, childTemplateId)
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -713,8 +714,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
 
         const { createdEntity, actions } = await this.service
-            .createEntityInstance(newInstanceData, ignoredRules, userId, id)
+            .createEntityInstance(newInstanceData, ignoredRules, userId, id, undefined)
             .catch((err) => this.handleBrokenRulesError(err));
+        // TODO: fix duplicate
 
         if (createAlert && ignoredRules.length) {
             await this.ruleBreachesManager.createRuleBreachAlert(

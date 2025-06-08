@@ -60,8 +60,9 @@ const TemplateTable = forwardRef<
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
         defaultFilter?: FilterModel;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+        childTemplateId?: string;
     }
->(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds, childTemplateId }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
@@ -351,6 +352,7 @@ const TemplateTable = forwardRef<
                             });
                         }}
                         setUpdatedEntities={setUpdatedEntities}
+                        childTemplateId={childTemplateId}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.addEntityTitle')}

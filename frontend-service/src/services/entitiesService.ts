@@ -27,7 +27,6 @@ import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
-import { IEntityChildTemplate } from '../interfaces/entityChildTemplates';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 
 const { entities, relationships } = environment.api;
@@ -159,28 +158,25 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (
-    entity: EntityWizardValues,
-    ignoredRules?: IRuleBreach['brokenRules'],
-    childTemplate?: IEntityChildTemplate,
-) => {
+export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules'], childTemplateId?: string) => {
     const formData = new FormData();
 
-    const propertiesWithDefaults = childTemplate
-        ? Object.entries(entity.template.properties.properties).reduce((acc, [key, prop]) => {
-              if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
-                  acc[key] = childTemplate.properties[key].defaultValue;
-              } else {
-                  acc[key] = entity.properties[key];
-              }
-              return acc;
-          }, {} as Record<string, any>)
-        : entity.properties;
+    // TODO: NOT USED - ask Amit
+    // const propertiesWithDefaults = childTemplate
+    //     ? Object.entries(entity.template.properties.properties).reduce((acc, [key, prop]) => {
+    //           if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
+    //               acc[key] = childTemplate.properties[key].defaultValue;
+    //           } else {
+    //               acc[key] = entity.properties[key];
+    //           }
+    //           return acc;
+    //       }, {} as Record<string, any>)
+    //     : entity.properties;
 
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(propertiesWithDefaults, (property, key) => {
+            mapValues(entity.properties, (property, key) => {
                 switch (entity.template.properties.properties[key]?.format) {
                     case 'relationshipReference':
                         return property?.properties._id;
@@ -204,6 +200,10 @@ export const createEntityRequest = async (
         ),
     );
     formData.append('templateId', entity.template._id);
+
+    if (!!childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));

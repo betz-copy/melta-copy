@@ -67,12 +67,13 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
+    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
             duplicatedFromId,
+            childTemplateId,
         });
 
         return data;
