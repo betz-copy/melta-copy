@@ -21,7 +21,6 @@ export interface TableMetaData {
     name: string;
     description: string;
     columns: string[];
-    // columnsOrder: string[];
     filter?: IGraphFilterBodyBatch;
 }
 
@@ -62,26 +61,3 @@ export enum ViewMode {
     ReadOnly = 'readonly',
     Add = 'add',
 }
-
-export const isChartItem = ({ type }: DashboardItem) => type === DashboardItemType.Chart;
-
-export const isIframeItem = ({ type }: DashboardItem) => type === DashboardItemType.Iframe;
-
-export const isTableItem = ({ type }: DashboardItem) => type === DashboardItemType.Table;
-
-export type DashboardItemData = IChart | IFrame | TableMetaData;
-
-export interface TabStepComponentHelpers {
-    viewMode: ViewMode;
-}
-
-export type TabStepComponentProps<T extends object, helpers extends keyof TabStepComponentHelpers = never> = FormikProps<T> &
-    Pick<TabStepComponentHelpers, helpers>;
-
-export type TabStepType<T extends object> = {
-    label: string;
-    icon?: React.ReactNode;
-    description?: string;
-    component: (formikProps: FormikProps<T>, helpers?: TabStepComponentHelpers) => JSX.Element;
-    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
-};

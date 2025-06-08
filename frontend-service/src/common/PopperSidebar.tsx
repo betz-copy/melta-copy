@@ -1,5 +1,5 @@
 import { CloseSharp } from '@mui/icons-material';
-import { Box, ClickAwayListener, Grid, IconButton, Popper, Typography, useTheme } from '@mui/material';
+import { Box, ClickAwayListener, Grid, IconButton, Popper, useTheme } from '@mui/material';
 import Slide from '@mui/material/Slide';
 import React, { CSSProperties } from 'react';
 import { useDarkModeStore } from '../stores/darkMode';

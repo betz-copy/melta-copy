@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { DashboardItemType } from './interface';
+import { DashboardItemType } from '@microservices/shared';
 import { searchFilterSchema } from '../../utils/formik';
 
 const TableMetaDataSchema = Joi.object({
@@ -7,7 +7,6 @@ const TableMetaDataSchema = Joi.object({
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
     columns: Joi.array().items(Joi.string().required()).min(1).required(),
-    columnsOrder: Joi.array().items(Joi.string()).required(),
     filter: searchFilterSchema.custom((value) => {
         // todo: upgrade mongo version up to 5 and then delete that convert
         if (value) return JSON.stringify(value);

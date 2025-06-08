@@ -76,17 +76,6 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
     },
 });
 
-// POST /api/dashboard/charts/by-user/:userId
-export const searchChartsByUserRequestSchema = Joi.object({
-    body: {
-        textSearch: Joi.string().allow(''),
-    },
-    query: {},
-    params: {
-        userId: MongoIdSchema.required(),
-    },
-});
-
 // POST /api/dashboard/charts
 export const createChartRequestSchema = Joi.object({
     body: chartSchema.required(),

@@ -1,9 +1,9 @@
-import { FilterQuery } from 'mongoose';
+import { DefaultManagerMongo, IChart, IMongoChart, NotFoundError, ServiceError } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import { DefaultManagerMongo, IMongoChart, IChartPermission, IChart, NotFoundError, ServiceError } from '@microservices/shared';
-import ChartSchema from './model';
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
+import ChartSchema from './model';
 
 class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {
@@ -17,21 +17,6 @@ class ChartManager extends DefaultManagerMongo<IMongoChart> {
     async getChartsByTemplateId(templateId: string, textSearch?: string) {
         const query: FilterQuery<IMongoChart> = {
             templateId,
-            ...(textSearch && {
-                $or: [
-                    { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },
-                    { description: { $regex: escapeRegExp(textSearch), $options: 'i' } },
-                ],
-            }),
-        };
-
-        return this.model.find(query).lean().exec();
-    }
-
-    async searchChartsByUser(userId: string, textSearch?: string) {
-        const query: FilterQuery<IMongoChart> = {
-            createdBy: userId,
-            permission: IChartPermission.Protected,
             ...(textSearch && {
                 $or: [
                     { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },

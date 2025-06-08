@@ -5,11 +5,11 @@ import { pickBy } from 'lodash';
 import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
-import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
 interface AxisInputProps {
     formik: FormikProps<IBasicChart>;
@@ -70,7 +70,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         </Typography>
                     </Grid>
                     <Grid item>
-                        <ReadOnlyTextField
+                        <ViewModeTextField
                             label={`${i18next.t('charts.title')}`}
                             name={titleFormikField}
                             onChange={(e) => formik.setFieldValue(titleFormikField, e.target.value)}

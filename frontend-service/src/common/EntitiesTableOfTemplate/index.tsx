@@ -209,7 +209,6 @@ export type EntitiesTableOfTemplateProps<Data> = {
     editable?: boolean;
     defaultFilter?: FilterModel;
     disableFilter?: boolean;
-    disableDragColumn?: boolean;
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
@@ -225,8 +224,6 @@ export type EntitiesTableOfTemplateRef<Data> = {
     scrollIntoView: () => void;
     showSideBar: () => void;
     getDisplayColumns: () => string[];
-    setColumnsVisible: (colId: string) => void;
-    moveColumn: (colId: string, destination: number) => void;
     resizeTableHeight: (newHeight: number) => void;
 };
 
@@ -285,8 +282,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [gridHeight, setGridHeight] = useState<number>(() =>
             infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
         );
-        console.log({ tableheight: gridHeight });
-
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
         const [currEditingCell, setCurrEditingCell] = useState<any>();
@@ -596,23 +591,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
             },
         );
-        // const resizeChart = () => {
-        //     if (!tableRef.current || !gridRef.current) return;
-        //     const newHeight = tableRef.current.offsetHeight;
-        //     // tableRef.current.chart.setSize(undefined, newHeight);
-        //     setGridHeight(newHeight);
-        // };
-
-        // useEffect(() => {
-        //     window.addEventListener('resize', resizeChart);
-        //     return () => window.removeEventListener('resize', resizeChart);
-        // }, []);
-
-        // useEffect(() => {
-        //     const observer = new ResizeObserver(resizeChart);
-        //     if (tableRef.current) observer.observe(tableRef.current);
-        //     return () => observer.disconnect();
-        // }, []);
 
         useImperativeHandle(ref, () => ({
             getExcelData() {
@@ -653,23 +631,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 else gridApi.openToolPanel('columns');
             },
             getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
-            setColumnsVisible: (colId: string) => {
-                if (gridRef.current) {
-                    const column = gridRef.current.api.getColumn(colId);
-                    if (column) {
-                        const currentlyVisible = column.isVisible();
-                        gridRef.current.api.setColumnsVisible([colId], !currentlyVisible);
-                    }
-                }
-            },
-            moveColumn: (colId: string, destination: number) => {
-                gridRef.current?.api.moveColumns([colId], destination);
-            },
-            resizeTableHeight: (newHeight: number) => {
-                console.log({ newHeight });
-
-                setGridHeight(newHeight);
-            },
+            resizeTableHeight: (newHeight: number) => setGridHeight(newHeight),
         }));
 
         const rowModelProps = useMemo(
@@ -708,7 +670,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     sx={gridStyles}
                     style={{
                         borderRadius: '10px',
-                        // boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+                        boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     }}
                     ref={tableRef}
                 >
@@ -784,7 +746,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             initialWidth: 250,
                             suppressSizeToFit: true,
                             suppressHeaderFilterButton: disableFilter,
-                            suppressHeaderMenuButton: disableFilter,
                         }}
                         onGridReady={(params) => {
                             if (saveStorageProps.pageType) {

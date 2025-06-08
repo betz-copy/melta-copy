@@ -95,16 +95,14 @@ const Chart: React.FC = () => {
                 });
             }
 
-            toast.success(i18next.t(viewMode === ViewMode.Edit ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
+            toast.success(i18next.t(`wizard.category.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
         },
 
         onError: (error: AxiosError) => {
             toast.error(
                 <ErrorToast
                     axiosError={error}
-                    defaultErrorMessage={
-                        ViewMode.Edit ? i18next.t('wizard.entityTemplate.failedToEdit') : i18next.t('wizard.entityTemplate.failedToCreate')
-                    }
+                    defaultErrorMessage={i18next.t(`wizard.entityTemplate.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
                 />,
             );
         },

@@ -37,14 +37,14 @@ const FilterSideBar = <T extends TableMetaData | IChart>({
                             options={entityTemplateFields!}
                             selectedOptions={values.columns}
                             setSelectedOptions={(value) => setFieldValue('columns', value)}
-                            title="עמודות להצגה"
+                            title={i18next.t('dashboard.tables.columnsToShow')}
                             getOptionId={(_id) => _id}
                             getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
                             toTopBar={false}
                             hideSearchBar
                             isDraggableDisabled
                             isSelectDisabled={viewMode === ViewMode.ReadOnly}
-                            readonly={viewMode === ViewMode.ReadOnly}
+                            hideChooseAll={viewMode === ViewMode.ReadOnly}
                         />
                     </Grid>
                     <Grid item>
@@ -61,7 +61,6 @@ const FilterSideBar = <T extends TableMetaData | IChart>({
                     setFilterRecord={(value: IGraphFilterBody, filterKey: number) => {
                         const currentValue = values.filter;
                         const newValue = { ...currentValue, [filterKey]: { ...value } };
-                        console.log({ currentValue, filterKey, newValue });
 
                         setFieldValue('filter', newValue);
                     }}

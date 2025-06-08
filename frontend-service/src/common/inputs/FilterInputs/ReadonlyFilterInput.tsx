@@ -1,8 +1,8 @@
 import { Grid } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
-import { ReadOnlyTextField } from './StyledFilterInput';
 import { IGraphFilterBody } from '../../../interfaces/entities';
+import { ViewModeTextField } from '../ViewModeTextField';
 
 const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {
     switch (filter?.filterType) {
@@ -29,10 +29,10 @@ const ReadOnlyFilterInput: React.FC<{ filterField: IGraphFilterBody['filterField
     return (
         <Grid container direction="row" flexWrap="nowrap">
             <Grid item>
-                <ReadOnlyTextField label={i18next.t('dashboard.field')} value={title} readOnly />
+                <ViewModeTextField label={i18next.t('dashboard.field')} value={title} readOnly />
             </Grid>
             <Grid item flexWrap="wrap">
-                <ReadOnlyTextField label={i18next.t('dashboard.filter')} value={getFilterFieldReadonly(filterField, type)} readOnly multiline />
+                <ViewModeTextField label={i18next.t('dashboard.filter')} value={getFilterFieldReadonly(filterField, type)} readOnly multiline />
             </Grid>
         </Grid>
     );

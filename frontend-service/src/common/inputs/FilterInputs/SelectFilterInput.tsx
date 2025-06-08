@@ -30,7 +30,6 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
               { option: false, label: i18next.t('booleanOptions.no') },
           ]
         : enumOptions?.map((option) => ({ option, label: option }));
-    console.log('SelectFilterInput', { filterField, options, condition: filterField?.filter ?? '' });
 
     return (
         <Grid container justifyContent="center">

@@ -26,7 +26,7 @@ export const getTemplateProperties = (entityTemplates: IEntityTemplateMap, templ
 };
 
 export const dashboardInitialValues = {
-    table: { templateId: '', name: '', description: '', columns: [], columnsOrder: [], filter: {} } as TableMetaData,
+    table: { templateId: '', name: '', description: '', columns: [], filter: {} } as TableMetaData,
     iframe: { name: '', url: '' } as IFrame,
 };
 

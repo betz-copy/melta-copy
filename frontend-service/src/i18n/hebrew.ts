@@ -1267,8 +1267,13 @@ export default {
             editTable: 'עריכת טבלה',
             permissionWarning: 'טבלה זו והמידע המוצג בה תופיע לכלל המשתמשים בהתאם להרשאותיהם',
             changeTableSizeWarning: 'כל משתמש יוכל לשנות את מידות הטבלה במסך הבית',
+            columnsToShow: 'עמודות להצגה',
         },
         charts: {
+            permissionWarning: ' תרשים זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
+            createChart: 'יצירת תרשים',
+            new:'חדש',
+            existing:'קיים',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: ' במידה והרשאת הצפייה שלו תשתנה ל”פרטי” - יוסר התרשים מעמוד הבית .תרשים זה מוצג בעמוד הבית.',
@@ -1278,6 +1283,7 @@ export default {
         iframes: {
             addIFrame: 'הוספת קישור חיצוני',
             editIFrame: 'עריכת קישור חיצוני',
+            permissionWarning: 'קישור חיצוני זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
         },
         dialogs: {
             delete: {

@@ -1,16 +1,13 @@
 import mongoose from 'mongoose';
+import { DashboardItemType } from '@microservices/shared';
 import config from '../../config';
-import { DashboardItemType } from './interface';
 
 const TableMetaDataSchema = new mongoose.Schema(
     {
-        templateId: {
-            type: String,
-        },
-        name: { type: String },
+        templateId: { type: String, required: true },
+        name: { type: String, required: true },
         description: { type: String },
-        columns: { type: [String] },
-        columnsOrder: { type: [String] },
+        columns: { type: [String], required: true },
         filter: { type: String },
     },
     { _id: false },
@@ -56,5 +53,6 @@ DashboardItemSchema.discriminator(
     }),
 );
 
-// todo:add indexes
+DashboardItemSchema.index({ type: 1 });
+
 export default DashboardItemSchema;

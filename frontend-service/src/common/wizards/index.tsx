@@ -69,8 +69,6 @@ const Wizard = <T extends object>({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const handleBack = () => {
-        console.log({ initialValues, activeStep });
-
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 

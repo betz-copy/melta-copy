@@ -3,13 +3,13 @@ import i18next from 'i18next';
 import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
-import { InfoTypography } from '../../../common/Infotypography';
-import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
+import { InfoTypography } from '../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { StepComponentProps } from '../../../common/wizards';
 import { TableMetaData, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getTemplateProperties } from '../../../utils/dashboard/formik';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
 const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue } = formikProps;
@@ -44,7 +44,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: V
                     </Grid>
                     <Grid item container direction="column" spacing={2.5}>
                         <Grid item>
-                            <ReadOnlyTextField
+                            <ViewModeTextField
                                 name="name"
                                 label={i18next.t('charts.name')}
                                 placeholder={i18next.t('charts.name')}
@@ -58,7 +58,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: V
                         </Grid>
 
                         <Grid item>
-                            <ReadOnlyTextField
+                            <ViewModeTextField
                                 name="description"
                                 multiline
                                 label={i18next.t('charts.description')}
@@ -73,7 +73,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: V
                             />
                         </Grid>
                     </Grid>
-                    {/* //to do : fix space */}
+
                     <Grid item container direction="column" spacing={2}>
                         <Grid item>
                             <InfoTypography text={i18next.t('dashboard.tables.permissionWarning')} />

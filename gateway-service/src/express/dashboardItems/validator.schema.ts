@@ -7,7 +7,6 @@ const TableMetaDataSchema = Joi.object({
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
     columns: Joi.array().items(Joi.string().required()).min(1).required(),
-    columnsOrder: Joi.array().items(Joi.string()).required(),
     filter: searchFilterSchema,
 });
 

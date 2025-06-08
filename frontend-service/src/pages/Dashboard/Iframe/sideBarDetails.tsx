@@ -1,21 +1,19 @@
-import { InfoOutlined } from '@mui/icons-material';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
+import { InfoTypography } from '../../../common/InfoTypography';
 import { StepComponentProps } from '../../../common/wizards';
 import { ViewMode } from '../../../interfaces/dashboard';
 import { IFrame } from '../../../interfaces/iFrames';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
 const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode }> = ({ values, touched, errors, handleChange, viewMode }) => {
-    const theme = useTheme();
-
     return (
         <Grid container direction="column" spacing={4}>
             <Grid item container direction="column" spacing={4}>
                 <Grid item container direction="column" spacing={2.5}>
                     <Grid item>
-                        <ReadOnlyTextField
+                        <ViewModeTextField
                             name="name"
                             label={i18next.t('charts.name')}
                             placeholder={i18next.t('charts.name')}
@@ -29,7 +27,7 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode
                     </Grid>
 
                     <Grid item>
-                        <ReadOnlyTextField
+                        <ViewModeTextField
                             name="url"
                             label="קישור"
                             placeholder="קישור"
@@ -42,58 +40,10 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode
                             multiline
                         />
                     </Grid>
-
-                    <Grid item>
-                        {/* <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
-                        <FormGroup>
-                            <FormControlLabel
-                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
-                                control={
-                                    <MeltaCheckbox
-                                        checked={selectedCategories.length === allowedCategoriesIds.length}
-                                        onChange={(e) => {
-                                            handleAllSelected(e.target.checked);
-                                        }}
-                                    />
-                                }
-                            />
-                            <Divider />
-                            {Array.from(
-                                categories.values(),
-                                (currentCategory) =>
-                                    allowedCategoriesIds.includes(currentCategory._id) && (
-                                        <FormControlLabel
-                                            key={currentCategory._id}
-                                            sx={{ paddingLeft: 3 }}
-                                            label={currentCategory.displayName}
-                                            labelPlacement="end"
-                                            control={
-                                                <MeltaCheckbox
-                                                    checked={selectedCategories.includes(currentCategory._id)}
-                                                    onChange={() => {
-                                                        handleCheckboxChange(currentCategory._id);
-                                                    }}
-                                                />
-                                            }
-                                        />
-                                    ),
-                            )}
-                        </FormGroup>
-                        {touched.categoryIds && errors.categoryIds && (
-                            <Typography color="error" sx={{ mt: 2 }}>
-                                {errors.categoryIds}
-                            </Typography>
-                        )} */}
-                    </Grid>
                 </Grid>
 
-                <Grid item container direction="column" spacing={2}>
-                    <Grid item container direction="row" alignItems="center" wrap="nowrap" gap={1.5}>
-                        <InfoOutlined style={{ color: theme.palette.primary.main }} />
-                        <Typography fontWeight={400} fontSize={14} color="#53566E">
-                            עמוד זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם
-                        </Typography>
-                    </Grid>
+                <Grid item>
+                    <InfoTypography text={i18next.t('dashboard.iframes.permissionWarning')} />
                 </Grid>
             </Grid>
         </Grid>

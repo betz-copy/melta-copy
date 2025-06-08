@@ -1,7 +1,6 @@
-import React, { MouseEventHandler } from 'react';
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { Check } from '@mui/icons-material';
+import React, { MouseEventHandler } from 'react';
 
 const AreYouSureDialog: React.FC<{
     open: boolean;
@@ -25,7 +24,6 @@ const AreYouSureDialog: React.FC<{
     disableYesButton,
     yesTitle = (
         <Grid container alignItems="center" justifyContent="center" style={{ gap: '5px' }}>
-            {/* <Check /> */}
             {i18next.t('areYouSureDialog.yes')}
         </Grid>
     ),

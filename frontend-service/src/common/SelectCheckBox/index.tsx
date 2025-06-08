@@ -40,7 +40,6 @@ export type SelectCheckboxProps<Option extends {}, Group extends any = Option> =
     dynamicWidth?: number;
     showIcon?: boolean;
     treeFunc?: (groups: Group[], options: Option[], getItemId: SelectCheckboxProps<Option>['getOptionId']) => TreeViewBaseItem<Option>[];
-    readonly?: boolean;
 }>;
 
 export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends any = Option>(
@@ -106,7 +105,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     onDragEnd,
     setOptions,
     showIcon,
-    readonly,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -277,7 +275,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         setSelectedOptions(filteredOptions);
                     }}
                     showIcon={showIcon}
-                    readonly={readonly}
                 />
             </Select>
         </FormControl>

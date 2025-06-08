@@ -1,15 +1,23 @@
 import groupBy from 'lodash.groupby';
 import { StatusCodes } from 'http-status-codes';
 import { FilterQuery, Types } from 'mongoose';
-import { DefaultManagerMongo, NotFoundError, IMongoChart, IMongoIframe, ServiceError } from '@microservices/shared';
+import {
+    DefaultManagerMongo,
+    NotFoundError,
+    IMongoChart,
+    IMongoIframe,
+    ServiceError,
+    DashboardItem,
+    DashboardItemType,
+    MongoDashboardItem,
+} from '@microservices/shared';
 import config from '../../config';
-import { DashboardItem, DashboardItemType } from './interface';
 import DashboardItemSchema from './model';
 import { escapeRegExp } from '../../utils';
 import ChartManager from '../charts/manager';
 import IFrameManager from '../iFrames/manager';
 
-class DashboardManager extends DefaultManagerMongo<DashboardItem> {
+class DashboardManager extends DefaultManagerMongo<MongoDashboardItem> {
     chartsManager: ChartManager;
 
     iframeManager: IFrameManager;
@@ -29,10 +37,6 @@ class DashboardManager extends DefaultManagerMongo<DashboardItem> {
             .lean()
             .exec();
     }
-
-    // async getDashboardRelatedItem(relatedId: string) {
-    //     return this.model.find({ metaData: relatedId }).populate('metaData').lean().exec();
-    // }
 
     async getDashboardRelatedItems(relatedIds: string[]) {
         const objectIds = relatedIds.map((id) => new Types.ObjectId(id));
@@ -99,9 +103,7 @@ class DashboardManager extends DefaultManagerMongo<DashboardItem> {
                 },
             },
             {
-                $match: {
-                    ...query,
-                },
+                $match: { ...query },
             },
             {
                 $project: {

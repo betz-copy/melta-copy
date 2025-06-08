@@ -1,9 +1,8 @@
+import { DefaultController, MongoDashboardItem } from '@microservices/shared';
 import { Request, Response } from 'express';
-import { DefaultController } from '@microservices/shared';
-import { DashboardItem } from './interface';
 import DashboardManager from './manager';
 
-class DashboardController extends DefaultController<DashboardItem, DashboardManager> {
+class DashboardController extends DefaultController<MongoDashboardItem, DashboardManager> {
     constructor(workspaceId: string) {
         super(new DashboardManager(workspaceId));
     }

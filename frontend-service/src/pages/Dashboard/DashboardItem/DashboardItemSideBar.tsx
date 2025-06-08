@@ -23,32 +23,6 @@ const DashboardItemSideBar = <T extends DashboardItemData>({
     const theme = useTheme();
 
     const handleTabChange = async (_event: React.SyntheticEvent, newValue: number) => {
-        const currentStepSchema = steps[activeStep].validationSchema;
-        // await formikProps.validateForm();
-
-        // if (!currentStepSchema) {
-        //     setActiveStep(newValue);
-        //     return;
-        // }
-
-        // try {
-        //     await (currentStepSchema as Yup.ObjectSchema<any>).validate(formikProps.values, {
-        //         abortEarly: false,
-        //     });
-
-        //     setActiveStep(newValue);
-        // } catch (err) {
-        //     console.log('hiiiii');
-
-        //     console.log({ err });
-
-        //     formikProps.setTouched(
-        //         Object.keys(formikProps.values).reduce((acc, key) => {
-        //             acc[key] = true;
-        //             return acc;
-        //         }, {}),
-        //     );
-        // }
         const allTouched = markTouched(formikProps.values);
         await formikProps.setTouched(allTouched);
 
@@ -94,7 +68,7 @@ const DashboardItemSideBar = <T extends DashboardItemData>({
                 <Grid item sx={{ width: '100%', padding: '30px' }}>
                     {steps.map(({ label }, index) => (
                         <TabPanel key={label} value={index.toString()} sx={{ padding: 0 }}>
-                            {steps[index].component(formikProps)}
+                            {steps[index].component(formikProps, { isEditMode: false, setBlock: () => {} })}
                         </TabPanel>
                     ))}
                 </Grid>

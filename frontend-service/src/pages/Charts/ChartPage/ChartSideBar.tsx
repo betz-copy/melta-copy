@@ -1,4 +1,4 @@
-import { Group as AllUsers, InfoOutlined, PermIdentity as PersonalIcon } from '@mui/icons-material';
+import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
 import {
     Autocomplete,
     Box,
@@ -19,33 +19,31 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
+import { InfoTypography } from '../../../common/InfoTypography';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
-import { IChart, IPermission } from '../../../interfaces/charts';
+import { IBasicChart, IChart, IPermission } from '../../../interfaces/charts';
 import { ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
 import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
-import { ReadOnlyTextField } from '../../../common/inputs/FilterInputs/StyledFilterInput';
-import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
     const { values, setValues, errors, touched, handleChange, setFieldValue } = props as FormikProps<IChart>;
 
     const currentUser = useUserStore();
+    const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const theme = useTheme();
-    console.log({ isDashboardPage, values });
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
-
-    console.log({ values, chartMode });
 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
@@ -67,15 +65,19 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                     {isDashboardPage && viewMode === ViewMode.Add && (
                         <Grid item>
                             <FormControl sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
-                                    יצירת תרשים
+                                <Typography fontSize="14px" fontWeight="14px" color={theme.palette.text.primary}>
+                                    {i18next.t('dashboard.charts.createChart')}
                                 </Typography>
                                 <RadioGroup
                                     row
                                     name="actionOnFail"
                                     onChange={(_e, newValue) => {
-                                        setChartMode(newValue);
-                                        setValues({ ...initialValues, templateId: values.templateId });
+                                        setChartMode(newValue as 'new' | 'exist');
+                                        setValues((prevValues) => ({
+                                            ...prevValues,
+                                            ...initialValues,
+                                            templateId: prevValues.templateId,
+                                        }));
                                     }}
                                     value={chartMode}
                                     sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}
@@ -83,7 +85,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                     <FormControlLabel
                                         value="new"
                                         control={<Radio />}
-                                        label="חדש"
+                                        label={i18next.t('dashboard.charts.new')}
                                         sx={{
                                             '& .MuiFormControlLabel-label': {
                                                 fontSize: '14px',
@@ -94,7 +96,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                     <FormControlLabel
                                         value="exist"
                                         control={<Radio />}
-                                        label="קיים"
+                                        label={i18next.t('dashboard.charts.existing')}
                                         sx={{
                                             '& .MuiFormControlLabel-label': {
                                                 fontSize: '14px',
@@ -116,7 +118,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                             )}
                             <Grid item container direction="column" spacing={2}>
                                 <Grid item>
-                                    <ReadOnlyTextField
+                                    <ViewModeTextField
                                         id="name"
                                         name="name"
                                         label={i18next.t('charts.name')}
@@ -130,7 +132,7 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                     />
                                 </Grid>
                                 <Grid item>
-                                    <ReadOnlyTextField
+                                    <ViewModeTextField
                                         id="description"
                                         name="description"
                                         multiline
@@ -148,13 +150,13 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
 
                                 <Grid item marginTop={2}>
                                     <ChartTypesEdit
-                                        formik={props}
+                                        formik={props as unknown as FormikProps<IBasicChart>}
                                         formikValues={values}
                                         entityTemplate={entityTemplates.get(values.templateId)!}
                                         disabled={viewMode === ViewMode.ReadOnly}
                                     />
                                 </Grid>
-                                {/* ask if not to show it in dashboard page in create/ edit */}
+
                                 <Grid item container direction="column" spacing={2}>
                                     <Grid item>
                                         <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
@@ -162,7 +164,6 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                         </Typography>
                                     </Grid>
                                     <Grid item>
-                                        {/* todo: check why i dont see the toopltip */}
                                         <ToggleButtonGroup
                                             exclusive
                                             id="permissions"
@@ -200,12 +201,11 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                         </ToggleButtonGroup>
                                     </Grid>
                                 </Grid>
-                                <Grid item container direction="row" alignItems="center" wrap="nowrap" gap={1.5} marginTop={2}>
-                                    <InfoOutlined style={{ color: theme.palette.primary.main }} />
-                                    <Typography fontWeight={400} fontSize={14} color="#53566E">
-                                        טבלה זו והמידע המוצג בה תופיע לכלל המשתמשים בהתאם להרשאותיהם
-                                    </Typography>
-                                </Grid>
+                                {values.permission === IPermission.Protected && (
+                                    <Grid item>
+                                        <InfoTypography text={i18next.t('dashboard.charts.permissionWarning')} />
+                                    </Grid>
+                                )}
                             </Grid>
                         </Grid>
                     ) : (
