@@ -1,14 +1,13 @@
 import { Add } from '@mui/icons-material';
 import { Box, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
-import i18next from 'i18next';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import PopperSidebar from '../../../common/PopperSidebar';
-import { useSearchParams } from '../../../utils/hooks/useSearchParams';
-import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
-import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
 
 const AddDashboardItem: React.FC = () => {
     const theme = useTheme();
@@ -17,7 +16,6 @@ const AddDashboardItem: React.FC = () => {
     const [_, navigate] = useLocation();
 
     const [openPopper, setOpenPopper] = React.useState(false);
-    const [searchParams, setSearchParams] = useSearchParams({});
 
     const itemsCards: DashboardItemCardProps[] = [
         {

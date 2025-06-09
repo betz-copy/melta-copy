@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { ViewModeTextField } from '../ViewModeTextField';
 
-const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {
+export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {
     switch (filter?.filterType) {
         case 'date':
             return `${i18next.t(`filters.${filter.type}`)} ${filter.dateFrom ? new Date(filter.dateFrom).toLocaleDateString('he-IL') : ''} ${

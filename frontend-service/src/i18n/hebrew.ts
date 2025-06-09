@@ -1274,6 +1274,7 @@ export default {
             createChart: 'יצירת תרשים',
             new:'חדש',
             existing:'קיים',
+            chooseChart:'בחירת תרשים',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: ' במידה והרשאת הצפייה שלו תשתנה ל”פרטי” - יוסר התרשים מעמוד הבית .תרשים זה מוצג בעמוד הבית.',
@@ -1333,6 +1334,8 @@ export default {
         xAxis: 'ציר ה-X',
         yAxis: 'ציר ה-Y',
         fieldToView: 'שדה להצגה',
+        filters:'סינונים',
+        noFilters:'ללא סינונים',
         dontHavePermissionToEditChart: 'אין הרשאות עריכה לתרשים',
         types: { lineChart: 'קווי', pieChart: 'עוגה', barChart: 'עמודות', numberChart: 'מספרי' },
         actions: {
