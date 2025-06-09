@@ -611,6 +611,7 @@ export const MemoFieldEditCard = memo(
     FieldEditCard,
     (prev, next) =>
         prev.index === next.index &&
+        prev.groupIndex === next.groupIndex &&
         prev.areThereAnyInstances === next.areThereAnyInstances &&
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
