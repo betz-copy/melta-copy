@@ -11,25 +11,11 @@ import {
     updateChartRequestSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-// import config from '../../config';
-
-// const {
-//     dashboardService: { url, baseRoute, requestTimeout, charts },
-// } = config;
 
 const ChartsRouter: Router = Router();
 
 const ChartsControllerMiddleware = createWorkspacesController(ChartController);
 const ChartsValidatorMiddleware = createWorkspacesController(ChartsValidator, true);
-
-// const ChartsServiceProxy = createProxyMiddleware({
-//     target: `${url}${baseRoute}${charts.baseRoute}`,
-//     changeOrigin: true,
-//     on: {
-//         proxyReq: fixRequestBody,
-//     },
-//     proxyTimeout: requestTimeout,
-// });
 
 ChartsRouter.get(
     '/:chartId',
@@ -48,9 +34,9 @@ ChartsRouter.post(
 
 ChartsRouter.post(
     '/by-user/:templateId',
-    // ValidateRequest(getChartByTemplateIdRequestSchema),
+    ValidateRequest(getChartByTemplateIdRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
-    // ChartsValidatorMiddleware.validateUserCanGetChartsByTemplate,
+    ChartsValidatorMiddleware.validateUserCanGetChartsByTemplate,
     ChartsControllerMiddleware.searchChartByUserId,
 );
 

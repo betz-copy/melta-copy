@@ -2100,7 +2100,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChart(templateId: string, chartBody: IChartBody[]) {
+    async getChartByTemplate(templateId: string, chartBody: IChartBody[]) {
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
         const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
@@ -2119,10 +2119,6 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return Promise.all(chartPromises);
     }
-
-    // async getChartByTemplateId(templateCharts: Record<string, IChartBody[]>) {
-    //     return Promise.all(Object.entries(templateCharts).map(([keyword$DataError, value]) => this.getChart(keyword$DataError, value)));
-    // }
 }
 
 export default EntityManager;

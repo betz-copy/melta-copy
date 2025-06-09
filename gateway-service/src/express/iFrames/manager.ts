@@ -3,7 +3,7 @@ import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import IFramesService from '../../externalServices/dashboardService/iframesService';
-import { DashboardItemService } from '../../externalServices/dashboardService/dashboardItemService';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;

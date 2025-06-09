@@ -1,6 +1,6 @@
-import _, { flatten, groupBy, keyBy, map, partition } from 'lodash';
-import { ISubCompactPermissions } from '@microservices/shared';
-import { DashboardItemService, DashboardItemType, MongoDashboardItemPopulated } from '../../externalServices/dashboardService/dashboardItemService';
+import { ChartItemPopulated, DashboardItemType, ISubCompactPermissions, MongoBaseFields, MongoDashboardItemPopulated } from '@microservices/shared';
+import { flatten, groupBy, keyBy, map, partition, sortBy } from 'lodash';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import ChartManager from '../templateCharts/manager';
 import TemplatesManager from '../templates/manager';
@@ -14,31 +14,31 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
     }
 
     private isItemAllowed(
-        dashboardItem: any,
+        dashboardItem: MongoDashboardItemPopulated,
         allowedTemplateIds: Set<string>,
         allowedCategoryIds: Set<string>,
         userId: string,
         permissionsOfUserId: ISubCompactPermissions,
         chartManager: ChartManager,
     ) {
-        const itemTypePermissions = {
-            [DashboardItemType.Chart]: () =>
-                allowedTemplateIds.has(dashboardItem.metaData.templateId) &&
-                chartManager.validateAllowedRelatedTemplate(userId, permissionsOfUserId, dashboardItem.metaData),
-
-            [DashboardItemType.Iframe]: () =>
-                permissionsOfUserId.admin?.scope
+        switch (dashboardItem.type) {
+            case DashboardItemType.Chart:
+                return (
+                    allowedTemplateIds.has(dashboardItem.metaData.templateId) &&
+                    chartManager.validateAllowedRelatedTemplate(userId, permissionsOfUserId, dashboardItem.metaData)
+                );
+            case DashboardItemType.Iframe:
+                return permissionsOfUserId.admin?.scope
                     ? true
-                    : dashboardItem.metaData.categoryIds.every((categoryId: string) => allowedCategoryIds.has(categoryId)),
-
-            [DashboardItemType.Table]: () => allowedTemplateIds.has(dashboardItem.metaData.templateId),
-        };
-
-        const validator = itemTypePermissions[dashboardItem.type];
-        return validator ? validator() : false;
+                    : dashboardItem.metaData.categoryIds.every((categoryId: string) => allowedCategoryIds.has(categoryId));
+            case DashboardItemType.Table:
+                return allowedTemplateIds.has(dashboardItem.metaData.templateId);
+            default:
+                return false;
+        }
     }
 
-    private async processChartItems(chartItems: any[], chartManager: ChartManager) {
+    private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager) {
         const chartMetaList = map(chartItems, 'metaData');
         const chartsByTemplateId = groupBy(chartMetaList, 'templateId');
 
@@ -55,7 +55,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
     }
 
     private sortItemsByCreatedDate(items: MongoDashboardItemPopulated[]) {
-        return _.sortBy(items, (item) => new Date(item.createdAt).getTime());
+        return sortBy(items, (item) => new Date(item.createdAt).getTime());
     }
 
     async searchDashboardItems(userId: string, permissionsOfUserId: ISubCompactPermissions, textSearch?: string) {
@@ -76,8 +76,8 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
 
         if (chartItems.length === 0) return this.sortItemsByCreatedDate(nonChartItems);
 
-        const enrichedChartItems = await this.processChartItems(chartItems, chartManager);
-        const allItems = [...enrichedChartItems, ...nonChartItems];
+        const processedCharts = await this.processChartItems(chartItems, chartManager);
+        const allItems = [...processedCharts, ...nonChartItems];
 
         return this.sortItemsByCreatedDate(allItems);
     }

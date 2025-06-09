@@ -18,7 +18,7 @@ import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
-import { DashboardItemService } from '../../externalServices/dashboardService/dashboardItemService';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;

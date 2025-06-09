@@ -184,13 +184,15 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                                     !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions))
                                             }
                                         >
-                                            <MeltaTooltip title={i18next.t('charts.personal')}>
-                                                <Box>
-                                                    <ToggleButton value={IPermission.Private}>
-                                                        <PersonalIcon />
-                                                    </ToggleButton>
-                                                </Box>
-                                            </MeltaTooltip>
+                                            {!isDashboardPage && (
+                                                <MeltaTooltip title={i18next.t('charts.personal')}>
+                                                    <Box>
+                                                        <ToggleButton value={IPermission.Private}>
+                                                            <PersonalIcon />
+                                                        </ToggleButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
                                             <MeltaTooltip title={i18next.t('charts.protected')}>
                                                 <Box>
                                                     <ToggleButton value={IPermission.Protected}>
