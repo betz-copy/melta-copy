@@ -67,7 +67,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>({});
     const isBrokenRules = (stepsData.brokenRulesEntities ?? []).length > 0;
     const [wasDirty, setWasDirty] = useState(false);
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>(initialValues);
     const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
@@ -166,7 +166,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         setOpenEditDialog(false);
         setStepsData({ succeededEntities: [], failedEntities: [] });
         setSelectedFields({});
-        setInitialValuePropsToFilter({});
+        setInitialValuePropsToFilter(initialValues);
         setWasDirty(false);
         setExternalErrors({ files: false, unique: {}, action: '' });
         setEntityData(undefined);
@@ -199,7 +199,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                         isMultipleSelection
                         multipleSelectionProps={{ selectedFields, setSelectedFields }}
                         entityTemplate={template}
-                        draftId={undefined}
                         wasDirty={wasDirty}
                         setWasDirty={setWasDirty}
                         externalErrors={externalErrors}
@@ -221,9 +220,10 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
                 return { properties: propertiesErrors };
             },
-
             stepperActions: {
-                disable: 'back',
+                next: {
+                    disabled: !wasDirty && Object.values(selectedFields).every((value) => !value),
+                },
             },
             invisibleBeforeStep: true,
         },
@@ -298,7 +298,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 );
             },
             stepperActions: {
-                disable: 'back',
+                hide: 'back',
                 next: {
                     text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                 },
@@ -378,6 +378,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 isLoading={isMultipleUpdateLoading}
                 submitFunction={async () => (isBrokenRules ? setCreateOrUpdateWithRuleBreachDialogState(true) : handleClose(true))}
                 direction="column"
+                checkForChanges={false}
             />
 
             {createOrUpdateWithRuleBreachDialogState && isBrokenRules && (
