@@ -1,24 +1,24 @@
-import { Card, Grid } from '@mui/material';
+import { Card, Grid, Typography, useTheme } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { BlueTitle } from '../../../common/BlueTitle';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../common/wizards';
 import { TableMetaData } from '../../../interfaces/dashboard';
+import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
-import { IEntity } from '../../../interfaces/entities';
 
 const BodyComponent: React.FC<StepComponentProps<TableMetaData>> = ({ values }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
+    const theme = useTheme();
+
     const entitiesTableRef = React.useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = metadata.agGrid;
-    const { headlineTitleFontSize } = metadata.mainFontSizes;
 
     const memoizedFilter = useMemo(() => {
         const { filter, templateId } = values;
@@ -33,12 +33,16 @@ const BodyComponent: React.FC<StepComponentProps<TableMetaData>> = ({ values }) 
         <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">
             {values.templateId && (
                 <Card sx={{ width: '98%', height: 'fit-content', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
-                    <BlueTitle
-                        title={values.name || ''}
-                        component="h4"
-                        variant="h4"
-                        style={{ fontSize: headlineTitleFontSize, justifySelf: 'center', padding: '20px' }}
-                    />
+                    <Typography variant="h5" fontWeight="450" color={theme.palette.primary.main} sx={{ textAlign: 'center', padding: '20px' }}>
+                        {values.name || ''}
+                    </Typography>
+
+                    {values.description && (
+                        <Typography variant="subtitle1" color={theme.palette.primary.main} sx={{ textAlign: 'center', mb: 2 }}>
+                            {values.description}
+                        </Typography>
+                    )}
+
                     <EntitiesTableOfTemplate
                         ref={entitiesTableRef}
                         template={entityTemplates.get(values.templateId)!}
