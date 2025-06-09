@@ -11,7 +11,7 @@ const ContactInfoCard: React.FC = () => {
 
     return (
         <>
-            <Typography variant="h6" align="center" fontWeight={700} color="primary" gutterBottom sx={{ fontSize: '1.1rem' }} >
+            <Typography variant="h6" align="center" fontWeight={700} color="primary" gutterBottom sx={{ fontSize: '1.1rem' }}>
                 {i18next.t('simbaClientPage.contactInfoCard.title')}
             </Typography>
             <Card sx={{ mt: 1, borderRadius: '16px', boxShadow: '-2px 2px 6px 0px #1e27754d' }}>
@@ -32,9 +32,13 @@ const ContactInfoCard: React.FC = () => {
                                 }}
                             >
                                 <Grid item container display="flex" direction="row" justifyContent="space-between" gap={1}>
-                                    <Typography color={propertyTitleColor}>{contact.role}</Typography>
+                                    <Typography fontSize="14px" color={propertyTitleColor}>
+                                        {contact.role}
+                                    </Typography>
                                     <Grid item justifyContent="start" alignItems="start" display="flex">
-                                        <Typography color={propertyValueColor}>{contact.name}</Typography>
+                                        <Typography fontSize="14px" color={propertyValueColor}>
+                                            {contact.name}
+                                        </Typography>
                                     </Grid>
                                 </Grid>
                                 <Grid item display="flex" gap={1}>
