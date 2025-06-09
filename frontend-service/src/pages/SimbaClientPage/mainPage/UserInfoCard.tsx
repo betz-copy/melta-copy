@@ -106,7 +106,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
                                     alignItems: 'center',
                                     width: '100%',
                                 }}
-                                innerStyle={{ width: '32%', maxHeight: '50px' }}
+                                innerStyle={{ width: '32%' }}
                                 textWrap
                                 mode="normal"
                             />
