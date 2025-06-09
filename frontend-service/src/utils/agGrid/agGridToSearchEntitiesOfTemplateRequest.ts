@@ -226,13 +226,11 @@ const getFilterModal = (
     if (!filterModel && !defaultModal) return undefined;
 
     const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
-        if (!filter) return [];
-
-        if (filter.$and) {
+        if (filter?.$and) {
             return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
         }
         
-        return [filter as IFilterOfTemplate];
+        return [];
     };
 
     const filterModelAnds = extractAndArray(filterModel);
