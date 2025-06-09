@@ -75,7 +75,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
                     </Grid>
                     <Grid item>
                         <Grid item>
-                            <Link href={`entity/${currentUserFromSimba.properties._id}`}>
+                            <Link href={'test.mlt/userInfo'}>
                                 <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
                                     <img height="15px" src="/icons/read-more-icon.svg" />
                                 </IconButtonWithPopover>

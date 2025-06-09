@@ -145,7 +145,7 @@ const SimbaClientPageInner: React.FC = () => {
                             <Route path="simba/test.mlt">
                                 <SimbaMainPage />
                             </Route>
-                            <Route path="simba/test.mlt/entity/:entityId">
+                            <Route path="simba/test.mlt/userInfo">
                                 {currentUserFromSimba && <UserInfoPage currentUserFromSimba={currentUserFromSimba} usersInfoChildTemplate={usersInfoChildTemplate!} />}
                             </Route>
                             <Route path="*">
