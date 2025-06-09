@@ -162,6 +162,10 @@ export const environment = {
     },
     dashboard: {
         dashboardOrderKey: 'dashboardOrder',
+        dashboardPath: '/dashboard',
+        chartPath: '/charts',
+        tablePath: '/table',
+        iFramePath: '/iframe',
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,

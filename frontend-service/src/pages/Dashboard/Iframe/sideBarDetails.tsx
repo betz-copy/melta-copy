@@ -15,28 +15,28 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode
                     <Grid item>
                         <ViewModeTextField
                             name="name"
-                            label={i18next.t('charts.name')}
-                            placeholder={i18next.t('charts.name')}
+                            label={i18next.t('wizard.name')}
+                            placeholder={i18next.t('wizard.name')}
                             value={values.name}
                             onChange={handleChange}
                             error={touched.name && Boolean(errors.name)}
                             helperText={touched.name && errors.name}
-                            fullWidth
                             readOnly={viewMode === ViewMode.ReadOnly}
+                            fullWidth
                         />
                     </Grid>
 
                     <Grid item>
                         <ViewModeTextField
                             name="url"
-                            label="קישור"
-                            placeholder="קישור"
+                            label={i18next.t('dashboard.iframes.url')}
+                            placeholder={i18next.t('dashboard.iframes.url')}
                             value={values.url}
                             onChange={handleChange}
                             error={touched.url && Boolean(errors.url)}
                             helperText={touched.url && errors.url}
-                            fullWidth
                             readOnly={viewMode === ViewMode.ReadOnly}
+                            fullWidth
                             multiline
                         />
                     </Grid>

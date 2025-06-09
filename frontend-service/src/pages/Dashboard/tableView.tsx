@@ -1,11 +1,10 @@
 import { Download } from '@mui/icons-material';
-import { Box, CircularProgress, Grid } from '@mui/material';
+import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../common/BlueTitle';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../common/EntitiesTableOfTemplate';
 import { TableButton } from '../../common/TableButton';
@@ -23,6 +22,8 @@ const {
 const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    
+    const theme = useTheme();
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -30,7 +31,6 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
 
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
-    const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -38,7 +38,7 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                 fileName: `${template.displayName}${excelExtension}`,
                 templates: {
                     [template._id]: {
-                        filter: metaData.filter && Object.keys(metaData.filter).length > 0 && JSON.parse(metaData.filter),
+                        filter: metaData.filter && Object.keys(metaData.filter).length > 0 && JSON.parse(metaData.filter as unknown as string),
                         displayColumns: metaData.columns ?? [],
                     },
                 },
@@ -54,37 +54,40 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
         },
     );
 
-    const resizeChart = () => {
+    const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
         const newHeight = containerRef.current.offsetHeight;
 
-        entitiesTableRef.current.resizeTableHeight(newHeight - 80);
+        entitiesTableRef.current.resizeTableHeight(newHeight - 120);
     };
 
     useEffect(() => {
-        window.addEventListener('resize', resizeChart);
-        return () => window.removeEventListener('resize', resizeChart);
+        window.addEventListener('resize', resizeTable);
+        return () => window.removeEventListener('resize', resizeTable);
     }, []);
 
     useEffect(() => {
-        const observer = new ResizeObserver(resizeChart);
+        const observer = new ResizeObserver(resizeTable);
         if (containerRef.current) observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, []);
 
     const memorizedFilter = React.useMemo(() => {
-        return metaData.filter && Object.keys(metaData.filter).length > 0 ? JSON.parse(metaData.filter) : undefined;
+        return metaData.filter && Object.keys(metaData.filter).length > 0 ? JSON.parse(metaData.filter as unknown as string) : undefined;
     }, [metaData.filter]);
 
     return (
         <Grid ref={containerRef} container item width="100%" height="100%" alignItems="center" justifyContent="center" paddingTop="20px">
             <Grid sx={{ width: '98%', height: '100%', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
-                <BlueTitle
-                    title={metaData.name || ''}
-                    component="h4"
-                    variant="h4"
-                    style={{ fontSize: headlineTitleFontSize, justifySelf: 'center' }}
-                />
+                <Typography variant="h5" fontWeight="450" color={theme.palette.primary.main} sx={{ textAlign: 'center' }}>
+                    {metaData.name || ''}
+                </Typography>
+
+                {metaData.description && (
+                    <Typography variant="subtitle1" color={theme.palette.primary.main} sx={{ textAlign: 'center' }}>
+                        {metaData.description}
+                    </Typography>
+                )}
 
                 <Grid display="flex">
                     <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={false} />

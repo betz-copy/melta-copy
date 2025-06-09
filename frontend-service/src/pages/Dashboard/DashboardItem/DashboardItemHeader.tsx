@@ -12,7 +12,7 @@ import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { ConfirmDeleteDashboardItem } from '../Dialogs';
-import { IChart } from '../../../interfaces/charts';
+import { IMongoChart } from '../../../interfaces/charts';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 
 interface DashboardItemHeaderProps<T extends DashboardItemData> {
@@ -46,12 +46,13 @@ const DashboardItemHeader = <T extends DashboardItemData>({
 }: DashboardItemHeaderProps<T>): React.ReactElement => {
     const theme = useTheme();
     const [, navigate] = useLocation();
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore((state) => state.user);
+
     const hasAdminPermission = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
     const hasPermissionChartPage =
-        chartPageProps?.isChartPage && type === DashboardItemType.Chart && (values as IChart).createdBy === currentUser._id;
-
+        chartPageProps?.isChartPage && type === DashboardItemType.Chart && (values as IMongoChart).createdBy === currentUser._id;
     const hasPermission = hasAdminPermission || hasPermissionChartPage;
 
     const isSameObject = isEqual(values, initialValues);
@@ -137,7 +138,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
             <Box display="flex" alignItems="center" gap="10px">
                 {viewMode.value === ViewMode.ReadOnly && hasPermission && (
                     <IconButtonWithPopover
-                        popoverText="עריכה"
+                        popoverText={i18next.t('actions.edit')}
                         iconButtonProps={{
                             onClick: () => viewMode.set(ViewMode.Edit),
                         }}
@@ -145,7 +146,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                     >
                         <Edit htmlColor="white" />
                         <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
-                            עריכה
+                            {i18next.t('actions.edit')}
                         </Typography>
                     </IconButtonWithPopover>
                 )}
@@ -153,7 +154,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                 {((viewMode.value !== ViewMode.ReadOnly && hasPermission) || (viewMode.value === ViewMode.Add && chartPageProps?.isChartPage)) && (
                     <>
                         <IconButtonWithPopover
-                            popoverText="ביטול"
+                            popoverText={i18next.t('actions.cancel')}
                             iconButtonProps={{
                                 onClick: () => handleResetClick(),
                             }}
@@ -167,11 +168,11 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                         >
                             <Close htmlColor={theme.palette.primary.main} />
                             <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: theme.palette.primary.main }}>
-                                ביטול
+                                {i18next.t('actions.cancel')}
                             </Typography>
                         </IconButtonWithPopover>
                         <IconButtonWithPopover
-                            popoverText="שמירה"
+                            popoverText={i18next.t('actions.save')}
                             iconButtonProps={{
                                 type: 'submit',
                             }}
@@ -185,7 +186,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                         >
                             <Check htmlColor={isDisabledForm ? '#9B9DB6' : 'white'} />
                             <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: isDisabledForm ? '#9B9DB6' : 'white' }}>
-                                שמירה
+                                {i18next.t('actions.save')}
                             </Typography>
                         </IconButtonWithPopover>
                     </>
@@ -206,6 +207,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                 isLoading={isLoading}
                 chartPageProps={chartPageProps}
             />
+
             <AreYouSureDialog
                 open={confirmCancelChanges.isDialogOpen}
                 handleClose={() => setConfirmCancelChanges({ isDialogOpen: false, cancelType: null })}

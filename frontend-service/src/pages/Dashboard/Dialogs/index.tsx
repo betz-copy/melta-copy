@@ -23,7 +23,6 @@ const ConfirmDeleteDashboardItem: React.FC<{
             noTitle={i18next.t('dashboard.back')}
             title={i18next.t('dashboard.dialogs.delete.title', { type: i18next.t(`dashboard.itemType.${type}`) })}
             body={
-                // eslint-disable-next-line no-nested-ternary
                 chartPageProps?.isChartPage
                     ? chartPageProps.usedInDashboard
                         ? i18next.t(`dashboard.dialogs.delete.body.${type}`)

@@ -59,15 +59,7 @@ const DashboardItemViewPage: React.FC<DashboardItemViewPageProps> = ({
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                 >
-                    <CardMenu
-                        onDeleteClick={onDelete}
-                        onEditClick={onEdit}
-                        // disabledProps={{
-                        //     isDeleteDisabled: !isWorkspaceAdmin(currentUser.currentWorkspacePermissions),
-                        //     isEditDisabled: false,
-                        //     tooltipTitle: '',
-                        // }}
-                    />
+                    <CardMenu onDeleteClick={onDelete} onEditClick={onEdit} />
                 </Box>
             )}
             {type === DashboardItemType.Chart &&

@@ -1,22 +1,22 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { ChartsAndGenerator, IChart, IPermission } from '../interfaces/charts';
+import { ChartsAndGenerator, IChart, IMongoChart, IPermission } from '../interfaces/charts';
 
 const { charts } = environment.api;
 
 type ChartWithStringFilter = Omit<IChart, 'filter'> & { filter?: string };
 
 export const createChart = async (newChart: ChartWithStringFilter, toDashboard: boolean = false) => {
-    const { data } = await axios.post<IChart>(charts, newChart, { params: { toDashboard } });
+    const { data } = await axios.post<IMongoChart>(charts, newChart, { params: { toDashboard } });
     return data;
 };
 
 export const editChart = async (chartId: string, updatedChart: ChartWithStringFilter) => {
-    const { _id, usedInDashboard, createdAt, updatedAt, ...restChart } = updatedChart;
+    const { usedInDashboard, ...restChart } = updatedChart;
 
     const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IPermission.Private;
 
-    const { data } = await axios.put<IChart>(`${charts}/${chartId}`, restChart, {
+    const { data } = await axios.put<IMongoChart>(`${charts}/${chartId}`, restChart, {
         params: {
             deleteReferenceDashboardItems,
         },
@@ -25,7 +25,7 @@ export const editChart = async (chartId: string, updatedChart: ChartWithStringFi
 };
 
 export const getChartById = async (chartId: string) => {
-    const { data } = await axios.get<IChart>(`${charts}/${chartId}`);
+    const { data } = await axios.get<IMongoChart>(`${charts}/${chartId}`);
     return data;
 };
 
@@ -35,12 +35,12 @@ export const getChartByTemplateId = async (templateId: string, textSearch?: stri
 };
 
 export const getChartsByUserId = async (templateId: string, textSearch?: string) => {
-    const { data } = await axios.post<IChart[]>(`${charts}/by-user/${templateId}`, { textSearch });
+    const { data } = await axios.post<IMongoChart[]>(`${charts}/by-user/${templateId}`, { textSearch });
     return data;
 };
 
 export const deleteChart = async (chartId: string, usedInDashboard?: boolean) => {
-    const { data } = await axios.delete<IChart>(`${charts}/${chartId}`, {
+    const { data } = await axios.delete<IMongoChart>(`${charts}/${chartId}`, {
         params: {
             deleteReferenceDashboardItems: usedInDashboard,
         },

@@ -36,7 +36,7 @@ const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
 const Charts = lazy(() => import('../Charts'));
-const Iframe1 = lazy(() => import('../Dashboard/Iframe'));
+const DashboardIframe = lazy(() => import('../Dashboard/Iframe'));
 const Chart = lazy(() => import('../Dashboard/Chart'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
@@ -235,7 +235,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                     permissions={currentUser.currentWorkspacePermissions}
                                     dashboardType={DashboardItemType.Iframe}
                                 >
-                                    <Iframe1 />
+                                    <DashboardIframe />
                                 </DashboardProtectedRoute>
                             </Route>
 
@@ -303,17 +303,6 @@ export const MeltaRoutesInner: React.FC = () => {
                             <Route path="/">
                                 <Redirect to={isDashboardHomePage ? '/dashboard' : '/search'} />
                             </Route>
-                            {/* 
-                            <Route path="/">
-                                {(() => {
-                                    const urlSearchParams = new URLSearchParams(window.location.search);
-                                    const hasSearchParams = urlSearchParams.get('search') !== null;
-
-                                    if (hasSearchParams) return <GlobalSearch />;
-
-                                    return isDashboardHomePage ? <Dashboard /> : <GlobalSearch />;
-                                })()}
-                            </Route> */}
 
                             <Route path="*">
                                 <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />

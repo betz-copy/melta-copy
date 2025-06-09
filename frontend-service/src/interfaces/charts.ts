@@ -1,6 +1,6 @@
 import { IGraphFilterBodyBatch } from './entities';
 
-export interface IBasicChart {
+export interface IChart {
     name: string;
     description: string;
     type: IChartType;
@@ -12,7 +12,7 @@ export interface IBasicChart {
     usedInDashboard?: boolean;
 }
 
-export interface IChart extends IBasicChart {
+export interface IMongoChart extends IChart {
     _id: string;
     createdAt: Date;
     updatedAt: Date;
@@ -86,6 +86,6 @@ export const isAggregation = (field: IAxisField): field is IAggregation => typeo
 
 type GeneratorChart = { x: any; y: any }[];
 
-export interface ChartsAndGenerator extends IChart {
+export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;
 }

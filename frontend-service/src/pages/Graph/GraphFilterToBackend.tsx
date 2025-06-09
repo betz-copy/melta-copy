@@ -28,8 +28,6 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
 
     const templateFilterRecord = Object.entries(groupedByTemplate).map(([template, filters]) => [template, { filter: { $and: filters } }]);
 
-    console.log({ templateFilterRecord });
-
     return Object.fromEntries(templateFilterRecord);
 };
 
@@ -150,7 +148,6 @@ export const FilterOfGraphToFilterRecord = (
     template: IMongoEntityTemplatePopulated,
 ): IGraphFilterBodyBatch => {
     const parsedFilters: IGraphFilterBodyBatch = {};
-    console.log({ filterModel });
 
     if (!filterModel || !filterModel.$and || !Array.isArray(filterModel.$and)) return {};
 
@@ -165,8 +162,6 @@ export const FilterOfGraphToFilterRecord = (
             };
         });
     });
-
-    console.log({ parsedFilters });
 
     return parsedFilters;
 };

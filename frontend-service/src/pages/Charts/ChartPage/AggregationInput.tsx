@@ -6,15 +6,15 @@ import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
-import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { IAggregation, IAggregationType, IChart, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
 interface AxisInputProps {
-    formik: FormikProps<IBasicChart>;
+    formik: FormikProps<IChart>;
     formikField: string;
-    formikValues: IBasicChart;
+    formikValues: IChart;
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;
     optionsType: OptionsType;

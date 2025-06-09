@@ -18,23 +18,27 @@ import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 import { DashboardItem } from '../DashboardItem';
 import { BodyComponent } from './BodyCompenet';
 import { SideBarDetails } from './sideBarDetails';
+import { environment } from '../../../globals';
+
+const { dashboardPath, tablePath } = environment.dashboard;
 
 const Table: React.FC = () => {
     const { tableId } = useParams<{ tableId: string }>();
     const [_, navigate] = useLocation();
 
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { data: table, isLoading: isLoadingGetTable } = useQuery(['getTable', tableId], () => getDashboardItemById(tableId!), {
         enabled: !!tableId,
     });
 
-    const template = table && entityTemplates.get(table?.metaData.templateId);
-
     const [viewMode, setViewMode] = useState<ViewMode>(tableId ? ViewMode.ReadOnly : ViewMode.Add);
     const [filters, setFilters] = useState<number[]>([]);
     const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const template = table && entityTemplates.get(table?.metaData.templateId);
 
     const updateFilters = (filter: string) => {
         const parsedFilter = JSON.parse(filter as unknown as string);
@@ -65,18 +69,16 @@ const Table: React.FC = () => {
                     setViewMode(ViewMode.ReadOnly);
                     updateFilters(data.metaData.filter);
                 } else {
-                    navigate(`/table/${data._id}`);
+                    navigate(`${tablePath}/${data._id}`);
                 }
 
-                toast.success(i18next.t(viewMode === ViewMode.Edit ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
+                toast.success(i18next.t(`wizard.category.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
             },
             onError: (error: AxiosError) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}
-                        defaultErrorMessage={
-                            ViewMode.Edit ? i18next.t('wizard.entityTemplate.failedToEdit') : i18next.t('wizard.entityTemplate.failedToCreate')
-                        }
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
                     />,
                 );
             },
@@ -85,13 +87,15 @@ const Table: React.FC = () => {
 
     const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(tableId), {
         onSuccess: () => {
-            navigate('/');
+            navigate(dashboardPath);
             toast.success(i18next.t('charts.actions.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
         },
     });
+
+    const getInitialValues = () => (table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table);
 
     const steps: StepType<TableMetaData>[] = [
         {
@@ -110,18 +114,15 @@ const Table: React.FC = () => {
 
     return (
         <DashboardItem<TableMetaData>
-            title={viewMode === ViewMode.Add ? i18next.t('dashboard.tables.addTable') : i18next.t('dashboard.tables.editTable')}
-            backPath={{ path: '/dashboard', title: 'מסך ראשי' }}
+            title={i18next.t(`dashboard.tables.${viewMode === ViewMode.Add ? 'add' : 'edit'}Table`)}
+            backPath={{ path: dashboardPath, title: i18next.t('dashboard.mainScreen') }}
             onDelete={deleteMutateAsync}
             steps={steps}
-            initialValues={table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table}
+            initialValues={getInitialValues()}
             bodyComponent={(props) => <BodyComponent {...props} />}
             submitFunction={(values) => mutateAsync(values)}
             isLoading={isLoading}
-            viewMode={{
-                value: viewMode,
-                set: setViewMode,
-            }}
+            viewMode={{ value: viewMode, set: setViewMode }}
             onReset={(_values, _formikHelpers) => setFilters(Object.keys(filterRecord).map(Number))}
             type={DashboardItemType.Table}
         />

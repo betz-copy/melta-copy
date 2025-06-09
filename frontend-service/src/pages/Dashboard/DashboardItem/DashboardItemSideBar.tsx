@@ -1,8 +1,7 @@
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, useTheme } from '@mui/material';
-import { FormikProps, FormikTouched } from 'formik';
+import { FormikProps } from 'formik';
 import React from 'react';
-import * as Yup from 'yup';
 import { StepType } from '../../../common/wizards';
 import { DashboardItemData } from '../../../interfaces/dashboard';
 import { markTouched } from '../../../utils/charts/markTouchedRecursive';

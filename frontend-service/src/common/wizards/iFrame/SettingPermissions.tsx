@@ -45,7 +45,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     }, [selectedCategories]);
 
     return (
-        <Card variant="outlined" sx={{ border: viewMode === ViewMode.ReadOnly ? 'none' : undefined }}>
+        <Card variant="outlined" sx={{ width: viewMode ? '100%' : '27%', border: viewMode === ViewMode.ReadOnly ? 'none' : undefined }}>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
                 <FormGroup>

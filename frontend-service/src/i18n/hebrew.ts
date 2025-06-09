@@ -1,3 +1,4 @@
+import { add } from 'lodash';
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
@@ -1257,6 +1258,8 @@ export default {
         field: 'שדה',
         filter: 'סינון',
         to: 'ל',
+        mainScreen:'מסך ראשי',
+        resetLayout: 'איפוס תצוגה',
         itemType: {
             table: 'טבלה',
             chart: 'תרשים',
@@ -1270,11 +1273,14 @@ export default {
             columnsToShow: 'עמודות להצגה',
         },
         charts: {
+            addChart: 'הוספת תרשים',
+            editChart: 'עריכת תרשים',
             permissionWarning: ' תרשים זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
             createChart: 'יצירת תרשים',
             new:'חדש',
             existing:'קיים',
             chooseChart:'בחירת תרשים',
+            chartsPage:'עמוד תרשימי',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: ' במידה והרשאת הצפייה שלו תשתנה ל”פרטי” - יוסר התרשים מעמוד הבית .תרשים זה מוצג בעמוד הבית.',
@@ -1285,6 +1291,7 @@ export default {
             addIFrame: 'הוספת קישור חיצוני',
             editIFrame: 'עריכת קישור חיצוני',
             permissionWarning: 'קישור חיצוני זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
+            url:'קישור'
         },
         dialogs: {
             delete: {

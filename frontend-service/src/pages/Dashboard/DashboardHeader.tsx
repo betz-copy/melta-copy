@@ -7,8 +7,6 @@ import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { TopBarGrid } from '../../common/TopBar';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { useUserStore } from '../../stores/user';
-import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 const DashboardHeader: React.FC<{
     setTextSearch: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -17,7 +15,6 @@ const DashboardHeader: React.FC<{
     AddNewItem: React.FC;
 }> = ({ setTextSearch, resetLayout, title, AddNewItem }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const currentUser = useUserStore((state) => state.user);
     const theme = useTheme();
 
     return (
@@ -49,7 +46,7 @@ const DashboardHeader: React.FC<{
                 <Grid container spacing={1} wrap="nowrap" alignItems="center">
                     <Grid item>
                         <IconButtonWithPopover
-                            popoverText="איפוס תצוגה"
+                            popoverText={i18next.t('dashboard.resetLayout')}
                             iconButtonProps={{
                                 onClick: () => resetLayout(),
                             }}
@@ -57,7 +54,7 @@ const DashboardHeader: React.FC<{
                         >
                             <Loop htmlColor={theme.palette.primary.main} />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: theme.palette.primary.main }}>
-                                איפוס תצוגה
+                                {i18next.t('dashboard.resetLayout')}
                             </Typography>
                         </IconButtonWithPopover>
                     </Grid>

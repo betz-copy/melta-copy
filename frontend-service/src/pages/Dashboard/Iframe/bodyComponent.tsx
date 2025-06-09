@@ -6,13 +6,13 @@ import { StepComponentProps } from '../../../common/wizards';
 import { IFrame as IframeType } from '../../../interfaces/iFrames';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
-const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values }) => {
+const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values: { name, url } }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
 
     return (
         <Grid item container width="100%" height="100%" alignItems="center" justifyContent="center">
-            {values.name && values.url && (
+            {name && url && (
                 <Card
                     sx={{
                         width: '90%',
@@ -23,7 +23,7 @@ const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values }) => 
                     }}
                 >
                     <BlueTitle
-                        title={values.name}
+                        title={name}
                         component="h4"
                         variant="h4"
                         style={{ fontSize: headlineTitleFontSize, justifySelf: 'center', padding: '20px' }}
@@ -35,7 +35,7 @@ const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values }) => 
                             overflow: 'hidden',
                         }}
                     >
-                        <Iframe url={values.url} title={values.name} width="100%" height="100%" frameBorder={0} />
+                        <Iframe url={url} title={name} width="100%" height="100%" frameBorder={0} />
                     </Grid>
                 </Card>
             )}

@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import Iframe from 'react-iframe';
 import { BlueTitle } from '../../common/BlueTitle';
 import { IFrame } from '../../interfaces/iFrames';
@@ -10,17 +10,6 @@ const IframeView: React.FC<{ metaData: IFrame }> = ({ metaData }) => {
 
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
-
-    // useEffect(() => {
-    //     window.addEventListener('resize', resizeChart);
-    //     return () => window.removeEventListener('resize', resizeChart);
-    // }, []);
-
-    // useEffect(() => {
-    //     const observer = new ResizeObserver(resizeChart);
-    //     if (containerRef.current) observer.observe(containerRef.current);
-    //     return () => observer.disconnect();
-    // }, []);
 
     return (
         <Grid ref={containerRef} sx={{ width: '100%', height: '100%', gap: 2 }} container direction="column">

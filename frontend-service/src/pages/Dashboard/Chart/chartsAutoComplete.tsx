@@ -6,13 +6,13 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../common/inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { IChart, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../../../interfaces/charts';
+import { IMongoChart, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData, IChart } from '../../../interfaces/charts';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getChartsByUserId } from '../../../services/chartsService';
 import { initialValues } from '../../../utils/charts/getChartAxes';
 import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 
-const renderMetaDtaChartByType = (option: IChart) => {
+const renderMetaDtaChartByType = (option: IMongoChart) => {
     switch (option.type) {
         case IChartType.Column:
         case IChartType.Line:
@@ -52,7 +52,7 @@ const renderMetaDtaChartByType = (option: IChart) => {
     }
 };
 
-const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart> }> = ({ formikProps }) => {
+const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: string }> }> = ({ formikProps }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(formikProps.values.templateId!);
@@ -74,7 +74,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart> }> = ({ for
         ));
     };
 
-    const onChange = (_event: React.SyntheticEvent, chosenChart: IChart | null) => {
+    const onChange = (_event: React.SyntheticEvent, chosenChart: IMongoChart | null) => {
         setInputValue('');
 
         if (chosenChart)
@@ -99,8 +99,8 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart> }> = ({ for
     });
 
     return (
-        <Autocomplete
-            value={formikProps.values}
+        <Autocomplete<IMongoChart>
+            value={formikProps.values as IMongoChart}
             inputValue={inputValue}
             onChange={onChange}
             onInputChange={handleInputChange}

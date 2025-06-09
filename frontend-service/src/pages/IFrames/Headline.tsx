@@ -8,20 +8,19 @@ import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import Iframe from 'react-iframe';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import Iframe from 'react-iframe';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IFrameWizard } from '../../common/wizards/iFrame';
+import { DashboardItemType } from '../../interfaces/dashboard';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
-import { useUserStore } from '../../stores/user';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
-import { DashboardItemType } from '../../interfaces/dashboard';
 
 const IFrameHeadline: React.FC<{
     iFrame: IMongoIFrame;
@@ -242,12 +241,6 @@ const IFrameHeadline: React.FC<{
                 }}
             />
 
-            {/* <AreYouSureDialog
-                open={deleteIFrameDialogState.isDialogOpen}
-                handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}
-                onYes={() => mutateAsync(deleteIFrameDialogState.iFrameId!)}
-                isLoading={isLoading}
-            /> */}
             <ConfirmEditCommonItem
                 isDialogOpen={editIFrameDialogState.isWizardOpen}
                 handleClose={closeEditDialog}

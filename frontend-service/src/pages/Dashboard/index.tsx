@@ -18,7 +18,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { DashboardItemViewPage } from './DashboardItemViewPage';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
 
-const { dashboardOrderKey } = environment.dashboard;
+const { dashboardOrderKey, chartPath, iFramePath, tablePath } = environment.dashboard;
 
 const Dashboard: React.FC = () => {
     const queryClient = useQueryClient();
@@ -75,12 +75,12 @@ const Dashboard: React.FC = () => {
     );
 
     const onEditYes = () => {
-        if (editDashboardItemDialogState.type === 'chart') {
-            navigate(`/charts/${editDashboardItemDialogState.templateId}/${editDashboardItemDialogState.chartId}/chart`, {
+        if (editDashboardItemDialogState.type === DashboardItemType.Chart) {
+            navigate(`${chartPath}/${editDashboardItemDialogState.templateId}/${editDashboardItemDialogState.chartId}/chart`, {
                 state: { isDashboardPage: true },
             });
-        } else if (editDashboardItemDialogState.type === 'iframe') {
-            navigate(`/iframe/${editDashboardItemDialogState.chartId}`);
+        } else if (editDashboardItemDialogState.type === DashboardItemType.Iframe) {
+            navigate(`${iFramePath}/${editDashboardItemDialogState.chartId}`);
         }
     };
 
@@ -122,15 +122,15 @@ const Dashboard: React.FC = () => {
                                     setDeleteChartDialogState({ chartId: dashboardItem._id, isDialogOpen: true, type: dashboardItem.type })
                                 }
                                 onEdit={() => {
-                                    if (dashboardItem.type === 'chart') {
+                                    if (dashboardItem.type === DashboardItemType.Chart) {
                                         setEditDashboardItemDialogState({
                                             chartId: dashboardItem.metaData._id,
                                             isDialogOpen: true,
                                             type: dashboardItem.type,
                                             templateId: dashboardItem.metaData.templateId!,
                                         });
-                                    } else if (dashboardItem.type === 'table') {
-                                        navigate(`/table/${dashboardItem._id}`);
+                                    } else if (dashboardItem.type ===DashboardItemType.Table) {
+                                        navigate(`${tablePath}/${dashboardItem._id}`);
                                     } else {
                                         setEditDashboardItemDialogState({
                                             chartId: dashboardItem.metaData._id,

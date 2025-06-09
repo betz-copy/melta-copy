@@ -8,8 +8,8 @@ import { DashboardItemData, DashboardItemType, ViewMode } from '../../../interfa
 
 interface DashboardItemProps<T extends DashboardItemData> {
     initialValues: T;
-    submitFunction: (values: T) => Promise<any>;
-    onReset?: (values: T, formikHelpers: FormikHelpers<any>) => void;
+    submitFunction: (values: T) => Promise<T>;
+    onReset?: (values: T, formikHelpers: FormikHelpers<T>) => void;
     steps: StepType<T>[];
     viewMode: {
         value: ViewMode;
@@ -41,8 +41,6 @@ const DashboardItem = <T extends DashboardItemData>({
     type,
     chartPageProps,
 }: DashboardItemProps<T>) => {
-    console.log({ initialValues });
-
     const [activeStep, setActiveStep] = React.useState(0);
 
     return (

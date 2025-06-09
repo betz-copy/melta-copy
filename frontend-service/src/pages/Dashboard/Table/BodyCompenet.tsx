@@ -10,11 +10,10 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 
 const BodyComponent: React.FC<StepComponentProps<TableMetaData>> = ({ values }) => {
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const theme = useTheme();
+    const queryClient = useQueryClient();
 
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entitiesTableRef = React.useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);

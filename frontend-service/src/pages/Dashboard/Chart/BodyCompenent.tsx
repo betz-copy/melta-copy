@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
+import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../common/wizards';
-import { IChart } from '../../../interfaces/charts';
-import { ChartGenerator } from '../../Charts/chartGenerator.tsx';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
+import { IChart } from '../../../interfaces/charts';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { ChartGenerator } from '../../Charts/chartGenerator.tsx';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 
 const BodyComponent: React.FC<StepComponentProps<IChart>> = ({ values }) => {

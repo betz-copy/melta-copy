@@ -1,7 +1,3 @@
-import React from 'react';
-import { FormikProps } from 'formik';
-import { ObjectShape } from 'yup/lib/object';
-import * as Yup from 'yup';
 import { ChartsAndGenerator, IChart } from './charts';
 import { IGraphFilterBodyBatch } from './entities';
 import { IFrame, IMongoIFrame } from './iFrames';
@@ -55,6 +51,8 @@ export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItem
 
 export type MongoDashboardItem = DashboardItem & MongoBaseFields;
 export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
+
+export type DashboardItemData = IChart | IFrame | TableMetaData;
 
 export enum ViewMode {
     Edit = 'edit',

@@ -4,7 +4,7 @@ import {
     IAggregationType,
     IAxisField,
     IColumnOrLineMetaData,
-    IBasicChart,
+    IChart,
     IChartType,
     IChartTypeMetaData,
     INUmberMetaData,
@@ -69,7 +69,7 @@ export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData =>
     return metaData;
 };
 
-export const initialValues: IBasicChart = {
+export const initialValues: IChart = {
     name: '',
     description: '',
     type: IChartType.Line,
