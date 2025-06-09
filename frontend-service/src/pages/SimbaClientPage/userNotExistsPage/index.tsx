@@ -17,7 +17,7 @@ const UserNotExistsPage: React.FC = () => {
                     flexDirection="column"
                     height="100%"
                     width="60%"
-                    paddingTop="80px"
+                    paddingTop="150px"
                     paddingX="70px"
                     sx={{ backgroundColor: '#F0F2F7', borderRadius: '15px 0 0 15px' }}
                 >
@@ -84,13 +84,25 @@ const UserNotExistsPage: React.FC = () => {
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid item height="100%" width="40%" sx={{ backgroundColor: '#4752B6', borderRadius: '0 15px 15px 0' }} alignContent="center">
-                    <img src="/icons/simba-logo-ltr.svg"></img>
-                </Grid>
+                <Grid
+                    item
+                    height="100%"
+                    width="40%"
+                    sx={{
+                        backgroundColor: '#4752B6',
+                        borderRadius: '0 15px 15px 0',
+                        backgroundImage: 'url(/icons/simba-logo-ltr.svg)',
+                        backgroundSize: '95% 95%',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPositionX: 'center',
+                        backgroundPositionY: 'center',
+                    }}
+                    alignContent="center"
+                />
             </Grid>
-            <Grid item container alignItems="baseline" flexWrap="nowrap" justifyContent="space-between" paddingX="150px" marginTop="20px">
+            <Grid item container alignItems="center" height="80px" flexWrap="nowrap" justifyContent="space-between" paddingX="150px" marginTop="20px">
                 <Grid item>
-                    <img src="/icons/simba-small-logo.svg"></img>
+                    <img height="60px" src="/icons/simba-small-logo.svg" style={{ marginBottom: '25px' }} />
                 </Grid>
                 <Grid item>
                     <Typography fontWeight="500" fontSize="14px" color="#1E2775" sx={{ textWrap: 'nowrap' }}>
