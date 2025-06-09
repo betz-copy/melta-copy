@@ -151,6 +151,27 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         );
     };
 
+    const handleSubmit = () => {
+        if (!localFilterField) return;
+
+        if (dialogType === 'default') {
+            let defaultValue: any;
+            if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
+                defaultValue = localFilterField.filter;
+            } else if (localFilterField.filterType === 'set') {
+                console.log('in set filter');
+
+                defaultValue = localFilterField.values;
+            } else if (localFilterField.filterType === 'date') {
+                defaultValue = localFilterField.dateFrom;
+            }
+            onSubmit(currentFieldName, defaultValue);
+        } else {
+            updateFieldFilter(localFilterField, currentFieldName);
+            onSubmit(currentFieldName, localFilterField);
+        }
+    };
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle>
@@ -177,39 +198,16 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                         />
                     </Grid>
 
-                    {dialogType === 'filter' && (
-                        <Grid item xs={12}>
-                            {renderFilterInput()}
-                        </Grid>
-                    )}
-
-                    {dialogType === 'default' && (
-                        <Grid item xs={12}>
-                            <TextField fullWidth value={inputValue} onChange={(e) => setInputValue(e.target.value)} variant="outlined" />
-                        </Grid>
-                    )}
+                    <Grid item xs={12}>
+                        {renderFilterInput()}
+                    </Grid>
                 </Grid>
             </DialogContent>
 
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} display="flex" justifyContent="center">
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                                if (dialogType === 'default') {
-                                    if (!inputValue) return;
-                                    onSubmit(currentFieldName, inputValue);
-                                    return;
-                                }
-
-                                if (!localFilterField) return;
-
-                                updateFieldFilter(localFilterField, currentFieldName);
-                                onSubmit(currentFieldName, localFilterField);
-                            }}
-                        >
+                        <Button variant="contained" color="primary" onClick={handleSubmit}>
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>
