@@ -31,7 +31,6 @@ import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphTopBar } from './GraphTopBar';
 import { NodeTooltip } from './NodeTooltip';
 import TemplatesSelectGrid from './templatesSelectGrid';
-// eslint-disable-next-line import/no-unresolved
 import { ILinkObject, INodeObject } from '../../customTypes';
 
 interface genericMenuState {

@@ -78,6 +78,14 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
+        const defaultFilterProps =
+            dialogType === 'default'
+                ? {
+                      hideFilterType: true,
+                      forceEqualsType: true,
+                  }
+                : {};
+
         if (propEnum) {
             return (
                 <SelectFilterInput
@@ -85,6 +93,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     enumOptions={propEnum}
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -97,6 +106,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleDateChange={handleDateChange}
                     readOnly={readOnly}
                     entityFilter={entityFilter}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -108,6 +118,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     isBooleanSelect
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -119,6 +130,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     enumOptions={items.enum}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -131,6 +143,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     setInputValue={setInputValue}
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -147,6 +160,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 handleFilterTypeChange={handleFilterTypeChange}
                 type={type}
                 readOnly={readOnly}
+                {...defaultFilterProps}
             />
         );
     };
@@ -159,8 +173,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
                 defaultValue = localFilterField.filter;
             } else if (localFilterField.filterType === 'set') {
-                console.log('in set filter');
-
                 defaultValue = localFilterField.values;
             } else if (localFilterField.filterType === 'date') {
                 defaultValue = localFilterField.dateFrom;

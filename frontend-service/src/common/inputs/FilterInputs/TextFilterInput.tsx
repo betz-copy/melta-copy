@@ -17,6 +17,8 @@ interface TextFilterProps {
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
     errors?: any;
     touched?: any;
+    hideFilterType?: boolean;
+    forceEqualsType?: boolean;
 }
 
 const TextFilterInput: React.FC<TextFilterProps> = ({
@@ -28,7 +30,15 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     handleFilterFieldChange,
     errors,
     touched,
+    hideFilterType = false,
+    forceEqualsType = false,
 }) => {
+    React.useEffect(() => {
+        if (forceEqualsType && filterField && filterField.type !== 'equals') {
+            handleFilterTypeChange('equals');
+        }
+    }, [forceEqualsType, filterField]);
+
     return (
         <Grid
             container
@@ -37,16 +47,18 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             spacing={1}
             sx={{ height: 'fit-content', display: 'flex', flexWrap: 'nowrap' }}
         >
-            <Grid item xs={entityFilter ? 5 : 12}>
-                <TypeSelectFilter
-                    filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
-                    handleFilterTypeChange={handleFilterTypeChange}
-                    readOnly={readOnly}
-                    type={type}
-                />
-            </Grid>
+            {!hideFilterType && (
+                <Grid item xs={entityFilter ? 5 : 12}>
+                    <TypeSelectFilter
+                        filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
+                        handleFilterTypeChange={handleFilterTypeChange}
+                        readOnly={readOnly || forceEqualsType}
+                        type={type}
+                    />
+                </Grid>
+            )}
 
-            <Grid item xs={5.5}>
+            <Grid item xs={hideFilterType ? 12 : 5.5}>
                 <StyledFilterInput
                     inputProps={{
                         readOnly,
@@ -65,8 +77,12 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                         const { value } = e.target;
                         const updatedFilter =
                             type === 'number'
-                                ? ({ ...filterField, filter: value ? Number(value) : undefined } as IAGGidNumberFilter)
-                                : ({ ...filterField, filter: value } as IAGGridTextFilter);
+                                ? ({
+                                      ...filterField,
+                                      filter: value ? Number(value) : undefined,
+                                      type: forceEqualsType ? 'equals' : filterField?.type,
+                                  } as IAGGidNumberFilter)
+                                : ({ ...filterField, filter: value, type: forceEqualsType ? 'equals' : filterField?.type } as IAGGridTextFilter);
 
                         handleFilterFieldChange(updatedFilter);
                     }}
