@@ -1,10 +1,10 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import TemplateTablesView, { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
+import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { useQuery } from 'react-query';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/simbaService';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty } from '../../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { CircularProgress, Typography } from '@mui/material';
 import { Grid } from '@mui/material';

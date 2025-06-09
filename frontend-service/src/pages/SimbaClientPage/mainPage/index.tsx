@@ -19,6 +19,18 @@ const SimbaMainPage: React.FC = () => {
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
 
+    const first9PropsKeys: string[] = [
+        ...usersInfoChildTemplate.fatherTemplateId.propertiesPreview,
+        ...usersInfoChildTemplate.fatherTemplateId.propertiesOrder
+            .filter(
+                (property) =>
+                    !usersInfoChildTemplate.fatherTemplateId.propertiesPreview.includes(property) &&
+                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].format !== 'fileId' &&
+                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].items?.format !== 'fileId',
+            )
+            .slice(0, Math.max(9 - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
+    ];
+
     return (
         <>
             <Box
@@ -31,7 +43,7 @@ const SimbaMainPage: React.FC = () => {
             >
                 <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
                     <Grid item width="70%">
-                        <UserInfoCard currentUserFromSimba={simbaUserEntity} usersInfoChildTemplate={usersInfoChildTemplate} />
+                        <UserInfoCard currentUserFromSimba={simbaUserEntity} usersInfoChildTemplate={usersInfoChildTemplate} overridePropertiesToShow={first9PropsKeys} />
                     </Grid>
                     <Grid item width="28%">
                         <ContactInfoCard />

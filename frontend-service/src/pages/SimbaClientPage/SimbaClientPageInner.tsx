@@ -14,11 +14,12 @@ import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTe
 import { IKartoffelUser } from '../../interfaces/users';
 import { Topbar } from './mainPage/Topbar';
 import { useSimbaUserStore } from '../../stores/simbaUser';
-import { LoadingAnimation } from '../../common/LoadingAnimation';
+import { LoadingAnimation } from '../../common/LoadingAnimation'
 
 const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
 const SimbaMainPage = lazy(() => import('./mainPage'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
+const UserInfoPage = lazy(() => import('./userInfoPage'));
 
 const SimbaClientPageInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -143,6 +144,9 @@ const SimbaClientPageInner: React.FC = () => {
                             </Route>
                             <Route path="simba/test.mlt">
                                 <SimbaMainPage />
+                            </Route>
+                            <Route path="simba/test.mlt/entity/:entityId">
+                                {currentUserFromSimba && <UserInfoPage currentUserFromSimba={currentUserFromSimba} usersInfoChildTemplate={usersInfoChildTemplate!} />}
                             </Route>
                             <Route path="*">
                                 <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />
