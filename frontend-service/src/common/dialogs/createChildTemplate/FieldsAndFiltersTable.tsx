@@ -82,6 +82,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             prop.format === 'location' ||
             prop.format === 'comment' ||
             prop.items?.format === 'fileId'
+            // prop.format === 'unitField'
         );
     };
 
@@ -214,6 +215,13 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                                             (c) => !(c.fieldName === chip.fieldName && c.chipType === 'default'),
                                                                         ),
                                                                     );
+                                                                    setTemplateFieldsFilters((prev) => ({
+                                                                        ...prev,
+                                                                        [chip.fieldName]: {
+                                                                            ...prev[chip.fieldName],
+                                                                            defaultValue: undefined,
+                                                                        },
+                                                                    }));
                                                                 }}
                                                                 color="default"
                                                             />
@@ -311,12 +319,18 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 },
                             }));
 
+                            const isDateField =
+                                entityTemplate.properties.properties[fieldName].format === 'date' ||
+                                entityTemplate.properties[fieldName].format === 'date-time';
+
+                            const displayValue = isDateField && typeof value === 'object' ? new Date(value).toLocaleDateString('en-uk') : value;
+
                             setFieldChips((prev) => [
                                 ...prev,
                                 {
                                     fieldName,
                                     chipType: 'default' as const,
-                                    value,
+                                    value: displayValue,
                                 },
                             ]);
                         }
