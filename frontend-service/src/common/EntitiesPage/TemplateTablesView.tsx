@@ -138,6 +138,7 @@ const TemplateTablesViewResults = forwardRef<
 
                         const { children, ...childTemplatePopulated } = {
                             ...template,
+                            childId: childTemplate._id,
                             displayName: childTemplate.displayName,
                             properties: {
                                 ...template.properties,
