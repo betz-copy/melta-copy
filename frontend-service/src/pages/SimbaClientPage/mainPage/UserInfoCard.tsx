@@ -11,13 +11,19 @@ import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-materia
 import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { IEntity } from '../../../interfaces/entities';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import i18next from 'i18next';
+import { Link } from 'wouter';
 
 interface IUserInfoCardProps {
     currentUserFromSimba: IEntity;
     usersInfoChildTemplate: IMongoChildEntityTemplatePopulated;
+    overridePropertiesToShow?: string[];
+    displayTilte?: boolean;
 }
 
-const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, usersInfoChildTemplate }) => {
+const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, usersInfoChildTemplate, overridePropertiesToShow, displayTilte = true
+ }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -25,59 +31,59 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
     const entityTemplateColor = getEntityTemplateColor(usersInfoChildTemplate.fatherTemplateId);
     const { height, width } = workspace!.metadata!.iconSize!;
 
-    const first9PropsKeys: string[] = [
-        ...usersInfoChildTemplate.fatherTemplateId.propertiesPreview,
-        ...usersInfoChildTemplate.fatherTemplateId.propertiesOrder
-            .filter(
-                (property) =>
-                    !usersInfoChildTemplate.fatherTemplateId.propertiesPreview.includes(property) &&
-                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].format !== 'fileId' &&
-                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].items?.format !== 'fileId',
-            )
-            .slice(0, Math.max(9 - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
-    ];
 
     return (
         <>
-            <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
-                <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
-                    <Grid item minWidth="fit-content">
-                        <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
-                    </Grid>
-                    <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
-                        {usersInfoChildTemplate.fatherTemplateId.iconFileId ? (
-                            <CustomIcon
-                                iconUrl={usersInfoChildTemplate.fatherTemplateId.iconFileId}
-                                height={height}
-                                width={width}
-                                color={theme.palette.primary.main}
-                            />
-                        ) : (
-                            <DefaultEntityTemplateIcon
-                                sx={{
-                                    color: theme.palette.primary.main,
-                                    height,
-                                    width,
+            {displayTilte && <Grid container justifyContent="space-between" width="100%">
+                <Grid item container justifyContent="space-between" width="100%">
+                    <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
+                        <Grid item minWidth="fit-content">
+                            <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
+                        </Grid>
+                        <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                            {usersInfoChildTemplate.fatherTemplateId.iconFileId ? (
+                                <CustomIcon
+                                    iconUrl={usersInfoChildTemplate.fatherTemplateId.iconFileId}
+                                    height={height}
+                                    width={width}
+                                    color={theme.palette.primary.main}
+                                />
+                            ) : (
+                                <DefaultEntityTemplateIcon
+                                    sx={{
+                                        color: theme.palette.primary.main,
+                                        height,
+                                        width,
+                                    }}
+                                />
+                            )}
+                        </Grid>
+                        <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                            <BlueTitle
+                                style={{
+                                    minWidth: 'fit-content',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    fontWeight: '500',
+                                    fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
                                 }}
+                                title={usersInfoChildTemplate.fatherTemplateId.displayName}
+                                component="h5"
+                                variant="h5"
                             />
-                        )}
+                        </Grid>
                     </Grid>
-                    <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                        <BlueTitle
-                            style={{
-                                minWidth: 'fit-content',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                fontWeight: '500',
-                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
-                            }}
-                            title={usersInfoChildTemplate.fatherTemplateId.displayName}
-                            component="h5"
-                            variant="h5"
-                        />
+                    <Grid item>
+                        <Grid item>
+                            <Link href={'test.mlt/userInfo'}>
+                                <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
+                                    <img height="15px" src="/icons/read-more-icon.svg" />
+                                </IconButtonWithPopover>
+                            </Link>
+                        </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
+            </Grid>}
             <Card
                 style={{
                     background: darkMode ? '#171717' : 'white',
@@ -92,7 +98,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
                             <EntityProperties
                                 entityTemplate={usersInfoChildTemplate!.fatherTemplateId}
                                 properties={currentUserFromSimba.properties}
-                                overridePropertiesToShow={first9PropsKeys}
+                                overridePropertiesToShow={overridePropertiesToShow}
                                 style={{
                                     flexDirection: 'row',
                                     flexWrap: 'wrap',
@@ -100,7 +106,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
                                     alignItems: 'center',
                                     width: '100%',
                                 }}
-                                innerStyle={{ width: '32%', maxHeight: '50px' }}
+                                innerStyle={{ width: '32%' }}
                                 textWrap
                                 mode="normal"
                             />

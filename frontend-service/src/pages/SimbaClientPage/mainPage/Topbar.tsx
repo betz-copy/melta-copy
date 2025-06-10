@@ -22,7 +22,6 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                 position: 'relative',
                 backgroundColor: 'white',
                 boxShadow: '-2px 2px 6px 0px #1e27754d',
-
                 zIndex: 10,
             }}
         >
