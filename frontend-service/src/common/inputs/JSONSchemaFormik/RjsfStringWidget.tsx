@@ -35,9 +35,10 @@ const RjsfTextWidget = ({
     hideLabel,
     ...textFieldProps
 }: WidgetProps) => {
+    const { defaultValue } = options;
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
         const parsedValue = (type || schema.type) === 'number' && newValue !== '' ? Number(newValue) : newValue;
-        onChange(newValue === '' ? options.emptyValue : parsedValue);
+        onChange(newValue === '' ? defaultValue : parsedValue);
     };
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
@@ -52,7 +53,7 @@ const RjsfTextWidget = ({
     if (options.hardCodedValue) finalValue = options.hardCodedValue;
     else if (isTextArea) finalValue = convertToPlainText(value);
     else if (schema.type === 'number' && value) finalValue = getFixedNumber(Number(value));
-    else finalValue = value ?? '';
+    else finalValue = value ?? defaultValue;
 
     const handleIncrement = () => {
         const newValue = Number(value || 0) + 1;

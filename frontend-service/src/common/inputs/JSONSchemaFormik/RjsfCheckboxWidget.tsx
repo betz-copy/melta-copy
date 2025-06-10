@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Box, Typography } from '@mui/material';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
+import i18next from 'i18next';
 
 const RjsfCheckboxWidget = ({
     id,
@@ -26,14 +27,23 @@ const RjsfCheckboxWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
+    const { defaultValue } = options;
+
+    useEffect(() => {
+        if (value === undefined && defaultValue !== undefined) {
+            const defValue = i18next.t('booleanOptions.yes') === defaultValue ? true : false;
+            onChange(defValue);
+        }
+    }, [value, defaultValue, onChange]);
+
     const _onChange = ({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) => {
         onChange(checked);
     };
 
     return (
         <Box display="flex" alignItems="center">
-            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} checked={Boolean(value)}/>
-            <Typography sx={{color: '#9398C2'}}>{label}</Typography>
+            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} checked={Boolean(value)} />
+            <Typography sx={{ color: '#9398C2' }}>{label}</Typography>
         </Box>
     );
 };
