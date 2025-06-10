@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined, FilterList } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
