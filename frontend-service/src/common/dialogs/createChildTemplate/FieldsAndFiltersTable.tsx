@@ -53,12 +53,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         if (!entityTemplate) return;
 
         const { format, type: fieldType } = entityTemplate.properties.properties[newProperty];
-        const existingFilter = templateFieldsFilters[newProperty]?.filterField;
-
-        if (existingFilter) {
-            addFilterToFieldHandler(existingFilter, newProperty);
-            return;
-        }
 
         const initializedFilterField: Record<string, IFieldFilter['filterField']> = {
             'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -71,7 +65,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
         const selectedFilter = (format && initializedFilterField[format]) || (fieldType && initializedFilterField[fieldType]);
 
-        if (selectedFilter) addFilterToFieldHandler(selectedFilter, newProperty);
+        if (selectedFilter) {
+            setTemplateFieldsFilters((prev) => ({
+                ...prev,
+                [newProperty]: {
+                    ...prev[newProperty],
+                    filterField: selectedFilter,
+                },
+            }));
+        }
     };
 
     const isDisallowedFormat = (fieldName: string): boolean => {
