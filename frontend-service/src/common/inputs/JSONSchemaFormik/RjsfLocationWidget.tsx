@@ -88,6 +88,8 @@ const RjsfLocationWidget = ({
     registry,
     color,
     propertyReadOnly,
+    hideError,  
+    hideLabel,
     ...textFieldProps
 }: WidgetProps) => {
     const getInitialLocation = (location: string | LocationData | undefined) => {
@@ -161,7 +163,7 @@ const RjsfLocationWidget = ({
                                 ),
                             }}
                             type={(options.inputType ?? inputType) as string}
-                            value={newLocationValue}
+                            value={newLocationValue ?? ''}
                             error={error || rawErrors.length > 0}
                             onChange={_onChange}
                             onBlur={_onBlur}
