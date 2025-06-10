@@ -134,6 +134,7 @@ const SimbaClientPageInner: React.FC = () => {
                     backgroundPositionX: 'center',
                     backgroundPositionY: 'bottom',
                 }}
+                style={{ overflowY: 'auto', overflowAnchor: 'none' }}
             >
                 <Box>
                     <Suspense fallback={<div />}>
