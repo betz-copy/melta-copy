@@ -1,19 +1,21 @@
 import { WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import { UserArrayInput } from '../UserArrayInput';
+import { IUser } from '../../../interfaces/users';
 
-const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
+const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');
     const [currentUsers, setCurrentUsers] = React.useState(
         (value && value.length && value[0] ? value.map((user) => JSON.parse(user)) : []).filter((user) => !!user),
     );
+    const { defaultValue } = options;
 
     if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
 
     return (
         <UserArrayInput
             mode="external"
-            value={null}
+            value={defaultValue as IUser}
             label={label}
             onChange={(_e, chosenUser, reason) => {
                 if (reason !== 'selectOption' || !chosenUser) return;

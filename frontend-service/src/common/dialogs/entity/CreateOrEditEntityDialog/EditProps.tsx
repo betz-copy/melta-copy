@@ -78,7 +78,7 @@ const EditProps: React.FC<{
 
     useEffect(() => {
         schema.required.forEach((field) => {
-            const fieldPropertiesEnum = schema.properties[field].enum;
+            const fieldPropertiesEnum = schema.properties[field]?.enum;
             const itemFieldProperties = schema.properties[field]?.items?.enum;
 
             if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
