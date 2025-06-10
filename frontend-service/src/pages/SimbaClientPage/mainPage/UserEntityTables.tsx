@@ -73,7 +73,16 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     Object.entries(childTemplate.fatherTemplateId.properties.properties).filter(([key]) =>
                                         childTemplatePropertiesList.includes(key),
                                     ),
-                                ) as Record<string, IEntitySingleProperty>;
+                                ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
+
+                                Object.keys(childTemplateProperties).forEach(
+                                    (propertyKey) =>
+                                        (childTemplateProperties[propertyKey] = {
+                                            ...childTemplateProperties[propertyKey],
+                                            isEditableByUser: childTemplate.properties[propertyKey].isEditableByUser,
+                                            defaultValue: childTemplate.properties[propertyKey].defaultValue,
+                                        }),
+                                );
 
                                 const defaultFilter = childTemplate.properties
                                     ? Object.entries(childTemplate.properties).reduce(

@@ -70,6 +70,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'dateNotification',
     });
     ajv.addKeyword({ keyword: 'isDailyAlert' });
+    ajv.addKeyword({ keyword: 'isEditableByUser' });
+    ajv.addKeyword({ keyword: 'defaultValue' });
     ajv.addKeyword({ keyword: 'isDatePastAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
@@ -170,7 +172,11 @@ const getComponent = (
         return getWrappedComponent;
     }
 
-    return Component;
+    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
+        return <Component {...props} readonly={props.schema.isEditableByUser === false} />;
+    };
+
+    return getWrappedComponent;
 };
 
 interface JSONSchemaFormFormikProps {
