@@ -339,7 +339,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
-                console.log('link', { template });
 
                 return (
                     <Grid container flexWrap="nowrap">
