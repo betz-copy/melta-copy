@@ -191,14 +191,21 @@ class MailManager {
         );
     }
 
-    private EntityLink({ entity, entityTemplate }: { entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }) {
+    private EntityLink({
+        entity,
+        entityTemplate,
+        baseUrl,
+    }: {
+        entity: IEntity | string | null;
+        entityTemplate: IMongoEntityTemplatePopulated | null;
+        baseUrl: string;
+    }) {
+        const entityId = entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity';
+        const displayName = entityTemplate ? entityTemplate.displayName : hebrew.ruleBreach.unknownEntity;
+
         return (
-            <a
-                href={`${this.meltaBaseUrlByWorkspace()}/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
-                target="_blank"
-                style={{ color: '#225AA7', fontWeight: 'bold' }}
-            >
-                {entityTemplate ? entityTemplate.displayName : hebrew.ruleBreach.unknownEntity}
+            <a href={`${baseUrl}/entity/${entityId}`} target="_blank" style={{ color: '#225AA7', fontWeight: 'bold' }}>
+                {displayName}
             </a>
         );
     }
@@ -222,36 +229,39 @@ class MailManager {
         const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(relationshipTemplateId);
         const sourceEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
         const destinationEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
+        const baseUrl = await this.meltaBaseUrlByWorkspace();
 
         return (
             <>
                 {actionType === ActionTypes.CreateRelationship ? hebrew.ruleBreach.relationshipCreation : hebrew.ruleBreach.relationshipDeletion}
                 <strong> {relationshipTemplate.displayName} </strong>
-                {hebrew.ruleBreach.fromEntity} <this.EntityLink entity={sourceEntity} entityTemplate={sourceEntityTemplate!} />
+                {hebrew.ruleBreach.fromEntity} <this.EntityLink entity={sourceEntity} entityTemplate={sourceEntityTemplate!} baseUrl={baseUrl} />
                 {hebrew.ruleBreach.toEntity}
-                <this.EntityLink entity={destinationEntity} entityTemplate={destinationEntityTemplate!} />
+                <this.EntityLink entity={destinationEntity} entityTemplate={destinationEntityTemplate!} baseUrl={baseUrl} />
             </>
         );
     }
 
     private async getUpdateEntityActionInfo({ entity }: IUpdateEntityMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
+        const baseUrl = await this.meltaBaseUrlByWorkspace();
 
         return (
             <p>
                 {hebrew.updateEntityActionInfo.updatingEntity}
-                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
+                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
             </p>
         );
     }
 
     private async getUpdateEntityStatusActionInfo({ entity, disabled }: IUpdateEntityStatusMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
+        const baseUrl = await this.meltaBaseUrlByWorkspace();
 
         return (
             <p>
                 {hebrew.updateEntityActionInfo.updatingEntityStatus}
-                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
+                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
                 <strong>
                     {disabled ? hebrew.ruleBreach.updateEntityStatusActionInfo.toDisabled : hebrew.ruleBreach.updateEntityStatusActionInfo.toActive}
                 </strong>
@@ -315,7 +325,7 @@ class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${this.meltaBaseUrlByWorkspace()}/rule-management/alert/${ruleBreachAlert._id}`} target="_blank">
+                        <a href={`${await this.meltaBaseUrlByWorkspace()}/rule-management/alert/${ruleBreachAlert._id}`} target="_blank">
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -341,7 +351,7 @@ class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
+                        <a href={`${await this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -371,7 +381,7 @@ class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
+                        <a href={`${await this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -382,6 +392,8 @@ class MailManager {
 
     private async dateAboutToExpireMail({ entity, propertyName, datePropertyValue }: IDateAboutToExpireMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
+        const baseUrl = await this.meltaBaseUrlByWorkspace();
+
         return (
             <html>
                 <body dir="rtl">
@@ -392,7 +404,7 @@ class MailManager {
                             {new Date(datePropertyValue).toLocaleDateString('he-IL')}({entityTemplate?.properties.properties[propertyName].title})
                         </strong>
                         {hebrew.dateAboutToExpireNotification.entityTemplateName}
-                        <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
+                        <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
                         {hebrew.dateAboutToExpireNotification.aboutToExpire}
                     </p>
                 </body>
