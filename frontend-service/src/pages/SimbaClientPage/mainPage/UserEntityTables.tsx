@@ -1,10 +1,10 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import TemplateTablesView, { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
+import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { useQuery } from 'react-query';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/simbaService';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty } from '../../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { CircularProgress, Typography } from '@mui/material';
 import { Grid } from '@mui/material';
@@ -78,19 +78,22 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                 const defaultFilter = childTemplate.properties
                                     ? Object.entries(childTemplate.properties).reduce(
                                           (acc, [key, prop]) => {
-                                              console.log(prop);
                                               if (prop.filters) {
                                                   const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
                                                   if (filters.$and) {
-                                                      acc[key] = {
-                                                          $and: filters.$and
-                                                              .map((f: any) => {
-                                                                  if (f.destination?.$eq) return { $eq: f.destination.$eq };
-                                                                  if (f.destination?.$rgx) return { $rgx: f.destination.$rgx };
-                                                                  return null;
-                                                              })
-                                                              .filter(Boolean),
-                                                      };
+                                                      const transformedFilters = filters.$and
+                                                          .map((filter: any) => {
+                                                              const fieldFilter = filter[key];
+                                                              if (fieldFilter) {
+                                                                  return { [key]: fieldFilter };
+                                                              }
+                                                              return null;
+                                                          })
+                                                          .filter(Boolean);
+
+                                                      if (transformedFilters.length > 0) {
+                                                          acc = { $and: transformedFilters };
+                                                      }
                                                   } else {
                                                       acc[key] = filters;
                                                   }
@@ -99,7 +102,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                           },
                                           { $and: { disabled: { $eq: false } } } as Record<string, unknown>,
                                       )
-                                    : { $and: { disabled: { $eq: false } } };
+                                    : {};
 
                                 console.log(defaultFilter);
 
