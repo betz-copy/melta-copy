@@ -400,7 +400,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-                        {onNavigateToRow && (
+                        {onNavigateToRow && pageType !== 'simba' && (
                             <Grid item>
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
@@ -423,7 +423,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && !template?.disabled && (
+                        {menuRowButtonProps && !template?.disabled && pageType !== 'simba' && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
