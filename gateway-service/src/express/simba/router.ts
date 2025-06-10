@@ -7,14 +7,12 @@ import {
     getAllSimbaTemplatesSchema,
     searchEntitiesOfTemplateSchema,
 } from './validator.schema';
-import SimbaValidator, { validateSimbaHeaders } from './middlewares';
+import SimbaValidator from './middlewares';
 
 const SimbaRouter: Router = Router();
 
 const SimbaControllerMiddleware = createController(SimbaController);
 const SimbaValidatorMiddleware = createController(SimbaValidator, true);
-
-SimbaRouter.use(validateSimbaHeaders);
 
 SimbaRouter.post(
     '/templates/all',
