@@ -143,12 +143,9 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = currentSimbaUser ? true : checkUserTemplatePermission(
-        currentUser.currentWorkspacePermissions,
-        template.category,
-        template._id,
-        PermissionScope.write,
-    );
+    const userHasWritePermissions = currentSimbaUser
+        ? true
+        : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -303,21 +300,23 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <EditExcelButton
-                        disabled={isEditExcelDisabled}
-                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={editExcelTooltip}
-                    >
-                        <EditNote
-                            fontSize="small"
-                            sx={{
-                                opacity: isEditExcelDisabled ? 0.3 : 1,
-                                pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
-                            }}
-                        />
-                        {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
-                    </EditExcelButton>
+                    {page !== 'simba' && (
+                        <EditExcelButton
+                            disabled={isEditExcelDisabled}
+                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                            onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                            popoverText={editExcelTooltip}
+                        >
+                            <EditNote
+                                fontSize="small"
+                                sx={{
+                                    opacity: isEditExcelDisabled ? 0.3 : 1,
+                                    pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                                }}
+                            />
+                            {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
+                        </EditExcelButton>
+                    )}
                     <LoadExcelButton
                         disabled={isLoadExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}

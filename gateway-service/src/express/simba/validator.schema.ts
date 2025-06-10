@@ -46,3 +46,17 @@ export const searchEntitiesOfTemplateSchema = Joi.object({
         templateId: MongoIdSchema.required(),
     },
 });
+
+// POST /api/simba/entities/expanded/:entityId
+export const getExpandedEntityByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),
+        options: Joi.object({
+            templateIds: Joi.array().items(Joi.string()).required(),
+        }),
+    },
+    params: {
+        entityId: Joi.string().required(),
+    },
+});

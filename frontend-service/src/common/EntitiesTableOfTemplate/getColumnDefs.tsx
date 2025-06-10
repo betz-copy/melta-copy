@@ -56,6 +56,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     searchValue?: string;
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
+    pageType?: string;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -80,6 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
     entityTemplates,
+    pageType,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -345,7 +347,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}`}
+                                    href={`/${pageType === 'simba' ? 'simba/entity' : 'entity'}/${getEntityPropertiesData(data)._id}`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}

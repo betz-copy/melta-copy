@@ -22,8 +22,12 @@ interface IUserInfoCardProps {
     displayTilte?: boolean;
 }
 
-const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, usersInfoChildTemplate, overridePropertiesToShow, displayTilte = true
- }) => {
+const UserInfoCard: React.FC<IUserInfoCardProps> = ({
+    currentUserFromSimba,
+    usersInfoChildTemplate,
+    overridePropertiesToShow,
+    displayTilte = true,
+}) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -31,59 +35,60 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({ currentUserFromSimba, user
     const entityTemplateColor = getEntityTemplateColor(usersInfoChildTemplate.fatherTemplateId);
     const { height, width } = workspace!.metadata!.iconSize!;
 
-
     return (
         <>
-            {displayTilte && <Grid container justifyContent="space-between" width="100%">
-                <Grid item container justifyContent="space-between" width="100%">
-                    <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
-                        <Grid item minWidth="fit-content">
-                            <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
-                        </Grid>
-                        <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
-                            {usersInfoChildTemplate.fatherTemplateId.iconFileId ? (
-                                <CustomIcon
-                                    iconUrl={usersInfoChildTemplate.fatherTemplateId.iconFileId}
-                                    height={height}
-                                    width={width}
-                                    color={theme.palette.primary.main}
-                                />
-                            ) : (
-                                <DefaultEntityTemplateIcon
-                                    sx={{
-                                        color: theme.palette.primary.main,
-                                        height,
-                                        width,
+            {displayTilte && (
+                <Grid container justifyContent="space-between" width="100%">
+                    <Grid item container justifyContent="space-between" width="100%">
+                        <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
+                            <Grid item minWidth="fit-content">
+                                <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
+                            </Grid>
+                            <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                                {usersInfoChildTemplate.fatherTemplateId.iconFileId ? (
+                                    <CustomIcon
+                                        iconUrl={usersInfoChildTemplate.fatherTemplateId.iconFileId}
+                                        height={height}
+                                        width={width}
+                                        color={theme.palette.primary.main}
+                                    />
+                                ) : (
+                                    <DefaultEntityTemplateIcon
+                                        sx={{
+                                            color: theme.palette.primary.main,
+                                            height,
+                                            width,
+                                        }}
+                                    />
+                                )}
+                            </Grid>
+                            <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                                <BlueTitle
+                                    style={{
+                                        minWidth: 'fit-content',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        fontWeight: '500',
+                                        fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
                                     }}
+                                    title={usersInfoChildTemplate.fatherTemplateId.displayName}
+                                    component="h5"
+                                    variant="h5"
                                 />
-                            )}
+                            </Grid>
                         </Grid>
-                        <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                            <BlueTitle
-                                style={{
-                                    minWidth: 'fit-content',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    fontWeight: '500',
-                                    fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
-                                }}
-                                title={usersInfoChildTemplate.fatherTemplateId.displayName}
-                                component="h5"
-                                variant="h5"
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid item>
                         <Grid item>
-                            <Link href={'test.mlt/userInfo'}>
-                                <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
-                                    <img height="15px" src="/icons/read-more-icon.svg" />
-                                </IconButtonWithPopover>
-                            </Link>
+                            <Grid item>
+                                <Link href={`/simba/entity/${currentUserFromSimba.properties._id}`}>
+                                    <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
+                                        <img height="15px" src="/icons/read-more-icon.svg" />
+                                    </IconButtonWithPopover>
+                                </Link>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
-            </Grid>}
+            )}
             <Card
                 style={{
                     background: darkMode ? '#171717' : 'white',

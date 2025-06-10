@@ -457,6 +457,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             searchValue: quickFilterText,
             disableEditCell: !editable || editRowButtonProps?.disabledButton,
             entityTemplates,
+            pageType: saveStorageProps.pageType,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 

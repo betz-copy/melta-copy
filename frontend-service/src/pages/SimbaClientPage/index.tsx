@@ -37,6 +37,9 @@ const SimbaClientPage: React.FC = () => {
     useQuery('getSimbaChildEntityTemplates', () => undefined, { enabled: false });
     useQuery('getSimbaRelationshipTemplates', () => undefined, { enabled: false });
 
+    useQuery('getEntityTemplates', () => undefined, { enabled: false });
+    useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
+
     const {
         data: workspace,
         isLoading: isLoadingWorkspace,
@@ -57,9 +60,11 @@ const SimbaClientPage: React.FC = () => {
             onSuccess: ({ categories, entityTemplates, relationshipTemplates, childTemplates }) => {
                 queryClient.setQueryData<ICategoryMap>('getSimbaCategories', mapTemplates(categories));
                 queryClient.setQueryData<IEntityTemplateMap>('getSimbaEntityTemplates', mapTemplates(entityTemplates));
-
                 queryClient.setQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates', mapTemplates(childTemplates));
                 queryClient.setQueryData<IRelationshipTemplateMap>('getSimbaRelationshipTemplates', mapTemplates(relationshipTemplates));
+
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
+                queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             },
             enabled: Boolean(workspace?._id),
         },

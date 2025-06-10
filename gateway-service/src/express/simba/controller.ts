@@ -22,6 +22,11 @@ class SimbaController extends DefaultController<SimbaManager> {
     async searchEntitiesOfTemplate(req: Request, res: Response) {
         res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
     }
+
+    async getExpandedEntityById(req: Request, res: Response) {
+        const userId = req.user?.kartoffelId;
+        res.json(await this.manager.getExpandedEntityById(req.params.entityId, req.body.expandedParams, req.body.options, userId));
+    }
 }
 
 export default SimbaController;

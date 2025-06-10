@@ -6,6 +6,7 @@ import {
     countEntitiesOfTemplatesByUserEntityIdSchema,
     getAllSimbaTemplatesSchema,
     searchEntitiesOfTemplateSchema,
+    getExpandedEntityByIdRequestSchema,
 } from './validator.schema';
 import SimbaValidator from './middlewares';
 
@@ -40,6 +41,13 @@ SimbaRouter.post(
     ValidateRequest(searchEntitiesOfTemplateSchema),
     SimbaValidatorMiddleware.validateUserCanAccessSimba,
     SimbaControllerMiddleware.searchEntitiesOfTemplate,
+);
+
+SimbaRouter.post(
+    '/entities/expanded/:entityId',
+    ValidateRequest(getExpandedEntityByIdRequestSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.getExpandedEntityById,
 );
 
 export default SimbaRouter;

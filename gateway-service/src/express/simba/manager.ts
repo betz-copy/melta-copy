@@ -28,8 +28,11 @@ class SimbaManager extends DefaultManagerProxy<null> {
             throw new NotFoundError('Users info child template not found');
         }
 
-        const entityTemplates = [...new Set(childTemplates.map((childTemplate) => childTemplate.fatherTemplateId))];
         const categories = [...new Set(childTemplates.map((childTemplate) => childTemplate.categories).flat())];
+        const entityTemplates = [...new Set(childTemplates.map((childTemplate) => childTemplate.fatherTemplateId))].map((entityTemplate) => ({
+            ...entityTemplate,
+            category: categories.find((category) => category._id === entityTemplate.category) || entityTemplate.category,
+        }));
 
         const [bySource, byDestination] = await Promise.all([
             this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [usersInfoChildTemplate.fatherTemplateId._id] }),
@@ -54,6 +57,19 @@ class SimbaManager extends DefaultManagerProxy<null> {
             sort: [],
         });
         return instances;
+    }
+
+    async getExpandedEntityById(entityId: string, expandedParams: { [key: string]: number }, options?: { templateIds: string[] }, userId?: string) {
+        const expandedEntity = await this.instancesService.getExpandedEntityByIdRequest(
+            entityId,
+            expandedParams,
+            {
+                templateIds: options?.templateIds ?? [],
+            },
+            userId,
+        );
+
+        return expandedEntity;
     }
 
     async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {

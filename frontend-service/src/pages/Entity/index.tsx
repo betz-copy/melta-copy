@@ -86,7 +86,7 @@ const ConnectionsTableTitle: React.FC<{
     );
 };
 
-const ConnectionsTable: React.FC<{
+export const ConnectionsTable: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
     templateIds: string[];
@@ -484,11 +484,7 @@ const Entity: React.FC = () => {
                         <Grid item>
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList
-                                        variant="scrollable"
-                                        scrollButtons="auto"
-                                        onChange={(_event, newValue) => setSelectedTabId(newValue)}
-                                    >
+                                    <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>
                                         {categoriesWithConnectionsTemplates.map(
                                             ({ category: { _id, displayName, iconFileId }, relationshipCount }) => (
                                                 <Tab

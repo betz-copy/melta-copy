@@ -2,7 +2,7 @@ import { IMongoChildEntityTemplatePopulated } from '../interfaces/entityChildTem
 import axios from '../axios';
 import { environment } from '../globals';
 import { IMongoCategory } from '../interfaces/categories';
-import { ICountSearchResult, ISearchEntitiesOfTemplateBody, ISearchResult } from '../interfaces/entities';
+import { ICountSearchResult, IEntityExpanded, ISearchEntitiesOfTemplateBody, ISearchResult } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
 
@@ -50,4 +50,22 @@ const searchEntitiesOfTemplateSimbaRequest = async (templateId: string, simbaUse
     return data;
 };
 
-export { getAllSimbaTemplates, getCurrentUserEntity, countEntitiesOfTemplatesByUserEntityId, searchEntitiesOfTemplateSimbaRequest };
+const getSimbaExpandedEntityByIdRequest = async (
+    entityId: string,
+    expandedParams: { [key: string]: number },
+    options?: { templateIds: string[] },
+) => {
+    const { data } = await axios.post<IEntityExpanded>(`${simbaRoutes}/entities/expanded/${entityId}`, {
+        expandedParams,
+        options,
+    });
+    return data;
+};
+
+export {
+    getAllSimbaTemplates,
+    getCurrentUserEntity,
+    countEntitiesOfTemplatesByUserEntityId,
+    searchEntitiesOfTemplateSimbaRequest,
+    getSimbaExpandedEntityByIdRequest,
+};
