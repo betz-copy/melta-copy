@@ -44,6 +44,7 @@ import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { useSimbaUserStore } from '../../stores/simbaUser';
 
 const {
     loadExcel: { excelExtension },
@@ -68,6 +69,8 @@ const TemplateTable = forwardRef<
     const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
+
+    const currentSimbaUser = useSimbaUserStore((state) => state.simbaUser);
 
     const theme = useTheme();
     const drafts = useDraftsStore((state) => state.drafts);
@@ -140,7 +143,7 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserTemplatePermission(
+    const userHasWritePermissions = currentSimbaUser ? true : checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
         template.category,
         template._id,
