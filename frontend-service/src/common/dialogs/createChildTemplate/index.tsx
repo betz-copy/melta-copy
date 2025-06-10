@@ -615,13 +615,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
-                                                        const original = entityTemplate?.category;
-                                                        if (!original) return;
-
-                                                        const hasOriginalCategory = newVal.some((category) => category._id === original._id);
-                                                        const newSelection = hasOriginalCategory ? newVal : [original, ...newVal];
-
-                                                        setSelectedCategories(newSelection);
+                                                        setSelectedCategories(newVal);
                                                     }}
                                                     value={selectedCategories}
                                                     getOptionLabel={(option) => option.displayName}
@@ -656,7 +650,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                                         borderRadius: '10px',
                                                                         opacity: isOriginal ? 0.8 : 1,
                                                                     }}
-                                                                    {...(!isOriginal && { onDelete })}
+                                                                    onDelete={onDelete}
                                                                 />
                                                             );
                                                         })

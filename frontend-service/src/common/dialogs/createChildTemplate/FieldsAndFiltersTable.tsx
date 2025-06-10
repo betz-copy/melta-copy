@@ -311,24 +311,36 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 return [...prev, newChip];
                             });
                         } else if (dialogType === 'default') {
-                            const value = typeof fieldValue === 'object' && 'value' in fieldValue ? fieldValue.value : fieldValue;
+                            if (fieldValue === undefined || fieldValue === null || fieldValue === '') return; //ADD VALIDATION FOR EMPTY VALUES
 
                             setTemplateFieldsFilters((prev) => ({
                                 ...prev,
                                 [fieldName]: {
                                     ...prev[fieldName],
-                                    defaultValue: value,
+                                    defaultValue: fieldValue,
                                 },
                             }));
 
                             const isDateField =
                                 entityTemplate.properties.properties[fieldName].format === 'date' ||
-                                entityTemplate.properties[fieldName].format === 'date-time';
+                                entityTemplate.properties.properties[fieldName].format === 'date-time';
 
-                            const displayValue = isDateField && typeof value === 'object' ? new Date(value).toLocaleDateString('en-uk') : value;
+                            let displayValue = fieldValue;
+                            if (isDateField && fieldValue) {
+                                try {
+                                    displayValue = new Date(fieldValue).toLocaleDateString('en-uk');
+                                } catch (e) {
+                                    console.error('Error formatting date:', e);
+                                    displayValue = fieldValue;
+                                }
+                            } else if (Array.isArray(fieldValue)) {
+                                displayValue = fieldValue.join(', ');
+                            } else if (typeof fieldValue === 'boolean') {
+                                displayValue = fieldValue ? 'true' : 'false';
+                            }
 
                             setFieldChips((prev) => [
-                                ...prev,
+                                ...prev.filter((chip) => !(chip.fieldName === fieldName && chip.chipType === 'default')),
                                 {
                                     fieldName,
                                     chipType: 'default' as const,
