@@ -8,18 +8,18 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
+import { updateIFramesOrderOnLocalStorage } from '../../../common/wizards/iFrame';
 import { createIFrameDetailsSchema } from '../../../common/wizards/iFrame/CreateIFrameDetails';
 import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from '../../../common/wizards/iFrame/SettingPermissions';
+import { environment } from '../../../globals';
 import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
+import { IFrame } from '../../../interfaces/iFrames';
+import { deleteDashboardItem } from '../../../services/dashboardService';
 import { createIFrame, getIFrameById, updateIFrame } from '../../../services/iFramesService';
+import { dashboardInitialValues } from '../../../utils/dashboard/formik';
 import { DashboardItem } from '../DashboardItem';
 import { BodyComponent } from './bodyComponent';
 import { SideBarDetails } from './sideBarDetails';
-import { environment } from '../../../globals';
-import { dashboardInitialValues } from '../../../utils/dashboard/formik';
-import { deleteDashboardItem } from '../../../services/dashboardService';
-import { updateIFramesOrderOnLocalStorage } from '../../../common/wizards/iFrame';
 
 const { dashboardPath, iFramePath } = environment.dashboard;
 
@@ -51,10 +51,7 @@ const DashboardIframe: React.FC = () => {
             },
             onError: (error: AxiosError) => {
                 toast.error(
-                    <ErrorToast
-                        axiosError={error}
-                        defaultErrorMessage={i18next.t(`wizard.iFrame.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
-                    />,
+                    <ErrorToast axiosError={error} defaultErrorMessage={i18next.t(`wizard.iFrame.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)} />,
                 );
             },
         },

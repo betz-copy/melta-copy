@@ -29,35 +29,6 @@ import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
-const isColumnVisible = (column: string, defaultVisibleColumns: { [key: string]: boolean }) => {
-    if (template.propertiesPreview.length === 0 && hideNonPreview) {
-        return !firstTwoPropsOrder.includes(property);
-    }
-
-    // Archive mode - hide all columns
-    if (archive) {
-        return true;
-    }
-
-    // Check explicit visibility settings
-    if (defaultVisibleColumns[property] !== undefined) {
-        return !defaultVisibleColumns[property];
-    }
-
-    // Hide non-preview properties when hideNonPreview is true
-    if (hideNonPreview && !template.propertiesPreview.includes(property)) {
-        return true;
-    }
-
-    // If columnsToShow is specified, only show those columns
-    if (columnsToShow && !columnsToShow.includes(property)) {
-        return true;
-    }
-
-    // Default: show the column
-    return false;
-};
-
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
