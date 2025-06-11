@@ -131,7 +131,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             {fieldChips
                                                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
                                                 .map((chip, index) => {
-                                                    const filterTypeLabel = 'type' in chip.filterType! ? chip.filterType.type : '';
+                                                    const isArrayType = entityTemplate.properties.properties[fieldName]?.type === 'array';
+                                                    const filterTypeLabel =
+                                                        'type' in chip.filterType! ? chip.filterType.type : isArrayType ? 'contains' : '';
+
                                                     let filterValue = '';
 
                                                     if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
