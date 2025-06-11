@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Box, Typography } from '@mui/material';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
-import i18next from 'i18next';
 
 const RjsfCheckboxWidget = ({
     id,
@@ -31,8 +30,7 @@ const RjsfCheckboxWidget = ({
 
     useEffect(() => {
         if (value === undefined && defaultValue !== undefined) {
-            const defValue = i18next.t('booleanOptions.yes') === defaultValue ? true : false;
-            onChange(defValue);
+            onChange(defaultValue);
         }
     }, [value, defaultValue, onChange]);
 

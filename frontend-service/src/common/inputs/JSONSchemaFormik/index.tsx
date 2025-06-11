@@ -354,11 +354,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'LocationWidget',
                     };
-                if (propertySchema.format === 'email')
-                    return {
-                        'ui:widget': 'EmailWidget',
-                        'ui:options': { defaultValue },
-                    };
                 return {
                     'ui:options': { defaultValue },
                 };

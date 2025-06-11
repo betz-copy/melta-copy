@@ -83,7 +83,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
-    const isValueExist = value && value.fullName.length > 0;
+    const isValueExist = value && value.fullName != '';
 
     return (
         <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>

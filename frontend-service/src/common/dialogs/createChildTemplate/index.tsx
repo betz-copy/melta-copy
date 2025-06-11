@@ -192,14 +192,10 @@ const CreateChildTemplateDialog: React.FC<{
 
                     const fieldTemplate = entityTemplate.properties.properties[fieldName];
                     if (fieldTemplate.format === 'date-time' || fieldTemplate.format === 'date') {
-                        console.log('date or datetime');
-
                         try {
                             const date = new Date(defaultValue);
                             if (!isNaN(date.getTime())) {
-                                displayValue = date.toLocaleDateString();
-                                console.log({ displayValue });
-                            }
+                                displayValue = date.toLocaleDateString();                            }
                         } catch (e) {
                             console.error('Error formatting date:', e);
                             displayValue = defaultValue;

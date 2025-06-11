@@ -2,13 +2,15 @@ import React from 'react';
 import { UserArrayInput } from '../UserArrayInput';
 import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { IUser } from '../../../interfaces/users';
 
 interface MultipleUserFilterInputProps {
     filterField: IAGGridSetFilter | undefined;
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
-    handleCheckboxChange: (option: string, checked: boolean) => void;
+    handleCheckboxChange: (option: string | IUser, checked: boolean) => void;
     readOnly: boolean;
+    isUsersArray?: boolean;
 }
 
 const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
@@ -17,6 +19,7 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
     setInputValue,
     handleCheckboxChange,
     readOnly,
+    isUsersArray = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -27,7 +30,7 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
             label=""
             onChange={(_e, chosenUser, reason) => {
                 if (reason !== 'selectOption' || !chosenUser) return;
-                handleCheckboxChange(chosenUser.fullName, true);
+                handleCheckboxChange(isUsersArray ? chosenUser : chosenUser.fullName, true);
 
                 setInputValue('');
             }}

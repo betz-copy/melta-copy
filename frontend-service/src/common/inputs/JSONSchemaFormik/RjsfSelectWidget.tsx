@@ -59,13 +59,13 @@ const RjsfSelectWidget = ({
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
     if (multiple) {
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) && value.length > 0) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
         } else {
-            selectedValue = defaultValue as (typeof items)[number][];
+            selectedValue = items.filter((opt) => (defaultValue as string[]).includes(opt.value));
         }
     } else {
-        selectedValue = items.find((opt) => opt.value === value) || (defaultValue as (typeof items)[number]);
+        selectedValue = items.find(opt => opt.value === (value ?? defaultValue)) ?? null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {

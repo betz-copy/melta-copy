@@ -10,6 +10,7 @@ import { MultipleUserFilterInput } from '../../inputs/FilterInputs/MultipleUserF
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { IFieldFilter } from '../../../interfaces/entityChildTemplates';
+import { IUser } from '../../../interfaces/users';
 
 interface IAddFieldFilterDialogProps {
     open: boolean;
@@ -61,7 +62,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         } as IAGGridDateFilter);
     };
 
-    const handleCheckboxChange = (option: string, checked: boolean) => {
+    const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
         const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
@@ -143,6 +144,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     setInputValue={setInputValue}
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
+                    isUsersArray
                     {...defaultFilterProps}
                 />
             );

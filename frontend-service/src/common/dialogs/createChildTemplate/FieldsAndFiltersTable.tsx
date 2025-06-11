@@ -8,6 +8,7 @@ import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFil
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
+import { IUser } from '../../../interfaces/users';
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -204,7 +205,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         chip.value === null || chip.value === undefined
                                                             ? ''
                                                             : Array.isArray(chip.value)
-                                                            ? chip.value.join(', ')
+                                                            ? chip.value
+                                                                  .map((item) => {
+                                                                      if (typeof item === 'string') return item;
+                                                                      if (typeof item === 'object') {
+                                                                          return (item as IUser).fullName;
+                                                                      }
+                                                                      return String(item);
+                                                                  })
+                                                                  .join(', ')
                                                             : String(chip.value);
 
                                                     return (

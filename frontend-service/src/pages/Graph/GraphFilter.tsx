@@ -18,6 +18,7 @@ import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entiti
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { IUser } from '../../interfaces/users';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -160,7 +161,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         );
     };
 
-    const handleCheckboxChange = (option: string, checked: boolean) => {
+    const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
         const { values } = filterField as IAGGridSetFilter;
 
         const updatedValues = checked ? [...values, option] : values?.filter((item) => item !== option);
