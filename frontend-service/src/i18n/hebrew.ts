@@ -1,4 +1,3 @@
-import { add } from 'lodash';
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
@@ -1258,7 +1257,7 @@ export default {
         field: 'שדה',
         filter: 'סינון',
         to: 'ל',
-        mainScreen:'מסך ראשי',
+        mainScreen: 'מסך ראשי',
         resetLayout: 'איפוס תצוגה',
         itemType: {
             table: 'טבלה',
@@ -1271,16 +1270,22 @@ export default {
             permissionWarning: 'טבלה זו והמידע המוצג בה תופיע לכלל המשתמשים בהתאם להרשאותיהם',
             changeTableSizeWarning: 'כל משתמש יוכל לשנות את מידות הטבלה במסך הבית',
             columnsToShow: 'עמודות להצגה',
+            createdSuccessfully: 'טבלה נוצרה בהצלחה',
+            editedSuccessfully: 'טבלה עודכנה בהצלחה',
+            deletedSuccessfully: 'טבלה נמחקה בהצלחה',
+            failedToCreate: 'נכשל ביצירת טבלה',
+            failedToEdit: 'נכשל בעדכון טבלה',
+            failedToDelete: 'מחיקת טבלה נכשלה',
         },
         charts: {
             addChart: 'הוספת תרשים',
             editChart: 'עריכת תרשים',
             permissionWarning: ' תרשים זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
             createChart: 'יצירת תרשים',
-            new:'חדש',
-            existing:'קיים',
-            chooseChart:'בחירת תרשים',
-            chartsPage:'עמוד תרשימי',
+            new: 'חדש',
+            existing: 'קיים',
+            chooseChart: 'בחירת תרשים',
+            chartsPage: 'עמוד תרשימי',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: ' במידה והרשאת הצפייה שלו תשתנה ל”פרטי” - יוסר התרשים מעמוד הבית .תרשים זה מוצג בעמוד הבית.',
@@ -1291,7 +1296,7 @@ export default {
             addIFrame: 'הוספת קישור חיצוני',
             editIFrame: 'עריכת קישור חיצוני',
             permissionWarning: 'קישור חיצוני זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
-            url:'קישור'
+            url: 'קישור',
         },
         dialogs: {
             delete: {
@@ -1329,7 +1334,6 @@ export default {
         protected: 'לכל המשתמשים',
         name: 'כותרת התרשים',
         description: 'תיאור',
-        axis: 'ציר',
         byField: 'לפי שדה',
         title: 'כותרת',
         dividedBy: 'חלוקה לפי שדה',
@@ -1341,8 +1345,8 @@ export default {
         xAxis: 'ציר ה-X',
         yAxis: 'ציר ה-Y',
         fieldToView: 'שדה להצגה',
-        filters:'סינונים',
-        noFilters:'ללא סינונים',
+        filters: 'סינונים',
+        noFilters: 'ללא סינונים',
         dontHavePermissionToEditChart: 'אין הרשאות עריכה לתרשים',
         types: { lineChart: 'קווי', pieChart: 'עוגה', barChart: 'עמודות', numberChart: 'מספרי' },
         actions: {
@@ -1548,6 +1552,7 @@ export default {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         flowCube: 'אפשר התממשקות קוביה ל-FLOW',
+        isDashboardHomePage: 'הצג בעמוד הבית את הdashboard',
         agGrid: {
             rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
             defaultExpandedRowCount: 'מספר שורות להצגה בטבלה במצב פתוח',

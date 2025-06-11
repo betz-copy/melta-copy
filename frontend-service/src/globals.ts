@@ -34,6 +34,7 @@ export const environment = {
     unauthorizedId: 'unauthorized',
     defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
+    searchPath: '/search',
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,

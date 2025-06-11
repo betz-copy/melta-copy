@@ -1,6 +1,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 import { ChartsAndGenerator, IChart, IMongoChart, IPermission } from '../interfaces/charts';
+import { MongoBaseFields } from '../interfaces/dashboard';
 
 const { charts } = environment.api;
 
@@ -11,8 +12,8 @@ export const createChart = async (newChart: ChartWithStringFilter, toDashboard: 
     return data;
 };
 
-export const editChart = async (chartId: string, updatedChart: ChartWithStringFilter) => {
-    const { usedInDashboard, ...restChart } = updatedChart;
+export const editChart = async (chartId: string, updatedChart: IChart & MongoBaseFields) => {
+    const { usedInDashboard, _id, createdAt, updatedAt, ...restChart } = updatedChart;
 
     const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IPermission.Private;
 

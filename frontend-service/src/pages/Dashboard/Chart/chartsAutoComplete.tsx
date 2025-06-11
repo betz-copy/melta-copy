@@ -21,10 +21,10 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
             return (
                 <>
                     <Grid item>
-                        {`${i18next.t('charts.axis')} x`} : {columnLineData.xAxis.title}
+                        {i18next.t('charts.xAxis')} : {columnLineData.xAxis.title}
                     </Grid>
                     <Grid item>
-                        {`${i18next.t('charts.axis')} y`} : {columnLineData.yAxis.title}
+                        {i18next.t('charts.yAxis')} : {columnLineData.yAxis.title}
                     </Grid>
                 </>
             );
@@ -52,15 +52,14 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
     }
 };
 
-const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: string }> }> = ({ formikProps }) => {
+const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: string }> }> = ({ formikProps: { values, setValues } }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = entityTemplates.get(formikProps.values.templateId!);
+    const entityTemplate = entityTemplates.get(values.templateId!);
 
     const [inputValue, setInputValue] = useState('');
 
-    const translateFieldFilter = (filter: string) =>
-        FilterOfGraphToFilterRecord(JSON.parse(filter), entityTemplates.get(formikProps.values.templateId!)!);
+    const translateFieldFilter = (filter: string) => FilterOfGraphToFilterRecord(JSON.parse(filter), entityTemplates.get(values.templateId!)!);
 
     const renderFilters = (filter: string) => {
         if (!filter) return <span>{i18next.t('charts.noFilters')}</span>;
@@ -78,29 +77,29 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: st
         setInputValue('');
 
         if (chosenChart)
-            formikProps.setValues({
+            setValues({
                 ...chosenChart,
                 filter: chosenChart.filter ? translateFieldFilter(chosenChart.filter as unknown as string) : undefined,
             });
         else
-            formikProps.setValues((prev) => ({
+            setValues((prev) => ({
                 ...prev,
                 ...initialValues,
-                templateId: formikProps.values.templateId,
+                templateId: values.templateId,
             }));
     };
 
     const handleInputChange = (_event: React.SyntheticEvent, newDisplayValue: string) => setInputValue(newDisplayValue);
 
     const { data: charts, isLoading } = useQuery({
-        queryKey: ['getUserCharts', formikProps.values.templateId!, inputValue],
-        queryFn: () => getChartsByUserId(formikProps.values.templateId!, inputValue),
+        queryKey: ['getUserCharts', values.templateId!, inputValue],
+        queryFn: () => getChartsByUserId(values.templateId!, inputValue),
         initialData: [],
     });
 
     return (
         <Autocomplete<IMongoChart>
-            value={formikProps.values as IMongoChart}
+            value={values as IMongoChart}
             inputValue={inputValue}
             onChange={onChange}
             onInputChange={handleInputChange}
@@ -124,15 +123,11 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: st
                 return (
                     <li {...props}>
                         <Grid container justifyContent="space-between" direction="row" spacing={1}>
-                            {charts?.map((chart, index) => (
-                                <Grid item key={chart._id} xs={4} overflow="hidden">
-                                    <MeltaTooltip placement="right" title={chart.name}>
-                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
-                                            {chart.name}
-                                        </Typography>
-                                    </MeltaTooltip>
-                                </Grid>
-                            ))}
+                            <Grid item key={option._id} xs={4} overflow="hidden">
+                                <MeltaTooltip placement="right" title={option.name}>
+                                    <Typography overflow="hidden">{option.name}</Typography>
+                                </MeltaTooltip>
+                            </Grid>
                             <Grid item xs={0}>
                                 <MeltaTooltip
                                     title={
@@ -160,7 +155,6 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: st
                     </li>
                 );
             }}
-            // size={size}
         />
     );
 };

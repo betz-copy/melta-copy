@@ -1,6 +1,6 @@
 import { CircularProgress, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import i18next from 'i18next';
+import i18next, { use } from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -17,12 +17,14 @@ import { AddDashboardItem } from './AddDashboardItem';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardItemViewPage } from './DashboardItemViewPage';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const { dashboardOrderKey, chartPath, iFramePath, tablePath } = environment.dashboard;
 
 const Dashboard: React.FC = () => {
     const queryClient = useQueryClient();
     const [_, navigate] = useLocation();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [layout, setLayout] = useState<LayoutItem[]>([]);
     const [isHoverOnCard, setIsHoverOnCard] = useState<number | null>(null);
@@ -102,7 +104,7 @@ const Dashboard: React.FC = () => {
                         <div
                             key={dashboardItem._id}
                             style={{
-                                background: 'white',
+                                background: darkMode ? '#131313' : 'white',
                                 border: '1px solid #CCCFE5',
                                 borderRadius: '7px',
                                 position: 'relative',
@@ -129,7 +131,7 @@ const Dashboard: React.FC = () => {
                                             type: dashboardItem.type,
                                             templateId: dashboardItem.metaData.templateId!,
                                         });
-                                    } else if (dashboardItem.type ===DashboardItemType.Table) {
+                                    } else if (dashboardItem.type === DashboardItemType.Table) {
                                         navigate(`${tablePath}/${dashboardItem._id}`);
                                     } else {
                                         setEditDashboardItemDialogState({

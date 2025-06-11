@@ -29,6 +29,35 @@ import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
+const isColumnVisible = (column: string, defaultVisibleColumns: { [key: string]: boolean }) => {
+    if (template.propertiesPreview.length === 0 && hideNonPreview) {
+        return !firstTwoPropsOrder.includes(property);
+    }
+
+    // Archive mode - hide all columns
+    if (archive) {
+        return true;
+    }
+
+    // Check explicit visibility settings
+    if (defaultVisibleColumns[property] !== undefined) {
+        return !defaultVisibleColumns[property];
+    }
+
+    // Hide non-preview properties when hideNonPreview is true
+    if (hideNonPreview && !template.propertiesPreview.includes(property)) {
+        return true;
+    }
+
+    // If columnsToShow is specified, only show those columns
+    if (columnsToShow && !columnsToShow.includes(property)) {
+        return true;
+    }
+
+    // Default: show the column
+    return false;
+};
+
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
@@ -101,14 +130,17 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
+        const isPreviewEmpty = template.propertiesPreview.length === 0;
+        const isPropertyInPreview = template.propertiesPreview.includes(property);
+        const isFirstTwoProperties = firstTwoPropsOrder.includes(property);
+        const isDefaultVisibilityColumn = defaultVisibleColumns[property] !== undefined;
+        const isColumnInDisplayList = columnsToShow?.includes(property) ?? true;
+
         const hideColumn =
-            template.propertiesPreview.length === 0 && hideNonPreview
-                ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
-                : archive ||
-                  (defaultVisibleColumns[property] !== undefined
-                      ? !defaultVisibleColumns[property]
-                      : hideNonPreview && !template.propertiesPreview.includes(property)) ||
-                  (columnsToShow && !columnsToShow?.includes(property));
+            (isPreviewEmpty && hideNonPreview && !isFirstTwoProperties) ||
+            archive ||
+            (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
+            !isColumnInDisplayList;
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 

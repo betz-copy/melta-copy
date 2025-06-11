@@ -16,7 +16,7 @@ import { dashboardInitialValues, tableDetailsSchema, tableMetaDataToBackend } fr
 import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
 import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 import { DashboardItem } from '../DashboardItem';
-import { BodyComponent } from './BodyCompenet';
+import { BodyComponent } from './BodyComponent';
 import { SideBarDetails } from './sideBarDetails';
 import { environment } from '../../../globals';
 
@@ -72,13 +72,13 @@ const Table: React.FC = () => {
                     navigate(`${tablePath}/${data._id}`);
                 }
 
-                toast.success(i18next.t(`wizard.category.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
+                toast.success(i18next.t(`dashboard.tables.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
             },
             onError: (error: AxiosError) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}
-                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
+                        defaultErrorMessage={i18next.t(`dashboard.tables.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
                     />,
                 );
             },
@@ -88,10 +88,10 @@ const Table: React.FC = () => {
     const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(tableId), {
         onSuccess: () => {
             navigate(dashboardPath);
-            toast.success(i18next.t('charts.actions.deletedSuccessfully'));
+            toast.success(i18next.t('dashboard.tables.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('dashboard.tables.failedToDelete')} />);
         },
     });
 

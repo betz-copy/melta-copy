@@ -44,10 +44,11 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     }
 
     async getIFrameById(iFrameId: string) {
+        console.log('hiiiiiiiii');
         const iframe = await this.service.getIFrameById(iFrameId);
         const dashboardIframesItems = await this.DashboardItemService.getDashboardRelatedItems([iFrameId]);
         const usedInDashboard = (dashboardIframesItems[iFrameId] ?? []).length > 0;
-
+        console.log({ usedInDashboard });
         return { ...iframe, usedInDashboard };
     }
 

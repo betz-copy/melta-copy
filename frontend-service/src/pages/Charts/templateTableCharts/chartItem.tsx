@@ -6,7 +6,7 @@ import { useUserStore } from '../../../stores/user';
 import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
-import { HighchartGenerator } from '../chartGenerator.tsx/HighChartgenerator';
+import { HighchartGenerator } from '../chartGenerator.tsx/HighchartGenerator';
 import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
 
 interface ChartItemProps {
@@ -18,7 +18,7 @@ interface ChartItemProps {
 }
 
 const ChartItem: React.FC<ChartItemProps> = ({
-    chartDetails: { chart: chartData, type, name, description, metaData, _id, createdBy },
+    chartDetails: { chart: chartData, type, name, description, metaData, createdBy },
     isHoverOnCard,
     indexInGrid,
     onDelete,
@@ -26,6 +26,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore();
+    const isEditAndDeleteDisabled = createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
 
     return (
         <Box style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -60,8 +61,8 @@ const ChartItem: React.FC<ChartItemProps> = ({
                         onDeleteClick={onDelete}
                         onEditClick={onEdit}
                         disabledProps={{
-                            isDeleteDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
-                            isEditDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
+                            isDeleteDisabled: isEditAndDeleteDisabled,
+                            isEditDisabled: isEditAndDeleteDisabled,
                             tooltipTitle: '',
                         }}
                     />

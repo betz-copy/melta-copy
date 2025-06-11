@@ -75,14 +75,14 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedOnFilter = useCallback(
-        debounce((newFilterField: IGraphFilterBody['filterField']) => {
-            console.log({ newFilterField });
-
+        debounce((newFilterField: IGraphFilterBody['filterField'], template, property) => {
             const newValue: IGraphFilterBody = {
-                selectedTemplate,
-                selectedProperty,
+                selectedTemplate: template,
+                selectedProperty: property,
                 filterField: newFilterField,
             };
+            console.log({ newVlaueInSet: newValue ,filterKey});
+
             setFilterRecord(newValue, filterKey);
             // setFilterRecord((prev) => ({
             //     ...prev,
@@ -95,7 +95,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
             onFilter?.();
         }, 500),
-        [filterKey, selectedTemplate, selectedProperty],
+        [filterKey],
     );
 
     const handleSelectTemplate = (newValue: IMongoEntityTemplatePopulated | null) => {
@@ -107,8 +107,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleSelectProperty = (newProperty: string | null) => {
-        console.log({ newProperty });
-
         setSelectedProperty(newProperty);
 
         if (!newProperty) {
@@ -135,7 +133,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleSetFilterRecord = (newFilterField: IGraphFilterBody['filterField'], condition: boolean = true) => {
-        if (condition) debouncedOnFilter(newFilterField);
+        console.log('enter to setFilterRecord', newFilterField, condition, selectedProperty);
+
+        if (condition) debouncedOnFilter(newFilterField, selectedTemplate, selectedProperty);
     };
 
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField'], condition: boolean = true) => {

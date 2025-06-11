@@ -14,7 +14,7 @@ const ViewModeTextField: React.FC<ViewModeTextFieldProps> = ({ readOnly = false,
             InputProps={{
                 ...InputProps,
                 readOnly,
-                disableUnderline: true,
+                ...(readOnly && { disableUnderline: true }),
                 style: {
                     textOverflow: 'ellipsis',
                     ...(InputProps?.style || {}),

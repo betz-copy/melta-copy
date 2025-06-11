@@ -15,11 +15,14 @@ const FilterSideBar = <T extends TableMetaData | IChart>({
     values,
     setFieldValue,
     filters,
+    setValues,
     viewMode,
 }: StepComponentProps<T> & {
     filters: { value: number[]; set: React.Dispatch<React.SetStateAction<number[]>> };
     viewMode: ViewMode;
 }) => {
+    console.log({ values });
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const templateOptions = Array.from(entityTemplates.values());
@@ -29,7 +32,7 @@ const FilterSideBar = <T extends TableMetaData | IChart>({
     const addNewFilter = () => filters.set((prevFilters) => [...prevFilters, Date.now()]);
 
     return (
-        <Grid item display="flex" direction="column" gap={3}>
+        <Grid item display="flex" sx={{ flexDirection: 'column' }} gap={3}>
             {'columns' in values && (
                 <>
                     <Grid item>
@@ -59,8 +62,11 @@ const FilterSideBar = <T extends TableMetaData | IChart>({
                     templateOptions={templateOptions}
                     filterRecord={values.filter || {}}
                     setFilterRecord={(value: IGraphFilterBody, filterKey: number) => {
+                        console.log({ valuesIN: values });
+
                         const currentValue = values.filter;
                         const newValue = { ...currentValue, [filterKey]: { ...value } };
+                        console.log({ currentValue, newValue });
 
                         setFieldValue('filter', newValue);
                     }}

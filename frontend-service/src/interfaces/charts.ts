@@ -8,7 +8,7 @@ export interface IChart {
     permission: IPermission;
     filter?: IGraphFilterBodyBatch;
     templateId?: string;
-    createdBy?: string;
+    createdBy: string;
     usedInDashboard?: boolean;
 }
 

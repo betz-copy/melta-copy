@@ -11,7 +11,7 @@ const AreYouSureDialog: React.FC<{
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
     disableYesButton?: boolean;
-    yesTitle?: React.ReactNode;
+    yesTitle?: string;
     noTitle?: string;
 }> = ({
     open,
@@ -22,16 +22,11 @@ const AreYouSureDialog: React.FC<{
     onYes,
     onNo,
     disableYesButton,
-    yesTitle = (
-        <Grid container alignItems="center" justifyContent="center" style={{ gap: '5px' }}>
-            {i18next.t('areYouSureDialog.yes')}
-        </Grid>
-    ),
-
+    yesTitle = i18next.t('areYouSureDialog.yes'),
     noTitle = i18next.t('areYouSureDialog.no'),
 }) => {
     const theme = useTheme();
-
+    
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="xs" style={{ height: '100%', margin: 'auto', padding: '20px' }} disableEnforceFocus>
             <DialogTitle fontWeight={600} fontSize={20} color={theme.palette.primary.main}>
@@ -43,7 +38,9 @@ const AreYouSureDialog: React.FC<{
                     {noTitle}
                 </Button>
                 <Button variant="contained" sx={{ borderRadius: '7px', color: 'white' }} onClick={onYes} disabled={isLoading || disableYesButton}>
-                    {yesTitle}
+                    <Grid container alignItems="center" justifyContent="center" style={{ gap: '5px' }}>
+                        {yesTitle}
+                    </Grid>
                     {isLoading && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>

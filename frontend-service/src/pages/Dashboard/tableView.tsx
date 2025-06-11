@@ -14,6 +14,7 @@ import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { filterModelToFilterOfTemplate, getFilterModal } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 const {
     loadExcel: { excelExtension },
@@ -22,7 +23,7 @@ const {
 const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    
+
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -38,8 +39,11 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                 fileName: `${template.displayName}${excelExtension}`,
                 templates: {
                     [template._id]: {
-                        filter: metaData.filter && Object.keys(metaData.filter).length > 0 && JSON.parse(metaData.filter as unknown as string),
-                        displayColumns: metaData.columns ?? [],
+                        filter: getFilterModal(
+                            filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel()!, template),
+                            metaData.filter && Object.keys(metaData.filter).length > 0 && JSON.parse(metaData.filter as unknown as string),
+                        ),
+                        displayColumns: metaData.columns,
                     },
                 },
             });

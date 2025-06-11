@@ -1,6 +1,7 @@
 import { Autocomplete, Chip, TextField } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import React, { CSSProperties } from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
 
 interface IFormikAutoCompleteProps<T> {
     formik: FormikProps<any>;
@@ -16,7 +17,6 @@ interface IFormikAutoCompleteProps<T> {
     onChange?: (value: T | T[] | null) => void;
     style?: CSSProperties;
     readonly?: boolean;
-    popupIcon?: React.ReactNode;
 }
 
 export const FormikAutoComplete = <T,>({
@@ -33,7 +33,6 @@ export const FormikAutoComplete = <T,>({
     onChange,
     style,
     readonly = false,
-    popupIcon,
 }: IFormikAutoCompleteProps<T>) => {
     const error = Boolean(getIn(touched, formikField)) && getIn(errors, formikField);
 
@@ -64,7 +63,7 @@ export const FormikAutoComplete = <T,>({
                         ...params.InputProps,
                         endAdornment: !readonly && params.InputProps.endAdornment,
                         readOnly: readonly,
-                        disableUnderline: readonly,
+                        ...(readonly && { disableUnderline: true }),
                     }}
                 />
             )}
@@ -74,7 +73,7 @@ export const FormikAutoComplete = <T,>({
                     <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : option} />
                 ))
             }
-            popupIcon={popupIcon}
+            popupIcon={<IoIosArrowDown fontSize="Medium" />}
         />
     );
 };

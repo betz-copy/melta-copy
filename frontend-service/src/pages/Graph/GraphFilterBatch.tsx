@@ -33,7 +33,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         selectedEntityTemplate,
         entityFilter = false,
     }) => {
-        console.log({ filters, filterRecord });
+        // console.log({ filters, filterRecord });
 
         const deleteFilter = (value: number) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));

@@ -12,6 +12,7 @@ export interface MongoBaseFields {
     createdAt: string;
     updatedAt: string;
 }
+
 export interface TableMetaData {
     templateId: string;
     name: string;
@@ -25,24 +26,24 @@ export interface TableItem {
     metaData: TableMetaData;
 }
 
-export interface ChartItem {
+interface ChartItem {
     type: DashboardItemType.Chart;
     metaData: string;
 }
 
-export interface IframeItem {
+interface IframeItem {
     type: DashboardItemType.Iframe;
     metaData: string;
 }
 
 export type DashboardItem = TableItem | ChartItem | IframeItem;
 
-export interface ChartItemPopulated {
+interface ChartItemPopulated {
     type: DashboardItemType.Chart;
     metaData: ChartsAndGenerator;
 }
 
-export interface IframeItemPopulated {
+interface IframeItemPopulated {
     type: DashboardItemType.Iframe;
     metaData: IMongoIFrame;
 }

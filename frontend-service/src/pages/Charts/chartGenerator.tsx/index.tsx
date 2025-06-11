@@ -8,7 +8,7 @@ import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 import { NumberChartGenerator } from './NumberChartGenerator';
-import { HighchartGenerator } from './HighChartgenerator';
+import { HighchartGenerator } from './HighchartGenerator';
 
 interface IChartGeneratorProps {
     formikValues: IChart;

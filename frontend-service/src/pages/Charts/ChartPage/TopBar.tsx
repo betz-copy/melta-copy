@@ -59,7 +59,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
             >
                 <Grid>
                     <BlueTitle
-                        title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')}`}
+                        title={`${i18next.t(`actions.${edit ? 'edit' : 'create'}ment`)} ${i18next.t('charts.chart')}`}
                         component="h4"
                         variant="h4"
                         style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}

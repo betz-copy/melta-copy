@@ -8,6 +8,11 @@ import PopperSidebar from '../../../common/PopperSidebar';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
+import { environment } from '../../../globals';
+
+const {
+    dashboard: { chartPath, tablePath, iFramePath },
+} = environment;
 
 const AddDashboardItem: React.FC = () => {
     const theme = useTheme();
@@ -20,17 +25,17 @@ const AddDashboardItem: React.FC = () => {
     const itemsCards: DashboardItemCardProps[] = [
         {
             title: i18next.t('dashboard.itemType.table'),
-            onClick: () => navigate('/table'),
+            onClick: () => navigate(tablePath),
             imgSrc: '/icons/dashboardViews/table.svg',
         },
         {
             title: i18next.t('dashboard.itemType.chart'),
-            onClick: () => navigate('/charts/chart', { state: { isDashboardPage: true } }),
+            onClick: () => navigate(`${chartPath}/chart`, { state: { isDashboardPage: true } }),
             imgSrc: '/icons/dashboardViews/chart.svg',
         },
         {
             title: i18next.t('dashboard.itemType.iframe'),
-            onClick: () => navigate('/iframe'),
+            onClick: () => navigate(iFramePath),
             imgSrc: '/icons/dashboardViews/iframe.svg',
         },
     ];

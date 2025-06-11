@@ -11,7 +11,7 @@ import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
 import { ChartsAndGenerator } from '../../interfaces/charts';
 import { DashboardItemType } from '../../interfaces/dashboard';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
@@ -19,6 +19,7 @@ import { DashboardHeader } from '../Dashboard/DashboardHeader';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 import { AddNewChartButton } from './templateTableCharts/AddNewChartButton';
 import ChartItem from './templateTableCharts/chartItem';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -26,8 +27,9 @@ const ChartsPage: React.FC = () => {
     const { templateId } = useParams();
     const queryClient = useQueryClient();
     const [currentLocation, navigate] = useLocation();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
+    const template = entityTemplates.get(templateId!)!;
 
     const [textSearch, setTextSearch] = useState<string>();
     const [layout, setLayout] = useState<LayoutItem[]>([]);
@@ -48,11 +50,13 @@ const ChartsPage: React.FC = () => {
         chartId: null,
     });
 
-    const { data: charts, isLoading } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ['getCharts', templateId, textSearch],
         queryFn: () => getChartByTemplateId(templateId as string, textSearch),
         initialData: [],
     });
+
+    const charts = data ?? [];
 
     const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation(
         ({ id, usedInDashboard }: { id: string; usedInDashboard?: boolean }) => deleteChart(id, usedInDashboard),
@@ -81,19 +85,19 @@ const ChartsPage: React.FC = () => {
         <Grid>
             <DashboardHeader
                 setTextSearch={setTextSearch}
-                resetLayout={() => setLayout(generateLayoutDetails(charts ?? []).lg)}
+                resetLayout={() => setLayout(generateLayoutDetails(charts).lg)}
                 title={`${i18next.t('charts.chartsOf')} ${template.displayName}`}
                 AddNewItem={AddNewChartButton}
             />
             <LocalStorageGridLayout<ChartsAndGenerator[]>
-                items={charts ?? []}
+                items={charts}
                 localStorageKey={`${chartsOrderKey}${templateId}`}
                 generateDom={() =>
-                    (charts ?? []).map((chart, index) => (
+                    charts.map((chart, index) => (
                         <div
                             key={chart._id}
                             style={{
-                                background: 'white',
+                                background: darkMode ? '#131313' : 'white',
                                 border: '1px solid #CCCFE5',
                                 borderRadius: '7px',
                                 position: 'relative',

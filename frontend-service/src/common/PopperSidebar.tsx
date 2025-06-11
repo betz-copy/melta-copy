@@ -47,7 +47,7 @@ const PopperSidebar: React.FC<{
                                             setOpen(false);
                                         }}
                                         size="small"
-                                        sx={{ position: 'absolute', top: '20px', right: '15px' }} //
+                                        sx={{ position: 'absolute', top: '20px', right: '15px' }}
                                     >
                                         <CloseSharp sx={{ color: theme.palette.primary.main }} />
                                     </IconButton>

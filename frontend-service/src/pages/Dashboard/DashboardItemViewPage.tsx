@@ -6,7 +6,7 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { GripVertical } from '../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { HighchartGenerator } from '../Charts/chartGenerator.tsx/HighChartgenerator';
+import { HighchartGenerator } from '../Charts/chartGenerator.tsx/HighchartGenerator';
 import { NumberChartGenerator } from '../Charts/chartGenerator.tsx/NumberChartGenerator';
 import { CardMenu } from '../SystemManagement/components/CardMenu';
 import { IframeView } from './iframeView';

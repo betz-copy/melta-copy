@@ -22,7 +22,9 @@ const BodyComponent: React.FC<StepComponentProps<IChart>> = ({ values }) => {
         return graphFilters?.[templateId]?.filter;
     }, [values.templateId, values.filter]);
 
-    return values.templateId ? (
+    if (!values.templateId) return null;
+
+    return (
         <>
             <Grid container item height="100%" alignItems="center" justifyContent="center">
                 <ChartGenerator formikValues={values} template={entityTemplates.get(values.templateId)!} filterRecord={values.filter} />
@@ -47,7 +49,7 @@ const BodyComponent: React.FC<StepComponentProps<IChart>> = ({ values }) => {
                 />
             </Grid>
         </>
-    ) : null;
+    );
 };
 
 export { BodyComponent };

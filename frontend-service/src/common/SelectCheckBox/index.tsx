@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Box, FormControl, Grid, Select, Typography, useTheme } from '@mui/material';
+import { Box, FormControl, Select, Typography, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';

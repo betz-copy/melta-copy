@@ -32,7 +32,6 @@ const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: V
                     getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
                     multiple={false}
                     readonly={viewMode === ViewMode.ReadOnly}
-                    popupIcon={<IoIosArrowDown fontSize="Medium" />}
                     style={{ width: '100%' }}
                 />
             </Grid>

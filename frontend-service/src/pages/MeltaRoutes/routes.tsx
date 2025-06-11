@@ -52,6 +52,11 @@ const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
+const {
+    searchPath,
+    dashboard: { dashboardPath },
+} = environment;
+
 export const MeltaRoutesInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { isDrawerOpen, isDashboardHomePage } = workspace.metadata;
@@ -292,16 +297,16 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <Unavailable setTitle={setTitle} />
                             </Route>
 
-                            <Route path="/dashboard">
+                            <Route path={dashboardPath}>
                                 <Dashboard />
                             </Route>
 
-                            <Route path="/search">
+                            <Route path={searchPath}>
                                 <GlobalSearch />
                             </Route>
 
                             <Route path="/">
-                                <Redirect to={isDashboardHomePage ? '/dashboard' : '/search'} />
+                                <Redirect to={isDashboardHomePage ? dashboardPath : searchPath} />
                             </Route>
 
                             <Route path="*">

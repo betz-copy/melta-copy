@@ -124,6 +124,7 @@ const Tree = <T extends {}>({
                 experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
                 onItemPositionChange={onDragEnd}
+                disableSelection={isSelectDisabled}
             />
         </>
     );

@@ -51,29 +51,29 @@ const LocalStorageGridLayout = <T extends any[]>({ items, localStorageKey, gener
     const handleLayoutChange = (newLayout: LayoutItem[]) => {
         const savedLayout = getSavedLayout();
 
-        if (newLayout.length) {
-            layout.set((prevLayout) => {
-                if (prevLayout.length < newLayout.length && savedLayout && !textSearch) return savedLayout;
+        if (!newLayout.length) return;
 
-                const updatedLayout = newLayout.map((newItem, index) => {
-                    const existingItem = prevLayout[index];
-                    return existingItem ? { ...newItem, i: existingItem.i } : newItem;
-                });
+        layout.set((prevLayout) => {
+            if (prevLayout.length < newLayout.length && savedLayout && !textSearch) return savedLayout;
 
-                if (savedLayout && savedLayout.length > newLayout.length) updatedLayout.push(savedLayout[savedLayout.length - 1]);
-
-                if (!textSearch) LocalStorage.set(localStorageKey, updatedLayout);
-
-                return updatedLayout;
+            const updatedLayout = newLayout.map((newItem, index) => {
+                const existingItem = prevLayout[index];
+                return existingItem ? { ...newItem, i: existingItem.i } : newItem;
             });
-        }
+
+            if (savedLayout && savedLayout.length > newLayout.length) updatedLayout.push(savedLayout[savedLayout.length - 1]);
+
+            if (!textSearch) LocalStorage.set(localStorageKey, updatedLayout);
+
+            return updatedLayout;
+        });
     };
 
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div>
             {layout.value.length > 0 && (
                 <GridLayout
-                    style={{ direction: 'ltr', width: '100%', height: '100%' }}
+                    style={{ direction: 'ltr' }}
                     rowHeight={30}
                     cols={defaultColumnSizes}
                     useCSSTransforms={mounted}

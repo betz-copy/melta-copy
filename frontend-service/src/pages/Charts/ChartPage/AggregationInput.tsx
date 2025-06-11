@@ -108,7 +108,6 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         }
                         return false;
                     }}
-                    popupIcon={<IoIosArrowDown fontSize="Medium" />}
                     style={{ width: 295 }}
                 />
             </Grid>
@@ -126,7 +125,6 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         getOptionLabel={(option) => getOptionLabel(option)}
                         multiple={false}
                         readonly={readonly}
-                        popupIcon={<IoIosArrowDown fontSize="Medium" />}
                         style={{ width: 295 }}
                     />
                 </Grid>

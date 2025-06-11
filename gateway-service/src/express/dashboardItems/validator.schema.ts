@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { DashboardItemType } from '../../externalServices/dashboardService/dashboardItemService';
+import { DashboardItemType } from '@microservices/shared';
 import { searchFilterSchema } from '../templateCharts/validator.schema';
 
 const TableMetaDataSchema = Joi.object({

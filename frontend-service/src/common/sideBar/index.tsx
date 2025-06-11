@@ -45,7 +45,11 @@ interface SideBarProps {
     isDrawerOpen: boolean;
 }
 
-const { notifications } = environment;
+const {
+    notifications,
+    searchPath,
+    dashboard: { dashboardPath },
+} = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
@@ -133,7 +137,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                         <Button
                             onClick={() => {
-                                navigate(isDashboardHomePage ? '/dashboard' : '/search');
+                                navigate(isDashboardHomePage ? dashboardPath : searchPath);
                                 setActiveButton(null);
                             }}
                             style={{ width: '50px' }}
@@ -203,7 +207,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
                                     handleChangeActiveButton(true, 'search');
-                                    navigate(`/search?search=${searchValue}&viewMode=templates-tables-view`);
+                                    navigate(`${searchPath}?search=${searchValue}&viewMode=templates-tables-view`);
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"

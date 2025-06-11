@@ -10,7 +10,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { environment } from '../../../globals';
 import { IChart, IPermission } from '../../../interfaces/charts';
-import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemType, MongoBaseFields, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
@@ -22,7 +22,7 @@ import { ChartSideBar } from '../../Charts/ChartPage/ChartSideBar';
 import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
 import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 import { DashboardItem } from '../DashboardItem';
-import { BodyComponent } from './BodyCompenent';
+import { BodyComponent } from './BodyComponent';
 
 const { dashboardPath, chartPath } = environment.dashboard;
 
@@ -45,7 +45,7 @@ const Chart: React.FC = () => {
     });
 
     const { isLoading, mutateAsync } = useMutation({
-        mutationFn: async (chartData: IChart & { _id?: string }) => {
+        mutationFn: async (chartData: IChart & MongoBaseFields) => {
             const baseChart = {
                 ...chartData,
                 createdBy: currentUser._id,
@@ -80,14 +80,14 @@ const Chart: React.FC = () => {
                 });
             }
 
-            toast.success(i18next.t(`wizard.category.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
+            toast.success(i18next.t(`charts.actions.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
         },
 
         onError: (error: AxiosError) => {
             toast.error(
                 <ErrorToast
                     axiosError={error}
-                    defaultErrorMessage={i18next.t(`wizard.entityTemplate.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
+                    defaultErrorMessage={i18next.t(`charts.actions.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
                 />,
             );
         },
@@ -97,7 +97,7 @@ const Chart: React.FC = () => {
         () => (isDashboardPage ? deleteDashboardItem(chartId!) : deleteChart(chartId!, chart?.usedInDashboard)),
         {
             onSuccess: () => {
-                navigate('/');
+                navigate(getBackPath().path);
                 toast.success(i18next.t('charts.actions.deletedSuccessfully'));
             },
             onError: (error: AxiosError) => {

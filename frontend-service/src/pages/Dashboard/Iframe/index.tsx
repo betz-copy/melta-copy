@@ -11,7 +11,7 @@ import { StepType } from '../../../common/wizards';
 import { createIFrameDetailsSchema } from '../../../common/wizards/iFrame/CreateIFrameDetails';
 import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from '../../../common/wizards/iFrame/SettingPermissions';
 import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { IFrame } from '../../../interfaces/iFrames';
+import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
 import { createIFrame, getIFrameById, updateIFrame } from '../../../services/iFramesService';
 import { DashboardItem } from '../DashboardItem';
 import { BodyComponent } from './bodyComponent';
@@ -19,6 +19,7 @@ import { SideBarDetails } from './sideBarDetails';
 import { environment } from '../../../globals';
 import { dashboardInitialValues } from '../../../utils/dashboard/formik';
 import { deleteDashboardItem } from '../../../services/dashboardService';
+import { updateIFramesOrderOnLocalStorage } from '../../../common/wizards/iFrame';
 
 const { dashboardPath, iFramePath } = environment.dashboard;
 
@@ -41,16 +42,18 @@ const DashboardIframe: React.FC = () => {
                     queryClient.invalidateQueries(['getIframe', iframeId]);
                     setViewMode(ViewMode.ReadOnly);
                 } else {
+                    updateIFramesOrderOnLocalStorage(data, queryClient);
+
                     navigate(`${iFramePath}/${data._id}`);
                 }
 
-                toast.success(i18next.t(`wizard.category.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
+                toast.success(i18next.t(`wizard.iFrame.${viewMode === ViewMode.Edit ? 'edited' : 'created'}Successfully`));
             },
             onError: (error: AxiosError) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}
-                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
+                        defaultErrorMessage={i18next.t(`wizard.iFrame.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
                     />,
                 );
             },
@@ -60,10 +63,10 @@ const DashboardIframe: React.FC = () => {
     const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(iframeId), {
         onSuccess: () => {
             navigate(dashboardPath);
-            toast.success(i18next.t('charts.actions.deletedSuccessfully'));
+            toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
         },
     });
 
