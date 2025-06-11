@@ -3,18 +3,17 @@ import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
-import { IAggregation, IAggregationType, IChart, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
+import { IAggregation, IAggregationType, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
-import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
 interface AxisInputProps {
-    formik: FormikProps<IChart>;
+    formik: FormikProps<ChartForm>;
     formikField: string;
-    formikValues: IChart;
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;
     optionsType: OptionsType;
@@ -22,21 +21,12 @@ interface AxisInputProps {
     titleFormikField?: string;
 }
 
-const AxisInput: React.FC<AxisInputProps> = ({
-    formik,
-    entityTemplate,
-    formikField,
-    titleFormikField,
-    formikValues,
-    label,
-    optionsType,
-    readonly,
-}) => {
+const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikField, titleFormikField, label, optionsType, readonly }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const fieldValue = getIn(formikValues, formikField);
-    const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
+    const fieldValue = getIn(formik.values, formikField);
+    const titleValue = titleFormikField ? getIn(formik.values, titleFormikField) : undefined;
     const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
 
     const entityTemplateFields = Object.keys(pickBy(entityTemplate?.properties.properties, ({ format }) => format !== 'comment'));

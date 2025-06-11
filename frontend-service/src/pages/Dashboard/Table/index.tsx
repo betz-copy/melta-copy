@@ -8,7 +8,8 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
-import { DashboardItemType, TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { environment } from '../../../globals';
+import { DashboardItemType, TableForm, TableMetaData, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../services/dashboardService';
@@ -18,7 +19,6 @@ import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 import { DashboardItem } from '../DashboardItem';
 import { BodyComponent } from './BodyComponent';
 import { SideBarDetails } from './sideBarDetails';
-import { environment } from '../../../globals';
 
 const { dashboardPath, tablePath } = environment.dashboard;
 
@@ -41,7 +41,7 @@ const Table: React.FC = () => {
     const template = table && entityTemplates.get(table?.metaData.templateId);
 
     const updateFilters = (filter: string) => {
-        const parsedFilter = JSON.parse(filter as unknown as string);
+        const parsedFilter = JSON.parse(filter);
         const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template!);
 
         setFilterRecord(formattedFilter);
@@ -53,11 +53,11 @@ const Table: React.FC = () => {
     }, [tableId, table]);
 
     useEffect(() => {
-        if (table && template && table.metaData.filter) updateFilters(table.metaData.filter as unknown as string);
+        if (table && template && table.metaData.filter) updateFilters(table.metaData.filter);
     }, [table, template]);
 
     const { isLoading, mutateAsync } = useMutation(
-        (tableData: TableMetaData) =>
+        (tableData: TableForm) =>
             viewMode === ViewMode.Edit
                 ? editDashboardItem(tableId!, tableMetaDataToBackend(tableData))
                 : createDashboardItem(tableMetaDataToBackend(tableData)),
@@ -95,9 +95,9 @@ const Table: React.FC = () => {
         },
     });
 
-    const getInitialValues = () => (table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table);
+    const initialValues = table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table;
 
-    const steps: StepType<TableMetaData>[] = [
+    const steps: StepType<TableForm>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <SideBarDetails viewMode={viewMode} {...props} />,
@@ -113,12 +113,12 @@ const Table: React.FC = () => {
     if (isLoadingGetTable) return <CircularProgress />;
 
     return (
-        <DashboardItem<TableMetaData>
+        <DashboardItem<TableForm>
             title={i18next.t(`dashboard.tables.${viewMode === ViewMode.Add ? 'add' : 'edit'}Table`)}
             backPath={{ path: dashboardPath, title: i18next.t('dashboard.mainScreen') }}
             onDelete={deleteMutateAsync}
             steps={steps}
-            initialValues={getInitialValues()}
+            initialValues={initialValues}
             bodyComponent={(props) => <BodyComponent {...props} />}
             submitFunction={(values) => mutateAsync(values)}
             isLoading={isLoading}

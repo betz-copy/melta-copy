@@ -3,7 +3,8 @@ import { Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
-import { IChart, IChartType } from '../../../interfaces/charts';
+import { IChartType } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { initializeChartMetaData } from '../../../utils/charts/getChartAxes';
 import { ColumnOrLineChart } from '../chartsType/ColumnOrLineChart';
@@ -12,8 +13,7 @@ import { PieChart } from '../chartsType/PieChart';
 import { ChartTypeButton } from './ChartTypeButton';
 
 interface ChartProps {
-    formik: FormikProps<IChart>;
-    formikValues: IChart;
+    formik: FormikProps<ChartForm>;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
 }
@@ -32,12 +32,13 @@ const chartTypeButtons = [
     { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.types.lineChart') },
 ];
 
-const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate, disabled }) => {
-    const SelectedChartType = useMemo(() => charts[formikValues.type], [formikValues.type]);
+const ChartTypesEdit: React.FC<ChartProps> = ({ formik, entityTemplate, disabled }) => {
+    const { values, setFieldValue } = formik;
+    const SelectedChartType = useMemo(() => charts[values.type], [values.type]);
 
     const handleButtonClick = (buttonId: IChartType) => {
-        formik.setFieldValue('type', buttonId);
-        formik.setFieldValue('metaData', initializeChartMetaData(buttonId));
+        setFieldValue('type', buttonId);
+        setFieldValue('metaData', initializeChartMetaData(buttonId));
     };
 
     return (
@@ -55,7 +56,7 @@ const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemp
                             key={type}
                             icon={icon}
                             buttonId={type}
-                            selectedButton={formikValues.type}
+                            selectedButton={values.type}
                             handleClick={handleButtonClick}
                             popoverText={label}
                             disabled={disabled}
@@ -64,11 +65,7 @@ const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemp
                 </Grid>
             </Grid>
 
-            <Grid item>
-                {formikValues.type && (
-                    <SelectedChartType formik={formik} formikValues={formikValues} entityTemplate={entityTemplate} disabled={disabled} />
-                )}
-            </Grid>
+            <Grid item>{values.type && <SelectedChartType formik={formik} entityTemplate={entityTemplate} disabled={disabled} />}</Grid>
         </Grid>
     );
 };

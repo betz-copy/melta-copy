@@ -1,6 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { DashboardItem, DashboardItemPopulated, MongoDashboardItemPopulated, TableItem } from '../interfaces/dashboard';
+import { DashboardItem, MongoDashboardItemPopulated, TableItem } from '../interfaces/dashboard';
 
 const { dashboard } = environment.api;
 

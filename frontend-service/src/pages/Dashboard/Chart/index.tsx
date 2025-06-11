@@ -10,7 +10,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { environment } from '../../../globals';
 import { IChart, IPermission } from '../../../interfaces/charts';
-import { DashboardItemType, MongoBaseFields, ViewMode } from '../../../interfaces/dashboard';
+import { ChartForm, DashboardItemType, MongoBaseFields, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
@@ -45,7 +45,7 @@ const Chart: React.FC = () => {
     });
 
     const { isLoading, mutateAsync } = useMutation({
-        mutationFn: async (chartData: IChart & MongoBaseFields) => {
+        mutationFn: async (chartData: ChartForm & MongoBaseFields) => {
             const baseChart = {
                 ...chartData,
                 createdBy: currentUser._id,
@@ -85,10 +85,7 @@ const Chart: React.FC = () => {
 
         onError: (error: AxiosError) => {
             toast.error(
-                <ErrorToast
-                    axiosError={error}
-                    defaultErrorMessage={i18next.t(`charts.actions.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)}
-                />,
+                <ErrorToast axiosError={error} defaultErrorMessage={i18next.t(`charts.actions.failedTo${ViewMode.Edit ? 'Edit' : 'Create'}`)} />,
             );
         },
     });
@@ -113,11 +110,11 @@ const Chart: React.FC = () => {
     }, [chartId, chart]);
 
     useEffect(() => {
-        if (chart && template && chart.filter) updateFilters(chart.filter as unknown as string);
+        if (chart && template && chart.filter) updateFilters(chart.filter);
     }, [chart, template]);
 
     const updateFilters = (filter: string) => {
-        const parsedFilter = JSON.parse(filter as unknown as string);
+        const parsedFilter = JSON.parse(filter);
         const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template!);
 
         setFilterRecord(formattedFilter);
@@ -140,6 +137,7 @@ const Chart: React.FC = () => {
         if (isDashboardPage && !chart)
             return {
                 ...baseValues,
+                filter: undefined,
                 permission: IPermission.Protected,
             };
 
@@ -150,7 +148,7 @@ const Chart: React.FC = () => {
         };
     };
 
-    const steps: StepType<IChart>[] = [
+    const steps: StepType<ChartForm>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <ChartSideBar {...props} isDashboardPage={isDashboardPage} viewMode={viewMode} />,
@@ -166,7 +164,7 @@ const Chart: React.FC = () => {
     if (isLoadingGetChart) return <CircularProgress />;
 
     return (
-        <DashboardItem<IChart>
+        <DashboardItem<ChartForm>
             title={i18next.t(`dashboard.charts.${viewMode === ViewMode.Add ? 'create' : 'edit'}Chart`)}
             backPath={getBackPath()}
             onDelete={deleteMutateAsync}

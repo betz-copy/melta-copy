@@ -5,24 +5,20 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { StepComponentProps } from '../../../common/wizards';
-import { IChart } from '../../../interfaces/charts';
-import { TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { GraphFilterBatch } from '../../Graph/GraphFilterBatch';
 
-const FilterSideBar = <T extends TableMetaData | IChart>({
+const FilterSideBar = <T extends TableForm | ChartForm>({
     values,
     setFieldValue,
     filters,
-    setValues,
     viewMode,
 }: StepComponentProps<T> & {
     filters: { value: number[]; set: React.Dispatch<React.SetStateAction<number[]>> };
     viewMode: ViewMode;
 }) => {
-    console.log({ values });
-
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const templateOptions = Array.from(entityTemplates.values());

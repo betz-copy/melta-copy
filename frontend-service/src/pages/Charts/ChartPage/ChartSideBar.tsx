@@ -24,7 +24,7 @@ import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
 import { IChart, IPermission } from '../../../interfaces/charts';
-import { ViewMode } from '../../../interfaces/dashboard';
+import { ChartForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
@@ -33,7 +33,7 @@ import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
 import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
-const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
+const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
     const { values, setValues, errors, touched, handleChange, setFieldValue } = props as FormikProps<IChart & { _id?: string }>;
 
@@ -151,7 +151,6 @@ const ChartSideBar: React.FC<StepComponentProps<IChart> & { isDashboardPage: boo
                                 <Grid item marginTop={2}>
                                     <ChartTypesEdit
                                         formik={props}
-                                        formikValues={values}
                                         entityTemplate={entityTemplates.get(values.templateId)!}
                                         disabled={viewMode === ViewMode.ReadOnly}
                                     />

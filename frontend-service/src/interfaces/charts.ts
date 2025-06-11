@@ -1,4 +1,3 @@
-import { IGraphFilterBodyBatch } from './entities';
 
 export interface IChart {
     name: string;
@@ -6,7 +5,7 @@ export interface IChart {
     type: IChartType;
     metaData: IChartTypeMetaData;
     permission: IPermission;
-    filter?: IGraphFilterBodyBatch;
+    filter?: string;
     templateId?: string;
     createdBy: string;
     usedInDashboard?: boolean;

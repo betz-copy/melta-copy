@@ -1,17 +1,16 @@
 import { Divider, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { InfoTypography } from '../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import { StepComponentProps } from '../../../common/wizards';
-import { TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getTemplateProperties } from '../../../utils/dashboard/formik';
-import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
-const SideBarDetails: React.FC<StepComponentProps<TableMetaData> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
+const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue } = formikProps;
 
     const queryClient = useQueryClient();

@@ -1,17 +1,18 @@
 import { CircularProgress } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
-import { IAxisField, IChart, IChartType } from '../../../interfaces/charts';
+import { IAxisField, IChartType } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
-import { NumberChartGenerator } from './NumberChartGenerator';
 import { HighchartGenerator } from './HighchartGenerator';
+import { NumberChartGenerator } from './NumberChartGenerator';
 
 interface IChartGeneratorProps {
-    formikValues: IChart;
+    formikValues: ChartForm;
     template: IMongoEntityTemplatePopulated;
     filterRecord?: IGraphFilterBodyBatch;
 }

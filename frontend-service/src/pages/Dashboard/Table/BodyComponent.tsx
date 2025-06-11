@@ -3,13 +3,13 @@ import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../common/wizards';
-import { TableMetaData } from '../../../interfaces/dashboard';
+import { TableForm } from '../../../interfaces/dashboard';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 
-const BodyComponent: React.FC<StepComponentProps<TableMetaData>> = ({ values }) => {
+const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
 

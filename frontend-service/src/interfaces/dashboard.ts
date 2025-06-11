@@ -18,7 +18,7 @@ export interface TableMetaData {
     name: string;
     description: string;
     columns: string[];
-    filter?: IGraphFilterBodyBatch;
+    filter?: string;
 }
 
 export interface TableItem {
@@ -53,7 +53,15 @@ export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItem
 export type MongoDashboardItem = DashboardItem & MongoBaseFields;
 export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
 
-export type DashboardItemData = IChart | IFrame | TableMetaData;
+export interface TableForm extends Omit<TableMetaData, 'filter'> {
+    filter?: IGraphFilterBodyBatch;
+}
+
+export interface ChartForm extends Omit<IChart, 'filter'> {
+    filter?: IGraphFilterBodyBatch;
+}
+
+export type DashboardItemData = ChartForm | IFrame | TableForm;
 
 export enum ViewMode {
     Edit = 'edit',

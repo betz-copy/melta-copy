@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
-import { IChart, IChartType, IColumnOrLineMetaData, IPermission } from '../../interfaces/charts';
-import { DashboardItem, DashboardItemType, TableMetaData } from '../../interfaces/dashboard';
+import { IChartType, IColumnOrLineMetaData, IPermission } from '../../interfaces/charts';
+import { ChartForm, DashboardItem, DashboardItemType, TableForm } from '../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IFrame } from '../../interfaces/iFrames';
@@ -13,7 +13,7 @@ export const tableDetailsSchema = Yup.object().shape({
 });
 
 export const dashboardInitialValues = {
-    table: { templateId: '', name: '', description: '', columns: [], filter: {} } as TableMetaData,
+    table: { templateId: '', name: '', description: '', columns: [] } as TableForm,
     iframe: { name: '', url: '' } as IFrame,
     chart: {
         name: '',
@@ -24,7 +24,7 @@ export const dashboardInitialValues = {
             yAxis: { field: '', title: '' },
         } as IColumnOrLineMetaData,
         permission: IPermission.Private,
-    } as IChart,
+    } as ChartForm,
 };
 
 export const getTemplateProperties = (entityTemplates: IEntityTemplateMap, templateId: string | null) => {
@@ -33,7 +33,7 @@ export const getTemplateProperties = (entityTemplates: IEntityTemplateMap, templ
     return entityTemplateFields || [];
 };
 
-export const tableMetaDataToBackend = (tableData: TableMetaData): DashboardItem => ({
+export const tableMetaDataToBackend = (tableData: TableForm): DashboardItem => ({
     type: DashboardItemType.Table,
     metaData: {
         ...tableData,

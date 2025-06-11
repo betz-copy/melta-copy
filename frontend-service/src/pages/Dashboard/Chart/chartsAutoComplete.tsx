@@ -6,7 +6,8 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../common/inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { IMongoChart, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData, IChart } from '../../../interfaces/charts';
+import { IChartType, IColumnOrLineMetaData, IMongoChart, INUmberMetaData, IPieMetaData } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getChartsByUserId } from '../../../services/chartsService';
 import { initialValues } from '../../../utils/charts/getChartAxes';
@@ -52,7 +53,7 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
     }
 };
 
-const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: string }> }> = ({ formikProps: { values, setValues } }) => {
+const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?: string }> }> = ({ formikProps: { values, setValues } }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(values.templateId!);
@@ -61,7 +62,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: st
 
     const translateFieldFilter = (filter: string) => FilterOfGraphToFilterRecord(JSON.parse(filter), entityTemplates.get(values.templateId!)!);
 
-    const renderFilters = (filter: string) => {
+    const renderFilters = (filter: string | undefined) => {
         if (!filter) return <span>{i18next.t('charts.noFilters')}</span>;
 
         const translatedFilter = translateFieldFilter(filter);
@@ -79,12 +80,13 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: st
         if (chosenChart)
             setValues({
                 ...chosenChart,
-                filter: chosenChart.filter ? translateFieldFilter(chosenChart.filter as unknown as string) : undefined,
+                filter: chosenChart.filter ? translateFieldFilter(chosenChart.filter) : undefined,
             });
         else
             setValues((prev) => ({
                 ...prev,
                 ...initialValues,
+                filter: undefined,
                 templateId: values.templateId,
             }));
     };
@@ -143,7 +145,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<IChart & { _id?: st
                                             </Grid>
                                             <Grid item>{renderMetaDtaChartByType(option)}</Grid>
                                             <Grid item>
-                                                {i18next.t('charts.filters')} : {renderFilters(option.filter as unknown as string)}
+                                                {i18next.t('charts.filters')} : {renderFilters(option.filter)}
                                             </Grid>
                                         </Grid>
                                     }

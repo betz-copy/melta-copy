@@ -4,12 +4,12 @@ import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../common/wizards';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
-import { IChart } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { ChartGenerator } from '../../Charts/chartGenerator.tsx';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 
-const BodyComponent: React.FC<StepComponentProps<IChart>> = ({ values }) => {
+const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 

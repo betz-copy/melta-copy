@@ -2,16 +2,16 @@ import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { IChart, OptionsType } from '../../../interfaces/charts';
+import { OptionsType } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AxisInput } from '../ChartPage/AggregationInput';
 
 const ColumnOrLineChart: React.FC<{
-    formik: FormikProps<IChart>;
-    formikValues: IChart;
+    formik: FormikProps<ChartForm>;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
-}> = ({ formik, formikValues, entityTemplate, disabled }) => {
+}> = ({ formik, entityTemplate, disabled }) => {
     return (
         <Grid container direction="column" spacing={2.5}>
             <Grid item>
@@ -20,7 +20,6 @@ const ColumnOrLineChart: React.FC<{
                     titleFormikField="metaData.xAxis.title"
                     formik={formik}
                     entityTemplate={entityTemplate}
-                    formikValues={formikValues}
                     label={i18next.t('charts.xAxis')}
                     optionsType={OptionsType.AggregationAndAllProperties}
                     readonly={disabled}
@@ -32,7 +31,6 @@ const ColumnOrLineChart: React.FC<{
                     titleFormikField="metaData.yAxis.title"
                     formik={formik}
                     entityTemplate={entityTemplate}
-                    formikValues={formikValues}
                     label={i18next.t('charts.yAxis')}
                     optionsType={OptionsType.AggregationAndNumberProperties}
                     readonly={disabled}
