@@ -113,8 +113,12 @@ const EditProps: React.FC<{
     }, [absoluteDirty, values, draftId]);
 
     useEffect(() => {
-        if (absoluteDirty && !wasDirty) setWasDirty(true);
+        setWasDirty(absoluteDirty);
     }, [absoluteDirty]);
+
+    useEffect(() => {
+        if (multipleSelectionProps) setWasDirty(Object.keys(values.attachmentsProperties).length > 0);
+    }, [values.attachmentsProperties]);
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];

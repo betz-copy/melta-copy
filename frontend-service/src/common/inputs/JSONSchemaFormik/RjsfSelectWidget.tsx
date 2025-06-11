@@ -46,6 +46,9 @@ const RjsfSelectWidget = ({
     rawErrors = [],
     color,
     options,
+    hideError,
+    hideLabel,
+    formContext,
     ...textFieldProps
 }: WidgetProps) => {
     const { defaultValue } = options;
@@ -65,7 +68,7 @@ const RjsfSelectWidget = ({
             selectedValue = items.filter((opt) => (defaultValue as string[]).includes(opt.value));
         }
     } else {
-        selectedValue = items.find(opt => opt.value === (value ?? defaultValue)) ?? null;
+        selectedValue = items.find((opt) => opt.value === (value ?? defaultValue)) ?? null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -104,8 +107,8 @@ const RjsfSelectWidget = ({
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
-            rawErrors={rawErrors}
-            label={label || schema.title}
+            rawErrors={!hideError ? rawErrors : []}
+            label={!hideLabel ? label || schema.title : undefined}
             color={color}
             value={value}
         />
