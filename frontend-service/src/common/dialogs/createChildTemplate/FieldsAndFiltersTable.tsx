@@ -85,7 +85,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             prop.format === 'location' ||
             prop.format === 'comment' ||
             prop.items?.format === 'fileId'
-            // prop.format === 'unitField'
         );
     };
 
@@ -255,7 +254,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                             }}
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
-                                                            disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                            disabled={
+                                                                !fieldFilter.selected ||
+                                                                isDisallowedFormat(fieldName) ||
+                                                                entityTemplate.properties.properties[fieldName]?.format === 'email'
+                                                            }
                                                         >
                                                             <AddRounded />
                                                         </Button>
