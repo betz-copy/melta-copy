@@ -9,6 +9,7 @@ import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
 import { IUser } from '../../../interfaces/users';
+import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -254,11 +255,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                             }}
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
-                                                            disabled={
-                                                                !fieldFilter.selected ||
-                                                                isDisallowedFormat(fieldName) ||
-                                                                entityTemplate.properties.properties[fieldName]?.format === 'email'
-                                                            }
+                                                            disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
                                                         >
                                                             <AddRounded />
                                                         </Button>
@@ -323,7 +320,31 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 return [...prev, newChip];
                             });
                         } else if (dialogType === 'default') {
-                            if (fieldValue === undefined || fieldValue === null || fieldValue === '') return; //ADD VALIDATION FOR EMPTY VALUES
+                            if (fieldValue === undefined || fieldValue === null || fieldValue === '') return;
+
+                            const fieldSchema = entityTemplate.properties.properties[fieldName];
+                            const fakeTemplateSchema = {
+                                ...entityTemplate.properties,
+                                required: [],
+                                properties: {
+                                    [fieldName]: fieldSchema,
+                                },
+                            };
+
+                            const formData = { [fieldName]: fieldValue };
+
+                            const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
+
+                            if (ajvErrors && ajvErrors[fieldName]) {
+                                setTemplateFieldsFilters((prev) => ({
+                                    ...prev,
+                                    [fieldName]: {
+                                        ...prev[fieldName],
+                                        error: ajvErrors[fieldName],
+                                    },
+                                }));
+                                return;
+                            }
 
                             setTemplateFieldsFilters((prev) => ({
                                 ...prev,
