@@ -46,7 +46,7 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                 <Grid item container justifyContent="flex-end" alignItems="center" flexWrap="nowrap" spacing={1} mr="1rem">
                     <Grid item>
                         <NotificationsButton
-                            notificationCountDetails={{ total: 2, groups: {} }}
+                            notificationCountDetails={{ total: 0, groups: {} }}
                             text={i18next.t('notifications.title')}
                             isDrawerOpen={false}
                             onClick={() => {}}
