@@ -20,6 +20,24 @@ const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
                 primary: '#1E2775',
             },
         },
+        {
+            name: 'simba',
+            displayName: 'Simba',
+            path: '/',
+            type: WorkspaceTypes.dir,
+            colors: {
+                primary: '#1E2775',
+            },
+        },
+        {
+            name: 'test',
+            displayName: 'Test',
+            path: '/simba',
+            type: WorkspaceTypes.mlt,
+            colors: {
+                primary: '#1E2775',
+            },
+        },
     ];
 };
 

@@ -7,7 +7,7 @@ import {
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISubCompactPermissions,
-    IMongoEntityChildTemplate,
+    IEntityChildTemplatePopulated,
     IMongoCategoryOrderConfig,
     IMongoBaseConfig,
     ConfigTypes,
@@ -154,12 +154,7 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async getAllChildTemplates() {
-        const { data } = await this.api.get<IMongoEntityChildTemplate[]>(`${baseChildTemplatesRoute}`);
-        return data;
-    }
-
-    // config
+    // configs
     async getConfigs(permissionsOfUserId: ISubCompactPermissions) {
         const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
 
@@ -202,6 +197,17 @@ class EntityTemplateService extends TemplatesManagerService {
     async createOrderConfig(configData: ICategoryOrderConfig) {
         const { data } = await this.api.post<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}`, configData);
 
+        return data;
+    }
+
+    // child templates
+    async getChildTemplateById(id: string) {
+        const { data } = await this.api.get<IEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        return data;
+    }
+
+    async getAllChildTemplates() {
+        const { data } = await this.api.get<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
         return data;
     }
 }

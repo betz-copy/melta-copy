@@ -12,6 +12,7 @@ const config = {
         permissionsRoute: env.get('USER_SERVICE_PERMISSION_BASE_ROUTE').default('/api/permissions').asString(),
         isAliveRoute: env.get('USER_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
         managersKartoffelIds: env.get('USER_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
+        testKartoffelIds: env.get('USER_SERVICE_TEST_KARTOFFEL_ID').default('5e5688d54203fc40043591ac').asArray(), // user: אחמד אדידס
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
@@ -23,6 +24,10 @@ const config = {
         relationships: {
             createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
             createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
+            getRelationshipTemplateRoute: env.get('GET_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
+        },
+        entityChildTemplates: {
+            createEntityChildTemplateRoute: env.get('CREATE_ENTITY_CHILD_TEMPLATE_ROUTE').default('/api/templates/child').asString(),
         },
         config: {
             createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/categoryOrder').asString(),
@@ -43,6 +48,7 @@ const config = {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
         isAliveRoute: env.get('INSTANCE_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         createEntityRoute: env.get('CREATE_ENTITY_ROUTE').default('/api/instances/entities').asString(),
+        updateConstraintsOfTemplateRoute: env.get('UPDATE_CONSTRAINTS_OF_TEMPLATE_ROUTE').default('/api/instances/entities/constraints').asString(),
         maxNumberOfEntities: env.get('MAX_NUMBER_OF_ENTITIES').default(100).asInt(),
         minNumberOfEntities: env.get('MIN_NUMBER_OF_ENTITIES').default(1).asInt(),
         createRelationshipRoute: env.get('CREATE_RELATIONSHIP_ROUTE').default('/api/instances/relationships').asString(),

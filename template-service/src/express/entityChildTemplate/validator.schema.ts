@@ -83,6 +83,16 @@ export const createEntityChildTemplateSchema = Joi.object({
     params: {},
 });
 
+// GET /api/templates/child/:id
+export const getChildTemplateByIdSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/templates/child/:id
 export const updateEntityChildTemplateSchema = Joi.object({
     body: {
         ...childEntityTemplateSchema,
@@ -93,6 +103,17 @@ export const updateEntityChildTemplateSchema = Joi.object({
     },
 });
 
+// GET /api/templates/child/search-by-user
+export const searchEntityChildTemplatesByUserSchema = Joi.object({
+    query: {},
+    body: {
+        kartoffelId: Joi.string().required(),
+        childTemplateId: Joi.string().required(),
+    },
+    params: {},
+});
+
+// DELETE /api/templates/child/:id
 export const deleteEntityChildTemplateSchema = Joi.object({
     body: {},
     query: {},

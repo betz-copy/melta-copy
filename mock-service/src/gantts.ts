@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IMongoEntityTemplate, IMongoGantt, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated, IMongoGantt, IMongoRelationshipTemplate } from '@microservices/shared';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';
 import getHardcodedRealGantts from './mocks/gantts/hardcoded';
@@ -11,7 +11,7 @@ const { url, baseRoute, isAliveRoute } = config.ganttService;
 export const createGantts = (
     chance: Chance.Chance,
     workspaceId: string,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     relationshipTemplates: IMongoRelationshipTemplate[],
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);

@@ -15,7 +15,7 @@ import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
-type TemplateTablesViewResultsRef = {
+export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
@@ -109,31 +109,34 @@ const TemplateTablesViewResults = forwardRef<
                         ) as Record<string, IEntitySingleProperty>;
 
                         const defaultFilter = childTemplate.properties
-                            ? Object.entries(childTemplate.properties).reduce((acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
-                                  if (prop.filters) {
-                                      const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                                      if (filters.$and) {
-                                          const transformedFilters = filters.$and
-                                              .map((filter: any) => {
-                                                  const fieldFilter = filter[key];
-                                                  if (fieldFilter) {
-                                                      return { [key]: fieldFilter };
-                                                  }
-                                                  return null;
-                                              })
-                                              .filter(Boolean);
+                            ? Object.entries(childTemplate.properties).reduce(
+                                  (acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
+                                      if (prop.filters) {
+                                          const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                                          if (filters.$and) {
+                                              const transformedFilters = filters.$and
+                                                  .map((filter: any) => {
+                                                      const fieldFilter = filter[key];
+                                                      if (fieldFilter) {
+                                                          return { [key]: fieldFilter };
+                                                      }
+                                                      return null;
+                                                  })
+                                                  .filter(Boolean);
 
-                                          if (transformedFilters.length > 0) {
+                                              if (transformedFilters.length > 0) {
+                                                  if (!acc.$and) acc.$and = [];
+                                                  acc.$and = [...acc.$and, ...transformedFilters];
+                                              }
+                                          } else {
                                               if (!acc.$and) acc.$and = [];
-                                              acc.$and = [...acc.$and, ...transformedFilters];
+                                              acc.$and.push({ [key]: filters });
                                           }
-                                      } else {
-                                          if (!acc.$and) acc.$and = [];
-                                          acc.$and.push({ [key]: filters });
                                       }
-                                  }
-                                  return acc;
-                              }, {} as { $and?: Array<Record<string, unknown>> })
+                                      return acc;
+                                  },
+                                  { $and: [{ disabled: { $eq: false } }] } as { $and?: Array<Record<string, unknown>> },
+                              )
                             : {};
 
                         const { children, ...childTemplatePopulated } = {

@@ -26,6 +26,7 @@ import {
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
     convertToRelationshipFieldRequestSchema,
+    countEntitiesOfTemplatesByUserEntityIdRequestSchema,
     getSelectedEntitiesRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
@@ -56,6 +57,11 @@ entityRouter.post(
     entityController.searchEntitiesOfTemplate,
 );
 entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
+entityRouter.post(
+    '/count/user-entity-id',
+    ValidateRequest(countEntitiesOfTemplatesByUserEntityIdRequestSchema),
+    entityController.countEntitiesOfTemplatesByUserEntityId,
+);
 entityRouter.post(
     '/search/templates',
     ValidateRequest(searchEntitiesByTemplatesSchema),

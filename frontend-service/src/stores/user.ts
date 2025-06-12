@@ -18,6 +18,8 @@ export interface UserState {
         iat: number;
 
         currentWorkspacePermissions: ISubCompactPermissions;
+        kartoffelId?: string;
+        simbaWorkspaceId?: string;
     } & IUser;
     setUser: (user: UserState['user']) => void;
 }
