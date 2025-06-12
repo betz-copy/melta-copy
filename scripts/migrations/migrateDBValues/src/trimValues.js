@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 import mongoose from 'mongoose';
 import neo4j from 'neo4j-driver';
-import config from './config/index';
-import { getTrimmedValueAggregation, trimValuesInMongoAggregation } from './aggregation';
+import config from './config/index.js';
+import { getTrimmedValueAggregation, trimValuesInMongoAggregation } from './aggregation.js';
 
 const { mongo, neo } = config;
 

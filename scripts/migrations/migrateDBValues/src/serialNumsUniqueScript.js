@@ -2,7 +2,7 @@
 /* eslint-disable no-await-in-loop */
 import mongoose from 'mongoose';
 import neo4j from 'neo4j-driver';
-import config from './config/index';
+import config from './config/index.js';
 
 const { mongo, neo } = config;
 

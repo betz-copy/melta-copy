@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
-import config from './config/index';
+import config from './config/index.js';
 
 const { mongo } = config;
 

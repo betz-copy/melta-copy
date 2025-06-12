@@ -90,6 +90,5 @@ declare global {
     namespace Express {
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         export interface User extends IConnectedUser {}
-        // export interface SimbaUserEntity extends IEntityWithDirectRelationships {} // TODO: yona- Check if really needed
     }
 }

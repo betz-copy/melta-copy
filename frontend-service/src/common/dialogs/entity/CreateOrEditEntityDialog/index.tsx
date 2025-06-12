@@ -28,7 +28,7 @@ export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTem
         (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
     );
     const templateFileKeys = Object.keys(templateFilesProperties);
-    const requiredFilesNames = (entityTemplate.properties.required || []).filter((name) => templateFileKeys.includes(name));
+    const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     return { templateFilesProperties, templateFileKeys, requiredFilesNames };
 };

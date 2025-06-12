@@ -2,7 +2,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable import/prefer-default-export */
 import mongoose from 'mongoose';
-import config from './config/index';
+import config from './config/index.js';
 
 const { mongo } = config;
 

@@ -201,14 +201,6 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
-        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
-            templateIds,
-            userEntityId,
-        });
-        return data;
-    }
-
     // constraints
     async getAllConstraints() {
         const { data } = await this.api.get<IConstraintsOfTemplate[]>(baseConstraintsRoute);
@@ -272,6 +264,14 @@ class InstancesService extends DefaultExternalServiceApi {
             { params: { dryRun } },
         );
 
+        return data;
+    }
+
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
+            templateIds,
+            userEntityId,
+        });
         return data;
     }
 

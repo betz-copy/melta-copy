@@ -1,5 +1,5 @@
 import env from 'env-var';
-import './dotenv';
+import './dotenv.js';
 
 const config = {
     mongo: {

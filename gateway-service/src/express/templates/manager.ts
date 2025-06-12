@@ -48,6 +48,7 @@ import {
     logger,
     RelatedPermission,
     ConfigTypes,
+    IMongoEntityChildTemplate,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -274,7 +275,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 ...childTemplate,
                 categories: childTemplate.categories.map((category) => category._id),
                 fatherTemplateId: childTemplate.fatherTemplateId._id,
-            };
+            } as IMongoEntityChildTemplate;
         });
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
