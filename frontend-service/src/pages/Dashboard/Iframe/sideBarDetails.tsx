@@ -7,7 +7,14 @@ import { ViewMode } from '../../../interfaces/dashboard';
 import { IFrame } from '../../../interfaces/iFrames';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 
-const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode }> = ({ values, touched, errors, handleChange, viewMode }) => {
+const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode }> = ({
+    values,
+    touched,
+    errors,
+    handleChange,
+    viewMode,
+    handleBlur,
+}) => {
     return (
         <Grid container direction="column" spacing={4}>
             <Grid item container direction="column" spacing={4}>
@@ -38,6 +45,7 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode
                             readOnly={viewMode === ViewMode.ReadOnly}
                             fullWidth
                             multiline
+                            onBlur={handleBlur}
                         />
                     </Grid>
                 </Grid>

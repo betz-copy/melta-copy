@@ -21,6 +21,8 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     touched,
     errors,
     viewMode,
+    handleBlur,
+    setFieldValue,
 }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -43,8 +45,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     };
 
     useEffect(() => {
-        // eslint-disable-next-line no-param-reassign
-        values.categoryIds = selectedCategories;
+        setFieldValue('categoryIds', selectedCategories);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategories]);
 
@@ -52,7 +53,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
         <Card variant="outlined" sx={{ width: viewMode ? '100%' : '27%', border: isReadonlyMode ? 'none' : undefined }}>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
-                <FormGroup>
+                <FormGroup onBlur={() => handleBlur({ target: { name: 'categoryIds' } })}>
                     {viewMode !== ViewMode.ReadOnly && (
                         <>
                             <FormControlLabel

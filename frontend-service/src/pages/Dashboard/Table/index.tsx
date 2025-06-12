@@ -9,7 +9,7 @@ import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { environment } from '../../../globals';
-import { DashboardItemType, TableForm, TableMetaData, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemType, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../services/dashboardService';
@@ -67,7 +67,7 @@ const Table: React.FC = () => {
                 if (viewMode === ViewMode.Edit) {
                     queryClient.setQueryData(['getTable', tableId], data);
                     setViewMode(ViewMode.ReadOnly);
-                    updateFilters(data.metaData.filter);
+                    if (data.type === DashboardItemType.Table && data.metaData.filter) updateFilters(data.metaData.filter);
                 } else {
                     navigate(`${tablePath}/${data._id}`);
                 }

@@ -9,7 +9,7 @@ import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { environment } from '../../../globals';
-import { IPermission } from '../../../interfaces/charts';
+import { IMongoChart, IPermission } from '../../../interfaces/charts';
 import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -68,13 +68,14 @@ const Chart: React.FC = () => {
         },
         onSuccess: async (data, chartData) => {
             if (viewMode === ViewMode.Edit) {
+                const updatedChart = data as IMongoChart;
                 await queryClient.invalidateQueries(['getChart', chartId]);
                 setViewMode(ViewMode.ReadOnly);
 
-                updateFilters(data.filter);
+                if (updatedChart.filter) updateFilters(updatedChart.filter);
             } else {
                 const newChartId = chartData._id || data._id;
-                const newTemplateId = chartData.templateId || data.templateId;
+                const newTemplateId = chartData._id ? chartData.templateId : (data as IMongoChart).templateId;
 
                 navigate(`/charts/${newTemplateId}/${newChartId}/chart`, {
                     state: { isDashboardPage },

@@ -93,7 +93,6 @@ const Dashboard: React.FC = () => {
     };
 
     if (isLoading) return <CircularProgress />;
-    console.log({ dashboardItems });
 
     return (
         <Grid>

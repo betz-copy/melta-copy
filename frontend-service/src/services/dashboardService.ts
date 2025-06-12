@@ -1,16 +1,16 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { DashboardItem, MongoDashboardItemPopulated, TableItem } from '../interfaces/dashboard';
-
+import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated, TableItem } from '../interfaces/dashboard';
+ 
 const { dashboard } = environment.api;
 
 export const createDashboardItem = async (newDashboardItem: DashboardItem) => {
-    const { data } = await axios.post(dashboard, newDashboardItem);
+    const { data } = await axios.post<MongoDashboardItem>(dashboard, newDashboardItem);
     return data;
 };
 
 export const editDashboardItem = async (dashboardItemId: string, updatedDashboardItem: DashboardItem) => {
-    const { data } = await axios.put(`${dashboard}/${dashboardItemId}`, updatedDashboardItem);
+    const { data } = await axios.put<MongoDashboardItem>(`${dashboard}/${dashboardItemId}`, updatedDashboardItem);
     return data;
 };
 
