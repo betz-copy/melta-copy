@@ -196,6 +196,7 @@ const main = async () => {
         simba: {
             usersInfoTemplateId: createdSimbaDriverEntityChildTemplate._id,
             carsInfoTemplateId: createdSimbaCarEntityChildTemplate._id,
+            numOfPropsToShow: 9,
         },
     };
 
