@@ -15,16 +15,39 @@ import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { BlueTitle } from '../../common/BlueTitle';
 
 const {
     loadExcel: { excelExtension },
 } = environment;
 
+export const CardTitle = ({ title, description }: { title: string; description?: string }) => {
+    const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
+    const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
+    const theme = useTheme();
+
+    return (
+        <>
+            <BlueTitle
+                title={title}
+                component="h4"
+                variant="h4"
+                style={{
+                    fontSize: headlineTitleFontSize,
+                    justifySelf: 'center',
+                }}
+            />
+
+            <Typography variant="subtitle1" color={theme.palette.primary.main} sx={{ textAlign: 'center', minHeight: '1.5em' }}>
+                {description || ''}
+            </Typography>
+        </>
+    );
+};
+
 const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    const theme = useTheme();
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -81,17 +104,9 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     }, [metaData.filter]);
 
     return (
-        <Grid ref={containerRef} container item width="100%" height="100%" alignItems="center" justifyContent="center" paddingTop="20px">
+        <Grid ref={containerRef} container item width="100%" height="100%" alignItems="center" justifyContent="center">
             <Grid sx={{ width: '98%', height: '100%', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
-                <Typography variant="h5" fontWeight="450" color={theme.palette.primary.main} sx={{ textAlign: 'center' }}>
-                    {metaData.name || ''}
-                </Typography>
-
-                {metaData.description && (
-                    <Typography variant="subtitle1" color={theme.palette.primary.main} sx={{ textAlign: 'center' }}>
-                        {metaData.description}
-                    </Typography>
-                )}
+                <CardTitle title={metaData.name} description={metaData.description} />
 
                 <Grid display="flex">
                     <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={false} />

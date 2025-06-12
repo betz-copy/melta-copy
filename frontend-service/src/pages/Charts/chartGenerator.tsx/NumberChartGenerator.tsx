@@ -1,5 +1,6 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
+import { CardTitle } from '../../Dashboard/tableView';
 
 export const NumberChartGenerator: React.FC<{
     data:
@@ -31,17 +32,7 @@ export const NumberChartGenerator: React.FC<{
                 textAlign: 'center',
             }}
         >
-            {name && (
-                <Typography variant="h5" fontWeight="450" color={theme.palette.primary.main} sx={{ textAlign: 'center', mb: 1 }}>
-                    {name}
-                </Typography>
-            )}
-
-            {description && (
-                <Typography variant="subtitle1" color={theme.palette.primary.main} sx={{ textAlign: 'center', mb: 2 }}>
-                    {description}
-                </Typography>
-            )}
+            <CardTitle title={name} description={description} />
 
             <Typography
                 fontSize="120px"

@@ -6,6 +6,8 @@ import React, { useEffect, useRef } from 'react';
 import { HighchartType, IAxis, IChartType, IChartTypeMetaData } from '../../../interfaces/charts';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { environment } from '../../../globals';
+import { CardTitle } from '../../Dashboard/tableView';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { pieChartColors } = environment.charts;
 
@@ -35,15 +37,28 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     const theme = useTheme();
     const darkMode = theme.palette.mode === 'dark';
 
+    const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
+    const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
+
     const { xAxis, yAxis } = getChartAxes(type, metaData, true);
 
     const commonStyles = {
         backgroundColor: darkMode ? '#131313' : '#fcfeff',
         gridLineColor: darkMode ? '#444' : '#dddddd',
         labelsColor: darkMode ? '#fff' : '#000',
+        titleStyle: {
+            color: theme.palette.primary.main,
+            fontWeight: '700',
+            fontSize: headlineTitleFontSize,
+            fontFamily: 'Rubik',
+            textAlign: 'center',
+            marginBottom: '2%',
+            top: '0px',
+        },
+        subtitleStyle: { color: theme.palette.primary.main, fontSize: '1rem', fontFamily: 'Rubik', textAlign: 'center', minHeight: '1.5em' },
     };
 
-    const { backgroundColor, gridLineColor, labelsColor } = commonStyles;
+    const { backgroundColor, gridLineColor, labelsColor, titleStyle, subtitleStyle } = commonStyles;
 
     const seriesData = data.map(({ x, y }) => ({ name: x, y }));
 
@@ -68,11 +83,13 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
         chart: { type, backgroundColor },
         title: {
             text: name,
-            style: {
-                color: labelsColor,
-            },
+            style: titleStyle,
         },
-        subtitle: { text: description },
+        subtitle: {
+            text: description,
+            style: subtitleStyle,
+        },
+
         xAxis: {
             categories: data.map(({ x }) => x ?? '-'),
             gridLineColor,
@@ -138,6 +155,7 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
                 backgroundColor: darkMode ? '#131313' : '#fcfeff',
             }}
         >
+            {/* <CardTitle title={name} description={description} /> */}
             {isQueryEnabled && !isLoading && <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />}
         </Box>
     );
