@@ -166,6 +166,7 @@ const searchByTemplateSchema = {
         )
         .unique('field')
         .default([]),
+    userEntityId: Joi.string().optional(),
 };
 
 export const chartSchema = Joi.object({
@@ -291,6 +292,18 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
         semanticSearchResult,
+    },
+    query: {},
+    params: {},
+});
+
+/*
+ * POST /api/instances/entities/count/user-entity-id
+ */
+export const countEntitiesOfTemplatesByUserEntityIdRequestSchema = Joi.object({
+    body: {
+        templateIds: Joi.array().items(Joi.string()).required(),
+        userEntityId: Joi.string().required(),
     },
     query: {},
     params: {},

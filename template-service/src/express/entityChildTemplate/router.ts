@@ -5,6 +5,7 @@ import {
     searchEntityChildTemplatesSchema,
     getAllChildTemplatesSchema,
     createEntityChildTemplateSchema,
+    getChildTemplateByIdSchema,
     updateEntityChildTemplateSchema,
     deleteEntityChildTemplateSchema,
 } from './validator.schema';
@@ -18,6 +19,8 @@ entityChildTemplateRouter.post('/search', ValidateRequest(searchEntityChildTempl
 entityChildTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), controller.getAllChildTemplates);
 
 entityChildTemplateRouter.post('/', ValidateRequest(createEntityChildTemplateSchema), controller.createEntityChildTemplate);
+
+entityChildTemplateRouter.get('/:id', ValidateRequest(getChildTemplateByIdSchema), controller.getChildTemplateById);
 
 entityChildTemplateRouter.put('/:id', ValidateRequest(updateEntityChildTemplateSchema), controller.updateEntityChildTemplate);
 

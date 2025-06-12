@@ -55,6 +55,7 @@ const config = {
         },
         meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
         meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
+        simbaWorkspaceId: env.get('SIMBA_WORKSPACE_ID').default('68347c4b1652e05582afa8b8').asString(),
     },
 
     authentication: {
@@ -68,6 +69,8 @@ const config = {
             accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
             unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
+            simbaId: env.get('SIMBA_ID').default('simba').asString(),
+            simbaEndURL: env.get('SIMBA_END_URL').default('/simba/test.mlt').asString(), // TODO: yona - change to better unique url for simba end user
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB
@@ -302,6 +305,11 @@ const config = {
             maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
         },
         wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
+    },
+    simba: {
+        usersInfoTemplateId: env.get('SIMBA_USERS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        carsInfoTemplateId: env.get('SIMBA_CARS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        numOfPropsToShow: env.get('SIMBA_NUM_OF_PROPS_TO_SHOW').default(9).asIntPositive(),
     },
 };
 

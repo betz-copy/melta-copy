@@ -56,6 +56,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     searchValue?: string;
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
+    pageType?: string;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -80,6 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
     entityTemplates,
+    pageType,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -345,7 +347,9 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}/${template.childId ?? template._id}`}
+                                    href={`/${pageType === 'simba' ? 'simba/entity' : 'entity'}/${getEntityPropertiesData(data)._id}${
+                                        pageType === 'simba' ? '' : `/${template.childId ?? template._id}`
+                                    }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -398,7 +402,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-                        {onNavigateToRow && (
+                        {onNavigateToRow && pageType !== 'simba' && (
                             <Grid item>
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
@@ -421,7 +425,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && !template?.disabled && (
+                        {menuRowButtonProps && !template?.disabled && pageType !== 'simba' && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {

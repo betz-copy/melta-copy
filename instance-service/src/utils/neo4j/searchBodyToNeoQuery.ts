@@ -241,6 +241,20 @@ const filterOfFieldToNeoQuery = (
             default:
                 throw new Error(`missing implementation for filter type "${filterType}" of filter of field`);
         }
+
+        if (fieldTemplate.format === 'user') {
+            // TODO: yona - refactor this to be more generic
+            const userIdFilterString = simplePartFilterOfFieldToNeoQuery(
+                `\`${field}.id_userField\``,
+                filterType as '$eq' | '$ne' | '$rgx' | '$gt' | '$gte' | '$lt' | '$lte' | '$not',
+                filterRhs,
+                `${parametersParentVariableName}.\`${filterType}\``,
+                fieldTemplate,
+            );
+
+            partFilterOfFieldQuery.cypherQuery = `(${partFilterOfFieldQuery.cypherQuery}) OR (${userIdFilterString.cypherQuery})`;
+        }
+
         return { cypherQuery: partFilterOfFieldQuery.cypherQuery, parameters: { [filterType]: partFilterOfFieldQuery.parameters } };
     });
 
@@ -391,6 +405,7 @@ const buildFulltextSearchQuery = (
     calculateOverallCount: boolean,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
+    userEntityId?: string,
 ) => {
     const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
     const entityIdMatch = entityIdsToInclude?.length
@@ -409,6 +424,13 @@ const buildFulltextSearchQuery = (
         `
         : '';
 
+    const userEntityIdMatch = userEntityId
+        ? `
+        MATCH (node)-[relationship]-(otherEntity)
+        WHERE otherEntity._id = $userEntityId
+        `
+        : '';
+
     if (calculateOverallCount) {
         return {
             cypherQuery: `
@@ -420,6 +442,7 @@ const buildFulltextSearchQuery = (
                     ${entityIdMatch}
                 }
                 ${entityIdExclude}
+                ${userEntityIdMatch} 
                 RETURN count(node)
             `,
             parameters: {
@@ -428,6 +451,7 @@ const buildFulltextSearchQuery = (
                 ...filterQuery.parameters,
                 ...(entityIdsToInclude?.length && { entityIdsToInclude }),
                 ...(entityIdsToExclude?.length && { entityIdsToExclude }),
+                ...(userEntityId && { userEntityId }),
             },
         };
     }
@@ -470,6 +494,7 @@ const fulltextSearchToNeoQuery = (
     prefixIndexName: string,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
+    userEntityId?: string,
     calculateOverallCount = false,
 ) => {
     const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
@@ -491,6 +516,7 @@ const fulltextSearchToNeoQuery = (
         calculateOverallCount,
         entityIdsToInclude,
         entityIdsToExclude,
+        userEntityId,
     );
 };
 
@@ -530,6 +556,7 @@ const searchToNeoQuery = (
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
+    userEntityId?: string,
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
@@ -540,6 +567,7 @@ const searchToNeoQuery = (
             config.neo4j.templateSearchIndexPrefix,
             entityIdsToInclude,
             entityIdsToExclude,
+            userEntityId,
             calculateOverallCount,
         );
     if (globalSearchIndexes.length === 1)
@@ -549,6 +577,7 @@ const searchToNeoQuery = (
             config.neo4j.globalSearchIndexPrefix,
             entityIdsToInclude,
             entityIdsToExclude,
+            userEntityId,
             calculateOverallCount,
         );
     return fulltextBatchSearchToNeoQuery(
@@ -567,13 +596,29 @@ export const searchWithRelationshipsToNeoQuery = (
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
-    const { entityIdsToInclude, entityIdsToExclude, ...restOfSearchBody } = searchBody;
+    const { entityIdsToInclude, entityIdsToExclude, userEntityId, ...restOfSearchBody } = searchBody;
 
     if (calculateOverallCount) {
-        return searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, entityIdsToExclude, true, globalSearchIndexes);
+        return searchToNeoQuery(
+            restOfSearchBody,
+            entityTemplatesMap,
+            entityIdsToInclude,
+            entityIdsToExclude,
+            userEntityId,
+            true,
+            globalSearchIndexes,
+        );
     }
 
-    const searchNeoQuery = searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, entityIdsToExclude, false, globalSearchIndexes);
+    const searchNeoQuery = searchToNeoQuery(
+        restOfSearchBody,
+        entityTemplatesMap,
+        entityIdsToInclude,
+        entityIdsToExclude,
+        userEntityId,
+        false,
+        globalSearchIndexes,
+    );
 
     const showRelationshipsPerTemplate = mapValues(restOfSearchBody.templates, ({ showRelationships }) => ({
         shouldShowRelationships: Boolean(showRelationships),
@@ -590,20 +635,22 @@ export const searchWithRelationshipsToNeoQuery = (
         WITH node, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
         
         OPTIONAL MATCH (node)-[relationship]-(otherEntity)
-        WHERE shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
+        
+        WHERE ${userEntityId ? `otherEntity._id = $userEntityId OR` : ''} shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
 
-        WITH node, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities
-        WITH node, relationships, otherEntities, CASE
+        WITH node, otherEntity, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities
+        WITH node, otherEntity, relationships, otherEntities, CASE
         WHEN NOT shouldShowRelationships THEN NULL
         WHEN size(relationships) = 0 then []
+        ${userEntityId ? `WHEN otherEntity._id = $userEntityId THEN relationships` : ''} 
         ELSE [i IN range(0, size(relationships) - 1) | {relationship: relationships[i], otherEntity: otherEntities[i]}]
         END as relationshipsList
-
         RETURN node, relationshipsList AS relationships
         `,
         parameters: {
             ...searchNeoQuery.parameters,
             showRelationshipsPerTemplate,
+            ...(userEntityId && { userEntityId }),
         },
     };
 };

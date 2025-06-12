@@ -87,7 +87,7 @@ const ConnectionsTableTitle: React.FC<{
     );
 };
 
-const ConnectionsTable: React.FC<{
+export const ConnectionsTable: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
     templateIds: string[];
