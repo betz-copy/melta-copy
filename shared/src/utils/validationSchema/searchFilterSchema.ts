@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import Joi from 'joi';
 
 const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
@@ -23,9 +24,7 @@ const filterOfFieldSchema = Joi.object({
 
 const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
 
-const searchFilterSchema = Joi.object({
+export const searchFilterSchema = Joi.object({
     $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
-
-export default searchFilterSchema;

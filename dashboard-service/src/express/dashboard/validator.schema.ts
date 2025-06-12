@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { DashboardItemType } from '@microservices/shared';
-import searchFilterSchema from '../../utils/formik';
+import { searchFilterSchema, DashboardItemType } from '@microservices/shared';
 
 const TableMetaDataSchema = Joi.object({
     name: Joi.string().required(),

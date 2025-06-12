@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { DashboardItemType } from '@microservices/shared';
-import { searchFilterSchema } from '../templateCharts/validator.schema';
+import { DashboardItemType, searchFilterSchema } from '@microservices/shared';
 
 const TableMetaDataSchema = Joi.object({
     name: Joi.string().required(),

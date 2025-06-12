@@ -1,6 +1,5 @@
-import { IAggregationType, IChartPermission, IChartType, MongoIdSchema } from '@microservices/shared';
+import { searchFilterSchema, IAggregationType, IChartPermission, IChartType, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
-import searchFilterSchema from '../../utils/formik';
 
 const aggregationSchema = Joi.object({
     type: Joi.string()
