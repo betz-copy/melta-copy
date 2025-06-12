@@ -1,5 +1,7 @@
 import Joi from 'joi';
-import { MongoIdSchema } from '@microservices/shared';
+import { fileSchema, MongoIdSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
+import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
 // GET /api/simba/templates/all
 export const getAllSimbaTemplatesSchema = Joi.object({
@@ -59,4 +61,16 @@ export const getExpandedEntityByIdRequestSchema = Joi.object({
     params: {
         entityId: Joi.string().required(),
     },
+});
+
+// POST /api/simba/entities
+export const createSimbaEntitySchema = Joi.object({
+    body: Joi.object({
+        templateId: Joi.string().required(),
+        properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
+        ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+    }).unknown(true),
+    query: {},
+    params: {},
+    files: Joi.array().items(fileSchema),
 });

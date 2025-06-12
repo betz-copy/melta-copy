@@ -1550,7 +1550,7 @@ export default {
         },
         unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
         simba: {
-            usersInfoTemplateId: 'ID תבנית משתמשים',
+            usersInfoChildTemplateId: 'ID תבנית משתמשים',
             carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
         },

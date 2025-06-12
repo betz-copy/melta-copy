@@ -13,10 +13,10 @@ const SimbaMainPage: React.FC = () => {
     const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
     const queryClient = useQueryClient();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { numOfPropsToShow, usersInfoTemplateId } = workspace.metadata.simba;
+    const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.simba;
 
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
-    const usersInfoChildTemplate = childTemplates.get(usersInfoTemplateId)!;
+    const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
 

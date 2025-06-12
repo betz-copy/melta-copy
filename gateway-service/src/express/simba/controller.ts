@@ -27,6 +27,11 @@ class SimbaController extends DefaultController<SimbaManager> {
         const userId = req.user?.kartoffelId;
         res.json(await this.manager.getExpandedEntityById(req.params.entityId, req.body.expandedParams, req.body.options, userId));
     }
+
+    async createEntity(req: Request, res: Response) {
+        const { ignoredRules, ...entityData } = req.body;
+        res.json(await this.manager.createEntity(entityData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.kartoffelId!));
+    }
 }
 
 export default SimbaController;

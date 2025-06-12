@@ -7,8 +7,10 @@ import {
     getAllSimbaTemplatesSchema,
     searchEntitiesOfTemplateSchema,
     getExpandedEntityByIdRequestSchema,
+    createSimbaEntitySchema,
 } from './validator.schema';
 import SimbaValidator from './middlewares';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const SimbaRouter: Router = Router();
 
@@ -48,6 +50,14 @@ SimbaRouter.post(
     ValidateRequest(getExpandedEntityByIdRequestSchema),
     SimbaValidatorMiddleware.validateUserCanAccessSimba,
     SimbaControllerMiddleware.getExpandedEntityById,
+);
+
+SimbaRouter.post(
+    '/entities',
+    busboyMiddleware,
+    ValidateRequest(createSimbaEntitySchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.createEntity,
 );
 
 export default SimbaRouter;

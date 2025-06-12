@@ -194,8 +194,9 @@ const main = async () => {
 
     const simbaWorkspaceMetadata = {
         simba: {
-            usersInfoTemplateId: createdSimbaDriverEntityChildTemplate._id,
+            usersInfoChildTemplateId: createdSimbaDriverEntityChildTemplate._id,
             carsInfoTemplateId: createdSimbaCarEntityChildTemplate._id,
+            numOfPropsToShow: 9,
         },
     };
 
