@@ -1,7 +1,7 @@
 import { Add } from '@mui/icons-material';
 import { Box, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { useLocation } from 'wouter';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import PopperSidebar from '../../../common/PopperSidebar';
@@ -10,11 +10,9 @@ import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions
 import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
 import { environment } from '../../../globals';
 
-const {
-    dashboard: { chartPath, tablePath, iFramePath },
-} = environment;
+const { chartPath, tablePath, iFramePath } = environment.dashboard;
 
-const AddDashboardItem: React.FC = () => {
+const AddDashboardItem: React.FC<{ overrideStyle?: CSSProperties }> = ({ overrideStyle }) => {
     const theme = useTheme();
     const currentUser = useUserStore((state) => state.user);
 
@@ -49,12 +47,22 @@ const AddDashboardItem: React.FC = () => {
                 iconButtonProps={{
                     onClick: () => setOpenPopper((previousOpen) => !previousOpen),
                 }}
-                style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '150px', height: '35px' }}
+                style={
+                    overrideStyle ?? {
+                        background: theme.palette.primary.main,
+                        borderRadius: '7px',
+                        width: '150px',
+                        height: '35px',
+                        fontSize: '13px',
+                        fontWeight: '400',
+                        color: 'white',
+                        fontFamily: 'Rubik',
+                        gap: '5px',
+                    }
+                }
             >
-                <Add htmlColor="white" />
-                <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
-                    {i18next.t('dashboard.addCard')}
-                </Typography>
+                <Add fontSize="small" htmlColor={!overrideStyle ? 'white' : undefined} />
+                {i18next.t('dashboard.addCard')}
             </IconButtonWithPopover>
 
             <PopperSidebar

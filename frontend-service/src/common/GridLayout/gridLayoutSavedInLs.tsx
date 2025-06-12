@@ -38,8 +38,7 @@ const LocalStorageGridLayout = <T extends any[]>({ items, localStorageKey, gener
             const updatedLayout = new Set<LayoutItem>(savedLayout);
 
             items.forEach((item) => {
-                if (!updatedLayout.has(item._id)) 
-                    updatedLayout.add(generateNewItemSizes(localStorageKey, item._id));
+                if (!updatedLayout.has(item._id)) updatedLayout.add(generateNewItemSizes(localStorageKey, item._id));
             });
 
             layout.set(Array.from(updatedLayout));
