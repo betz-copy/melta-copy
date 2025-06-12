@@ -96,12 +96,21 @@ const TemplateTablesViewResults = forwardRef<
                     {template.children.map((childTemplate) => {
                         const childTemplatePropertiesList = Object.keys(childTemplate.properties);
                         const childTemplateProperties = Object.fromEntries(
-                            Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
+                            Object.entries(template.properties.properties)
+                                .filter(([key]) => childTemplatePropertiesList.includes(key))
+                                .map(([key, value]) => [
+                                    key,
+                                    {
+                                        ...value,
+                                        defaultValue: childTemplate.properties[key].defaultValue,
+                                        filters: childTemplate.properties[key].filters,
+                                    },
+                                ]),
                         ) as Record<string, IEntitySingleProperty>;
 
                         const defaultFilter = childTemplate.properties
                             ? Object.entries(childTemplate.properties).reduce(
-                                  (acc, [key, prop]) => {
+                                  (acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
                                       if (prop.filters) {
                                           const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
                                           if (filters.$and) {
@@ -116,20 +125,23 @@ const TemplateTablesViewResults = forwardRef<
                                                   .filter(Boolean);
 
                                               if (transformedFilters.length > 0) {
-                                                  acc = { $and: transformedFilters };
+                                                  if (!acc.$and) acc.$and = [];
+                                                  acc.$and = [...acc.$and, ...transformedFilters];
                                               }
                                           } else {
-                                              acc[key] = filters;
+                                              if (!acc.$and) acc.$and = [];
+                                              acc.$and.push({ [key]: filters });
                                           }
                                       }
                                       return acc;
                                   },
-                                  { $and: { disabled: { $eq: false } } } as Record<string, unknown>,
+                                  { $and: [{ disabled: { $eq: false } }] } as { $and?: Array<Record<string, unknown>> },
                               )
                             : {};
 
                         const { children, ...childTemplatePopulated } = {
                             ...template,
+                            childId: childTemplate._id,
                             displayName: childTemplate.displayName,
                             properties: {
                                 ...template.properties,

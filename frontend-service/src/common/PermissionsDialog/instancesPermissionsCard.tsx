@@ -46,7 +46,7 @@ const InstancesPermissionsCard: React.FC<{
             <Box>
                 <Grid container rowGap={1}>
                     <Grid container sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
-                        <Grid xs={12}>
+                        <Grid item xs={12}>
                             <Box sx={{ background: !darkMode ? '#EBEFFA' : '#1E2A3A', borderRadius: '5px' }}>
                                 <BlueTitle
                                     title={i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
@@ -56,12 +56,12 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             </Box>
                         </Grid>
-                        <Grid xs={6} marginTop="10px">
+                        <Grid item xs={6} marginTop="10px">
                             <Typography sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight="bold">
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
-                        <Grid xs={3} marginTop="10px">
+                        <Grid item xs={3} marginTop="10px">
                             <Typography paddingLeft="15px" fontWeight="bold">
                                 {i18next.t('permissions.permissionsOfUserDialog.read')}
                             </Typography>
@@ -80,7 +80,7 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             )}
                         </Grid>
-                        <Grid xs={3} marginTop="10px">
+                        <Grid item xs={3} marginTop="10px">
                             <Typography paddingLeft="15px" fontWeight="bold">
                                 {i18next.t('permissions.permissionsOfUserDialog.write')}
                             </Typography>

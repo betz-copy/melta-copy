@@ -106,9 +106,39 @@ const CreateChildTemplateDialog: React.FC<{
                                 } else if (fieldValue.$eq !== undefined) {
                                     filterType = 'equals';
                                     value = fieldValue.$eq;
+                                } else if (fieldValue.$ne !== undefined) {
+                                    filterType = 'notEqual';
+                                    value = fieldValue.$ne;
+                                } else if (fieldValue.$lt !== undefined) {
+                                    filterType = 'lessThan';
+                                    value = fieldValue.$lt;
+                                } else if (fieldValue.$lte !== undefined) {
+                                    filterType = 'lessThanOrEqual';
+                                    value = fieldValue.$lte;
+                                } else if (fieldValue.$gt !== undefined) {
+                                    filterType = 'greaterThan';
+                                    value = fieldValue.$gt;
+                                } else if (fieldValue.$gte !== undefined) {
+                                    filterType = 'greaterThanOrEqual';
+                                    value = fieldValue.$gte;
                                 } else if (fieldValue.$in) {
                                     filterType = 'in';
                                     value = fieldValue.$in.join(', ');
+                                } else if (fieldValue.$eq === null) {
+                                    filterType = 'blank';
+                                    value = '';
+                                } else if (fieldValue.$ne === null) {
+                                    filterType = 'notBlank';
+                                    value = '';
+                                } else if (fieldValue.$startsWith) {
+                                    filterType = 'startsWith';
+                                    value = fieldValue.$startsWith;
+                                } else if (fieldValue.$endsWith) {
+                                    filterType = 'endsWith';
+                                    value = fieldValue.$endsWith;
+                                } else if (fieldValue.$notContains) {
+                                    filterType = 'notContains';
+                                    value = fieldValue.$notContains;
                                 }
 
                                 const fieldTemplate = entityTemplate.properties.properties[fieldName];
@@ -157,10 +187,25 @@ const CreateChildTemplateDialog: React.FC<{
                     }
                 }
                 if (prop.defaultValue !== undefined) {
+                    const defaultValue = prop.defaultValue;
+                    let displayValue = defaultValue;
+
+                    const fieldTemplate = entityTemplate.properties.properties[fieldName];
+                    if (fieldTemplate.format === 'date-time' || fieldTemplate.format === 'date') {
+                        try {
+                            const date = new Date(defaultValue);
+                            if (!isNaN(date.getTime())) {
+                                displayValue = date.toLocaleDateString();                            }
+                        } catch (e) {
+                            console.error('Error formatting date:', e);
+                            displayValue = defaultValue;
+                        }
+                    }
+
                     chips.push({
                         fieldName,
                         chipType: 'default',
-                        value: prop.defaultValue,
+                        value: displayValue,
                     });
                 }
             });
@@ -566,13 +611,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
-                                                        const original = entityTemplate?.category;
-                                                        if (!original) return;
-
-                                                        const hasOriginalCategory = newVal.some((category) => category._id === original._id);
-                                                        const newSelection = hasOriginalCategory ? newVal : [original, ...newVal];
-
-                                                        setSelectedCategories(newSelection);
+                                                        setSelectedCategories(newVal);
                                                     }}
                                                     value={selectedCategories}
                                                     getOptionLabel={(option) => option.displayName}
@@ -607,7 +646,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                                         borderRadius: '10px',
                                                                         opacity: isOriginal ? 0.8 : 1,
                                                                     }}
-                                                                    {...(!isOriginal && { onDelete })}
+                                                                    onDelete={onDelete}
                                                                 />
                                                             );
                                                         })

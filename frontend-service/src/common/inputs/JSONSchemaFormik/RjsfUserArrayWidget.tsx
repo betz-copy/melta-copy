@@ -2,11 +2,13 @@ import { WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import { UserArrayInput } from '../UserArrayInput';
 
-const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
+const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');
-    const [currentUsers, setCurrentUsers] = React.useState(
-        (value && value.length && value[0] ? value.map((user) => JSON.parse(user)) : []).filter((user) => !!user),
-    );
+    const { defaultValue } = options;
+
+    const users = Array.isArray(value) && value[0] ? value.map((user) => JSON.parse(user)) : defaultValue ?? [];
+    const [currentUsers, setCurrentUsers] = React.useState(Array.isArray(users) ? users.filter(Boolean) : []);
+
 
     if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
 
