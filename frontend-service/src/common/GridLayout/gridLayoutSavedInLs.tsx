@@ -35,14 +35,14 @@ const LocalStorageGridLayout = <T extends any[]>({ items, localStorageKey, gener
         if (!savedLayout && items.length > 0) layout.set(generateLayoutDetails(items).lg);
 
         if (items.length > savedLayout.length) {
-            const updatedLayout = [...savedLayout];
+            const updatedLayout = new Set<LayoutItem>(savedLayout);
 
             items.forEach((item) => {
-                if (!updatedLayout.some((layoutItem) => layoutItem.i === item._id))
-                    updatedLayout.push(generateNewItemSizes(localStorageKey, item._id));
+                if (!updatedLayout.has(item._id)) 
+                    updatedLayout.add(generateNewItemSizes(localStorageKey, item._id));
             });
 
-            layout.set(updatedLayout);
+            layout.set(Array.from(updatedLayout));
         }
 
         if (textSearch) savedLayout.filter((l) => items.some((item) => item._id === l.i));
