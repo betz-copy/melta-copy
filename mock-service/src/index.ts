@@ -8,9 +8,8 @@ import { createInstances, createRelationshipInstances, isInstanceServiceAlive, u
 import categories from './mocks/categories';
 import entityTemplates from './mocks/entityTemplates';
 import simbaCategories from './mocks/simba/categories';
-import simbaEntityTemplates from './mocks/simba/entityTemplates';
-import { driverEntityChildTemplate, carEntityChildTemplate } from './mocks/simba/entityChildTemplates';
-// import simbaRelationshipTemplates from './mocks/simba/relationshipTemplates';
+import { carEntityTemplate, driverEntityTemplate, crashEntityTemplate } from './mocks/simba/entityTemplates';
+import { driverEntityChildTemplate, carEntityChildTemplate, crashEntityChildTemplate } from './mocks/simba/entityChildTemplates';
 import getProcessTemplateToCreate from './mocks/processTemplates';
 import relationshipTemplates from './mocks/relationshipTemplates';
 import getUsersToCreate from './mocks/users';
@@ -152,13 +151,23 @@ const main = async () => {
 
     console.log('Creating simba entity templates');
 
-    const createdSimbaDriverTemplate = (await createEntityTemplates(simbaWorkspace._id, simbaEntityTemplates.slice(0, 1), createdSimbaCategories))[0];
+    const createdSimbaDriverTemplate = (await createEntityTemplates(simbaWorkspace._id, [driverEntityTemplate], createdSimbaCategories))[0];
     await updateConstraintsOfTemplate(simbaWorkspace._id, createdSimbaDriverTemplate._id, {
         requiredConstraints: ['full_name'],
         uniqueConstraints: [],
     });
-    simbaEntityTemplates[1].properties.properties.parents.relationshipReference!.relatedTemplateId = createdSimbaDriverTemplate._id;
-    const createdSimbaCarTemplate = (await createEntityTemplates(simbaWorkspace._id, simbaEntityTemplates.slice(1, 2), createdSimbaCategories))[0];
+    carEntityTemplate.properties.properties.parents.relationshipReference!.relatedTemplateId = createdSimbaDriverTemplate._id;
+    const createdSimbaCarTemplate = (await createEntityTemplates(simbaWorkspace._id, [carEntityTemplate], createdSimbaCategories))[0];
+    await updateConstraintsOfTemplate(simbaWorkspace._id, createdSimbaCarTemplate._id, {
+        requiredConstraints: ['ID'],
+        uniqueConstraints: [],
+    });
+
+    crashEntityTemplate.properties.properties.driver.relationshipReference!.relatedTemplateId = createdSimbaDriverTemplate._id;
+    crashEntityTemplate.properties.properties.car.relationshipReference!.relatedTemplateId = createdSimbaCarTemplate._id;
+    const createdSimbaCrashTemplate = (await createEntityTemplates(simbaWorkspace._id, [crashEntityTemplate], createdSimbaCategories))[0];
+
+    console.log('createdSimbaCrashTemplate', createdSimbaCrashTemplate);
 
     console.log('Creating simba entity child templates');
 
@@ -168,6 +177,13 @@ const main = async () => {
         createdSimbaDriverTemplate,
     );
     const createdSimbaCarEntityChildTemplate = await createEntityChildTemplate(simbaWorkspace._id, carEntityChildTemplate, createdSimbaCarTemplate);
+    const createdSimbaCrashEntityChildTemplate = await createEntityChildTemplate(
+        simbaWorkspace._id,
+        crashEntityChildTemplate,
+        createdSimbaCrashTemplate,
+    );
+
+    console.log('createdSimbaCrashEntityChildTemplate', createdSimbaCrashEntityChildTemplate);
 
     console.log('Creating simba relationship templates');
 
@@ -210,6 +226,10 @@ const main = async () => {
             10,
             createdSimbaDriverInstances[0].createdEntity.properties._id,
         );
+
+        console.log('Creating simba crashes entities');
+
+        await createInstances(simbaWorkspace._id, userIds[0], [createdSimbaCrashTemplate], chance, exampleFileId, 10);
     } catch (error) {
         console.log('error creating simba driver/car instances', (error as AxiosError).response?.data);
     }

@@ -56,6 +56,16 @@ export const createInstances = async (
 
     if (relationshipReferenceTemplateId) {
         JSONSchemaFaker.format('relationshipReference', (_value) => relationshipReferenceTemplateId);
+    } else {
+        JSONSchemaFaker.format('relationshipReference', (_value) => {
+            return JSON.stringify({
+                _id: '5e5688d54203fc40043591ac',
+                fullName: 'אחמד אדידס',
+                jobTitle: 'טבח',
+                hierarchy: 'es_name/es',
+                mail: 't25458789sh@jello.com',
+            });
+        });
     }
 
     const promises = entityTemplates
@@ -70,6 +80,17 @@ export const createInstances = async (
                             entityProperties === null ||
                             Array.isArray(entityProperties) ||
                             !('full_name' in entityProperties)
+                        ) {
+                            entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+                        }
+                    }
+
+                    if (entityTemplate.name === 'car') {
+                        while (
+                            typeof entityProperties !== 'object' ||
+                            entityProperties === null ||
+                            Array.isArray(entityProperties) ||
+                            !('ID' in entityProperties)
                         ) {
                             entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
                         }
