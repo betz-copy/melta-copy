@@ -9,8 +9,8 @@ import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType } from '../../../common/wizards';
 import { environment } from '../../../globals';
-import { IChart, IPermission } from '../../../interfaces/charts';
-import { ChartForm, DashboardItemType, MongoBaseFields, ViewMode } from '../../../interfaces/dashboard';
+import { IPermission } from '../../../interfaces/charts';
+import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
@@ -37,7 +37,8 @@ const Chart: React.FC = () => {
     const [filters, setFilters] = useState<number[]>([]);
     const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
 
-    const isDashboardPage: boolean = window.history.state?.isDashboardPage ?? false;
+    const { isDashboardPage = false, dashboardId = '' } = window.history.state ?? {};
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { data: chart, isLoading: isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
@@ -45,7 +46,7 @@ const Chart: React.FC = () => {
     });
 
     const { isLoading, mutateAsync } = useMutation({
-        mutationFn: async (chartData: ChartForm & MongoBaseFields) => {
+        mutationFn: async (chartData: ChartForm & { _id?: string }) => {
             const baseChart = {
                 ...chartData,
                 createdBy: currentUser._id,
@@ -91,7 +92,7 @@ const Chart: React.FC = () => {
     });
 
     const { mutateAsync: deleteMutateAsync } = useMutation(
-        () => (isDashboardPage ? deleteDashboardItem(chartId!) : deleteChart(chartId!, chart?.usedInDashboard)),
+        () => (isDashboardPage ? deleteDashboardItem(dashboardId) : deleteChart(chartId!, chart?.usedInDashboard)),
         {
             onSuccess: () => {
                 navigate(getBackPath().path);

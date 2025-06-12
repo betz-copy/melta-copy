@@ -27,6 +27,7 @@ const DashboardIframe: React.FC = () => {
     const { iframeId } = useParams<{ iframeId: string }>();
     const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
+    const dashboardId: string = window.history.state?.dashboardId ?? '';
 
     const [viewMode, setViewMode] = useState<ViewMode>(iframeId ? ViewMode.ReadOnly : ViewMode.Add);
 
@@ -57,7 +58,7 @@ const DashboardIframe: React.FC = () => {
         },
     );
 
-    const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(iframeId), {
+    const { mutateAsync: deleteMutateAsync } = useMutation(() => deleteDashboardItem(dashboardId), {
         onSuccess: () => {
             navigate(dashboardPath);
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
