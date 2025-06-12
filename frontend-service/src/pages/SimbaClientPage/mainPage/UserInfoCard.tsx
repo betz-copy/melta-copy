@@ -32,7 +32,8 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-    const entityTemplateColor = getEntityTemplateColor(usersInfoChildTemplate.fatherTemplateId);
+    const usersInfoTemplate = usersInfoChildTemplate.fatherTemplateId;
+    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
     const { height, width } = workspace!.metadata!.iconSize!;
 
     return (
@@ -45,9 +46,9 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                                 <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                             </Grid>
                             <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
-                                {usersInfoChildTemplate.fatherTemplateId.iconFileId ? (
+                                {usersInfoTemplate.iconFileId ? (
                                     <CustomIcon
-                                        iconUrl={usersInfoChildTemplate.fatherTemplateId.iconFileId}
+                                        iconUrl={usersInfoTemplate.iconFileId}
                                         height={height}
                                         width={width}
                                         color={theme.palette.primary.main}
@@ -71,7 +72,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                                         fontWeight: '500',
                                         fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
                                     }}
-                                    title={usersInfoChildTemplate.fatherTemplateId.displayName}
+                                    title={usersInfoTemplate.displayName}
                                     component="h5"
                                     variant="h5"
                                 />

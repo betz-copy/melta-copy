@@ -1552,6 +1552,7 @@ export default {
         simba: {
             usersInfoTemplateId: 'ID תבנית משתמשים',
             carsInfoTemplateId: 'ID תבנית רכבים',
+            numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
         },
     },
     createChildTemplateDialog: {

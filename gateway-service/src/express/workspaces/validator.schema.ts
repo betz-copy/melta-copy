@@ -33,6 +33,7 @@ const metadataSchema = Joi.object({
     simba: Joi.object({
         usersInfoTemplateId: Joi.string(),
         carsInfoTemplateId: Joi.string(),
+        numOfPropsToShow: Joi.number(),
     }).optional(),
 }).optional();
 

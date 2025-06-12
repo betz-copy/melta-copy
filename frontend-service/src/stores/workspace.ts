@@ -38,6 +38,7 @@ export const defaultMetadata = {
     simba: {
         usersInfoTemplateId: '',
         carsInfoTemplateId: '',
+        numOfPropsToShow: 9,
     },
 } as const;
 

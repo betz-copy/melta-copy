@@ -13,13 +13,14 @@ const SimbaMainPage: React.FC = () => {
     const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
     const queryClient = useQueryClient();
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const { numOfPropsToShow, usersInfoTemplateId } = workspace.metadata.simba;
 
     const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
-    const usersInfoChildTemplate = childTemplates.get(workspace.metadata.simba.usersInfoTemplateId)!;
+    const usersInfoChildTemplate = childTemplates.get(usersInfoTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
 
-    const first9PropsKeys: string[] = [
+    const firstXPropsKeys: string[] = [
         ...usersInfoChildTemplate.fatherTemplateId.propertiesPreview,
         ...usersInfoChildTemplate.fatherTemplateId.propertiesOrder
             .filter(
@@ -28,7 +29,7 @@ const SimbaMainPage: React.FC = () => {
                     usersInfoChildTemplate.fatherTemplateId.properties.properties[property].format !== 'fileId' &&
                     usersInfoChildTemplate.fatherTemplateId.properties.properties[property].items?.format !== 'fileId',
             )
-            .slice(0, Math.max(9 - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
+            .slice(0, Math.max(numOfPropsToShow - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
     ];
 
     return (
@@ -43,7 +44,11 @@ const SimbaMainPage: React.FC = () => {
             >
                 <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
                     <Grid item width="70%">
-                        <UserInfoCard currentUserFromSimba={simbaUserEntity} usersInfoChildTemplate={usersInfoChildTemplate} overridePropertiesToShow={first9PropsKeys} />
+                        <UserInfoCard
+                            currentUserFromSimba={simbaUserEntity}
+                            usersInfoChildTemplate={usersInfoChildTemplate}
+                            overridePropertiesToShow={firstXPropsKeys}
+                        />
                     </Grid>
                     <Grid item width="28%">
                         <ContactInfoCard />

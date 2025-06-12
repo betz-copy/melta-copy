@@ -45,6 +45,7 @@ export interface IMetadata {
     simba: {
         usersInfoTemplateId: string;
         carsInfoTemplateId: string;
+        numOfPropsToShow: number;
     };
 }
 export interface IWorkspace {

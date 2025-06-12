@@ -35,6 +35,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         simba: {
             usersInfoTemplateId: { type: String },
             carsInfoTemplateId: { type: String },
+            numOfPropsToShow: { type: Number },
         },
     },
     { _id: false },

@@ -113,8 +113,6 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                       )
                                     : {};
 
-                                console.log(defaultFilter);
-
                                 const childTemplatePopulated = {
                                     ...childTemplate.fatherTemplateId,
                                     displayName: childTemplate.displayName,
