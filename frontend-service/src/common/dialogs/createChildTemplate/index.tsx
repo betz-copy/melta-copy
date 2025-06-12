@@ -195,7 +195,8 @@ const CreateChildTemplateDialog: React.FC<{
                         try {
                             const date = new Date(defaultValue);
                             if (!isNaN(date.getTime())) {
-                                displayValue = date.toLocaleDateString();                            }
+                                displayValue = date.toLocaleDateString();
+                            }
                         } catch (e) {
                             console.error('Error formatting date:', e);
                             displayValue = defaultValue;

@@ -140,7 +140,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
                                                         filterValue = String(chip.filterType.filter);
                                                     } else if ('values' in chip.filterType! && Array.isArray(chip.filterType.values)) {
-                                                        filterValue = chip.filterType.values.join(', ');
+                                                        filterValue = chip.filterType.values
+                                                            .map((item) => {
+                                                                if (typeof item === 'string') return item;
+                                                                if (typeof item === 'object') {
+                                                                    return (item as IUser).fullName;
+                                                                }
+                                                                return String(item);
+                                                            })
+                                                            .join(', ');
                                                     } else if ('dateFrom' in chip.filterType!) {
                                                         if (chip.filterType.dateFrom) {
                                                             filterValue = new Date(chip.filterType.dateFrom).toLocaleDateString();
@@ -357,9 +365,9 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 },
                             }));
 
-                            const isDateField =
-                                entityTemplate.properties.properties[fieldName].format === 'date' ||
-                                entityTemplate.properties.properties[fieldName].format === 'date-time';
+                            const propertySchema = entityTemplate.properties.properties[fieldName];
+                            const isDateField = propertySchema.format === 'date' || propertySchema.format === 'date-time';
+                            const isUsersArray = propertySchema.type === 'array' && propertySchema.items?.format === 'user';
 
                             let displayValue = fieldValue;
                             if (isDateField && fieldValue) {
@@ -370,7 +378,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     displayValue = fieldValue;
                                 }
                             } else if (Array.isArray(fieldValue)) {
-                                displayValue = fieldValue.join(', ');
+                                if (isUsersArray) displayValue = fieldValue.map(({ fullName }) => fullName).join(', ');
+                                else displayValue = fieldValue.join(', ');
                             } else if (typeof fieldValue === 'boolean') {
                                 displayValue = fieldValue ? 'true' : 'false';
                             }
