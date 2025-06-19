@@ -99,9 +99,8 @@ const processTemplateObjectToProcessTemplateForm = (
             }
         });
 
-        stepsForm.push({
-            _id: step._id,
-            draggableId: step._id,
+        const stepForm: ProcessTemplateWizardValues['steps'][number] = {
+            draggableId: step._id || uuid(),
             properties: stepsPropertiesArray,
             attachmentProperties: stepsAttachmentProperties,
             name: step.name,
@@ -112,7 +111,13 @@ const processTemplateObjectToProcessTemplateForm = (
             } as fileDetails,
             reviewers: step.reviewers,
             disableAddingReviewers: step.disableAddingReviewers,
-        });
+        };
+
+        if (step._id && step._id !== '') {
+            stepForm._id = step._id;
+        }
+
+        stepsForm.push(stepForm);
     });
 
     return {
