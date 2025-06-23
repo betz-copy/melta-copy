@@ -18,7 +18,7 @@ export const checkUserCategoryPermission = (
 
 export const checkUserTemplatePermission = (
     permissions: ISubCompactPermissions,
-    { _id: categoryId }: IMongoCategory,
+    { _id: categoryId }: Pick<IMongoCategory, '_id'>,
     templateId: string,
     scope: PermissionScope,
 ): boolean => {
