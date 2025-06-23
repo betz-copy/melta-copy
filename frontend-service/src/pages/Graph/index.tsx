@@ -12,7 +12,6 @@ import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
-import { values } from 'lodash';
 import { environment } from '../../globals';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';

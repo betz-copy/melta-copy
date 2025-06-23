@@ -3,33 +3,25 @@ import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React, { useEffect, useRef } from 'react';
-import { HighchartType, IAxis, IChartType, IChartTypeMetaData } from '../../../interfaces/charts';
-import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { environment } from '../../../globals';
-import { CardTitle } from '../../Dashboard/tableView';
+import { GeneratedChart, HighchartType, IAxis, IChart, IChartType } from '../../../interfaces/charts';
 import { useWorkspaceStore } from '../../../stores/workspace';
-
+import { getChartAxes } from '../../../utils/charts/getChartAxes';
 const { pieChartColors } = environment.charts;
 
 interface HighchartGeneratorProps {
-    data: { x: any; y: number }[] | undefined;
-    isLoading: boolean;
-    name: string;
-    description: string;
-    metaData: IChartTypeMetaData;
+    generatedChart: GeneratedChart | undefined;
+    isLoading?: boolean;
     isQueryEnabled: boolean;
-    type: HighchartType;
+    chartDetails: Omit<IChart, 'filter'>;
     enableResize?: boolean;
 }
 
 const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
-    data = [],
+    generatedChart: data = [],
     isLoading,
     isQueryEnabled,
-    type,
-    name,
-    description,
-    metaData,
+    chartDetails: { type, metaData, name, description },
     enableResize = false,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -139,7 +131,7 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
             {
                 data: type === IChartType.Pie ? seriesData : seriesData.map(({ y }) => y),
                 color: theme.palette.primary.main,
-                type,
+                type: type as HighchartType,
             },
         ],
     };
@@ -155,7 +147,6 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
                 backgroundColor: darkMode ? '#131313' : '#fcfeff',
             }}
         >
-            {/* <CardTitle title={name} description={description} /> */}
             {isQueryEnabled && !isLoading && <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />}
         </Box>
     );

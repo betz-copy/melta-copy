@@ -8,12 +8,22 @@ const ConfirmDeleteDashboardItem: React.FC<{
     handleClose: () => void;
     onDeleteYes: () => void;
     type: DashboardItemType | null;
-    chartPageProps?: {
-        isChartPage: boolean;
+    commomItemProps?: {
+        isNotDashboardPage?: boolean;
         usedInDashboard?: boolean;
     };
     isLoading?: boolean;
-}> = ({ isDialogOpen, handleClose, onDeleteYes, isLoading, type, chartPageProps }) => {
+}> = ({ isDialogOpen, handleClose, onDeleteYes, isLoading, type, commomItemProps }) => {
+    let bodyText: string | undefined;
+
+    if (commomItemProps?.isNotDashboardPage)
+        if (commomItemProps.usedInDashboard) bodyText = i18next.t(`dashboard.dialogs.delete.body.${type}`);
+        else bodyText = undefined;
+    else
+        bodyText = i18next.t('dashboard.dialogs.delete.body.dashboard', {
+            type: i18next.t(`dashboard.itemType.${type}`),
+        });
+
     return (
         <AreYouSureDialog
             open={isDialogOpen}
@@ -22,13 +32,7 @@ const ConfirmDeleteDashboardItem: React.FC<{
             yesTitle={i18next.t('actions.delete')}
             noTitle={i18next.t('dashboard.back')}
             title={i18next.t('dashboard.dialogs.delete.title', { type: i18next.t(`dashboard.itemType.${type}`) })}
-            body={
-                chartPageProps?.isChartPage
-                    ? chartPageProps.usedInDashboard
-                        ? i18next.t(`dashboard.dialogs.delete.body.${type}`)
-                        : undefined
-                    : i18next.t('dashboard.dialogs.delete.body.dashboard', { type: i18next.t(`dashboard.itemType.${type}`) })
-            }
+            body={bodyText}
             isLoading={isLoading}
         />
     );

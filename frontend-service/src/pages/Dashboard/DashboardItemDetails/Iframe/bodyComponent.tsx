@@ -1,12 +1,12 @@
 import { Card, Grid } from '@mui/material';
-import Iframe from 'react-iframe';
 import React from 'react';
-import { BlueTitle } from '../../../common/BlueTitle';
-import { StepComponentProps } from '../../../common/wizards';
-import { IFrame as IframeType } from '../../../interfaces/iFrames';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import Iframe from 'react-iframe';
+import { BlueTitle } from '../../../../common/BlueTitle';
+import { StepComponentProps } from '../../../../common/wizards';
+import { IFrameWizardValues } from '../../../../common/wizards/iFrame';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 
-const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values: { name, url }, errors, touched }) => {
+const BodyComponent: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values: { name, url }, errors, touched }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
 
@@ -43,4 +43,4 @@ const BodyComponent: React.FC<StepComponentProps<IframeType>> = ({ values: { nam
     );
 };
 
-export { BodyComponent };
+export default BodyComponent;

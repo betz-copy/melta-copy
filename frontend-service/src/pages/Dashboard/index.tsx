@@ -15,11 +15,11 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
 import { AddDashboardItem } from './AddDashboardItem';
-import { DashboardHeader } from './DashboardHeader';
-import { DashboardItemViewPage } from './DashboardItemViewPage';
+import { DashboardHeader } from './dashboardPage/DashboardHeader';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
-import NoItemsCard from './NoItemsCard';
 import { useWorkspaceStore } from '../../stores/workspace';
+import NoItemsCard from './dashboardPage/NoItemsCard';
+import { DashboardItemCard } from './dashboardPage/DashboardItemCard';
 
 const { dashboardOrderKey, chartPath, iFramePath, tablePath } = environment.dashboard;
 
@@ -44,13 +44,13 @@ const Dashboard: React.FC = () => {
 
     const [editDashboardItemDialogState, setEditDashboardItemDialogState] = useState<{
         isDialogOpen: boolean;
-        chartId: string | null;
+        relatedId: string | null;
         dashboardId: string | null;
         templateId: string | null;
         type: DashboardItemType | null;
     }>({
         isDialogOpen: false,
-        chartId: null,
+        relatedId: null,
         dashboardId: null,
         templateId: null,
         type: null,
@@ -80,15 +80,43 @@ const Dashboard: React.FC = () => {
         },
     );
 
+    const handleEdit = (dashboardItem: MongoDashboardItemPopulated) => {
+        const { _id: dashboardId, type, metaData } = dashboardItem;
+
+        if (type === DashboardItemType.Table) {
+            navigate(`${tablePath}/${dashboardId}`);
+            return;
+        }
+
+        const { _id: relatedId } = metaData;
+
+        setEditDashboardItemDialogState({
+            relatedId,
+            isDialogOpen: true,
+            type,
+            templateId: type === DashboardItemType.Chart ? metaData.templateId! : null,
+            dashboardId,
+        });
+    };
+
     const onEditYes = () => {
-        if (editDashboardItemDialogState.type === DashboardItemType.Chart) {
-            navigate(`${chartPath}/${editDashboardItemDialogState.templateId}/${editDashboardItemDialogState.chartId}/chart`, {
-                state: { isDashboardPage: true, dashboardId: editDashboardItemDialogState.dashboardId },
-            });
-        } else if (editDashboardItemDialogState.type === DashboardItemType.Iframe) {
-            navigate(`${iFramePath}/${editDashboardItemDialogState.chartId}`, {
-                state: { dashboardId: editDashboardItemDialogState.dashboardId },
-            });
+        const { type, relatedId, templateId, dashboardId } = editDashboardItemDialogState;
+
+        switch (type) {
+            case DashboardItemType.Chart:
+                navigate(`${chartPath}/${templateId}/${relatedId}/chart`, {
+                    state: { isDashboardPage: true, dashboardId },
+                });
+                break;
+
+            case DashboardItemType.Iframe:
+                navigate(`${iFramePath}/${relatedId}`, {
+                    state: { dashboardId },
+                });
+                break;
+
+            default:
+                break;
         }
     };
 
@@ -107,7 +135,7 @@ const Dashboard: React.FC = () => {
                     <NoItemsCard />
                 </Grid>
             ) : (
-                <LocalStorageGridLayout<MongoDashboardItemPopulated[]>
+                <LocalStorageGridLayout<MongoDashboardItemPopulated>
                     items={dashboardItems ?? []}
                     localStorageKey={dashboardOrderKey}
                     generateDom={() =>
@@ -127,34 +155,14 @@ const Dashboard: React.FC = () => {
                                 onMouseLeave={() => setIsHoverOnCard(null)}
                                 data-grid={layout[index]}
                             >
-                                <DashboardItemViewPage
-                                    chartDetails={dashboardItem}
+                                <DashboardItemCard
+                                    itemDetails={dashboardItem}
                                     indexInGrid={index}
                                     isHoverOnCard={isHoverOnCard}
                                     onDelete={() =>
                                         setDeleteChartDialogState({ chartId: dashboardItem._id, isDialogOpen: true, type: dashboardItem.type })
                                     }
-                                    onEdit={() => {
-                                        if (dashboardItem.type === DashboardItemType.Chart) {
-                                            setEditDashboardItemDialogState({
-                                                chartId: dashboardItem.metaData._id,
-                                                isDialogOpen: true,
-                                                type: dashboardItem.type,
-                                                templateId: dashboardItem.metaData.templateId!,
-                                                dashboardId: dashboardItem._id,
-                                            });
-                                        } else if (dashboardItem.type === DashboardItemType.Table) {
-                                            navigate(`${tablePath}/${dashboardItem._id}`);
-                                        } else {
-                                            setEditDashboardItemDialogState({
-                                                chartId: dashboardItem.metaData._id,
-                                                isDialogOpen: true,
-                                                type: dashboardItem.type,
-                                                templateId: null,
-                                                dashboardId: dashboardItem._id,
-                                            });
-                                        }
-                                    }}
+                                    onEdit={() => handleEdit(dashboardItem)}
                                 />
                             </div>
                         ))
@@ -170,7 +178,7 @@ const Dashboard: React.FC = () => {
             <ConfirmEditCommonItem
                 isDialogOpen={editDashboardItemDialogState.isDialogOpen}
                 handleClose={() =>
-                    setEditDashboardItemDialogState({ isDialogOpen: false, chartId: null, templateId: null, type: null, dashboardId: null })
+                    setEditDashboardItemDialogState({ isDialogOpen: false, relatedId: null, templateId: null, type: null, dashboardId: null })
                 }
                 onEditYes={onEditYes}
                 type={editDashboardItemDialogState.type}

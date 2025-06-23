@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IFrame, ServiceError } from '@microservices/shared';
+import { IFrame, ServiceError ,ForbiddenError} from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import { Authorizer } from '../../utils/authorizer';
 import IFrameManager from './manager';
@@ -49,6 +49,12 @@ class IFramesValidator extends DefaultController {
     }
 
     async validateUserCanCreateIFrame(req: Request) {
+        const { toDashboard } = req.query as { toDashboard?: boolean };
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+
+        if (toDashboard && !userPermissions.admin?.scope)
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
+
         await this.validateUserHasPermissionsToIFrame(req, req.body, undefined, true);
     }
 
@@ -57,6 +63,12 @@ class IFramesValidator extends DefaultController {
     }
 
     async validateUserCanDeleteIFrame(req: Request) {
+        const { deleteReferenceDashboardItems } = req.query as { deleteReferenceDashboardItems?: boolean };
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+
+        if (deleteReferenceDashboardItems && !userPermissions.admin?.scope)
+                throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
+
         await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId, true);
     }
 }

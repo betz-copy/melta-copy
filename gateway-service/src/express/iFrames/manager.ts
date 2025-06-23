@@ -8,12 +8,12 @@ import DashboardItemService from '../../externalServices/dashboardService/dashbo
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;
 
-    private DashboardItemService: DashboardItemService;
+    private dashboardItemService: DashboardItemService;
 
     constructor(workspaceId: string) {
         super(new IFramesService(workspaceId));
         this.storageService = new StorageService(workspaceId);
-        this.DashboardItemService = new DashboardItemService(workspaceId);
+        this.dashboardItemService = new DashboardItemService(workspaceId);
     }
 
     private filterIFramesWithPermissions(allIFrames: IMongoIframe[], allowedCategories: string[]) {
@@ -31,7 +31,7 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
         const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 
         const dashboardIframesItems =
-            filteredIFrames.length > 0 ? await this.DashboardItemService.getDashboardRelatedItems(filteredIFrames.map(({ _id }) => _id)) : {};
+            filteredIFrames.length > 0 ? await this.dashboardItemService.getDashboardRelatedItems(filteredIFrames.map(({ _id }) => _id)) : {};
 
         const allFilteredIframes = filteredIFrames.map((iframe) => ({
             ...iframe,
@@ -44,11 +44,9 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     }
 
     async getIFrameById(iFrameId: string) {
-        console.log('hiiiiiiiii');
         const iframe = await this.service.getIFrameById(iFrameId);
-        const dashboardIframesItems = await this.DashboardItemService.getDashboardRelatedItems([iFrameId]);
+        const dashboardIframesItems = await this.dashboardItemService.getDashboardRelatedItems([iFrameId]);
         const usedInDashboard = (dashboardIframesItems[iFrameId] ?? []).length > 0;
-        console.log({ usedInDashboard });
         return { ...iframe, usedInDashboard };
     }
 
@@ -62,14 +60,14 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
         const createdIframe = await this.service.createIFrame(newIFrame);
 
         if (toDashboard)
-            await this.DashboardItemService.createDashboardItem({ type: DashboardItemType.Iframe, metaData: createdIframe._id } as IframeItem);
+            await this.dashboardItemService.createDashboardItem({ type: DashboardItemType.Iframe, metaData: createdIframe._id } as IframeItem);
 
         return createdIframe;
     }
 
     async deleteIFrame(iFrameId: string, deleteReferenceDashboardItems: boolean = false) {
         if (deleteReferenceDashboardItems) {
-            await this.DashboardItemService.deleteDashboardItemByRelatedItem(iFrameId);
+            await this.dashboardItemService.deleteDashboardItemByRelatedItem(iFrameId);
         }
         return this.service.deleteIFrame(iFrameId);
     }

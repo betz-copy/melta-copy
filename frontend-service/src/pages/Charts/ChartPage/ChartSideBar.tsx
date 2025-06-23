@@ -29,7 +29,7 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { ChartAutoComplete } from '../../Dashboard/Chart/chartsAutoComplete';
+import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
 import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
@@ -50,11 +50,21 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
             {isDashboardPage && viewMode === ViewMode.Add && (
                 <Grid item>
                     <Autocomplete
+                        id="templateId"
                         value={values.templateId || null}
-                        onChange={(_e, newValue) => setFieldValue('templateId', newValue || null)}
+                        onChange={(_e, newValue) => setFieldValue('templateId', newValue || '')}
                         options={Array.from(entityTemplates.keys())}
                         getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
-                        renderInput={(params) => <TextField {...params} label={i18next.t('entity')} fullWidth />}
+                        renderInput={(params) => (
+                            <TextField
+                                name="templateId"
+                                {...params}
+                                label={i18next.t('entity')}
+                                error={Boolean(touched.templateId && errors.templateId)}
+                                helperText={touched.templateId && errors.templateId}
+                                fullWidth
+                            />
+                        )}
                         popupIcon={<IoIosArrowDown fontSize="Medium" />}
                         sx={{ width: 295 }}
                     />
@@ -62,7 +72,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
             )}
             {values.templateId && (
                 <>
-                    {isDashboardPage && viewMode === ViewMode.Add && (
+                    {isDashboardPage && (
                         <Grid item>
                             <FormControl sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                 <Typography fontSize="14px" fontWeight="14px" color={theme.palette.text.primary}>
@@ -229,4 +239,4 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     );
 };
 
-export { ChartSideBar };
+export default ChartSideBar;

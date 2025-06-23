@@ -1,13 +1,13 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
-import { StepComponentProps } from '../../../common/wizards';
-import { TableForm } from '../../../interfaces/dashboard';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../../common/EntitiesTableOfTemplate';
+import { StepComponentProps } from '../../../../common/wizards';
+import { TableForm } from '../../../../interfaces/dashboard';
+import { IEntity } from '../../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { filterModelToFilterOfGraph } from '../../../Graph/GraphFilterToBackend';
 
 const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const theme = useTheme();
@@ -71,4 +71,4 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     );
 };
 
-export { BodyComponent };
+export default BodyComponent;

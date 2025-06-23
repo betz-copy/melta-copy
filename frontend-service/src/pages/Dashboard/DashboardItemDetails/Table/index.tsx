@@ -6,19 +6,18 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { StepType } from '../../../common/wizards';
-import { environment } from '../../../globals';
-import { DashboardItemType, TableForm, ViewMode } from '../../../interfaces/dashboard';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../services/dashboardService';
-import { dashboardInitialValues, tableDetailsSchema, tableMetaDataToBackend } from '../../../utils/dashboard/formik';
-import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
-import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
-import { DashboardItem } from '../DashboardItem';
-import { BodyComponent } from './BodyComponent';
-import { SideBarDetails } from './sideBarDetails';
+import DashboardItemDetails from '..';
+import { ErrorToast } from '../../../../common/ErrorToast';
+import { environment } from '../../../../globals';
+import { DashboardItemType, TableForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
+import { IGraphFilterBodyBatch } from '../../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../../services/dashboardService';
+import { dashboardInitialValues, tableDetailsSchema, tableMetaDataToBackend } from '../../../../utils/dashboard/formik';
+import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
+import { FilterOfGraphToFilterRecord } from '../../../Graph/GraphFilterToBackend';
+import BodyComponent from './BodyComponent';
+import SideBarDetails from './sideBarDetails';
 
 const { dashboardPath, tablePath } = environment.dashboard;
 
@@ -97,7 +96,7 @@ const Table: React.FC = () => {
 
     const initialValues = table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table;
 
-    const steps: StepType<TableForm>[] = [
+    const steps: TabStepComponent<TableForm>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <SideBarDetails viewMode={viewMode} {...props} />,
@@ -113,7 +112,7 @@ const Table: React.FC = () => {
     if (isLoadingGetTable) return <CircularProgress />;
 
     return (
-        <DashboardItem<TableForm>
+        <DashboardItemDetails<TableForm>
             title={i18next.t(`dashboard.tables.${viewMode === ViewMode.Add ? 'add' : 'edit'}Table`)}
             backPath={{ path: dashboardPath, title: i18next.t('dashboard.mainScreen') }}
             onDelete={deleteMutateAsync}

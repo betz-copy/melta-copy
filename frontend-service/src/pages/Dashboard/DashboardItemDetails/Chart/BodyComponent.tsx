@@ -2,12 +2,12 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { StepComponentProps } from '../../../common/wizards';
-import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
-import { ChartForm } from '../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { ChartGenerator } from '../../Charts/chartGenerator.tsx';
-import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
+import { StepComponentProps } from '../../../../common/wizards';
+import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
+import { ChartForm } from '../../../../interfaces/dashboard';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
+import { filterModelToFilterOfGraph } from '../../../Graph/GraphFilterToBackend';
 
 const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const queryClient = useQueryClient();
@@ -52,4 +52,4 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     );
 };
 
-export { BodyComponent };
+export default BodyComponent;

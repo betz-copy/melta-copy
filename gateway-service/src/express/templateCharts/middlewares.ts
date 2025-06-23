@@ -71,6 +71,14 @@ class ChartsValidator extends DefaultController {
         await this.validateUserIsCreatorOfChart(req, chart);
     }
 
+    async validateUserCanDeleteRerencedDahboardItem(req: Request) {
+        const { deleteReferenceDashboardItems } = req.query as { deleteReferenceDashboardItems?: boolean };
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+
+        if (deleteReferenceDashboardItems && !userPermissions.admin?.scope)
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
+    }
+
     async validateUserCanCreateChart(req: Request) {
         const { toDashboard } = req.query as { toDashboard?: boolean };
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
@@ -82,11 +90,15 @@ class ChartsValidator extends DefaultController {
     }
 
     async validateUserCanUpdateChart(req: Request) {
+        await this.validateUserCanDeleteRerencedDahboardItem(req);
         return this.validateUserHasPermissionToChart(req);
     }
 
     async validateUserCanDeleteChart(req: Request) {
         const { chartId } = req.params;
+
+        await this.validateUserCanDeleteRerencedDahboardItem(req);
+
         const chart = await this.chartManager.getChartById(chartId);
 
         await this.validateUserHasPermissionToTemplate(req, chart.templateId);

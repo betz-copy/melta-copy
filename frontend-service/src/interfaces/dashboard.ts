@@ -1,12 +1,16 @@
+import { FormikProps } from 'formik';
+import { StepType } from '../common/wizards';
+import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { ChartsAndGenerator, IChart } from './charts';
 import { IGraphFilterBodyBatch } from './entities';
-import { IFrame, IMongoIFrame } from './iFrames';
+import { IMongoIFrame } from './iFrames';
 
 export enum DashboardItemType {
     Table = 'table',
     Chart = 'chart',
     Iframe = 'iframe',
 }
+
 export interface MongoBaseFields {
     _id: string;
     createdAt: string;
@@ -61,10 +65,14 @@ export interface ChartForm extends Omit<IChart, 'filter'> {
     filter?: IGraphFilterBodyBatch;
 }
 
-export type DashboardItemData = ChartForm | IFrame | TableForm;
+export type DashboardItemData = ChartForm | IFrameWizardValues | TableForm;
 
 export enum ViewMode {
     Edit = 'edit',
     ReadOnly = 'readonly',
     Add = 'add',
 }
+
+export type TabStepComponent<T extends object> = Omit<StepType<T>, 'component'> & {
+    component: (formikProps: FormikProps<T>) => JSX.Element;
+};

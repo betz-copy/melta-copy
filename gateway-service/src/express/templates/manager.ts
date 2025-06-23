@@ -40,14 +40,15 @@ import {
     IChartType,
     IColumnOrLineMetaData,
     IEntity,
-    IMongoChart,
+    TableItem,
     INUmberMetaData,
     IPieMetaData,
-    ISearchFilter,
     UploadedFile,
     logger,
     RelatedPermission,
     ConfigTypes,
+    DashboardItemType,
+    MongoBaseFields,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -68,6 +69,8 @@ import { buildNewRelationshipField, validateNoDependentRules, validateRequiredCo
 import InstancesManager from '../instances/manager';
 import ChartManager from '../templateCharts/manager';
 import Kartoffel from '../../externalServices/kartoffel';
+import DashboardItemService from 'gateway-service/src/externalServices/dashboardService/dashboardItemService';
+import { processAndUpdateItems } from 'gateway-service/src/utils/templates/deletePropertyFromFilter';
 
 const {
     categoryHasTemplates,
@@ -100,6 +103,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private ganttService: GanttsService;
 
+    private dashboardService: DashboardItemService;
+
     constructor(private workspaceId: string) {
         super(new EntityTemplateService(workspaceId));
         this.storageService = new StorageService(workspaceId);
@@ -111,6 +116,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.instanceManager = new InstancesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
+        this.dashboardService = new DashboardItemService(workspaceId);
     }
 
     async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string, searchBody?: any) {
@@ -785,31 +791,33 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private async deletePropertyFromChartFilter(templateId: string, removedProperties: string[]) {
         const chartManager = new ChartManager(this.workspaceId);
-
         const allChartsOfTemplate = await chartManager.getChartsByTemplateId(templateId);
 
-        const updatedCharts = allChartsOfTemplate
-            .filter(({ filter }) => filter)
-            .map((chart) => {
-                try {
-                    const parsedFilter: ISearchFilter = JSON.parse(chart.filter!);
-                    parsedFilter.$and = Array.isArray(parsedFilter.$and) ? parsedFilter.$and : [];
-                    parsedFilter.$and = parsedFilter.$and.filter((filterProperty) => {
-                        const propertyKey = Object.keys(filterProperty)[0];
-                        return !removedProperties.includes(propertyKey);
-                    });
+        return processAndUpdateItems(
+            allChartsOfTemplate,
+            removedProperties,
+            (chart) => chart.filter,
+            (chart, filter) => (chart.filter = filter),
+            (chart) => chart._id,
+            (chartId, updatedChart) => chartManager.updateChart(chartId, updatedChart),
+        );
+    }
 
-                    chart.filter = parsedFilter.$and.length > 0 ? JSON.stringify(parsedFilter) : undefined;
+    private async deletePropertyFromTableDashboardFilter(templateId: string, removedProperties: string[]) {
+        const allDashboardItems = await this.dashboardService.searchDashboardItems();
 
-                    return { chartId: chart._id, updatedChart: chart };
-                } catch (error) {
-                    logger.error(`Error parsing filter for chart ${chart._id}:`, { error });
-                    return null;
-                }
-            })
-            .filter(Boolean) as { chartId: string; updatedChart: IMongoChart }[];
+        const filteredTableItems = allDashboardItems.filter(
+            ({ type, metaData }) => type === DashboardItemType.Table && metaData.templateId === templateId && metaData.filter,
+        ) as (TableItem & MongoBaseFields)[];
 
-        await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => chartManager.updateChart(chartId, updatedChart)));
+        return processAndUpdateItems(
+            filteredTableItems,
+            removedProperties,
+            (item) => item.metaData.filter,
+            (item, filter) => (item.metaData.filter = filter),
+            (item) => item._id,
+            (itemId, updatedItem) => this.dashboardService.updateDashboardItem(itemId, updatedItem),
+        );
     }
 
     private async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
@@ -896,6 +904,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
             await this.deletePropertyFromChartFilter(id, removedProperties);
+            await this.deletePropertyFromTableDashboardFilter(id, removedProperties);
 
             const { err } = await trycatch(() =>
                 this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),

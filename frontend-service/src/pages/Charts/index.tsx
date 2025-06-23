@@ -15,11 +15,11 @@ import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
-import { DashboardHeader } from '../Dashboard/DashboardHeader';
+import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
-import { AddNewChartButton } from './templateTableCharts/AddNewChartButton';
-import ChartItem from './templateTableCharts/chartItem';
+import ChartItem from './chartsTemplatePage/chartItem';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { AddNewChartButton } from './AddNewChartButton';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -53,7 +53,6 @@ const ChartsPage: React.FC = () => {
     const { data, isLoading } = useQuery({
         queryKey: ['getCharts', templateId, textSearch],
         queryFn: () => getChartByTemplateId(templateId as string, textSearch),
-        initialData: [],
     });
 
     const charts = data ?? [];
@@ -89,7 +88,12 @@ const ChartsPage: React.FC = () => {
                 title={`${i18next.t('charts.chartsOf')} ${template.displayName}`}
                 AddNewItem={AddNewChartButton}
             />
-            <LocalStorageGridLayout<ChartsAndGenerator[]>
+            {charts?.length === 0 && (
+                <Grid container justifyContent="center" marginTop="2rem">
+                    {i18next.t('charts.noChartsFound')}
+                </Grid>
+            )}
+            <LocalStorageGridLayout<ChartsAndGenerator>
                 items={charts}
                 localStorageKey={`${chartsOrderKey}${templateId}`}
                 generateDom={() =>
@@ -125,10 +129,7 @@ const ChartsPage: React.FC = () => {
                         </div>
                     ))
                 }
-                layout={{
-                    value: layout,
-                    set: setLayout,
-                }}
+                layout={{ value: layout, set: setLayout }}
                 textSearch={textSearch}
             />
 
@@ -139,7 +140,7 @@ const ChartsPage: React.FC = () => {
                     deleteChartMutateAsync({ id: deleteChartDialogState.chartId!, usedInDashboard: deleteChartDialogState.usedInDashboard })
                 }
                 isLoading={isDeleteChartLoading}
-                chartPageProps={{ isChartPage: true, usedInDashboard: deleteChartDialogState.usedInDashboard }}
+                commomItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteChartDialogState.usedInDashboard }}
                 type={DashboardItemType.Chart}
             />
 

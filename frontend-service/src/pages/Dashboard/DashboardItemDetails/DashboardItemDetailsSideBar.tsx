@@ -2,23 +2,22 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import React from 'react';
-import { StepType } from '../../../common/wizards';
-import { DashboardItemData } from '../../../interfaces/dashboard';
+import { DashboardItemData, TabStepComponent } from '../../../interfaces/dashboard';
 import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
-interface DashboardItemSideBarProps<T extends DashboardItemData> {
+interface DashboardItemDetailsSideBarProps<T extends DashboardItemData> {
     activeStep: number;
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-    steps: StepType<T>[];
+    steps: TabStepComponent<T>[];
     formikProps: FormikProps<T>;
 }
 
-const DashboardItemSideBar = <T extends DashboardItemData>({
+const DashboardItemDetailsSideBar = <T extends DashboardItemData>({
     activeStep,
     setActiveStep,
     steps,
     formikProps,
-}: DashboardItemSideBarProps<T>): React.ReactElement => {
+}: DashboardItemDetailsSideBarProps<T>): React.ReactElement => {
     const theme = useTheme();
 
     const handleTabChange = async (_event: React.SyntheticEvent, newValue: number) => {
@@ -67,7 +66,7 @@ const DashboardItemSideBar = <T extends DashboardItemData>({
                 <Grid item sx={{ width: '100%', padding: '30px' }}>
                     {steps.map(({ label }, index) => (
                         <TabPanel key={label} value={index.toString()} sx={{ padding: 0 }}>
-                            {steps[index].component(formikProps, { isEditMode: false, setBlock: () => {} })}
+                            {steps[index].component(formikProps)}
                         </TabPanel>
                     ))}
                 </Grid>
@@ -76,4 +75,4 @@ const DashboardItemSideBar = <T extends DashboardItemData>({
     );
 };
 
-export { DashboardItemSideBar };
+export default DashboardItemDetailsSideBar;

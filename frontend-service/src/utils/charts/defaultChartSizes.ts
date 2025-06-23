@@ -4,7 +4,7 @@ import { LocalStorage } from '../localStorage';
 
 const { defaultColumnSizes } = environment.charts;
 
-export const generateLayoutDetails = (items: any[]) =>
+export const generateLayoutDetails = <T extends { _id: string }>(items: T[]) =>
     Object.keys(defaultColumnSizes).reduce((acc, col) => {
         // eslint-disable-next-line no-param-reassign
         acc[col] = items.map(({ _id }, index) => ({

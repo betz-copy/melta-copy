@@ -6,20 +6,18 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { StepType } from '../../../common/wizards';
-import { updateIFramesOrderOnLocalStorage } from '../../../common/wizards/iFrame';
-import { createIFrameDetailsSchema } from '../../../common/wizards/iFrame/CreateIFrameDetails';
-import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from '../../../common/wizards/iFrame/SettingPermissions';
-import { environment } from '../../../globals';
-import { DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { IFrame } from '../../../interfaces/iFrames';
-import { deleteDashboardItem } from '../../../services/dashboardService';
-import { createIFrame, getIFrameById, updateIFrame } from '../../../services/iFramesService';
-import { dashboardInitialValues } from '../../../utils/dashboard/formik';
-import { DashboardItem } from '../DashboardItem';
-import { BodyComponent } from './bodyComponent';
-import { SideBarDetails } from './sideBarDetails';
+import DashboardItemDetails from '..';
+import { ErrorToast } from '../../../../common/ErrorToast';
+import { IFrameWizardValues, updateIFramesOrderOnLocalStorage } from '../../../../common/wizards/iFrame';
+import { createIFrameDetailsSchema } from '../../../../common/wizards/iFrame/CreateIFrameDetails';
+import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from '../../../../common/wizards/iFrame/SettingPermissions';
+import { environment } from '../../../../globals';
+import { DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
+import { deleteDashboardItem } from '../../../../services/dashboardService';
+import { createIFrame, getIFrameById, updateIFrame } from '../../../../services/iFramesService';
+import { dashboardInitialValues } from '../../../../utils/dashboard/formik';
+import BodyComponent from './bodyComponent';
+import SideBarDetails from './sideBarDetails';
 
 const { dashboardPath, iFramePath } = environment.dashboard;
 
@@ -36,7 +34,7 @@ const DashboardIframe: React.FC = () => {
     });
 
     const { isLoading, mutateAsync } = useMutation(
-        (chartData: IFrame) => (viewMode === ViewMode.Edit ? updateIFrame(iframeId, chartData) : createIFrame(chartData, true)),
+        (chartData: IFrameWizardValues) => (viewMode === ViewMode.Edit ? updateIFrame(iframeId, chartData) : createIFrame(chartData, true)),
         {
             onSuccess: async (data) => {
                 if (viewMode === ViewMode.Edit) {
@@ -72,7 +70,7 @@ const DashboardIframe: React.FC = () => {
         if (iframeId && iframeData) setViewMode(ViewMode.ReadOnly);
     }, [iframeId, iframeData]);
 
-    const steps: StepType<IFrame>[] = [
+    const steps: TabStepComponent<IFrameWizardValues>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <SideBarDetails viewMode={viewMode} {...props} />,
@@ -88,7 +86,7 @@ const DashboardIframe: React.FC = () => {
     if (isLoadingGetTable) return <CircularProgress />;
 
     return (
-        <DashboardItem<IFrame>
+        <DashboardItemDetails<IFrameWizardValues>
             title={i18next.t(`dashboard.iframes.${viewMode === ViewMode.Add ? 'add' : 'edit'}IFrame`)}
             backPath={{ path: dashboardPath, title: i18next.t('dashboard.mainScreen') }}
             onDelete={deleteMutateAsync}

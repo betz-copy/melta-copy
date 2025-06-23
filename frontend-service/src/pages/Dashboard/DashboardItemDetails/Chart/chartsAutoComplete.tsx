@@ -4,14 +4,14 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { getFilterFieldReadonly } from '../../../common/inputs/FilterInputs/ReadonlyFilterInput';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { IChartType, IColumnOrLineMetaData, IMongoChart, INUmberMetaData, IPieMetaData } from '../../../interfaces/charts';
-import { ChartForm } from '../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { getChartsByUserId } from '../../../services/chartsService';
-import { initialValues } from '../../../utils/charts/getChartAxes';
-import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
+import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/ReadonlyFilterInput';
+import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import { IChartType, IColumnOrLineMetaData, IMongoChart, INUmberMetaData, IPieMetaData } from '../../../../interfaces/charts';
+import { ChartForm } from '../../../../interfaces/dashboard';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { getChartsByUserId } from '../../../../services/chartsService';
+import { initialValues } from '../../../../utils/charts/getChartAxes';
+import { FilterOfGraphToFilterRecord } from '../../../Graph/GraphFilterToBackend';
 
 const renderMetaDtaChartByType = (option: IMongoChart) => {
     switch (option.type) {
@@ -60,7 +60,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
 
     const [inputValue, setInputValue] = useState('');
 
-    const translateFieldFilter = (filter: string) => FilterOfGraphToFilterRecord(JSON.parse(filter), entityTemplates.get(values.templateId!)!);
+    const translateFieldFilter = (filter: string) => FilterOfGraphToFilterRecord(JSON.parse(filter), entityTemplate!);
 
     const renderFilters = (filter: string | undefined) => {
         if (!filter) return <span>{i18next.t('charts.noFilters')}</span>;
@@ -161,4 +161,4 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
     );
 };
 
-export { ChartAutoComplete };
+export default ChartAutoComplete;

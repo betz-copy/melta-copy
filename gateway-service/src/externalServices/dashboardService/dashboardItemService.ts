@@ -1,10 +1,8 @@
-import { DashboardItem, MongoDashboardItemPopulated } from '@microservices/shared';
+import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    dashboardService: { url, baseRoute, requestTimeout, dashboard },
-} = config;
+const { url, baseRoute, requestTimeout, dashboard } = config.dashboardService;
 
 class DashboardItemService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
@@ -15,6 +13,11 @@ class DashboardItemService extends DefaultExternalServiceApi {
         const { data } = await this.api.post('/', dashboardItem);
         return data;
     }
+    
+        async updateDashboardItem(dashboardItemId: string, updatedDashboardItem: MongoDashboardItemPopulated) {
+            const { data } = await this.api.put<MongoDashboardItem>(`${dashboard}/${dashboardItemId}`, updatedDashboardItem);
+            return data;
+        }
 
     async searchDashboardItems(textSearch?: string): Promise<MongoDashboardItemPopulated[]> {
         const { data } = await this.api.post<MongoDashboardItemPopulated[]>('/search', { textSearch });

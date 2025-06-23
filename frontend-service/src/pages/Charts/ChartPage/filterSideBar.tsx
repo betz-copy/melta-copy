@@ -88,4 +88,4 @@ const FilterSideBar = <T extends TableForm | ChartForm>({
     );
 };
 
-export { FilterSideBar };
+export default FilterSideBar;

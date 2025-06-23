@@ -1,11 +1,11 @@
 import { Card, Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { BlueTitle } from '../../common/BlueTitle';
-import { useWorkspaceStore } from '../../stores/workspace';
 import i18next from 'i18next';
-import { useUserStore } from '../../stores/user';
-import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { AddDashboardItem } from './AddDashboardItem';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { useUserStore } from '../../../stores/user';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { BlueTitle } from '../../../common/BlueTitle';
+import { AddDashboardItem } from '../AddDashboardItem';
 
 const NoItemsCard: React.FC = () => {
     const theme = useTheme();

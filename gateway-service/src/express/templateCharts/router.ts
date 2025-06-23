@@ -52,6 +52,7 @@ ChartsRouter.post(
 ChartsRouter.delete(
     '/:chartId',
     ValidateRequest(deleteChartRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     ChartsValidatorMiddleware.validateUserCanDeleteChart,
     ChartsControllerMiddleware.deleteChart,
 );

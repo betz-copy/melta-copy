@@ -27,9 +27,8 @@ const getIFrameById = async (id: string) => {
     return data;
 };
 
-const createIFrame = async (newIFrame: IFrameWizardValues, toDashboard: boolean = false) => {
+const createIFrame = async ({ name, url, categoryIds, placeInSideBar, icon }: IFrameWizardValues, toDashboard: boolean = false) => {
     const formData = new FormData();
-    const { name, url, categoryIds, placeInSideBar, icon } = newIFrame;
 
     if (icon) {
         formData.append('file', icon.file as File);

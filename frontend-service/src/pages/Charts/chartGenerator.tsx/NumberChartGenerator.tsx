@@ -1,18 +1,14 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { CardTitle } from '../../Dashboard/tableView';
+import { GeneratedChart } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
+import { CardTitle } from '../../Dashboard/dashboardPage/TableCard';
 
 export const NumberChartGenerator: React.FC<{
-    data:
-        | {
-              x: any;
-              y: number;
-          }[]
-        | undefined;
-    name: string;
-    description: string;
+    data: GeneratedChart | undefined;
+    chartDetails: Omit<ChartForm, 'filter'>;
     enableResize?: boolean;
-}> = ({ data, name, description, enableResize = false }) => {
+}> = ({ data, chartDetails: { name, description }, enableResize = false }) => {
     const theme = useTheme();
 
     const darkMode = theme.palette.mode === 'dark';

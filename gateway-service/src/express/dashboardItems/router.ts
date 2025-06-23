@@ -14,9 +14,7 @@ import {
 } from './validator.schema';
 import DashboardValidator from './middlewares';
 
-const {
-    dashboardService: { url, baseRoute, requestTimeout, dashboard },
-} = config;
+const { url, baseRoute, requestTimeout, dashboard } = config.dashboardService;
 
 const dashboardItemsServiceProxy = createProxyMiddleware({
     target: `${url}${baseRoute}${dashboard.baseRoute}`,

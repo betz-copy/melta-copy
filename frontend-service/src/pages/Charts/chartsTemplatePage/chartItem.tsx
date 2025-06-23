@@ -17,16 +17,10 @@ interface ChartItemProps {
     onEdit: () => void;
 }
 
-const ChartItem: React.FC<ChartItemProps> = ({
-    chartDetails: { chart: chartData, type, name, description, metaData, createdBy },
-    isHoverOnCard,
-    indexInGrid,
-    onDelete,
-    onEdit,
-}) => {
+const ChartItem: React.FC<ChartItemProps> = ({ chartDetails, isHoverOnCard, indexInGrid, onDelete, onEdit }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore();
-    const isEditAndDeleteDisabled = createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
+    const hasWritePermission = chartDetails.createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
 
     return (
         <Box style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -61,27 +55,18 @@ const ChartItem: React.FC<ChartItemProps> = ({
                         onDeleteClick={onDelete}
                         onEditClick={onEdit}
                         disabledProps={{
-                            isDeleteDisabled: isEditAndDeleteDisabled,
-                            isEditDisabled: isEditAndDeleteDisabled,
+                            isDeleteDisabled: hasWritePermission,
+                            isEditDisabled: hasWritePermission,
                             tooltipTitle: '',
                         }}
                     />
                 </Box>
             )}
 
-            {type === IChartType.Number ? (
-                <NumberChartGenerator data={chartData} name={name} description={description} enableResize />
+            {chartDetails.type === IChartType.Number ? (
+                <NumberChartGenerator data={chartDetails.chart} chartDetails={chartDetails} enableResize />
             ) : (
-                <HighchartGenerator
-                    data={chartData}
-                    isLoading={false}
-                    isQueryEnabled
-                    name={name}
-                    description={description}
-                    metaData={metaData}
-                    type={type}
-                    enableResize
-                />
+                <HighchartGenerator generatedChart={chartDetails.chart} chartDetails={chartDetails} isQueryEnabled enableResize />
             )}
         </Box>
     );

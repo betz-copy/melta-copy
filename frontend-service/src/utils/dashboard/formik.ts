@@ -10,6 +10,7 @@ import { filterModelToFilterOfGraph } from '../../pages/Graph/GraphFilterToBacke
 export const tableDetailsSchema = Yup.object().shape({
     name: Yup.string().required(i18next.t('validation.required')),
     description: Yup.string().required(i18next.t('validation.required')),
+    templateId: Yup.string().required(i18next.t('validation.required')),
 });
 
 export const dashboardInitialValues = {
@@ -24,6 +25,8 @@ export const dashboardInitialValues = {
             yAxis: { field: '', title: '' },
         } as IColumnOrLineMetaData,
         permission: IPermission.Private,
+        createdBy: '',
+        templateId: '',
     } as ChartForm,
 };
 

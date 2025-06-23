@@ -50,18 +50,8 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
 
     if (!data) return <img src="/icons/notFoundChart.svg" />;
 
-    if (type === IChartType.Number) return <NumberChartGenerator data={data[0]} name={formikValues.name} description={formikValues.description} />;
-    return (
-        <HighchartGenerator
-            data={data[0]}
-            isLoading={isLoading}
-            isQueryEnabled={isQueryEnabled}
-            name={formikValues.name}
-            description={formikValues.description}
-            metaData={formikValues.metaData}
-            type={type}
-        />
-    );
+    if (type === IChartType.Number) return <NumberChartGenerator data={data[0]} chartDetails={formikValues} />;
+    return <HighchartGenerator generatedChart={data[0]} isLoading={isLoading} isQueryEnabled={isQueryEnabled} chartDetails={formikValues} />;
 };
 
 export { ChartGenerator };

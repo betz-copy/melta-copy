@@ -111,8 +111,6 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                         useContainer={false}
                     >
                         {(iFrame) => {
-                            console.log('iFrame:', iFrame);
-
                             return (
                                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                     <Resizable

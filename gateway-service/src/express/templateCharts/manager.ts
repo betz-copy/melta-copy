@@ -114,13 +114,13 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         const dashboardChartsItems =
             allowedCharts.length > 0 ? await this.DashboardItemService.getDashboardRelatedItems(allowedCharts.map(({ _id }) => _id)) : {};
 
-        const GeneratedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
+        const generatedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
             ...chart,
             usedInDashboard: (dashboardChartsItems[chart._id] ?? []).length > 0,
             chart: generatedChartsMap.get(chart._id.toString())!,
         }));
 
-        return GeneratedAndDataCharts;
+        return generatedAndDataCharts;
     }
 
     async getChartsOfTemplateId(

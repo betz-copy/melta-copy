@@ -22,12 +22,13 @@ interface AxisInputProps {
 }
 
 const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikField, titleFormikField, label, optionsType, readonly }) => {
+    const { values, setFieldValue, touched, errors, handleBlur } = formik;
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const fieldValue = getIn(formik.values, formikField);
-    const titleValue = titleFormikField ? getIn(formik.values, titleFormikField) : undefined;
-    const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
+    const fieldValue = getIn(values, formikField);
+    const titleValue = titleFormikField ? getIn(values, titleFormikField) : undefined;
+    const titleError = titleFormikField && getIn(touched, titleFormikField) && getIn(errors, titleFormikField);
 
     const entityTemplateFields = Object.keys(pickBy(entityTemplate?.properties.properties, ({ format }) => format !== 'comment'));
     const entityTemplateNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
@@ -63,13 +64,12 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                         <ViewModeTextField
                             label={`${i18next.t('charts.title')}`}
                             name={titleFormikField}
-                            onChange={(e) => formik.setFieldValue(titleFormikField, e.target.value)}
+                            onChange={(e) => setFieldValue(titleFormikField, e.target.value)}
                             value={titleValue || ''}
-                            onBlur={formik.handleBlur}
+                            onBlur={handleBlur}
                             error={Boolean(titleError)}
                             helperText={titleError}
                             fullWidth
-                            variant={readonly ? 'standard' : 'outlined'}
                             readOnly={readonly}
                             sx={{ width: 295 }}
                         />
@@ -86,8 +86,8 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                     multiple={false}
                     onChange={(newValue) => {
                         if (newValue && typeof newValue === 'string' && aggregationOptions.includes(newValue as IAggregation['type']))
-                            formik.setFieldValue(formikField, { type: newValue, byField: '' } as IAggregation);
-                        else formik.setFieldValue(formikField, (newValue as string) ?? '');
+                            setFieldValue(formikField, { type: newValue, byField: '' } as IAggregation);
+                        else setFieldValue(formikField, (newValue as string) ?? '');
                     }}
                     readonly={readonly}
                     getOptionDisabled={(option) => {

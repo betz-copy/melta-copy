@@ -15,7 +15,12 @@ import { ConfirmDeleteDashboardItem } from '../Dialogs';
 import { IMongoChart } from '../../../interfaces/charts';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 
-interface DashboardItemHeaderProps<T extends DashboardItemData> {
+enum CancelType {
+    Reset = 'reset',
+    Back = 'back',
+}
+
+interface DashboardItemDetailsHeaderProps<T extends DashboardItemData> {
     title: string;
     backPath: { title: string; path: string };
     onDelete: () => void;
@@ -33,7 +38,7 @@ interface DashboardItemHeaderProps<T extends DashboardItemData> {
     isValidForm?: boolean;
 }
 
-const DashboardItemHeader = <T extends DashboardItemData>({
+const DashboardItemDetailsHeader = <T extends DashboardItemData>({
     title,
     backPath,
     onDelete,
@@ -43,7 +48,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
     viewMode,
     isValidForm,
     formikProps: { values, initialValues, resetForm },
-}: DashboardItemHeaderProps<T>): React.ReactElement => {
+}: DashboardItemDetailsHeaderProps<T>): React.ReactElement => {
     const theme = useTheme();
     const [, navigate] = useLocation();
 
@@ -61,14 +66,14 @@ const DashboardItemHeader = <T extends DashboardItemData>({
     const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
     const [confirmCancelChanges, setConfirmCancelChanges] = useState<{
         isDialogOpen: boolean;
-        cancelType: 'reset' | 'back' | null;
+        cancelType: CancelType | null;
     }>({
         isDialogOpen: false,
         cancelType: null,
     });
 
     const confirmCancelChangesHandler = () => {
-        if (viewMode.value === ViewMode.Add || confirmCancelChanges.cancelType === 'back') {
+        if (viewMode.value === ViewMode.Add || confirmCancelChanges.cancelType === CancelType.Back) {
             navigate(backPath.path);
         } else {
             viewMode.set(ViewMode.ReadOnly);
@@ -80,7 +85,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
 
     const handleBackNavigationClick = () => {
         if (viewMode.value !== ViewMode.ReadOnly && !isSameObject) {
-            setConfirmCancelChanges({ isDialogOpen: true, cancelType: 'back' });
+            setConfirmCancelChanges({ isDialogOpen: true, cancelType: CancelType.Back });
         } else {
             navigate(backPath.path);
         }
@@ -92,7 +97,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
             return;
         }
 
-        setConfirmCancelChanges({ isDialogOpen: true, cancelType: 'reset' });
+        setConfirmCancelChanges({ isDialogOpen: true, cancelType: CancelType.Reset });
     };
 
     return (
@@ -192,7 +197,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                     </>
                 )}
 
-                {(viewMode.value === ViewMode.Edit || viewMode.value === ViewMode.ReadOnly) && hasPermission && (
+                {viewMode.value !== ViewMode.Add && hasPermission && (
                     <Box style={{ color: theme.palette.primary.main }} onMouseDown={(e) => e.stopPropagation()}>
                         <CardMenu onDeleteClick={() => setDeleteDialogOpen(true)} optionsIconStyle={{ color: theme.palette.primary.main }} />
                     </Box>
@@ -205,7 +210,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                 onDeleteYes={onDelete}
                 type={type}
                 isLoading={isLoading}
-                chartPageProps={chartPageProps}
+                commomItemProps={{ ...chartPageProps, isNotDashboardPage: chartPageProps?.isChartPage }}
             />
 
             <AreYouSureDialog
@@ -213,7 +218,7 @@ const DashboardItemHeader = <T extends DashboardItemData>({
                 handleClose={() => setConfirmCancelChanges({ isDialogOpen: false, cancelType: null })}
                 onYes={confirmCancelChangesHandler}
                 title={i18next.t('dashboard.dialogs.cancel.title')}
-                body={i18next.t(`dashboard.dialogs.cancel.${viewMode.value === ViewMode.Add ? 'addMode' : 'editMode'}`, {
+                body={i18next.t(`dashboard.dialogs.cancel.${viewMode.value === ViewMode.Add ? 'add' : 'edit'}Mode`, {
                     type: i18next.t(`dashboard.itemType.${type}`),
                 })}
                 yesTitle={i18next.t('dashboard.dialogs.cancel.yesTitle')}
@@ -223,4 +228,4 @@ const DashboardItemHeader = <T extends DashboardItemData>({
     );
 };
 
-export { DashboardItemHeader };
+export default DashboardItemDetailsHeader;

@@ -1,4 +1,3 @@
-
 export interface IChart {
     name: string;
     description: string;
@@ -6,7 +5,7 @@ export interface IChart {
     metaData: IChartTypeMetaData;
     permission: IPermission;
     filter?: string;
-    templateId?: string;
+    templateId: string;
     createdBy: string;
     usedInDashboard?: boolean;
 }
@@ -83,8 +82,8 @@ export type HighchartType = Exclude<IChartType, IChartType.Number>;
 
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';
 
-type GeneratorChart = { x: any; y: any }[];
+export type GeneratedChart = { x: any; y: number }[];
 
 export interface ChartsAndGenerator extends IMongoChart {
-    chart: GeneratorChart;
+    chart: GeneratedChart;
 }

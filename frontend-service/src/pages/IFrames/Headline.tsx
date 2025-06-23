@@ -250,13 +250,14 @@ const IFrameHeadline: React.FC<{
                 }}
                 type={DashboardItemType.Iframe}
             />
+
             <ConfirmDeleteDashboardItem
                 isDialogOpen={deleteIFrameDialogState.isDialogOpen}
                 handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}
                 onDeleteYes={() => mutateAsync({ id: deleteIFrameDialogState.iFrameId!, usedInDashboard: deleteIFrameDialogState.usedInDashboard })}
                 isLoading={isLoading}
                 type={DashboardItemType.Iframe}
-                chartPageProps={{ isChartPage: true, usedInDashboard: deleteIFrameDialogState.usedInDashboard }}
+                commomItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteIFrameDialogState.usedInDashboard }}
             />
         </Grid>
     );

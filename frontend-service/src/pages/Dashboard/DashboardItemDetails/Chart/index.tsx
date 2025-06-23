@@ -6,23 +6,22 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { StepType } from '../../../common/wizards';
-import { environment } from '../../../globals';
-import { IMongoChart, IPermission } from '../../../interfaces/charts';
-import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
-import { createDashboardItem, deleteDashboardItem } from '../../../services/dashboardService';
-import { useUserStore } from '../../../stores/user';
-import { chartValidationSchema } from '../../../utils/charts/getChartAxes';
-import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
-import { ChartSideBar } from '../../Charts/ChartPage/ChartSideBar';
-import { FilterSideBar } from '../../Charts/ChartPage/filterSideBar';
-import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
-import { DashboardItem } from '../DashboardItem';
-import { BodyComponent } from './BodyComponent';
+import DashboardItemDetails from '..';
+import { ErrorToast } from '../../../../common/ErrorToast';
+import { environment } from '../../../../globals';
+import { IMongoChart, IPermission } from '../../../../interfaces/charts';
+import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
+import { IGraphFilterBodyBatch } from '../../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
+import { createDashboardItem, deleteDashboardItem } from '../../../../services/dashboardService';
+import { useUserStore } from '../../../../stores/user';
+import { chartValidationSchema } from '../../../../utils/charts/getChartAxes';
+import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../../utils/dashboard/formik';
+import ChartSideBar from '../../../Charts/ChartPage/ChartSideBar';
+import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
+import { FilterOfGraphToFilterRecord } from '../../../Graph/GraphFilterToBackend';
+import BodyComponent from './BodyComponent';
 
 const { dashboardPath, chartPath } = environment.dashboard;
 
@@ -126,9 +125,9 @@ const Chart: React.FC = () => {
     const getBackPath = () => {
         const path = isDashboardPage ? dashboardPath : `${chartPath}/${templateId}`;
 
-        const title = isDashboardPage
-            ? i18next.t('dashboard.mainScreen')
-            : `${i18next.t('dashboard.charts.chartsPage')} ${entityTemplates.get(templateId as string)?.displayName || ''} `;
+        const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${
+            isDashboardPage ? entityTemplates.get(templateId!)?.displayName || '' : ''
+        } `;
 
         return { path, title };
     };
@@ -150,7 +149,7 @@ const Chart: React.FC = () => {
         };
     };
 
-    const steps: StepType<ChartForm>[] = [
+    const steps: TabStepComponent<ChartForm>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <ChartSideBar {...props} isDashboardPage={isDashboardPage} viewMode={viewMode} />,
@@ -166,7 +165,7 @@ const Chart: React.FC = () => {
     if (isLoadingGetChart) return <CircularProgress />;
 
     return (
-        <DashboardItem<ChartForm>
+        <DashboardItemDetails<ChartForm>
             title={i18next.t(`dashboard.charts.${viewMode === ViewMode.Add ? 'create' : 'edit'}Chart`)}
             backPath={getBackPath()}
             onDelete={deleteMutateAsync}

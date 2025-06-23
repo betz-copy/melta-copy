@@ -42,7 +42,7 @@ export interface ChartItemPopulated {
     metaData: IMongoChart;
 }
 
-export interface IframeItemPopulated {
+interface IframeItemPopulated {
     type: DashboardItemType.Iframe;
     metaData: IMongoIframe;
 }

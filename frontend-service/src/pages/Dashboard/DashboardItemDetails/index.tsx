@@ -1,16 +1,17 @@
 import { Grid } from '@mui/material';
 import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import React from 'react';
-import { StepComponentHelpers, StepType } from '../../../common/wizards';
-import { DashboardItemData, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { DashboardItemHeader } from './DashboardItemHeader';
-import { DashboardItemSideBar } from './DashboardItemSideBar';
+import { isSchema } from 'yup';
+import { StepComponentHelpers } from '../../../common/wizards';
+import { DashboardItemData, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
+import DashboardItemDetailsHeader from './DashboardItemDetailsHeader';
+import DashboardItemDetailsSideBar from './DashboardItemDetailsSideBar';
 
-interface DashboardItemProps<T extends DashboardItemData> {
+interface DashboardItemDetailsProps<T extends DashboardItemData> {
     initialValues: T;
     submitFunction: (values: T) => Promise<any>;
     onReset?: (values: T, formikHelpers: FormikHelpers<T>) => void;
-    steps: StepType<T>[];
+    steps: TabStepComponent<T>[];
     viewMode: {
         value: ViewMode;
         set: React.Dispatch<React.SetStateAction<ViewMode>>;
@@ -27,7 +28,7 @@ interface DashboardItemProps<T extends DashboardItemData> {
     };
 }
 
-const DashboardItem = <T extends DashboardItemData>({
+const DashboardItemDetails = <T extends DashboardItemData>({
     title,
     initialValues,
     backPath,
@@ -40,30 +41,28 @@ const DashboardItem = <T extends DashboardItemData>({
     viewMode,
     type,
     chartPageProps,
-}: DashboardItemProps<T>) => {
+}: DashboardItemDetailsProps<T>) => {
     const [activeStep, setActiveStep] = React.useState(0);
 
     return (
         <Formik
             initialValues={initialValues}
-            onSubmit={async (values) => {
-                await submitFunction(values);
-            }}
+            onSubmit={async (values) => await submitFunction(values)}
             validationSchema={steps[activeStep].validationSchema}
             enableReinitialize
-            onReset={(values, formikHelpers) => {
-                onReset?.(values, formikHelpers);
-            }}
+            onReset={(values, formikHelpers) => onReset?.(values, formikHelpers)}
             validateOnMount
         >
             {(formikProps: FormikProps<T>) => {
                 const isValidForm = steps.every((step) =>
-                    step.validationSchema ? step.validationSchema.isValidSync(formikProps.values, { abortEarly: false }) : true,
+                    step.validationSchema && isSchema(step.validationSchema)
+                        ? step.validationSchema.isValidSync(formikProps.values, { abortEarly: false })
+                        : true,
                 );
 
                 return (
                     <Form>
-                        <DashboardItemHeader
+                        <DashboardItemDetailsHeader
                             title={title}
                             backPath={backPath}
                             onDelete={onDelete}
@@ -81,7 +80,12 @@ const DashboardItem = <T extends DashboardItemData>({
                             </Grid>
 
                             <Grid item width="375px" flexShrink={0}>
-                                <DashboardItemSideBar activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} formikProps={formikProps} />
+                                <DashboardItemDetailsSideBar
+                                    activeStep={activeStep}
+                                    setActiveStep={setActiveStep}
+                                    steps={steps}
+                                    formikProps={formikProps}
+                                />
                             </Grid>
                         </Grid>
                     </Form>
@@ -91,4 +95,4 @@ const DashboardItem = <T extends DashboardItemData>({
     );
 };
 
-export { DashboardItem };
+export default DashboardItemDetails;

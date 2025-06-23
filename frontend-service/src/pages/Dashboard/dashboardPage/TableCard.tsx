@@ -2,24 +2,22 @@ import { Download } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../common/EntitiesTableOfTemplate';
-import { TableButton } from '../../common/TableButton';
-import { environment } from '../../globals';
-import { TableMetaData } from '../../interfaces/dashboard';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { exportEntitiesRequest } from '../../services/entitiesService';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { filterModelToFilterOfTemplate, getFilterModal } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { BlueTitle } from '../../common/BlueTitle';
+import { BlueTitle } from '../../../common/BlueTitle';
+import { ResetFilterButton } from '../../../common/EntitiesPage/ResetFilterButton';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
+import { TableButton } from '../../../common/TableButton';
+import { environment } from '../../../globals';
+import { TableMetaData } from '../../../interfaces/dashboard';
+import { IEntity } from '../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { exportEntitiesRequest } from '../../../services/entitiesService';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
-const {
-    loadExcel: { excelExtension },
-} = environment;
+const { excelExtension } = environment.loadExcel;
 
 export const CardTitle = ({ title, description }: { title: string; description?: string }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
@@ -45,7 +43,9 @@ export const CardTitle = ({ title, description }: { title: string; description?:
     );
 };
 
-const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
+const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
+    const TITLE_SECTION_HEIGHT = 120;
+
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -56,21 +56,30 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
 
+    const [isFiltered, setIsFiltered] = useState(false);
+    const memorizedFilter = React.useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+
+    const resizeTable = () => {
+        if (!containerRef.current || !entitiesTableRef.current) return;
+        const newHeight = containerRef.current.offsetHeight;
+
+        entitiesTableRef.current.resizeTableHeight(newHeight - TITLE_SECTION_HEIGHT);
+    };
+
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async () => {
-            return exportEntitiesRequest({
+        async () =>
+            exportEntitiesRequest({
                 fileName: `${template.displayName}${excelExtension}`,
                 templates: {
                     [template._id]: {
                         filter: getFilterModal(
                             filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel()!, template),
-                            metaData.filter && Object.keys(metaData.filter).length > 0 && JSON.parse(metaData.filter as unknown as string),
+                            metaData.filter && JSON.parse(metaData.filter),
                         ),
                         displayColumns: metaData.columns,
                     },
                 },
-            });
-        },
+            }),
         {
             onError() {
                 toast.error(i18next.t('failedToExportTable'));
@@ -80,13 +89,6 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
             },
         },
     );
-
-    const resizeTable = () => {
-        if (!containerRef.current || !entitiesTableRef.current) return;
-        const newHeight = containerRef.current.offsetHeight;
-
-        entitiesTableRef.current.resizeTableHeight(newHeight - 120);
-    };
 
     useEffect(() => {
         window.addEventListener('resize', resizeTable);
@@ -99,17 +101,13 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
         return () => observer.disconnect();
     }, []);
 
-    const memorizedFilter = React.useMemo(() => {
-        return metaData.filter && Object.keys(metaData.filter).length > 0 ? JSON.parse(metaData.filter as unknown as string) : undefined;
-    }, [metaData.filter]);
-
     return (
         <Grid ref={containerRef} container item width="100%" height="100%" alignItems="center" justifyContent="center">
             <Grid sx={{ width: '98%', height: '100%', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
                 <CardTitle title={metaData.name} description={metaData.description} />
 
                 <Grid display="flex">
-                    <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={false} />
+                    <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
 
                     <TableButton
                         iconButtonWithPopoverProps={{
@@ -122,6 +120,7 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                         text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
                     />
                 </Grid>
+
                 <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
                     <EntitiesTableOfTemplate
                         ref={entitiesTableRef}
@@ -145,6 +144,7 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                         defaultFilter={memorizedFilter}
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
+                        onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
                     />
                 </Box>
             </Grid>
@@ -152,4 +152,4 @@ const TableView: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     );
 };
 
-export { TableView };
+export default TableCard;

@@ -33,17 +33,11 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         selectedEntityTemplate,
         entityFilter = false,
     }) => {
-        // console.log({ filters, filterRecord });
-
         const deleteFilter = (value: number) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));
         };
 
         const removeFilterFromFilterList = (filterKey: number) => {
-            // setFilterRecord((prev) => {
-            //     const { [filterKey]: deletedFilter, ...restFilters } = prev;
-            //     return restFilters;
-            // });
             onRemoveFilter(filterKey);
             onFilter?.();
         };
@@ -58,7 +52,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
                                 filterKey={key}
                                 templateOptions={templateOptions}
                                 setFilterRecord={setFilterRecord}
-                                filter={filterRecord?.[key]}
+                                filter={filterRecord[key]}
                                 deleteFilter={deleteFilter}
                                 graphEntityTemplateIds={graphEntityTemplateIds}
                                 removeFilterFromFilterList={removeFilterFromFilterList}

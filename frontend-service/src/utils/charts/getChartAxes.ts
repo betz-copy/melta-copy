@@ -78,6 +78,8 @@ export const initialValues: IChart = {
         yAxis: { field: '', title: '' },
     } as IColumnOrLineMetaData,
     permission: IPermission.Private,
+    createdBy: '',
+    templateId: '',
 };
 
 const aggregationSchema = Yup.object({
@@ -139,4 +141,6 @@ export const chartValidationSchema = Yup.object({
         .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
         .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
+    createdBy: Yup.string().required(i18next.t('validation.required')),
+    templateId: Yup.string().required(i18next.t('validation.required')),
 });

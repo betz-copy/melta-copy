@@ -1273,6 +1273,7 @@ export default {
             },
         },
         tables: {
+            title: 'כותרת הטבלה',
             addTable: 'הוספת טבלה',
             editTable: 'עריכת טבלה',
             permissionWarning: 'טבלה זו והמידע המוצג בה תופיע לכלל המשתמשים בהתאם להרשאותיהם',
@@ -1560,7 +1561,7 @@ export default {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         flowCube: 'אפשר התממשקות קוביה ל-FLOW',
-        isDashboardHomePage: 'הצג בעמוד הבית את הdashboard',
+        isDashboardHomePage: 'הצג בעמוד הבית את תצוגת המערכת',
         agGrid: {
             rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
             defaultExpandedRowCount: 'מספר שורות להצגה בטבלה במצב פתוח',

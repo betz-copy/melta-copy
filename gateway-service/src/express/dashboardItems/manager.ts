@@ -7,10 +7,12 @@ import TemplatesManager from '../templates/manager';
 
 class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
     templateManager: TemplatesManager;
+    chartManager: ChartManager;
 
     constructor(private workspaceId: string) {
         super(new DashboardItemService(workspaceId));
         this.templateManager = new TemplatesManager(workspaceId);
+        this.chartManager = new ChartManager(workspaceId);
     }
 
     private isItemAllowed(
@@ -19,13 +21,12 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         allowedCategoryIds: Set<string>,
         userId: string,
         permissionsOfUserId: ISubCompactPermissions,
-        chartManager: ChartManager,
     ) {
         switch (dashboardItem.type) {
             case DashboardItemType.Chart:
                 return (
                     allowedTemplateIds.has(dashboardItem.metaData.templateId) &&
-                    chartManager.validateAllowedRelatedTemplate(userId, permissionsOfUserId, dashboardItem.metaData)
+                    this.chartManager.validateAllowedRelatedTemplate(userId, permissionsOfUserId, dashboardItem.metaData)
                 );
             case DashboardItemType.Iframe:
                 return permissionsOfUserId.admin?.scope
@@ -38,12 +39,12 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         }
     }
 
-    private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager) {
+    private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[]) {
         const chartMetaList = map(chartItems, 'metaData');
         const chartsByTemplateId = groupBy(chartMetaList, 'templateId');
 
         const generatedCharts = flatten(
-            await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId))),
+            await Promise.all(map(chartsByTemplateId, (charts, templateId) => this.chartManager.generateCharts(charts, templateId))),
         );
 
         const generatedChartsMap = keyBy(generatedCharts, '_id');
@@ -59,7 +60,6 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
     }
 
     async searchDashboardItems(userId: string, permissionsOfUserId: ISubCompactPermissions, textSearch?: string) {
-        const chartManager = new ChartManager(this.workspaceId);
         const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
         const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
 
@@ -69,14 +69,14 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         const dashboardItems = await this.service.searchDashboardItems(textSearch);
 
         const allowedItems = dashboardItems.filter((item) =>
-            this.isItemAllowed(item, allowedTemplateIds, allowedCategoryIds, userId, permissionsOfUserId, chartManager),
+            this.isItemAllowed(item, allowedTemplateIds, allowedCategoryIds, userId, permissionsOfUserId),
         );
 
         const [chartItems, nonChartItems] = partition(allowedItems, (item) => item.type === DashboardItemType.Chart);
 
         if (chartItems.length === 0) return this.sortItemsByCreatedDate(nonChartItems);
 
-        const processedCharts = await this.processChartItems(chartItems, chartManager);
+        const processedCharts = await this.processChartItems(chartItems as (ChartItemPopulated & MongoBaseFields)[]);
         const allItems = [...processedCharts, ...nonChartItems];
 
         return this.sortItemsByCreatedDate(allItems);

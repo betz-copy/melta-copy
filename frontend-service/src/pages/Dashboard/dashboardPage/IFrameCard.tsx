@@ -1,10 +1,10 @@
 import { Grid } from '@mui/material';
 import React, { useRef } from 'react';
 import Iframe from 'react-iframe';
-import { IFrame } from '../../interfaces/iFrames';
-import { CardTitle } from './tableView';
+import { IMongoIFrame } from '../../../interfaces/iFrames';
+import { CardTitle } from './TableCard';
 
-const IframeView: React.FC<{ metaData: IFrame }> = ({ metaData }) => {
+const IFrameCard: React.FC<{ metaData: IMongoIFrame }> = ({ metaData }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -20,4 +20,4 @@ const IframeView: React.FC<{ metaData: IFrame }> = ({ metaData }) => {
     );
 };
 
-export { IframeView };
+export default IFrameCard;

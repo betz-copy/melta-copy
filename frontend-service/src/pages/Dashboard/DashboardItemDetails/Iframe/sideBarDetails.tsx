@@ -1,13 +1,13 @@
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { InfoTypography } from '../../../common/InfoTypography';
-import { StepComponentProps } from '../../../common/wizards';
-import { ViewMode } from '../../../interfaces/dashboard';
-import { IFrame } from '../../../interfaces/iFrames';
-import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
+import { InfoTypography } from '../../../../common/InfoTypography';
+import { ViewModeTextField } from '../../../../common/inputs/ViewModeTextField';
+import { StepComponentProps } from '../../../../common/wizards';
+import { IFrameWizardValues } from '../../../../common/wizards/iFrame';
+import { ViewMode } from '../../../../interfaces/dashboard';
 
-const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode }> = ({
+const SideBarDetails: React.FC<StepComponentProps<IFrameWizardValues> & { viewMode: ViewMode }> = ({
     values,
     touched,
     errors,
@@ -58,4 +58,4 @@ const SideBarDetails: React.FC<StepComponentProps<IFrame> & { viewMode: ViewMode
     );
 };
 
-export { SideBarDetails };
+export default SideBarDetails;

@@ -81,7 +81,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 selectedProperty: property,
                 filterField: newFilterField,
             };
-            console.log({ newVlaueInSet: newValue ,filterKey});
 
             setFilterRecord(newValue, filterKey);
             // setFilterRecord((prev) => ({
@@ -133,8 +132,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleSetFilterRecord = (newFilterField: IGraphFilterBody['filterField'], condition: boolean = true) => {
-        console.log('enter to setFilterRecord', newFilterField, condition, selectedProperty);
-
         if (condition) debouncedOnFilter(newFilterField, selectedTemplate, selectedProperty);
     };
 

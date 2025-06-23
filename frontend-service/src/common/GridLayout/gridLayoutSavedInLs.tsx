@@ -7,8 +7,8 @@ import { LayoutItem } from './interface';
 
 const { defaultColumnSizes } = environment.charts;
 
-interface LocalStorageGridLayoutProps<T extends any[]> {
-    items: T;
+interface LocalStorageGridLayoutProps<T extends { _id: string }> {
+    items: T[];
     localStorageKey: string;
     generateDom: () => React.ReactNode[];
     layout: {
@@ -18,7 +18,13 @@ interface LocalStorageGridLayoutProps<T extends any[]> {
     textSearch?: string;
 }
 
-const LocalStorageGridLayout = <T extends any[]>({ items, localStorageKey, generateDom, layout, textSearch }: LocalStorageGridLayoutProps<T>) => {
+const LocalStorageGridLayout = <T extends { _id: string }>({
+    items,
+    localStorageKey,
+    generateDom,
+    layout,
+    textSearch,
+}: LocalStorageGridLayoutProps<T>) => {
     const [mounted, setMounted] = useState(false);
 
     const getSavedLayout = (): LayoutItem[] => LocalStorage.get(localStorageKey) || [];
@@ -34,14 +40,15 @@ const LocalStorageGridLayout = <T extends any[]>({ items, localStorageKey, gener
 
         if (!savedLayout && items.length > 0) layout.set(generateLayoutDetails(items).lg);
 
-        if (items.length > savedLayout.length) {
-            const updatedLayout = new Set<LayoutItem>(savedLayout);
+        if (savedLayout && items.length > savedLayout.length) {
+            const updatedLayout = [...savedLayout];
+            const existingIds = new Set(savedLayout.map((layoutItem) => layoutItem.i));
 
             items.forEach((item) => {
-                if (!updatedLayout.has(item._id)) updatedLayout.add(generateNewItemSizes(localStorageKey, item._id));
+                if (!existingIds.has(item._id)) updatedLayout.push(generateNewItemSizes(localStorageKey, item._id));
             });
 
-            layout.set(Array.from(updatedLayout));
+            layout.set(updatedLayout);
         }
 
         if (textSearch) savedLayout.filter((l) => items.some((item) => item._id === l.i));
