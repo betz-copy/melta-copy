@@ -75,11 +75,12 @@ export const formatToString = (
             );
         }
         if (format === 'user') {
+            const userObject = typeof value === 'string' ? JSON.parse(value) : value;
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={JSON.parse(value).fullName}>
+                    <MeltaTooltip title={userObject.fullName}>
                         <Grid item>
-                            <Chip avatar={<UserAvatar user={JSON.parse(value)} size={25} bgColor="1E2775" />} label={JSON.parse(value).fullName} />
+                            <Chip avatar={<UserAvatar user={userObject} size={25} bgColor="1E2775" />} label={userObject.fullName} />
                         </Grid>
                     </MeltaTooltip>
                 </Grid>

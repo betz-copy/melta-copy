@@ -12,6 +12,7 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import TemplatesManager from '../templates/manager';
 import InstanceManager from '../instances/manager';
+import NotificationsService from '../notifications/manager';
 
 class SimbaManager extends DefaultManagerProxy<null> {
     private entityTemplateService: EntityTemplateService;
@@ -24,6 +25,8 @@ class SimbaManager extends DefaultManagerProxy<null> {
 
     private instancesService: InstancesService;
 
+    private notificationsService: NotificationsService;
+
     constructor(workspaceId: string) {
         super(null);
 
@@ -32,6 +35,7 @@ class SimbaManager extends DefaultManagerProxy<null> {
         this.relationshipTemplateService = new RelationshipsTemplateService(workspaceId);
         this.templatesManager = new TemplatesManager(workspaceId);
         this.instanceManager = new InstanceManager(workspaceId);
+        this.notificationsService = new NotificationsService(workspaceId);
     }
 
     async getAllSimbaTemplates(usersInfoChildTemplateId: string) {
@@ -102,6 +106,21 @@ class SimbaManager extends DefaultManagerProxy<null> {
     async createEntity(entity: IEntity, files: UploadedFile[], ignoredRules: IBrokenRule[], userId: string) {
         const createdEntity = await this.instanceManager.createEntityInstance(entity, files, ignoredRules, userId);
         return createdEntity;
+    }
+
+    async getMyNotifications(user: Express.User, query: any) {
+        const notifications = await this.notificationsService.getMyNotifications(user, query);
+        return notifications;
+    }
+
+    async getMyNotificationGroupCount(user: Express.User, query: any) {
+        const notificationGroupCount = await this.notificationsService.getMyNotificationGroupCount(user, query);
+        return notificationGroupCount;
+    }
+
+    async manyNotificationSeen(user: Express.User, query: any) {
+        const notifications = await this.notificationsService.manyNotificationsSeen(user, query);
+        return notifications;
     }
 }
 

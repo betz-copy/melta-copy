@@ -10,6 +10,8 @@ import { EntityWizardValues } from '../common/dialogs/entity';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { locationConverterToString } from '../utils/map/convert';
 import { mapValues } from 'lodash';
+import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
+import { IGetMyNotificationsRequestQuery } from './notificationService';
 
 const { simbaRoutes, getAllSimbaTemplates: getAllSimbaTemplatesRoute } = environment.api;
 
@@ -129,6 +131,26 @@ const createEntitySimbaRequest = async (
     return data;
 };
 
+const getMySimbaNotificationGroupCountRequest = async (groups: INotificationCountGroups) => {
+    const { data } = await axios.post<INotificationGroupCountDetails>(`${simbaRoutes}/notifications/my/group-count`, { groups });
+    return data;
+};
+
+const manyNotificationSeenSimbaRequest = async (types: NotificationType[]) => {
+    const { data } = await axios.post<INotificationPopulated[]>(`${simbaRoutes}/notifications/seen`, { types });
+    return data;
+};
+
+const getMyNotificationsSimbaRequest = async (query: IGetMyNotificationsRequestQuery) => {
+    const startDate = query.startDate && query.startDate.toDateString();
+    const endDate = query.endDate && query.endDate.toDateString();
+
+    const { data } = await axios.get<INotificationPopulated[]>(`${simbaRoutes}/notifications/my`, {
+        params: { ...query, startDate, endDate },
+    });
+    return data;
+};
+
 export {
     getAllSimbaTemplates,
     getCurrentUserEntity,
@@ -136,4 +158,7 @@ export {
     searchEntitiesOfTemplateSimbaRequest,
     getSimbaExpandedEntityByIdRequest,
     createEntitySimbaRequest,
+    getMySimbaNotificationGroupCountRequest,
+    manyNotificationSeenSimbaRequest,
+    getMyNotificationsSimbaRequest,
 };
