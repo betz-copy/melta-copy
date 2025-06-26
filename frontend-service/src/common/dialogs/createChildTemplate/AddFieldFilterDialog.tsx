@@ -186,6 +186,23 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         }
     };
 
+    const isValueValid = () => {
+        if (!localFilterField) return false;
+        if (dialogType === 'filter' || dialogType === 'default') {
+            if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
+                return !!localFilterField.filter;
+            }
+            if (localFilterField.filterType === 'set') {
+                return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
+            }
+            if (localFilterField.filterType === 'date') {
+                return !!localFilterField.dateFrom;
+            }
+            return true;
+        }
+        return true;
+    };
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle>
@@ -221,7 +238,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} display="flex" justifyContent="center">
-                        <Button variant="contained" color="primary" onClick={handleSubmit}>
+                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={!isValueValid()}>
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>
