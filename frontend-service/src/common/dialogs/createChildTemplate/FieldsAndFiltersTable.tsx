@@ -98,6 +98,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
                         const isRequired = entityTemplate.properties.required.includes(fieldName);
                         const isKartoffelUserField = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
+                        const isSerialNumberField = entityTemplate.properties.properties[fieldName]?.format === 'serialNumber';
 
                         return (
                             <React.Fragment key={fieldName}>
@@ -193,7 +194,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     <Button
                                                         color="primary"
                                                         onClick={() => {
-                                                            if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                            if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                             handleSelectProperty(fieldName, 'filter');
                                                         }}
                                                         size="small"
@@ -261,7 +262,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         <Button
                                                             color="primary"
                                                             onClick={() => {
-                                                                if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                                if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                                 handleSelectProperty(fieldName, 'default');
                                                             }}
                                                             size="small"
@@ -269,7 +270,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                             disabled={
                                                                 (!fieldFilter.selected && !isRequired) ||
                                                                 isDisallowedFormat(fieldName) ||
-                                                                isKartoffelUserField
+                                                                isKartoffelUserField ||
+                                                                isSerialNumberField
                                                             }
                                                         >
                                                             <AddRounded />

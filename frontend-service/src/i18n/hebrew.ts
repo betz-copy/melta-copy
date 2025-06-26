@@ -937,6 +937,7 @@ export default {
         required: 'חובה',
         url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
+        atLeastOneCategory: 'חובה לפחות קטגוריה אחת',
         preview: 'תצוגה מצומצמת',
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
         hide: 'הסתר',

@@ -387,9 +387,10 @@ const CreateChildTemplateDialog: React.FC<{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
                     displayName: childTemplate ? childTemplate.displayName : '',
                     description: childTemplate?.description || '',
+                    categories: selectedCategories,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
-                onSubmit={async ({ name, displayName, description }) => {
+                onSubmit={async ({ name, displayName, description, categories }) => {
                     const fullName = `${entityTemplate.name}_${name}`;
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
@@ -431,7 +432,7 @@ const CreateChildTemplateDialog: React.FC<{
                         displayName: displayNameToUse,
                         description,
                         fatherTemplateId: entityTemplate._id,
-                        categories: selectedCategories.map((c) => c._id),
+                        categories: categories.map((c) => c._id),
                         properties,
                         disabled: false,
                         viewType: childTemplateViewType,
@@ -446,15 +447,18 @@ const CreateChildTemplateDialog: React.FC<{
                     }
                 }}
             >
-                {({ values, handleChange, touched, errors }) => {
+                {({ values, handleChange, touched, errors, setFieldValue }) => {
                     React.useEffect(() => {
                         if (!childTemplate) return;
 
                         const hasDescriptionChange = values.description !== (childTemplate.description || '');
-                        if (hasDescriptionChange) {
+                        const hasCategoryChange =
+                            JSON.stringify(values.categories.map((c) => c._id).sort()) !== JSON.stringify(childTemplate.categories.sort());
+
+                        if (hasDescriptionChange || hasCategoryChange) {
                             setHasChanges(true);
                         }
-                    }, [values.description]);
+                    }, [values.description, values.categories]);
 
                     return (
                         <Form>
@@ -612,9 +616,9 @@ const CreateChildTemplateDialog: React.FC<{
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
-                                                        setSelectedCategories(newVal);
+                                                        setFieldValue('categories', newVal);
                                                     }}
-                                                    value={selectedCategories}
+                                                    value={values.categories}
                                                     getOptionLabel={(option) => option.displayName}
                                                     isOptionEqualToValue={(option, value) => option._id === value._id}
                                                     renderInput={(params) => (
@@ -624,6 +628,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                             name="category"
                                                             variant="outlined"
                                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
+                                                            error={touched.categories && Boolean(errors.categories)}
+                                                            helperText={touched.categories && errors.categories}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (
