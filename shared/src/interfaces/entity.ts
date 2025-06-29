@@ -142,6 +142,7 @@ export interface ISearchEntitiesOfTemplateBody {
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
     entityIdsToInclude?: string[];
     entityIdsToExclude?: string[];
+    userEntityId?: string;
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -164,6 +165,7 @@ export interface ISearchBatchBody {
     };
     sort: ISearchSort;
     shouldSemanticSearch?: boolean;
+    userEntityId?: string;
 }
 
 export interface UploadedFile {

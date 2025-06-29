@@ -8,6 +8,8 @@ import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFil
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
+import { IUser } from '../../../interfaces/users';
+import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -53,12 +55,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         if (!entityTemplate) return;
 
         const { format, type: fieldType } = entityTemplate.properties.properties[newProperty];
-        const existingFilter = templateFieldsFilters[newProperty]?.filterField;
-
-        if (existingFilter) {
-            addFilterToFieldHandler(existingFilter, newProperty);
-            return;
-        }
 
         const initializedFilterField: Record<string, IFieldFilter['filterField']> = {
             'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -71,9 +67,16 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
         const selectedFilter = (format && initializedFilterField[format]) || (fieldType && initializedFilterField[fieldType]);
 
-        if (selectedFilter) addFilterToFieldHandler(selectedFilter, newProperty);
+        if (selectedFilter) {
+            setTemplateFieldsFilters((prev) => ({
+                ...prev,
+                [newProperty]: {
+                    ...prev[newProperty],
+                    filterField: selectedFilter,
+                },
+            }));
+        }
     };
-
     const isDisallowedFormat = (fieldName: string): boolean => {
         const prop = entityTemplate.properties.properties[fieldName];
         return (
@@ -94,6 +97,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 <Grid container>
                     {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
                         const isRequired = entityTemplate.properties.required.includes(fieldName);
+                        const isKartoffelUserField = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
+                        const isSerialNumberField = entityTemplate.properties.properties[fieldName]?.format === 'serialNumber';
 
                         return (
                             <React.Fragment key={fieldName}>
@@ -127,13 +132,24 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             {fieldChips
                                                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
                                                 .map((chip, index) => {
-                                                    const filterTypeLabel = 'type' in chip.filterType! ? chip.filterType.type : '';
+                                                    const isArrayType = entityTemplate.properties.properties[fieldName]?.type === 'array';
+                                                    const filterTypeLabel =
+                                                        'type' in chip.filterType! ? chip.filterType.type : isArrayType ? 'contains' : '';
+
                                                     let filterValue = '';
 
                                                     if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
                                                         filterValue = String(chip.filterType.filter);
                                                     } else if ('values' in chip.filterType! && Array.isArray(chip.filterType.values)) {
-                                                        filterValue = chip.filterType.values.join(', ');
+                                                        filterValue = chip.filterType.values
+                                                            .map((item) => {
+                                                                if (typeof item === 'string') return item;
+                                                                if (typeof item === 'object') {
+                                                                    return (item as IUser).fullName;
+                                                                }
+                                                                return String(item);
+                                                            })
+                                                            .join(', ');
                                                     } else if ('dateFrom' in chip.filterType!) {
                                                         if (chip.filterType.dateFrom) {
                                                             filterValue = new Date(chip.filterType.dateFrom).toLocaleDateString();
@@ -178,12 +194,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     <Button
                                                         color="primary"
                                                         onClick={() => {
-                                                            if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                            if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                             handleSelectProperty(fieldName, 'filter');
                                                         }}
                                                         size="small"
                                                         sx={{ minWidth: '32px', p: '4px' }}
-                                                        disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                        disabled={(!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)}
                                                     >
                                                         <AddRounded />
                                                     </Button>
@@ -201,7 +217,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         chip.value === null || chip.value === undefined
                                                             ? ''
                                                             : Array.isArray(chip.value)
-                                                            ? chip.value.join(', ')
+                                                            ? chip.value
+                                                                  .map((item) => {
+                                                                      if (typeof item === 'string') return item;
+                                                                      if (typeof item === 'object') {
+                                                                          return (item as IUser).fullName;
+                                                                      }
+                                                                      return String(item);
+                                                                  })
+                                                                  .join(', ')
                                                             : String(chip.value);
 
                                                     return (
@@ -214,6 +238,13 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                                             (c) => !(c.fieldName === chip.fieldName && c.chipType === 'default'),
                                                                         ),
                                                                     );
+                                                                    setTemplateFieldsFilters((prev) => ({
+                                                                        ...prev,
+                                                                        [chip.fieldName]: {
+                                                                            ...prev[chip.fieldName],
+                                                                            defaultValue: undefined,
+                                                                        },
+                                                                    }));
                                                                 }}
                                                                 color="default"
                                                             />
@@ -231,12 +262,17 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         <Button
                                                             color="primary"
                                                             onClick={() => {
-                                                                if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                                if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                                 handleSelectProperty(fieldName, 'default');
                                                             }}
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
-                                                            disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                            disabled={
+                                                                (!fieldFilter.selected && !isRequired) ||
+                                                                isDisallowedFormat(fieldName) ||
+                                                                isKartoffelUserField ||
+                                                                isSerialNumberField
+                                                            }
                                                         >
                                                             <AddRounded />
                                                         </Button>
@@ -301,22 +337,65 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 return [...prev, newChip];
                             });
                         } else if (dialogType === 'default') {
-                            const value = typeof fieldValue === 'object' && 'value' in fieldValue ? fieldValue.value : fieldValue;
+                            if (fieldValue === undefined || fieldValue === null || fieldValue === '') return;
+
+                            const fieldSchema = entityTemplate.properties.properties[fieldName];
+                            const fakeTemplateSchema = {
+                                ...entityTemplate.properties,
+                                required: [],
+                                properties: {
+                                    [fieldName]: fieldSchema,
+                                },
+                            };
+
+                            const formData = { [fieldName]: fieldValue };
+
+                            const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
+
+                            if (ajvErrors && ajvErrors[fieldName]) {
+                                setTemplateFieldsFilters((prev) => ({
+                                    ...prev,
+                                    [fieldName]: {
+                                        ...prev[fieldName],
+                                        error: ajvErrors[fieldName],
+                                    },
+                                }));
+                                return;
+                            }
 
                             setTemplateFieldsFilters((prev) => ({
                                 ...prev,
                                 [fieldName]: {
                                     ...prev[fieldName],
-                                    defaultValue: value,
+                                    defaultValue: fieldValue,
                                 },
                             }));
 
+                            const propertySchema = entityTemplate.properties.properties[fieldName];
+                            const isDateField = propertySchema.format === 'date' || propertySchema.format === 'date-time';
+                            const isUsersArray = propertySchema.type === 'array' && propertySchema.items?.format === 'user';
+
+                            let displayValue = fieldValue;
+                            if (isDateField && fieldValue) {
+                                try {
+                                    displayValue = new Date(fieldValue).toLocaleDateString('en-uk');
+                                } catch (e) {
+                                    console.error('Error formatting date:', e);
+                                    displayValue = fieldValue;
+                                }
+                            } else if (Array.isArray(fieldValue)) {
+                                if (isUsersArray) displayValue = fieldValue.map(({ fullName }) => fullName).join(', ');
+                                else displayValue = fieldValue.join(', ');
+                            } else if (typeof fieldValue === 'boolean') {
+                                displayValue = fieldValue ? 'true' : 'false';
+                            }
+
                             setFieldChips((prev) => [
-                                ...prev,
+                                ...prev.filter((chip) => !(chip.fieldName === fieldName && chip.chipType === 'default')),
                                 {
                                     fieldName,
                                     chipType: 'default' as const,
-                                    value,
+                                    value: displayValue,
                                 },
                             ]);
                         }

@@ -5,6 +5,7 @@ import {
     searchEntityChildTemplatesSchema,
     getAllChildTemplatesSchema,
     createEntityChildTemplateSchema,
+    getChildTemplateByIdSchema,
     updateEntityChildTemplateSchema,
     deleteEntityChildTemplateSchema,
     updateEntityTemplateActionSchema,
@@ -24,6 +25,8 @@ entityChildTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), 
 entityChildTemplateRouter.get('/:id', ValidateRequest(getEntityChildTemplateByIdSchema), controller.getEntityChildTemplateById);
 
 entityChildTemplateRouter.post('/', ValidateRequest(createEntityChildTemplateSchema), controller.createEntityChildTemplate);
+
+entityChildTemplateRouter.get('/:id', ValidateRequest(getChildTemplateByIdSchema), controller.getChildTemplateById);
 
 entityChildTemplateRouter.put('/:id', ValidateRequest(updateEntityChildTemplateSchema), controller.updateEntityChildTemplate);
 

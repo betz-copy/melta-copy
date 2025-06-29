@@ -108,7 +108,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                 <TextField
                     value={typeof inputValue === 'string' && inputValue.endsWith(unit) ? inputValue.replace(unit, '') : inputValue}
                     variant="standard"
-                    type="number"
+                    type={typeof inputValue === 'string' && inputValue.endsWith(unit) ? 'number' : 'text'}
                     InputProps={{
                         startAdornment:
                             typeof value === 'string' && (value as string).endsWith(unit) ? (
@@ -120,6 +120,8 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                         const newValue = e.target.value;
                         if (/^\d*$/.test(newValue)) {
                             handleInputChange(`${newValue}${unit}`);
+                        } else {
+                            handleInputChange(newValue);
                         }
                     }}
                     onKeyDown={handleKeyDown}

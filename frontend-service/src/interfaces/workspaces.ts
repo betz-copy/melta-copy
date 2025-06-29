@@ -37,6 +37,11 @@ export interface IMetadata {
         bulk: number;
     };
     unitFieldSplitDepth: number;
+    simba: {
+        usersInfoTemplateId: string;
+        carsInfoTemplateId: string;
+        numOfPropsToShow: number;
+    };
 }
 
 export interface IWorkspace {

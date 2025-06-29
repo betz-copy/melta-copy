@@ -164,7 +164,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
                 />
             ),
             validationSchema: {},
-            stepperActions: { disable: 'all' },
+            stepperActions: { hide: 'all' },
         },
         {
             label: i18next.t('wizard.entity.loadEntities.uploadFilesTitle'),
@@ -180,7 +180,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
             ),
             validationSchema: stepsData.status === ExcelStepStatus.uploadExcel ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
-                disable: stepsData.status === ExcelStepStatus.uploadExcel ? 'all' : undefined,
+                hide: stepsData.status === ExcelStepStatus.uploadExcel ? 'all' : undefined,
                 back: {
                     onClick: () => {
                         if (stepsData.status === ExcelStepStatus.previewExcelRows) {
@@ -239,7 +239,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
                 );
             },
             stepperActions: {
-                disable: 'back',
+                hide: 'back',
                 next: {
                     text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                 },

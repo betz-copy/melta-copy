@@ -63,7 +63,6 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             )}
             InputProps={{
                 style: {
-                    // eslint-disable-next-line no-nested-ternary
                     borderRadius: borderRadius || !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
                 },
             }}

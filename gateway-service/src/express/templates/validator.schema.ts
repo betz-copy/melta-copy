@@ -19,16 +19,13 @@ const filterOfFieldSchema = Joi.object({
         Joi.array().items(Joi.number().allow(null)),
     ),
     $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
+}).id('filterOfField');
 
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-
-export const searchFilterSchema = Joi.object({
-    $and: Joi.array().items(filterOfTemplateSchema).min(1),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
+const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
+const searchFilterSchema = Joi.object({
+    $and: Joi.array().items(filterOfTemplateSchema),
+    $or: Joi.array().items(filterOfTemplateSchema),
+});
 
 const childTemplatePropertySchema = Joi.object({
     title: Joi.string().required(),

@@ -16,11 +16,27 @@ interface DateFilterInputProps {
     handleDateChange: (newValue: Date | null, isStartDate: boolean) => void;
     entityFilter: boolean;
     readOnly: boolean;
+    hideFilterType?: boolean;
+    forceEqualsType?: boolean;
 }
 
-const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFilterTypeChange, handleDateChange, entityFilter, readOnly }) => {
+const DateFilterInput: React.FC<DateFilterInputProps> = ({
+    filterField,
+    handleFilterTypeChange,
+    handleDateChange,
+    entityFilter,
+    readOnly,
+    hideFilterType = false,
+    forceEqualsType = false,
+}) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === 'inRange';
+
+    React.useEffect(() => {
+        if (forceEqualsType && filterField && filterField.type !== 'equals') {
+            handleFilterTypeChange('equals');
+        }
+    }, [forceEqualsType, filterField]);
 
     const inputStyle = darkMode
         ? undefined
@@ -37,17 +53,19 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
             spacing={1}
             sx={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
         >
-            <Grid item xs={isInRangeType ? 12 : 5}>
-                <TypeSelectFilter
-                    filterField={filterField as IAGGridDateFilter}
-                    handleFilterTypeChange={handleFilterTypeChange}
-                    readOnly={readOnly}
-                    type="date"
-                />
-            </Grid>
+            {!hideFilterType && (
+                <Grid item xs={isInRangeType ? 12 : 5}>
+                    <TypeSelectFilter
+                        filterField={filterField as IAGGridDateFilter}
+                        handleFilterTypeChange={handleFilterTypeChange}
+                        readOnly={readOnly || forceEqualsType}
+                        type="date"
+                    />
+                </Grid>
+            )}
 
-            <Grid item xs={isInRangeType ? 12 : 7} boxSizing="border-box" width="86%">
-                {isInRangeType ? (
+            <Grid item xs={hideFilterType || isInRangeType ? 12 : 7} boxSizing="border-box" width="86%">
+                {isInRangeType && !forceEqualsType ? (
                     <DateRange
                         onStartDateChange={(newValue) => handleDateChange(newValue, true)}
                         onEndDateChange={(newValue) => handleDateChange(newValue, false)}
@@ -62,7 +80,6 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
                         value={filterField?.dateFrom}
                         onChange={(newValue) => handleDateChange(newValue, true)}
                         components={{
-                            // eslint-disable-next-line react/no-unstable-nested-components
                             OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
                         }}
                         sx={inputStyle}

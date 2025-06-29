@@ -78,7 +78,7 @@ const EditProps: React.FC<{
 
     useEffect(() => {
         schema.required.forEach((field) => {
-            const fieldPropertiesEnum = schema.properties[field].enum;
+            const fieldPropertiesEnum = schema.properties[field]?.enum;
             const itemFieldProperties = schema.properties[field]?.items?.enum;
 
             if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
@@ -113,8 +113,12 @@ const EditProps: React.FC<{
     }, [absoluteDirty, values, draftId]);
 
     useEffect(() => {
-        if (absoluteDirty && !wasDirty) setWasDirty(true);
+        setWasDirty(absoluteDirty);
     }, [absoluteDirty]);
+
+    useEffect(() => {
+        if (multipleSelectionProps) setWasDirty(Object.keys(values.attachmentsProperties).length > 0);
+    }, [values.attachmentsProperties]);
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];

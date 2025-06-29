@@ -106,9 +106,39 @@ const CreateChildTemplateDialog: React.FC<{
                                 } else if (fieldValue.$eq !== undefined) {
                                     filterType = 'equals';
                                     value = fieldValue.$eq;
+                                } else if (fieldValue.$ne !== undefined) {
+                                    filterType = 'notEqual';
+                                    value = fieldValue.$ne;
+                                } else if (fieldValue.$lt !== undefined) {
+                                    filterType = 'lessThan';
+                                    value = fieldValue.$lt;
+                                } else if (fieldValue.$lte !== undefined) {
+                                    filterType = 'lessThanOrEqual';
+                                    value = fieldValue.$lte;
+                                } else if (fieldValue.$gt !== undefined) {
+                                    filterType = 'greaterThan';
+                                    value = fieldValue.$gt;
+                                } else if (fieldValue.$gte !== undefined) {
+                                    filterType = 'greaterThanOrEqual';
+                                    value = fieldValue.$gte;
                                 } else if (fieldValue.$in) {
                                     filterType = 'in';
                                     value = fieldValue.$in.join(', ');
+                                } else if (fieldValue.$eq === null) {
+                                    filterType = 'blank';
+                                    value = '';
+                                } else if (fieldValue.$ne === null) {
+                                    filterType = 'notBlank';
+                                    value = '';
+                                } else if (fieldValue.$startsWith) {
+                                    filterType = 'startsWith';
+                                    value = fieldValue.$startsWith;
+                                } else if (fieldValue.$endsWith) {
+                                    filterType = 'endsWith';
+                                    value = fieldValue.$endsWith;
+                                } else if (fieldValue.$notContains) {
+                                    filterType = 'notContains';
+                                    value = fieldValue.$notContains;
                                 }
 
                                 const fieldTemplate = entityTemplate.properties.properties[fieldName];
@@ -157,10 +187,26 @@ const CreateChildTemplateDialog: React.FC<{
                     }
                 }
                 if (prop.defaultValue !== undefined) {
+                    const defaultValue = prop.defaultValue;
+                    let displayValue = defaultValue;
+
+                    const fieldTemplate = entityTemplate.properties.properties[fieldName];
+                    if (fieldTemplate.format === 'date-time' || fieldTemplate.format === 'date') {
+                        try {
+                            const date = new Date(defaultValue);
+                            if (!isNaN(date.getTime())) {
+                                displayValue = date.toLocaleDateString();
+                            }
+                        } catch (e) {
+                            console.error('Error formatting date:', e);
+                            displayValue = defaultValue;
+                        }
+                    }
+
                     chips.push({
                         fieldName,
                         chipType: 'default',
-                        value: prop.defaultValue,
+                        value: displayValue,
                     });
                 }
             });
@@ -341,9 +387,10 @@ const CreateChildTemplateDialog: React.FC<{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
                     displayName: childTemplate ? childTemplate.displayName : '',
                     description: childTemplate?.description || '',
+                    categories: selectedCategories,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
-                onSubmit={async ({ name, displayName, description }) => {
+                onSubmit={async ({ name, displayName, description, categories }) => {
                     const fullName = `${entityTemplate.name}_${name}`;
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
@@ -385,7 +432,7 @@ const CreateChildTemplateDialog: React.FC<{
                         displayName: displayNameToUse,
                         description,
                         fatherTemplateId: entityTemplate._id,
-                        categories: selectedCategories.map((c) => c._id),
+                        categories: categories.map((c) => c._id),
                         properties,
                         disabled: false,
                         viewType: childTemplateViewType,
@@ -400,15 +447,18 @@ const CreateChildTemplateDialog: React.FC<{
                     }
                 }}
             >
-                {({ values, handleChange, touched, errors }) => {
+                {({ values, handleChange, touched, errors, setFieldValue }) => {
                     React.useEffect(() => {
                         if (!childTemplate) return;
 
                         const hasDescriptionChange = values.description !== (childTemplate.description || '');
-                        if (hasDescriptionChange) {
+                        const hasCategoryChange =
+                            JSON.stringify(values.categories.map((c) => c._id).sort()) !== JSON.stringify(childTemplate.categories.sort());
+
+                        if (hasDescriptionChange || hasCategoryChange) {
                             setHasChanges(true);
                         }
-                    }, [values.description]);
+                    }, [values.description, values.categories]);
 
                     return (
                         <Form>
@@ -566,15 +616,9 @@ const CreateChildTemplateDialog: React.FC<{
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
-                                                        const original = entityTemplate?.category;
-                                                        if (!original) return;
-
-                                                        const hasOriginalCategory = newVal.some((category) => category._id === original._id);
-                                                        const newSelection = hasOriginalCategory ? newVal : [original, ...newVal];
-
-                                                        setSelectedCategories(newSelection);
+                                                        setFieldValue('categories', newVal);
                                                     }}
-                                                    value={selectedCategories}
+                                                    value={values.categories}
                                                     getOptionLabel={(option) => option.displayName}
                                                     isOptionEqualToValue={(option, value) => option._id === value._id}
                                                     renderInput={(params) => (
@@ -584,6 +628,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                             name="category"
                                                             variant="outlined"
                                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
+                                                            error={touched.categories && Boolean(errors.categories)}
+                                                            helperText={touched.categories && errors.categories}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (
@@ -607,7 +653,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                                         borderRadius: '10px',
                                                                         opacity: isOriginal ? 0.8 : 1,
                                                                     }}
-                                                                    {...(!isOriginal && { onDelete })}
+                                                                    onDelete={onDelete}
                                                                 />
                                                             );
                                                         })

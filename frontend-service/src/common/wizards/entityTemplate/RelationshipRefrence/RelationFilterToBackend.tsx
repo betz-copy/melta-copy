@@ -38,13 +38,17 @@ const relationFieldFilterToFilterOfTemplate = (field: string, fieldFilter: IAGGr
 export const filterRelationListToSearchFilter = (filterModel: IFilterRelationReference[]): ISearchFilter | undefined => {
     if (filterModel.length === 0) return undefined;
 
-    const filters: IFilterOfTemplate[] = filterModel.map(({ filterProperty, filterField }) => {
-        if (!filterProperty || !filterField) return {};
-        return relationFieldFilterToFilterOfTemplate(filterProperty, filterField);
-    });
+    const filters: IFilterOfTemplate[] = filterModel
+        .map(({ filterProperty, filterField }) => {
+            if (!filterProperty || !filterField) return {};
+            return relationFieldFilterToFilterOfTemplate(filterProperty, filterField);
+        })
+        .filter((filter) => Object.keys(filter).length > 0); // Filter out empty filters
+
+    if (filters.length === 0) return undefined;
 
     return {
-        $and: filters,
+        $and: filters.map((filter) => filter),
     };
 };
 

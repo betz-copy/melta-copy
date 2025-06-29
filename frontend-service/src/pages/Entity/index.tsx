@@ -17,7 +17,7 @@ import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -33,6 +33,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -87,7 +88,7 @@ const ConnectionsTableTitle: React.FC<{
     );
 };
 
-const ConnectionsTable: React.FC<{
+export const ConnectionsTable: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
     templateIds: string[];
@@ -346,7 +347,7 @@ export interface IConnectionTemplateOfExpandedEntity {
 const Entity: React.FC = () => {
     const theme = useTheme();
 
-    const { entityId } = useParams();
+    const { entityId, templateId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
@@ -357,9 +358,13 @@ const Entity: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(
+        Array.from(Array.from(entityTemplates.values())),
+        currentUser,
+    );
     const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
@@ -379,8 +384,25 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated => {
+        if (templateId) {
+            const childTemplate = childTemplates.get(templateId);
+            if (childTemplate) {
+                const fatherEntity = entityTemplates.get(childTemplate.fatherTemplateId)!;
+                return {
+                    ...fatherEntity,
+                    _id: childTemplate._id,
+                    displayName: childTemplate.displayName,
+                    properties: { ...fatherEntity.properties, properties: childTemplate.properties as Record<string, IEntitySingleProperty> },
+                    propertiesOrder: fatherEntity.propertiesOrder.filter((key) => key in childTemplate.properties),
+                };
+            }
+        }
+        return entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
+    };
+
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
+    const currentEntityTemplate = getCurrentEntityTemplate(templateId);
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,

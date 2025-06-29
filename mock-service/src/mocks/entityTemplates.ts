@@ -506,7 +506,6 @@ const entityTemplates: IEntityTemplateMock[] = [
                 mail: {
                     title: 'כתובת מייל',
                     type: 'string',
-                    format: 'email',
                 },
                 multiEnum: {
                     title: 'רשימה מרובה',

@@ -18,15 +18,13 @@ const filterOfFieldSchema = Joi.object({
         Joi.array().items(Joi.number().allow(null)),
     ),
     $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
+}).id('filterOfField');
 
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
+const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
 const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
+    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema)),
+    $or: Joi.array().items(filterOfTemplateSchema),
+});
 
 const childTemplatePropertySchema = Joi.object({
     title: Joi.string().required(),
@@ -85,6 +83,16 @@ export const createEntityChildTemplateSchema = Joi.object({
     params: {},
 });
 
+// GET /api/templates/child/:id
+export const getChildTemplateByIdSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/templates/child/:id
 export const updateEntityChildTemplateSchema = Joi.object({
     body: {
         ...childEntityTemplateSchema,
@@ -95,6 +103,17 @@ export const updateEntityChildTemplateSchema = Joi.object({
     },
 });
 
+// GET /api/templates/child/search-by-user
+export const searchEntityChildTemplatesByUserSchema = Joi.object({
+    query: {},
+    body: {
+        kartoffelId: Joi.string().required(),
+        childTemplateId: Joi.string().required(),
+    },
+    params: {},
+});
+
+// DELETE /api/templates/child/:id
 export const deleteEntityChildTemplateSchema = Joi.object({
     body: {},
     query: {},

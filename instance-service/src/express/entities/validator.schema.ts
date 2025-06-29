@@ -122,15 +122,13 @@ const filterOfFieldSchema = Joi.object({
         Joi.array().items(Joi.number().allow(null)),
     ),
     $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
+}).id('filterOfField');
 
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
+const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
 const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
+    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema)),
+    $or: Joi.array().items(filterOfTemplateSchema),
+});
 
 /**
  * POST /api/instances/entities/expanded/:id
@@ -169,6 +167,7 @@ const searchByTemplateSchema = {
         )
         .unique('field')
         .default([]),
+    userEntityId: Joi.string().optional(),
 };
 
 export const chartSchema = Joi.object({
@@ -294,6 +293,18 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
         semanticSearchResult,
+    },
+    query: {},
+    params: {},
+});
+
+/*
+ * POST /api/instances/entities/count/user-entity-id
+ */
+export const countEntitiesOfTemplatesByUserEntityIdRequestSchema = Joi.object({
+    body: {
+        templateIds: Joi.array().items(Joi.string()).required(),
+        userEntityId: Joi.string().required(),
     },
     query: {},
     params: {},

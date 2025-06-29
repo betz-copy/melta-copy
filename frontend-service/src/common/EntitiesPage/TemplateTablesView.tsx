@@ -15,7 +15,7 @@ import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
-type TemplateTablesViewResultsRef = {
+export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
@@ -37,8 +37,8 @@ const TemplateTablesViewResults = forwardRef<
         const savedCount = sessionStorage.getItem('visibleTemplatesCount');
         return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
     });
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
-    const childTemplatesList = Array.from(childTemplates.values());
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplatesList = Array.from(childTemplates?.values() || []);
 
     const loaderRef = useRef<HTMLDivElement | null>(null);
 
@@ -96,37 +96,52 @@ const TemplateTablesViewResults = forwardRef<
                     {template.children.map((childTemplate) => {
                         const childTemplatePropertiesList = Object.keys(childTemplate.properties);
                         const childTemplateProperties = Object.fromEntries(
-                            Object.entries(template.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
+                            Object.entries(template.properties.properties)
+                                .filter(([key]) => childTemplatePropertiesList.includes(key))
+                                .map(([key, value]) => [
+                                    key,
+                                    {
+                                        ...value,
+                                        defaultValue: childTemplate.properties[key].defaultValue,
+                                        filters: childTemplate.properties[key].filters,
+                                    },
+                                ]),
                         ) as Record<string, IEntitySingleProperty>;
 
                         const defaultFilter = childTemplate.properties
-                            ? Object.entries(childTemplate.properties).reduce((acc, [key, prop]) => {
-                                  if (prop.filters) {
-                                      const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                                      if (filters.$and) {
-                                          const transformedFilters = filters.$and
-                                              .map((filter: any) => {
-                                                  const fieldFilter = filter[key];
-                                                  if (fieldFilter) {
-                                                      return { [key]: fieldFilter };
-                                                  }
-                                                  return null;
-                                              })
-                                              .filter(Boolean);
+                            ? Object.entries(childTemplate.properties).reduce(
+                                  (acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
+                                      if (prop.filters) {
+                                          const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                                          if (filters.$and) {
+                                              const transformedFilters = filters.$and
+                                                  .map((filter: any) => {
+                                                      const fieldFilter = filter[key];
+                                                      if (fieldFilter) {
+                                                          return { [key]: fieldFilter };
+                                                      }
+                                                      return null;
+                                                  })
+                                                  .filter(Boolean);
 
-                                          if (transformedFilters.length > 0) {
-                                              acc = { $and: transformedFilters };
+                                              if (transformedFilters.length > 0) {
+                                                  if (!acc.$and) acc.$and = [];
+                                                  acc.$and = [...acc.$and, ...transformedFilters];
+                                              }
+                                          } else {
+                                              if (!acc.$and) acc.$and = [];
+                                              acc.$and.push({ [key]: filters });
                                           }
-                                      } else {
-                                          acc[key] = filters;
                                       }
-                                  }
-                                  return acc;
-                              }, {} as Record<string, unknown>)
+                                      return acc;
+                                  },
+                                  { $and: [{ disabled: { $eq: false } }] } as { $and?: Array<Record<string, unknown>> },
+                              )
                             : {};
 
                         const { children, ...childTemplatePopulated } = {
                             ...template,
+                            childId: childTemplate._id,
                             displayName: childTemplate.displayName,
                             properties: {
                                 ...template.properties,

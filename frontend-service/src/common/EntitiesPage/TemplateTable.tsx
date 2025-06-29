@@ -44,6 +44,7 @@ import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { useSimbaUserStore } from '../../stores/simbaUser';
 
 const {
     loadExcel: { excelExtension },
@@ -54,7 +55,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated;
+        template: IMongoEntityTemplatePopulated & { childId?: string };
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
@@ -69,6 +70,8 @@ const TemplateTable = forwardRef<
     const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
+
+    const currentSimbaUser = useSimbaUserStore((state) => state.simbaUser);
 
     const theme = useTheme();
     const drafts = useDraftsStore((state) => state.drafts);
@@ -141,12 +144,9 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserTemplatePermission(
-        currentUser.currentWorkspacePermissions,
-        template.category,
-        template._id,
-        PermissionScope.write,
-    );
+    const userHasWritePermissions = currentSimbaUser
+        ? true
+        : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -301,22 +301,24 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <EditExcelButton
-                        disabled={isEditExcelDisabled}
-                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={editExcelTooltip}
-                        childTemplateId={childTemplateId}
-                    >
-                        <EditNote
-                            fontSize="small"
-                            sx={{
-                                opacity: isEditExcelDisabled ? 0.3 : 1,
-                                pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
-                            }}
-                        />
-                        {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
-                    </EditExcelButton>
+                    {page !== 'simba' && (
+                        <EditExcelButton
+                            disabled={isEditExcelDisabled}
+                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                            onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                            popoverText={editExcelTooltip}
+                            childTemplateId={childTemplateId}
+                        >
+                            <EditNote
+                                fontSize="small"
+                                sx={{
+                                    opacity: isEditExcelDisabled ? 0.3 : 1,
+                                    pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                                }}
+                            />
+                            {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
+                        </EditExcelButton>
+                    )}
                     <LoadExcelButton
                         disabled={isLoadExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}

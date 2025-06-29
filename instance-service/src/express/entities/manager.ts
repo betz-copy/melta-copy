@@ -677,7 +677,13 @@ class EntityManager extends DefaultManagerNeo4j {
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
 
-                throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: createdEntity.properties._id }]);
+                throwIfActionCausedRuleFailures(
+                    ignoredRules,
+                    [],
+                    ruleFailuresAfterAction,
+                    [{ createdEntityId: createdEntity.properties._id }],
+                    [{ actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: entityTemplate._id, properties } }],
+                );
 
                 const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
                     this.activityLogProducer.createActivityLog(activityLogToCreate),
@@ -704,6 +710,7 @@ class EntityManager extends DefaultManagerNeo4j {
             sort: searchBody.sort ?? [],
             entityIdsToInclude: searchBody.entityIdsToInclude,
             entityIdsToExclude: searchBody.entityIdsToExclude,
+            userEntityId: searchBody.userEntityId,
         };
 
         const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
@@ -772,6 +779,20 @@ class EntityManager extends DefaultManagerNeo4j {
             templateIds,
             textSearchFixed,
             ...(includeSemantic && { semanticSearchResult }),
+        });
+    }
+
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const query = `
+            UNWIND $templateIds AS templateId
+            MATCH (s) -[r]-> (d)
+            WHERE labels(s)[0] = templateId AND d._id = $userEntityId
+            RETURN templateId, count(s) as count
+        `;
+
+        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
+            templateIds,
+            userEntityId,
         });
     }
 

@@ -18,6 +18,7 @@ import {
     IChartBody,
     IMultipleSelect,
     IEntityWithDirectRelationships,
+    IEntityExpanded,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -272,6 +273,28 @@ class InstancesService extends DefaultExternalServiceApi {
             { params: { dryRun } },
         );
 
+        return data;
+    }
+
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
+            templateIds,
+            userEntityId,
+        });
+        return data;
+    }
+
+    async getExpandedEntityByIdRequest(
+        entityId: string,
+        expandedParams: { [key: string]: number },
+        options?: { templateIds: string[] },
+        userId?: string,
+    ) {
+        const { data } = await this.api.post<IEntityExpanded>(`${baseEntitiesRoute}/expanded/${entityId}`, {
+            ...options,
+            expandedParams,
+            userId,
+        });
         return data;
     }
 }

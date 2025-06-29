@@ -10,6 +10,7 @@ import { MultipleUserFilterInput } from '../../inputs/FilterInputs/MultipleUserF
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { IFieldFilter } from '../../../interfaces/entityChildTemplates';
+import { IUser } from '../../../interfaces/users';
 
 interface IAddFieldFilterDialogProps {
     open: boolean;
@@ -61,7 +62,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         } as IAGGridDateFilter);
     };
 
-    const handleCheckboxChange = (option: string, checked: boolean) => {
+    const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
         const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
@@ -78,6 +79,14 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
+        const defaultFilterProps =
+            dialogType === 'default'
+                ? {
+                      hideFilterType: true,
+                      forceEqualsType: true,
+                  }
+                : {};
+
         if (propEnum) {
             return (
                 <SelectFilterInput
@@ -85,6 +94,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     enumOptions={propEnum}
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -97,6 +107,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleDateChange={handleDateChange}
                     readOnly={readOnly}
                     entityFilter={entityFilter}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -108,6 +119,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     isBooleanSelect
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -119,6 +131,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     enumOptions={items.enum}
                     readOnly={readOnly}
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -131,6 +144,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     setInputValue={setInputValue}
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
+                    isUsersArray
+                    {...defaultFilterProps}
                 />
             );
         }
@@ -147,8 +162,45 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 handleFilterTypeChange={handleFilterTypeChange}
                 type={type}
                 readOnly={readOnly}
+                {...defaultFilterProps}
             />
         );
+    };
+
+    const handleSubmit = () => {
+        if (!localFilterField) return;
+
+        if (dialogType === 'default') {
+            let defaultValue: any;
+            if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
+                defaultValue = localFilterField.filter;
+            } else if (localFilterField.filterType === 'set') {
+                defaultValue = localFilterField.values;
+            } else if (localFilterField.filterType === 'date') {
+                defaultValue = localFilterField.dateFrom;
+            }
+            onSubmit(currentFieldName, defaultValue);
+        } else {
+            updateFieldFilter(localFilterField, currentFieldName);
+            onSubmit(currentFieldName, localFilterField);
+        }
+    };
+
+    const isValueValid = () => {
+        if (!localFilterField) return false;
+        if (dialogType === 'filter' || dialogType === 'default') {
+            if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
+                return !!localFilterField.filter;
+            }
+            if (localFilterField.filterType === 'set') {
+                return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
+            }
+            if (localFilterField.filterType === 'date') {
+                return !!localFilterField.dateFrom;
+            }
+            return true;
+        }
+        return true;
     };
 
     return (
@@ -177,39 +229,16 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                         />
                     </Grid>
 
-                    {dialogType === 'filter' && (
-                        <Grid item xs={12}>
-                            {renderFilterInput()}
-                        </Grid>
-                    )}
-
-                    {dialogType === 'default' && (
-                        <Grid item xs={12}>
-                            <TextField fullWidth value={inputValue} onChange={(e) => setInputValue(e.target.value)} variant="outlined" />
-                        </Grid>
-                    )}
+                    <Grid item xs={12}>
+                        {renderFilterInput()}
+                    </Grid>
                 </Grid>
             </DialogContent>
 
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} display="flex" justifyContent="center">
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                                if (dialogType === 'default') {
-                                    if (!inputValue) return;
-                                    onSubmit(currentFieldName, inputValue);
-                                    return;
-                                }
-
-                                if (!localFilterField) return;
-
-                                updateFieldFilter(localFilterField, currentFieldName);
-                                onSubmit(currentFieldName, localFilterField);
-                            }}
-                        >
+                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={!isValueValid()}>
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>

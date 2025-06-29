@@ -57,8 +57,9 @@ export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
 
 export type IEntityChildTemplateMap = Map<string, IMongoChildEntityTemplate>;
 
-export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories'> {
+export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
     categories: IMongoCategory[];
+    fatherTemplateId: IMongoEntityTemplatePopulated;
 }
 
 export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplatePopulated {
@@ -85,3 +86,4 @@ export interface ParentTemplate extends entityTemplateBase {
 }
 
 export type templateItem = ChildTemplate | ParentTemplate;
+export type IEntityChildTemplateMapPopulated = Map<string, IMongoChildEntityTemplatePopulated>;

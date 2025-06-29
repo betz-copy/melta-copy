@@ -45,8 +45,13 @@ const RjsfSelectWidget = ({
     onFocus,
     rawErrors = [],
     color,
+    options,
+    hideError,
+    hideLabel,
+    formContext,
     ...textFieldProps
 }: WidgetProps) => {
+    const { defaultValue } = options;
     const { enumOptions: items } = getUiOptions(uiSchema) as {
         enumOptions: Array<{
             label: string;
@@ -57,13 +62,13 @@ const RjsfSelectWidget = ({
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
     if (multiple) {
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) && value.length > 0) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
         } else {
-            selectedValue = [];
+            selectedValue = items.filter((opt) => (defaultValue as string[]).includes(opt.value));
         }
     } else {
-        selectedValue = items.find((opt) => opt.value === value) || null;
+        selectedValue = items.find((opt) => opt.value === (value ?? defaultValue)) ?? null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -102,8 +107,8 @@ const RjsfSelectWidget = ({
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
-            rawErrors={rawErrors}
-            label={label || schema.title}
+            rawErrors={!hideError ? rawErrors : []}
+            label={!hideLabel ? label || schema.title : undefined}
             color={color}
             value={value}
         />
