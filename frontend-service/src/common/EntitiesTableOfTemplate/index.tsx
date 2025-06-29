@@ -89,7 +89,7 @@ export interface IButtonProps<Data> {
 }
 
 export const getDatasource = <Data extends any = EntityData>(
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -123,7 +123,7 @@ export const getDatasource = <Data extends any = EntityData>(
                           ),
                       )
                     : searchEntitiesOfTemplateRequest(
-                          template._id,
+                          template.fatherTemplateId || template._id,
                           agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,

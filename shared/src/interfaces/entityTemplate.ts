@@ -53,6 +53,8 @@ export interface IEntitySingleProperty {
     comment?: string;
     color?: string;
     hideFromDetailsPage?: boolean;
+    filters?: any;
+    defaultValue?: any;
 }
 export interface IProperties {
     type: 'object';
