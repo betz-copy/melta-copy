@@ -594,6 +594,7 @@ const entityTemplates: IEntityTemplateMock[] = [
                 polygon: {
                     type: 'string',
                     title: 'פוליגון',
+                    format: 'location',
                 },
                 availableCount: {
                     type: 'number',

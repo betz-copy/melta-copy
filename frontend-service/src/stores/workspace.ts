@@ -41,8 +41,8 @@ export const defaultMetadata = {
         numOfPropsToShow: 9,
     },
     azarim: {
-        katalogTemplateId: '',
-        requestTemplateId: '',
+        katalogTemplateId: '6861508594757d29345780b7',
+        requestTemplateId: '6861508594757d29345780bb',
     },
 } as const;
 

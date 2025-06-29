@@ -36,8 +36,8 @@ const metadataSchema = Joi.object({
         numOfPropsToShow: Joi.number(),
     }).optional(),
     azarim: Joi.object({
-        katalogTemplateId: Joi.string(),
-        requestTemplateId: Joi.string(),
+        katalogTemplateId: Joi.string().optional(),
+        requestTemplateId: Joi.string().optional(),
     }).optional(),
 }).optional();
 
