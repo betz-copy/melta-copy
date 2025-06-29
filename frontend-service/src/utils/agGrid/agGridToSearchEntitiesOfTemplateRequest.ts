@@ -13,7 +13,7 @@ import {
     IAGGridTextFilter,
 } from './interfaces';
 
-export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSetFilter): IFilterOfTemplate => {
+export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[]): IFilterOfTemplate => {
     return { [field]: { $in: values } };
 };
 
@@ -200,7 +200,12 @@ export const filterModelToFilterOfTemplatePerField = (
             }
             break;
         case 'set':
-            filter = setFilterToFilterOfTemplate(field, fieldFilter);
+            const filtersValues = (
+                Array.isArray(fieldFilter.values) ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName : item)) : fieldFilter
+            ) as IAGGridSetFilter;
+
+            filter = setFilterToFilterOfTemplate(field, filtersValues);
+
             break;
         default:
             throw new Error('Invalid supported ag-grid filter type');

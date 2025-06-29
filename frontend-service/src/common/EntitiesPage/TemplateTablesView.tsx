@@ -37,8 +37,8 @@ const TemplateTablesViewResults = forwardRef<
         const savedCount = sessionStorage.getItem('visibleTemplatesCount');
         return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
     });
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
-    const childTemplatesList = Array.from(childTemplates.values());
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplatesList = Array.from(childTemplates?.values() || []);
 
     const loaderRef = useRef<HTMLDivElement | null>(null);
 

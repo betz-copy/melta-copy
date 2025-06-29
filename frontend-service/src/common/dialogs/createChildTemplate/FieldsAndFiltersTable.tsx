@@ -77,7 +77,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             }));
         }
     };
-
     const isDisallowedFormat = (fieldName: string): boolean => {
         const prop = entityTemplate.properties.properties[fieldName];
         return (
@@ -98,6 +97,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 <Grid container>
                     {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
                         const isRequired = entityTemplate.properties.required.includes(fieldName);
+                        const isKartoffelUserField = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
+                        const isSerialNumberField = entityTemplate.properties.properties[fieldName]?.format === 'serialNumber';
 
                         return (
                             <React.Fragment key={fieldName}>
@@ -140,7 +141,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
                                                         filterValue = String(chip.filterType.filter);
                                                     } else if ('values' in chip.filterType! && Array.isArray(chip.filterType.values)) {
-                                                        filterValue = chip.filterType.values.join(', ');
+                                                        filterValue = chip.filterType.values
+                                                            .map((item) => {
+                                                                if (typeof item === 'string') return item;
+                                                                if (typeof item === 'object') {
+                                                                    return (item as IUser).fullName;
+                                                                }
+                                                                return String(item);
+                                                            })
+                                                            .join(', ');
                                                     } else if ('dateFrom' in chip.filterType!) {
                                                         if (chip.filterType.dateFrom) {
                                                             filterValue = new Date(chip.filterType.dateFrom).toLocaleDateString();
@@ -185,12 +194,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     <Button
                                                         color="primary"
                                                         onClick={() => {
-                                                            if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                            if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                             handleSelectProperty(fieldName, 'filter');
                                                         }}
                                                         size="small"
                                                         sx={{ minWidth: '32px', p: '4px' }}
-                                                        disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                        disabled={(!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)}
                                                     >
                                                         <AddRounded />
                                                     </Button>
@@ -253,12 +262,17 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         <Button
                                                             color="primary"
                                                             onClick={() => {
-                                                                if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                                if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                                 handleSelectProperty(fieldName, 'default');
                                                             }}
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
-                                                            disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                            disabled={
+                                                                (!fieldFilter.selected && !isRequired) ||
+                                                                isDisallowedFormat(fieldName) ||
+                                                                isKartoffelUserField ||
+                                                                isSerialNumberField
+                                                            }
                                                         >
                                                             <AddRounded />
                                                         </Button>
@@ -357,9 +371,9 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 },
                             }));
 
-                            const isDateField =
-                                entityTemplate.properties.properties[fieldName].format === 'date' ||
-                                entityTemplate.properties.properties[fieldName].format === 'date-time';
+                            const propertySchema = entityTemplate.properties.properties[fieldName];
+                            const isDateField = propertySchema.format === 'date' || propertySchema.format === 'date-time';
+                            const isUsersArray = propertySchema.type === 'array' && propertySchema.items?.format === 'user';
 
                             let displayValue = fieldValue;
                             if (isDateField && fieldValue) {
@@ -370,7 +384,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     displayValue = fieldValue;
                                 }
                             } else if (Array.isArray(fieldValue)) {
-                                displayValue = fieldValue.join(', ');
+                                if (isUsersArray) displayValue = fieldValue.map(({ fullName }) => fullName).join(', ');
+                                else displayValue = fieldValue.join(', ');
                             } else if (typeof fieldValue === 'boolean') {
                                 displayValue = fieldValue ? 'true' : 'false';
                             }
