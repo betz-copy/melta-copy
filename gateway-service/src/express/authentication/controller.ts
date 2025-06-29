@@ -12,7 +12,7 @@ const { accessTokenName, simbaEndURL, unauthorizedId } = config.authentication.s
 class AuthenticationController {
     static async createSimbaToken(userId: string) {
         const simbaWorkspace = await WorkspaceService.getFile(simbaEndURL);
-        const usersInfoChildTemplateId = simbaWorkspace.metadata?.simba?.usersInfoTemplateId;
+        const usersInfoChildTemplateId = simbaWorkspace.metadata?.simba?.usersInfoChildTemplateId;
 
         const token = AuthenticationManager.createAccessToken({
             id: config.authentication.shragaAuthentication.simbaId,

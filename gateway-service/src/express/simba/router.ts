@@ -7,8 +7,15 @@ import {
     getAllSimbaTemplatesSchema,
     searchEntitiesOfTemplateSchema,
     getExpandedEntityByIdRequestSchema,
+    createSimbaEntitySchema,
 } from './validator.schema';
 import SimbaValidator from './middlewares';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
+import {
+    getMyNotificationGroupCountRequestSchema,
+    getMyNotificationsRequestSchema,
+    manyNotificationSeenRequestSchema,
+} from '../notifications/validator.schema';
 
 const SimbaRouter: Router = Router();
 
@@ -48,6 +55,35 @@ SimbaRouter.post(
     ValidateRequest(getExpandedEntityByIdRequestSchema),
     SimbaValidatorMiddleware.validateUserCanAccessSimba,
     SimbaControllerMiddleware.getExpandedEntityById,
+);
+
+SimbaRouter.post(
+    '/entities',
+    busboyMiddleware,
+    ValidateRequest(createSimbaEntitySchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.createEntity,
+);
+
+SimbaRouter.get(
+    '/notifications/my',
+    ValidateRequest(getMyNotificationsRequestSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.getMyNotifications,
+);
+
+SimbaRouter.post(
+    '/notifications/my/group-count',
+    ValidateRequest(getMyNotificationGroupCountRequestSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.getMyNotificationGroupCount,
+);
+
+SimbaRouter.post(
+    '/notifications/seen',
+    ValidateRequest(manyNotificationSeenRequestSchema),
+    SimbaValidatorMiddleware.validateUserCanAccessSimba,
+    SimbaControllerMiddleware.manyNotificationSeen,
 );
 
 export default SimbaRouter;

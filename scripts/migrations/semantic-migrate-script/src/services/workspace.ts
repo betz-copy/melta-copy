@@ -43,7 +43,7 @@ export interface IMetadata {
     };
     unitFieldSplitDepth: number;
     simba: {
-        usersInfoTemplateId: string;
+        usersInfoChildTemplateId: string;
         carsInfoTemplateId: string;
         numOfPropsToShow: number;
     };
