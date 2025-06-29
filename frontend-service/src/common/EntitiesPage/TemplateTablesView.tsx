@@ -18,6 +18,41 @@ export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
+export function getDefaultFilterFromTemplate(
+    template: IMongoEntityTemplatePopulated & {
+        fatherTemplateId?: string;
+    },
+    isChildTemplate: boolean,
+) {
+    if (!isChildTemplate) return undefined;
+
+    const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
+
+    for (const [key, prop] of Object.entries(template.properties.properties)) {
+        if (!prop.filters) continue;
+
+        const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+
+        if ('$and' in filters) {
+            const andFilters = filters.$and as any[];
+            const transformedFilters = andFilters
+                .map((filter) => {
+                    const fieldFilter = filter[key];
+                    return fieldFilter ? { [key]: fieldFilter } : null;
+                })
+                .filter(Boolean);
+
+            if (transformedFilters.length > 0) {
+                result.$and!.push(...transformedFilters);
+            }
+        } else {
+            result.$and!.push({ [key]: filters });
+        }
+    }
+
+    return result;
+}
+
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
@@ -36,7 +71,6 @@ const TemplateTablesViewResults = forwardRef<
     });
 
     const loaderRef = useRef<HTMLDivElement | null>(null);
-
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
@@ -69,39 +103,7 @@ const TemplateTablesViewResults = forwardRef<
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 const isChildTemplate = !!template.fatherTemplateId;
-
-                const defaultFilter = isChildTemplate
-                    ? Object.entries(template.properties.properties).reduce(
-                          (acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
-                              if (prop.filters) {
-                                  const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-
-                                  if (filters.$and) {
-                                      const transformedFilters = filters.$and
-                                          .map((filter: any) => {
-                                              const fieldFilter = filter[key];
-                                              if (fieldFilter) {
-                                                  return { [key]: fieldFilter };
-                                              }
-                                              return null;
-                                          })
-                                          .filter(Boolean);
-
-                                      if (transformedFilters.length > 0) {
-                                          if (!acc.$and) acc.$and = [];
-                                          acc.$and = [...acc.$and, ...transformedFilters];
-                                      }
-                                  } else {
-                                      if (!acc.$and) acc.$and = [];
-                                      acc.$and.push({ [key]: filters });
-                                  }
-                              }
-                              return acc;
-                          },
-                          { $and: [{ disabled: { $eq: false } }] } as { $and?: Array<Record<string, unknown>> },
-                      )
-                    : undefined;
-
+                const defaultFilter = getDefaultFilterFromTemplate(template, isChildTemplate);
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -117,7 +119,7 @@ const TemplateTablesViewResults = forwardRef<
                             page={pageType}
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
-                            {...(defaultFilter ? { defaultFilter } : {})}
+                            defaultFilter={defaultFilter}
                         />
                     </Grid>
                 );

@@ -5,13 +5,16 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IEntityWithDirectConnections } from '../../interfaces/entities';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { getDefaultFilterFromTemplate } from './TemplateTablesView';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { transformChild } from '../../pages/Category';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -22,9 +25,12 @@ export interface CardsViewRef {
 export interface CardsViewProps {
     templateIds: string[];
     searchInput: string;
+    templates: (IMongoEntityTemplatePopulated & {
+        fatherTemplateId?: string;
+    })[];
 }
 
-const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput }, ref) => {
+const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput, templates }, ref) => {
     const [entitiesCount, setEntitiesCount] = useState<number | null>(null);
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
     const queryClient = useQueryClient();
@@ -48,23 +54,61 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] }>
+                    <InfiniteScroll<
+                        IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
+                    >
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
                                 setEntitiesCount(null);
                             }
 
-                            const searchEntitiesResult = await getEntitiesWithDirectConnections({
-                                skip: startRow,
-                                limit: infiniteScrollPageCount,
-                                textSearch: searchInput,
-                                templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
-                                shouldSemanticSearch: convertToBool(urlSemanticSearch!),
-                            });
+                            const childTemplates = templates.filter((t) => !!t.fatherTemplateId);
+                            const fatherTemplates = templates.filter((t) => !t.fatherTemplateId);
 
-                            setEntitiesCount(searchEntitiesResult.count);
-                            return searchEntitiesResult.entities;
+                            let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
+                            let totalCount = 0;
+
+                            if (fatherTemplates.length > 0) {
+                                const result = await getEntitiesWithDirectConnections({
+                                    skip: startRow,
+                                    limit: infiniteScrollPageCount,
+                                    textSearch: searchInput,
+                                    templates: Object.fromEntries(fatherTemplates.map((t) => [t._id, { showRelationships: false }])),
+                                    shouldSemanticSearch: convertToBool(urlSemanticSearch!),
+                                });
+
+                                entities.push(...result.entities);
+                                totalCount += result.count;
+                            }
+
+                            for (const template of childTemplates) {
+                                const filter = getDefaultFilterFromTemplate(template, true);
+
+                                const result = await getEntitiesWithDirectConnections({
+                                    skip: startRow,
+                                    limit: infiniteScrollPageCount,
+                                    textSearch: searchInput,
+                                    templates: {
+                                        [template.fatherTemplateId!]: {
+                                            showRelationships: false,
+                                            filter,
+                                        },
+                                    },
+                                    shouldSemanticSearch: convertToBool(urlSemanticSearch!),
+                                });
+
+                                const mappedEntities = result.entities.map((entity) => ({
+                                    ...entity,
+                                    childTemplateId: template._id,
+                                }));
+
+                                entities.push(...mappedEntities);
+                                totalCount += result.count;
+                            }
+
+                            setEntitiesCount(totalCount);
+                            return entities;
                         }}
                         onQueryError={(error) => {
                             console.error('failed to search entities error:', error);
@@ -81,15 +125,21 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {({ entity, minioFileIdsWithTexts }) => {
+                        {({ entity, minioFileIdsWithTexts, childTemplateId }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+                            const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
+                            const childEntityTemplate = childTemplateId ? entityChildTemplates?.get(childTemplateId)! : undefined;
+                            const template = childEntityTemplate
+                                ? transformChild(childEntityTemplate, entityTemplate, entityTemplate.category)
+                                : entityTemplate;
+
                             return (
                                 <EntityCard
                                     minioFileId={minioFileIdsWithTexts?.[0].minioFileId} // Navigate to the first found file
                                     matchedSentence={minioFileIdsWithTexts?.[0].text}
                                     entity={entity}
-                                    entityTemplate={entityTemplate}
+                                    entityTemplate={template}
                                     expandCard={openCardsMap.has(entity.properties._id)}
                                     onExpand={(entityId) => {
                                         setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));

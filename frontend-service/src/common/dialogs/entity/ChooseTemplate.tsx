@@ -57,7 +57,7 @@ const ChooseTemplate: React.FC<{
         })
         .map((child) => {
             const parent = entityTemplates.get(child.fatherTemplateId!)!;
-            const category = categoryId ? categories.get(categoryId)! : categories.get(child.categories[0])!; // fallback to first category
+            const category = categoryId ? categories.get(categoryId)! : categories.get(child.categories[0])!;
 
             return transformChild(child, parent, category);
         });
