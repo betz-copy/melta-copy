@@ -673,7 +673,13 @@ class EntityManager extends DefaultManagerNeo4j {
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
 
-                throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: createdEntity.properties._id }]);
+                throwIfActionCausedRuleFailures(
+                    ignoredRules,
+                    [],
+                    ruleFailuresAfterAction,
+                    [{ createdEntityId: createdEntity.properties._id }],
+                    [{ actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: entityTemplate._id, properties } }],
+                );
 
                 const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
                     this.activityLogProducer.createActivityLog(activityLogToCreate),

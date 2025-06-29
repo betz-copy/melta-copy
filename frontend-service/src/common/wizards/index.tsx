@@ -31,9 +31,9 @@ export type StepType<T extends object> = {
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
     stepperActions?: {
-        disable?: 'all' | 'back' | 'next';
-        back?: { text?: string; onClick?: () => void };
-        next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void };
+        hide?: 'all' | 'back' | 'next';
+        back?: { text?: string; onClick?: () => void, disabled?: boolean };
+        next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void,  disabled?: boolean};
     };
     invisibleBeforeStep?: boolean;
 };
@@ -50,6 +50,7 @@ const Wizard = <T extends object>({
     isEditMode,
     direction = 'row',
     showPrevSteps = false,
+    checkForChanges = true,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -59,6 +60,7 @@ const Wizard = <T extends object>({
         submitFunction: (values: T) => Promise<any>;
         direction?: 'row' | 'column';
         showPrevSteps?: boolean;
+        checkForChanges?: boolean;
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
@@ -114,7 +116,7 @@ const Wizard = <T extends object>({
                     validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
-                            await submitFunction(values);
+                            await submitFunction(values);    
                         } else {
                             await steps[activeStep].stepperActions?.next?.onClick?.(values, actions);
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -134,7 +136,7 @@ const Wizard = <T extends object>({
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
                             />
-                            {steps[activeStep].stepperActions?.disable !== 'all' && (
+                            {steps[activeStep].stepperActions?.hide !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>
                                     <StepperActions
                                         step={steps[activeStep]}
@@ -143,6 +145,7 @@ const Wizard = <T extends object>({
                                         isFirstStep={activeStep === 0}
                                         isLoading={isLoading || block}
                                         formikProps={formikProps}
+                                        checkForChanges={checkForChanges}
                                     />
                                 </Box>
                             )}

@@ -38,6 +38,8 @@ const getRjsfDateOrDateTimeWidget =
         formContext,
         registry,
         color,
+        hideError,
+        hideLabel,
         ...textFieldProps
     }: WidgetProps) => {
         const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
@@ -95,7 +97,7 @@ const getRjsfDateOrDateTimeWidget =
                     inputFormat={dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm'}
                     showToolbar
                     componentsProps={{ actionBar: { actions: ['clear', 'cancel', 'accept'] } }}
-                    label={displayLabel ? label || schema.title : false}
+                    label={!hideLabel && (displayLabel ? label || schema.title : false)}
                     renderInput={(params) => (
                         <TextField
                             {...textFieldProps}
@@ -105,7 +107,7 @@ const getRjsfDateOrDateTimeWidget =
                             required={required}
                             onBlur={_onBlur}
                             onFocus={_onFocus}
-                            error={rawErrors.length > 0}
+                            error={!hideError && rawErrors.length > 0}
                             variant={variant}
                             InputLabelProps={{ shrink: readonly || undefined }}
                             InputProps={{
@@ -127,6 +129,8 @@ const getRjsfDateOrDateTimeWidget =
                     toolbarFormat="dd/MM"
                     onOpen={handleOpenDateOrDateTimePicker}
                     ToolbarComponent={CustomDateTimePickerToolbar}
+                    data-hide-error={hideError}
+                    data-hide-label={hideLabel}
                 />
             </LocalizationProvider>
         );
