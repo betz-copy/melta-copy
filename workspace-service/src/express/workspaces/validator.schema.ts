@@ -35,6 +35,10 @@ const metadataSchema = Joi.object({
         carsInfoTemplateId: Joi.string(),
         numOfPropsToShow: Joi.number(),
     }).optional(),
+    azarim: Joi.object({
+        katalogTemplateId: Joi.string(),
+        requestTemplateId: Joi.string(),
+    }).optional(),
 }).optional();
 
 // Joi schema for Workspace

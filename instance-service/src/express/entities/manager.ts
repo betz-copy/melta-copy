@@ -153,7 +153,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
         entitiesRelevantRulesMap.forEach(async ({ rules }, entityId) => {
-            const entity = await this.getEntityById(entityId);
+            const entity = await this.getEntityByIdInTransaction(entityId, transaction);
             const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
             ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules, entityTemplate));
         });

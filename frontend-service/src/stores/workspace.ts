@@ -40,6 +40,10 @@ export const defaultMetadata = {
         carsInfoTemplateId: '',
         numOfPropsToShow: 9,
     },
+    azarim: {
+        katalogTemplateId: '',
+        requestTemplateId: '',
+    },
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

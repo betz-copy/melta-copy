@@ -50,6 +50,13 @@ const categories: ICategory[] = [
         iconFileId: null,
         templatesOrder: [],
     },
+    {
+        name: 'azarim',
+        displayName: 'עזרים',
+        color: '#000000',
+        iconFileId: null,
+        templatesOrder: [],
+    },
 ];
 
 export default categories;

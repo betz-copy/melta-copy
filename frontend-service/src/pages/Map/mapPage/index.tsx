@@ -204,7 +204,7 @@ const MapPage = () => {
                 const entityTemplate = entityTemplateMap!.get(node.templateId)!;
 
                 matchingFields.forEach((matchingField) => {
-                    const { type, value } = stringToCoordinates(node.properties[matchingField]);
+                    const { type, value } = stringToCoordinates(node.properties[matchingField].location);
                     const name = entityTemplate.properties.properties[matchingField].title;
 
                     if (type === 'polygon') {

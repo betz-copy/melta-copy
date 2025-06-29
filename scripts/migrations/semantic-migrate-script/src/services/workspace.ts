@@ -47,6 +47,10 @@ export interface IMetadata {
         carsInfoTemplateId: string;
         numOfPropsToShow: number;
     };
+    azarim: {
+        katalogTemplateId: string;
+        requestTemplateId: string;
+    };
 }
 export interface IWorkspace {
     _id: string;

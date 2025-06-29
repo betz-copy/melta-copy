@@ -1555,6 +1555,10 @@ export default {
             carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
         },
+        azarim: {
+            katalogTemplateId: 'ID תבנית קטלוג',
+            requestTemplateId: 'ID תבנית בקשה',
+        },
     },
     createChildTemplateDialog: {
         templateTitle: 'יצירת תבנית בן',

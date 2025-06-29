@@ -37,6 +37,10 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             carsInfoTemplateId: { type: String },
             numOfPropsToShow: { type: Number },
         },
+        azarim: {
+            katalogTemplateId: { type: String },
+            requestTemplateId: { type: String },
+        },
     },
     { _id: false },
 );
