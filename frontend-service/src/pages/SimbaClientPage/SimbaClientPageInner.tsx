@@ -25,7 +25,7 @@ const SimbaClientPageInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const setSimbaUser = useSimbaUserStore((state) => state.setSimbaUser);
 
-    const usersInfoChildTemplateId = workspace.metadata.simba.usersInfoTemplateId;
+    const usersInfoChildTemplateId = workspace.metadata.simba.usersInfoChildTemplateId;
     const user = AuthService.getUser();
 
     const queryClient = useQueryClient();

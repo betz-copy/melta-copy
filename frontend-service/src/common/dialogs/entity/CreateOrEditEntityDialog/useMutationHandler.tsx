@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
@@ -14,6 +14,8 @@ import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationPro
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import { environment } from '../../../../globals';
+import { createEntitySimbaRequest } from '../../../../services/simbaService';
+import { IEntityChildTemplateMapPopulated, IMongoChildEntityTemplatePopulated } from '../../../../interfaces/entityChildTemplates';
 
 const { errorCodes } = environment;
 
@@ -27,10 +29,12 @@ const useMutationHandler = (
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
     childTemplateId?: string,
+    simbaUserEntity?: IEntity,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
+    let childTemplate: IMongoChildEntityTemplatePopulated | undefined = undefined;
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -119,6 +123,25 @@ const useMutationHandler = (
         },
     );
 
+    if (Object.keys(simbaUserEntity || {}).length > 0) {
+        const queryClient = useQueryClient();
+
+        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
+        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.fatherTemplateId._id === entityTemplate._id);
+    }
+    const { isLoading: isSimbaCreateLoading, mutateAsync: simbaCreateMutation } = useMutation(
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            createEntitySimbaRequest(newEntityData, ignoredRules, childTemplate, simbaUserEntity),
+        {
+            onSuccess: (data) => {
+                onSuccess?.(data);
+            },
+            onError: (err: AxiosError, { newEntityData }) => {
+                handleMutationError(err, entityTemplate, newEntityData);
+            },
+        },
+    );
+
     switch (actionType) {
         case ActionTypes.CreateEntity:
             isLoading = isCreateLoading;
@@ -127,6 +150,10 @@ const useMutationHandler = (
         case ActionTypes.UpdateEntity:
             isLoading = isUpdateLoading;
             mutateAsync = updateMutation;
+            break;
+        case ActionTypes.CreateSimbaEntity:
+            isLoading = isSimbaCreateLoading;
+            mutateAsync = simbaCreateMutation;
             break;
         default:
             isLoading = false;

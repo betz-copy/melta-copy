@@ -94,6 +94,7 @@ export enum ActionTypes {
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
     UpdateMultipleEntities = 'update-multiple-entities',
+    CreateSimbaEntity = 'create-simba-entity',
 }
 
 export interface IAction {

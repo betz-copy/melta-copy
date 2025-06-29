@@ -36,7 +36,7 @@ export const defaultMetadata = {
     },
     unitFieldSplitDepth: 2,
     simba: {
-        usersInfoTemplateId: '',
+        usersInfoChildTemplateId: '',
         carsInfoTemplateId: '',
         numOfPropsToShow: 9,
     },

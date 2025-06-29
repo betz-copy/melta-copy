@@ -19,6 +19,7 @@ import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import EditProps from './EditProps';
+import { useSimbaUserStore } from '../../../../stores/simbaUser';
 
 const { signaturePrefix } = environment;
 
@@ -108,14 +109,27 @@ const CreateOrEditEntityDetails: React.FC<{
     }, [payload, entityTemplate, initialTemplateFileKeys]);
     console.log('aa', { entityTemplate });
 
+    const simbaUserEntity: IEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+
+    const finalMutationProps = useMemo(() => {
+        if (Object.keys(simbaUserEntity).length > 0) {
+            return {
+                ...mutationProps,
+                actionType: ActionTypes.CreateSimbaEntity,
+            };
+        }
+        return mutationProps;
+    }, [mutationProps, simbaUserEntity]) as IMutationProps;
+
     const [isLoading, mutationPromiseToastify] = useMutationHandler(
         externalErrors,
         shouldNavigateToEntityPage,
         entityTemplate,
-        mutationProps,
+        finalMutationProps,
         setExternalErrors,
         setCreateOrUpdateWithRuleBreachDialogState,
         childTemplateId,
+        simbaUserEntity,
     );
 
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(

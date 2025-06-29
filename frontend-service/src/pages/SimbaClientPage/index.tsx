@@ -51,7 +51,7 @@ const SimbaClientPage: React.FC = () => {
 
     const { isLoading: isLoadingAllSimbaTemplates, isError: isErrorAllSimbaTemplates } = useQuery<GetAllSimbaTemplatesType>(
         'getAllSimbaTemplates',
-        () => getAllSimbaTemplates(workspace?.metadata?.simba!.usersInfoTemplateId || ''),
+        () => getAllSimbaTemplates(workspace?.metadata?.simba!.usersInfoChildTemplateId || ''),
         {
             onError: (error) => {
                 toast.error(i18next.t('failedToGetTemplates'));

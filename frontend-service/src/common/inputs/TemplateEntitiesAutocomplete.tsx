@@ -6,7 +6,7 @@ import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../EntityProperties';
@@ -14,6 +14,8 @@ import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
 import { locationConverterToString } from '../../utils/map/convert';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
+import { searchEntitiesOfTemplateSimbaRequest } from '../../services/simbaService';
+import { useSimbaUserStore } from '../../stores/simbaUser';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -49,6 +51,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
     style,
     relationFilters,
 }) => {
+    const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+
     const { cacheBlockSize } = environment.agGrid;
 
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
@@ -70,10 +74,15 @@ const TemplateEntitiesAutocomplete: React.FC<{
         };
     };
 
+    const searchFunction = (templateId: string, simbaUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
+        simbaUserEntity?.properties?._id
+            ? searchEntitiesOfTemplateSimbaRequest(templateId, simbaUserEntityId, searchBody)
+            : searchEntitiesOfTemplateRequest(templateId, searchBody);
+
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
         ({ pageParam = 0 }) => {
-            return searchEntitiesOfTemplateRequest(template._id!, {
+            return searchFunction(template._id!, simbaUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: relationFilters ? parseAndAddDisabled(relationFilters) : { $and: { disabled: { $eq: false } } },
