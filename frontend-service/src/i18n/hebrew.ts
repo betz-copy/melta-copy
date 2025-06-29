@@ -937,6 +937,7 @@ export default {
         required: 'חובה',
         url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
+        atLeastOneCategory: 'חובה לפחות קטגוריה אחת',
         preview: 'תצוגה מצומצמת',
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
         hide: 'הסתר',
@@ -1550,7 +1551,7 @@ export default {
         },
         unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
         simba: {
-            usersInfoTemplateId: 'ID תבנית משתמשים',
+            usersInfoChildTemplateId: 'ID תבנית משתמשים',
             carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
         },

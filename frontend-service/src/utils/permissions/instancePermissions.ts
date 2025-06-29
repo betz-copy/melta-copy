@@ -81,7 +81,7 @@ export const getChangedCategoryPermissions = (
             if (categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope === PermissionScope.write)
                 newTemplatePermission[key] = {
                     scope: PermissionScope.write,
-                    entityChildTemplates: (categoriesPermissions?.[id]?.entityTemplates?.[key]?.entityChildTemplates ?? {}),
+                    entityChildTemplates: categoriesPermissions?.[id]?.entityTemplates?.[key]?.entityChildTemplates ?? {},
                     fields: {},
                 };
         });
@@ -118,8 +118,6 @@ const changeSpecificTemplate = (
         };
     }
 
-    console.log('changeSpecificTemplate(categoriesPermissions)', categoriesPermissions);
-
     return categoriesPermissions;
 };
 
@@ -132,7 +130,11 @@ const changeSpecificChildTemplate = (
     childTemplateId: string,
 ) => {
     const categoriesPermissions = { ...permissions };
-    const newScope = getNewScope(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates?.[childTemplateId]?.scope, scope, checked);
+    const newScope = getNewScope(
+        categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates?.[childTemplateId]?.scope,
+        scope,
+        checked,
+    );
 
     if (!newScope) {
         delete categoriesPermissions[categoryId].entityTemplates[templateId].entityChildTemplates[childTemplateId];
@@ -229,9 +231,8 @@ export const getChangedTemplatePermission = (
     entityTemplates: entityTemplatePermissionDialog[],
     childTemplateId?: string,
 ) => {
-
     let categoriesPermissions;
-    if(childTemplateId) {
+    if (childTemplateId) {
         categoriesPermissions = changeSpecificChildTemplate(permissions, checked, scope, categoryId, templateId, childTemplateId);
     } else {
         categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId);
@@ -246,9 +247,6 @@ export const getChangedTemplatePermission = (
     if (!categoriesPermissions?.[categoryId]?.scope && Object.keys(categoriesPermissions?.[categoryId]?.entityTemplates ?? {}).length === 0) {
         delete categoriesPermissions?.[categoryId];
     }
-
-    console.log('categoriesPermissions', categoriesPermissions);
-    
 
     return categoriesPermissions;
 };

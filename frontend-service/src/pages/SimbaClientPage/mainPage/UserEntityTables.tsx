@@ -2,9 +2,9 @@ import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/simbaService';
-import { IEntitySingleProperty } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { CircularProgress, Typography } from '@mui/material';
 import { Grid } from '@mui/material';
@@ -45,6 +45,10 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
             enabled: !!currentUserFromSimba,
         });
 
+        const queryClient = useQueryClient();
+
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getSimbaEntityTemplates')!;
+
         const viewResultsRef = useRef<TemplateTablesViewResultsRef>(null);
 
         useImperativeHandle(ref, () => ({
@@ -68,11 +72,12 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                     {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
                         <Grid container direction="column" spacing={1}>
                             {templatesFilteredByCount.map((childTemplate) => {
+                                const fatherTemplate = entityTemplates.get(childTemplate.fatherTemplateId._id);
+                                if (!fatherTemplate) return null;
+
                                 const childTemplatePropertiesList = Object.keys(childTemplate.properties);
                                 const childTemplateProperties = Object.fromEntries(
-                                    Object.entries(childTemplate.fatherTemplateId.properties.properties).filter(([key]) =>
-                                        childTemplatePropertiesList.includes(key),
-                                    ),
+                                    Object.entries(fatherTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
                                 ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
 
                                 Object.keys(childTemplateProperties).forEach(
@@ -114,13 +119,13 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     : {};
 
                                 const childTemplatePopulated = {
-                                    ...childTemplate.fatherTemplateId,
+                                    ...fatherTemplate,
                                     displayName: childTemplate.displayName,
                                     properties: {
-                                        ...childTemplate.fatherTemplateId.properties,
+                                        ...fatherTemplate.properties,
                                         properties: childTemplateProperties,
                                     },
-                                    propertiesOrder: childTemplate.fatherTemplateId.propertiesOrder.filter((property) =>
+                                    propertiesOrder: fatherTemplate.propertiesOrder.filter((property) =>
                                         childTemplatePropertiesList.includes(property),
                                     ),
                                 };

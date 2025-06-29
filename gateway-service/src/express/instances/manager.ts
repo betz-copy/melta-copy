@@ -500,6 +500,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
+        logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
         const { createdEntity, actions } = await this.service
             .createEntityInstance({ properties, templateId }, ignoredRules, userId)
             .catch((err) => this.handleBrokenRulesError(err));

@@ -33,7 +33,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         },
         unitFieldSplitDepth: { type: Number },
         simba: {
-            usersInfoTemplateId: { type: String },
+            usersInfoChildTemplateId: { type: String },
             carsInfoTemplateId: { type: String },
             numOfPropsToShow: { type: Number },
         },

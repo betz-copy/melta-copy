@@ -12,4 +12,12 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
             .required(i18next.t('validation.required'))
             .test('unique-displayName', i18next.t('validation.existingDisplayName'), (val) => !existingDisplayNames.includes(val || '')),
         description: Yup.string().required(i18next.t('validation.required')),
+        categories: Yup.array()
+            .of(
+                Yup.object({
+                    _id: Yup.string().required(),
+                    displayName: Yup.string().required(),
+                }),
+            )
+            .min(1, i18next.t('validation.atLeastOneCategory')),
     });

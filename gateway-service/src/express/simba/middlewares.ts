@@ -42,6 +42,8 @@ class SimbaValidator extends DefaultController {
 
         if (!simbaUserEntity) throw new Error('User does not exists in simba drivers table');
 
+        req.user = { ...user, id: `simba-${user.kartoffelId}` };
+
         req.simbaUserEntity = simbaUserEntity;
     }
 }

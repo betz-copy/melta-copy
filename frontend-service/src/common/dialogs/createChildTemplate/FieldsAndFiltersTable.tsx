@@ -77,7 +77,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             }));
         }
     };
-
     const isDisallowedFormat = (fieldName: string): boolean => {
         const prop = entityTemplate.properties.properties[fieldName];
         return (
@@ -98,6 +97,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 <Grid container>
                     {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
                         const isRequired = entityTemplate.properties.required.includes(fieldName);
+                        const isKartoffelUserField = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
+                        const isSerialNumberField = entityTemplate.properties.properties[fieldName]?.format === 'serialNumber';
 
                         return (
                             <React.Fragment key={fieldName}>
@@ -193,12 +194,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     <Button
                                                         color="primary"
                                                         onClick={() => {
-                                                            if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                            if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                             handleSelectProperty(fieldName, 'filter');
                                                         }}
                                                         size="small"
                                                         sx={{ minWidth: '32px', p: '4px' }}
-                                                        disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                        disabled={(!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)}
                                                     >
                                                         <AddRounded />
                                                     </Button>
@@ -261,12 +262,17 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         <Button
                                                             color="primary"
                                                             onClick={() => {
-                                                                if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                                if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
                                                                 handleSelectProperty(fieldName, 'default');
                                                             }}
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
-                                                            disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
+                                                            disabled={
+                                                                (!fieldFilter.selected && !isRequired) ||
+                                                                isDisallowedFormat(fieldName) ||
+                                                                isKartoffelUserField ||
+                                                                isSerialNumberField
+                                                            }
                                                         >
                                                             <AddRounded />
                                                         </Button>

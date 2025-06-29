@@ -31,7 +31,7 @@ const metadataSchema = Joi.object({
     }).optional(),
     unitFieldSplitDepth: Joi.number(),
     simba: Joi.object({
-        usersInfoTemplateId: Joi.string(),
+        usersInfoChildTemplateId: Joi.string(),
         carsInfoTemplateId: Joi.string(),
         numOfPropsToShow: Joi.number(),
     }).optional(),

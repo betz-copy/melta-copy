@@ -69,7 +69,6 @@ const TemplateTablesViewResults = forwardRef<
         const savedCount = sessionStorage.getItem('visibleTemplatesCount');
         return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
     });
-
     const loaderRef = useRef<HTMLDivElement | null>(null);
 
     useImperativeHandle(ref, () => ({

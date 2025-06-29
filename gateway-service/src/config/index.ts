@@ -307,7 +307,7 @@ const config = {
         wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
     },
     simba: {
-        usersInfoTemplateId: env.get('SIMBA_USERS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        usersInfoChildTemplateId: env.get('SIMBA_USERS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         carsInfoTemplateId: env.get('SIMBA_CARS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         numOfPropsToShow: env.get('SIMBA_NUM_OF_PROPS_TO_SHOW').default(9).asIntPositive(),
     },
