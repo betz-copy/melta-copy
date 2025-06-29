@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import { addPropertyToRequest, DefaultController, entityTemplateType, IMongoEntityChildTemplate, templateItem } from '@microservices/shared';
+import { addPropertyToRequest, DefaultController, EntityTemplateType, IMongoEntityChildTemplate, TemplateItem } from '@microservices/shared';
 import getFullChildTemplateProperties from '../../utils/entityChildTemplate';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
@@ -26,8 +26,8 @@ class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTe
 
         const entityProperties = getFullChildTemplateProperties(baseChildTemplate, baseParentTemplate);
         const entityPropertiesQueue = [entityProperties];
-        const relationshipReferenceIdsMap = new Map<string, templateItem>([
-            [templateId, { type: entityTemplateType.Child, metaData: { ...baseChildTemplate, properties: entityProperties } }],
+        const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
+            [templateId, { type: EntityTemplateType.Child, metaData: { ...baseChildTemplate, properties: entityProperties } }],
         ]);
 
         while (entityPropertiesQueue.length > 0) {
@@ -39,7 +39,7 @@ class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTe
 
                     if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
                         const relatedTemplate = parentTemplatesMap.get(relatedTemplateId)!;
-                        relationshipReferenceIdsMap.set(relatedTemplateId, { type: entityTemplateType.Parent, metaData: relatedTemplate });
+                        relationshipReferenceIdsMap.set(relatedTemplateId, { type: EntityTemplateType.Parent, metaData: relatedTemplate });
 
                         entityPropertiesQueue.push(relatedTemplate.properties.properties);
                     }
@@ -50,7 +50,7 @@ class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTe
         return relationshipReferenceIdsMap;
     };
 
-    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, templateItem>) => {
+    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, TemplateItem>) => {
         const defaultCode = [
             '/// To throw a custom error in your code, use the following syntax:',
             '// throw new CustomError("Your error message")',

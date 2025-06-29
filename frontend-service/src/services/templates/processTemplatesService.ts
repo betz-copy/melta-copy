@@ -11,7 +11,7 @@ import {
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
 } from '../../interfaces/processes/processTemplate';
-import { extractProperties } from './enitityTemplatesService';
+import { extractProperties } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];

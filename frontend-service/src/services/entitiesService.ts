@@ -211,7 +211,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     );
     formData.append('templateId', entity.template._id);
 
-    if (!!childTemplateId) {
+    if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
     }
 

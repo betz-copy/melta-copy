@@ -12,7 +12,7 @@ import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } f
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentHelpers, StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
@@ -262,8 +262,7 @@ export const FieldBlockWrapper = ({
             enabled: isEditMode,
             initialData: { count: 1, entities: [] },
             onError: (error: AxiosError) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to check areThereInstancesByTemplateId. error:', error);
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },

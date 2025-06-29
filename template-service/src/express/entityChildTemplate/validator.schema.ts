@@ -132,10 +132,3 @@ export const updateEntityTemplateActionSchema = Joi.object({
         templateId: MongoIdSchema.required(),
     },
 });
-
-// GET /api/entities/templates/child/:id
-export const getEntityChildTemplateByIdSchema = Joi.object({
-    query: {},
-    body: {},
-    params: { id: MongoIdSchema.required() },
-});

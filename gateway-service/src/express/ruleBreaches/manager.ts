@@ -198,6 +198,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async approveRuleBreachRequest(
         ruleBreachRequestId: string,
         user: Express.User,
+        childTemplateId?: string,
     ): Promise<
         | IRuleBreachRequestPopulated
         | { actionsResults: PromiseSettledResult<(IRelationship | IEntity)[]>[]; ruleBreachRequestPopulated: IRuleBreachRequestPopulated }
@@ -238,6 +239,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as ICreateEntityMetadata, actionType },
                         ruleBreachRequest.brokenRules,
+                        childTemplateId,
                     );
                 else if (actionType === ActionTypes.DuplicateEntity)
                     await this.duplicateEntity(
@@ -245,6 +247,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as IDuplicateEntityMetadata, actionType },
                         ruleBreachRequest.brokenRules,
+                        childTemplateId,
                     );
                 else if (actionType === ActionTypes.UpdateEntity)
                     await this.updateEntity(
@@ -252,6 +255,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as IUpdateEntityMetadata, actionType },
                         ruleBreachRequest.brokenRules,
+                        childTemplateId,
                     );
                 else if (actionType === ActionTypes.UpdateStatus)
                     await this.updateEntityStatus(
@@ -365,6 +369,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             actionMetadata: ICreateEntityMetadata;
         },
         brokenRules: IBrokenRule[],
+        childTemplateId?: string,
     ) {
         const { templateId, properties } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
@@ -374,7 +379,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             [],
             brokenRules,
             originUserId,
-            undefined,
+            childTemplateId,
             undefined,
             false,
         );
@@ -398,6 +403,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             actionMetadata: IDuplicateEntityMetadata;
         },
         brokenRules: IBrokenRule[],
+        childTemplateId?: string,
     ) {
         const { templateId, properties, entityIdToDuplicate } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
@@ -408,7 +414,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             [],
             brokenRules,
             originUserId,
-            undefined, // TODO: handle subTemplates in rule breaches
+            childTemplateId,
             false,
             false,
         );
@@ -432,6 +438,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             actionMetadata: IUpdateEntityMetadata;
         },
         brokenRules: IBrokenRule[],
+        childTemplateId?: string,
     ) {
         const { entityId, updatedFields } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
@@ -448,7 +455,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             [],
             brokenRules,
             originUserId,
-            undefined, // TODO: handle subTemplates in rule breaches
+            childTemplateId,
             false,
         );
 

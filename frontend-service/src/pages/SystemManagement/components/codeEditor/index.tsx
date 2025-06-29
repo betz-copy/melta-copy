@@ -11,14 +11,14 @@ import { toast } from 'react-toastify';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
+import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
-import { entityTemplateType, IEntityChildTemplateMap, templateItem } from '../../../../interfaces/entityChildTemplates';
+import { EntityTemplateType, IEntityChildTemplateMap, TemplateItem } from '../../../../interfaces/entityChildTemplates';
 import { getFullChildTemplateProperties } from '../../../../utils/entityChildTemplates';
 
 const {
@@ -30,13 +30,11 @@ const {
 const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    templateItem: templateItem | null;
+    templateItem: TemplateItem | null;
     searchText: string;
     categoriesToShow: IMongoCategory[];
     isChild?: boolean;
 }> = ({ open, handleClose, templateItem, searchText, categoriesToShow }) => {
-    console.log({ templateItem });
-
     if (!templateItem) return null;
 
     const { type, metaData: entityTemplate } = templateItem;
@@ -55,7 +53,7 @@ const CodeEditorDialog: React.FC<{
         '// throw new CustomError("Your error message")',
         '',
         `${generateInterfaceWithRelationships(
-            type === entityTemplateType.Parent
+            type === EntityTemplateType.Parent
                 ? entityTemplate.properties.properties
                 : getFullChildTemplateProperties(entityTemplate, entityTemplates!.get(entityTemplate.fatherTemplateId)!),
             entityTemplate.name,
@@ -76,7 +74,7 @@ const CodeEditorDialog: React.FC<{
 
     const { mutateAsync, isLoading } = useMutation(
         () => {
-            return updateActionToEntity(entityTemplate._id, editorValue, type === entityTemplateType.Child);
+            return updateActionToEntity(entityTemplate._id, editorValue, type === EntityTemplateType.Child);
         },
         {
             onError: (err: AxiosError) => {
@@ -84,7 +82,7 @@ const CodeEditorDialog: React.FC<{
             },
             onSuccess: (data) => {
                 const { actions } = data;
-                if (type === entityTemplateType.Parent)
+                if (type === EntityTemplateType.Parent)
                     queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                         entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                     );

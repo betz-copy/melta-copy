@@ -15,7 +15,7 @@ import { getFileName } from '../../utils/getFileName';
 import {
     filterRelationListToSearchFilter,
     SearchFilterToFilterRelationList,
-} from '../../common/wizards/entityTemplate/RelationshipRefrence/RelationFilterToBackend';
+} from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 

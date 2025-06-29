@@ -66,24 +66,24 @@ export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplate
     _id: string;
 }
 
-export enum entityTemplateType {
+export enum EntityTemplateType {
     Child = 'Child',
     Parent = 'Parent',
 }
 
-export interface entityTemplateBase {
-    type: entityTemplateType;
+export interface EntityTemplateBase {
+    type: EntityTemplateType;
 }
 
-export interface ChildTemplate extends entityTemplateBase {
-    type: entityTemplateType.Child;
+export interface ChildTemplate extends EntityTemplateBase {
+    type: EntityTemplateType.Child;
     metaData: IMongoChildEntityTemplate;
 }
 
-export interface ParentTemplate extends entityTemplateBase {
-    type: entityTemplateType.Parent;
+export interface ParentTemplate extends EntityTemplateBase {
+    type: EntityTemplateType.Parent;
     metaData: IMongoEntityTemplatePopulated;
 }
 
-export type templateItem = ChildTemplate | ParentTemplate;
+export type TemplateItem = ChildTemplate | ParentTemplate;
 export type IEntityChildTemplateMapPopulated = Map<string, IMongoChildEntityTemplatePopulated>;

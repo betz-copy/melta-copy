@@ -43,23 +43,23 @@ export interface IEntityChildTemplatePropertiesPopulated extends Omit<IEntityChi
     properties: Record<string, IEntitySingleProperty>;
 }
 
-export enum entityTemplateType {
+export enum EntityTemplateType {
     Child = 'Child',
     Parent = 'Parent',
 }
 
-export interface entityTemplateBase {
-    type: entityTemplateType;
+export interface EntityTemplateBase {
+    type: EntityTemplateType;
 }
 
-export interface ChildTemplate extends entityTemplateBase {
-    type: entityTemplateType.Child;
+export interface ChildTemplate extends EntityTemplateBase {
+    type: EntityTemplateType.Child;
     metaData: IEntityChildTemplatePropertiesPopulated;
 }
 
-export interface ParentTemplate extends entityTemplateBase {
-    type: entityTemplateType.Parent;
+export interface ParentTemplate extends EntityTemplateBase {
+    type: EntityTemplateType.Parent;
     metaData: IEntityTemplatePopulated;
 }
 
-export type templateItem = ChildTemplate | ParentTemplate;
+export type TemplateItem = ChildTemplate | ParentTemplate;

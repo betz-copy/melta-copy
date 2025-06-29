@@ -107,7 +107,6 @@ const CreateOrEditEntityDetails: React.FC<{
             template: entityTemplate,
         };
     }, [payload, entityTemplate, initialTemplateFileKeys]);
-    console.log('aa', { entityTemplate });
 
     const simbaUserEntity: IEntity = useSimbaUserStore((state) => state.simbaUserEntity);
 

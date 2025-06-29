@@ -42,9 +42,9 @@ import { MeltaTooltip } from '../../../MeltaTooltip';
 import KartoffelUserField from '.././KartoffelUserField';
 import { getInitialValue, useMuiRteTheme } from '../../../inputs/JSONSchemaFormik/RjsfTextAreaWidget';
 import { CommonFormInputProperties } from '../commonInterfaces';
-import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/enitityTemplatesService';
+import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import RelationshipReferenceField from '../RelationshipRefrence/RelationshipReferenceField';
+import RelationshipReferenceField from '../RelationshipReference/RelationshipReferenceField';
 
 enum dateNotificationOptions {
     day = 1,

@@ -1,8 +1,8 @@
-import { entityTemplateType, IEntitySingleProperty, templateItem } from '@microservices/shared';
+import { EntityTemplateType, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
-    entitiesTemplatesByIds: Map<string, templateItem>,
+    entitiesTemplatesByIds: Map<string, TemplateItem>,
 ) => {
     if (typeEnum) return typeEnum?.map((option) => `\`${option}\``).join(' | ');
 
@@ -24,7 +24,7 @@ const generateFromArray = ({ items }: IEntitySingleProperty) => {
 export const generateInterface = (
     entity: Record<string, IEntitySingleProperty>,
     interfaceName: string,
-    entitiesTemplatesByIds: Map<string, templateItem>,
+    entitiesTemplatesByIds: Map<string, TemplateItem>,
 ) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
@@ -59,13 +59,13 @@ export const generateInterface = (
     ].join('\n');
 };
 
-export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, templateItem>) =>
+export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, TemplateItem>) =>
     [...entitiesTemplatesByIds.values()]
         .map((entityTemplate) => {
             const { metaData, type } = entityTemplate;
 
             const { name } = metaData;
-            const properties = type === entityTemplateType.Child ? metaData.properties : metaData.properties.properties;
+            const properties = type === EntityTemplateType.Child ? metaData.properties : metaData.properties.properties;
 
             return generateInterface(properties, name, entitiesTemplatesByIds);
         })

@@ -8,9 +8,11 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { ICategoryMap } from '../../interfaces/categories';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
-import { IUser } from '../../interfaces/users';
-import { createUserRequest } from '../../services/userService';
+import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { createUserRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -19,7 +21,6 @@ import {
     getChangedCategoryPermissions,
     getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
-import UserAutocomplete from '../inputs/UserAutocomplete';
 import {
     CategoryWithTemplates,
     didPermissionsChange,
@@ -27,10 +28,9 @@ import {
     entityTemplatePermissionDialog,
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
-import ManagementPermissionsCard from '../PermissionsDialog/managementPermissionsCard';
+import UserAutocomplete from '../inputs/UserAutocomplete';
 import InstancesPermissionsCard from '../PermissionsDialog/instancesPermissionsCard';
+import ManagementPermissionsCard, { managementTypes } from '../PermissionsDialog/managementPermissionsCard';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -93,8 +93,6 @@ const MyPermissions: React.FC<{
             entityChildTemplates: displayEntityChildTemplates || [],
         };
 
-        console.log('displayEntity', displayEntity);
-
         category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
         dialogPermissionData.set(entity.category._id, category);
     });
@@ -123,7 +121,7 @@ const MyPermissions: React.FC<{
 
     const { mutate: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
-            return syncUserPermissionsRequest(formUser._id, {
+            return syncPermissionsRequest(formUser._id, RelatedPermission.User, {
                 [workspace._id]: {
                     ...formUser.permissions[workspace._id],
                 },
@@ -187,6 +185,9 @@ const MyPermissions: React.FC<{
                     );
                 };
 
+                const isAdmin = currentPermissions?.admin?.scope === PermissionScope.write;
+                const isPropertyChecked = (property: managementTypes) => currentPermissions?.[property]?.scope === PermissionScope.write || isAdmin;
+
                 return (
                     <Form>
                         <DialogTitle>
@@ -211,72 +212,39 @@ const MyPermissions: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             {(!(
                                 mode === 'view' &&
-                                currentPermissions?.permissions?.scope !== PermissionScope.write &&
-                                currentPermissions?.templates?.scope !== PermissionScope.write &&
-                                currentPermissions?.processes?.scope !== PermissionScope.write &&
-                                currentPermissions?.rules?.scope !== PermissionScope.write
+                                Object.entries(currentPermissions)
+                                    .filter(([key]) => !['admin', 'instances'].includes(key))
+                                    .some(([_, perm]) => perm?.scope === PermissionScope.write)
                             ) ||
-                                currentPermissions?.admin?.scope === PermissionScope.write) && (
+                                isAdmin) && (
                                 <Box margin={1}>
                                     <ManagementPermissionsCard
-                                        permissionsManagement={{
-                                            checked:
-                                                currentPermissions?.permissions?.scope === PermissionScope.write ||
-                                                currentPermissions?.admin?.scope === PermissionScope.write,
-                                            onChange:
-                                                mode === 'view'
-                                                    ? () => {}
-                                                    : (_e, checked) =>
-                                                          handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked, true),
-                                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                                            viewMode: mode === 'view',
-                                        }}
-                                        templatesManagement={{
-                                            checked:
-                                                currentPermissions?.templates?.scope === PermissionScope.write ||
-                                                currentPermissions?.admin?.scope === PermissionScope.write,
-                                            onChange:
-                                                mode === 'view'
-                                                    ? () => {}
-                                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.templates`, checked),
-                                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                                            viewMode: mode === 'view',
-                                        }}
-                                        rulesManagement={{
-                                            checked:
-                                                currentPermissions?.rules?.scope === PermissionScope.write ||
-                                                currentPermissions?.admin?.scope === PermissionScope.write,
-                                            onChange:
-                                                mode === 'view'
-                                                    ? () => {}
-                                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.rules`, checked),
-                                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                                            viewMode: mode === 'view',
-                                        }}
-                                        processesManagement={{
-                                            checked:
-                                                currentPermissions?.processes?.scope === PermissionScope.write ||
-                                                currentPermissions?.admin?.scope === PermissionScope.write,
-                                            onChange:
-                                                mode === 'view'
-                                                    ? () => {}
-                                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.processes`, checked),
-                                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
-                                            viewMode: mode === 'view',
-                                        }}
+                                        viewMode={mode === 'view'}
+                                        isChecked={isPropertyChecked}
+                                        onChange={
+                                            mode === 'view'
+                                                ? () => {}
+                                                : (checked, property, permissionsManagement) =>
+                                                      handleManagementPermissionCheck(
+                                                          `${permissionsPath}.${property}`,
+                                                          checked,
+                                                          permissionsManagement,
+                                                      )
+                                        }
+                                        disabled={formikProps.isSubmitting || isAdmin}
                                     />
                                 </Box>
                             )}
                             <Box margin={1}>
                                 <InstancesPermissionsCard
                                     viewMode={mode === 'view'}
-                                    formikProps={formikProps}
+                                    formikProps={formikProps as FormikProps<PermissionData>}
                                     workspaceId={workspace._id}
                                     permissionsPath={permissionsPath}
                                     categoriesCheckboxProps={Array.from(dialogPermissionData.values(), (currCategory) => ({
                                         categoryId: currCategory._id,
                                         categoryDisplayName: currCategory.displayName,
-                                        disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                                        disabled: formikProps.isSubmitting || isAdmin,
                                         scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                                         entityTemplates: currCategory.entityTemplates,
                                         permissionType: {
@@ -335,7 +303,7 @@ const MyPermissions: React.FC<{
                                                                   Object.values(categoriesPermissions).every(
                                                                       (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
                                                                   )) ||
-                                                              currentPermissions?.admin?.scope === PermissionScope.write,
+                                                              isAdmin,
                                                           onChange: (_e, checked) => {
                                                               formikProps.setFieldValue(
                                                                   `${permissionsPath}.instances.categories`,
@@ -361,7 +329,7 @@ const MyPermissions: React.FC<{
                                                                   Object.values(categoriesPermissions).every(
                                                                       (categoryPermission) => categoryPermission?.scope,
                                                                   )) ||
-                                                              currentPermissions?.admin?.scope === PermissionScope.write,
+                                                              isAdmin,
                                                           onChange: (_e, checked) => {
                                                               Array.from(categories).forEach(([categoryId]) => {
                                                                   const newPermission = getChangedCategoryPermissions(

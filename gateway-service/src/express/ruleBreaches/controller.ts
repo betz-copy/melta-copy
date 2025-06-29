@@ -18,7 +18,7 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     async approveRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.approveRuleBreachRequest(ruleBreachRequestId, req.user!));
+        res.json(await this.manager.approveRuleBreachRequest(ruleBreachRequestId, req.user!, req.body.childTemplateId));
     }
 
     async denyRuleBreachRequest(req: Request, res: Response) {
