@@ -311,6 +311,7 @@ const config = {
         carsInfoTemplateId: env.get('SIMBA_CARS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         numOfPropsToShow: env.get('SIMBA_NUM_OF_PROPS_TO_SHOW').default(9).asIntPositive(),
     },
+    isAzarimWorkspace: env.get('IS_AZARIM_WORKSPACE').default('false').asBool(),
     azarim: {
         katalogTemplateId: env.get('AZARIM_KATALOG_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         requestTemplateId: env.get('AZARIM_REQUEST_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),

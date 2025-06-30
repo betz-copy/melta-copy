@@ -1555,6 +1555,7 @@ export default {
             carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
         },
+        isAzarimWorkspace: 'סביבת עבודה של עזרים',
         azarim: {
             katalogTemplateId: 'ID תבנית קטלוג',
             requestTemplateId: 'ID תבנית בקשה',

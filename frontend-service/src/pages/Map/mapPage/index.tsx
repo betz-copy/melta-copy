@@ -268,7 +268,10 @@ const MapPage = () => {
     };
 
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { katalogTemplateId } = workspace.metadata.azarim;
+    const {
+        azarim: { katalogTemplateId },
+        isAzarimWorkspace,
+    } = workspace.metadata;
     const katalogTemplate = entityTemplateMap!.get(katalogTemplateId);
 
     return (
@@ -418,7 +421,7 @@ const MapPage = () => {
                         )}
                     </Viewer>
                 </Grid>
-                {searchedMarkers.length > 0 && (
+                {isAzarimWorkspace && searchedMarkers.length > 0 && (
                     <Grid item width="98%">
                         <EntitiesTable
                             rowData={searchedMarkers.map(({ node }) => node)}

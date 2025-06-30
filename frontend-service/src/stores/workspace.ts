@@ -40,9 +40,10 @@ export const defaultMetadata = {
         carsInfoTemplateId: '',
         numOfPropsToShow: 9,
     },
+    isAzarimWorkspace: false,
     azarim: {
-        katalogTemplateId: '6861508594757d29345780b7',
-        requestTemplateId: '6861508594757d29345780bb',
+        katalogTemplateId: '',
+        requestTemplateId: '',
     },
 } as const;
 
