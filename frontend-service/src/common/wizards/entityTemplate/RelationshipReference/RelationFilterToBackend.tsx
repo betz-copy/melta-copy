@@ -2,11 +2,9 @@ import { QueryClient, useQueryClient } from 'react-query';
 import { IFilterOfField, IFilterOfTemplate, ISearchFilter } from '../../../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
-import {
-    filterModelToFilterOfTemplatePerField
-} from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
-import { IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
+import { IAGGridFilter, IFilterTemplate } from '../commonInterfaces';
 
 const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eq: 'equals',
@@ -21,9 +19,8 @@ const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eqi: 'equals',
 };
 
-
 export const filterRelationListToSearchFilter = (
-    filterModel: IFilterRelationReference[],
+    filterModel: IFilterTemplate[],
     templateId: string,
     queryClient: QueryClient,
 ): ISearchFilter | undefined => {
@@ -138,10 +135,10 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property?: IE
 };
 
 // New function to handle relation filter conversion
-export const SearchFilterToFilterRelationList = (relatedTemplateId: string, filterModel?: ISearchFilter): IFilterRelationReference[] => {
+export const SearchFilterToFilterRelationList = (relatedTemplateId: string, filterModel?: ISearchFilter): IFilterTemplate[] => {
     if (!filterModel || !filterModel.$and || !Array.isArray(filterModel.$and)) return [];
 
-    const relationFilters: IFilterRelationReference[] = [];
+    const relationFilters: IFilterTemplate[] = [];
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relatedTemplate = entityTemplates.get(relatedTemplateId)!;
@@ -165,13 +162,10 @@ export const SearchFilterToFilterRelationList = (relatedTemplateId: string, filt
     return relationFilters;
 };
 
-export const FilterModelToFilterRecord = (
-    filterModel: ISearchFilter | undefined,
-    template: IMongoEntityTemplatePopulated,
-): IFilterRelationReference[] => {
+export const FilterModelToFilterRecord = (filterModel: ISearchFilter | undefined, template: IMongoEntityTemplatePopulated): IFilterTemplate[] => {
     if (!filterModel?.$and || !Array.isArray(filterModel.$and)) return [];
 
-    return filterModel.$and.reduce<IFilterRelationReference[]>((acc, filter) => {
+    return filterModel.$and.reduce<IFilterTemplate[]>((acc, filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
             if (!fieldFilter) return;
 

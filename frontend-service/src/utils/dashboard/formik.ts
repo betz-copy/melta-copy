@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import { QueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { filtersSchema } from '../../common/wizards/entityTemplate/AddFields';
-import { IFilterRelationReference } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { filterRelationListToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
 import { IChartType, IColumnOrLineMetaData, IPermission } from '../../interfaces/charts';
 import { ChartForm, DashboardItemType, TableForm, TableItemToBackend } from '../../interfaces/dashboard';
@@ -51,5 +51,5 @@ export const tableMetaDataToBackend = (tableData: TableForm, queryClient: QueryC
     },
 });
 
-export const filterDocumentToFilterBackend = (templateId: string, filter: IFilterRelationReference[] | undefined, queryClient: QueryClient) =>
+export const filterDocumentToFilterBackend = (templateId: string, filter: IFilterTemplate[] | undefined, queryClient: QueryClient) =>
     filter ? filterRelationListToSearchFilter(filter, templateId, queryClient) : undefined;

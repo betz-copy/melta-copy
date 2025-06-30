@@ -5,7 +5,7 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { StepComponentProps } from '../../../common/wizards';
-import { IAGGridFilter, IFilterRelationReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
+import { IAGGridFilter, IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import FilterCompetent from './filterCompenet';
@@ -22,7 +22,7 @@ const FilterSideBar = <T extends TableForm | ChartForm>(
     const entityTemplate = entityTemplates.get(values.templateId!);
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
 
-    const filterInitialValues: IFilterRelationReference = {
+    const filterInitialValues: IFilterTemplate = {
         filterProperty: '',
         filterField: {} as IAGGridFilter,
     };

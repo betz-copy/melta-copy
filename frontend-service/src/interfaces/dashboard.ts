@@ -1,6 +1,6 @@
 import { FormikProps } from 'formik';
 import { StepType } from '../common/wizards';
-import { IFilterRelationReference } from '../common/wizards/entityTemplate/commonInterfaces';
+import { IFilterTemplate } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { ChartsAndGenerator, IChart } from './charts';
 import { ISearchFilter } from './entities';
@@ -59,11 +59,11 @@ export type MongoDashboardItem = DashboardItem & MongoBaseFields;
 export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
 
 export interface TableForm extends Omit<TableMetaData, 'filter'> {
-    filter?: IFilterRelationReference[];
+    filter?: IFilterTemplate[];
 }
 
 export interface ChartForm extends Omit<IChart, 'filter'> {
-    filter?: IFilterRelationReference[];
+    filter?: IFilterTemplate[];
 }
 
 export interface ChartToBackend extends Omit<IChart, 'filter'> {

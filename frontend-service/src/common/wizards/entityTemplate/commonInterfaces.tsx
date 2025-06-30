@@ -5,7 +5,7 @@ export interface IRelationshipReference {
     relationshipTemplateDirection: 'outgoing' | 'incoming';
     relatedTemplateId: string;
     relatedTemplateField: string;
-    filters?: IFilterRelationReference[];
+    filters?: IFilterTemplate[];
 }
 export interface FieldGroupData {
     name: string;
@@ -67,11 +67,11 @@ export interface ConvertToRelationshipFieldFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
-        filters?: IFilterRelationReference[];
+        filters?: IFilterTemplate[];
     };
 }
 
-export interface IFilterRelationReference {
+export interface IFilterTemplate {
     filterProperty: string;
     filterField?: IAGGridFilter;
 }

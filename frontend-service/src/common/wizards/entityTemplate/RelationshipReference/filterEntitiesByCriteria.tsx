@@ -4,7 +4,7 @@ import { Grid, TextField, Button, Typography, IconButton, Autocomplete } from '@
 import { Add, Clear } from '@mui/icons-material';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
-import { CommonFormInputProperties, IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
+import { CommonFormInputProperties, IAGGridFilter, IFilterTemplate } from '../commonInterfaces';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
 import { DateFilterInput } from '../../../inputs/FilterInputs/DateFilterInput';
@@ -30,7 +30,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     touched,
     errors,
 }) => {
-    const filters: IFilterRelationReference[] = useMemo(() => getIn(value, name) || [], [value, name]);
+    const filters: IFilterTemplate[] = useMemo(() => getIn(value, name) || [], [value, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
     const selectedEntityTemplatePropOptions = useMemo(() => {
@@ -45,7 +45,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
             }));
     }, [selectedEntityTemplate]);
 
-    const filterInitialValues: IFilterRelationReference = {
+    const filterInitialValues: IFilterTemplate = {
         filterProperty: '',
         filterField: {} as IAGGridFilter,
     };
@@ -85,7 +85,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                 throw new Error(`Unsupported filterType: ${filterType}`);
         }
 
-        const updatedFilter: IFilterRelationReference = {
+        const updatedFilter: IFilterTemplate = {
             ...filters[index],
             filterField: newFilterField,
         };
@@ -148,7 +148,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     };
 
     const renderFilterField = (
-        filter: IFilterRelationReference,
+        filter: IFilterTemplate,
         index: number,
         property: IEntitySingleProperty,
         isNewProperty: boolean,
@@ -237,7 +237,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         );
     };
 
-    const isNewFilter = (filter: IFilterRelationReference): boolean => {
+    const isNewFilter = (filter: IFilterTemplate): boolean => {
         return !initialFilters?.some((currFilter) => isEqual(currFilter, filter));
     };
 
@@ -262,8 +262,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                             selectedEntityTemplate?.properties.properties[filter.filterProperty] ?? ({} as IEntitySingleProperty);
 
                         const fieldBase = `relationshipReference.filters[${index}]`; // e.g., 'relationshipReference.filters[2]'
-                        const filterError: FormikErrors<IFilterRelationReference> = getIn(errors, `${fieldBase}`);
-                        const filterTouched: FormikTouched<IFilterRelationReference> = getIn(touched, `${fieldBase}`);
+                        const filterError: FormikErrors<IFilterTemplate> = getIn(errors, `${fieldBase}`);
+                        const filterTouched: FormikTouched<IFilterTemplate> = getIn(touched, `${fieldBase}`);
 
                         return (
                             <Grid container wrap="nowrap" direction="row" gap="0.4rem" key={filter.filterProperty || index}>

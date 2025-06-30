@@ -24,7 +24,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
-import { FieldGroupData, IFilterRelationReference, PropertyItem } from './commonInterfaces';
+import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 
 const { errorCodes } = environment;
 
@@ -55,7 +55,7 @@ export interface EntityTemplateFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
-        filters?: IFilterRelationReference[];
+        filters?: IFilterTemplate[];
     };
     expandedUserField?: {
         relatedUserField: string;

@@ -13,7 +13,7 @@ import { ReadOnlyFilterInput } from '../../../common/inputs/FilterInputs/Readonl
 import { SelectFilterInput } from '../../../common/inputs/FilterInputs/SelectFilterInput';
 import { StyledFilterInput } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../../common/inputs/FilterInputs/TextFilterInput';
-import { IAGGridFilter, IFilterRelationReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
+import { IAGGridFilter, IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm } from '../../../interfaces/dashboard';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -29,7 +29,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
     const queryClient = useQueryClient();
     const theme = useTheme();
 
-    const filters: IFilterRelationReference[] = useMemo(() => getIn(values, 'filter') || [], [values]);
+    const filters: IFilterTemplate[] = useMemo(() => getIn(values, 'filter') || [], [values]);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -100,7 +100,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                 throw new Error(`Unsupported filterType: ${filterType}`);
         }
 
-        const updatedFilter: IFilterRelationReference = {
+        const updatedFilter: IFilterTemplate = {
             ...filters[index],
             filterField: newFilterField,
         };
@@ -142,10 +142,10 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
     };
 
     const renderFilterInput = (
-        filter: IFilterRelationReference,
+        filter: IFilterTemplate,
         index: number,
         property: IEntitySingleProperty,
-        filterTouched: FormikTouched<IFilterRelationReference>,
+        filterTouched: FormikTouched<IFilterTemplate>,
         filterErrors?: string | FormikErrors<IAGGridFilter>,
     ) => {
         const field = filter.filterField;
@@ -278,8 +278,8 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
 
                     const fieldBase = `filter[${index}]`; // e.g., 'relationshipReference.filters[2]'
 
-                    const filterError: FormikErrors<IFilterRelationReference> = getIn(errors, `${fieldBase}`);
-                    const filterTouched: FormikTouched<IFilterRelationReference> = getIn(touched, `${fieldBase}`);
+                    const filterError: FormikErrors<IFilterTemplate> = getIn(errors, `${fieldBase}`);
+                    const filterTouched: FormikTouched<IFilterTemplate> = getIn(touched, `${fieldBase}`);
 
                     return (
                         <Grid key={fieldBase}>

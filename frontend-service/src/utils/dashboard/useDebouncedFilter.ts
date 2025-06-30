@@ -1,9 +1,9 @@
-import { QueryClient } from "react-query";
-import { IAGGridFilter, IFilterRelationReference } from "../../common/wizards/entityTemplate/commonInterfaces";
-import { ISearchFilter } from "../../interfaces/entities";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { filterRelationListToSearchFilter } from "../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend";
-import { debounce } from "lodash";
+import { QueryClient } from 'react-query';
+import { IAGGridFilter, IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { ISearchFilter } from '../../interfaces/entities';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { filterRelationListToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { debounce } from 'lodash';
 
 export function isValidAGGridFilter(filter: IAGGridFilter | undefined): boolean {
     if (!filter) return false;
@@ -23,7 +23,7 @@ export function isValidAGGridFilter(filter: IAGGridFilter | undefined): boolean 
 }
 
 type FilterProcessingInput = {
-    filter?: IFilterRelationReference[];
+    filter?: IFilterTemplate[];
     templateId?: string;
 };
 
