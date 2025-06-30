@@ -256,7 +256,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
-                const defaultValue = values.template.properties.properties[propertyKey].defaultValue ?? '';
+                const defaultValue = values.template?.properties?.properties?.[propertyKey].defaultValue ?? '';
                 if (propertySchema.archive) return {};
                 if (propertySchema.format === 'comment')
                     return {

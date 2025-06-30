@@ -13,67 +13,71 @@ import { mapValues } from 'lodash';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
 import { IGetMyNotificationsRequestQuery } from './notificationService';
 
-const { simbaRoutes, getAllSimbaTemplates: getAllSimbaTemplatesRoute } = environment.api;
+const { clientSideRoutes, getAllClientSideTemplates: getAllClientSideTemplatesRoute } = environment.api;
 
-export type GetAllSimbaTemplatesType = {
+export type GetAllClientSideTemplatesType = {
     categories: IMongoCategory[];
     entityTemplates: IMongoEntityTemplatePopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
     childTemplates: IMongoChildEntityTemplatePopulated[];
 };
 
-const getAllSimbaTemplates = async (usersInfoChildTemplateId: string) => {
-    const { data } = await axios.post<GetAllSimbaTemplatesType>(getAllSimbaTemplatesRoute, {
+const getAllClientSideTemplates = async (usersInfoChildTemplateId: string) => {
+    const { data } = await axios.post<GetAllClientSideTemplatesType>(getAllClientSideTemplatesRoute, {
         usersInfoChildTemplateId,
     });
     return data;
 };
 
 const getCurrentUserEntity = async (templateId: string, kartoffelId: string) => {
-    const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/${templateId}`, {
+    const { data } = await axios.post<ISearchResult>(`${clientSideRoutes}/entities/${templateId}`, {
         kartoffelId,
     });
 
     if (data.entities.length === 0) {
-        throw new Error('User not exists in simba');
+        throw new Error('User not exists in client side users table');
     }
 
     return data.entities[0].entity;
 };
 
 const countEntitiesOfTemplatesByUserEntityId = async (templateIds: string[], userEntityId: string) => {
-    const { data } = await axios.post<ICountSearchResult[]>(`${simbaRoutes}/entities/count/user-entity-id`, {
+    const { data } = await axios.post<ICountSearchResult[]>(`${clientSideRoutes}/entities/count/user-entity-id`, {
         templateIds,
         userEntityId,
     });
     return data;
 };
 
-const searchEntitiesOfTemplateSimbaRequest = async (templateId: string, simbaUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
-    const { data } = await axios.post<ISearchResult>(`${simbaRoutes}/entities/search/template/${templateId}`, {
-        userEntityId: simbaUserEntityId,
+const searchEntitiesOfTemplateClientSideRequest = async (
+    templateId: string,
+    clientSideUserEntityId: string,
+    searchBody: ISearchEntitiesOfTemplateBody,
+) => {
+    const { data } = await axios.post<ISearchResult>(`${clientSideRoutes}/entities/search/template/${templateId}`, {
+        userEntityId: clientSideUserEntityId,
         ...searchBody,
     });
     return data;
 };
 
-const getSimbaExpandedEntityByIdRequest = async (
+const getClientSideExpandedEntityByIdRequest = async (
     entityId: string,
     expandedParams: { [key: string]: number },
     options?: { templateIds: string[] },
 ) => {
-    const { data } = await axios.post<IEntityExpanded>(`${simbaRoutes}/entities/expanded/${entityId}`, {
+    const { data } = await axios.post<IEntityExpanded>(`${clientSideRoutes}/entities/expanded/${entityId}`, {
         expandedParams,
         options,
     });
     return data;
 };
 
-const createEntitySimbaRequest = async (
+const createEntityClientSideRequest = async (
     entity: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
     childTemplate?: IMongoChildEntityTemplatePopulated,
-    simbaUserEntity?: IEntity,
+    clientSideUserEntity?: IEntity,
 ) => {
     const formData = new FormData();
     const entityTemplateProperties = childTemplate!.fatherTemplateId.properties.properties;
@@ -87,8 +91,8 @@ const createEntitySimbaRequest = async (
               }
 
               if (entity.properties[key] === undefined && entityTemplateProperties[key]?.format === 'relationshipReference') {
-                  if (entityTemplateProperties[key]?.relationshipReference?.relatedTemplateId === simbaUserEntity?.templateId) {
-                      acc[key] = simbaUserEntity?.properties._id;
+                  if (entityTemplateProperties[key]?.relationshipReference?.relatedTemplateId === clientSideUserEntity?.templateId) {
+                      acc[key] = clientSideUserEntity?.properties._id;
                   }
               }
               return acc;
@@ -127,38 +131,38 @@ const createEntitySimbaRequest = async (
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
 
-    const { data } = await axios.post<IEntity>(`${simbaRoutes}/entities`, formData);
+    const { data } = await axios.post<IEntity>(`${clientSideRoutes}/entities`, formData);
     return data;
 };
 
-const getMySimbaNotificationGroupCountRequest = async (groups: INotificationCountGroups) => {
-    const { data } = await axios.post<INotificationGroupCountDetails>(`${simbaRoutes}/notifications/my/group-count`, { groups });
+const getMyClientSideNotificationGroupCountRequest = async (groups: INotificationCountGroups) => {
+    const { data } = await axios.post<INotificationGroupCountDetails>(`${clientSideRoutes}/notifications/my/group-count`, { groups });
     return data;
 };
 
-const manyNotificationSeenSimbaRequest = async (types: NotificationType[]) => {
-    const { data } = await axios.post<INotificationPopulated[]>(`${simbaRoutes}/notifications/seen`, { types });
+const manyNotificationSeenClientSideRequest = async (types: NotificationType[]) => {
+    const { data } = await axios.post<INotificationPopulated[]>(`${clientSideRoutes}/notifications/seen`, { types });
     return data;
 };
 
-const getMyNotificationsSimbaRequest = async (query: IGetMyNotificationsRequestQuery) => {
+const getMyNotificationsClientSideRequest = async (query: IGetMyNotificationsRequestQuery) => {
     const startDate = query.startDate && query.startDate.toDateString();
     const endDate = query.endDate && query.endDate.toDateString();
 
-    const { data } = await axios.get<INotificationPopulated[]>(`${simbaRoutes}/notifications/my`, {
+    const { data } = await axios.get<INotificationPopulated[]>(`${clientSideRoutes}/notifications/my`, {
         params: { ...query, startDate, endDate },
     });
     return data;
 };
 
 export {
-    getAllSimbaTemplates,
+    getAllClientSideTemplates,
     getCurrentUserEntity,
     countEntitiesOfTemplatesByUserEntityId,
-    searchEntitiesOfTemplateSimbaRequest,
-    getSimbaExpandedEntityByIdRequest,
-    createEntitySimbaRequest,
-    getMySimbaNotificationGroupCountRequest,
-    manyNotificationSeenSimbaRequest,
-    getMyNotificationsSimbaRequest,
+    searchEntitiesOfTemplateClientSideRequest,
+    getClientSideExpandedEntityByIdRequest,
+    createEntityClientSideRequest,
+    getMyClientSideNotificationGroupCountRequest,
+    manyNotificationSeenClientSideRequest,
+    getMyNotificationsClientSideRequest,
 };

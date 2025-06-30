@@ -3,8 +3,8 @@ import { fileSchema, MongoIdSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
-// GET /api/simba/templates/all
-export const getAllSimbaTemplatesSchema = Joi.object({
+// GET /api/client-side/templates/all
+export const getAllClientSideTemplatesSchema = Joi.object({
     query: {},
     body: {
         usersInfoChildTemplateId: MongoIdSchema.required(),
@@ -12,7 +12,7 @@ export const getAllSimbaTemplatesSchema = Joi.object({
     params: {},
 });
 
-// POST /api/simba/entities/:templateId
+// POST /api/client-side/entities/:templateId
 export const getInstancesByTemplateIdSchema = Joi.object({
     query: {},
     body: {
@@ -23,7 +23,7 @@ export const getInstancesByTemplateIdSchema = Joi.object({
     },
 });
 
-// POST /api/simba/entities/count
+// POST /api/client-side/entities/count
 export const countEntitiesOfTemplatesByUserEntityIdSchema = Joi.object({
     query: {},
     body: {
@@ -32,7 +32,7 @@ export const countEntitiesOfTemplatesByUserEntityIdSchema = Joi.object({
     },
 });
 
-// POST /api/simba/entities/search/template/:templateId
+// POST /api/client-side/entities/search/template/:templateId
 export const searchEntitiesOfTemplateSchema = Joi.object({
     query: {},
     body: {
@@ -49,7 +49,7 @@ export const searchEntitiesOfTemplateSchema = Joi.object({
     },
 });
 
-// POST /api/simba/entities/expanded/:entityId
+// POST /api/client-side/entities/expanded/:entityId
 export const getExpandedEntityByIdRequestSchema = Joi.object({
     query: {},
     body: {
@@ -63,8 +63,8 @@ export const getExpandedEntityByIdRequestSchema = Joi.object({
     },
 });
 
-// POST /api/simba/entities
-export const createSimbaEntitySchema = Joi.object({
+// POST /api/client-side/entities
+export const createClientSideEntitySchema = Joi.object({
     body: Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)

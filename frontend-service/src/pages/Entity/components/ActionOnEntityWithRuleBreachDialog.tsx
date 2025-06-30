@@ -84,7 +84,7 @@ type BaseActionProps = {
 };
 
 export interface IActionOnSingleEntityWithRuleBreachDialogProps extends BaseActionProps {
-    actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity | ActionTypes.UpdateEntity | ActionTypes.CreateSimbaEntity;
+    actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity | ActionTypes.UpdateEntity | ActionTypes.CreateClientSideEntity;
     brokenRules: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules: IRuleBreach['brokenRules'];
     actions?: IActionPopulated[];

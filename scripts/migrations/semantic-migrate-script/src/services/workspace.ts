@@ -42,10 +42,10 @@ export interface IMetadata {
         bulk: number;
     };
     unitFieldSplitDepth: number;
-    simba: {
+    clientSide: {
         usersInfoChildTemplateId: string;
-        carsInfoTemplateId: string;
         numOfPropsToShow: number;
+        clientSideWorkspaceName: 'simba' | 'azarim';
     };
 }
 export interface IWorkspace {

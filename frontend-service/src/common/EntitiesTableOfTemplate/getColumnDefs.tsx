@@ -347,8 +347,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/${pageType === 'simba' ? 'simba/entity' : 'entity'}/${getEntityPropertiesData(data)._id}${
-                                        pageType === 'simba' ? '' : `/${template.childId ?? template._id}`
+                                    href={`/${pageType === 'client-side' ? 'client-side/entity' : 'entity'}/${getEntityPropertiesData(data)._id}${
+                                        pageType === 'client-side' ? '' : `/${template.childId ?? template._id}`
                                     }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
@@ -402,7 +402,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-                        {onNavigateToRow && pageType !== 'simba' && (
+                        {onNavigateToRow && pageType !== 'client-side' && (
                             <Grid item>
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
@@ -425,7 +425,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && !template?.disabled && pageType !== 'simba' && (
+                        {menuRowButtonProps && !template?.disabled && pageType !== 'client-side' && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {

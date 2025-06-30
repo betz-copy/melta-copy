@@ -4,18 +4,18 @@ import { Box } from '@mui/material';
 import React, { useRef } from 'react';
 import ContactInfoCard from './ContactInfoCard';
 import UserEntityTables, { UserEntityTablesRef } from './UserEntityTables';
-import { useSimbaUserStore } from '../../../stores/simbaUser';
+import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useQueryClient } from 'react-query';
 import { IEntityChildTemplateMapPopulated } from '../../../interfaces/entityChildTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
-const SimbaMainPage: React.FC = () => {
-    const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+const ClientSideMainPage: React.FC = () => {
+    const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
     const queryClient = useQueryClient();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.simba;
+    const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.clientSide;
 
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
@@ -45,7 +45,7 @@ const SimbaMainPage: React.FC = () => {
                 <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
                     <Grid item width="70%">
                         <UserInfoCard
-                            currentUserFromSimba={simbaUserEntity}
+                            currentUserFromClientSide={clientSideUserEntity}
                             usersInfoChildTemplate={usersInfoChildTemplate}
                             overridePropertiesToShow={firstXPropsKeys}
                         />
@@ -58,7 +58,7 @@ const SimbaMainPage: React.FC = () => {
                 <Grid container item xs={12} justifyContent="center">
                     <UserEntityTables
                         childTemplates={Array.from(childTemplates.values())}
-                        currentUserFromSimba={simbaUserEntity}
+                        currentUserFromClientSide={clientSideUserEntity}
                         usersInfoChildTemplate={usersInfoChildTemplate}
                         ref={userEntityTablesRef}
                     />
@@ -68,4 +68,4 @@ const SimbaMainPage: React.FC = () => {
     );
 };
 
-export default SimbaMainPage;
+export default ClientSideMainPage;

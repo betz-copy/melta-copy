@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import SimbaManager from './manager';
+import ClientSideManager from './manager';
 
-class SimbaController extends DefaultController<SimbaManager> {
+class ClientSideController extends DefaultController<ClientSideManager> {
     constructor(workspaceId: string) {
-        super(new SimbaManager(workspaceId));
+        super(new ClientSideManager(workspaceId));
     }
 
-    async getAllSimbaTemplates(req: Request, res: Response) {
-        res.json(await this.manager.getAllSimbaTemplates(req.body.usersInfoChildTemplateId));
+    async getAllClientSideTemplates(req: Request, res: Response) {
+        res.json(await this.manager.getAllClientSideTemplates(req.body.usersInfoChildTemplateId));
     }
 
     async getInstancesByTemplateId(req: Request, res: Response) {
@@ -46,4 +46,4 @@ class SimbaController extends DefaultController<SimbaManager> {
     }
 }
 
-export default SimbaController;
+export default ClientSideController;

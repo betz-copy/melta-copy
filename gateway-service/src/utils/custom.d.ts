@@ -5,7 +5,7 @@ declare global {
         export interface Request {
             files?: UploadedFile[];
             file?: UploadedFile;
-            simbaUserEntity?: IEntityWithDirectRelationships;
+            clientSideUserEntity?: IEntityWithDirectRelationships;
         }
     }
 }

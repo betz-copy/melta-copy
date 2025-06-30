@@ -14,7 +14,7 @@ import templatesRouter from './templates/router';
 import usersRouter from './users/router';
 import workspaceRouter from './workspaces/router';
 import ChartsRouter from './templateCharts/router';
-import SimbaRouter from './simba/router';
+import ClientSideRouter from './clientSide/router';
 
 const apiRouter = Router();
 
@@ -77,6 +77,6 @@ apiRouter.use('/charts', ChartsRouter);
 
 apiRouter.use('/workspaces', workspaceRouter);
 
-apiRouter.use('/simba', SimbaRouter);
+apiRouter.use('/client-side', ClientSideRouter);
 
 export default apiRouter;

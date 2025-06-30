@@ -35,10 +35,10 @@ export const defaultMetadata = {
         bulk: 5,
     },
     unitFieldSplitDepth: 2,
-    simba: {
+    clientSide: {
         usersInfoChildTemplateId: '',
-        carsInfoTemplateId: '',
         numOfPropsToShow: 9,
+        clientSideWorkspaceName: 'simba',
     },
 } as const;
 
