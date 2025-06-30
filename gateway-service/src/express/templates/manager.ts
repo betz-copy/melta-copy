@@ -50,6 +50,8 @@ import {
     DashboardItemType,
     MongoBaseFields,
 } from '@microservices/shared';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
+import { prepareChartForUpdate, prepareDashboardItemForUpdate, processAndUpdateItems } from '../../utils/templates/deletePropertyFromFilter';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import ProcessService from '../../externalServices/processService';
@@ -69,8 +71,6 @@ import { buildNewRelationshipField, validateNoDependentRules, validateRequiredCo
 import InstancesManager from '../instances/manager';
 import ChartManager from '../templateCharts/manager';
 import Kartoffel from '../../externalServices/kartoffel';
-import DashboardItemService from 'gateway-service/src/externalServices/dashboardService/dashboardItemService';
-import { processAndUpdateItems } from 'gateway-service/src/utils/templates/deletePropertyFromFilter';
 
 const {
     categoryHasTemplates,
@@ -103,8 +103,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private ganttService: GanttsService;
 
-    private dashboardService: DashboardItemService;
-
     constructor(private workspaceId: string) {
         super(new EntityTemplateService(workspaceId));
         this.storageService = new StorageService(workspaceId);
@@ -116,7 +114,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.instanceManager = new InstancesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
-        this.dashboardService = new DashboardItemService(workspaceId);
     }
 
     async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string, searchBody?: any) {
@@ -797,14 +794,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             allChartsOfTemplate,
             removedProperties,
             (chart) => chart.filter,
-            (chart, filter) => (chart.filter = filter),
+            (chart, filter) => {
+                chart.filter = filter;
+            },
             (chart) => chart._id,
             (chartId, updatedChart) => chartManager.updateChart(chartId, updatedChart),
+            prepareChartForUpdate,
         );
     }
 
     private async deletePropertyFromTableDashboardFilter(templateId: string, removedProperties: string[]) {
-        const allDashboardItems = await this.dashboardService.searchDashboardItems();
+        const dashboardItemService = new DashboardItemService(this.workspaceId);
+        const allDashboardItems = await dashboardItemService.searchDashboardItems();
 
         const filteredTableItems = allDashboardItems.filter(
             ({ type, metaData }) => type === DashboardItemType.Table && metaData.templateId === templateId && metaData.filter,
@@ -814,9 +815,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             filteredTableItems,
             removedProperties,
             (item) => item.metaData.filter,
-            (item, filter) => (item.metaData.filter = filter),
+            (item, filter) => {
+                item.metaData.filter = filter;
+                item.metaData.columns = item.metaData.columns.filter((column) => !removedProperties.includes(column));
+            },
             (item) => item._id,
-            (itemId, updatedItem) => this.dashboardService.updateDashboardItem(itemId, updatedItem),
+            (itemId, updatedItem) => dashboardItemService.updateDashboardItem(itemId, updatedItem),
+            prepareDashboardItemForUpdate,
         );
     }
 
@@ -901,7 +906,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
-
         if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
             await this.deletePropertyFromChartFilter(id, removedProperties);
             await this.deletePropertyFromTableDashboardFilter(id, removedProperties);

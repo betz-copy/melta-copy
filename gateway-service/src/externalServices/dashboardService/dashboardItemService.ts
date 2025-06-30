@@ -15,7 +15,7 @@ class DashboardItemService extends DefaultExternalServiceApi {
     }
 
     async updateDashboardItem(dashboardItemId: string, updatedDashboardItem: MongoDashboardItemPopulated) {
-        const { data } = await this.api.put<MongoDashboardItem>(`${dashboard}/${dashboardItemId}`, updatedDashboardItem);
+        const { data } = await this.api.put<MongoDashboardItem>(`/${dashboardItemId}`, updatedDashboardItem);
         return data;
     }
 
