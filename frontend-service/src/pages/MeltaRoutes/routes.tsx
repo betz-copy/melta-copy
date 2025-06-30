@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
@@ -6,14 +7,18 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { Redirect, Route, Switch, useLocation, useRoute } from 'wouter';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
+import { environment } from '../../globals';
+import { DashboardItemType } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { MainBox } from '../../Main.styled';
+import { MeltaUpdates } from '../../MeltaUpdates';
 import ScrollToTop from '../../ScrollToTop';
+import { BackendConfigState } from '../../services/backendConfigService';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { LocalStorage } from '../../utils/localStorage';
 import {
     CategoryProtectedRoute,
@@ -22,11 +27,6 @@ import {
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { environment } from '../../globals';
-import { MeltaUpdates } from '../../MeltaUpdates';
-import { BackendConfigState } from '../../services/backendConfigService';
-import { DashboardItemType } from '../../interfaces/dashboard';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Dashboard = lazy(() => import('../Dashboard'));

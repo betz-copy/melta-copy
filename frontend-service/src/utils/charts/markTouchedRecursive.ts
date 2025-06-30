@@ -13,7 +13,7 @@ import { FormikTouched } from 'formik';
 // };
 
 export const markTouched = <T extends object>(obj: T): FormikTouched<T> => {
-    const result: any = {};
+    const result: FormikTouched<T> = {};
 
     for (const [key, value] of Object.entries(obj)) {
         if (value && typeof value === 'object') {
@@ -27,5 +27,5 @@ export const markTouched = <T extends object>(obj: T): FormikTouched<T> => {
         }
     }
 
-    return result as FormikTouched<T>;
+    return result;
 };

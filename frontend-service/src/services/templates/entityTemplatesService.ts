@@ -1,8 +1,15 @@
 /* eslint-disable no-nested-ternary */
-import { v4 as uuid } from 'uuid';
 import i18next from 'i18next';
+import { QueryClient } from 'react-query';
+import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
+import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import {
+    filterRelationListToSearchFilter,
+    SearchFilterToFilterRelationList,
+} from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import {
     IEntitySingleProperty,
@@ -12,13 +19,6 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
-import {
-    filterRelationListToSearchFilter,
-    SearchFilterToFilterRelationList,
-} from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
-import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
-import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
-import { QueryClient } from 'react-query';
 
 const { entityTemplates } = environment.api;
 
@@ -746,13 +746,7 @@ const updateActionToEntity = async (entityTemplateId: string, actions: string) =
 };
 
 export {
-    createEntityTemplateRequest,
-    searchEntityTemplates,
-    updateEntityTemplateRequest,
-    entityTemplateObjectToEntityTemplateForm,
-    deleteEntityTemplateRequest,
-    updateEntityTemplateStatusRequest,
-    updateEnumFieldRequest,
-    deleteEnumFieldRequest,
-    updateActionToEntity,
+    createEntityTemplateRequest, deleteEntityTemplateRequest, deleteEnumFieldRequest, entityTemplateObjectToEntityTemplateForm, searchEntityTemplates, updateActionToEntity, updateEntityTemplateRequest, updateEntityTemplateStatusRequest,
+    updateEnumFieldRequest
 };
+

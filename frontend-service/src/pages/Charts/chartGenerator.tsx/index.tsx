@@ -6,9 +6,9 @@ import { ChartForm } from '../../../interfaces/dashboard';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
+import { useDebouncedFilter } from '../../../utils/dashboard/useDebouncedFilter';
 import { HighchartGenerator } from './HighchartGenerator';
 import { NumberChartGenerator } from './NumberChartGenerator';
-import { useDebouncedFilter } from '../../../utils/dashboard/useDebouncedFilter';
 
 interface IChartGeneratorProps {
     formikValues: ChartForm;

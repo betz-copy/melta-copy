@@ -12,14 +12,14 @@ import { environment } from '../../globals';
 import { DashboardItemType, MongoDashboardItemPopulated } from '../../interfaces/dashboard';
 import { deleteDashboardItem, getDashboardItems } from '../../services/dashboardService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
 import { AddDashboardItem } from './AddDashboardItem';
 import { DashboardHeader } from './dashboardPage/DashboardHeader';
-import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
-import { useWorkspaceStore } from '../../stores/workspace';
-import NoItemsCard from './dashboardPage/NoItemsCard';
 import { DashboardItemCard } from './dashboardPage/DashboardItemCard';
+import NoItemsCard from './dashboardPage/NoItemsCard';
+import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
 
 const { dashboardOrderKey, chartPath, iFramePath, tablePath } = environment.dashboard;
 

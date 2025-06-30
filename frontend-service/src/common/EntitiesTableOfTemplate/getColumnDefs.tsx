@@ -1,13 +1,16 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
-import { Link } from 'wouter';
-import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
+import { Link } from 'wouter';
 import { IButtonPopoverProps } from '.';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import {
     booleanColDef,
     dateColDef,
@@ -25,9 +28,6 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };

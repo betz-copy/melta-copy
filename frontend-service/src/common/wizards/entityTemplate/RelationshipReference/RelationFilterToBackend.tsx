@@ -1,5 +1,5 @@
 import { QueryClient, useQueryClient } from 'react-query';
-import { IFilterOfField, IFilterOfTemplate, ISearchFilter } from '../../../../interfaces/entities';
+import { IFilterOfField, ISearchFilter } from '../../../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -29,8 +29,8 @@ export const filterRelationListToSearchFilter = (
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId)!;
 
-    const filters: IFilterOfTemplate[] = filterModel.map(({ filterProperty, filterField }) => {
-        if (!filterProperty || !filterField) return {};
+    const filters = filterModel.map(({ filterProperty, filterField }) => {
+        if (!filterField) return {};
         const propertyTemplate = template.properties.properties[filterProperty];
 
         return filterModelToFilterOfTemplatePerField(propertyTemplate, filterProperty, filterField);

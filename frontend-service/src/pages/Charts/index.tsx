@@ -13,13 +13,13 @@ import { ChartsAndGenerator } from '../../interfaces/charts';
 import { DashboardItemType } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
 import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
-import ChartItem from './chartsTemplatePage/chartItem';
-import { useDarkModeStore } from '../../stores/darkMode';
 import { AddNewChartButton } from './AddNewChartButton';
+import ChartItem from './chartsTemplatePage/chartItem';
 
 const { chartsOrderKey } = environment.charts;
 

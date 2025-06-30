@@ -2,15 +2,15 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import {
     IAggregationType,
+    IAxis,
     IAxisField,
-    IColumnOrLineMetaData,
     IChart,
     IChartType,
     IChartTypeMetaData,
+    IColumnOrLineMetaData,
     INumberMetaData,
     IPermission,
     IPieMetaData,
-    IAxis,
 } from '../../interfaces/charts';
 
 export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, includeTitle: boolean = false) => {

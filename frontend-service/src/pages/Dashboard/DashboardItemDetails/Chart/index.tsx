@@ -17,7 +17,7 @@ import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
 import { createDashboardItem, deleteDashboardItem } from '../../../../services/dashboardService';
-import { parseFilters } from '../../../../services/templates/enitityTemplatesService';
+import { parseFilters } from '../../../../services/templates/entityTemplatesService';
 import { useUserStore } from '../../../../stores/user';
 import { chartValidationSchema } from '../../../../utils/charts/getChartAxes';
 import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../../utils/dashboard/formik';
@@ -111,7 +111,7 @@ const Chart: React.FC = () => {
         const path = isDashboardPage ? dashboardPath : `${chartPath}/${templateId}`;
 
         const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${
-            isDashboardPage ? '' : entityTemplates.get(templateId!)?.displayName!
+            isDashboardPage ? '' : entityTemplates.get(templateId!)?.displayName
         } `;
 
         return { path, title };

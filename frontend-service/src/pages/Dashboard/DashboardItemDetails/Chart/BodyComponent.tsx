@@ -6,8 +6,8 @@ import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
+import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 
 const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const queryClient = useQueryClient();

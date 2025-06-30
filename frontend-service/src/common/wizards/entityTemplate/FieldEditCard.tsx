@@ -18,7 +18,7 @@ import isEqual from 'lodash.isequal';
 import { validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { arrayTypes } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { environment } from '../../../globals';

@@ -1,9 +1,9 @@
+import { debounce } from 'lodash';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QueryClient } from 'react-query';
 import { IAGGridFilter, IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
-import { ISearchFilter } from '../../interfaces/entities';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { filterRelationListToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
-import { debounce } from 'lodash';
+import { ISearchFilter } from '../../interfaces/entities';
 
 export function isValidAGGridFilter(filter: IAGGridFilter | undefined): boolean {
     if (!filter) return false;

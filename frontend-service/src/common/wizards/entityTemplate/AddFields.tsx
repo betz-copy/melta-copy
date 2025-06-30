@@ -12,7 +12,7 @@ import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } f
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentHelpers, StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';

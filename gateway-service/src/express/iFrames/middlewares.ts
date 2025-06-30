@@ -1,7 +1,7 @@
+import { ForbiddenError, IFrame } from '@microservices/shared';
 import { Request } from 'express';
-import { IFrame, ServiceError ,ForbiddenError} from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
 import { Authorizer } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
 import IFrameManager from './manager';
 
 class IFramesValidator extends DefaultController {
@@ -19,7 +19,7 @@ class IFramesValidator extends DefaultController {
         const unauthorizedCategories = iFrame.categoryIds.filter((id) => !allowedCategoriesIds.includes(id));
 
         if (unauthorizedCategories.length > 0) {
-            throw new ServiceError(403, 'user not authorized ', {
+            throw new ForbiddenError('user not authorized ', {
                 metadata: `unauthorized iFrame items' categories ${JSON.stringify(unauthorizedCategories)}`,
             });
         }
@@ -67,7 +67,7 @@ class IFramesValidator extends DefaultController {
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         if (deleteReferenceDashboardItems && !userPermissions.admin?.scope)
-                throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
 
         await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId, true);
     }

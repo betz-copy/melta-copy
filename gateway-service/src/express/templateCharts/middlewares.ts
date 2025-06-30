@@ -1,8 +1,8 @@
+import { ForbiddenError, IChartPermission, IMongoChart } from '@microservices/shared';
 import { Request } from 'express';
-import { IMongoChart, IChartPermission, ForbiddenError } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
-import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
 import ChartManager from './manager';
 
 class ChartsValidator extends DefaultController {

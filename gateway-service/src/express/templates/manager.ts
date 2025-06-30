@@ -1,59 +1,60 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-param-reassign */
-import _, { groupBy } from 'lodash';
-import { AxiosError, AxiosResponse } from 'axios';
-import _isEqual from 'lodash.isequal';
-import _omit from 'lodash/omit';
-import lodashUniqby from 'lodash.uniqby';
-import { StatusCodes } from 'http-status-codes';
 import {
+    BadRequestError,
+    ConfigTypes,
+    DashboardItemType,
+    IAxisField,
     ICategory,
+    ICategoryOrderConfig,
+    IChartType,
+    IColumnOrLineMetaData,
+    IConstraintsOfTemplate,
+    IEntity,
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IEntityTemplateWithConstraints,
+    IFormula,
     IMongoBaseConfig,
     IMongoCategory,
-    IMongoEntityTemplatePopulated,
     IMongoCategoryOrderConfig,
-    ICategoryOrderConfig,
-    ISearchEntityTemplatesBody,
-    IMongoRelationshipTemplate,
-    ISearchRelationshipTemplatesBody,
-    IRule,
-    IMongoRule,
-    IRelationship,
-    ISearchRulesBody,
-    IFormula,
-    IUniqueConstraintOfTemplate,
-    IConstraintsOfTemplate,
-    PermissionType,
-    IEntityTemplateWithConstraints,
+    IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
-    IUpdateOrDeleteEnumFieldReqData,
-    BadRequestError,
-    NotFoundError,
-    ServiceError,
-    ISubCompactPermissions,
-    PermissionScope,
-    IAxisField,
-    IChartType,
-    IColumnOrLineMetaData,
-    IEntity,
-    TableItem,
+    IMongoRelationshipTemplate,
+    IMongoRule,
     INUmberMetaData,
     IPieMetaData,
-    UploadedFile,
+    IRelationship,
+    IRule,
+    ISearchEntityTemplatesBody,
+    ISearchRelationshipTemplatesBody,
+    ISearchRulesBody,
+    ISubCompactPermissions,
+    IUniqueConstraintOfTemplate,
+    IUpdateOrDeleteEnumFieldReqData,
     logger,
-    RelatedPermission,
-    ConfigTypes,
-    DashboardItemType,
     MongoBaseFields,
+    NotFoundError,
+    PermissionScope,
+    PermissionType,
+    RelatedPermission,
+    ServiceError,
+    TableItem,
+    UploadedFile,
 } from '@microservices/shared';
-import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
-import { prepareChartForUpdate, prepareDashboardItemForUpdate, processAndUpdateItems } from '../../utils/templates/deletePropertyFromFilter';
+import { AxiosError, AxiosResponse } from 'axios';
+import { StatusCodes } from 'http-status-codes';
+import _, { groupBy } from 'lodash';
+import _isEqual from 'lodash.isequal';
+import lodashUniqby from 'lodash.uniqby';
+import _omit from 'lodash/omit';
 import config from '../../config';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
+import GanttsService from '../../externalServices/ganttsService';
 import InstancesService from '../../externalServices/instanceService';
+import Kartoffel from '../../externalServices/kartoffel';
 import ProcessService from '../../externalServices/processService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
@@ -62,15 +63,14 @@ import RelationshipsTemplateService from '../../externalServices/templates/relat
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import { prepareChartForUpdate, prepareDashboardItemForUpdate, processAndUpdateItems } from '../../utils/templates/deletePropertyFromFilter';
+import InstancesManager from '../instances/manager';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
+import ChartManager from '../templateCharts/manager';
 import UsersManager from '../users/manager';
 import { getParametersOfFormula } from './rules';
-import GanttsService from '../../externalServices/ganttsService';
 import checkPropertyInUsedFromFormula from './rules/checkIfPropertyInUsed';
-import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
-import InstancesManager from '../instances/manager';
-import ChartManager from '../templateCharts/manager';
-import Kartoffel from '../../externalServices/kartoffel';
 
 const {
     categoryHasTemplates,
