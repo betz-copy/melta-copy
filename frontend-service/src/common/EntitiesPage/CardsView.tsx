@@ -15,6 +15,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 import { transformChild } from '../../pages/Category';
+import { useUserStore } from '../../stores/user';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -39,6 +40,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     const refetch = () => queryClient.invalidateQueries(['searchEntities', templateIds, searchInput, urlSemanticSearch], { exact: true });
     useImperativeHandle(ref, () => ({ refetch }));
+
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -83,7 +87,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             }
 
                             for (const template of childTemplates) {
-                                const filter = getDefaultFilterFromTemplate(template, true);
+                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId);
 
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,

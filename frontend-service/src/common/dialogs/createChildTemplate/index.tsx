@@ -55,7 +55,7 @@ const CreateChildTemplateDialog: React.FC<{
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
-    const [selectedUserField, setSelectedUserField] = useState<string | null>(null);
+    const [selectedUserField, setSelectedUserField] = useState<string | null>(childTemplate?.filterByCurrentUserField || null);
     const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
     const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState(childTemplate?.isFilterByCurrentUser || false);
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(childTemplate?.isFilterByUserUnit || false);
@@ -438,6 +438,7 @@ const CreateChildTemplateDialog: React.FC<{
                         viewType: childTemplateViewType,
                         isFilterByCurrentUser: childTemplateFilterByCurrentUser,
                         isFilterByUserUnit: childTemplateFilterByUserUnit,
+                        filterByCurrentUserField: selectedUserField || undefined,
                     };
 
                     if (childTemplate) {

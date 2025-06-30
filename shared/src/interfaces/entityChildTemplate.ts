@@ -28,6 +28,7 @@ export interface IEntityChildTemplate {
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
+    filterByCurrentUserField?: string;
 }
 
 export interface IMongoEntityChildTemplate extends IEntityChildTemplate, Document<string> {

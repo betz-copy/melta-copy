@@ -316,6 +316,7 @@ export const createEntityChildTemplateSchema = Joi.object({
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
         isFilterByCurrentUser: Joi.boolean().default(false),
         isFilterByUserUnit: Joi.boolean().default(false),
+        filterByCurrentUserField: Joi.string(),
     },
     query: {},
     params: {},
@@ -334,6 +335,7 @@ export const updateEntityChildTemplateSchema = Joi.object({
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
         isFilterByCurrentUser: Joi.boolean().default(false),
         isFilterByUserUnit: Joi.boolean().default(false),
+        filterByCurrentUserField: Joi.string(),
     },
     query: {},
     params: {

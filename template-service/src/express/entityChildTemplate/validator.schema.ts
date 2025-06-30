@@ -25,6 +25,7 @@ const childEntityTemplateSchema = {
     actions: Joi.string(),
     viewType: Joi.string().valid('categoryPage', 'userPage').required(),
     isFilterByCurrentUser: Joi.boolean().default(false),
+    filterByCurrentUserField: Joi.string(),
     isFilterByUserUnit: Joi.boolean().default(false),
 };
 
