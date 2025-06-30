@@ -32,13 +32,13 @@ const Dashboard: React.FC = () => {
     const [layout, setLayout] = useState<LayoutItem[]>([]);
     const [isHoverOnCard, setIsHoverOnCard] = useState<number | null>(null);
     const [textSearch, setTextSearch] = useState<string>();
-    const [deleteChartDialogState, setDeleteChartDialogState] = useState<{
+    const [deleteItemDialogState, setDeleteItemDialogState] = useState<{
         isDialogOpen: boolean;
-        chartId: string | null;
+        itemId: string | null;
         type: DashboardItemType | null;
     }>({
         isDialogOpen: false,
-        chartId: null,
+        itemId: null,
         type: null,
     });
 
@@ -56,9 +56,14 @@ const Dashboard: React.FC = () => {
         type: null,
     });
 
-    const { data: dashboardItems, isLoading } = useQuery({
+    const {
+        data: dashboardItems,
+        isLoading,
+        isFetching,
+    } = useQuery({
         queryKey: ['getDashboard', textSearch, workspace._id],
         queryFn: () => getDashboardItems(textSearch),
+        placeholderData: [],
     });
 
     const { mutateAsync: deleteDashboardItemMutateAsync, isLoading: isDeleteDashboardItemLoading } = useMutation(
@@ -66,7 +71,7 @@ const Dashboard: React.FC = () => {
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('charts.actions.deletedSuccessfully'));
-                setDeleteChartDialogState({ isDialogOpen: false, chartId: null, type: null });
+                setDeleteItemDialogState({ isDialogOpen: false, itemId: null, type: null });
 
                 const updatedLayout = layout.filter((item) => item.i !== data._id);
                 LocalStorage.set(dashboardOrderKey, updatedLayout);
@@ -120,7 +125,22 @@ const Dashboard: React.FC = () => {
         }
     };
 
-    if (isLoading) return <CircularProgress />;
+    const renderNoDataMessage = () => {
+        if (textSearch)
+            return (
+                <Grid container justifyContent="center" marginTop="2rem">
+                    {i18next.t('noSearchResults')}
+                </Grid>
+            );
+
+        return (
+            <Grid height="90vh" justifyContent="center" justifyItems="center" alignContent="center">
+                <NoItemsCard />
+            </Grid>
+        );
+    };
+
+    if (isLoading || isFetching) return <CircularProgress />;
 
     return (
         <Grid>
@@ -131,9 +151,7 @@ const Dashboard: React.FC = () => {
                 AddNewItem={AddDashboardItem}
             />
             {dashboardItems?.length === 0 ? (
-                <Grid height="90vh" justifyContent="center" justifyItems="center" alignContent="center">
-                    <NoItemsCard />
-                </Grid>
+                renderNoDataMessage()
             ) : (
                 <LocalStorageGridLayout<MongoDashboardItemPopulated>
                     items={dashboardItems ?? []}
@@ -160,17 +178,14 @@ const Dashboard: React.FC = () => {
                                     indexInGrid={index}
                                     isHoverOnCard={isHoverOnCard}
                                     onDelete={() =>
-                                        setDeleteChartDialogState({ chartId: dashboardItem._id, isDialogOpen: true, type: dashboardItem.type })
+                                        setDeleteItemDialogState({ itemId: dashboardItem._id, isDialogOpen: true, type: dashboardItem.type })
                                     }
                                     onEdit={() => handleEdit(dashboardItem)}
                                 />
                             </div>
                         ))
                     }
-                    layout={{
-                        value: layout,
-                        set: setLayout,
-                    }}
+                    layout={{ value: layout, set: setLayout }}
                     textSearch={textSearch}
                 />
             )}
@@ -185,11 +200,11 @@ const Dashboard: React.FC = () => {
             />
 
             <ConfirmDeleteDashboardItem
-                isDialogOpen={deleteChartDialogState.isDialogOpen}
-                handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null, type: null })}
-                onDeleteYes={() => deleteDashboardItemMutateAsync(deleteChartDialogState.chartId!)}
+                isDialogOpen={deleteItemDialogState.isDialogOpen}
+                handleClose={() => setDeleteItemDialogState({ isDialogOpen: false, itemId: null, type: null })}
+                onDeleteYes={() => deleteDashboardItemMutateAsync(deleteItemDialogState.itemId!)}
                 isLoading={isDeleteDashboardItemLoading}
-                type={deleteChartDialogState.type}
+                type={deleteItemDialogState.type}
             />
         </Grid>
     );

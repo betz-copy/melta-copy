@@ -8,14 +8,14 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
+import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
 import { environment } from '../../../../globals';
 import { DashboardItemType, TableForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
-import { IGraphFilterBodyBatch } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../../services/dashboardService';
-import { dashboardInitialValues, tableDetailsSchema, tableMetaDataToBackend } from '../../../../utils/dashboard/formik';
+import { parseFilters } from '../../../../services/templates/enitityTemplatesService';
+import { dashboardInitialValues, tableFilterDetailsSchema, tableDetailsSchema, tableMetaDataToBackend } from '../../../../utils/dashboard/formik';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
-import { FilterOfGraphToFilterRecord } from '../../../Graph/GraphFilterToBackend';
 import BodyComponent from './BodyComponent';
 import SideBarDetails from './sideBarDetails';
 
@@ -32,41 +32,26 @@ const Table: React.FC = () => {
     });
 
     const [viewMode, setViewMode] = useState<ViewMode>(tableId ? ViewMode.ReadOnly : ViewMode.Add);
-    const [filters, setFilters] = useState<number[]>([]);
-    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const template = table && entityTemplates.get(table?.metaData.templateId);
 
-    const updateFilters = (filter: string) => {
-        const parsedFilter = JSON.parse(filter);
-        const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template!);
-
-        setFilterRecord(formattedFilter);
-        setFilters(Object.keys(formattedFilter).map(Number));
-    };
-
     useEffect(() => {
         if (tableId && table) setViewMode(ViewMode.ReadOnly);
     }, [tableId, table]);
 
-    useEffect(() => {
-        if (table && template && table.metaData.filter) updateFilters(table.metaData.filter);
-    }, [table, template]);
-
     const { isLoading, mutateAsync } = useMutation(
         (tableData: TableForm) =>
             viewMode === ViewMode.Edit
-                ? editDashboardItem(tableId!, tableMetaDataToBackend(tableData))
-                : createDashboardItem(tableMetaDataToBackend(tableData)),
+                ? editDashboardItem(tableId!, tableMetaDataToBackend(tableData, queryClient))
+                : createDashboardItem(tableMetaDataToBackend(tableData, queryClient)),
 
         {
             onSuccess: async (data) => {
                 if (viewMode === ViewMode.Edit) {
                     queryClient.setQueryData(['getTable', tableId], data);
                     setViewMode(ViewMode.ReadOnly);
-                    if (data.type === DashboardItemType.Table && data.metaData.filter) updateFilters(data.metaData.filter);
                 } else {
                     navigate(`${tablePath}/${data._id}`);
                 }
@@ -94,7 +79,12 @@ const Table: React.FC = () => {
         },
     });
 
-    const initialValues = table ? { ...table.metaData, filter: filterRecord } : dashboardInitialValues.table;
+    const initialValues = table
+        ? {
+              ...table.metaData,
+              filter: table?.metaData.filter ? FilterModelToFilterRecord(parseFilters(table?.metaData.filter), template!) : undefined,
+          }
+        : dashboardInitialValues.table;
 
     const steps: TabStepComponent<TableForm>[] = [
         {
@@ -104,8 +94,8 @@ const Table: React.FC = () => {
         },
         {
             label: i18next.t('charts.filterDetails'),
-            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} viewMode={viewMode} {...props} />,
-            validationSchema: undefined,
+            component: (props) => <FilterSideBar viewMode={viewMode} {...props} />,
+            validationSchema: tableFilterDetailsSchema,
         },
     ];
 
@@ -122,7 +112,6 @@ const Table: React.FC = () => {
             submitFunction={(values) => mutateAsync(values)}
             isLoading={isLoading}
             viewMode={{ value: viewMode, set: setViewMode }}
-            onReset={(_values, _formikHelpers) => setFilters(Object.keys(filterRecord).map(Number))}
             type={DashboardItemType.Table}
         />
     );

@@ -3,11 +3,11 @@ import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import React from 'react';
 import { isSchema } from 'yup';
 import { StepComponentHelpers } from '../../../common/wizards';
-import { DashboardItemData, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
 import DashboardItemDetailsHeader from './DashboardItemDetailsHeader';
 import DashboardItemDetailsSideBar from './DashboardItemDetailsSideBar';
 
-interface DashboardItemDetailsProps<T extends DashboardItemData> {
+interface DashboardItemDetailsProps<T extends DashboardItemForm> {
     initialValues: T;
     submitFunction: (values: T) => Promise<any>;
     onReset?: (values: T, formikHelpers: FormikHelpers<T>) => void;
@@ -28,7 +28,7 @@ interface DashboardItemDetailsProps<T extends DashboardItemData> {
     };
 }
 
-const DashboardItemDetails = <T extends DashboardItemData>({
+const DashboardItemDetails = <T extends DashboardItemForm>({
     title,
     initialValues,
     backPath,

@@ -1,26 +1,26 @@
 import { Check, Close, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { FormikProps } from 'formik';
+import i18next from 'i18next';
+import { isEqual } from 'lodash';
 import React, { useState } from 'react';
 import { useLocation } from 'wouter';
-import { FormikProps } from 'formik';
-import { isEqual } from 'lodash';
-import i18next from 'i18next';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { DashboardItemData, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
+import { IMongoChart } from '../../../interfaces/charts';
+import { DashboardItemForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { ConfirmDeleteDashboardItem } from '../Dialogs';
-import { IMongoChart } from '../../../interfaces/charts';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 
 enum CancelType {
     Reset = 'reset',
     Back = 'back',
 }
 
-interface DashboardItemDetailsHeaderProps<T extends DashboardItemData> {
+interface DashboardItemDetailsHeaderProps<T extends DashboardItemForm> {
     title: string;
     backPath: { title: string; path: string };
     onDelete: () => void;
@@ -38,7 +38,7 @@ interface DashboardItemDetailsHeaderProps<T extends DashboardItemData> {
     isValidForm?: boolean;
 }
 
-const DashboardItemDetailsHeader = <T extends DashboardItemData>({
+const DashboardItemDetailsHeader = <T extends DashboardItemForm>({
     title,
     backPath,
     onDelete,

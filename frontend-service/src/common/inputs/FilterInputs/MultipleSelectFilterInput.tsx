@@ -8,9 +8,18 @@ interface MultipleSelectFilterInputProps {
     readOnly: boolean;
     handleCheckboxChange: (option: string, checked: boolean) => void;
     enumOptions: string[] | undefined;
+    isError?: boolean;
+    helperText?: string;
 }
 
-const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({ filterField, readOnly, handleCheckboxChange, enumOptions }) => {
+const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
+    filterField,
+    readOnly,
+    handleCheckboxChange,
+    enumOptions,
+    isError,
+    helperText,
+}) => {
     return (
         <Grid container justifyContent="center">
             <StyledFilterInput
@@ -19,6 +28,8 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({ f
                 size="small"
                 fullWidth
                 value={filterField?.values ? filterField.values : []}
+                error={isError}
+                helperText={helperText}
                 inputProps={{
                     readOnly,
                     style: {

@@ -15,8 +15,8 @@ interface TextFilterProps {
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
-    errors?: any;
-    touched?: any;
+    error?: boolean;
+    helperText?: string;
 }
 
 const TextFilterInput: React.FC<TextFilterProps> = ({
@@ -26,8 +26,8 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
-    errors,
-    touched,
+    error,
+    helperText,
 }) => {
     return (
         <Grid
@@ -53,15 +53,15 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                     type={type}
                     value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
                     disabled={readOnly}
-                    error={Boolean(touched && errors?.filter)}
-                    helperText={touched ? errors?.filter : ''}
+                    error={error}
+                    helperText={helperText}
                     onChange={(e) => {
                         const { value } = e.target;
 
                         const updatedFilter =
                             type === 'number'
                                 ? ({ ...filterField, filter: value ? Number(value) : undefined } as IAGGidNumberFilter)
-                                : ({ ...filterField, filter: value } as IAGGridTextFilter);
+                                : ({ ...filterField, filter: value || undefined } as IAGGridTextFilter);
 
                         handleFilterFieldChange(
                             updatedFilter,

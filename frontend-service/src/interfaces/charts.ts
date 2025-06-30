@@ -54,11 +54,11 @@ export interface IPieMetaData {
     aggregationType: IAggregation;
 }
 
-export interface INUmberMetaData {
+export interface INumberMetaData {
     accumulator: IAggregation;
 }
 
-export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INUmberMetaData;
+export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INumberMetaData;
 
 export enum IPermission {
     Protected = 'protected',

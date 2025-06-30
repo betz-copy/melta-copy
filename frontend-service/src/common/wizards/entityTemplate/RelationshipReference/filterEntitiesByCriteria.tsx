@@ -156,7 +156,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         filterErrors?,
     ) => {
         const field = filter.filterField;
-        if (!field?.filterType || !field.type) return null;
+        if (!field?.filterType) return null;
 
         const { format, enum: propEnum, type, items } = property;
 
@@ -219,7 +219,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                 />
             );
         }
-
         return (
             <TextFilterInput
                 filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
@@ -232,8 +231,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                 readOnly={!isNewProperty}
                 entityFilter
                 type={field.filterType}
-                errors={filterErrors}
-                touched={filterTouched}
+                error={Boolean(filterTouched && filterErrors?.filter)}
+                helperText={filterTouched ? filterErrors?.filter : ''}
             />
         );
     };

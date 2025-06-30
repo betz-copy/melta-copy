@@ -1,5 +1,5 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../../common/wizards';
@@ -7,7 +7,7 @@ import { TableForm } from '../../../../interfaces/dashboard';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import { filterModelToFilterOfGraph } from '../../../Graph/GraphFilterToBackend';
+import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 
 const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const theme = useTheme();
@@ -19,14 +19,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = metadata.agGrid;
 
-    const memoizedFilter = useMemo(() => {
-        const { filter, templateId } = values;
-
-        if (!templateId || !filter || Object.keys(filter).length === 0) return undefined;
-
-        const graphFilters = filterModelToFilterOfGraph(filter);
-        return graphFilters?.[templateId]?.filter;
-    }, [values.templateId, values.filter]);
+    const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
 
     return (
         <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">

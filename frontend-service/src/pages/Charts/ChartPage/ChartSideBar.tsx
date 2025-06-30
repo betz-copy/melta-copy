@@ -1,6 +1,5 @@
 import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
 import {
-    Autocomplete,
     Box,
     Divider,
     FormControl,
@@ -8,7 +7,6 @@ import {
     Grid,
     Radio,
     RadioGroup,
-    TextField,
     ToggleButton,
     ToggleButtonGroup,
     Typography,
@@ -17,9 +15,9 @@ import {
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { InfoTypography } from '../../../common/InfoTypography';
+import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
@@ -47,32 +45,28 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
-            {isDashboardPage && viewMode === ViewMode.Add && (
+            {isDashboardPage && (
                 <Grid item>
-                    <Autocomplete
-                        id="templateId"
-                        value={values.templateId || null}
-                        onChange={(_e, newValue) => setFieldValue('templateId', newValue || '')}
+                    <FormikAutoComplete
+                        formik={props}
+                        formikField="templateId"
                         options={Array.from(entityTemplates.keys())}
+                        label={i18next.t('entity')}
+                        onChange={(newValue) => {
+                            setFieldValue('templateId', newValue || '');
+                            // if (typeof newValue === 'string') setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
+                            // if (!newValue) setValues(dashboardInitialValues.table); //to do? dislog teell that wil delete
+                        }}
                         getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
-                        renderInput={(params) => (
-                            <TextField
-                                name="templateId"
-                                {...params}
-                                label={i18next.t('entity')}
-                                error={Boolean(touched.templateId && errors.templateId)}
-                                helperText={touched.templateId && errors.templateId}
-                                fullWidth
-                            />
-                        )}
-                        popupIcon={<IoIosArrowDown fontSize="Medium" />}
-                        sx={{ width: 295 }}
+                        multiple={false}
+                        readonly={viewMode === ViewMode.ReadOnly}
+                        style={{ width: 295 }}
                     />
                 </Grid>
             )}
             {values.templateId && (
                 <>
-                    {isDashboardPage && (
+                    {isDashboardPage && viewMode === ViewMode.Add && (
                         <Grid item>
                             <FormControl sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                 <Typography fontSize="14px" fontWeight="14px" color={theme.palette.text.primary}>

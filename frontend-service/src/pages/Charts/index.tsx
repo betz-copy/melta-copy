@@ -50,9 +50,10 @@ const ChartsPage: React.FC = () => {
         chartId: null,
     });
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching } = useQuery({
         queryKey: ['getCharts', templateId, textSearch],
         queryFn: () => getChartByTemplateId(templateId as string, textSearch),
+        placeholderData: [],
     });
 
     const charts = data ?? [];
@@ -78,7 +79,7 @@ const ChartsPage: React.FC = () => {
 
     const onEditChartYes = (chartId: string) => navigate(`${currentLocation}/${chartId}/chart`, { state: { isDashboardPage: false } });
 
-    if (isLoading) return <CircularProgress />;
+    if (isLoading || isFetching) return <CircularProgress />;
 
     return (
         <Grid>

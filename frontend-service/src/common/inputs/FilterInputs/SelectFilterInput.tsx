@@ -8,11 +8,11 @@ import { StyledFilterInput } from './StyledFilterInput';
 interface SelectFilterInputProps {
     filterField: IAGGridTextFilter | undefined;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
-    readOnly: boolean;
+    readOnly?: boolean;
     isBooleanSelect?: boolean;
     enumOptions?: string[];
     error?: boolean;
-    helperText?: string | undefined;
+    helperText?: string;
 }
 
 const SelectFilterInput: React.FC<SelectFilterInputProps> = ({

@@ -1,10 +1,9 @@
-import { useQueryClient } from 'react-query';
+import { QueryClient, useQueryClient } from 'react-query';
 import { IFilterOfField, IFilterOfTemplate, ISearchFilter } from '../../../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import {
-    dateFilterToFilterOfTemplate,
-    numberFilterToFilterOfTemplate,
-    textFilterToFilterOfTemplate,
+    filterModelToFilterOfTemplatePerField
 } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
 import { IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
@@ -22,25 +21,22 @@ const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eqi: 'equals',
 };
 
-const relationFieldFilterToFilterOfTemplate = (field: string, fieldFilter: IAGGridFilter): IFilterOfTemplate => {
-    switch (fieldFilter.filterType) {
-        case 'text':
-            return textFilterToFilterOfTemplate(field, fieldFilter);
-        case 'number':
-            return numberFilterToFilterOfTemplate(field, fieldFilter);
-        case 'date':
-            return dateFilterToFilterOfTemplate(field, fieldFilter);
-        default:
-            throw new Error('Invalid supported ag-grid filter type');
-    }
-};
 
-export const filterRelationListToSearchFilter = (filterModel: IFilterRelationReference[]): ISearchFilter | undefined => {
+export const filterRelationListToSearchFilter = (
+    filterModel: IFilterRelationReference[],
+    templateId: string,
+    queryClient: QueryClient,
+): ISearchFilter | undefined => {
     if (filterModel.length === 0) return undefined;
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const template = entityTemplates.get(templateId)!;
 
     const filters: IFilterOfTemplate[] = filterModel.map(({ filterProperty, filterField }) => {
         if (!filterProperty || !filterField) return {};
-        return relationFieldFilterToFilterOfTemplate(filterProperty, filterField);
+        const propertyTemplate = template.properties.properties[filterProperty];
+
+        return filterModelToFilterOfTemplatePerField(propertyTemplate, filterProperty, filterField);
     });
 
     return {
@@ -167,4 +163,28 @@ export const SearchFilterToFilterRelationList = (relatedTemplateId: string, filt
     });
 
     return relationFilters;
+};
+
+export const FilterModelToFilterRecord = (
+    filterModel: ISearchFilter | undefined,
+    template: IMongoEntityTemplatePopulated,
+): IFilterRelationReference[] => {
+    if (!filterModel?.$and || !Array.isArray(filterModel.$and)) return [];
+
+    return filterModel.$and.reduce<IFilterRelationReference[]>((acc, filter) => {
+        Object.entries(filter).forEach(([field, fieldFilter]) => {
+            if (!fieldFilter) return;
+
+            const property = template.properties.properties[field];
+            const filterField = translateFieldFilter(fieldFilter, property);
+
+            if (filterField) {
+                acc.push({
+                    filterProperty: field,
+                    filterField,
+                });
+            }
+        });
+        return acc;
+    }, []);
 };

@@ -1,31 +1,37 @@
 import { Add } from '@mui/icons-material';
-import { Button, Divider, Grid } from '@mui/material';
+import { Button, Divider, FormHelperText, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { StepComponentProps } from '../../../common/wizards';
+import { IAGGridFilter, IFilterRelationReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
-import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { GraphFilterBatch } from '../../Graph/GraphFilterBatch';
+import FilterCompetent from './filterCompenet';
 
-const FilterSideBar = <T extends TableForm | ChartForm>({
-    values,
-    setFieldValue,
-    filters,
-    viewMode,
-}: StepComponentProps<T> & {
-    filters: { value: number[]; set: React.Dispatch<React.SetStateAction<number[]>> };
-    viewMode: ViewMode;
-}) => {
+const FilterSideBar = <T extends TableForm | ChartForm>(
+    props: StepComponentProps<T> & {
+        viewMode: ViewMode;
+    },
+) => {
+    const { values, setFieldValue, viewMode, errors } = props;
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const templateOptions = Array.from(entityTemplates.values());
+
     const entityTemplate = entityTemplates.get(values.templateId!);
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
 
-    const addNewFilter = () => filters.set((prevFilters) => [...prevFilters, Date.now()]);
+    const filterInitialValues: IFilterRelationReference = {
+        filterProperty: '',
+        filterField: {} as IAGGridFilter,
+    };
+
+    const handleAddFilter = () => {
+        const updatedFilters = [...(values.filter ?? []), filterInitialValues];
+
+        setFieldValue('filter', updatedFilters);
+    };
 
     return (
         <Grid item display="flex" sx={{ flexDirection: 'column' }} gap={3}>
@@ -46,13 +52,15 @@ const FilterSideBar = <T extends TableForm | ChartForm>({
                             hideChooseAll={viewMode === ViewMode.ReadOnly}
                         />
                     </Grid>
+                    {'columns' in errors && errors.columns && <FormHelperText error>{errors.columns}</FormHelperText>}
+
                     <Grid item>
                         <Divider sx={{ width: '95%' }} />
                     </Grid>
                 </>
             )}
             <Grid item sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
-                <GraphFilterBatch
+                {/* <GraphFilterBatch
                     filters={filters.value}
                     setFilters={filters.set}
                     templateOptions={templateOptions}
@@ -77,10 +85,11 @@ const FilterSideBar = <T extends TableForm | ChartForm>({
                     entityFilter
                     selectedEntityTemplate={entityTemplates.get(values.templateId!)}
                     readonly={viewMode === ViewMode.ReadOnly}
-                />
+                /> */}
+                <FilterCompetent readonly={viewMode === ViewMode.ReadOnly} formik={props} />
             </Grid>
             {viewMode !== ViewMode.ReadOnly && (
-                <Button sx={{ marginRight: 'auto', zIndex: '100' }} onClick={addNewFilter} startIcon={<Add style={{ marginLeft: '5px' }} />}>
+                <Button sx={{ marginRight: 'auto', zIndex: '100' }} onClick={handleAddFilter} startIcon={<Add style={{ marginLeft: '5px' }} />}>
                     {i18next.t('charts.actions.filterFields')}
                 </Button>
             )}

@@ -1,8 +1,9 @@
 import { FormikProps } from 'formik';
 import { StepType } from '../common/wizards';
+import { IFilterRelationReference } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { ChartsAndGenerator, IChart } from './charts';
-import { IGraphFilterBodyBatch } from './entities';
+import { ISearchFilter } from './entities';
 import { IMongoIFrame } from './iFrames';
 
 export enum DashboardItemType {
@@ -58,14 +59,27 @@ export type MongoDashboardItem = DashboardItem & MongoBaseFields;
 export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
 
 export interface TableForm extends Omit<TableMetaData, 'filter'> {
-    filter?: IGraphFilterBodyBatch;
+    filter?: IFilterRelationReference[];
 }
 
 export interface ChartForm extends Omit<IChart, 'filter'> {
-    filter?: IGraphFilterBodyBatch;
+    filter?: IFilterRelationReference[];
 }
 
-export type DashboardItemData = ChartForm | IFrameWizardValues | TableForm;
+export interface ChartToBackend extends Omit<IChart, 'filter'> {
+    filter?: ISearchFilter;
+}
+
+export interface TableToBackend extends Omit<TableMetaData, 'filter'> {
+    filter?: ISearchFilter;
+}
+
+export interface TableItemToBackend {
+    type: DashboardItemType.Table;
+    metaData: TableToBackend;
+}
+
+export type DashboardItemForm = ChartForm | IFrameWizardValues | TableForm;
 
 export enum ViewMode {
     Edit = 'edit',

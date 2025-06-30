@@ -81,7 +81,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
             initialData: [],
         },
     );
-
+    
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
     const isValueExist = value && value.fullName.length > 0;
 

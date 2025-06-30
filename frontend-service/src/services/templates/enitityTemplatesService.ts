@@ -15,9 +15,10 @@ import { getFileName } from '../../utils/getFileName';
 import {
     filterRelationListToSearchFilter,
     SearchFilterToFilterRelationList,
-} from '../../common/wizards/entityTemplate/RelationshipRefrence/RelationFilterToBackend';
+} from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
+import { QueryClient } from 'react-query';
 
 const { entityTemplates } = environment.api;
 
@@ -37,7 +38,7 @@ export const stringFormats = [
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
-const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
+export const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
 type ExtractedProps<T> = {
     properties: T[];
     propertiesPath: Record<string, string>;
@@ -288,7 +289,7 @@ export const extractGroups = (
     };
 };
 
-export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
+export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
         values;
     const serialsUniqueConstraints: string[][] = [];
@@ -401,7 +402,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
-                          filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
+                          filters: relationshipReference.filters
+                              ? filterRelationListToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
                       }
                     : undefined,
                 comment,
@@ -507,7 +510,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
-                          filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
+                          filters: relationshipReference.filters
+                              ? filterRelationListToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
                       }
                     : undefined,
                 comment,
@@ -593,10 +598,10 @@ const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) =>
     return data;
 };
 
-const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
+const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues, queryClient: QueryClient) => {
     const formData = new FormData();
 
-    const entityTemplate = formToJSONSchema(newEntityTemplate, false);
+    const entityTemplate = formToJSONSchema(newEntityTemplate, false, queryClient);
 
     if (newEntityTemplate.icon) {
         if (newEntityTemplate.icon.file instanceof File) {
@@ -652,12 +657,16 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
     return data;
 };
 
-const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
+const updateEntityTemplateRequest = async (
+    entityTemplateId: string,
+    updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues,
+    queryClient: QueryClient,
+) => {
     const formData = new FormData();
 
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate
-            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
+            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true, queryClient)
             : updatedEntityTemplate;
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {

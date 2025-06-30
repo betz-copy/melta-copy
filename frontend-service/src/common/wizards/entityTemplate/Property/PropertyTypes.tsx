@@ -44,7 +44,7 @@ import { getInitialValue, useMuiRteTheme } from '../../../inputs/JSONSchemaFormi
 import { CommonFormInputProperties } from '../commonInterfaces';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/enitityTemplatesService';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import RelationshipReferenceField from '../RelationshipRefrence/RelationshipReferenceField';
+import RelationshipReferenceField from '../RelationshipReference/RelationshipReferenceField';
 
 enum dateNotificationOptions {
     day = 1,

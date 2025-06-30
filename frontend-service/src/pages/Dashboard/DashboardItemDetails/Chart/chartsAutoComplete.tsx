@@ -6,12 +6,12 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { IChartType, IColumnOrLineMetaData, IMongoChart, INUmberMetaData, IPieMetaData } from '../../../../interfaces/charts';
+import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '../../../../interfaces/charts';
 import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { getChartsByUserId } from '../../../../services/chartsService';
 import { initialValues } from '../../../../utils/charts/getChartAxes';
-import { FilterOfGraphToFilterRecord } from '../../../Graph/GraphFilterToBackend';
 
 const renderMetaDtaChartByType = (option: IMongoChart) => {
     switch (option.type) {
@@ -42,7 +42,7 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
                 </>
             );
         case IChartType.Number:
-            const numberData = option.metaData as INUmberMetaData;
+            const numberData = option.metaData as INumberMetaData;
             return (
                 <Grid item>
                     {i18next.t('charts.accumulateAccordingTo')} : {numberData.accumulator.type}
@@ -60,7 +60,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
 
     const [inputValue, setInputValue] = useState('');
 
-    const translateFieldFilter = (filter: string) => FilterOfGraphToFilterRecord(JSON.parse(filter), entityTemplate!);
+    const translateFieldFilter = (filter: string) => FilterModelToFilterRecord(JSON.parse(filter), entityTemplate!);
 
     const renderFilters = (filter: string | undefined) => {
         if (!filter) return <span>{i18next.t('charts.noFilters')}</span>;
@@ -68,7 +68,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
         const translatedFilter = translateFieldFilter(filter);
         return Object.values(translatedFilter).map((filter, index) => (
             <span key={index}>
-                {getFilterFieldReadonly(filter.filterField, entityTemplate?.properties.properties[filter.selectedProperty!].type!)}
+                {getFilterFieldReadonly(filter.filterField, entityTemplate?.properties.properties[filter.filterProperty!].type!)}
                 {index < Object.values(translatedFilter).length - 1 ? ', ' : ''}
             </span>
         ));

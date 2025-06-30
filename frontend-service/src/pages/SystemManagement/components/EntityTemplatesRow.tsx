@@ -622,10 +622,14 @@ const EntityTemplatesRow: React.FC = () => {
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return updateEntityTemplateRequest(entityTemplateId, {
-                ...entityTemplate,
-                category: category._id,
-            });
+            return updateEntityTemplateRequest(
+                entityTemplateId,
+                {
+                    ...entityTemplate,
+                    category: category._id,
+                },
+                queryClient,
+            );
         },
 
         {

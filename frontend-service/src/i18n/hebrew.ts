@@ -906,6 +906,7 @@ export default {
         invalidNumberField: 'חייב להיות מספר',
         invalidSerialStarter: 'חייב להיות גדול או שווה ל0',
         hebrew: 'עברית',
+        atLeastOne: 'חובה לבחור ערך אחד לפחות',
         oneField: 'חובה לפחות שדה אחד',
         oneCategory: 'חובה קטגוריה אחת לפחות',
         oneStep: 'לפחות שלב אחד',

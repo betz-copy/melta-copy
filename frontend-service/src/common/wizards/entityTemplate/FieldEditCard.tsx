@@ -26,7 +26,7 @@ import { Switches } from './Property/Switches';
 import { PropertiesTypes } from './Property/PropertyTypes';
 import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { FilterEntitiesByCriteria } from './RelationshipRefrence/filterEntitiesByCriteria';
+import { FilterEntitiesByCriteria } from './RelationshipReference/filterEntitiesByCriteria';
 
 const { mapSearchPropertiesLimit } = environment.map;
 

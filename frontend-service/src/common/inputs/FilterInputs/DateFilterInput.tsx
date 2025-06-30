@@ -15,7 +15,7 @@ interface DateFilterInputProps {
     ) => void;
     handleDateChange: (newValue: Date | null, isStartDate: boolean) => void;
     entityFilter: boolean;
-    readOnly: boolean;
+    readOnly?: boolean;
 }
 
 const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFilterTypeChange, handleDateChange, entityFilter, readOnly }) => {

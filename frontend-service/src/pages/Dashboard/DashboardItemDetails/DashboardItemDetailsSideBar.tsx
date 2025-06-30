@@ -2,17 +2,17 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import React from 'react';
-import { DashboardItemData, TabStepComponent } from '../../../interfaces/dashboard';
+import { DashboardItemForm, TabStepComponent } from '../../../interfaces/dashboard';
 import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
-interface DashboardItemDetailsSideBarProps<T extends DashboardItemData> {
+interface DashboardItemDetailsSideBarProps<T extends DashboardItemForm> {
     activeStep: number;
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
     steps: TabStepComponent<T>[];
     formikProps: FormikProps<T>;
 }
 
-const DashboardItemDetailsSideBar = <T extends DashboardItemData>({
+const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
     activeStep,
     setActiveStep,
     steps,

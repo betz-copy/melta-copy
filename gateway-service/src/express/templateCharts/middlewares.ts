@@ -28,6 +28,7 @@ class ChartsValidator extends DefaultController {
         const { permission, createdBy, _id } = chart;
 
         if (permission === IChartPermission.Private && req.user?.id !== createdBy)
+            /// until now only the creator can update if its private but if protected evey user canupdate
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on chart ${_id}` });
     }
 

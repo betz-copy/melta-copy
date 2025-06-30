@@ -6,21 +6,23 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
+import * as Yup from 'yup';
 import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
+import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFields';
+import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
 import { environment } from '../../../../globals';
 import { IMongoChart, IPermission } from '../../../../interfaces/charts';
 import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
-import { IGraphFilterBodyBatch } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
 import { createDashboardItem, deleteDashboardItem } from '../../../../services/dashboardService';
+import { parseFilters } from '../../../../services/templates/enitityTemplatesService';
 import { useUserStore } from '../../../../stores/user';
 import { chartValidationSchema } from '../../../../utils/charts/getChartAxes';
 import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../../utils/dashboard/formik';
 import ChartSideBar from '../../../Charts/ChartPage/ChartSideBar';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
-import { FilterOfGraphToFilterRecord } from '../../../Graph/GraphFilterToBackend';
 import BodyComponent from './BodyComponent';
 
 const { dashboardPath, chartPath } = environment.dashboard;
@@ -33,8 +35,6 @@ const Chart: React.FC = () => {
     const queryClient = useQueryClient();
 
     const [viewMode, setViewMode] = useState<ViewMode>(chartId ? ViewMode.ReadOnly : ViewMode.Add);
-    const [filters, setFilters] = useState<number[]>([]);
-    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
 
     const { isDashboardPage = false, dashboardId = '' } = window.history.state ?? {};
 
@@ -49,7 +49,7 @@ const Chart: React.FC = () => {
             const baseChart = {
                 ...chartData,
                 createdBy: currentUser._id,
-                filter: filterDocumentToFilterBackend(chartData.templateId!, chartData.filter),
+                filter: filterDocumentToFilterBackend(chartData.templateId!, chartData.filter, queryClient),
             };
 
             if (viewMode === ViewMode.Edit && chartId) {
@@ -67,11 +67,8 @@ const Chart: React.FC = () => {
         },
         onSuccess: async (data, chartData) => {
             if (viewMode === ViewMode.Edit) {
-                const updatedChart = data as IMongoChart;
                 await queryClient.invalidateQueries(['getChart', chartId]);
                 setViewMode(ViewMode.ReadOnly);
-
-                if (updatedChart.filter) updateFilters(updatedChart.filter);
             } else {
                 const newChartId = chartData._id || data._id;
                 const newTemplateId = chartData._id ? chartData.templateId : (data as IMongoChart).templateId;
@@ -110,23 +107,11 @@ const Chart: React.FC = () => {
         if (chart && chartId) setViewMode(ViewMode.ReadOnly);
     }, [chartId, chart]);
 
-    useEffect(() => {
-        if (chart && template && chart.filter) updateFilters(chart.filter);
-    }, [chart, template]);
-
-    const updateFilters = (filter: string) => {
-        const parsedFilter = JSON.parse(filter);
-        const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template!);
-
-        setFilterRecord(formattedFilter);
-        setFilters(Object.keys(formattedFilter).map(Number));
-    };
-
     const getBackPath = () => {
         const path = isDashboardPage ? dashboardPath : `${chartPath}/${templateId}`;
 
         const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${
-            isDashboardPage ? entityTemplates.get(templateId!)?.displayName || '' : ''
+            isDashboardPage ? '' : entityTemplates.get(templateId!)?.displayName!
         } `;
 
         return { path, title };
@@ -145,7 +130,7 @@ const Chart: React.FC = () => {
         return {
             ...baseValues,
             ...(chart ? {} : { templateId }),
-            filter: filterRecord,
+            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template!) : undefined,
         };
     };
 
@@ -157,8 +142,10 @@ const Chart: React.FC = () => {
         },
         {
             label: i18next.t('charts.filterDetails'),
-            component: (props) => <FilterSideBar filters={{ value: filters, set: setFilters }} {...props} viewMode={viewMode} />,
-            validationSchema: undefined,
+            component: (props) => <FilterSideBar {...props} viewMode={viewMode} />,
+            validationSchema: Yup.object({
+                filter: filtersSchema,
+            }),
         },
     ];
 
@@ -175,7 +162,6 @@ const Chart: React.FC = () => {
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
             viewMode={{ value: viewMode, set: setViewMode }}
-            onReset={(_values, _formikHelpers) => setFilters(Object.keys(filterRecord).map(Number))}
             type={DashboardItemType.Chart}
             chartPageProps={{ isChartPage: !isDashboardPage, usedInDashboard: chart?.usedInDashboard }}
         />

@@ -1,24 +1,24 @@
 import { CircularProgress } from '@mui/material';
-import React from 'react';
-import { useQuery } from 'react-query';
+import React, { useEffect } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { IAxisField, IChartType } from '../../../interfaces/charts';
 import { ChartForm } from '../../../interfaces/dashboard';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
-import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 import { HighchartGenerator } from './HighchartGenerator';
 import { NumberChartGenerator } from './NumberChartGenerator';
+import { useDebouncedFilter } from '../../../utils/dashboard/useDebouncedFilter';
 
 interface IChartGeneratorProps {
     formikValues: ChartForm;
     template: IMongoEntityTemplatePopulated;
-    filterRecord?: IGraphFilterBodyBatch;
 }
 
-const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, filterRecord }) => {
+const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues }) => {
     const { type, metaData } = formikValues;
+
+    const queryClient = useQueryClient();
 
     const isAggregationValid = (field: IAxisField): boolean => {
         if (typeof field === 'string') return Boolean(field);
@@ -33,18 +33,19 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
     const isQueryEnabled =
         type === IChartType.Number ? isAggregationValid(xAxisField) : isAggregationValid(xAxisField) && isAggregationValid(yAxisField as IAxisField);
 
-    const { data, isLoading } = useQuery(
-        ['chart', template._id, xAxis, yAxis, filterRecord],
-        () => {
-            const filter =
-                filterRecord && Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[template._id].filter : undefined;
+    const memoizedFilter = useDebouncedFilter(formikValues, queryClient, 500);
 
-            return getChartOfTemplate(xAxisField, yAxisField, template._id, filter);
-        },
+    const { data, isLoading, refetch } = useQuery(
+        ['chart', template._id, xAxisField, yAxisField, memoizedFilter],
+        () => getChartOfTemplate(xAxisField, yAxisField, template._id, memoizedFilter),
         {
-            enabled: Boolean(isQueryEnabled),
+            enabled: false,
         },
     );
+
+    useEffect(() => {
+        if (isQueryEnabled) refetch();
+    }, [memoizedFilter, xAxisField, yAxisField, metaData]);
 
     if (isLoading) return <CircularProgress />;
 

@@ -1,16 +1,16 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { ChartsAndGenerator, IChart, IMongoChart, IPermission } from '../interfaces/charts';
-import { ChartForm, MongoBaseFields } from '../interfaces/dashboard';
+import { ChartsAndGenerator, IMongoChart, IPermission } from '../interfaces/charts';
+import { ChartToBackend, MongoBaseFields } from '../interfaces/dashboard';
 
 const { charts } = environment.api;
 
-export const createChart = async (newChart: ChartForm, toDashboard: boolean = false) => {
+export const createChart = async (newChart: ChartToBackend, toDashboard: boolean = false) => {
     const { data } = await axios.post<IMongoChart>(charts, newChart, { params: { toDashboard } });
     return data;
 };
 
-export const editChart = async (chartId: string, updatedChart: IChart & Partial<MongoBaseFields>) => {
+export const editChart = async (chartId: string, updatedChart: ChartToBackend & Partial<MongoBaseFields>) => {
     const { usedInDashboard, _id, createdAt, updatedAt, ...restChart } = updatedChart;
 
     const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IPermission.Private;

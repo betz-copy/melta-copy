@@ -92,7 +92,7 @@ const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFi
     } as IAGGridDateFilter;
 };
 
-const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IGraphFilterBody['filterField'] => {
+export const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IGraphFilterBody['filterField'] => {
     const filterKeys = Object.keys(fieldFilter) as (keyof IFilterOfField)[];
     const [filterKey] = filterKeys;
     const filterValue = fieldFilter[filterKey];

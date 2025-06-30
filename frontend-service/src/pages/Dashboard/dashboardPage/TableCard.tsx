@@ -58,6 +58,8 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
 
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = React.useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+    console.log({memorizedFilter});
+    
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;

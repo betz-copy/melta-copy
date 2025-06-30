@@ -23,6 +23,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
     onRemove,
     overrideSx,
     readOnly,
+    helperText,
 }) => {
     return (
         <Box>
@@ -37,6 +38,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                     onBlur={onBlur}
                     onFocus={onFocus}
                     isError={isError}
+                    helperText={helperText}
                     displayValue={displayValue}
                     onDisplayValueChange={onDisplayValueChange}
                     overrideSx={overrideSx}

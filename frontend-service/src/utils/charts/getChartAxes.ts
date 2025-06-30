@@ -7,7 +7,7 @@ import {
     IChart,
     IChartType,
     IChartTypeMetaData,
-    INUmberMetaData,
+    INumberMetaData,
     IPermission,
     IPieMetaData,
     IAxis,
@@ -32,7 +32,7 @@ export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, inc
             break;
         }
         case IChartType.Number: {
-            const { accumulator } = metaData as INUmberMetaData;
+            const { accumulator } = metaData as INumberMetaData;
             xAxis = accumulator;
             break;
         }
@@ -59,7 +59,7 @@ export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData =>
         } as IPieMetaData,
         [IChartType.Number]: {
             accumulator: { type: 'countAll' },
-        } as INUmberMetaData,
+        } as INumberMetaData,
     };
 
     const metaData = chartMetadataMap[type];
@@ -141,6 +141,5 @@ export const chartValidationSchema = Yup.object({
         .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
         .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
-    createdBy: Yup.string().required(i18next.t('validation.required')),
     templateId: Yup.string().required(i18next.t('validation.required')),
 });
