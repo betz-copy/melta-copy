@@ -1,9 +1,14 @@
-import { DefaultManagerMongo, NotFoundError } from '@microservices/shared';
+import {
+    DefaultManagerMongo,
+    NotFoundError,
+    IEntityChildTemplate,
+    IEntityChildTemplatePopulated,
+    IMongoEntityChildTemplate,
+} from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 
-import { IEntityChildTemplate, IEntityChildTemplatePopulated, IMongoEntityChildTemplate } from './interface';
 import EntityChildTemplateSchema from './model';
 
 class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTemplate> {

@@ -51,28 +51,3 @@ export { default as DefaultManagerMongo } from './utils/mongo/manager';
 export * from './utils/map';
 export * from './utils/joi';
 export { default as ValidateRequest } from './utils/joi';
-// export {
-//     ActionTypes,
-//     ActionErrors,
-//     RuleBreachRequestStatus,
-//     basicFilterOperationTypes,
-//     numberFilterOperationTypes,
-//     textFilterOperationTypes,
-//     filterTypes,
-// } from './interfaces/ruleBreach';
-// export {
-//     isPropertyOfVariable,
-//     isConstant,
-//     isAggregationGroup,
-//     isGroup,
-//     isRegularFunction,
-//     isCountAggFunction,
-//     isSumAggFunction,
-//     isEquation,
-// } from './interfaces/rule';
-// export { NotificationType } from './interfaces/notification';
-// export { WorkspaceTypes, Colors } from './interfaces/workspace';
-// export { PermissionScope, PermissionType, InstancesSubclassesPermissions } from './interfaces/permission';
-// export { Status, ProcessPropertyFormats } from './interfaces/process';
-// export { FileTypes } from './interfaces/semanticSearch';
-// export { IndexingAction } from './interfaces/globalSearch';
