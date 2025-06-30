@@ -2,7 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
@@ -208,7 +208,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     textWrap,
     preview,
 }) => {
-    const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
+    const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {

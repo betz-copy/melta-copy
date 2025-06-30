@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { MenuItem } from '@mui/material';

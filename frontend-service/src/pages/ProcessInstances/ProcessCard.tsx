@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Card,
@@ -94,9 +94,9 @@ export const StepIcon: React.FC<{
     displayTitle?: boolean;
 }> = ({ step, stepTemplate, iconColor, setOpen, displayTitle = true }) => {
     const stageNameRef = React.useRef<any>(null);
-    const [isOverflowing, setIsOverflowing] = React.useState(false);
+    const [isOverflowing, setIsOverflowing] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const stageName = stageNameRef.current;
         if (stageName && stageName.scrollWidth > stageName.clientWidth) {
             setIsOverflowing(true);
@@ -200,7 +200,7 @@ const ProcessCard: React.FC<{
         setOpen({ isOpen: false });
         if (isProcessChanged) onChangedProcessDialogClose(processInstance._id);
     };
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);

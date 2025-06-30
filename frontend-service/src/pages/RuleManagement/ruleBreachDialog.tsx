@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
@@ -43,7 +43,7 @@ const RuleBreachDialog: React.FC<{
 }> = ({ isOpen, handleClose, ruleBreach, breachType, refreshBreaches, onUpdatedRuleBreach }) => {
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const [value, setValue] = React.useState('1');
+    const [value, setValue] = useState('1');
 
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         setValue(newValue);

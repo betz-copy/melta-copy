@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FormControl } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import TemplateEntitiesAutocomplete from '../../common/inputs/TemplateEntitiesAutocomplete';
@@ -14,7 +14,7 @@ interface RelationshipRefCellEditorProps {
 }
 
 const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({ value, onValueChange, relatedTemplateId, template }) => {
-    const [inputValue, setInputValue] = React.useState('');
+    const [inputValue, setInputValue] = useState('');
 
     const queryClient = useQueryClient();
 

@@ -81,11 +81,9 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
 
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
-    const [activeStep, setActiveStep] = React.useState(
-        stepTemplate ? processTemplate.steps.findIndex((step) => step._id === stepTemplate._id) + 1 : 0,
-    );
+    const [activeStep, setActiveStep] = useState(stepTemplate ? processTemplate.steps.findIndex((step) => step._id === stepTemplate._id) + 1 : 0);
 
-    const [contentDisplay, setContentDisplay] = React.useState<'SUMMARY' | 'REVIEWERS'>(environment.processDetailsContentDisplay.summary);
+    const [contentDisplay, setContentDisplay] = useState<'SUMMARY' | 'REVIEWERS'>(environment.processDetailsContentDisplay.summary);
 
     const classes = wizardContentStyles();
 
@@ -111,7 +109,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
         },
     );
 
-    const [openActivityPopper, setOpenActivityPopper] = React.useState(false);
+    const [openActivityPopper, setOpenActivityPopper] = useState(false);
 
     return (
         <Dialog
