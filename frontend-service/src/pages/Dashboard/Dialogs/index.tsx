@@ -75,4 +75,23 @@ const ConfirmEditPermissionCommonItem: React.FC<{ isDialogOpen: boolean; handleC
     );
 };
 
-export { ConfirmEditCommonItem, ConfirmDeleteDashboardItem, ConfirmEditPermissionCommonItem };
+const ChangeTemplate: React.FC<{
+    isDialogOpen: boolean;
+    handleClose: () => void;
+    onYes: () => void;
+    type: DashboardItemType;
+}> = ({ isDialogOpen, handleClose, onYes, type }) => {
+    return (
+        <AreYouSureDialog
+            open={isDialogOpen}
+            handleClose={handleClose}
+            onYes={onYes}
+            title={i18next.t('dashboard.dialogs.changeTemplate.title')}
+            noTitle={i18next.t('dashboard.dialogs.changeTemplate.noTitle')}
+            yesTitle={i18next.t('dashboard.dialogs.changeTemplate.yesTitle')}
+            body={i18next.t('dashboard.dialogs.changeTemplate.body', { type: i18next.t(`dashboard.itemType.${type}`) })}
+        />
+    );
+};
+
+export { ConfirmEditCommonItem, ConfirmDeleteDashboardItem, ConfirmEditPermissionCommonItem, ChangeTemplate };

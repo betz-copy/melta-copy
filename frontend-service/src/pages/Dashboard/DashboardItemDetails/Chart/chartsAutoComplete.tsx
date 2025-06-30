@@ -137,11 +137,13 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
                                             <Grid item>
                                                 {i18next.t('charts.name')} : {option.name}
                                             </Grid>
+                                            {option.description && (
+                                                <Grid item>
+                                                    {i18next.t('charts.description')} : {option.description}
+                                                </Grid>
+                                            )}
                                             <Grid item>
-                                                {i18next.t('charts.description')} : {option.description}
-                                            </Grid>
-                                            <Grid item>
-                                                {i18next.t('charts.chartType')}: {option.type}
+                                                {i18next.t('charts.chartType')}: {i18next.t(`charts.types.${option.type}Chart`)}
                                             </Grid>
                                             <Grid item>{renderMetaDtaChartByType(option)}</Grid>
                                             <Grid item>

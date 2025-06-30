@@ -85,6 +85,8 @@ const DashboardItemDetails = <T extends DashboardItemForm>({
                                     setActiveStep={setActiveStep}
                                     steps={steps}
                                     formikProps={formikProps}
+                                    viewMode={viewMode}
+                                    type={type}
                                 />
                             </Grid>
                         </Grid>

@@ -2,7 +2,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import React from 'react';
-import { DashboardItemForm, TabStepComponent } from '../../../interfaces/dashboard';
+import { ChartForm, DashboardItemForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
 import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
 interface DashboardItemDetailsSideBarProps<T extends DashboardItemForm> {
@@ -10,6 +10,11 @@ interface DashboardItemDetailsSideBarProps<T extends DashboardItemForm> {
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
     steps: TabStepComponent<T>[];
     formikProps: FormikProps<T>;
+    viewMode: {
+        value: ViewMode;
+        set: React.Dispatch<React.SetStateAction<ViewMode>>;
+    };
+    type: DashboardItemType;
 }
 
 const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
@@ -17,8 +22,12 @@ const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
     setActiveStep,
     steps,
     formikProps,
+    viewMode,
+    type,
 }: DashboardItemDetailsSideBarProps<T>): React.ReactElement => {
     const theme = useTheme();
+    const isDisabled =
+        viewMode.value === ViewMode.Add && type === DashboardItemType.Chart && (formikProps.values as ChartForm & { _id?: string })._id;
 
     const handleTabChange = async (_event: React.SyntheticEvent, newValue: number) => {
         const allTouched = markTouched(formikProps.values);
@@ -26,7 +35,7 @@ const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
 
         const errors = await formikProps.validateForm();
 
-        if (Object.keys(errors).length === 0) setActiveStep(newValue);
+        if (!isDisabled && Object.keys(errors).length === 0) setActiveStep(newValue);
     };
 
     return (
@@ -52,7 +61,7 @@ const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
                                 value={index.toString()}
                                 wrapped
                                 sx={{
-                                    color: activeStep === index ? theme.palette.primary.main : '#787C9E',
+                                    color: activeStep === index ? theme.palette.primary.main : isDisabled ? ' #9B9DB6' : '#787C9E',
                                     fontWeight: activeStep === index ? '600' : '400',
                                     minHeight: '44px',
                                     fontSize: '14px',

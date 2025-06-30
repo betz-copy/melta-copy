@@ -22,13 +22,14 @@ import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
 import { IChart, IPermission } from '../../../interfaces/charts';
-import { ChartForm, ViewMode } from '../../../interfaces/dashboard';
+import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
+import { dashboardInitialValues } from '../../../utils/dashboard/formik';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
-import { ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
+import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
@@ -42,6 +43,10 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
+    const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
+        isOpen: false,
+        newTemplate: null,
+    });
 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
@@ -53,9 +58,8 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                         options={Array.from(entityTemplates.keys())}
                         label={i18next.t('entity')}
                         onChange={(newValue) => {
-                            setFieldValue('templateId', newValue || '');
-                            // if (typeof newValue === 'string') setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
-                            // if (!newValue) setValues(dashboardInitialValues.table); //to do? dislog teell that wil delete
+                            if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
+                            else setFieldValue('templateId', newValue || '');
                         }}
                         getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
                         multiple={false}
@@ -228,6 +232,17 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                     setFieldValue('permission', IPermission.Private);
                     setPermissionDialogWarningOpen(false);
                 }}
+            />
+
+            <ChangeTemplate
+                isDialogOpen={changeTemplateWarning.isOpen}
+                onYes={() => {
+                    setValues({ ...dashboardInitialValues.chart, filter: undefined });
+                    setFieldValue('templateId', changeTemplateWarning.newTemplate || '');
+                    setChangeTemplateWarning({ isOpen: false, newTemplate: null });
+                }}
+                handleClose={() => setChangeTemplateWarning({ isOpen: false, newTemplate: null })}
+                type={DashboardItemType.Chart}
             />
         </Grid>
     );

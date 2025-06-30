@@ -1,20 +1,31 @@
 import { Divider, Grid } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { InfoTypography } from '../../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../../common/inputs/ViewModeTextField';
 import { StepComponentProps } from '../../../../common/wizards';
-import { TableForm, ViewMode } from '../../../../interfaces/dashboard';
+import { DashboardItemType, TableForm, ViewMode } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
+import { ChangeTemplate } from '../../Dialogs';
 
 const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue, setValues } = formikProps;
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
+        isOpen: false,
+        newTemplate: null,
+    });
+
+    const handleChangeTemplate = (newValue) => {
+        setFieldValue('templateId', newValue || null);
+        setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
+    };
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -25,9 +36,8 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
                     options={Array.from(entityTemplates.keys())}
                     label={i18next.t('entity')}
                     onChange={(newValue) => {
-                        setFieldValue('templateId', newValue || null);
-                        if (typeof newValue === 'string') setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
-                        if (!newValue) setValues(dashboardInitialValues.table); //to do? dislog teell that wil delete
+                        if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
+                        else handleChangeTemplate(newValue);
                     }}
                     getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
                     multiple={false}
@@ -83,6 +93,17 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
                     </Grid>
                 </Grid>
             )}
+
+            <ChangeTemplate
+                isDialogOpen={changeTemplateWarning.isOpen}
+                onYes={() => {
+                    setValues(dashboardInitialValues.table);
+                    handleChangeTemplate(changeTemplateWarning.newTemplate);
+                    setChangeTemplateWarning({ isOpen: false, newTemplate: null });
+                }}
+                handleClose={() => setChangeTemplateWarning({ isOpen: false, newTemplate: null })}
+                type={DashboardItemType.Table}
+            />
         </Grid>
     );
 };
