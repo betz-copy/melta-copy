@@ -50,10 +50,10 @@ const ChartsPage: React.FC = () => {
         chartId: null,
     });
 
-    const { data, isLoading, isFetching } = useQuery({
+    const { data, isFetching } = useQuery({
         queryKey: ['getCharts', templateId, textSearch],
         queryFn: () => getChartByTemplateId(templateId as string, textSearch),
-        placeholderData: [],
+        initialData: [],
     });
 
     const charts = data ?? [];
@@ -79,8 +79,6 @@ const ChartsPage: React.FC = () => {
 
     const onEditChartYes = (chartId: string) => navigate(`${currentLocation}/${chartId}/chart`, { state: { isDashboardPage: false } });
 
-    if (isLoading || isFetching) return <CircularProgress />;
-
     return (
         <Grid>
             <DashboardHeader
@@ -89,51 +87,55 @@ const ChartsPage: React.FC = () => {
                 title={`${i18next.t('charts.chartsOf')} ${template.displayName}`}
                 AddNewItem={AddNewChartButton}
             />
-            {charts?.length === 0 && (
+            {isFetching ? (
+                <Grid container justifyContent="center" marginTop="2rem">
+                    <CircularProgress />
+                </Grid>
+            ) : charts?.length === 0 ? (
                 <Grid container justifyContent="center" marginTop="2rem">
                     {i18next.t('charts.noChartsFound')}
                 </Grid>
+            ) : (
+                <LocalStorageGridLayout<ChartsAndGenerator>
+                    items={charts}
+                    localStorageKey={`${chartsOrderKey}${templateId}`}
+                    generateDom={() =>
+                        charts.map((chart, index) => (
+                            <div
+                                key={chart._id}
+                                style={{
+                                    background: darkMode ? '#131313' : 'white',
+                                    border: '1px solid #CCCFE5',
+                                    borderRadius: '7px',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    direction: 'rtl',
+                                    padding: '20px 10px',
+                                }}
+                                onMouseEnter={() => setIsHoverOnCard(index)}
+                                onMouseLeave={() => setIsHoverOnCard(null)}
+                                data-grid={layout[index]}
+                            >
+                                <ChartItem
+                                    chartDetails={chart}
+                                    onDelete={() =>
+                                        setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true, usedInDashboard: chart.usedInDashboard })
+                                    }
+                                    isHoverOnCard={isHoverOnCard}
+                                    indexInGrid={index}
+                                    onEdit={() =>
+                                        chart.usedInDashboard
+                                            ? setEditChartDialogState({ chartId: chart._id, isDialogOpen: true })
+                                            : onEditChartYes(chart._id)
+                                    }
+                                />
+                            </div>
+                        ))
+                    }
+                    layout={{ value: layout, set: setLayout }}
+                    textSearch={textSearch}
+                />
             )}
-            <LocalStorageGridLayout<ChartsAndGenerator>
-                items={charts}
-                localStorageKey={`${chartsOrderKey}${templateId}`}
-                generateDom={() =>
-                    charts.map((chart, index) => (
-                        <div
-                            key={chart._id}
-                            style={{
-                                background: darkMode ? '#131313' : 'white',
-                                border: '1px solid #CCCFE5',
-                                borderRadius: '7px',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                direction: 'rtl',
-                                padding: '20px 10px',
-                            }}
-                            onMouseEnter={() => setIsHoverOnCard(index)}
-                            onMouseLeave={() => setIsHoverOnCard(null)}
-                            data-grid={layout[index]}
-                        >
-                            <ChartItem
-                                chartDetails={chart}
-                                onDelete={() =>
-                                    setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true, usedInDashboard: chart.usedInDashboard })
-                                }
-                                isHoverOnCard={isHoverOnCard}
-                                indexInGrid={index}
-                                onEdit={() =>
-                                    chart.usedInDashboard
-                                        ? setEditChartDialogState({ chartId: chart._id, isDialogOpen: true })
-                                        : onEditChartYes(chart._id)
-                                }
-                            />
-                        </div>
-                    ))
-                }
-                layout={{ value: layout, set: setLayout }}
-                textSearch={textSearch}
-            />
-
             <ConfirmDeleteDashboardItem
                 isDialogOpen={deleteChartDialogState.isDialogOpen}
                 handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}

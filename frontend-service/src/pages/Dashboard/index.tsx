@@ -56,14 +56,10 @@ const Dashboard: React.FC = () => {
         type: null,
     });
 
-    const {
-        data: dashboardItems,
-        isLoading,
-        isFetching,
-    } = useQuery({
+    const { data: dashboardItems, isFetching } = useQuery({
         queryKey: ['getDashboard', textSearch, workspace._id],
         queryFn: () => getDashboardItems(textSearch),
-        placeholderData: [],
+        initialData: [],
     });
 
     const { mutateAsync: deleteDashboardItemMutateAsync, isLoading: isDeleteDashboardItemLoading } = useMutation(
@@ -140,8 +136,6 @@ const Dashboard: React.FC = () => {
         );
     };
 
-    if (isLoading || isFetching) return <CircularProgress />;
-
     return (
         <Grid>
             <DashboardHeader
@@ -150,7 +144,11 @@ const Dashboard: React.FC = () => {
                 title={i18next.t('dashboard.systemView')}
                 AddNewItem={AddDashboardItem}
             />
-            {dashboardItems?.length === 0 ? (
+            {isFetching ? (
+                <Grid container justifyContent="center" marginTop="2rem">
+                    <CircularProgress />
+                </Grid>
+            ) : dashboardItems?.length === 0 ? (
                 renderNoDataMessage()
             ) : (
                 <LocalStorageGridLayout<MongoDashboardItemPopulated>
