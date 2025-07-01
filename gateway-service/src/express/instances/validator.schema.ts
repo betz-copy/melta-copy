@@ -8,8 +8,6 @@ const {
     instanceService: { searchEntitiesMaxLimit },
 } = config;
 
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
-
 // POST /api/instances/entities
 export const createEntityInstanceSchema = Joi.object({
     body: Joi.object({

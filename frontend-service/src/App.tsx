@@ -21,12 +21,12 @@ import { useDarkModeStore } from './stores/darkMode';
 import { useWorkspaceStore } from './stores/workspace';
 import { getWorkspacePermissions } from './utils/permissions';
 import { useMatomoInstance } from './matomo';
-import SimbaClientPage from './pages/SimbaClientPage';
+import ClientSidePage from './pages/ClientSidePage';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
-    const [isSimbaClient, setIsSimbaClient] = useState(false);
+    const [isClientSide, setIsClientSide] = useState(false);
 
     const [location, navigate] = useLocation();
 
@@ -82,15 +82,15 @@ const App: React.FC = () => {
             const user = AuthService.getUser();
 
             const isUserUnauthorized = user?.id === environment.unauthorizedId;
-            const isSimbaClient = user?.id === environment.simbaId;
+            const isClientSide = user?.id === environment.clientSideId;
 
             if (!user || isUserUnauthorized) {
                 if (isUserUnauthorized) setIsErrorMyUser(true);
                 return;
             }
 
-            if (isSimbaClient) {
-                setIsSimbaClient(true);
+            if (isClientSide) {
+                setIsClientSide(true);
                 return;
             }
 
@@ -120,7 +120,7 @@ const App: React.FC = () => {
         initUser();
     }, [setUser, navigate, workspaceStore]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (isSimbaClient) return <SimbaClientPage />;
+    if (isClientSide) return <ClientSidePage />;
 
     if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 

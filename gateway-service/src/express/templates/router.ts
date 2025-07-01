@@ -263,6 +263,7 @@ templatesRouter.post(
     templatesControllerMiddleware.searchRulesTemplates,
 );
 
+// child templates
 templatesRouter.post(
     '/child',
     busboyMiddleware,

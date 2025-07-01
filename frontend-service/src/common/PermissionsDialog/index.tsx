@@ -4,7 +4,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQueryClient } from 'react-query';
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
@@ -33,11 +33,11 @@ const PermissionsDialog: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
-    const [tabValue, setTabValue] = React.useState(initialTab);
-    const [isPreferencesUpdated, setIsPreferencesUpdated] = React.useState(false);
-    const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = React.useState(false);
+    const [tabValue, setTabValue] = useState(initialTab);
+    const [isPreferencesUpdated, setIsPreferencesUpdated] = useState(false);
+    const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState(false);
 
-    const [openMeltaUpdates, setOpenMeltaUpdates] = React.useState(false);
+    const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 

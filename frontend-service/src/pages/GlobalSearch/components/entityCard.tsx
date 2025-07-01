@@ -224,7 +224,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {
                                 icon: '/icons/read-more-icon.svg',
                                 action: () => {
-                                    navigate(`/entity/${entity.properties._id}`);
+                                    navigate(`/entity/${entity.properties._id}/${entityTemplate._id}`);
                                 },
                                 popoverText: i18next.t('wizard.entity.readMore'),
                             },

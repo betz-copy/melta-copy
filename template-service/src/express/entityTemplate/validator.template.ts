@@ -107,7 +107,7 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         });
 
         if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField)))
-            throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist;');
+            throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist');
     }
 
     validateEntityTemplateUpdate = async (req: Request) => {

@@ -4,7 +4,7 @@ import DefaultController from '../../utils/express/controller';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 
-class SimbaValidator extends DefaultController {
+class ClientSideValidator extends DefaultController {
     private workspaceId: string;
 
     private instancesService: InstancesService;
@@ -19,10 +19,10 @@ class SimbaValidator extends DefaultController {
         this.instancesService = new InstancesService(this.workspaceId);
     }
 
-    async validateUserCanAccessSimba(req: Request) {
+    async validateUserCanAccessClientSide(req: Request) {
         const { user } = req;
 
-        if (!user || !user.kartoffelId || !user.usersInfoChildTemplateId) throw new Error('Non existing user trying connecting to simba');
+        if (!user || !user.kartoffelId || !user.usersInfoChildTemplateId) throw new Error('Non existing user trying connecting to client side');
 
         const usersInfoChildTemplate = await this.entityTemplateService.getChildTemplateById(user.usersInfoChildTemplateId);
 
@@ -38,14 +38,14 @@ class SimbaValidator extends DefaultController {
             sort: [],
         });
 
-        const simbaUserEntity = instances.entities[0];
+        const clientSideUserEntity = instances.entities[0];
 
-        if (!simbaUserEntity) throw new Error('User does not exists in simba drivers table');
+        if (!clientSideUserEntity) throw new Error('User does not exists in client side drivers table');
 
-        req.user = { ...user, id: `simba-${user.kartoffelId}` };
+        req.user = { ...user, id: `client-side-${user.kartoffelId}` };
 
-        req.simbaUserEntity = simbaUserEntity;
+        req.clientSideUserEntity = clientSideUserEntity;
     }
 }
 
-export default SimbaValidator;
+export default ClientSideValidator;

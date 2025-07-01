@@ -106,52 +106,54 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
-    simbaClientPage: {
-        contactInfoCard: {
-            title: 'פרטי קשר ומידע רלוונטי',
-            contacts: [
-                {
-                    role: 'רמ"ד תחבורה במנהלת',
-                    name: 'אריה שיים',
-                    hichatLink: 'https://www.hichat.com/ariehshayim',
-                    mailLink: 'mailto:arieh.shayim@simba.co.il',
-                },
-                {
-                    role: 'קצין בטיחות בתעבורה',
-                    name: 'רמי מגלשווילי',
-                    hichatLink: 'https://www.hichat.com/ramimgalchovil',
-                    mailLink: 'mailto:rami.galchovil@simba.co.il',
-                },
-                {
-                    role: 'תקלות מערכת',
-                    name: 'עדי סאקופסקי',
-                    hichatLink: 'https://www.hichat.com/adysakofsky',
-                    mailLink: 'mailto:adi.sakofsky@simba.co.il',
-                },
-            ],
-        },
-        topbar: {
-            title: 'בוקר טוב',
-        },
-        userNotExistsPage: {
-            title: 'נראה כי אין ברשותך רישיון פעיל',
-            subTitle: 'לא מצאנו אותך ברשימת הנהגים שלנו',
-            texts: {
-                whatWouldYouLikeToDo: 'מה ברצונך לעשות?',
-                userHaveUnactiveLicense: {
-                    title: 'יש לי רישיון אבל הוא לא בתוקף',
-                    description:
-                        'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי',
-                },
-                userDontHaveLicense: {
-                    title: 'אני רוצה להוציא רישיון צבאי',
-                    description:
-                        'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכ',
-                },
+    clientSidePage: {
+        simba: {
+            contactInfoCard: {
+                title: 'פרטי קשר ומידע רלוונטי',
+                contacts: [
+                    {
+                        role: 'רמ"ד תחבורה במנהלת',
+                        name: 'אריה שיים',
+                        hichatLink: 'https://www.hichat.com/ariehshayim',
+                        mailLink: 'mailto:arieh.shayim@gmail.com',
+                    },
+                    {
+                        role: 'קצין בטיחות בתעבורה',
+                        name: 'רמי מגלשווילי',
+                        hichatLink: 'https://www.hichat.com/ramimgalchovil',
+                        mailLink: 'mailto:rami.galchovil@gmail.com',
+                    },
+                    {
+                        role: 'תקלות מערכת',
+                        name: 'עדי סאקופסקי',
+                        hichatLink: 'https://www.hichat.com/adysakofsky',
+                        mailLink: 'mailto:adi.sakofsky@gmail.com',
+                    },
+                ],
             },
-            recieveLicenseRequest: 'להגשת בקשה לרישיון צבאי ע”י מפקד:',
-            neededLetter: 'מכתב נחיצות.pdf',
-            forMoreInfo: 'למידע נוסף ניתן לפנות ל:',
+            topbar: {
+                title: 'בוקר טוב',
+            },
+            userNotExistsPage: {
+                title: 'נראה כי אין ברשותך רישיון פעיל',
+                subTitle: 'לא מצאנו אותך ברשימת הנהגים שלנו',
+                texts: {
+                    whatWouldYouLikeToDo: 'מה ברצונך לעשות?',
+                    userHaveUnactiveLicense: {
+                        title: 'יש לי רישיון אבל הוא לא בתוקף',
+                        description:
+                            'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי',
+                    },
+                    userDontHaveLicense: {
+                        title: 'אני רוצה להוציא רישיון צבאי',
+                        description:
+                            'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכ',
+                    },
+                },
+                recieveLicenseRequest: 'להגשת בקשה לרישיון צבאי ע”י מפקד:',
+                neededLetter: 'מכתב נחיצות.pdf',
+                forMoreInfo: 'למידע נוסף ניתן לפנות ל:',
+            },
         },
     },
     entityPage: {
@@ -1550,10 +1552,10 @@ export default {
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
-        simba: {
+        clientSide: {
             usersInfoChildTemplateId: 'ID תבנית משתמשים',
-            carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
+            clientSideWorkspaceName: 'שם סביבת צד לקוח',
         },
     },
     createChildTemplateDialog: {

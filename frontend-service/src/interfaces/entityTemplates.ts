@@ -42,6 +42,9 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    filters?: any;
+    defaultValue?: any;
+    isFilterByCurrentUser?: boolean;
 }
 
 export interface IEntityTemplate {

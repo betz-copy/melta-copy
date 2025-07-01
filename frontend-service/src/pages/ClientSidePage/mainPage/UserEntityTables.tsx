@@ -3,7 +3,7 @@ import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityCh
 import { IEntity } from '../../../interfaces/entities';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { useQuery, useQueryClient } from 'react-query';
-import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/simbaService';
+import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { CircularProgress, Typography } from '@mui/material';
@@ -12,11 +12,11 @@ import i18next from 'i18next';
 
 interface IUserEntityTablesProps {
     childTemplates: IMongoChildEntityTemplatePopulated[];
-    currentUserFromSimba: IEntity;
+    currentUserFromClientSide: IEntity;
     usersInfoChildTemplate: IMongoChildEntityTemplatePopulated;
 }
 
-const filterEmptyTemplateTablesOnSimbaPage = async (templates: IMongoChildEntityTemplatePopulated[], userEntityId: string) => {
+const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildEntityTemplatePopulated[], userEntityId: string) => {
     const entitiesCountByTemplates = await countEntitiesOfTemplatesByUserEntityId(
         templates.map(({ fatherTemplateId }) => fatherTemplateId._id),
         userEntityId,
@@ -34,20 +34,20 @@ export type UserEntityTablesRef = {
 };
 
 const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>(
-    ({ childTemplates, currentUserFromSimba, usersInfoChildTemplate }, ref) => {
+    ({ childTemplates, currentUserFromClientSide, usersInfoChildTemplate }, ref) => {
         const {
             data: templatesFilteredByCount,
             refetch: refetchTemplatesFilteredByCount,
             isFetching: isLoadingTemplatesFilteredByCount,
         } = useQuery({
-            queryKey: ['countEntitiesOfTemplatesByUser', usersInfoChildTemplate?.fatherTemplateId._id, currentUserFromSimba.properties._id],
-            queryFn: () => filterEmptyTemplateTablesOnSimbaPage(Array.from(childTemplates.values()), currentUserFromSimba.properties._id!),
-            enabled: !!currentUserFromSimba,
+            queryKey: ['countEntitiesOfTemplatesByUser', usersInfoChildTemplate?.fatherTemplateId._id, currentUserFromClientSide.properties._id],
+            queryFn: () => filterEmptyTemplateTablesOnClientSidePage(Array.from(childTemplates.values()), currentUserFromClientSide.properties._id!),
+            enabled: !!currentUserFromClientSide,
         });
 
         const queryClient = useQueryClient();
 
-        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getSimbaEntityTemplates')!;
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getClientSideEntityTemplates')!;
 
         const viewResultsRef = useRef<TemplateTablesViewResultsRef>(null);
 
@@ -141,7 +141,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                             }}
                                             template={childTemplatePopulated}
                                             quickFilterText={''}
-                                            page="simba"
+                                            page="client-side"
                                             setUpdatedEntities={() => {}}
                                             defaultFilter={defaultFilter}
                                         />

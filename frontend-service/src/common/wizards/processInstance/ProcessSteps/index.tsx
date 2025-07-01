@@ -2,7 +2,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled, Typography } from '@mui/material';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TocIcon from '@mui/icons-material/Toc';
 import i18next from 'i18next';
 import { History } from '@mui/icons-material';
@@ -60,18 +60,18 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
     setActiveStep,
 }) => {
-    const [currStepInstance, setCurrStepInstance] = React.useState(
+    const [currStepInstance, setCurrStepInstance] = useState(
         defaultStepTemplate ? processInstance.steps.find((step) => step.templateId === defaultStepTemplate._id) : processInstance.steps[0],
     );
 
-    const [currStepInstanceIndex, setCurrStepInstanceIndex] = React.useState(
+    const [currStepInstanceIndex, setCurrStepInstanceIndex] = useState(
         defaultStepTemplate ? processInstance.steps.findIndex((step) => step.templateId === defaultStepTemplate._id) : 0,
     );
 
-    const [openActivityPopper, setOpenActivityPopper] = React.useState(false);
-    const [scrollPosition, setScrollPosition] = React.useState(0);
-    const [scrollLeftDisabled, setScrollLeftDisabled] = React.useState(false);
-    const [scrollRightDisabled, setScrollRightDisabled] = React.useState(false);
+    const [openActivityPopper, setOpenActivityPopper] = useState(false);
+    const [scrollPosition, setScrollPosition] = useState(0);
+    const [scrollLeftDisabled, setScrollLeftDisabled] = useState(false);
+    const [scrollRightDisabled, setScrollRightDisabled] = useState(false);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 

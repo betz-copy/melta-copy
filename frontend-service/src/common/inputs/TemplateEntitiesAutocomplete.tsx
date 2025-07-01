@@ -14,8 +14,8 @@ import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
 import { locationConverterToString } from '../../utils/map/convert';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
-import { searchEntitiesOfTemplateSimbaRequest } from '../../services/simbaService';
-import { useSimbaUserStore } from '../../stores/simbaUser';
+import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -51,7 +51,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     style,
     relationFilters,
 }) => {
-    const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+    const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const { cacheBlockSize } = environment.agGrid;
 
@@ -74,15 +74,15 @@ const TemplateEntitiesAutocomplete: React.FC<{
         };
     };
 
-    const searchFunction = (templateId: string, simbaUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
-        simbaUserEntity?.properties?._id
-            ? searchEntitiesOfTemplateSimbaRequest(templateId, simbaUserEntityId, searchBody)
+    const searchFunction = (templateId: string, clientSideUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
+        clientSideUserEntity?.properties?._id
+            ? searchEntitiesOfTemplateClientSideRequest(templateId, clientSideUserEntityId, searchBody)
             : searchEntitiesOfTemplateRequest(templateId, searchBody);
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
         ({ pageParam = 0 }) => {
-            return searchFunction(template._id!, simbaUserEntity?.properties?._id, {
+            return searchFunction(template._id!, clientSideUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: relationFilters ? parseAndAddDisabled(relationFilters) : { $and: { disabled: { $eq: false } } },

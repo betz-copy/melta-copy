@@ -63,8 +63,8 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { searchEntitiesOfTemplateSimbaRequest } from '../../services/simbaService';
-import { useSimbaUserStore } from '../../stores/simbaUser';
+import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -89,14 +89,14 @@ export interface IButtonProps<Data> {
 }
 
 export const getDatasource = <Data extends any = EntityData>(
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
     defaultFilter?: ISearchFilter,
     pageType?: string,
-    simbaUserEntityId?: string,
+    clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -111,10 +111,10 @@ export const getDatasource = <Data extends any = EntityData>(
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
             const { result: data, err } = await trycatch(() =>
-                pageType === 'simba'
-                    ? searchEntitiesOfTemplateSimbaRequest(
+                pageType === 'client-side'
+                    ? searchEntitiesOfTemplateClientSideRequest(
                           template._id,
-                          simbaUserEntityId!,
+                          clientSideUserEntityId!,
                           agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,
@@ -123,7 +123,7 @@ export const getDatasource = <Data extends any = EntityData>(
                           ),
                       )
                     : searchEntitiesOfTemplateRequest(
-                          template._id,
+                          template.fatherTemplateId || template._id,
                           agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,
@@ -164,7 +164,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     hasInstances?: boolean,
     defaultFilter?: ISearchFilter,
     pageType?: string,
-    simbaUserEntityId?: string,
+    clientSideUserEntityId?: string,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -184,7 +184,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
             rowData as IConnection[],
             defaultFilter,
             pageType,
-            simbaUserEntityId,
+            clientSideUserEntityId,
         ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
@@ -295,7 +295,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
 
-        const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+        const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -724,7 +724,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     hasInstances,
                     defaultFilter,
                     saveStorageProps.pageType,
-                    simbaUserEntity?.properties?._id,
+                    clientSideUserEntity?.properties?._id,
                 ),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
         );

@@ -3,16 +3,19 @@ import { Card, CardContent, Typography, Grid, Link, IconButton } from '@mui/mate
 import i18next from 'i18next';
 import hebrew from '../../../i18n/hebrew';
 import { getPropertyColor } from '../../../common/EntityProperties';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const ContactInfoCard: React.FC = () => {
-    const contacts = hebrew.simbaClientPage.contactInfoCard.contacts;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { clientSideWorkspaceName } = workspace.metadata?.clientSide || {};
+    const contacts = hebrew.clientSidePage[clientSideWorkspaceName].contactInfoCard.contacts;
     const propertyTitleColor = getPropertyColor('propertyKey', [], undefined, 'normal', '#9398C2');
     const propertyValueColor = getPropertyColor('propertyKey', [], undefined, 'normal', '#53566E');
 
     return (
         <>
             <Typography variant="h6" align="center" fontWeight={700} color="primary" gutterBottom sx={{ fontSize: '1.1rem' }}>
-                {i18next.t('simbaClientPage.contactInfoCard.title')}
+                {i18next.t(`clientSidePage.${clientSideWorkspaceName}.contactInfoCard.title`)}
             </Typography>
             <Card sx={{ mt: 1, borderRadius: '16px', boxShadow: '-2px 2px 6px 0px #1e27754d' }}>
                 <CardContent>

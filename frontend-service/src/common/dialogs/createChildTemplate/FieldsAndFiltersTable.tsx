@@ -1,5 +1,5 @@
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import { AddRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
@@ -30,8 +30,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     setFieldChips,
     onCheckboxChange,
 }) => {
-    const [addFilterToField, setAddFilterToField] = React.useState<string | null>(null);
-    const [dialogType, setDialogType] = React.useState<'filter' | 'default' | 'editByUser' | null>(null);
+    const [addFilterToField, setAddFilterToField] = useState<string | null>(null);
+    const [dialogType, setDialogType] = useState<'filter' | 'default' | 'editByUser' | null>(null);
 
     const addFilterToFieldHandler = (
         filterField: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter,
@@ -77,6 +77,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             }));
         }
     };
+
     const isDisallowedFormat = (fieldName: string): boolean => {
         const prop = entityTemplate.properties.properties[fieldName];
         return (

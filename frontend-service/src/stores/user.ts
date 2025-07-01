@@ -19,7 +19,7 @@ export interface UserState {
 
         currentWorkspacePermissions: ISubCompactPermissions;
         kartoffelId?: string;
-        simbaWorkspaceId?: string;
+        clientSideWorkspaceId?: string;
     } & IUser;
     setUser: (user: UserState['user']) => void;
 }

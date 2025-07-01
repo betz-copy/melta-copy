@@ -14,7 +14,7 @@ import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationPro
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import { environment } from '../../../../globals';
-import { createEntitySimbaRequest } from '../../../../services/simbaService';
+import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { IEntityChildTemplateMapPopulated, IMongoChildEntityTemplatePopulated } from '../../../../interfaces/entityChildTemplates';
 
 const { errorCodes } = environment;
@@ -29,7 +29,7 @@ const useMutationHandler = (
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
     childTemplateId?: string,
-    simbaUserEntity?: IEntity,
+    clientSideUserEntity?: IEntity,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
@@ -123,15 +123,15 @@ const useMutationHandler = (
         },
     );
 
-    if (Object.keys(simbaUserEntity || {}).length > 0) {
+    if (Object.keys(clientSideUserEntity || {}).length > 0) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
+        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.fatherTemplateId._id === entityTemplate._id);
     }
-    const { isLoading: isSimbaCreateLoading, mutateAsync: simbaCreateMutation } = useMutation(
+    const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            createEntitySimbaRequest(newEntityData, ignoredRules, childTemplate, simbaUserEntity),
+            createEntityClientSideRequest(newEntityData, ignoredRules, childTemplate, clientSideUserEntity),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);
@@ -151,9 +151,9 @@ const useMutationHandler = (
             isLoading = isUpdateLoading;
             mutateAsync = updateMutation;
             break;
-        case ActionTypes.CreateSimbaEntity:
-            isLoading = isSimbaCreateLoading;
-            mutateAsync = simbaCreateMutation;
+        case ActionTypes.CreateClientSideEntity:
+            isLoading = isClientSideCreateLoading;
+            mutateAsync = clientSideCreateMutation;
             break;
         default:
             isLoading = false;

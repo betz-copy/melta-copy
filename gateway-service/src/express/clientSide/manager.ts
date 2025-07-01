@@ -14,7 +14,7 @@ import TemplatesManager from '../templates/manager';
 import InstanceManager from '../instances/manager';
 import NotificationsService from '../notifications/manager';
 
-class SimbaManager extends DefaultManagerProxy<null> {
+class ClientSideManager extends DefaultManagerProxy<null> {
     private entityTemplateService: EntityTemplateService;
 
     private instanceManager: InstanceManager;
@@ -38,7 +38,7 @@ class SimbaManager extends DefaultManagerProxy<null> {
         this.notificationsService = new NotificationsService(workspaceId);
     }
 
-    async getAllSimbaTemplates(usersInfoChildTemplateId: string) {
+    async getAllClientSideTemplates(usersInfoChildTemplateId: string) {
         const childTemplates = await this.entityTemplateService.getAllChildTemplates();
 
         const usersInfoChildTemplate = childTemplates.find((template) => template._id === usersInfoChildTemplateId);
@@ -124,4 +124,4 @@ class SimbaManager extends DefaultManagerProxy<null> {
     }
 }
 
-export default SimbaManager;
+export default ClientSideManager;

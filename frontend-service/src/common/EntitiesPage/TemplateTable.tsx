@@ -44,7 +44,7 @@ import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { useSimbaUserStore } from '../../stores/simbaUser';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 
 const {
     loadExcel: { excelExtension },
@@ -71,7 +71,7 @@ const TemplateTable = forwardRef<
 
     const currentUser = useUserStore((state) => state.user);
 
-    const currentSimbaUser = useSimbaUserStore((state) => state.simbaUser);
+    const currentClientSideUser = useClientSideUserStore((state) => state.clientSideUser);
 
     const theme = useTheme();
     const drafts = useDraftsStore((state) => state.drafts);
@@ -144,7 +144,7 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = currentSimbaUser
+    const userHasWritePermissions = currentClientSideUser
         ? true
         : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
 
@@ -301,7 +301,7 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    {page !== 'simba' && (
+                    {page !== 'client-side' && (
                         <EditExcelButton
                             disabled={isEditExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}

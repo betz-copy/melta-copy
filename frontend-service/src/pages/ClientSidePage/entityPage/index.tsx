@@ -4,7 +4,7 @@ import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/mat
 import { useParams } from 'wouter';
 import { useQuery, useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { getSimbaExpandedEntityByIdRequest } from '../../../services/simbaService';
+import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { ConnectionsTable, IConnectionTemplateOfExpandedEntity } from '../../Entity';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -16,15 +16,15 @@ import i18next from 'i18next';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { CustomIcon } from '../../../common/CustomIcon';
 
-const SimbaEntityPage: React.FC = () => {
+const ClientSideEntityPage: React.FC = () => {
     const theme = useTheme();
 
     const { entityId } = useParams();
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<ICategoryMap>('getSimbaCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getSimbaEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getSimbaRelationshipTemplates')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getClientSideCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getClientSideEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getClientSideRelationshipTemplates')!;
 
     const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = Array.from(entityTemplates.values());
     const allowedRelationships: IMongoRelationshipTemplate[] = Array.from(relationshipTemplates.values());
@@ -32,7 +32,7 @@ const SimbaEntityPage: React.FC = () => {
     const expanded = entityId ? { [entityId]: 1 } : {};
     const { data: expandedEntity } = useQuery({
         queryKey: ['expandedEntity', entityId],
-        queryFn: () => getSimbaExpandedEntityByIdRequest(entityId!, expanded, { templateIds: Array.from(entityTemplates.keys()) }),
+        queryFn: () => getClientSideExpandedEntityByIdRequest(entityId!, expanded, { templateIds: Array.from(entityTemplates.keys()) }),
     });
 
     const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
@@ -204,4 +204,4 @@ const SimbaEntityPage: React.FC = () => {
     );
 };
 
-export default SimbaEntityPage;
+export default ClientSideEntityPage;

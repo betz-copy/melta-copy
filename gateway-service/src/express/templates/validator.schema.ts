@@ -1,27 +1,7 @@
 import Joi from 'joi';
-import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes } from '@microservices/shared';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes, filterOfTemplateSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // Neo4j regex (Java style)
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-}).id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
 const searchFilterSchema = Joi.object({
     $and: Joi.array().items(filterOfTemplateSchema),
     $or: Joi.array().items(filterOfTemplateSchema),
@@ -348,6 +328,7 @@ export const createEntityChildTemplateSchema = Joi.object({
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
         isFilterByCurrentUser: Joi.boolean().default(false),
         isFilterByUserUnit: Joi.boolean().default(false),
+        filterByCurrentUserField: Joi.string(),
     },
     query: {},
     params: {},
@@ -366,6 +347,7 @@ export const updateEntityChildTemplateSchema = Joi.object({
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
         isFilterByCurrentUser: Joi.boolean().default(false),
         isFilterByUserUnit: Joi.boolean().default(false),
+        filterByCurrentUserField: Joi.string(),
     },
     query: {},
     params: {

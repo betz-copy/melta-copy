@@ -16,14 +16,14 @@ import i18next from 'i18next';
 import { Link } from 'wouter';
 
 interface IUserInfoCardProps {
-    currentUserFromSimba: IEntity;
+    currentUserFromClientSide: IEntity;
     usersInfoChildTemplate: IMongoChildEntityTemplatePopulated;
     overridePropertiesToShow?: string[];
     displayTilte?: boolean;
 }
 
 const UserInfoCard: React.FC<IUserInfoCardProps> = ({
-    currentUserFromSimba,
+    currentUserFromClientSide,
     usersInfoChildTemplate,
     overridePropertiesToShow,
     displayTilte = true,
@@ -80,7 +80,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                         </Grid>
                         <Grid item>
                             <Grid item>
-                                <Link href={`/simba/entity/${currentUserFromSimba.properties._id}`}>
+                                <Link href={`/client-side/entity/${currentUserFromClientSide.properties._id}`}>
                                     <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
                                         <img height="15px" src="/icons/read-more-icon.svg" />
                                     </IconButtonWithPopover>
@@ -103,7 +103,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                         <Grid item height="40%">
                             <EntityProperties
                                 entityTemplate={usersInfoChildTemplate!.fatherTemplateId}
-                                properties={currentUserFromSimba.properties}
+                                properties={currentUserFromClientSide.properties}
                                 overridePropertiesToShow={overridePropertiesToShow}
                                 style={{
                                     flexDirection: 'row',
@@ -119,8 +119,8 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                         </Grid>
                         <Grid container item justifyContent="space-between" paddingTop="25px">
                             <EntityDates
-                                createdAt={currentUserFromSimba.properties.createdAt}
-                                updatedAt={currentUserFromSimba.properties.updatedAt}
+                                createdAt={currentUserFromClientSide.properties.createdAt}
+                                updatedAt={currentUserFromClientSide.properties.updatedAt}
                             />
                         </Grid>
                     </Grid>

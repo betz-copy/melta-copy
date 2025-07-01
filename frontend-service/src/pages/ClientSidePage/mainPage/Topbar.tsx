@@ -10,10 +10,11 @@ import { useQuery } from 'react-query';
 import { environment } from '../../../globals';
 import { INotificationCountGroups } from '../../../interfaces/notifications';
 import {
-    getMySimbaNotificationGroupCountRequest,
-    manyNotificationSeenSimbaRequest,
-    getMyNotificationsSimbaRequest,
-} from '../../../services/simbaService';
+    getMyClientSideNotificationGroupCountRequest,
+    manyNotificationSeenClientSideRequest,
+    getMyNotificationsClientSideRequest,
+} from '../../../services/clientSideService';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { notifications } = environment;
 
@@ -23,10 +24,15 @@ interface ITopbarProps {
 
 const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { clientSideWorkspaceName } = workspace.metadata?.clientSide || {};
 
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
         ['getMyNotificationCount', isNotificationsScreenOpen],
-        () => getMySimbaNotificationGroupCountRequest(isNotificationsScreenOpen ? (notifications.groups as unknown as INotificationCountGroups) : {}),
+        () =>
+            getMyClientSideNotificationGroupCountRequest(
+                isNotificationsScreenOpen ? (notifications.groups as unknown as INotificationCountGroups) : {},
+            ),
         {
             refetchInterval: notifications.updateInterval,
             refetchOnWindowFocus: true,
@@ -53,7 +59,7 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                 <Grid container item alignItems="center" flexWrap="nowrap" spacing={1}>
                     <Grid container item alignItems="center" flexWrap="nowrap" spacing={1} xs={8}>
                         <Grid item display="flex" alignItems="center" justifyContent="center">
-                            <CustomImage preserveColor imageUrl="/images/simba-background.png" width="50px" />
+                            <CustomImage preserveColor imageUrl={`/clientSide/${clientSideWorkspaceName}/background.png`} width="50px" />
                         </Grid>
                         <Grid item>
                             <Divider
@@ -64,7 +70,7 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                         </Grid>
                         <Grid item>
                             <Typography fontSize="16px" color="#1e2775">
-                                <b>{i18next.t('simbaClientPage.topbar.title')}</b> {currentUser?.fullName}
+                                <b>{i18next.t(`clientSidePage.${clientSideWorkspaceName}.topbar.title`)}</b> {currentUser?.fullName}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -93,8 +99,8 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                 notificationCountDetails={notificationCountDetails}
                 updateNotificationCountDetails={updateNotificationCountDetails}
                 side="left"
-                manyNotificationSeenRequest={manyNotificationSeenSimbaRequest}
-                getMyNotificationsRequest={getMyNotificationsSimbaRequest}
+                manyNotificationSeenRequest={manyNotificationSeenClientSideRequest}
+                getMyNotificationsRequest={getMyNotificationsClientSideRequest}
             />
         </>
     );

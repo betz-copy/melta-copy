@@ -9,23 +9,23 @@ import { environment } from '../../globals';
 import { MainBox } from '../../Main.styled';
 import ScrollToTop from '../../ScrollToTop';
 import i18next from 'i18next';
-import { getCurrentUserEntity } from '../../services/simbaService';
+import { getCurrentUserEntity } from '../../services/clientSideService';
 import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTemplates';
 import { IKartoffelUser } from '../../interfaces/users';
 import { Topbar } from './mainPage/Topbar';
-import { useSimbaUserStore } from '../../stores/simbaUser';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 
 const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
-const SimbaMainPage = lazy(() => import('./mainPage'));
+const ClientSideMainPage = lazy(() => import('./mainPage'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
-const SimbaEntityPage = lazy(() => import('./entityPage'));
+const ClientSideEntityPage = lazy(() => import('./entityPage'));
 
-const SimbaClientPageInner: React.FC = () => {
+const ClientSidePageInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const setSimbaUser = useSimbaUserStore((state) => state.setSimbaUser);
+    const setClientSideUser = useClientSideUserStore((state) => state.setClientSideUser);
 
-    const usersInfoChildTemplateId = workspace.metadata.simba.usersInfoChildTemplateId;
+    const { usersInfoChildTemplateId, clientSideWorkspaceName } = workspace.metadata.clientSide;
     const user = AuthService.getUser();
 
     const queryClient = useQueryClient();
@@ -33,28 +33,28 @@ const SimbaClientPageInner: React.FC = () => {
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
 
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getSimbaChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
     const {
         isLoading,
-        data: currentUserFromSimba,
+        data: currentUserFromClientSide,
         isError,
     } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.fatherTemplateId._id, user?.kartoffelId],
         queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.fatherTemplateId._id || '', user?.kartoffelId!),
         onError: () => {
-            navigate('/simba/user-not-exists');
+            navigate('/client-side/user-not-exists');
         },
     });
 
-    const currentUser: IKartoffelUser = JSON.parse(currentUserFromSimba?.properties.full_name || '{}');
+    const currentUser: IKartoffelUser = JSON.parse(currentUserFromClientSide?.properties.full_name || '{}');
 
     useEffect(() => {
-        if (currentUserFromSimba) {
-            setSimbaUser({ ...currentUser }, currentUserFromSimba!);
+        if (currentUserFromClientSide) {
+            setClientSideUser({ ...currentUser }, currentUserFromClientSide!);
         }
-    }, [currentUser, setSimbaUser, currentUserFromSimba]);
+    }, [currentUser, setClientSideUser, currentUserFromClientSide]);
 
     const pageScrollTargetRef = useRef<HTMLElement | null>(null);
     const trigger = useScrollTrigger({ target: pageScrollTargetRef.current ?? undefined, disableHysteresis: true, threshold: 300 });
@@ -128,7 +128,7 @@ const SimbaClientPageInner: React.FC = () => {
                     pageScrollTargetRef.current = ref;
                 }}
                 sx={{
-                    backgroundImage: 'url(/icons/simba-logo-rtl.svg)',
+                    backgroundImage: `url(/clientSide/${clientSideWorkspaceName}/logo-rtl.svg)`,
                     backgroundSize: '90% 90%',
                     backgroundRepeat: 'no-repeat',
                     backgroundPositionX: 'center',
@@ -140,14 +140,14 @@ const SimbaClientPageInner: React.FC = () => {
                     <Suspense fallback={<div />}>
                         {!isError && <Topbar currentUser={currentUser} />}
                         <Switch>
-                            <Route path="simba/user-not-exists">
+                            <Route path="client-side/user-not-exists">
                                 <UserNotExistsPage />
                             </Route>
-                            <Route path="simba/test.mlt">
-                                <SimbaMainPage />
+                            <Route path="client-side/test.mlt">
+                                <ClientSideMainPage />
                             </Route>
-                            <Route path="simba/entity/:entityId">
-                                <SimbaEntityPage />
+                            <Route path="client-side/entity/:entityId">
+                                <ClientSideEntityPage />
                             </Route>
                             <Route path="*">
                                 <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />
@@ -162,4 +162,4 @@ const SimbaClientPageInner: React.FC = () => {
     );
 };
 
-export default SimbaClientPageInner;
+export default ClientSidePageInner;

@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
@@ -33,7 +33,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     hideFilterType = false,
     forceEqualsType = false,
 }) => {
-    React.useEffect(() => {
+    useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
             handleFilterTypeChange('equals');
         }

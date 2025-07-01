@@ -9,7 +9,7 @@ interface DayNightSwitchProps {
     animationDuration?: number;
 }
 export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick, animationScale = 30, animationDuration = 0.4 }) => {
-    const [isDay, setDay] = React.useState(!checked);
+    const [isDay, setDay] = useState(!checked);
     const [toNightAnimation] = useState(gsap.timeline());
 
     const checkedRef = useRef(checked);

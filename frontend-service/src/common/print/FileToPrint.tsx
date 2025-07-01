@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 import FlexBox from '../FlexBox';
@@ -21,13 +21,13 @@ const FileToPrint: React.FC<{
         setNumOfPages(numPages);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (file.contentType === 'image' && isPreviewLoading === false) {
             onPreviewLoadingFinished();
         }
     }, [isPreviewLoading === true]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (noSuchKeyError) onPreviewLoadingFinished(true);
     }, [noSuchKeyError === true]);
 

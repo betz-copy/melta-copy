@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { DefaultController, fetchPropertyFromRequest } from '@microservices/shared';
-import { IMongoEntityChildTemplate } from './interface';
+import { DefaultController, fetchPropertyFromRequest, IMongoEntityChildTemplate } from '@microservices/shared';
 import EntityChildTemplateManager from './manager';
 
 class EntityChildTemplateController extends DefaultController<IMongoEntityChildTemplate, EntityChildTemplateManager> {
