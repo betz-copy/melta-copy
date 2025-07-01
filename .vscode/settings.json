@@ -52,8 +52,7 @@
         "**/dist": true
     },
     "search.exclude": {
-        "**/node_modules": true
-        // "**/dist": true,
-    },
-    "files.autoSave": "afterDelay"
+        "**/node_modules": true,
+        "**/dist": true
+    }
 }

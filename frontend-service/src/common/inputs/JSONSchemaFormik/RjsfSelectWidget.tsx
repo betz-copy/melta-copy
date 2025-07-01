@@ -45,6 +45,9 @@ const RjsfSelectWidget = ({
     onFocus,
     rawErrors = [],
     color,
+    hideError,
+    hideLabel,
+    formContext,
     ...textFieldProps
 }: WidgetProps) => {
     const { enumOptions: items } = getUiOptions(uiSchema) as {
@@ -102,8 +105,8 @@ const RjsfSelectWidget = ({
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
-            rawErrors={rawErrors}
-            label={label || schema.title}
+            rawErrors={!hideError ? rawErrors: []}
+            label={!hideLabel ? label || schema.title : undefined}
             color={color}
             value={value}
         />
