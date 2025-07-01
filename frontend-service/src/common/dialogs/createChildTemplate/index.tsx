@@ -69,7 +69,7 @@ const CreateChildTemplateDialog: React.FC<{
             const initialFields: ITemplateFieldsFilters = {};
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
-                const isSelected = childTemplate ? key in childTemplate.properties || isRequired : false;
+                const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
 
                 initialFields[key] = {
                     selected: isSelected,
