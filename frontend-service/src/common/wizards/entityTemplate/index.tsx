@@ -25,6 +25,8 @@ import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateT
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 import { FieldGroupData, IFilterRelationReference, PropertyItem } from './commonInterfaces';
+import { IEntityChildTemplateMap, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
+import { getAllEntityChildTemplates } from '../../../services/templates/entityChildTemplatesService';
 
 const { errorCodes } = environment;
 
@@ -126,6 +128,25 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
 
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
+
+                    try {
+                        const childTemplates: IMongoChildEntityTemplatePopulated[] = await getAllEntityChildTemplates();
+                        queryClient.setQueryData<IEntityChildTemplateMap>(
+                            'getChildEntityTemplates',
+                            mapTemplates(
+                                childTemplates.map((childTemplate) => {
+                                    return {
+                                        ...childTemplate,
+                                        categories: childTemplate.categories.map((category) => category._id),
+                                        fatherTemplateId: childTemplate.fatherTemplateId._id,
+                                    } as IMongoChildEntityTemplate;
+                                }),
+                                'name',
+                            ),
+                        );
+                    } catch (error) {
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                    }
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
                     try {

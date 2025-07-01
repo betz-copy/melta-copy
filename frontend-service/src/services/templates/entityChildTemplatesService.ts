@@ -1,5 +1,5 @@
 import axios from '../../axios';
-import { IEntityChildTemplate, IMongoChildEntityTemplate } from '../../interfaces/entityChildTemplates';
+import { IEntityChildTemplate, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../interfaces/entityChildTemplates';
 import { environment } from '../../globals';
 
 const { entityChildTemplates } = environment.api;
@@ -15,7 +15,7 @@ const updateEntityChildTemplate = async (id: string, childTemplate: IEntityChild
 };
 
 const getAllEntityChildTemplates = async () => {
-    const { data } = await axios.get<IMongoChildEntityTemplate[]>(entityChildTemplates);
+    const { data } = await axios.get<IMongoChildEntityTemplatePopulated[]>(entityChildTemplates);
     return data;
 };
 

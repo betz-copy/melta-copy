@@ -76,6 +76,16 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         return this.model.findByIdAndUpdate(id, childTemplate, { new: true }).orFail(new NotFoundError('Entity Child Template not found'));
     }
 
+    async updateChildrenDisplayNames(fatherTemplateId: string, oldDisplayName: string, newDisplayName: string): Promise<void> {
+        const result = await this.model.updateMany({ fatherTemplateId }, [
+            { $set: { displayName: { $replaceOne: { input: '$displayName', find: oldDisplayName, replacement: newDisplayName } } } },
+        ]);
+
+        if (result.modifiedCount === 0) {
+            throw new NotFoundError('No child templates found');
+        }
+    }
+
     async deleteChildTemplate(id: string): Promise<IMongoEntityChildTemplate | null> {
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Entity Child Template not found'));
     }
