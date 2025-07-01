@@ -384,7 +384,7 @@ const CreateChildTemplateDialog: React.FC<{
             <Formik
                 initialValues={{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
-                    displayName: childTemplate ? childTemplate.displayName : '',
+                    displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
                     categories: selectedCategories,
                 }}
@@ -464,7 +464,7 @@ const CreateChildTemplateDialog: React.FC<{
                         <Form>
                             <DialogTitle>
                                 {childTemplate
-                                    ? `${i18next.t('createChildTemplateDialog.updateTemplateTitle')}- ${entityTemplate.displayName}`
+                                    ? `${i18next.t('createChildTemplateDialog.updateTemplateTitle')}- ${childTemplate.displayName}`
                                     : `${i18next.t('createChildTemplateDialog.templateTitle')}- ${entityTemplate.displayName}`}
                             </DialogTitle>
                             <DialogContent>
