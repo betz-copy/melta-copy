@@ -136,6 +136,7 @@ interface EntityTemplateCardProps {
     entityHasWritePermission: boolean;
     isDisabledView?: boolean;
     isChildTemplate?: boolean;
+    title?: string;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -148,6 +149,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     entityHasWritePermission,
     isDisabledView = false,
     isChildTemplate = false,
+    title = entityTemplate.displayName,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -174,7 +176,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints,fieldGroups } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups } = entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
@@ -225,7 +227,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             )}
                         </Grid>
                         <Grid item>
-                            <MeltaTooltip title={entityTemplate.displayName}>
+                            <MeltaTooltip title={title}>
                                 <Typography
                                     style={{
                                         fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
@@ -237,7 +239,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         width: '130px',
                                     }}
                                 >
-                                    {entityTemplate.displayName}
+                                    {title}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>
@@ -791,7 +793,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityTemplate={{
                                                         ...entityTemplate,
                                                         _id: childTemplate._id,
-                                                        displayName: childTemplate.displayName,
                                                     }}
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -801,6 +802,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityHasWritePermission={entityHasWritePermission}
                                                     isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
                                                     isChildTemplate={true}
+                                                    title={childTemplate.displayName}
                                                 />
                                             </Grid>
                                         ))}
@@ -850,7 +852,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityTemplate={{
                                                     ...parentTemplate,
                                                     _id: childTemplate._id,
-                                                    displayName: parentTemplate.disabled ? parentTemplate.displayName : childTemplate.displayName,
                                                 }}
                                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -860,6 +861,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityHasWritePermission={false}
                                                 isDisabledView={!childTemplate.categories.includes(entityTemplatesWithCategory.category._id)}
                                                 isChildTemplate={true}
+                                                title={childTemplate.displayName}
                                             />
                                         </Grid>
                                     ))}
