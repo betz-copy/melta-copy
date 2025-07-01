@@ -29,10 +29,12 @@ export const environment = {
         ruleBreachesRequests: '/rule-breaches/requests',
         ruleBreachesAlerts: '/rule-breaches/alerts',
         workspaces: '/workspaces',
+        dashboard: '/dashboard',
     },
     unauthorizedId: 'unauthorized',
     defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
+    searchPath: '/search',
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
@@ -143,6 +145,28 @@ export const environment = {
     charts: {
         defaultColumnSizes: { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 },
         chartsOrderKey: 'chartsOrder_',
+        pieChartColors: [
+            '#F098ED',
+            '#F9FB85',
+            '#FFBB6D',
+            '#86FB83',
+            '#6DCBFF',
+            '#F09898',
+            '#AF98F0',
+            '#85FBED',
+            '#C0FB85',
+            '#FFDF6D',
+            '#6D96FF',
+            '#FB8383',
+            '#D498F0',
+        ],
+    },
+    dashboard: {
+        dashboardOrderKey: 'dashboardOrder',
+        dashboardPath: '/dashboard',
+        chartPath: '/charts',
+        tablePath: '/table',
+        iFramePath: '/iframe',
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,

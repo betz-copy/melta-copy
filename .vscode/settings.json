@@ -1,5 +1,8 @@
 {
-    "eslint.validate": ["javascript", "typescript"],
+    "eslint.validate": [
+        "javascript",
+        "typescript"
+    ],
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
@@ -34,7 +37,16 @@
         "statusBarItem.remoteForeground": "#e7e7e7"
     },
     "peacock.color": "#007fff",
-    "cSpell.words": ["ECEF", "epsg", "hemi", "kartoffel", "melta"],
+    "cSpell.words": [
+        "ECEF",
+        "epsg",
+        "hemi",
+        "Highchart",
+        "Highcharts",
+        "kartoffel",
+        "melta",
+        "wouter"
+    ],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": true

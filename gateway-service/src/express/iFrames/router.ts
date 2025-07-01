@@ -3,7 +3,7 @@ import { createController, ValidateRequest } from '@microservices/shared';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import IFramesController from './controller';
 import IFramesValidator from './middlewares';
-import { createIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
+import { createIFrameSchema, deleteIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import config from '../../config';
@@ -51,6 +51,7 @@ iFramesRouter.put(
 );
 iFramesRouter.delete(
     '/:iFrameId',
+    ValidateRequest(deleteIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanDeleteIFrame,
     IframesServiceProxy,

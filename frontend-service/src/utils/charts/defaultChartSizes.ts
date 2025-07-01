@@ -1,14 +1,13 @@
 import { LayoutItem, Layouts } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
-import { ChartsAndGenerator } from '../../interfaces/charts';
 import { LocalStorage } from '../localStorage';
 
-const { defaultColumnSizes, chartsOrderKey } = environment.charts;
+const { defaultColumnSizes } = environment.charts;
 
-export const generateLayoutDetails = (charts: ChartsAndGenerator[]) =>
+export const generateLayoutDetails = <T extends { _id: string }>(items: T[]) =>
     Object.keys(defaultColumnSizes).reduce((acc, col) => {
         // eslint-disable-next-line no-param-reassign
-        acc[col] = charts.map(({ _id }, index) => ({
+        acc[col] = items.map(({ _id }, index) => ({
             i: _id,
             x: (index % 3) * 4,
             y: Math.floor(index / 3) * 3,
@@ -20,8 +19,8 @@ export const generateLayoutDetails = (charts: ChartsAndGenerator[]) =>
         return acc;
     }, {} as Layouts);
 
-export const generateNewItemSizes = (templateId: string, chartId: string) => {
-    const savedLayout: LayoutItem[] = LocalStorage.get(`${chartsOrderKey}${templateId}`) || [];
+export const generateNewItemSizes = (localStorageKey: string, itemId: string) => {
+    const savedLayout: LayoutItem[] = LocalStorage.get(localStorageKey) || [];
 
     const maxY = savedLayout.length ? Math.max(...savedLayout.map((item) => item.y)) : 0;
     const lastRowItems = savedLayout.filter((item) => item.y === maxY);
@@ -39,7 +38,7 @@ export const generateNewItemSizes = (templateId: string, chartId: string) => {
     const availableY = availableX !== -1 ? maxY : maxY + 12;
 
     const newItem = {
-        i: chartId,
+        i: itemId,
         x: availableX !== -1 ? availableX : (savedLayout.length % 3) * 4,
         y: availableY,
         w: itemWidth,
@@ -48,7 +47,7 @@ export const generateNewItemSizes = (templateId: string, chartId: string) => {
         minW: 3,
     };
 
-    LocalStorage.set(`${chartsOrderKey}${templateId}`, [...savedLayout, newItem]);
+    LocalStorage.set(localStorageKey, [...savedLayout, newItem]);
 
     return newItem;
 };

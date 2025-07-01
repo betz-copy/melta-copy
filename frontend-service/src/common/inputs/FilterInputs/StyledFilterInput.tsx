@@ -1,6 +1,7 @@
-import { styled, TextField } from '@mui/material';
+import { styled } from '@mui/material';
+import { ViewModeTextField } from '../ViewModeTextField';
 
-export const StyledFilterInput = styled(TextField)(({ theme }) => ({
+export const StyledFilterInput = styled(ViewModeTextField)(({ theme }) => ({
     '& .MuiInputBase-root': {
         borderRadius: '7px',
         backgroundColor: theme.palette.mode === 'dark' ? undefined : 'white',

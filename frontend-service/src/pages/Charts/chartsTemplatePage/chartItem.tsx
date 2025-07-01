@@ -1,34 +1,31 @@
 import { Box } from '@mui/material';
 import React from 'react';
-import { useLocation } from 'wouter';
 import { ChartsAndGenerator, IChartType } from '../../../interfaces/charts';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
+import { HighchartGenerator } from '../chartGenerator.tsx/HighchartGenerator';
 import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
-import { HighchartGenerator } from '../chartGenerator.tsx/HighChartgenerator';
-import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface ChartItemProps {
     chartDetails: ChartsAndGenerator;
     isHoverOnCard: number | null;
     indexInGrid: number;
     onDelete: () => void;
+    onEdit: () => void;
 }
 
-const ChartItem: React.FC<ChartItemProps> = ({
-    chartDetails: { chart: chartData, type, name, description, metaData, _id, createdBy },
-    isHoverOnCard,
-    indexInGrid,
-    onDelete,
-}) => {
+const ChartItem: React.FC<ChartItemProps> = ({ chartDetails, isHoverOnCard, indexInGrid, onDelete, onEdit }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore();
-    const [currentLocation, navigate] = useLocation();
+    const { createdBy, chart, type } = chartDetails;
+
+    const hasWritePermission = createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
 
     return (
-        <Box style={{ width: '100%', height: '100%', position: 'relative' }} onClick={() => navigate(`${currentLocation}/${_id}/chart`)}>
+        <Box style={{ width: '100%', height: '100%', position: 'relative' }}>
             <Box
                 className="drag-handle"
                 style={{
@@ -58,9 +55,10 @@ const ChartItem: React.FC<ChartItemProps> = ({
                 >
                     <CardMenu
                         onDeleteClick={onDelete}
+                        onEditClick={onEdit}
                         disabledProps={{
-                            isDeleteDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
-                            isEditDisabled: false,
+                            isDeleteDisabled: hasWritePermission,
+                            isEditDisabled: hasWritePermission,
                             tooltipTitle: '',
                         }}
                     />
@@ -68,18 +66,9 @@ const ChartItem: React.FC<ChartItemProps> = ({
             )}
 
             {type === IChartType.Number ? (
-                <NumberChartGenerator data={chartData} name={name} description={description} enableResize />
+                <NumberChartGenerator data={chart} chartDetails={chartDetails} enableResize />
             ) : (
-                <HighchartGenerator
-                    data={chartData}
-                    isLoading={false}
-                    isQueryEnabled
-                    name={name}
-                    description={description}
-                    metaData={metaData}
-                    type={type}
-                    enableResize
-                />
+                <HighchartGenerator generatedChart={chart} chartDetails={chartDetails} isQueryEnabled enableResize />
             )}
         </Box>
     );

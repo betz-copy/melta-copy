@@ -11,6 +11,7 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
         chartsCollectionName: env.get('MONGO_CHARTS_COLLECTION_NAME').required().asString(),
+        dashboardCollectionName: env.get('MONGO_DASHBOARD_COLLECTION_NAME').required().asString(),
         connectionOptions: {
             maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(), // Maximum time (in ms) that a connection can be idle before being closed
             socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(), // Maximum idle time for an active connection

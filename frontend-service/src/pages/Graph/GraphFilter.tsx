@@ -1,7 +1,7 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
-import { Autocomplete, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
@@ -11,19 +11,21 @@ import { CustomIcon } from '../../common/CustomIcon';
 import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
 import { MultipleUserFilterInput } from '../../common/inputs/FilterInputs/MultipleUserFilterInput';
+import { ReadOnlyFilterInput } from '../../common/inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
 import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
-import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { initializedFilterField } from '../../common/FilterCompetent';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
     deleteFilter: (value: number) => void;
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+    setFilterRecord: (value: IGraphFilterBody, filterKey: number) => void;
     filterKey: number;
     removeFilterFromFilterList: (filterKey: number) => void;
     entityFilter: boolean;
@@ -58,6 +60,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const [filterField, setFilterField] = useState<IGraphFilterBody['filterField']>(filter?.filterField || undefined);
     const [fullView, setFullView] = useState<boolean>(true);
     const [inputValue, setInputValue] = useState<string>('');
+
     const options = templateOptions.filter((option) => graphEntityTemplateIds.includes(option._id));
     const properties = selectedTemplate?.properties.properties;
     const filterProperties = properties
@@ -73,19 +76,17 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedOnFilter = useCallback(
-        debounce((newFilterField) => {
-            setFilterRecord((prev) => ({
-                ...prev,
-                [filterKey]: {
-                    selectedTemplate,
-                    selectedProperty,
-                    filterField: newFilterField,
-                },
-            }));
+        debounce((newFilterField: IGraphFilterBody['filterField'], template, property) => {
+            const newValue: IGraphFilterBody = {
+                selectedTemplate: template,
+                selectedProperty: property,
+                filterField: newFilterField,
+            };
 
+            setFilterRecord(newValue, filterKey);
             onFilter?.();
         }, 500),
-        [filterKey, selectedTemplate, selectedProperty],
+        [filterKey],
     );
 
     const handleSelectTemplate = (newValue: IMongoEntityTemplatePopulated | null) => {
@@ -108,22 +109,13 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         const { format, type } = selectedTemplate.properties.properties[newProperty];
 
-        const initializedFilterField: Record<string, IGraphFilterBody['filterField']> = {
-            'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            date: { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            number: { filterType: 'number', type: 'equals' },
-            string: { filterType: 'text', type: 'contains' },
-            boolean: { filterType: 'text', type: 'equals' },
-            array: { filterType: 'set', values: [] },
-        };
-
         const selectedFilter = (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 
         if (selectedFilter) setFilterField(selectedFilter);
     };
 
     const handleSetFilterRecord = (newFilterField: IGraphFilterBody['filterField'], condition: boolean = true) => {
-        if (condition) debouncedOnFilter(newFilterField);
+        if (condition) debouncedOnFilter(newFilterField, selectedTemplate, selectedProperty);
     };
 
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField'], condition: boolean = true) => {
@@ -183,7 +175,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     const renderFilterInput = () => {
         if (!(selectedProperty && selectedTemplate)) return null;
-        const { format, enum: propEnum, type, items } = selectedTemplate.properties.properties[selectedProperty];
+        const { format, enum: propEnum, type, items, title } = selectedTemplate.properties.properties[selectedProperty];
+
+        if (readOnly) return <ReadOnlyFilterInput filterField={filterField} selectedProperty={{ title, type }} />;
+
         // no files in graph filter
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
@@ -255,20 +250,20 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         );
     };
 
+    let backgroundColor = '#EBEFFA33';
+    if (entityFilter && !readOnly) backgroundColor = darkMode ? '#4a4a5033' : '#EBEFFA33';
+    else backgroundColor = darkMode ? '#121212' : 'white';
+
     return (
         <>
             <Grid
                 sx={{
                     borderRadius: '10px',
-                    ...(entityFilter
-                        ? {
-                              backgroundColor: darkMode ? '#4a4a5033' : '#EBEFFA33',
-                          }
-                        : {
-                              boxShadow: '0px 2px 1px -1px  #1E27754D',
-                              marginBottom: '5px',
-                              backgroundColor: darkMode ? '#121212' : 'white',
-                          }),
+                    ...(!entityFilter && {
+                        boxShadow: '0px 2px 1px -1px  #1E27754D',
+                        marginBottom: '5px',
+                    }),
+                    backgroundColor,
                 }}
             >
                 {!entityFilter && (
@@ -344,7 +339,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     </Grid>
                 )}
                 <Grid display={fullView ? undefined : 'none'}>
-                    {selectedTemplate && (
+                    {selectedTemplate && !readOnly && (
                         <Grid
                             item
                             sx={{
@@ -355,38 +350,40 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             }}
                         >
                             {!entityFilter && <Divider sx={{ width: '90%', margin: 'auto', border: '1px 0px 0px 0px' }} />}
-                            <Autocomplete
-                                popupIcon={<IoIosArrowDown size="15px" />}
-                                clearIcon={<CloseIcon sx={{ fontSize: '16px' }} />}
-                                size="small"
-                                sx={{
-                                    width: '90%',
-                                    ...(entityFilter ? { marginLeft: '5%' } : { margin: 'auto', paddingBottom: '10px' }),
-                                }}
-                                value={selectedProperty}
-                                onChange={(_event, newValue) => handleSelectProperty(newValue)}
-                                options={filterProperties}
-                                getOptionLabel={(option) =>
-                                    selectedTemplate?.properties.properties[option] ? selectedTemplate.properties.properties[option].title : ''
-                                }
-                                renderInput={(params) => (
-                                    <StyledFilterInput
-                                        {...params}
-                                        variant="outlined"
-                                        sx={{ borderRadius: '5px' }}
-                                        label={entityFilter ? i18next.t('charts.field') : undefined}
-                                    />
-                                )}
-                                readOnly={readOnly}
-                                getOptionDisabled={(option) => {
-                                    const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
-                                    if (propertyTemplate?.format === 'relationshipReference') {
-                                        const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                                        return !entityTemplates?.get(relatedTemplateId);
+                            {!readOnly && (
+                                <Autocomplete
+                                    popupIcon={<IoIosArrowDown size="15px" />}
+                                    clearIcon={<CloseIcon sx={{ fontSize: '16px' }} />}
+                                    size="small"
+                                    sx={{
+                                        width: '90%',
+                                        ...(entityFilter ? { marginLeft: '5%' } : { margin: 'auto', paddingBottom: '10px' }),
+                                    }}
+                                    value={selectedProperty}
+                                    onChange={(_event, newValue) => handleSelectProperty(newValue)}
+                                    options={filterProperties}
+                                    getOptionLabel={(option) =>
+                                        selectedTemplate?.properties.properties[option] ? selectedTemplate.properties.properties[option].title : ''
                                     }
-                                    return false;
-                                }}
-                            />
+                                    renderInput={(params) => (
+                                        <StyledFilterInput
+                                            {...params}
+                                            variant="outlined"
+                                            sx={{ borderRadius: '5px' }}
+                                            label={entityFilter ? i18next.t('charts.field') : undefined}
+                                        />
+                                    )}
+                                    readOnly={readOnly}
+                                    getOptionDisabled={(option) => {
+                                        const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
+                                        if (propertyTemplate?.format === 'relationshipReference') {
+                                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                                            return !entityTemplates?.get(relatedTemplateId);
+                                        }
+                                        return false;
+                                    }}
+                                />
+                            )}
                             {entityFilter && !readOnly && (
                                 <IconButton onClick={handleFilterErasion}>
                                     <CloseIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
@@ -404,7 +401,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     )}
                 </Grid>
             </Grid>
-            {entityFilter && <Divider sx={{ width: '100%', margin: '8px', border: '1px 0px 0px 0px', color: '#EBEFFA' }} />}
+            {entityFilter &&
+                (readOnly ? <Box sx={{ height: '3px', width: '100%', my: 1 }} /> : <Divider sx={{ width: '100%', my: 1, borderColor: '#EBEFFA' }} />)}
         </>
     );
 };

@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppRegistration as AppRegistrationIcon, Edit } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { keyBy } from 'lodash';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { keyBy } from 'lodash';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
@@ -16,20 +16,26 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
+import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { updateCategoryRequest, updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-} from '../../../services/templates/enitityTemplatesService';
+} from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
-import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
@@ -37,12 +43,6 @@ import { CardMenu } from './CardMenu';
 import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { environment } from '../../../globals';
-import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { useUserStore } from '../../../stores/user';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -622,10 +622,14 @@ const EntityTemplatesRow: React.FC = () => {
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return updateEntityTemplateRequest(entityTemplateId, {
-                ...entityTemplate,
-                category: category._id,
-            });
+            return updateEntityTemplateRequest(
+                entityTemplateId,
+                {
+                    ...entityTemplate,
+                    category: category._id,
+                },
+                queryClient,
+            );
         },
 
         {
@@ -797,7 +801,7 @@ const EntityTemplatesRow: React.FC = () => {
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
-                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
+                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />

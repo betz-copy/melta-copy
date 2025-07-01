@@ -9,7 +9,7 @@ import { BlueTitle } from '../../BlueTitle';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
-import RelationshipReferenceField from '../entityTemplate/RelationshipRefrence/RelationshipReferenceField';
+import RelationshipReferenceField from '../entityTemplate/RelationshipReference/RelationshipReferenceField';
 
 interface IConvertToRelationship {
     open: boolean;

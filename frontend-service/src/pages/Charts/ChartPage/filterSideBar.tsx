@@ -1,51 +1,74 @@
-import { Button, Grid } from '@mui/material';
+import { Add } from '@mui/icons-material';
+import { Button, Divider, FormHelperText, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQueryClient } from 'react-query';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
+import { SelectCheckbox } from '../../../common/SelectCheckBox';
+import { StepComponentProps } from '../../../common/wizards';
+import { IAGGridFilter, IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
+import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { GraphFilterBatch } from '../../Graph/GraphFilterBatch';
+import FilterCompetent from './FilterCompetent';
 
-const FilterSideBar: React.FC<{
-    templateId: string;
-    filterRecord: IGraphFilterBodyBatch;
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
-    filters: number[];
-    readonly: boolean;
-    setFilters: React.Dispatch<React.SetStateAction<number[]>>;
-}> = ({ templateId, filterRecord, setFilterRecord, filters, setFilters, readonly }) => {
+const FilterSideBar = <T extends TableForm | ChartForm>(
+    props: StepComponentProps<T> & {
+        viewMode: ViewMode;
+    },
+) => {
+    const { values, setFieldValue, viewMode, errors } = props;
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const templateOptions = Array.from(entityTemplates.values());
 
-    const addNewFilter = () => setFilters((prevFilters) => [...prevFilters, Date.now()]);
+    const entityTemplate = entityTemplates.get(values.templateId!);
+    const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
+
+    const filterInitialValues: IFilterTemplate = {
+        filterProperty: '',
+        filterField: {} as IAGGridFilter,
+    };
+
+    const handleAddFilter = () => {
+        const updatedFilters = [...(values.filter ?? []), filterInitialValues];
+
+        setFieldValue('filter', updatedFilters);
+    };
 
     return (
-        <Grid container direction="column" marginTop={2}>
-            <Grid sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
-                <GraphFilterBatch
-                    filters={filters}
-                    setFilters={setFilters}
-                    templateOptions={templateOptions}
-                    filterRecord={filterRecord}
-                    setFilterRecord={setFilterRecord}
-                    graphEntityTemplateIds={[templateId]}
-                    entityFilter
-                    selectedEntityTemplate={entityTemplates.get(templateId)}
-                    readonly={readonly}
-                />
+        <Grid item display="flex" sx={{ flexDirection: 'column' }} gap={3}>
+            {'columns' in values && (
+                <>
+                    <Grid item>
+                        <SelectCheckbox
+                            options={entityTemplateFields!}
+                            selectedOptions={values.columns}
+                            setSelectedOptions={(value) => setFieldValue('columns', value)}
+                            title={i18next.t('dashboard.tables.columnsToShow')}
+                            getOptionId={(_id) => _id}
+                            getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
+                            toTopBar={false}
+                            hideSearchBar
+                            isDraggableDisabled
+                            isSelectDisabled={viewMode === ViewMode.ReadOnly}
+                            hideChooseAll={viewMode === ViewMode.ReadOnly}
+                        />
+                    </Grid>
+                    {'columns' in errors && errors.columns && <FormHelperText error>{errors.columns}</FormHelperText>}
+
+                    <Grid item>
+                        <Divider sx={{ width: '95%' }} />
+                    </Grid>
+                </>
+            )}
+            <Grid item sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
+                <FilterCompetent viewMode={viewMode} formik={props} />
             </Grid>
-            <Button
-                sx={{ marginRight: 'auto', marginTop: '16px', zIndex: '100' }}
-                onClick={addNewFilter}
-                startIcon={<BsFillPlusCircleFill style={{ marginLeft: '5px' }} />}
-                disabled={readonly}
-            >
-                {i18next.t('charts.actions.filterFields')}
-            </Button>
+            {viewMode !== ViewMode.ReadOnly && (
+                <Button sx={{ marginRight: 'auto', zIndex: '100' }} onClick={handleAddFilter} startIcon={<Add style={{ marginLeft: '5px' }} />}>
+                    {i18next.t('charts.actions.filterFields')}
+                </Button>
+            )}
         </Grid>
     );
 };
 
-export { FilterSideBar };
+export default FilterSideBar;

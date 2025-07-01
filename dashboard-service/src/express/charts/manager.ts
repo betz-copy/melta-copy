@@ -1,9 +1,9 @@
-import { FilterQuery } from 'mongoose';
+import { DefaultManagerMongo, IChart, IMongoChart, NotFoundError, ServiceError } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import { DefaultManagerMongo, IMongoChart, IChart, NotFoundError, ServiceError } from '@microservices/shared';
-import ChartSchema from './model';
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
+import ChartSchema from './model';
 
 class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {

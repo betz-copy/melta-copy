@@ -1,18 +1,19 @@
-import { Grid, TextField, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { pickBy } from 'lodash';
-import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
+import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
+import { IAggregation, IAggregationType, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
-import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 
 interface AxisInputProps {
-    formik: FormikProps<IBasicChart>;
+    formik: FormikProps<ChartForm>;
     formikField: string;
-    formikValues: IBasicChart;
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;
     optionsType: OptionsType;
@@ -20,22 +21,14 @@ interface AxisInputProps {
     titleFormikField?: string;
 }
 
-const AxisInput: React.FC<AxisInputProps> = ({
-    formik,
-    entityTemplate,
-    formikField,
-    titleFormikField,
-    formikValues,
-    label,
-    optionsType,
-    readonly,
-}) => {
+const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikField, titleFormikField, label, optionsType, readonly }) => {
+    const { values, setFieldValue, touched, errors, handleBlur } = formik;
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const fieldValue = getIn(formikValues, formikField);
-    const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
-    const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
+    const fieldValue = getIn(values, formikField);
+    const titleValue = titleFormikField ? getIn(values, titleFormikField) : undefined;
+    const titleError = titleFormikField && getIn(touched, titleFormikField) && getIn(errors, titleFormikField);
 
     const entityTemplateFields = Object.keys(pickBy(entityTemplate?.properties.properties, ({ format }) => format !== 'comment'));
     const entityTemplateNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
@@ -63,27 +56,22 @@ const AxisInput: React.FC<AxisInputProps> = ({
             {titleFormikField && (
                 <>
                     <Grid item>
-                        <Typography variant="subtitle2">{label}</Typography>
+                        <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
+                            {label}
+                        </Typography>
                     </Grid>
                     <Grid item>
-                        <TextField
+                        <ViewModeTextField
                             label={`${i18next.t('charts.title')}`}
                             name={titleFormikField}
-                            onChange={(e) => formik.setFieldValue(titleFormikField, e.target.value)}
+                            onChange={(e) => setFieldValue(titleFormikField, e.target.value)}
                             value={titleValue || ''}
-                            onBlur={formik.handleBlur}
+                            onBlur={handleBlur}
                             error={Boolean(titleError)}
                             helperText={titleError}
                             fullWidth
-                            margin="normal"
-                            sx={{ width: '100%' }}
-                            variant={readonly ? 'standard' : 'outlined'}
-                            inputProps={{
-                                readOnly: readonly,
-                                style: {
-                                    textOverflow: 'ellipsis',
-                                },
-                            }}
+                            readOnly={readonly}
+                            sx={{ width: 295 }}
                         />
                     </Grid>
                 </>
@@ -93,15 +81,14 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     formik={formik}
                     formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}
                     options={typeOptions[optionsType]}
-                    label={label}
+                    label={i18next.t('charts.fieldToView')}
                     getOptionLabel={(option) => getOptionLabel(option)}
                     multiple={false}
                     onChange={(newValue) => {
                         if (newValue && typeof newValue === 'string' && aggregationOptions.includes(newValue as IAggregation['type']))
-                            formik.setFieldValue(formikField, { type: newValue, byField: '' } as IAggregation);
-                        else formik.setFieldValue(formikField, (newValue as string) ?? '');
+                            setFieldValue(formikField, { type: newValue, byField: '' } as IAggregation);
+                        else setFieldValue(formikField, (newValue as string) ?? '');
                     }}
-                    style={{ width: '100%' }}
                     readonly={readonly}
                     getOptionDisabled={(option) => {
                         const propertyTemplate = entityTemplate.properties.properties[option];
@@ -111,6 +98,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         }
                         return false;
                     }}
+                    style={{ width: 295 }}
                 />
             </Grid>
             {isAggregation(fieldValue) && fieldValue?.type !== IAggregationType.CountAll && (
@@ -126,8 +114,8 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         label={`${i18next.t('charts.byField')}`}
                         getOptionLabel={(option) => getOptionLabel(option)}
                         multiple={false}
-                        style={{ width: '100%' }}
                         readonly={readonly}
+                        style={{ width: 295 }}
                     />
                 </Grid>
             )}

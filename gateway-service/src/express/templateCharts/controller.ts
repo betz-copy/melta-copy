@@ -18,16 +18,22 @@ class ChartController extends DefaultController<ChartManager> {
         res.json(await this.manager.getChartsOfTemplateId(params.templateId, user!.id, permissionsOfUserId, body.textSearch));
     }
 
+    async searchChartByUserId(req: Request, res: Response) {
+        const { body, params, user } = req as RequestWithPermissionsOfUserId;
+
+        res.json(await this.manager.searchChartByUserId(params.templateId, user!.id, body.textSearch));
+    }
+
     async createChart(req: Request, res: Response) {
-        res.json(await this.manager.createChart(req.body));
+        res.json(await this.manager.createChart(req.body, req.query.toDashboard as boolean | undefined));
     }
 
     async updateChart(req: Request, res: Response) {
-        res.json(await this.manager.updateChart(req.params.chartId, req.body));
+        res.json(await this.manager.updateChart(req.params.chartId, req.body, req.query.deleteReferenceDashboardItems as boolean | undefined));
     }
 
     async deleteChart(req: Request, res: Response) {
-        res.json(await this.manager.deleteChart(req.params.chartId));
+        res.json(await this.manager.deleteChart(req.params.chartId, req.query.deleteReferenceDashboardItems as boolean | undefined));
     }
 }
 

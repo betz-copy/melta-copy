@@ -1,7 +1,7 @@
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
+import { QueryClient, useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
@@ -35,7 +35,7 @@ const steps: StepType<IFrameWizardValues>[] = [
         component: (props) => <ChooseIFrameIcon {...props} />,
     },
 ];
-const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame) => {
+export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient: QueryClient) => {
     const iFramesOrder = localStorage.getItem('iFramesOrder');
 
     if (iFramesOrder) {
@@ -48,6 +48,21 @@ const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame) => {
             localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
         }
     } else localStorage.setItem('iFramesOrder', JSON.stringify([data._id]));
+
+    queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+        if (!oldData) {
+            return [data];
+        }
+
+        const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
+
+        if (index === -1) {
+            return [data, ...oldData];
+        }
+        const updatedData = [...oldData];
+        updatedData[index] = data;
+        return [...updatedData];
+    });
 };
 const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
     open,
@@ -66,23 +81,9 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
             onSuccess: async (data: IMongoIFrame) => {
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
-                updateIFramesOrderOnLocalStorage(data);
+                updateIFramesOrderOnLocalStorage(data, queryClient);
                 setIFramesOrder(JSON.parse(localStorage.getItem('iFramesOrder')!));
 
-                queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
-                    if (!oldData) {
-                        return [data];
-                    }
-
-                    const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
-
-                    if (index === -1) {
-                        return [data, ...oldData];
-                    }
-                    const updatedData = [...oldData];
-                    updatedData[index] = data;
-                    return [...updatedData];
-                });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccessfully' : 'wizard.iFrame.createdSuccessfully');
                 handleClose();
             },

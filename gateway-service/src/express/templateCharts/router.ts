@@ -33,6 +33,14 @@ ChartsRouter.post(
 );
 
 ChartsRouter.post(
+    '/by-user/:templateId',
+    ValidateRequest(getChartByTemplateIdRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    ChartsValidatorMiddleware.validateUserCanGetChartsByTemplate,
+    ChartsControllerMiddleware.searchChartByUserId,
+);
+
+ChartsRouter.post(
     '/',
     ValidateRequest(createChartRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
@@ -44,6 +52,7 @@ ChartsRouter.post(
 ChartsRouter.delete(
     '/:chartId',
     ValidateRequest(deleteChartRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     ChartsValidatorMiddleware.validateUserCanDeleteChart,
     ChartsControllerMiddleware.deleteChart,
 );

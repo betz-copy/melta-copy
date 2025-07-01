@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
-import { extractGroups, extractProperties } from '../services/templates/enitityTemplatesService';
+import { extractGroups, extractProperties } from '../services/templates/entityTemplatesService';
 import { GroupProperty } from '../common/wizards/entityTemplate/commonInterfaces';
 
 export const regexSchema = Yup.string().test('is-regex', (value, context) => {
@@ -129,7 +129,10 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
 export const processTemplateUniquePropertiesDetails = (value, context: Yup.TestContext) => {
     if (!value) return true;
     const errors: Yup.ValidationError[] = [];
-    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties<ProcessTemplateFormInputProperties>(value.detailsProperties, 'detailsProperties');
+    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties<ProcessTemplateFormInputProperties>(
+        value.detailsProperties,
+        'detailsProperties',
+    );
     const { properties: attachmentProperties, propertiesPath: attachmentPropertiesPath } = extractProperties<ProcessTemplateFormInputProperties>(
         value.detailsAttachmentProperties,
         'detailsAttachmentProperties',

@@ -1,39 +1,43 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { Route, Switch, useLocation, useRoute } from 'wouter';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { Redirect, Route, Switch, useLocation, useRoute } from 'wouter';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
+import { environment } from '../../globals';
+import { DashboardItemType } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { MainBox } from '../../Main.styled';
+import { MeltaUpdates } from '../../MeltaUpdates';
 import ScrollToTop from '../../ScrollToTop';
+import { BackendConfigState } from '../../services/backendConfigService';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { LocalStorage } from '../../utils/localStorage';
 import {
     CategoryProtectedRoute,
-    ChartsProtectedRoute,
+    DashboardProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { environment } from '../../globals';
-import { MeltaUpdates } from '../../MeltaUpdates';
-import { BackendConfigState } from '../../services/backendConfigService';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
+const Dashboard = lazy(() => import('../Dashboard'));
 const Category = lazy(() => import('../Category'));
+const Table = lazy(() => import('../Dashboard/DashboardItemDetails/Table'));
 const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
 const Charts = lazy(() => import('../Charts'));
-const ChartPage = lazy(() => import('../Charts/ChartPage'));
+const DashboardIframe = lazy(() => import('../Dashboard/DashboardItemDetails/Iframe'));
+const Chart = lazy(() => import('../Dashboard/DashboardItemDetails/Chart'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
 const IFrames = lazy(() => import('../IFrames'));
@@ -48,9 +52,14 @@ const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
+const {
+    searchPath,
+    dashboard: { dashboardPath },
+} = environment;
+
 export const MeltaRoutesInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { isDrawerOpen } = workspace.metadata;
+    const { isDrawerOpen, isDashboardHomePage } = workspace.metadata;
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(isDrawerOpen);
     const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
@@ -199,16 +208,40 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <Map />
                             </Route>
 
-                            <Route path="/charts/:templateId/:chartId?/chart">
-                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
-                                    <ChartPage />
-                                </ChartsProtectedRoute>
+                            <Route path="/charts/:templateId?/:chartId?/chart">
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Chart}
+                                >
+                                    <Chart />
+                                </DashboardProtectedRoute>
                             </Route>
 
                             <Route path="/charts/:templateId">
-                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Chart}
+                                >
                                     <Charts />
-                                </ChartsProtectedRoute>
+                                </DashboardProtectedRoute>
+                            </Route>
+
+                            <Route path="/table/:tableId?">
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Table}
+                                >
+                                    <Table />
+                                </DashboardProtectedRoute>
+                            </Route>
+
+                            <Route path="/iframe/:iframeId?">
+                                <DashboardProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    dashboardType={DashboardItemType.Iframe}
+                                >
+                                    <DashboardIframe />
+                                </DashboardProtectedRoute>
                             </Route>
 
                             <Route path="/gantts">
@@ -264,8 +297,16 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <Unavailable setTitle={setTitle} />
                             </Route>
 
-                            <Route path="/">
+                            <Route path={dashboardPath}>
+                                <Dashboard />
+                            </Route>
+
+                            <Route path={searchPath}>
                                 <GlobalSearch />
+                            </Route>
+
+                            <Route path="/">
+                                <Redirect to={isDashboardHomePage ? dashboardPath : searchPath} />
                             </Route>
 
                             <Route path="*">

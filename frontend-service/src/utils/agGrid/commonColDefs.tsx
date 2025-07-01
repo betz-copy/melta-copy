@@ -7,31 +7,31 @@ import {
     ValueGetterFunc,
     ValueGetterParams,
 } from '@ag-grid-community/core';
+import { PriorityHigh } from '@mui/icons-material';
+import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import i18next from 'i18next';
 import React from 'react';
-import Chip from '@mui/material/Chip';
-import { Box, Tooltip, tooltipClasses, Grid } from '@mui/material';
-import { PriorityHigh } from '@mui/icons-material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import UserAvatar from '../../common/UserAvatar';
 import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
+import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IUser } from '../../interfaces/users';
+import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
-import { agGridLocaleText } from './agGridLocaleText';
-import OverflowWrapper from './OverflowWrapper';
-import { Value } from './Value';
-import OpenMap from '../../pages/Map/OpenMap';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IUser } from '../../interfaces/users';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
-import UserAvatar from '../../common/UserAvatar';
-import SelectCellEditor from './SelectCellEditor';
-import DateTimeCellEditor from './DateTimeCellEditor';
-import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
-import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
+import { agGridLocaleText } from './agGridLocaleText';
+import DateTimeCellEditor from './DateTimeCellEditor';
+import OverflowWrapper from './OverflowWrapper';
+import RelationshipRefCellEditor from './RelationshipRefCellEditor';
+import SelectCellEditor from './SelectCellEditor';
+import { Value } from './Value';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);

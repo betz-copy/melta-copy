@@ -7,6 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { PermissionScope } from '../interfaces/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
+import { DashboardItemType } from '../interfaces/dashboard';
 import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
@@ -63,18 +64,30 @@ export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermission
     );
 };
 
-export const ChartsProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
-    const queryClient = useQueryClient();
+export const DashboardProtectedRoute: React.FC<{
+    permissions: ISubCompactPermissions;
+    dashboardType: DashboardItemType;
+}> = ({ permissions, dashboardType, children }) => {
     const { templateId } = useParams<{ templateId: string }>();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const { category } = entityTemplates.get(templateId) as IMongoEntityTemplatePopulated;
+    const queryClient = useQueryClient();
 
-    const categoryPermissions = permissions.instances?.categories?.[category?._id];
+    if (permissions.admin?.scope) return protectedRoute(children, true);
 
-    return protectedRoute(
-        children,
-        Boolean(permissions.admin?.scope || categoryPermissions?.scope || categoryPermissions?.entityTemplates?.[templateId]?.scope),
-    );
+    if (dashboardType === DashboardItemType.Chart) {
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+        const template = templateId ? (entityTemplates?.get(templateId) as IMongoEntityTemplatePopulated) : null;
+
+        const category = template?.category;
+        const categoryId = category?._id;
+
+        const categoryPermissions = categoryId ? permissions.instances?.categories?.[categoryId] : undefined;
+
+        const hasAccess = categoryPermissions?.scope || categoryPermissions?.entityTemplates?.[templateId]?.scope;
+
+        return protectedRoute(children, Boolean(hasAccess));
+    }
+
+    return protectedRoute(children, false);
 };
 
 export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {

@@ -14,7 +14,7 @@ interface TypeSelectFilterProps {
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    readOnly: boolean;
+    readOnly?: boolean;
     type: string;
 }
 

@@ -3,28 +3,26 @@ import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React, { useEffect, useRef } from 'react';
-import { HighchartType, IAxis, IChartType, IChartTypeMetaData } from '../../../interfaces/charts';
+import { environment } from '../../../globals';
+import { GeneratedChart, HighchartType, IAxis, IChart, IChartType } from '../../../interfaces/charts';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 
+const { pieChartColors } = environment.charts;
+
 interface HighchartGeneratorProps {
-    data: { x: any; y: number }[] | undefined;
-    isLoading: boolean;
-    name: string;
-    description: string;
-    metaData: IChartTypeMetaData;
+    generatedChart: GeneratedChart | undefined;
+    isLoading?: boolean;
     isQueryEnabled: boolean;
-    type: HighchartType;
+    chartDetails: Omit<IChart, 'filter'>;
     enableResize?: boolean;
 }
 
 const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
-    data = [],
+    generatedChart: data = [],
     isLoading,
     isQueryEnabled,
-    type,
-    name,
-    description,
-    metaData,
+    chartDetails: { type, metaData, name, description },
     enableResize = false,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -32,15 +30,28 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     const theme = useTheme();
     const darkMode = theme.palette.mode === 'dark';
 
+    const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
+    const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
+
     const { xAxis, yAxis } = getChartAxes(type, metaData, true);
 
     const commonStyles = {
         backgroundColor: darkMode ? '#131313' : '#fcfeff',
         gridLineColor: darkMode ? '#444' : '#dddddd',
         labelsColor: darkMode ? '#fff' : '#000',
+        titleStyle: {
+            color: theme.palette.primary.main,
+            fontWeight: '700',
+            fontSize: headlineTitleFontSize,
+            fontFamily: 'Rubik',
+            textAlign: 'center',
+            marginBottom: '2%',
+            top: '0px',
+        },
+        subtitleStyle: { color: theme.palette.primary.main, fontSize: '1rem', fontFamily: 'Rubik', textAlign: 'center', minHeight: '1.5em' },
     };
 
-    const { backgroundColor, gridLineColor, labelsColor } = commonStyles;
+    const { backgroundColor, gridLineColor, labelsColor, titleStyle, subtitleStyle } = commonStyles;
 
     const seriesData = data.map(({ x, y }) => ({ name: x, y }));
 
@@ -65,11 +76,13 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
         chart: { type, backgroundColor },
         title: {
             text: name,
-            style: {
-                color: labelsColor,
-            },
+            style: titleStyle,
         },
-        subtitle: { text: description },
+        subtitle: {
+            text: description,
+            style: subtitleStyle,
+        },
+
         xAxis: {
             categories: data.map(({ x }) => x ?? '-'),
             gridLineColor,
@@ -111,7 +124,7 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
                 dataLabels: {
                     enabled: false,
                 },
-
+                colors: pieChartColors.slice(),
                 showInLegend: true,
             },
         },
@@ -119,7 +132,7 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
             {
                 data: type === IChartType.Pie ? seriesData : seriesData.map(({ y }) => y),
                 color: theme.palette.primary.main,
-                type,
+                type: type as HighchartType,
             },
         ],
     };

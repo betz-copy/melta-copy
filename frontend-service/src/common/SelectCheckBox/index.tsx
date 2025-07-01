@@ -233,7 +233,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
-                {isSelectDisabled && hideChooseAll ? (
+                {hideChooseAll ? (
                     <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
                         {title}
                     </Typography>

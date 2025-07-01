@@ -19,14 +19,16 @@ const basicTheme: ThemeOptions = {
                         '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {
                             display: 'none',
                         },
+                        color: '#53566E',
                     },
+
                     '& fieldset': {
                         borderColor: '#CCCFE5',
                         color: '#CCCFE5',
                     },
                     '& label': {
                         color: '#9398C2',
-                        fontSize: '14px',
+                        fontSize: 14,
                     },
                 },
             },
