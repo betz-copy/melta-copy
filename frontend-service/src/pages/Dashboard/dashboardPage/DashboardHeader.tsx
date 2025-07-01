@@ -46,7 +46,7 @@ const DashboardHeader: React.FC<{
                 <Grid container spacing={1} wrap="nowrap" alignItems="center">
                     <Grid item>
                         <IconButtonWithPopover
-                            popoverText={i18next.t('dashboard.resetLayout')}
+                            popoverText={i18next.t('dashboard.resetToDefault')}
                             iconButtonProps={{
                                 onClick: () => resetLayout(),
                             }}
