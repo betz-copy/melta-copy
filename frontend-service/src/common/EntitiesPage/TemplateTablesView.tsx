@@ -18,14 +18,11 @@ export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
-export function getDefaultFilterFromTemplate(
+export function getDefaultFilterFromChildTemplate(
     template: IMongoEntityTemplatePopulated & {
         fatherTemplateId?: string;
     },
-    isChildTemplate: boolean,
 ) {
-    if (!isChildTemplate) return undefined;
-
     const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
@@ -102,7 +99,7 @@ const TemplateTablesViewResults = forwardRef<
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 const isChildTemplate = !!template.fatherTemplateId;
-                const defaultFilter = getDefaultFilterFromTemplate(template, isChildTemplate);
+                const defaultFilter = isChildTemplate ? getDefaultFilterFromChildTemplate(template) : undefined;
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable

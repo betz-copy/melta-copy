@@ -12,7 +12,7 @@ import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { getDefaultFilterFromTemplate } from './TemplateTablesView';
+import { getDefaultFilterFromChildTemplate } from './TemplateTablesView';
 import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 import { transformChild } from '../../pages/Category';
 
@@ -83,7 +83,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             }
 
                             for (const template of childTemplates) {
-                                const filter = getDefaultFilterFromTemplate(template, true);
+                                const filter = getDefaultFilterFromChildTemplate(template);
 
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,

@@ -47,8 +47,10 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
     return Object.fromEntries(formikErrorsEntries);
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
+export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
+    addFormats(ajv);
+
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
@@ -56,68 +58,121 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
-            const userObj = JSON.parse(user);
-            return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+            try {
+                const userObj = JSON.parse(user);
+                return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+            } catch {
+                return false;
+            }
         },
     });
-    ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     ajv.addFormat('comment', /.*/);
-    addFormats(ajv);
+
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
-    ajv.addKeyword({
-        keyword: 'dateNotification',
-    });
-    ajv.addKeyword({ keyword: 'isDailyAlert' });
-    ajv.addKeyword({ keyword: 'isEditableByUser' });
-    ajv.addKeyword({ keyword: 'defaultValue' });
-    ajv.addKeyword({ keyword: 'isDatePastAlert' });
-    ajv.addKeyword({ keyword: 'calculateTime' });
-    ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
-    ajv.addKeyword({
-        keyword: 'serialStarter',
-    });
-    ajv.addKeyword({
-        keyword: 'relationshipReference',
-        type: 'string',
-    });
-    ajv.addKeyword({
-        keyword: 'expandedUserField',
-        type: 'string',
-    });
-    ajv.addKeyword({
-        keyword: 'serialCurrent',
-    });
-    ajv.addKeyword({
-        keyword: 'comment',
-    });
-    ajv.addKeyword({
-        keyword: 'hideFromDetailsPage',
-    });
-    ajv.addKeyword({
-        keyword: 'color',
+
+    [
+        'dateNotification',
+        'isDailyAlert',
+        'isEditableByUser',
+        'defaultValue',
+        'isDatePastAlert',
+        'calculateTime',
+        'archive',
+        'serialStarter',
+        'relationshipReference',
+        'expandedUserField',
+        'serialCurrent',
+        'comment',
+        'hideFromDetailsPage',
+        'color',
+        'filters',
+    ].forEach((keyword) => {
+        ajv.addKeyword({ keyword });
     });
 
     ajv.addKeyword({
         keyword: 'identifier',
         type: 'string',
         schema: false,
-        validate: (dataToValidate) => dataToValidate !== undefined,
+        validate: (v) => v !== undefined,
         errors: false,
     });
 
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
+        properties: pickBy(schema.properties, (v) => v.format !== 'relationshipReference' && v.format !== 'location'),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
-
     validateFunction(data);
     const ajvErrors = validateFunction.errors ?? [];
+    const formikErrors = ajvErrorsToFormikErrors(schema, ajvErrors);
 
-    return ajvErrorsToFormikErrors(schema, ajvErrors);
+    const filterErrors: FormikErrors<any> = {};
+
+    Object.entries(schema.properties || {}).forEach(([field, propertySchema]) => {
+        const rawFilter = propertySchema?.filters;
+        if (!rawFilter) return;
+
+        const parsedFilter = typeof rawFilter === 'string' ? JSON.parse(rawFilter) : rawFilter;
+        if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
+
+        const value = data[field];
+
+        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+            filterErrors[field] = i18next.t('validation.fieldFilterCondition');
+        }
+    });
+
+    return { ...formikErrors, ...filterErrors };
+};
+
+const matchValueAgainstFilter = (data: any, filter: any): boolean => {
+    if ('$and' in filter) return filter.$and.every((f: any) => matchValueAgainstFilter(data, f));
+    if ('$or' in filter) return filter.$or.some((f: any) => matchValueAgainstFilter(data, f));
+
+    const [field, condition] = Object.entries(filter)[0];
+    const actual = data[field];
+
+    if (!condition || typeof condition !== 'object') return true;
+
+    return Object.entries(condition).every(([op, expected]) => evaluateOperator(op, actual, expected));
+};
+
+const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
+    switch (op) {
+        case '$eq':
+            return actual === expected;
+        case '$ne':
+        case '$nw':
+            return actual !== expected;
+        case '$lt':
+            return actual < expected;
+        case '$lte':
+            return actual <= expected;
+        case '$gt':
+            return actual > expected;
+        case '$gte':
+            return actual >= expected;
+        case '$in':
+            return Array.isArray(expected) && expected.includes(actual);
+        case '$rgx':
+            try {
+                return new RegExp(expected).test(actual);
+            } catch {
+                return false;
+            }
+        case '$startWith':
+            return typeof actual === 'string' && actual.startsWith(expected);
+        case '$endWith':
+            return typeof actual === 'string' && actual.endsWith(expected);
+        case '$notContains':
+            return typeof actual === 'string' && !actual.includes(expected);
+        default:
+            return true;
+    }
 };
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
