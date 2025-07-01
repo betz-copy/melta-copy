@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
-import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
 import { DashboardItemType, TableForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
@@ -82,7 +82,9 @@ const Table: React.FC = () => {
     const initialValues = table
         ? {
               ...table.metaData,
-              filter: table?.metaData.filter ? FilterModelToFilterRecord(parseFilters(table?.metaData.filter), template!) : undefined,
+              filter: table?.metaData.filter
+                  ? FilterModelToFilterRecord(parseFilters(table?.metaData.filter), template?._id!, queryClient)
+                  : undefined,
           }
         : dashboardInitialValues.table;
 

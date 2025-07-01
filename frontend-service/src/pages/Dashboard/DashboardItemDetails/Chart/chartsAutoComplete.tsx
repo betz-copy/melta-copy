@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '../../../../interfaces/charts';
 import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
@@ -60,7 +60,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
 
     const [inputValue, setInputValue] = useState('');
 
-    const translateFieldFilter = (filter: string) => FilterModelToFilterRecord(JSON.parse(filter), entityTemplate!);
+    const translateFieldFilter = (filter: string) => FilterModelToFilterRecord(JSON.parse(filter), entityTemplate?._id!, queryClient);
 
     const renderFilters = (filter: string | undefined) => {
         if (!filter) return <span>{i18next.t('charts.noFilters')}</span>;

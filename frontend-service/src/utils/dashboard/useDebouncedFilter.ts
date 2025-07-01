@@ -2,7 +2,7 @@ import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QueryClient } from 'react-query';
 import { IAGGridFilter, IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
-import { filterRelationListToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { filterTemplateToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { ISearchFilter } from '../../interfaces/entities';
 
 export function isValidAGGridFilter(filter: IAGGridFilter | undefined): boolean {
@@ -37,7 +37,7 @@ export const useDebouncedFilter = (values: FilterProcessingInput, queryClient: Q
 
         if (validFilters.length === 0) return undefined;
 
-        return filterRelationListToSearchFilter(validFilters, templateId, queryClient);
+        return filterTemplateToSearchFilter(validFilters, templateId, queryClient);
     }, [values.templateId, values.filter, queryClient]);
 
     const [debouncedFilter, setDebouncedFilter] = useState<ISearchFilter | undefined>(memoizedFilter);

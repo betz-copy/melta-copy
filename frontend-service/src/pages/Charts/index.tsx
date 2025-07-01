@@ -143,7 +143,7 @@ const ChartsPage: React.FC = () => {
                     deleteChartMutateAsync({ id: deleteChartDialogState.chartId!, usedInDashboard: deleteChartDialogState.usedInDashboard })
                 }
                 isLoading={isDeleteChartLoading}
-                commomItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteChartDialogState.usedInDashboard }}
+                commonItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteChartDialogState.usedInDashboard }}
                 type={DashboardItemType.Chart}
             />
 

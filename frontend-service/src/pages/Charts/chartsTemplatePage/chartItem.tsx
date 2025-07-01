@@ -20,7 +20,9 @@ interface ChartItemProps {
 const ChartItem: React.FC<ChartItemProps> = ({ chartDetails, isHoverOnCard, indexInGrid, onDelete, onEdit }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore();
-    const hasWritePermission = chartDetails.createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
+    const { createdBy, chart, type } = chartDetails;
+
+    const hasWritePermission = createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
 
     return (
         <Box style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -63,10 +65,10 @@ const ChartItem: React.FC<ChartItemProps> = ({ chartDetails, isHoverOnCard, inde
                 </Box>
             )}
 
-            {chartDetails.type === IChartType.Number ? (
-                <NumberChartGenerator data={chartDetails.chart} chartDetails={chartDetails} enableResize />
+            {type === IChartType.Number ? (
+                <NumberChartGenerator data={chart} chartDetails={chartDetails} enableResize />
             ) : (
-                <HighchartGenerator generatedChart={chartDetails.chart} chartDetails={chartDetails} isQueryEnabled enableResize />
+                <HighchartGenerator generatedChart={chart} chartDetails={chartDetails} isQueryEnabled enableResize />
             )}
         </Box>
     );

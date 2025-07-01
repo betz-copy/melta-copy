@@ -69,8 +69,7 @@ export interface ChartForm extends Omit<IChart, 'filter'> {
 export interface ChartToBackend extends Omit<IChart, 'filter'> {
     filter?: ISearchFilter;
 }
-
-export interface TableToBackend extends Omit<TableMetaData, 'filter'> {
+interface TableToBackend extends Omit<TableMetaData, 'filter'> {
     filter?: ISearchFilter;
 }
 

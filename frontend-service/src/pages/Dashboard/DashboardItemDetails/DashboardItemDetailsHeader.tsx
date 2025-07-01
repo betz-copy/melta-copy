@@ -210,7 +210,7 @@ const DashboardItemDetailsHeader = <T extends DashboardItemForm>({
                 onDeleteYes={onDelete}
                 type={type}
                 isLoading={isLoading}
-                commomItemProps={{ ...chartPageProps, isNotDashboardPage: chartPageProps?.isChartPage }}
+                commonItemProps={{ ...chartPageProps, isNotDashboardPage: chartPageProps?.isChartPage }}
             />
 
             <AreYouSureDialog

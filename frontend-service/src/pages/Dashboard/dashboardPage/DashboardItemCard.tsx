@@ -82,4 +82,4 @@ const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ itemDetails, isHo
     );
 };
 
-export { DashboardItemCard };
+export default DashboardItemCard;

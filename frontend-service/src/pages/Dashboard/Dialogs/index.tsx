@@ -8,16 +8,16 @@ const ConfirmDeleteDashboardItem: React.FC<{
     handleClose: () => void;
     onDeleteYes: () => void;
     type: DashboardItemType | null;
-    commomItemProps?: {
+    commonItemProps?: {
         isNotDashboardPage?: boolean;
         usedInDashboard?: boolean;
     };
     isLoading?: boolean;
-}> = ({ isDialogOpen, handleClose, onDeleteYes, isLoading, type, commomItemProps }) => {
+}> = ({ isDialogOpen, handleClose, onDeleteYes, isLoading, type, commonItemProps }) => {
     let bodyText: string | undefined;
 
-    if (commomItemProps?.isNotDashboardPage)
-        if (commomItemProps.usedInDashboard) bodyText = i18next.t(`dashboard.dialogs.delete.body.${type}`);
+    if (commonItemProps?.isNotDashboardPage)
+        if (commonItemProps.usedInDashboard) bodyText = i18next.t(`dashboard.dialogs.delete.body.${type}`);
         else bodyText = undefined;
     else
         bodyText = i18next.t('dashboard.dialogs.delete.body.dashboard', {

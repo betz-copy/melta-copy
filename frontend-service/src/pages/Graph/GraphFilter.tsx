@@ -19,6 +19,7 @@ import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { initializedFilterField } from '../../common/FilterCompetent';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -83,15 +84,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             };
 
             setFilterRecord(newValue, filterKey);
-            // setFilterRecord((prev) => ({
-            //     ...prev,
-            //     [filterKey]: {
-            // selectedTemplate,
-            // selectedProperty,
-            // filterField: newFilterField,
-            //     },
-            // }));
-
             onFilter?.();
         }, 500),
         [filterKey],
@@ -116,15 +108,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (!selectedTemplate) return;
 
         const { format, type } = selectedTemplate.properties.properties[newProperty];
-
-        const initializedFilterField: Record<string, IGraphFilterBody['filterField']> = {
-            'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            date: { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            number: { filterType: 'number', type: 'equals' },
-            string: { filterType: 'text', type: 'contains' },
-            boolean: { filterType: 'text', type: 'equals' },
-            array: { filterType: 'set', values: [] },
-        };
 
         const selectedFilter = (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 

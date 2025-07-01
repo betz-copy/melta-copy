@@ -44,7 +44,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
 };
 
 const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
-    const TITLE_SECTION_HEIGHT = 120;
+    const titleSectionHeight = 120;
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -58,14 +58,12 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
 
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = React.useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
-    console.log({memorizedFilter});
-    
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
         const newHeight = containerRef.current.offsetHeight;
 
-        entitiesTableRef.current.resizeTableHeight(newHeight - TITLE_SECTION_HEIGHT);
+        entitiesTableRef.current.resizeTableHeight(newHeight - titleSectionHeight);
     };
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(

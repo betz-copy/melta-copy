@@ -8,7 +8,7 @@ import { StepComponentProps } from '../../../common/wizards';
 import { IAGGridFilter, IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import FilterCompetent from './filterCompenet';
+import FilterCompetent from './FilterCompetent';
 
 const FilterSideBar = <T extends TableForm | ChartForm>(
     props: StepComponentProps<T> & {
@@ -60,33 +60,7 @@ const FilterSideBar = <T extends TableForm | ChartForm>(
                 </>
             )}
             <Grid item sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
-                {/* <GraphFilterBatch
-                    filters={filters.value}
-                    setFilters={filters.set}
-                    templateOptions={templateOptions}
-                    filterRecord={values.filter || {}}
-                    setFilterRecord={(value: IGraphFilterBody, filterKey: number) => {
-                        console.log({ valuesIN: values });
-
-                        const currentValue = values.filter;
-                        const newValue = { ...currentValue, [filterKey]: { ...value } };
-                        console.log({ currentValue, newValue });
-
-                        setFieldValue('filter', newValue);
-                    }}
-                    onRemoveFilter={(filterKey: number) => {
-                        const currentValue = values.filter;
-                        const newValue = { ...currentValue };
-                        delete newValue[filterKey];
-
-                        setFieldValue('filter', newValue);
-                    }}
-                    graphEntityTemplateIds={[values.templateId!]}
-                    entityFilter
-                    selectedEntityTemplate={entityTemplates.get(values.templateId!)}
-                    readonly={viewMode === ViewMode.ReadOnly}
-                /> */}
-                <FilterCompetent readonly={viewMode === ViewMode.ReadOnly} formik={props} />
+                <FilterCompetent viewMode={viewMode} formik={props} />
             </Grid>
             {viewMode !== ViewMode.ReadOnly && (
                 <Button sx={{ marginRight: 'auto', zIndex: '100' }} onClick={handleAddFilter} startIcon={<Add style={{ marginLeft: '5px' }} />}>

@@ -6,9 +6,9 @@ import axios from '../../axios';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import {
-    filterRelationListToSearchFilter,
-    SearchFilterToFilterRelationList,
-} from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+    FilterModelToFilterRecord,
+    filterTemplateToSearchFilter,
+} from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import {
@@ -49,7 +49,10 @@ type AttachmentOrArchiveProperties = {
     data: EntityTemplateFormInputProperties;
 };
 
-const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
+const entityTemplateObjectToEntityTemplateForm = (
+    entityTemplate: IMongoEntityTemplatePopulated | null,
+    queryClient: QueryClient,
+): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
     const {
         iconFileId,
@@ -119,9 +122,10 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                       relatedTemplateId: value.relationshipReference.relatedTemplateId,
                       relatedTemplateField: value.relationshipReference.relatedTemplateField,
                       filters: value.relationshipReference.filters
-                          ? SearchFilterToFilterRelationList(
-                                value.relationshipReference.relatedTemplateId,
+                          ? FilterModelToFilterRecord(
                                 parseFilters(value.relationshipReference.filters),
+                                value.relationshipReference.relatedTemplateId,
+                                queryClient,
                             )
                           : undefined,
                   }
@@ -403,7 +407,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                           filters: relationshipReference.filters
-                              ? filterRelationListToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
                               : undefined,
                       }
                     : undefined,
@@ -511,7 +515,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                           filters: relationshipReference.filters
-                              ? filterRelationListToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
                               : undefined,
                       }
                     : undefined,
@@ -746,7 +750,13 @@ const updateActionToEntity = async (entityTemplateId: string, actions: string) =
 };
 
 export {
-    createEntityTemplateRequest, deleteEntityTemplateRequest, deleteEnumFieldRequest, entityTemplateObjectToEntityTemplateForm, searchEntityTemplates, updateActionToEntity, updateEntityTemplateRequest, updateEntityTemplateStatusRequest,
-    updateEnumFieldRequest
+    createEntityTemplateRequest,
+    deleteEntityTemplateRequest,
+    deleteEnumFieldRequest,
+    entityTemplateObjectToEntityTemplateForm,
+    searchEntityTemplates,
+    updateActionToEntity,
+    updateEntityTemplateRequest,
+    updateEntityTemplateStatusRequest,
+    updateEnumFieldRequest,
 };
-

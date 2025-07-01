@@ -257,7 +257,7 @@ const IFrameHeadline: React.FC<{
                 onDeleteYes={() => mutateAsync({ id: deleteIFrameDialogState.iFrameId!, usedInDashboard: deleteIFrameDialogState.usedInDashboard })}
                 isLoading={isLoading}
                 type={DashboardItemType.Iframe}
-                commomItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteIFrameDialogState.usedInDashboard }}
+                commonItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteIFrameDialogState.usedInDashboard }}
             />
         </Grid>
     );

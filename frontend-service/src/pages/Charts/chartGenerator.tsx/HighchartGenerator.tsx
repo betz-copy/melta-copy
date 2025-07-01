@@ -7,6 +7,7 @@ import { environment } from '../../../globals';
 import { GeneratedChart, HighchartType, IAxis, IChart, IChartType } from '../../../interfaces/charts';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
+
 const { pieChartColors } = environment.charts;
 
 interface HighchartGeneratorProps {

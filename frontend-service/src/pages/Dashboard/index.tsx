@@ -17,7 +17,7 @@ import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
 import { AddDashboardItem } from './AddDashboardItem';
 import { DashboardHeader } from './dashboardPage/DashboardHeader';
-import { DashboardItemCard } from './dashboardPage/DashboardItemCard';
+import DashboardItemCard from './dashboardPage/DashboardItemCard';
 import NoItemsCard from './dashboardPage/NoItemsCard';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
 

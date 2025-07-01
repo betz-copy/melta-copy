@@ -22,9 +22,10 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
         newTemplate: null,
     });
 
-    const handleChangeTemplate = (newValue) => {
+    const handleChangeTemplate = (newValue: string[] | string | null) => {
         setFieldValue('templateId', newValue || null);
-        setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
+
+        if (typeof newValue === 'string') setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
     };
 
     return (

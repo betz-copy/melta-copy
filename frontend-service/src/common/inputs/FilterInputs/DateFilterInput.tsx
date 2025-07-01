@@ -55,7 +55,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
                         endDateInput={filterField?.dateTo ?? null}
                         directionIsRow={entityFilter}
                         overrideSx={inputStyle}
-                        readOnly={readOnly}
+                        readOnly={readOnly}               
                     />
                 ) : (
                     <DatePickerWrapper

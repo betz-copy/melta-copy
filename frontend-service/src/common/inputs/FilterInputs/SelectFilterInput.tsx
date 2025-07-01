@@ -48,6 +48,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                         textOverflow: 'ellipsis',
                     },
                 }}
+                forceOutlined
             >
                 {options?.map(({ option, label }) => (
                     <MenuItem key={option} value={option}>

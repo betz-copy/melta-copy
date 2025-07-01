@@ -3,7 +3,7 @@ import { QueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { filtersSchema } from '../../common/wizards/entityTemplate/AddFields';
 import { IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
-import { filterRelationListToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { filterTemplateToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { IChartType, IColumnOrLineMetaData, IPermission } from '../../interfaces/charts';
 import { ChartForm, DashboardItemType, TableForm, TableItemToBackend } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
@@ -47,9 +47,9 @@ export const tableMetaDataToBackend = (tableData: TableForm, queryClient: QueryC
     type: DashboardItemType.Table,
     metaData: {
         ...tableData,
-        filter: tableData.filter ? filterRelationListToSearchFilter(tableData.filter, tableData.templateId, queryClient) : undefined,
+        filter: tableData.filter ? filterTemplateToSearchFilter(tableData.filter, tableData.templateId, queryClient) : undefined,
     },
 });
 
 export const filterDocumentToFilterBackend = (templateId: string, filter: IFilterTemplate[] | undefined, queryClient: QueryClient) =>
-    filter ? filterRelationListToSearchFilter(filter, templateId, queryClient) : undefined;
+    filter ? filterTemplateToSearchFilter(filter, templateId, queryClient) : undefined;

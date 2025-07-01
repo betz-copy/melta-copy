@@ -69,6 +69,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                         );
                     }}
                     readOnly={readOnly}
+                    forceOutlined
                 />
             </Grid>
         </Grid>

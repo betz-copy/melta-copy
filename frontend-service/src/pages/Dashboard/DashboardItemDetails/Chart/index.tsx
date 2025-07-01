@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFields';
-import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/RelationFilterToBackend';
+import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
 import { IMongoChart, IPermission } from '../../../../interfaces/charts';
 import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
@@ -130,7 +130,7 @@ const Chart: React.FC = () => {
         return {
             ...baseValues,
             ...(chart ? {} : { templateId }),
-            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template!) : undefined,
+            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template?._id!, queryClient) : undefined,
         };
     };
 

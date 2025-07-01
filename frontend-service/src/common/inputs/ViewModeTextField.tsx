@@ -3,14 +3,15 @@ import React from 'react';
 
 type ViewModeTextFieldProps = TextFieldProps & {
     readOnly?: boolean;
+    forceOutlined?: boolean;
 };
 
-const ViewModeTextField: React.FC<ViewModeTextFieldProps> = ({ readOnly = false, InputProps, value, ...rest }) => {
+const ViewModeTextField: React.FC<ViewModeTextFieldProps> = ({ readOnly = false, forceOutlined = false, InputProps, value, ...rest }) => {
     return (
         <TextField
             {...rest}
             value={value ?? (readOnly ? '-' : '')}
-            variant={readOnly ? 'standard' : 'outlined'}
+            variant={readOnly && !forceOutlined ? 'standard' : 'outlined'}
             InputProps={{
                 ...InputProps,
                 readOnly,

@@ -801,7 +801,7 @@ const EntityTemplatesRow: React.FC = () => {
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
-                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
+                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />
