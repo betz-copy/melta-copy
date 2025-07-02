@@ -12,7 +12,7 @@ import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFil
 import { IFieldFilter } from '../../../interfaces/entityChildTemplates';
 import { IUser } from '../../../interfaces/users';
 import { format } from 'date-fns';
-
+import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 interface IAddFieldFilterDialogProps {
     open: boolean;
     onClose: () => void;
@@ -39,6 +39,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
     const [inputValue, setInputValue] = useState<string>('');
     const [localFilterField, setLocalFilterField] = useState<IFieldFilter['filterField']>(fieldFilter.filterField || undefined);
+    const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (open) {
@@ -47,10 +48,12 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     }, [open, fieldFilter]);
 
     const handleFilterFieldChange = (value: IFieldFilter['filterField']) => {
+        setCurrentFieldError(undefined);
         setLocalFilterField(value);
     };
 
     const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
+        setCurrentFieldError(undefined);
         if (!newValue && localFilterField?.filterType === 'date') {
             const isRemovingStart = isStartDate && !localFilterField.dateTo;
             const isRemovingEnd = !isStartDate && !localFilterField.dateFrom;
@@ -66,12 +69,14 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     };
 
     const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
+        setCurrentFieldError(undefined);
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
         const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+        setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };
 
@@ -166,6 +171,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 type={type}
                 readOnly={readOnly}
                 {...defaultFilterProps}
+                error={!!currentFieldError}
+                helperText={currentFieldError}
             />
         );
     };
@@ -183,7 +190,24 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 defaultValue = localFilterField.dateFrom;
             }
 
-            onSubmit(currentFieldName, defaultValue);
+            const fieldSchema = entityTemplate.properties.properties[currentFieldName];
+            const fakeTemplateSchema = {
+                ...entityTemplate.properties,
+                required: [],
+                properties: {
+                    [currentFieldName]: fieldSchema,
+                },
+            };
+
+            const formData = { [currentFieldName]: defaultValue };
+
+            const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
+
+            if (ajvErrors && ajvErrors[currentFieldName]) {
+                setCurrentFieldError(ajvErrors[currentFieldName] as string);
+            } else {
+                onSubmit(currentFieldName, defaultValue);
+            }
         } else {
             updateFieldFilter(localFilterField, currentFieldName);
             onSubmit(currentFieldName, localFilterField);

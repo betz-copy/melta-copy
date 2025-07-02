@@ -25,13 +25,8 @@ import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
-<<<<<<< HEAD
-import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
-import { FieldGroupData, IFilterRelationReference, PropertyItem } from './commonInterfaces';
 import { IEntityChildTemplateMap, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
 import { getAllEntityChildTemplates } from '../../../services/templates/entityChildTemplatesService';
-=======
->>>>>>> 9c0b3bc04563f8d3851a913bc9add630c19a90dc
 
 const { errorCodes } = environment;
 
