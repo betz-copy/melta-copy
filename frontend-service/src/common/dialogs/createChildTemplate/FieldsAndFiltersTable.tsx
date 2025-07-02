@@ -85,7 +85,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             prop.format === 'signature' ||
             prop.format === 'location' ||
             prop.format === 'comment' ||
-            prop.items?.format === 'fileId'
+            prop.format === 'user' ||
+            prop.format === 'kartoffelUserField' ||
+            prop.items?.format === 'fileId' ||
+            prop.items?.format === 'user'
         );
     };
 

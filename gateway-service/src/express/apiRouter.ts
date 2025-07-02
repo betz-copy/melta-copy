@@ -28,6 +28,7 @@ apiRouter.use('/config', (_req, res) =>
         meltaUpdates: config.frontendConfig.meltaUpdates,
         meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
+        units: config.frontendConfig.units,
     }),
 );
 

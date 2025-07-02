@@ -18,6 +18,8 @@ import {
 } from '../../common/wizards/entityTemplate/RelationshipRefrence/RelationFilterToBackend';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
+import { useQueryClient } from 'react-query';
+import { BackendConfigState } from '../backendConfigService';
 
 const { entityTemplates } = environment.api;
 
@@ -290,6 +292,9 @@ export const extractGroups = (
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
+    const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
         values;
     const serialsUniqueConstraints: string[][] = [];
@@ -431,8 +436,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 });
             }
             if (type === 'unitField') {
-                const { units } = environment;
-                schema.properties[name].enum = [...units];
+                schema.properties[name].enum = [...(config?.units || [])];
             }
         },
     );
