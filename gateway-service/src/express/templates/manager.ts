@@ -501,6 +501,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, { [this.workspaceId]: updatedPermissions });
     }
 
+    async updateEntityTemplateAction(templateId: string, actions: string, isChildTemplate?: boolean): Promise<IMongoEntityTemplatePopulated> {
+        if (isChildTemplate) return this.entityTemplateService.updateChildEntityTemplateAction(templateId, actions);
+        return this.entityTemplateService.updateEntityTemplateAction(templateId, actions);
+    }
+
     async searchEntityTemplates(
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
         searchQuery: ISearchEntityTemplatesBody,
@@ -1102,7 +1107,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             isSingularToPlural
                         )
                     ) {
-                        throw new BadRequestError('can not change property format');
+                        throw new BadRequestError('can not change property format', { value, newValue });
                     }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');

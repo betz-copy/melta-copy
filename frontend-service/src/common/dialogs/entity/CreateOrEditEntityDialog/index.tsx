@@ -71,6 +71,7 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
+    childTemplateId?: string;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -80,6 +81,7 @@ const CreateOrEditEntityDetails: React.FC<{
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
+    childTemplateId,
     showActionButtons = true,
 }) => {
     const { payload, actionType } = mutationProps;
@@ -125,6 +127,7 @@ const CreateOrEditEntityDetails: React.FC<{
         finalMutationProps,
         setExternalErrors,
         setCreateOrUpdateWithRuleBreachDialogState,
+        childTemplateId,
         clientSideUserEntity,
     );
 

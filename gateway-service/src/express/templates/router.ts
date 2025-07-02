@@ -34,6 +34,7 @@ import {
     updateRuleStatusByIdRequestSchema,
     updateEntityChildTemplateSchema,
     deleteEntityChildTemplateSchema,
+    updateEntityTemplateActionSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -134,7 +135,12 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
-templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
+templatesRouter.patch(
+    '/entities/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    AuthorizerControllerMiddleware.userIsRootAdmin,
+    templatesControllerMiddleware.updateEntityTemplateAction,
+);
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',

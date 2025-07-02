@@ -197,6 +197,7 @@ const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    childTemplateId?: string;
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -256,6 +257,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     <Data extends any>(
         {
             template,
+            childTemplateId,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -388,6 +390,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
+            childTemplateId,
             getEntityPropertiesData,
             getRowId,
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
@@ -686,7 +689,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds },
+                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds, childTemplateId },
                 });
 
             return panels;

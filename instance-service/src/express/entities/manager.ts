@@ -77,6 +77,7 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import BulkActionManager from '../bulkActions/manager';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
+import EntityChildTemplateManagerService from '../../externalServices/templates/entityChildTemplateManager';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
@@ -84,6 +85,8 @@ const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
 class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
+
+    private entityChildTemplateManagerService: EntityChildTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
@@ -97,6 +100,7 @@ class EntityManager extends DefaultManagerNeo4j {
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
         this.relationshipManager = new RelationshipManager(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
+        this.entityChildTemplateManagerService = new EntityChildTemplateManagerService(workspaceId);
     }
 
     private getRelevantRulesOfEntities = (
@@ -153,7 +157,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
         entitiesRelevantRulesMap.forEach(async ({ rules }, entityId) => {
-            const entity = await this.getEntityById(entityId);
+            const entity = await this.getEntityByIdInTransaction(entityId, transaction);
             const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
             ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules, entityTemplate));
         });
@@ -404,14 +408,14 @@ class EntityManager extends DefaultManagerNeo4j {
         return relatedEntityIdsByFieldToChange;
     }
 
-    async getAllRelationshipReferencesEntityTemplates(templateId: string) {
+    async getAllRelationshipReferencesEntityTemplates(templateId: string, actions?: string) {
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
 
         const baseTemplate = templatesMap.get(templateId)!;
 
         const templatePropertiesQueue = [baseTemplate.properties.properties];
-        const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
+        const relationshipReferenceIdsMap = new Map<string, IMongoEntityTemplate>([[templateId, { ...baseTemplate, actions }]]);
 
         while (templatePropertiesQueue.length > 0) {
             const currentEntityProperties = templatePropertiesQueue.shift()!;
@@ -592,7 +596,7 @@ class EntityManager extends DefaultManagerNeo4j {
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
-        const entitiesTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate._id);
+        const entitiesTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate._id, entityTemplate.actions);
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
@@ -642,16 +646,16 @@ class EntityManager extends DefaultManagerNeo4j {
         ignoredRules: IBrokenRule[],
         userId: string,
         duplicatedFromId?: string,
+        childTemplateId?: string,
     ) {
-        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onCreateEntity)) {
-            const actions = await this.buildActionsArray(
-                IEntityCrudAction.onCreateEntity,
-                properties,
-                entityTemplate,
-                userId,
-                undefined,
-                duplicatedFromId,
-            );
+        let template = entityTemplate;
+        if (childTemplateId) {
+            const childTemplate = await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId);
+            template = { ...entityTemplate, actions: childTemplate.actions };
+        }
+
+        if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onCreateEntity)) {
+            const actions = await this.buildActionsArray(IEntityCrudAction.onCreateEntity, properties, template, userId, undefined, duplicatedFromId);
 
             const bulkManager = new BulkActionManager(this.workspaceId);
 
@@ -667,7 +671,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
                     transaction,
                     properties,
-                    entityTemplate,
+                    template,
                     userId,
                     duplicatedFromId,
                 );
@@ -1584,6 +1588,7 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
         userId?: string,
+        childTemplateId?: string,
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
@@ -1591,14 +1596,14 @@ class EntityManager extends DefaultManagerNeo4j {
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
-        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
-            const actions = await this.buildActionsArray(
-                IEntityCrudAction.onUpdateEntity,
-                entityProperties,
-                entityTemplate,
-                userId,
-                unPopulatedEntity,
-            );
+        let template = entityTemplate;
+        if (childTemplateId) {
+            const childTemplate = await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId);
+            template = { ...entityTemplate, actions: childTemplate.actions };
+        }
+
+        if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
+            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedEntity);
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
@@ -1610,13 +1615,13 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
+                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, template);
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
                     id,
                     entityProperties,
-                    entityTemplate,
+                    template,
                     transaction,
                     userId,
                     convertToRelationshipField,

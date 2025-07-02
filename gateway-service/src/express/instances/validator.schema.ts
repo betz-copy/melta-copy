@@ -14,6 +14,7 @@ export const createEntityInstanceSchema = Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: {},
@@ -26,6 +27,7 @@ export const updateEntityInstanceSchema = Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: { id: Joi.string().required() },
@@ -40,6 +42,7 @@ export const updateMultipleEntitiesSchema = Joi.object({
         ignoredRules: ExtendedJoi.stringToObject().default({}),
         entitiesToUpdate: ExtendedJoi.stringToObject(),
         propertiesToRemove: ExtendedJoi.stringToArray().items(Joi.string()).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: {},
@@ -241,6 +244,7 @@ export const loadEntitiesSchema = Joi.object({
                 .default([]),
         ),
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {},
@@ -270,6 +274,7 @@ export const editReadExcelSchema = Joi.object({
 export const editManyEntitiesByExcelSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
         entities: ExtendedJoi.stringToArray(
             Joi.array()
                 .items(
