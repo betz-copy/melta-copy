@@ -119,7 +119,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     {i18next.t('notifications.title')}
                 </Typography>
             }
-            side="right"
+            side={side}
             sideMargin={sideBarWidth}
             isCheckBoxClicked={isCheckBoxClicked}
         >
