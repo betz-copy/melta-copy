@@ -191,13 +191,13 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     };
 
     const isValueValid = () => {
-        if (!localFilterField) return false;
+        if (localFilterField === undefined) return false;
 
         if (dialogType === 'filter' || dialogType === 'default') {
             switch (localFilterField.filterType) {
                 case 'text':
                 case 'number':
-                    return !!localFilterField.filter;
+                    return !!localFilterField.filter || typeof localFilterField.filter === 'boolean';
                 case 'set':
                     return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
                 case 'date':

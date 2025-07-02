@@ -97,9 +97,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 </Grid>
                 <Grid container>
                     {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
-                        const isRequired = entityTemplate.properties.required.includes(fieldName);
-                        const isKartoffelUserField = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
-                        const isSerialNumberField = entityTemplate.properties.properties[fieldName]?.format === 'serialNumber';
+                        const isRequired: boolean = entityTemplate.properties.required.includes(fieldName);
+                        const isKartoffelUserField: boolean = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
+                        const isSerialNumberField: boolean = !!entityTemplate.properties.properties[fieldName]?.serialCurrent;
+                        const isRelationshipRefField: boolean = entityTemplate.properties.properties[fieldName]?.format === 'relationshipReference';
 
                         return (
                             <React.Fragment key={fieldName}>
@@ -269,10 +270,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
                                                             disabled={
+                                                                isSerialNumberField ||
                                                                 (!fieldFilter.selected && !isRequired) ||
                                                                 isDisallowedFormat(fieldName) ||
                                                                 isKartoffelUserField ||
-                                                                isSerialNumberField
+                                                                isRelationshipRefField
                                                             }
                                                         >
                                                             <AddRounded />
