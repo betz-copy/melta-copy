@@ -55,7 +55,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated & { childId?: string };
+        template: IMongoEntityTemplatePopulated & { childTemplateId?: string };
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;

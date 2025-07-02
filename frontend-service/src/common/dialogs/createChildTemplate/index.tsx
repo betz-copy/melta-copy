@@ -308,8 +308,8 @@ const CreateChildTemplateDialog: React.FC<{
             const currentDefaultValue = fieldChips.find((chip) => chip.fieldName === fieldName && chip.chipType === 'default')?.value;
 
             if (
-                (originalDefaultValue === undefined && currentDefaultValue !== undefined) ||
-                (originalDefaultValue !== undefined && currentDefaultValue === undefined) ||
+                (!originalDefaultValue && !!currentDefaultValue) ||
+                (!!originalDefaultValue && !currentDefaultValue) ||
                 JSON.stringify(originalDefaultValue) !== JSON.stringify(currentDefaultValue)
             ) {
                 return true;
@@ -387,6 +387,9 @@ const CreateChildTemplateDialog: React.FC<{
                     displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
                     categories: selectedCategories,
+                    isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
+                    isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
+                    filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, categories }) => {

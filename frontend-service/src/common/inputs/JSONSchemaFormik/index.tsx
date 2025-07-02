@@ -173,7 +173,7 @@ const getComponent = (
     }
 
     const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-        return <Component {...props} readonly={props.schema.isEditableByUser === false} />;
+        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
     };
 
     return getWrappedComponent;

@@ -29,7 +29,7 @@ const RjsfCheckboxWidget = ({
     const { defaultValue } = options;
 
     useEffect(() => {
-        if (value === undefined && defaultValue !== undefined) {
+        if (!value && !!defaultValue) {
             onChange(defaultValue);
         }
     }, [value, defaultValue, onChange]);

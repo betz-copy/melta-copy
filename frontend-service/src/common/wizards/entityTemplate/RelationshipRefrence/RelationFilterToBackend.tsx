@@ -48,7 +48,7 @@ export const filterRelationListToSearchFilter = (filterModel: IFilterRelationRef
     if (filters.length === 0) return undefined;
 
     return {
-        $and: filters.map((filter) => filter),
+        $and: filters,
     };
 };
 

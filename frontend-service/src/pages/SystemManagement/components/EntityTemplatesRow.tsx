@@ -216,7 +216,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
                             <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
-                            {/* <FilterList fontSize="small" sx={{ fontSize: '14px' }} /> */}
                         </Grid>
 
                         <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>

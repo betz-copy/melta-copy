@@ -31,7 +31,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { environment } from '../../globals';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childId?: string };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childTemplateId?: string };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -350,7 +350,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 <Link
                                     href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
                                         getEntityPropertiesData(data)._id
-                                    }${pageType === environment.clientSideId ? '' : `/${template.childId ?? template._id}`}`}
+                                    }${pageType === environment.clientSideId ? '' : `/${template.childTemplateId ?? template._id}`}`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}

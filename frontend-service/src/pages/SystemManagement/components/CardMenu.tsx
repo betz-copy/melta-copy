@@ -72,16 +72,6 @@ export const CardMenu: React.FC<{
         return i18next.t('systemManagement.defaultCantEdit');
     }, [disabledProps]);
 
-    // const getDeleteButtonTooltip = () => {
-    //     if (disabledProps?.isDeleteDisabled) {
-    //         if (disabledProps?.tooltipTitle?.includes('entities')) {
-    //             return i18next.t('systemManagement.cannotDeleteTemplateWithData');
-    //         }
-    //         return disabledProps.tooltipTitle;
-    //     }
-    //     return i18next.t('actions.delete');
-    // };
-
     return (
         <>
             <IconButton onClick={handleClick} style={{ ...iconSize }}>

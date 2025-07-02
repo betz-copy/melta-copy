@@ -104,8 +104,6 @@ class InstancesValidator extends DefaultController {
     ) {
         const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
-        // eslint-disable-next-line no-console
-        console.log('userPermissions: ', { userPermissions });
 
         if (
             !userPermissions.admin?.scope &&
