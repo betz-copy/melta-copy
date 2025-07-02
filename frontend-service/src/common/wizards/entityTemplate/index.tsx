@@ -6,27 +6,32 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
+import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
-import { mapTemplates } from '../../../utils/templates';
-import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
+import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
+<<<<<<< HEAD
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 import { FieldGroupData, IFilterRelationReference, PropertyItem } from './commonInterfaces';
 import { IEntityChildTemplateMap, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
 import { getAllEntityChildTemplates } from '../../../services/templates/entityChildTemplatesService';
+=======
+>>>>>>> 9c0b3bc04563f8d3851a913bc9add630c19a90dc
 
 const { errorCodes } = environment;
 
@@ -57,7 +62,7 @@ export interface EntityTemplateFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
-        filters?: IFilterRelationReference[];
+        filters?: IFilterTemplate[];
     };
     expandedUserField?: {
         relatedUserField: string;
@@ -119,8 +124,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>
             isEditMode
-                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate)
-                : createEntityTemplateRequest(entityTemplate),
+                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate, queryClient)
+                : createEntityTemplateRequest(entityTemplate, queryClient),
         {
             onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
@@ -194,7 +199,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false, queryClient);
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];

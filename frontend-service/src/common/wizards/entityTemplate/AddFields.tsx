@@ -12,7 +12,7 @@ import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } f
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentHelpers, StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
@@ -73,13 +73,20 @@ const agGridNumberFilterSchema = Yup.object({
 
 const agGridDateFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['date']).required(),
-    type: Yup.string().oneOf(['equals', 'notEqual', 'greaterThan', 'lessThan', 'inRange']).required(i18next.t('validation.required')),
+    type: Yup.string()
+        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
+        .required(i18next.t('validation.required')),
     dateFrom: Yup.string().required(i18next.t('validation.required')),
     dateTo: Yup.string().when('type', {
         is: 'inRange',
         then: (schema) => schema.required(i18next.t('validation.required')),
-        otherwise: (schema) => schema.notRequired(),
+        otherwise: (schema) => schema.nullable().notRequired(),
     }),
+});
+
+const agGridSetFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['set']).required(),
+    values: Yup.array().of(Yup.string().nullable()).min(1, i18next.t('validation.atLeastOne')).required(i18next.t('validation.required')),
 });
 
 // Dynamic filter field validation based on `filterType`
@@ -91,12 +98,14 @@ const filterFieldSchema = Yup.lazy((value: any) => {
             return agGridNumberFilterSchema;
         case 'date':
             return agGridDateFilterSchema;
+        case 'set':
+            return agGridSetFilterSchema;
         default:
             return Yup.mixed().required(i18next.t('validation.required'));
     }
 });
 
-const filtersSchema = Yup.array().of(
+export const filtersSchema = Yup.array().of(
     Yup.object({
         filterProperty: Yup.string().required(i18next.t('validation.required')),
         filterField: filterFieldSchema,

@@ -1,13 +1,16 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
-import { Link } from 'wouter';
-import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
+import { Link } from 'wouter';
 import { IButtonPopoverProps } from '.';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import {
     booleanColDef,
     dateColDef,
@@ -25,9 +28,6 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childId?: string };
@@ -57,6 +57,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
     pageType?: string;
+    columnsToShow?: string[];
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -82,6 +83,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     disableEditCell,
     entityTemplates,
     pageType,
+    columnsToShow,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -101,13 +103,17 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
+        const isPreviewEmpty = template.propertiesPreview.length === 0;
+        const isPropertyInPreview = template.propertiesPreview.includes(property);
+        const isFirstTwoProperties = firstTwoPropsOrder.includes(property);
+        const isDefaultVisibilityColumn = defaultVisibleColumns[property] !== undefined;
+        const isColumnInDisplayList = columnsToShow?.includes(property) ?? true;
+
         const hideColumn =
-            template.propertiesPreview.length === 0 && hideNonPreview
-                ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
-                : archive ||
-                  (defaultVisibleColumns[property] !== undefined
-                      ? !defaultVisibleColumns[property]
-                      : hideNonPreview && !template.propertiesPreview.includes(property));
+            (isPreviewEmpty && hideNonPreview && !isFirstTwoProperties) ||
+            archive ||
+            (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
+            !isColumnInDisplayList;
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
@@ -237,7 +243,15 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 editable,
             );
         if (propertyTemplate.items?.format === 'fileId') {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight, isLastColumn);
+            return enumFilesColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                defaultColumnWidths[property],
+                rowHeight,
+                isLastColumn,
+                hideColumn,
+            );
         }
         if (propertyTemplate.format === 'user') {
             return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], isLastColumn, hideColumn);

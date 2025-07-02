@@ -11,7 +11,7 @@ import { toast } from 'react-toastify';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
+import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { environment } from '../../../../globals';

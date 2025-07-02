@@ -1,14 +1,15 @@
 /* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
 import React from 'react';
-import { IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { GraphFilter } from './GraphFilter';
 
 interface GraphFilterBatchProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+    setFilterRecord: (value: IGraphFilterBody, filterKey: number) => void;
+    onRemoveFilter: (filterKey: number) => void;
     filters: number[];
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
     filterRecord: IGraphFilterBodyBatch;
@@ -22,6 +23,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
     ({
         templateOptions,
         setFilterRecord,
+        onRemoveFilter,
         filters,
         setFilters,
         filterRecord,
@@ -36,10 +38,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         };
 
         const removeFilterFromFilterList = (filterKey: number) => {
-            setFilterRecord((prev) => {
-                const { [filterKey]: deletedFilter, ...restFilters } = prev;
-                return restFilters;
-            });
+            onRemoveFilter(filterKey);
             onFilter?.();
         };
 

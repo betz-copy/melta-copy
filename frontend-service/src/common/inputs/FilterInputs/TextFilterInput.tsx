@@ -15,10 +15,10 @@ interface TextFilterProps {
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
-    errors?: any;
-    touched?: any;
     hideFilterType?: boolean;
     forceEqualsType?: boolean;
+    error?: boolean;
+    helperText?: string;
 }
 
 const TextFilterInput: React.FC<TextFilterProps> = ({
@@ -28,10 +28,10 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
-    errors,
-    touched,
     hideFilterType = false,
     forceEqualsType = false,
+    error,
+    helperText,
 }) => {
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
@@ -60,19 +60,13 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
 
             <Grid item xs={hideFilterType ? 12 : 5.5}>
                 <StyledFilterInput
-                    inputProps={{
-                        readOnly,
-                        style: {
-                            textOverflow: 'ellipsis',
-                        },
-                    }}
                     size="small"
                     fullWidth
                     type={type}
-                    value={filterField?.filter ?? ''}
+                    value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
                     disabled={readOnly}
-                    error={Boolean(touched && errors?.filter)}
-                    helperText={touched ? errors?.filter : ''}
+                    error={error}
+                    helperText={helperText}
                     onChange={(e) => {
                         const { value } = e.target;
                         const updatedFilter =
@@ -86,6 +80,8 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
 
                         handleFilterFieldChange(updatedFilter);
                     }}
+                    readOnly={readOnly}
+                    forceOutlined
                 />
             </Grid>
         </Grid>

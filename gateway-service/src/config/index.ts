@@ -191,6 +191,9 @@ const config = {
         iframes: {
             baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_ROUTE').default('/iframes').asString(),
         },
+        dashboard: {
+            baseRoute: env.get('DASHBOARD_SERVICE_DASHBOARD_ROUTE').default('/items').asString(),
+        },
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
