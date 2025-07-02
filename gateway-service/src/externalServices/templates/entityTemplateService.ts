@@ -12,6 +12,7 @@ import {
     IMongoBaseConfig,
     ConfigTypes,
     ICategoryOrderConfig,
+    ISearchEntityChildTemplatesBody,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -209,6 +210,21 @@ class EntityTemplateService extends TemplatesManagerService {
     async getAllChildTemplates() {
         const { data } = await this.api.get<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
         return data;
+    }
+
+    async searchChildTemplates(userId: string, body: ISearchEntityChildTemplatesBody = {}) {
+        const workspaceId = this.api.defaults.headers[workspaceIdHeaderName]!.toString();
+        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(userId);
+
+        const { data: childTemplates } = await this.api.post<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, body);
+        return usersPermissions.admin
+            ? childTemplates
+            : childTemplates.filter((childTemplate) => {
+                  const { fatherTemplateId: fatherTemplate } = childTemplate;
+                  const categoryPermission = usersPermissions.instances?.categories[fatherTemplate.category];
+                  const templatePermission = categoryPermission?.entityTemplates[fatherTemplate._id];
+                  return categoryPermission?.scope || templatePermission?.scope || templatePermission?.entityChildTemplates[childTemplate._id];
+              });
     }
 }
 

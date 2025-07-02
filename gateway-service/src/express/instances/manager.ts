@@ -2,6 +2,39 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
+import {
+    ActionTypes,
+    BadRequestError,
+    EntityTemplateType,
+    IAction,
+    IBrokenRule,
+    IBrokenRuleEntity,
+    ICountSearchResult,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IDeleteEntityBody,
+    IEntity,
+    IEntityTemplatePopulated,
+    IEntityWithDirectRelationships,
+    IEntityWithIgnoredRules,
+    IExportEntitiesBody,
+    IFailedEntity,
+    IFilterOfTemplate,
+    IMongoEntityTemplatePopulated,
+    IMultipleSelect,
+    IRelationship,
+    ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    ISearchSort,
+    ISemanticSearchResult,
+    ITemplateSearchBody,
+    IUpdateEntityMetadata,
+    logger,
+    TemplateItem,
+    UploadedFile,
+} from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
@@ -9,53 +42,24 @@ import { Dictionary, mapValues, omit } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
-import {
-    IEntityTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-    ActionTypes,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IUpdateEntityMetadata,
-    IAction,
-    IBrokenRule,
-    ISearchEntitiesByLocationBody,
-    ICountSearchResult,
-    IDeleteEntityBody,
-    IEntity,
-    ISearchBatchBody,
-    ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
-    ISearchSort,
-    IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
-    ITemplateSearchBody,
-    IBrokenRuleEntity,
-    IFailedEntity,
-    IRelationship,
-    logger,
-    IExportEntitiesBody,
-    ISemanticSearchResult,
-    BadRequestError,
-    UploadedFile,
-    IMultipleSelect,
-} from '@microservices/shared';
+import getFilterFromChildTemplate from '../../utils/childTemplate';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
+import { PreviewService } from '../../externalServices/previewService';
+import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
+import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
+import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { objectFilter } from '../../utils/object';
-import RuleBreachesManager from '../ruleBreaches/manager';
-import { patchDocumentAsStream } from './documentExport';
 import RabbitManager from '../../utils/rabbit';
-import { SemanticSearchService } from '../../externalServices/semanticSearch';
-import WorkspaceService from '../workspaces/service';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
-import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
-import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, classifyEntityErrors } from '../../utils/excel';
-import { PreviewService } from '../../externalServices/previewService';
+import RuleBreachesManager from '../ruleBreaches/manager';
+import WorkspaceService from '../workspaces/service';
+import { patchDocumentAsStream } from './documentExport';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -149,10 +153,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         workbook: stream.xlsx.WorkbookWriter,
         workspace: { path: string; id: string },
     ): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities }]) => {
-            const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
-        });
+        const tasks = Object.entries(templates).map(
+            async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities, isChildTemplate }]) => {
+                const template: TemplateItem = isChildTemplate
+                    ? { type: EntityTemplateType.Child, metaData: await this.entityTemplateService.getChildTemplateById(templateId) }
+                    : { type: EntityTemplateType.Parent, metaData: await this.entityTemplateService.getEntityTemplateById(templateId) };
+
+                await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
+            },
+        );
 
         await Promise.all(tasks);
     }
@@ -208,9 +217,31 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return entities;
     }
 
+    private combineFilters = (
+        filterModel?: ISearchEntitiesOfTemplateBody['filter'],
+        defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
+    ): ISearchFilter | undefined => {
+        if (!filterModel && !defaultModal) return undefined;
+
+        const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
+            if (filter?.$and) {
+                return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
+            }
+
+            return [];
+        };
+
+        const filterModelAnds = extractAndArray(filterModel);
+        const defaultModalAnds = extractAndArray(defaultModal);
+
+        return {
+            $and: [...filterModelAnds, ...defaultModalAnds],
+        };
+    }; // TODO: match the function to the frontend after noa's assignment
+
     private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
-        template: IMongoEntityTemplatePopulated,
+        templateItem: TemplateItem,
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
@@ -219,38 +250,44 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         headersOnly?: boolean,
         insertEntities?: Record<string, any>[],
     ) {
-        const worksheet = await createWorksheet(workbook, template, displayColumns, headersOnly || !!insertEntities);
+        const { type, metaData: template } = templateItem;
+        const parentTemplate = type === EntityTemplateType.Child ? template.fatherTemplateId : template;
+
+        const worksheet = await createWorksheet(workbook, templateItem, displayColumns, headersOnly || !!insertEntities);
         const { searchEntitiesChunkSize } = config.service;
 
         if (headersOnly) return;
 
         if (insertEntities) {
-            styleAWorksheet(worksheet, insertEntities, template, workspace, displayColumns);
+            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns);
             return;
         }
 
-        const templateCount = await this.getEntitiesCountByTemplates(true, {
-            templateIds: [template._id],
-            textSearch,
-        });
+        const filters = type === EntityTemplateType.Parent ? filter : this.combineFilters(getFilterFromChildTemplate(template), filter);
 
-        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
+        const { count } = await this.service.searchEntitiesOfTemplateRequest(parentTemplate._id, {
+            skip: 0,
+            limit: 1,
+            textSearch,
+            filter: filters,
+            showRelationships: false,
+            sort: sort || [],
+        });
 
         // Remove the ?? 0 because it create infinite loop
         for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
-            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(parentTemplate._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
                 textSearch,
-                filter,
+                filter: filters,
                 showRelationships: false,
                 sort: sort || [],
-                entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
             });
             styleAWorksheet(
                 worksheet,
                 chunk.map((row) => row.entity.properties),
-                template,
+                templateItem,
                 workspace,
                 displayColumns,
                 headersOnly,
