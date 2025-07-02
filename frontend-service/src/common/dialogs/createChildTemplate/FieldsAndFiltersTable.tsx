@@ -1,5 +1,5 @@
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import { AddRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
@@ -30,8 +30,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     setFieldChips,
     onCheckboxChange,
 }) => {
-    const [addFilterToField, setAddFilterToField] = React.useState<string | null>(null);
-    const [dialogType, setDialogType] = React.useState<'filter' | 'default' | 'editByUser' | null>(null);
+    const [addFilterToField, setAddFilterToField] = useState<string | null>(null);
+    const [dialogType, setDialogType] = useState<'filter' | 'default' | 'editByUser' | null>(null);
 
     const addFilterToFieldHandler = (
         filterField: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter,
@@ -77,6 +77,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             }));
         }
     };
+
     const isDisallowedFormat = (fieldName: string): boolean => {
         const prop = entityTemplate.properties.properties[fieldName];
         return (
@@ -84,7 +85,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             prop.format === 'signature' ||
             prop.format === 'location' ||
             prop.format === 'comment' ||
-            prop.items?.format === 'fileId'
+            prop.format === 'user' ||
+            prop.format === 'kartoffelUserField' ||
+            prop.items?.format === 'fileId' ||
+            prop.items?.format === 'user'
         );
     };
 
@@ -96,9 +100,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 </Grid>
                 <Grid container>
                     {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
-                        const isRequired = entityTemplate.properties.required.includes(fieldName);
-                        const isKartoffelUserField = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
-                        const isSerialNumberField = entityTemplate.properties.properties[fieldName]?.format === 'serialNumber';
+                        const isRequired: boolean = entityTemplate.properties.required.includes(fieldName);
+                        const isKartoffelUserField: boolean = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
+                        const isSerialNumberField: boolean = !!entityTemplate.properties.properties[fieldName]?.serialCurrent;
+                        const isRelationshipRefField: boolean = entityTemplate.properties.properties[fieldName]?.format === 'relationshipReference';
 
                         return (
                             <React.Fragment key={fieldName}>
@@ -268,10 +273,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
                                                             disabled={
+                                                                isSerialNumberField ||
                                                                 (!fieldFilter.selected && !isRequired) ||
                                                                 isDisallowedFormat(fieldName) ||
                                                                 isKartoffelUserField ||
-                                                                isSerialNumberField
+                                                                isRelationshipRefField
                                                             }
                                                         >
                                                             <AddRounded />

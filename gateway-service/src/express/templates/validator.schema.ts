@@ -1,27 +1,7 @@
 import Joi from 'joi';
-import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes } from '@microservices/shared';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes, filterOfTemplateSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // Neo4j regex (Java style)
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-}).id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
 const searchFilterSchema = Joi.object({
     $and: Joi.array().items(filterOfTemplateSchema),
     $or: Joi.array().items(filterOfTemplateSchema),
@@ -35,6 +15,21 @@ const childTemplatePropertySchema = Joi.object({
     filters: searchFilterSchema,
     isEditableByUser: Joi.boolean(),
 });
+
+const EntityChildTemplateSchema = {
+    name: Joi.string().required(),
+    displayName: Joi.string().required(),
+    description: Joi.string(),
+    fatherTemplateId: MongoIdSchema.required(),
+    categories: Joi.array().items(MongoIdSchema).required(),
+    properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    disabled: Joi.boolean().default(false),
+    actions: Joi.string(),
+    viewType: Joi.string().valid('categoryPage', 'userPage').required(),
+    isFilterByCurrentUser: Joi.boolean().default(false),
+    isFilterByUserUnit: Joi.boolean().default(false),
+    filterByCurrentUserField: Joi.string(),
+};
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -162,6 +157,18 @@ export const updateEntityTemplateSchema = Joi.object({
     },
     file: iconFileSchema,
     files: Joi.array().items(fileSchema),
+});
+
+// PATCH /api/entities/templates/:templateId/actions
+export const updateEntityTemplateActionSchema = Joi.object({
+    body: {
+        actions: Joi.string().required(),
+        isChildTemplate: Joi.boolean(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
 });
 
 // PATCH /api/templates/entities/:id/status
@@ -309,7 +316,6 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     query: {},
     params: {},
@@ -325,17 +331,7 @@ export const getAllChildTemplatesSchema = Joi.object({
 // POST /api/templates/child
 export const createEntityChildTemplateSchema = Joi.object({
     body: {
-        name: Joi.string().required(),
-        displayName: Joi.string().required(),
-        description: Joi.string(),
-        fatherTemplateId: MongoIdSchema.required(),
-        categories: Joi.array().items(MongoIdSchema).required(),
-        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
-        disabled: Joi.boolean().default(false),
-        actions: Joi.string(),
-        viewType: Joi.string().valid('categoryPage', 'userPage').required(),
-        isFilterByCurrentUser: Joi.boolean().default(false),
-        isFilterByUserUnit: Joi.boolean().default(false),
+        ...EntityChildTemplateSchema,
     },
     query: {},
     params: {},
@@ -343,17 +339,7 @@ export const createEntityChildTemplateSchema = Joi.object({
 
 export const updateEntityChildTemplateSchema = Joi.object({
     body: {
-        name: Joi.string().required(),
-        displayName: Joi.string().required(),
-        description: Joi.string(),
-        fatherTemplateId: MongoIdSchema.required(),
-        categories: Joi.array().items(MongoIdSchema).required(),
-        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
-        disabled: Joi.boolean().default(false),
-        actions: Joi.string(),
-        viewType: Joi.string().valid('categoryPage', 'userPage').required(),
-        isFilterByCurrentUser: Joi.boolean().default(false),
-        isFilterByUserUnit: Joi.boolean().default(false),
+        ...EntityChildTemplateSchema,
     },
     query: {},
     params: {

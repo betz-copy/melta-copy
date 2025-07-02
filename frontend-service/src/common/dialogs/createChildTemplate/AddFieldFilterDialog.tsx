@@ -11,6 +11,7 @@ import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { IFieldFilter } from '../../../interfaces/entityChildTemplates';
 import { IUser } from '../../../interfaces/users';
+import { format } from 'date-fns';
 
 interface IAddFieldFilterDialogProps {
     open: boolean;
@@ -56,9 +57,11 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             if (isRemovingStart || isRemovingEnd) return;
         }
 
+        const dateString = newValue ? format(newValue, 'yyyy-MM-dd') : undefined;
+
         setLocalFilterField({
             ...localFilterField,
-            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
+            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
         } as IAGGridDateFilter);
     };
 
@@ -171,7 +174,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         if (!localFilterField) return;
 
         if (dialogType === 'default') {
-            let defaultValue: any;
+            let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
+
             if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
                 defaultValue = localFilterField.filter;
             } else if (localFilterField.filterType === 'set') {
@@ -179,6 +183,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             } else if (localFilterField.filterType === 'date') {
                 defaultValue = localFilterField.dateFrom;
             }
+
             onSubmit(currentFieldName, defaultValue);
         } else {
             updateFieldFilter(localFilterField, currentFieldName);
@@ -187,18 +192,20 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     };
 
     const isValueValid = () => {
-        if (!localFilterField) return false;
+        if (localFilterField === undefined) return false;
+
         if (dialogType === 'filter' || dialogType === 'default') {
-            if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
-                return !!localFilterField.filter;
+            switch (localFilterField.filterType) {
+                case 'text':
+                case 'number':
+                    return !!localFilterField.filter || typeof localFilterField.filter === 'boolean';
+                case 'set':
+                    return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
+                case 'date':
+                    return !!localFilterField.dateFrom;
+                default:
+                    return true;
             }
-            if (localFilterField.filterType === 'set') {
-                return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
-            }
-            if (localFilterField.filterType === 'date') {
-                return !!localFilterField.dateFrom;
-            }
-            return true;
         }
         return true;
     };

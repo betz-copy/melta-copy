@@ -8,6 +8,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         shouldNavigateToEntityPage: { type: Boolean },
         isDrawerOpen: { type: Boolean },
         flowCube: { type: Boolean },
+        isDashboardHomePage: { type: Boolean },
         agGrid: {
             rowCount: { type: Number },
             defaultExpandedRowCount: { type: Number },
@@ -32,10 +33,10 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             bulk: { type: Number },
         },
         unitFieldSplitDepth: { type: Number },
-        simba: {
+        clientSide: {
             usersInfoChildTemplateId: { type: String },
-            carsInfoTemplateId: { type: String },
             numOfPropsToShow: { type: Number },
+            clientSideWorkspaceName: { type: String },
         },
     },
     { _id: false },

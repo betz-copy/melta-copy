@@ -11,6 +11,7 @@ export const defaultMetadata = {
     shouldNavigateToEntityPage: false,
     isDrawerOpen: false,
     flowCube: false,
+    isDashboardHomePage: true,
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,
@@ -35,10 +36,10 @@ export const defaultMetadata = {
         bulk: 5,
     },
     unitFieldSplitDepth: 2,
-    simba: {
+    clientSide: {
         usersInfoChildTemplateId: '',
-        carsInfoTemplateId: '',
         numOfPropsToShow: 9,
+        clientSideWorkspaceName: 'simba',
     },
 } as const;
 

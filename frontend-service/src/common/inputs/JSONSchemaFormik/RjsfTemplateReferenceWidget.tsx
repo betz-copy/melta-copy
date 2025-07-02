@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { useQueryClient } from 'react-query';
 import { TextField } from '@mui/material';
@@ -23,7 +23,7 @@ const RjsfTemplateReferenceWidget = ({
     placeholder,
     ...widgetProps
 }: WidgetProps) => {
-    const [inputValue, setInputValue] = React.useState('');
+    const [inputValue, setInputValue] = useState('');
 
     const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onChange(chosenEntity);

@@ -32,6 +32,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { HighlightText } from '../../../utils/HighlightText';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { getFirstXPropsKeys } from '../../../utils/templates';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -157,17 +158,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity; wizardValues?: EntityWizardValues }>({ isOpen: false });
     const [_, navigate] = useLocation();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
-    const first5PropsKeys: string[] = [
-        ...entityTemplate.propertiesPreview,
-        ...entityTemplate.propertiesOrder
-            .filter(
-                (property) =>
-                    !entityTemplate.propertiesPreview.includes(property) &&
-                    entityTemplate.properties.properties[property].format !== 'fileId' &&
-                    entityTemplate.properties.properties[property].items?.format !== 'fileId',
-            )
-            .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
-    ];
+    const first5PropsKeys: string[] = getFirstXPropsKeys(5, entityTemplate);
 
     useMemo(() => {
         const fileIndex = files.findIndex(

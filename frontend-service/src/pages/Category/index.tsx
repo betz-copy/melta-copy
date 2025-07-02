@@ -24,6 +24,7 @@ export const transformChild = (
                     ...parentProp,
                     defaultValue: child.properties[key].defaultValue,
                     filters: child.properties[key].filters,
+                    isFilterByCurrentUser: child.filterByCurrentUserField === key,
                 },
             ]),
     );
@@ -53,6 +54,8 @@ const Category: React.FC = () => {
 
     const category = categories.get(categoryId!)!;
     const currentUser = useUserStore((state) => state.user);
+
+    console.log('currentUser', JSON.stringify(currentUser, null, 2));
 
     const authorizedTemplates = Array.from(entityTemplates.values()).filter(
         (template) =>
@@ -105,7 +108,7 @@ const Category: React.FC = () => {
             const parent = entityTemplates.get(child.fatherTemplateId);
             if (parent) {
                 const childTemplate = transformChild(child, parent, category);
-                allAuthorizedTemplatesMap.set(child._id, childTemplate); 
+                allAuthorizedTemplatesMap.set(child._id, childTemplate);
                 defaultOrderedTemplateIds.push(child._id);
                 addedTemplateIds.add(child._id);
             }

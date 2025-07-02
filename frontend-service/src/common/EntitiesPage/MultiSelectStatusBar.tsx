@@ -33,6 +33,7 @@ interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    childTemplateId?: string;
 }
 
 export interface IUpdateMultipleEntitiesResponse {
@@ -41,7 +42,13 @@ export interface IUpdateMultipleEntitiesResponse {
     brokenRulesEntities?: IBrokenRuleEntity[];
 }
 
-export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
+    api,
+    template,
+    quickFilterText,
+    setUpdatedTemplateIds,
+    childTemplateId,
+}) => {
     const initialValues: EntityWizardValues = {
         template,
         attachmentsProperties: {},
@@ -98,7 +105,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             entitiesToUpdate: IMultipleSelect<boolean>;
             propertiesToRemove: string[];
             ignoredRules?: Record<string, IBrokenRule[]>;
-        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, propertiesToRemove, ignoredRules),
+        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, propertiesToRemove, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 setStepsData(data);

@@ -228,7 +228,7 @@ const getComponent = (
     }
 
     const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-        return <Component {...props} readonly={props.schema.isEditableByUser === false} />;
+        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
     };
 
     return getWrappedComponent;
@@ -311,7 +311,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
-                const defaultValue = values.template.properties.properties[propertyKey].defaultValue ?? '';
+                const defaultValue = values.template?.properties?.properties?.[propertyKey].defaultValue ?? '';
                 if (propertySchema.archive) return {};
                 if (propertySchema.format === 'comment')
                     return {

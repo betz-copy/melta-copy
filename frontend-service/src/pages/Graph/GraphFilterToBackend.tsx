@@ -31,7 +31,7 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
     return Object.fromEntries(templateFilterRecord);
 };
 
-const filterFieldToValue: Record<keyof IFilterOfField, string> = {
+export const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eq: 'equals',
     $ne: 'notEqual',
     $gt: 'greaterThan',
@@ -44,7 +44,7 @@ const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eqi: 'equals',
 };
 
-const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTextFilter | null => {
+export const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTextFilter | null => {
     const startsWith = filterValue.startsWith('.*');
     const endsWith = filterValue.endsWith('.*');
 
@@ -72,7 +72,7 @@ const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTe
     return null;
 };
 
-const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
+export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
     if (filterKeys.length === 2) {
         const [dateFrom, dateTo] = filterKeys;
 
@@ -92,7 +92,7 @@ const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFi
     } as IAGGridDateFilter;
 };
 
-const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IGraphFilterBody['filterField'] => {
+export const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IGraphFilterBody['filterField'] => {
     const filterKeys = Object.keys(fieldFilter) as (keyof IFilterOfField)[];
     const [filterKey] = filterKeys;
     const filterValue = fieldFilter[filterKey];

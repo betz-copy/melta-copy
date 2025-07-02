@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { MenuItem } from '@mui/material';
@@ -15,7 +14,7 @@ interface TypeSelectFilterProps {
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    readOnly: boolean;
+    readOnly?: boolean;
     type: string;
 }
 

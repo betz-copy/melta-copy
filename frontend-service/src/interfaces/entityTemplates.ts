@@ -44,6 +44,7 @@ export interface IEntitySingleProperty {
     color?: string;
     filters?: string;
     defaultValue?: any;
+    isFilterByCurrentUser?: boolean;
 }
 
 export interface IEntityTemplate {

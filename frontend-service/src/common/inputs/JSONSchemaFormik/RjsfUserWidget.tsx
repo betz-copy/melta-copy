@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
@@ -18,7 +18,7 @@ const RjsfUserWidget = ({
     ...textFieldProps
 }: WidgetProps) => {
     const handleOnChange = options.updateExpandedUserFields as (user: IKartoffelUserStringFields | null, values: any) => void;
-    const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
+    const [currentUser, setCurrentUser] = useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
         if (handleOnChange) handleOnChange(null, options.globalValues);
     }

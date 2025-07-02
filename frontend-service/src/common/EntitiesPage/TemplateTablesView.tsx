@@ -11,6 +11,7 @@ import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
+import { useUserStore } from '../../stores/user';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -22,10 +23,14 @@ export function getDefaultFilterFromChildTemplate(
     template: IMongoEntityTemplatePopulated & {
         fatherTemplateId?: string;
     },
+    currentUserKartoffelId?: string,
 ) {
     const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
+        if (prop.isFilterByCurrentUser) {
+            result.$and!.push({ [key]: { $eq: currentUserKartoffelId } });
+        }
         if (!prop.filters) continue;
 
         const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
@@ -95,11 +100,15 @@ const TemplateTablesViewResults = forwardRef<
     useEffect(() => {
         sessionStorage.setItem('visibleTemplatesCount', visibleTemplatesCount.toString());
     }, [visibleTemplatesCount]);
+
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+
     return (
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 const isChildTemplate = !!template.fatherTemplateId;
-                const defaultFilter = isChildTemplate ? getDefaultFilterFromChildTemplate(template) : undefined;
+                const defaultFilter = getDefaultFilterFromTemplate(template, currentUserKartoffelId);
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -116,6 +125,7 @@ const TemplateTablesViewResults = forwardRef<
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
                             defaultFilter={defaultFilter}
+                            childTemplateId={isChildTemplate ? template._id : undefined}
                         />
                     </Grid>
                 );

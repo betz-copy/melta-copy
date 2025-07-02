@@ -40,8 +40,8 @@ export const getRuleBreachAlertsRequest = async (
     return data;
 };
 
-export const approveRuleBreachRequestRequest = async (breachId: string) => {
-    const { data } = await axios.post<IRuleBreachRequestPopulated>(`${ruleBreachesRequests}/${breachId}/approve`);
+export const approveRuleBreachRequestRequest = async (breachId: string, childTemplateId?: string) => {
+    const { data } = await axios.post<IRuleBreachRequestPopulated>(`${ruleBreachesRequests}/${breachId}/approve`, { childTemplateId });
     return data;
 };
 

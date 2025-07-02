@@ -176,7 +176,7 @@ const main = async () => {
         driverEntityChildTemplate,
         createdSimbaDriverTemplate,
     );
-    const createdSimbaCarEntityChildTemplate = await createEntityChildTemplate(simbaWorkspace._id, carEntityChildTemplate, createdSimbaCarTemplate);
+    await createEntityChildTemplate(simbaWorkspace._id, carEntityChildTemplate, createdSimbaCarTemplate);
     const createdSimbaCrashEntityChildTemplate = await createEntityChildTemplate(
         simbaWorkspace._id,
         crashEntityChildTemplate,
@@ -193,10 +193,10 @@ const main = async () => {
     await getRelationshipTemplateById(simbaWorkspace._id, createdSimbaCarTemplateRelationshipTemplateId);
 
     const simbaWorkspaceMetadata = {
-        simba: {
+        clientSide: {
             usersInfoChildTemplateId: createdSimbaDriverEntityChildTemplate._id,
-            carsInfoTemplateId: createdSimbaCarEntityChildTemplate._id,
             numOfPropsToShow: 9,
+            clientSideWorkspaceName: 'simba' as const,
         },
     };
 

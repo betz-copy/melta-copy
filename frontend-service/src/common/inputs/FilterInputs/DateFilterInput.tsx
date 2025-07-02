@@ -1,6 +1,6 @@
 import { CalendarToday } from '@mui/icons-material';
 import { Grid } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import DatePickerWrapper from '../DatePickerWrapper';
@@ -32,7 +32,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === 'inRange';
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
             handleFilterTypeChange('equals');
         }

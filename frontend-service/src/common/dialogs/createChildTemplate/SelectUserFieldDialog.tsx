@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Autocomplete } from '@mui/material';
 import i18next from 'i18next';
 
@@ -11,9 +11,9 @@ interface SelectUserFieldDialogProps {
 }
 
 const SelectUserFieldDialog: React.FC<SelectUserFieldDialogProps> = ({ open, userFields, selectedField, onClose, onSubmit }) => {
-    const [value, setValue] = React.useState<string | null>(selectedField);
+    const [value, setValue] = useState<string | null>(selectedField);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setValue(selectedField);
     }, [selectedField]);
 
@@ -32,14 +32,7 @@ const SelectUserFieldDialog: React.FC<SelectUserFieldDialogProps> = ({ open, use
                 />
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'center', mb: 2 }}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    disabled={!value}
-                    onClick={() => {
-                        if (value) onSubmit(value);
-                    }}
-                >
+                <Button variant="contained" color="primary" disabled={!value} onClick={() => onSubmit(value!)}>
                     {i18next.t('createChildTemplateDialog.selectUserDialog.addAction')}
                 </Button>
             </DialogActions>

@@ -24,6 +24,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -32,7 +33,6 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import { pickBy } from 'lodash';
 import { environment } from '../../globals';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -63,8 +63,8 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { searchEntitiesOfTemplateSimbaRequest } from '../../services/simbaService';
-import { useSimbaUserStore } from '../../stores/simbaUser';
+import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -96,7 +96,7 @@ export const getDatasource = <Data extends any = EntityData>(
     rowData?: IConnection[],
     defaultFilter?: ISearchFilter,
     pageType?: string,
-    simbaUserEntityId?: string,
+    clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -111,10 +111,10 @@ export const getDatasource = <Data extends any = EntityData>(
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
             const { result: data, err } = await trycatch(() =>
-                pageType === 'simba'
-                    ? searchEntitiesOfTemplateSimbaRequest(
+                pageType === 'client-side'
+                    ? searchEntitiesOfTemplateClientSideRequest(
                           template._id,
-                          simbaUserEntityId!,
+                          clientSideUserEntityId!,
                           agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,
@@ -164,7 +164,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     hasInstances?: boolean,
     defaultFilter?: ISearchFilter,
     pageType?: string,
-    simbaUserEntityId?: string,
+    clientSideUserEntityId?: string,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -184,7 +184,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
             rowData as IConnection[],
             defaultFilter,
             pageType,
-            simbaUserEntityId,
+            clientSideUserEntityId,
         ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
@@ -197,6 +197,7 @@ const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    childTemplateId?: string;
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -234,6 +235,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     editable?: boolean;
     defaultFilter?: FilterModel;
     disableFilter?: boolean;
+    columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
@@ -248,12 +250,14 @@ export type EntitiesTableOfTemplateRef<Data> = {
     scrollIntoView: () => void;
     showSideBar: () => void;
     getDisplayColumns: () => string[];
+    resizeTableHeight: (newHeight: number) => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
     <Data extends any>(
         {
             template,
+            childTemplateId,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -280,6 +284,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             editable = true,
             defaultFilter,
             disableFilter = false,
+            columnsToShow,
             setUpdatedTemplateIds,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
@@ -293,7 +298,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
 
-        const simbaUserEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+        const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -306,7 +311,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [gridHeight, setGridHeight] = useState<number>(() =>
             infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
         );
-
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
         const [currEditingCell, setCurrEditingCell] = useState<any>();
@@ -384,59 +388,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
         };
 
-        useImperativeHandle(ref, () => ({
-            getExcelData() {
-                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
-            },
-            resetFilter() {
-                gridRef.current?.api.setFilterModel(defaultFilterModel);
-            },
-            refreshServerSide() {
-                gridRef.current?.api.refreshServerSide({ purge: true });
-            },
-            updateRowDataClientSide(data: Data) {
-                gridRef.current?.api.forEachNode((rowNode) => {
-                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                        rowNode.updateData(data);
-                    }
-                });
-            },
-            isFiltered() {
-                const filters = gridRef.current?.api.getFilterModel();
-                return !filters || !isEqual(filters, defaultFilterModel);
-            },
-            getFilterModel() {
-                return gridRef.current!.api.getFilterModel();
-            },
-            getSortModel() {
-                return getSortModel();
-            },
-            scrollIntoView() {
-                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
-            },
-            showSideBar() {
-                const gridApi = gridRef.current?.api;
-                if (!gridApi) return;
-                const isSideBarOpen = gridApi.isToolPanelShowing();
-                gridApi.setSideBarVisible(!isSideBarOpen);
-                if (isSideBarOpen) {
-                    gridApi.closeToolPanel();
-                } else {
-                    gridApi.openToolPanel('columns');
-                }
-            },
-            getDisplayColumns: () => {
-                return (
-                    gridRef.current?.api
-                        .getAllDisplayedColumns()
-                        .map((column) => column.getColId())
-                        .filter((colId) => filteredColumns.includes(colId)) || []
-                );
-            },
-        }));
-
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
+            childTemplateId,
             getEntityPropertiesData,
             getRowId,
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
@@ -458,6 +412,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             disableEditCell: !editable || editRowButtonProps?.disabledButton,
             entityTemplates,
             pageType: saveStorageProps.pageType,
+            columnsToShow,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -707,6 +662,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 else gridApi.openToolPanel('columns');
             },
             getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+            resizeTableHeight: (newHeight: number) => setGridHeight(newHeight),
         }));
 
         const rowModelProps = useMemo(
@@ -721,7 +677,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     hasInstances,
                     defaultFilter,
                     saveStorageProps.pageType,
-                    simbaUserEntity?.properties?._id,
+                    clientSideUserEntity?.properties?._id,
                 ),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
         );
@@ -733,7 +689,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds },
+                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds, childTemplateId },
                 });
 
             return panels;

@@ -106,52 +106,54 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
-    simbaClientPage: {
-        contactInfoCard: {
-            title: 'פרטי קשר ומידע רלוונטי',
-            contacts: [
-                {
-                    role: 'רמ"ד תחבורה במנהלת',
-                    name: 'אריה שיים',
-                    hichatLink: 'https://www.hichat.com/ariehshayim',
-                    mailLink: 'mailto:arieh.shayim@simba.co.il',
-                },
-                {
-                    role: 'קצין בטיחות בתעבורה',
-                    name: 'רמי מגלשווילי',
-                    hichatLink: 'https://www.hichat.com/ramimgalchovil',
-                    mailLink: 'mailto:rami.galchovil@simba.co.il',
-                },
-                {
-                    role: 'תקלות מערכת',
-                    name: 'עדי סאקופסקי',
-                    hichatLink: 'https://www.hichat.com/adysakofsky',
-                    mailLink: 'mailto:adi.sakofsky@simba.co.il',
-                },
-            ],
-        },
-        topbar: {
-            title: 'בוקר טוב',
-        },
-        userNotExistsPage: {
-            title: 'נראה כי אין ברשותך רישיון פעיל',
-            subTitle: 'לא מצאנו אותך ברשימת הנהגים שלנו',
-            texts: {
-                whatWouldYouLikeToDo: 'מה ברצונך לעשות?',
-                userHaveUnactiveLicense: {
-                    title: 'יש לי רישיון אבל הוא לא בתוקף',
-                    description:
-                        'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי',
-                },
-                userDontHaveLicense: {
-                    title: 'אני רוצה להוציא רישיון צבאי',
-                    description:
-                        'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכ',
-                },
+    clientSidePage: {
+        simba: {
+            contactInfoCard: {
+                title: 'פרטי קשר ומידע רלוונטי',
+                contacts: [
+                    {
+                        role: 'רמ"ד תחבורה במנהלת',
+                        name: 'אריה שיים',
+                        hichatLink: 'https://www.hichat.com/ariehshayim',
+                        mailLink: 'mailto:arieh.shayim@gmail.com',
+                    },
+                    {
+                        role: 'קצין בטיחות בתעבורה',
+                        name: 'רמי מגלשווילי',
+                        hichatLink: 'https://www.hichat.com/ramimgalchovil',
+                        mailLink: 'mailto:rami.galchovil@gmail.com',
+                    },
+                    {
+                        role: 'תקלות מערכת',
+                        name: 'עדי סאקופסקי',
+                        hichatLink: 'https://www.hichat.com/adysakofsky',
+                        mailLink: 'mailto:adi.sakofsky@gmail.com',
+                    },
+                ],
             },
-            recieveLicenseRequest: 'להגשת בקשה לרישיון צבאי ע”י מפקד:',
-            neededLetter: 'מכתב נחיצות.pdf',
-            forMoreInfo: 'למידע נוסף ניתן לפנות ל:',
+            topbar: {
+                title: 'בוקר טוב',
+            },
+            userNotExistsPage: {
+                title: 'נראה כי אין ברשותך רישיון פעיל',
+                subTitle: 'לא מצאנו אותך ברשימת הנהגים שלנו',
+                texts: {
+                    whatWouldYouLikeToDo: 'מה ברצונך לעשות?',
+                    userHaveUnactiveLicense: {
+                        title: 'יש לי רישיון אבל הוא לא בתוקף',
+                        description:
+                            'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי',
+                    },
+                    userDontHaveLicense: {
+                        title: 'אני רוצה להוציא רישיון צבאי',
+                        description:
+                            'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכ',
+                    },
+                },
+                recieveLicenseRequest: 'להגשת בקשה לרישיון צבאי ע”י מפקד:',
+                neededLetter: 'מכתב נחיצות.pdf',
+                forMoreInfo: 'למידע נוסף ניתן לפנות ל:',
+            },
         },
     },
     entityPage: {
@@ -957,6 +959,7 @@ export default {
         invalidNumberField: 'חייב להיות מספר',
         invalidSerialStarter: 'חייב להיות גדול או שווה ל0',
         hebrew: 'עברית',
+        atLeastOne: 'חובה לבחור ערך אחד לפחות',
         oneField: 'חובה לפחות שדה אחד',
         oneCategory: 'חובה קטגוריה אחת לפחות',
         oneStep: 'לפחות שלב אחד',
@@ -1301,18 +1304,107 @@ export default {
             deleteGroupBy: 'מחק קיבוץ',
         },
     },
+    dashboard: {
+        systemView: 'תצוגת מערכת',
+        addCard: 'הוספת כרטיסייה',
+        continueEdit: 'המשך לעריכה',
+        back: 'חזרה',
+        field: 'שדה',
+        filter: 'סינון',
+        to: 'ל',
+        mainScreen: 'מסך ראשי',
+        resetLayout: 'איפוס תצוגה',
+        resetToDefault: 'איפוס תצוגה לברירת מחדל',
+        itemType: {
+            table: 'טבלה',
+            chart: 'תרשים',
+            iframe: 'קישור חיצוני',
+        },
+        noItems: {
+            description: 'נציג בעמוד זה טבלאות ותרשימים נבחרים',
+            admin: {
+                title: 'תכנים נבחרים לצפייה ע״י כלל משתמשי הסביבה',
+                description: 'באפשרותך להוסיף טבלאות, תרשימים וקישורים חיצוניים',
+                comment: '* כל משתמש יראה את תוכן הכרטיסיות בהתאם להרשאותיו',
+            },
+        },
+        tables: {
+            title: 'כותרת הטבלה',
+            addTable: 'הוספת טבלה',
+            editTable: 'עריכת טבלה',
+            permissionWarning: 'טבלה זו והמידע המוצג בה תופיע לכלל המשתמשים בהתאם להרשאותיהם',
+            changeTableSizeWarning: 'כל משתמש יוכל לשנות את מידות הטבלה במסך הבית',
+            columnsToShow: 'עמודות להצגה',
+            createdSuccessfully: 'טבלה נוצרה בהצלחה',
+            editedSuccessfully: 'טבלה עודכנה בהצלחה',
+            deletedSuccessfully: 'טבלה נמחקה בהצלחה',
+            failedToCreate: 'נכשל ביצירת טבלה',
+            failedToEdit: 'נכשל בעדכון טבלה',
+            failedToDelete: 'מחיקת טבלה נכשלה',
+        },
+        charts: {
+            addChart: 'הוספת תרשים',
+            editChart: 'עריכת תרשים',
+            permissionWarning: ' תרשים זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
+            createChart: 'יצירת תרשים',
+            new: 'חדש',
+            existing: 'קיים',
+            chooseChart: 'בחירת תרשים',
+            chartsPage: 'עמוד תרשימי',
+            changePermissionDialog: {
+                title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
+                body: 'תרשים זה מוצג בעמוד הבית. במידה והרשאת הצפייה שלו תשתנה ל"פרטי" - יוסר הרשים מעמוד הבית.',
+                gotIt: 'הבנתי',
+            },
+        },
+        iframes: {
+            addIFrame: 'הוספת קישור חיצוני',
+            editIFrame: 'עריכת קישור חיצוני',
+            permissionWarning: 'קישור חיצוני זה והמידע המוצג בו יופיע לכלל המשתמשים בהתאם להרשאותיהם',
+            url: 'קישור',
+        },
+        dialogs: {
+            delete: {
+                title: 'בחרת למחוק את ה{{type}}',
+                body: {
+                    dashboard: 'הפריט ימחק מהמסך הראשי עבורך ועבור כל מי שמורשה לצפות בו. למחוק את ה{{type}}?',
+                    iframe: 'קישור חיצוני זה מופיע בעמוד הבית ובעמוד קישורים חיצוניים. מחיקת הקישור חיצוני תמחק את כלל המופעים',
+                    chart: 'תרשים זה מופיע בעמוד הבית ובעמוד התרשימים של היישות. מחיקת התרשים תמחק את כלל המופעים',
+                },
+            },
+            edit: {
+                title: 'בחרת לערוך {{type}} אשר מופיע בעמוד נוסף',
+                body: {
+                    iframe: 'קישור חיצוני זה מופיע בעמוד הבית ובעמוד קישורים חיצוניים. שינויים בפרטי הקישור חיצוני והגדרת הרשאות יחולו על כלל המופעים.',
+                    chart: 'תרשים זה מופיע בעמוד הבית ובעמוד התרשימים של הייישות. שינויים בפרטי התרשים והגדרות הסינון יחולו על כלל המופעים',
+                },
+            },
+            cancel: {
+                title: 'בחרת לצאת ללא שמירה',
+                yesTitle: 'יציאה',
+                noTitle: 'חזרה לעריכה',
+                editMode: 'במידה ותבחר לצאת ללא שמירה, הגדרות ה{{type}} ימחקו.',
+                addMode: 'במידה ותבחר לצאת ללא שמירה, השינויים שביצעת בהגדרות ה{{type}} יבוטלו.',
+            },
+            changeTemplate: {
+                title: 'בחרת לשנות יישות',
+                body: 'במידה ותבחר לשנות את היישות כל ההגדרות של ה{{type}} הנוכחי ימחקו. האם אתה בטוח לשנות את היישות?',
+                yesTitle: 'שינוי יישות',
+                noTitle: 'חזרה לעריכה',
+            },
+        },
+    },
     charts: {
         chart: 'תרשים',
         chartsOf: 'תרשימי',
         generalDetails: 'פרטים כלליים',
         filterDetails: 'הגדרות סינון',
-        chartDetails: 'פרטי התרשים',
+        chartType: 'סוג התרשים',
         permissions: 'הרשאות',
         personal: 'אישי',
         protected: 'לכל המשתמשים',
-        name: 'שם',
+        name: 'כותרת התרשים',
         description: 'תיאור',
-        axis: 'ציר',
         byField: 'לפי שדה',
         title: 'כותרת',
         dividedBy: 'חלוקה לפי שדה',
@@ -1321,6 +1413,11 @@ export default {
         noChartsFound: 'לא נמצאו תרשימים',
         viewData: 'הנתונים המוצגים',
         field: 'שדה',
+        xAxis: 'ציר ה-X',
+        yAxis: 'ציר ה-Y',
+        fieldToView: 'שדה להצגה',
+        filters: 'סינונים',
+        noFilters: 'ללא סינונים',
         dontHavePermissionToEditChart: 'אין הרשאות עריכה לתרשים',
         types: { lineChart: 'קווי', pieChart: 'עוגה', barChart: 'עמודות', numberChart: 'מספרי' },
         actions: {
@@ -1526,6 +1623,7 @@ export default {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         flowCube: 'אפשר התממשקות קוביה ל-FLOW',
+        isDashboardHomePage: 'הצג בעמוד הבית את תצוגת המערכת',
         agGrid: {
             rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
             defaultExpandedRowCount: 'מספר שורות להצגה בטבלה במצב פתוח',
@@ -1551,10 +1649,10 @@ export default {
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
-        simba: {
+        clientSide: {
             usersInfoChildTemplateId: 'ID תבנית משתמשים',
-            carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
+            clientSideWorkspaceName: 'שם סביבת צד לקוח',
         },
     },
     createChildTemplateDialog: {
