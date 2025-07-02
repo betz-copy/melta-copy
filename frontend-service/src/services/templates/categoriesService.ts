@@ -14,7 +14,6 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
         const file: Partial<File> = { name: iconFileId };
         return { ...restOfCategory, icon: { file, name: getFileName(iconFileId) } };
     }
-
     return restOfCategory;
 };
 

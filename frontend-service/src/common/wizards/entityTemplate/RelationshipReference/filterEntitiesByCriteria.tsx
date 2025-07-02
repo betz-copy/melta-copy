@@ -1,15 +1,12 @@
-import React, { useMemo } from 'react';
-import { getIn, FormikTouched, FormikErrors } from 'formik';
-import { Grid, TextField, Button, Typography, IconButton, Autocomplete } from '@mui/material';
 import { Add, Clear } from '@mui/icons-material';
+import { Autocomplete, Button, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
-import { CommonFormInputProperties, IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
+import React, { useMemo } from 'react';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
-import { DateFilterInput } from '../../../inputs/FilterInputs/DateFilterInput';
-import { TextFilterInput } from '../../../inputs/FilterInputs/TextFilterInput';
-import { SelectFilterInput } from '../../../inputs/FilterInputs/SelectFilterInput';
+import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterCompetent';
+import { CommonFormInputProperties, IAGGridFilter, IFilterTemplate } from '../commonInterfaces';
 
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
@@ -30,74 +27,25 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     touched,
     errors,
 }) => {
-    const filters: IFilterRelationReference[] = useMemo(() => getIn(value, name) || [], [value, name]);
+    const filters: IFilterTemplate[] = useMemo(() => getIn(value, name) || [], [value, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
     const selectedEntityTemplatePropOptions = useMemo(() => {
         if (!selectedEntityTemplate?.properties) return [];
         const { required, properties } = selectedEntityTemplate.properties;
+        const notIncludedFormats = ['signature', 'comment'];
 
         return Object.entries(properties)
-            .filter(([key, prop]) => required.includes(key) && prop.format !== 'signature')
+            .filter(([key, prop]) => required.includes(key) && !notIncludedFormats.includes(prop.format ?? ''))
             .map(([key, prop]) => ({
                 key,
                 title: prop.title,
             }));
     }, [selectedEntityTemplate]);
 
-    const filterInitialValues: IFilterRelationReference = {
+    const filterInitialValues: IFilterTemplate = {
         filterProperty: '',
         filterField: {} as IAGGridFilter,
-    };
-
-    const handleFilterFieldChange = (index: number, updatedFields: Partial<IAGGridFilter>, _condition: boolean = true) => {
-        const current = filters[index]?.filterField;
-        const filterType = current?.filterType || updatedFields.filterType || 'text';
-
-        let newFilterField: IAGGridFilter;
-
-        switch (filterType) {
-            case 'text':
-                newFilterField = {
-                    ...(current as IAGGridTextFilter),
-                    ...(updatedFields as Partial<IAGGridTextFilter>),
-                    filterType: 'text',
-                };
-                break;
-
-            case 'number':
-                newFilterField = {
-                    ...(current as IAGGidNumberFilter),
-                    ...(updatedFields as Partial<IAGGidNumberFilter>),
-                    filterType: 'number',
-                };
-                break;
-
-            case 'date':
-                newFilterField = {
-                    ...(current as IAGGridDateFilter),
-                    ...(updatedFields as Partial<IAGGridDateFilter>),
-                    filterType: 'date',
-                };
-                break;
-
-            default:
-                throw new Error(`Unsupported filterType: ${filterType}`);
-        }
-
-        const updatedFilter: IFilterRelationReference = {
-            ...filters[index],
-            filterField: newFilterField,
-        };
-
-        const newFiltersArray = [...filters];
-        newFiltersArray[index] = updatedFilter;
-        const newValues = {
-            ...value.relationshipReference,
-            filters: newFiltersArray,
-        };
-
-        setFieldValue('relationshipReference', newValues);
     };
 
     const handleAddFilter = () => {
@@ -110,136 +58,17 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         setFieldValue('relationshipReference', newValues);
     };
 
-    const handleRemoveFilter = (index: number) => {
-        const updatedFilters = filters.filter((_, i) => i !== index);
+    const isNewFilter = (filter: IFilterTemplate): boolean => {
+        return !initialFilters?.some((currFilter) => isEqual(currFilter, filter));
+    };
+
+    const handleFilterChange = (newFiltersArray: IFilterTemplate[]) => {
         const newValues = {
             ...value.relationshipReference,
-            filters: updatedFilters,
+            filters: newFiltersArray,
         };
 
         setFieldValue('relationshipReference', newValues);
-    };
-
-    const initializedFilterField: Record<string, IAGGridFilter> = {
-        'date-time': { filterType: 'date', type: 'equals', dateFrom: '', dateTo: '' },
-        date: { filterType: 'date', type: 'equals', dateFrom: '', dateTo: '' },
-        number: { filterType: 'number', type: 'equals' },
-        string: { filterType: 'text', type: 'contains' },
-        boolean: { filterType: 'text', type: 'equals' },
-    };
-
-    const handleTypedFilterTypeChange = (filterType: IAGGridFilter['filterType'], index: number, newType: string, field: IAGGridFilter) => {
-        if (filterType === 'text') {
-            handleFilterFieldChange(index, {
-                ...(field as IAGGridTextFilter),
-                type: newType as IAGGridTextFilter['type'],
-            } as Partial<IAGGridTextFilter>);
-        } else if (filterType === 'number') {
-            handleFilterFieldChange(index, {
-                ...(field as IAGGidNumberFilter),
-                type: newType as IAGGidNumberFilter['type'],
-            } as Partial<IAGGidNumberFilter>);
-        } else if (filterType === 'date') {
-            handleFilterFieldChange(index, {
-                ...(field as IAGGridDateFilter),
-                type: newType as IAGGridDateFilter['type'],
-            } as Partial<IAGGridDateFilter>);
-        }
-    };
-
-    const renderFilterField = (
-        filter: IFilterRelationReference,
-        index: number,
-        property: IEntitySingleProperty,
-        isNewProperty: boolean,
-        filterTouched?,
-        filterErrors?,
-    ) => {
-        const field = filter.filterField;
-        if (!field?.filterType || !field.type) return null;
-
-        const { format, enum: propEnum, type, items } = property;
-
-        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature' || format === 'user' || type === 'array') return null;
-
-        if (propEnum) {
-            return (
-                <SelectFilterInput
-                    filterField={field?.filterType === 'text' ? (field as IAGGridTextFilter) : undefined}
-                    enumOptions={propEnum}
-                    handleFilterFieldChange={(updatedField, condition) => {
-                        if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
-                            handleFilterFieldChange(index, updatedField, condition);
-                        }
-                    }}
-                    readOnly={!isNewProperty}
-                    error={Boolean(touched && filterErrors?.filter)}
-                    helperText={filterErrors?.filter}
-                />
-            );
-        }
-
-        if (format === 'date-time' || format === 'date') {
-            return (
-                <DateFilterInput
-                    filterField={field?.filterType === 'date' ? (field as IAGGridDateFilter) : undefined}
-                    handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
-                    handleDateChange={(newValue, isStartDate) => {
-                        if (!newValue && field?.filterType === 'date') {
-                            const isRemovingStart = isStartDate && !field.dateTo;
-                            const isRemovingEnd = !isStartDate && !field.dateFrom;
-                            if (isRemovingStart || isRemovingEnd) {
-                                handleRemoveFilter(index);
-                                return;
-                            }
-                        }
-
-                        handleFilterFieldChange(index, {
-                            ...field,
-                            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
-                        } as IAGGridDateFilter);
-                    }}
-                    entityFilter
-                    readOnly={!isNewProperty}
-                />
-            );
-        }
-
-        if (type === 'boolean') {
-            return (
-                <SelectFilterInput
-                    filterField={field?.filterType === 'text' ? (field as IAGGridTextFilter) : undefined}
-                    isBooleanSelect
-                    handleFilterFieldChange={(updatedField, condition) => {
-                        if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
-                            handleFilterFieldChange(index, updatedField, condition);
-                        }
-                    }}
-                    readOnly={!isNewProperty}
-                />
-            );
-        }
-
-        return (
-            <TextFilterInput
-                filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
-                handleFilterFieldChange={(updatedField, condition) => {
-                    if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
-                        handleFilterFieldChange(index, updatedField, condition);
-                    }
-                }}
-                handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(field.filterType, index, newType, field)}
-                readOnly={!isNewProperty}
-                entityFilter
-                type={field.filterType}
-                errors={filterErrors}
-                touched={filterTouched}
-            />
-        );
-    };
-
-    const isNewFilter = (filter: IFilterRelationReference): boolean => {
-        return !initialFilters?.some((currFilter) => isEqual(currFilter, filter));
     };
 
     return (
@@ -263,8 +92,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                             selectedEntityTemplate?.properties.properties[filter.filterProperty] ?? ({} as IEntitySingleProperty);
 
                         const fieldBase = `relationshipReference.filters[${index}]`; // e.g., 'relationshipReference.filters[2]'
-                        const filterError: FormikErrors<IFilterRelationReference> = getIn(errors, `${fieldBase}`);
-                        const filterTouched: FormikTouched<IFilterRelationReference> = getIn(touched, `${fieldBase}`);
+                        const filterError: FormikErrors<IFilterTemplate> = getIn(errors, `${fieldBase}`);
+                        const filterTouched: FormikTouched<IFilterTemplate> = getIn(touched, `${fieldBase}`);
 
                         return (
                             <Grid container wrap="nowrap" direction="row" gap="0.4rem" key={filter.filterProperty || index}>
@@ -310,17 +139,19 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 />
 
                                 {filterType &&
-                                    renderFilterField(
+                                    renderFilterInput(
+                                        filters,
                                         filter,
                                         index,
                                         selectedProperty,
-                                        isNewProperty,
+                                        handleFilterChange,
                                         filterTouched?.filterField,
                                         filterError?.filterField,
+                                        !isNewProperty,
                                     )}
 
                                 <Grid item>
-                                    <IconButton onClick={() => handleRemoveFilter(index)}>
+                                    <IconButton onClick={() => handleRemoveFilter(filters, index, handleFilterChange)}>
                                         <Clear />
                                     </IconButton>
                                 </Grid>

@@ -114,7 +114,11 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         <PopperSidebar
             open={open}
             setOpen={setOpen}
-            title={i18next.t('notifications.title')}
+            title={
+                <Typography color={theme.palette.primary.main} fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
+                    {i18next.t('notifications.title')}
+                </Typography>
+            }
             side={side}
             sideMargin={sideBarWidth}
             isCheckBoxClicked={isCheckBoxClicked}

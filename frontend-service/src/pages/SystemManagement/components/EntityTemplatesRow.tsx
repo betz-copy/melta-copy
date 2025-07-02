@@ -22,10 +22,10 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
+    EntityTemplateType,
     IEntityChildTemplate,
     IEntityChildTemplateMap,
     IMongoChildEntityTemplate,
-    EntityTemplateType,
     TemplateItem,
 } from '../../../interfaces/entityChildTemplates';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -146,6 +146,7 @@ interface EntityTemplateCardProps {
     entityHasWritePermission: boolean;
     isDisabledView?: boolean;
     isChildTemplate?: boolean;
+    title?: string;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -158,6 +159,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     entityHasWritePermission,
     isDisabledView = false,
     isChildTemplate = false,
+    title = entityTemplate.displayName,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -224,7 +226,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
                             <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
-                            {/* <FilterList fontSize="small" sx={{ fontSize: '14px' }} /> */}
                         </Grid>
 
                         <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
@@ -235,7 +236,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             )}
                         </Grid>
                         <Grid item>
-                            <MeltaTooltip title={entityTemplate.displayName}>
+                            <MeltaTooltip title={title}>
                                 <Typography
                                     style={{
                                         fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
@@ -247,7 +248,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         width: '130px',
                                     }}
                                 >
-                                    {entityTemplate.displayName}
+                                    {title}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>
@@ -804,7 +805,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityTemplate={{
                                                         ...entityTemplate,
                                                         _id: childTemplate._id,
-                                                        displayName: childTemplate.displayName,
                                                     }}
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -814,6 +814,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityHasWritePermission={entityHasWritePermission}
                                                     isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
                                                     isChildTemplate={true}
+                                                    title={childTemplate.displayName}
                                                 />
                                             </Grid>
                                         ))}
@@ -863,7 +864,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityTemplate={{
                                                     ...parentTemplate,
                                                     _id: childTemplate._id,
-                                                    displayName: parentTemplate.disabled ? parentTemplate.displayName : childTemplate.displayName,
                                                 }}
                                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -873,6 +873,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityHasWritePermission={false}
                                                 isDisabledView={!childTemplate.categories.includes(entityTemplatesWithCategory.category._id)}
                                                 isChildTemplate={true}
+                                                title={childTemplate.displayName}
                                             />
                                         </Grid>
                                     ))}
@@ -1033,10 +1034,14 @@ const EntityTemplatesRow: React.FC = () => {
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return updateEntityTemplateRequest(entityTemplateId, {
-                ...entityTemplate,
-                category: category._id,
-            });
+            return updateEntityTemplateRequest(
+                entityTemplateId,
+                {
+                    ...entityTemplate,
+                    category: category._id,
+                },
+                queryClient,
+            );
         },
 
         {
@@ -1209,7 +1214,7 @@ const EntityTemplatesRow: React.FC = () => {
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
-                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
+                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />

@@ -1,18 +1,18 @@
 /* eslint-disable react/no-array-index-key */
+import { Grid } from '@mui/material';
+import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { Grid } from '@mui/material';
 import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
-import IFramesPageHeadline from './IFramesHeadline';
-import { IMongoIFrame } from '../../interfaces/iFrames';
-import { IFrameWizard } from '../../common/wizards/iFrame';
-import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { Resizable } from './ResizableBox';
+import { IFrameWizard } from '../../common/wizards/iFrame';
 import { environment } from '../../globals';
+import { IMongoIFrame } from '../../interfaces/iFrames';
+import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import { LocalStorage } from '../../utils/localStorage';
+import IFramePage from './IFramePage';
+import IFramesPageHeadline from './IFramesHeadline';
+import { Resizable } from './ResizableBox';
 
 const { infiniteScrollPageCount, sideBarWidth, iFrameDimensionKey, sideBarOpenKey } = environment.iFrames;
 

@@ -16,14 +16,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         super(workspaceId, config.mongo.entityChildTemplatesCollectionName, EntityChildTemplateSchema);
     }
 
-    getChildTemplates(searchQuery: {
-        search?: string;
-        ids?: string[];
-        categoryIds?: string[];
-        fatherTemplatesIds?: string[];
-        limit: number;
-        skip: number;
-    }) {
+    getChildTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
         const query: FilterQuery<IEntityChildTemplate> = {};
 
@@ -74,6 +67,16 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
 
     async updateChildTemplate(id: string, childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate | null> {
         return this.model.findByIdAndUpdate(id, childTemplate, { new: true }).orFail(new NotFoundError('Entity Child Template not found'));
+    }
+
+    async updateChildrenDisplayNames(fatherTemplateId: string, oldDisplayName: string, newDisplayName: string): Promise<void> {
+        const result = await this.model.updateMany({ fatherTemplateId }, [
+            { $set: { displayName: { $replaceOne: { input: '$displayName', find: oldDisplayName, replacement: newDisplayName } } } },
+        ]);
+
+        if (result.modifiedCount === 0) {
+            throw new NotFoundError('No child templates found');
+        }
     }
 
     async deleteChildTemplate(id: string): Promise<IMongoEntityChildTemplate | null> {

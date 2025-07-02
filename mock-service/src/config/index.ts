@@ -12,7 +12,6 @@ const config = {
         permissionsRoute: env.get('USER_SERVICE_PERMISSION_BASE_ROUTE').default('/api/permissions').asString(),
         isAliveRoute: env.get('USER_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
         managersKartoffelIds: env.get('USER_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
-        testKartoffelIds: env.get('USER_SERVICE_TEST_KARTOFFEL_ID').default('5e5688d54203fc40043591ac').asArray(), // user: אחמד אדידס
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),

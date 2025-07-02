@@ -1,11 +1,11 @@
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
     relationshipTemplateDirection: 'outgoing' | 'incoming';
     relatedTemplateId: string;
     relatedTemplateField: string;
-    filters?: IFilterRelationReference[];
+    filters?: IFilterTemplate[];
 }
 export interface FieldGroupData {
     name: string;
@@ -67,13 +67,13 @@ export interface ConvertToRelationshipFieldFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
-        filters?: IFilterRelationReference[];
+        filters?: IFilterTemplate[];
     };
 }
 
-export interface IFilterRelationReference {
+export interface IFilterTemplate {
     filterProperty: string;
     filterField?: IAGGridFilter;
 }
 
-export type IAGGridFilter = IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter;
+export type IAGGridFilter = IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;

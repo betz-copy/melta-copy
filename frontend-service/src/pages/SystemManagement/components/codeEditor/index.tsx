@@ -1,25 +1,25 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useMemo, useState } from 'react';
+import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
-import i18next from 'i18next';
-import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
-import { editor } from 'monaco-editor';
-import * as ts from 'typescript-actions';
-import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import { editor } from 'monaco-editor';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import * as ts from 'typescript-actions';
+import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
-import { ActionManagement } from './actionsManagement';
+import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
+import { environment } from '../../../../globals';
+import { IMongoCategory } from '../../../../interfaces/categories';
+import { EntityTemplateType, IEntityChildTemplateMap, TemplateItem } from '../../../../interfaces/entityChildTemplates';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
-import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
-import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
-import { environment } from '../../../../globals';
-import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
-import { IMongoCategory } from '../../../../interfaces/categories';
-import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
-import { EntityTemplateType, IEntityChildTemplateMap, TemplateItem } from '../../../../interfaces/entityChildTemplates';
 import { getFullChildTemplateProperties } from '../../../../utils/entityChildTemplates';
+import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
+import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
+import { ActionManagement } from './actionsManagement';
 
 const {
     systemManagement: {

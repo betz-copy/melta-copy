@@ -11,6 +11,7 @@ export const defaultMetadata = {
     shouldNavigateToEntityPage: false,
     isDrawerOpen: false,
     flowCube: false,
+    isDashboardHomePage: true,
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,

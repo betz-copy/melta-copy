@@ -103,7 +103,6 @@ export const createEntityRequestSchema = Joi.object({
     params: {},
 });
 
-// format of properties keys in entity template
 
 /**
  * POST /api/instances/entities/expanded/:id

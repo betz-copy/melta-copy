@@ -30,6 +30,24 @@ import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
+export const defaultEmptyUser = {
+    _id: '',
+    fullName: '',
+    jobTitle: '',
+    hierarchy: '',
+    mail: '',
+    profile: '',
+    preferences: {
+        darkMode: false,
+    },
+    externalMetadata: {
+        kartoffelId: '',
+        digitalIdentitySource: '',
+    },
+    permissions: {},
+    displayName: '',
+} as IUser;
+
 const MyPermissions: React.FC<{
     handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
@@ -41,28 +59,12 @@ const MyPermissions: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const defaultEmptyUser = {
-        _id: '',
-        fullName: '',
-        jobTitle: '',
-        hierarchy: '',
-        mail: '',
-        profile: '',
-        preferences: {
-            darkMode: false,
-        },
-        externalMetadata: {
-            kartoffelId: '',
-            digitalIdentitySource: '',
-        },
-        permissions: {},
-        displayName: '',
-    } as IUser;
-
     const queryClient = useQueryClient();
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((entity) => {

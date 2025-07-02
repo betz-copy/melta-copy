@@ -38,7 +38,6 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     params: {},
 });

@@ -243,7 +243,6 @@ const filterOfFieldToNeoQuery = (
         }
 
         if (fieldTemplate.format === 'user') {
-            // TODO: yona - refactor this to be more generic
             const userIdFilterString = simplePartFilterOfFieldToNeoQuery(
                 `\`${field}.id_userField\``,
                 filterType as '$eq' | '$ne' | '$rgx' | '$gt' | '$gte' | '$lt' | '$lte' | '$not',

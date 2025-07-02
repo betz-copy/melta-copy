@@ -8,6 +8,7 @@ import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useQueryClient } from 'react-query';
 import { IEntityChildTemplateMapPopulated } from '../../../interfaces/entityChildTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { getFirstXPropsKeys } from '../../../utils/templates';
 
 const ClientSideMainPage: React.FC = () => {
     const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
@@ -20,17 +21,7 @@ const ClientSideMainPage: React.FC = () => {
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
 
-    const firstXPropsKeys: string[] = [
-        ...usersInfoChildTemplate.fatherTemplateId.propertiesPreview,
-        ...usersInfoChildTemplate.fatherTemplateId.propertiesOrder
-            .filter(
-                (property) =>
-                    !usersInfoChildTemplate.fatherTemplateId.propertiesPreview.includes(property) &&
-                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].format !== 'fileId' &&
-                    usersInfoChildTemplate.fatherTemplateId.properties.properties[property].items?.format !== 'fileId',
-            )
-            .slice(0, Math.max(numOfPropsToShow - usersInfoChildTemplate.fatherTemplateId.propertiesPreview.length, 0)),
-    ];
+    const firstXPropsKeys: string[] = getFirstXPropsKeys(numOfPropsToShow, usersInfoChildTemplate.fatherTemplateId);
 
     return (
         <>
