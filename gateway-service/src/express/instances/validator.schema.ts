@@ -242,6 +242,7 @@ export const loadEntitiesSchema = Joi.object({
                 .default([]),
         ),
         templateId: Joi.string().required(),
+        isChildTemplate: Joi.string().valid('true', 'false').required(),
     },
     query: {},
     params: {},
@@ -252,6 +253,7 @@ export const getChangedEntitiesFromExcelSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
         templateId: Joi.string().required(),
+        isChildTemplate: Joi.string().valid('true', 'false').required(),
     },
     query: {},
     params: {},
@@ -262,6 +264,7 @@ export const editReadExcelSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
         templateId: Joi.string().required(),
+        isChildTemplate: Joi.string().valid('true', 'false').required(),
     },
     query: {},
     params: {},

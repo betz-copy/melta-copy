@@ -49,6 +49,7 @@ export const loadEntitiesRequest = async (
             formData.append(key, value as Blob);
         });
     formData.append('templateId', template._id);
+    formData.append('isChildTemplate', String('fatherTemplateId' in template));
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
@@ -85,13 +86,18 @@ export const loadEntitiesRequest = async (
     return data;
 };
 
-export const getChangedEntitiesFromExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
+export const getChangedEntitiesFromExcelRequest = async (
+    templateId: string,
+    file: Record<string, File>,
+    isChildTemplate: boolean,
+): Promise<IEditReadExcel> => {
     const formData = new FormData();
 
     Object.entries(file).forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
     formData.append('templateId', templateId);
+    formData.append('isChildTemplate', String(isChildTemplate));
 
     const { data } = await axios.post(`${entities}/getChangedEntitiesFromExcel`, formData);
 
@@ -106,6 +112,7 @@ export const editManyEntitiesByExcelRequest = async (
     const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', template._id);
+    formData.append('isChildTemplate', String('fatherTemplateId' in template));
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,

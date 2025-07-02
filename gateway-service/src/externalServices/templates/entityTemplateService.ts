@@ -13,6 +13,7 @@ import {
     ConfigTypes,
     ICategoryOrderConfig,
     ISearchEntityChildTemplatesBody,
+    IMongoEntityChildTemplatePopulated,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -203,7 +204,7 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get<IMongoEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 

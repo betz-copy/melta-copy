@@ -25,22 +25,28 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
+        const { templateId, insertBrokenEntities, isChildTemplate } = req.body;
         res.json(
             await this.manager.loadEntities(
-                req.body.templateId,
+                templateId,
+                isChildTemplate === 'true',
                 req.user!.id,
                 req.files || (req.file ? [req.file] : []),
-                req.body.insertBrokenEntities,
+                insertBrokenEntities,
             ),
         );
     }
 
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
-        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.files?.[0] || req.file!));
+        const { templateId, isChildTemplate } = req.body;
+
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, isChildTemplate === 'true', req.files?.[0] || req.file!));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {
-        res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
+        const { entities, isChildTemplate } = req.body;
+
+        res.json(await this.manager.editManyEntitiesByExcel(entities, isChildTemplate === 'true', req.user!.id));
     }
 
     async updateMultipleEntities(req: Request, res: Response) {

@@ -20,6 +20,7 @@ import {
     IExportEntitiesBody,
     IFailedEntity,
     IFilterOfTemplate,
+    IFullMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
     IRelationship,
@@ -42,7 +43,6 @@ import { Dictionary, mapValues, omit } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
-import getFilterFromChildTemplate from '../../utils/childTemplate';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import { PreviewService } from '../../externalServices/previewService';
@@ -50,6 +50,7 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
+import { getFilterFromChildTemplate, transformChild } from '../../utils/childTemplate';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
@@ -296,11 +297,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    updateTemplateCurrentNumbers = async (
-        template: IMongoEntityTemplatePopulated,
-        serialStarters: Record<string, number>,
-        succeededIndex: number,
-    ) => {
+    updateTemplateCurrentNumbers = async (template: IFullMongoEntityTemplate, serialStarters: Record<string, number>, succeededIndex: number) => {
         const serialProperties = Object.entries(template.properties.properties)
             .filter(([_key, value]) => value.type === 'number' && !!value.serialStarter && !!value.serialCurrent)
             .reduce((acc, [key, value]) => {
@@ -311,7 +308,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
-            category: category._id,
+            category,
             properties: {
                 ...template.properties,
                 properties: { ...template.properties.properties, ...serialProperties },
@@ -319,9 +316,30 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     };
 
-    async loadEntities(templateId: string, userId: string, files?: UploadedFile[], insertBrokenEntities?: IEntityWithIgnoredRules[]) {
+    private async handleTemplate(templateId: string, isChildTemplate: boolean) {
+        const templateItem: TemplateItem = isChildTemplate
+            ? { type: EntityTemplateType.Child, metaData: await this.entityTemplateService.getChildTemplateById(templateId) }
+            : { type: EntityTemplateType.Parent, metaData: await this.entityTemplateService.getEntityTemplateById(templateId) };
+
+        const { type, metaData: template } = templateItem;
+
+        const templateAsParent: IMongoEntityTemplatePopulated & { fatherTemplateId?: IFullMongoEntityTemplate } =
+            type === EntityTemplateType.Parent
+                ? template
+                : transformChild(template, await this.entityTemplateService.getEntityTemplateById(template.fatherTemplateId._id));
+
+        return templateAsParent;
+    }
+
+    async loadEntities(
+        templateId: string,
+        isChildTemplate: boolean,
+        userId: string,
+        files?: UploadedFile[],
+        insertBrokenEntities?: IEntityWithIgnoredRules[],
+    ) {
         let entities = insertBrokenEntities;
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const template = await this.handleTemplate(templateId, isChildTemplate);
 
         const failedEntities: IFailedEntity[] = [];
 
@@ -350,13 +368,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         else await Promise.all(entities!.map(async (entity) => handleCreateEntity(entity)));
 
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
-        if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
+        if (serialStarters)
+            await this.updateTemplateCurrentNumbers(
+                template.fatherTemplateId ?? { ...template, category: template.category._id },
+                serialStarters,
+                succeededEntities.length,
+            );
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile) {
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+    async getChangedEntitiesFromExcel(templateId: string, isChildTemplate: boolean, file: UploadedFile) {
+        const template = await this.handleTemplate(templateId, isChildTemplate);
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
 
@@ -371,14 +394,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         const entities = entitiesWithIgnoresRules.map(({ properties }) => ({
-            templateId,
+            templateId: template.fatherTemplateId ? template.fatherTemplateId?._id : templateId,
             properties,
         }));
 
         return { entities, failedEntities };
     }
 
-    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], userId: string) {
+    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], isChildTemplate: boolean, userId: string) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
@@ -393,7 +416,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         };
 
-        await Promise.all(entities!.map(async (entity) => handleUpdateEntity(entity)));
+        await Promise.all(entities.map(async (entity) => handleUpdateEntity(entity)));
 
         succeededEntities.push(...results);
 

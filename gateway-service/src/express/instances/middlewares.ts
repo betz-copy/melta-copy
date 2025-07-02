@@ -47,14 +47,19 @@ class InstancesValidator extends DefaultController {
         return template.category._id;
     }
 
+    private async getParentIdFromChildTemplateId(childId: string) {
+        const template = await this.entityTemplateService.getChildTemplateById(childId);
+        return template.fatherTemplateId._id;
+    }
+
     private async getCategoryIdsFromTemplateIds(templateIds: string[], userId: string) {
         const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: templateIds });
         return templates.map((template) => template.category._id);
     }
 
     async validateUserCanCreateEntityInstance(req: Request) {
-        const { templateId } = req.body;
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
+        const { templateId, isChildTemplate } = req.body;
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, isChildTemplate === 'true');
     }
 
     async getAllowedEntityTemplatesForInstances(
@@ -134,22 +139,28 @@ class InstancesValidator extends DefaultController {
         templateId: string,
         permissionScope: PermissionScope,
         givenCategoryId?: string,
+        isChildTemplate?: boolean,
     ) {
-        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
+        const parentId = isChildTemplate ? await this.getParentIdFromChildTemplateId(templateId) : templateId;
+        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(parentId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
-        // eslint-disable-next-line no-console
-        console.log('userPermissions: ', { userPermissions });
 
         if (
             !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([category, { scope, entityTemplates }]) =>
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(([category, { scope, entityTemplates }]) => {
+                const templatePermissions = entityTemplates?.[parentId];
+                return (
                     category === categoryId &&
                     (scope === permissionScope ||
                         scope === PermissionScope.write ||
-                        entityTemplates?.[templateId]?.scope === permissionScope ||
-                        entityTemplates?.[templateId]?.scope === PermissionScope.write),
-            )
+                        templatePermissions?.scope === permissionScope ||
+                        templatePermissions?.scope === PermissionScope.write ||
+                        (isChildTemplate
+                            ? templatePermissions?.entityChildTemplates[templateId]?.scope === permissionScope ||
+                              templatePermissions?.entityChildTemplates[templateId]?.scope === PermissionScope.write
+                            : true))
+                );
+            })
         ) {
             throw new ForbiddenError(
                 `user not authorized, does not have ${permissionScope} permission on template ${templateId} in category ${categoryId}`,
