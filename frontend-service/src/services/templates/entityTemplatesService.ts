@@ -1,8 +1,15 @@
 /* eslint-disable no-nested-ternary */
-import { v4 as uuid } from 'uuid';
 import i18next from 'i18next';
+import { QueryClient } from 'react-query';
+import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
+import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import {
+    FilterModelToFilterRecord,
+    filterTemplateToSearchFilter,
+} from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
+import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import {
     IEntitySingleProperty,
@@ -12,13 +19,6 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
-import {
-    filterRelationListToSearchFilter,
-    SearchFilterToFilterRelationList,
-} from '../../common/wizards/entityTemplate/RelationshipRefrence/RelationFilterToBackend';
-import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
-import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
-import { useQueryClient } from 'react-query';
 import { BackendConfigState } from '../backendConfigService';
 
 const { entityTemplates } = environment.api;
@@ -40,7 +40,7 @@ export const stringFormats = [
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
-const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
+export const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
 type ExtractedProps<T> = {
     properties: T[];
     propertiesPath: Record<string, string>;
@@ -51,7 +51,10 @@ type AttachmentOrArchiveProperties = {
     data: EntityTemplateFormInputProperties;
 };
 
-const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
+const entityTemplateObjectToEntityTemplateForm = (
+    entityTemplate: IMongoEntityTemplatePopulated | null,
+    queryClient: QueryClient,
+): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
     const {
         iconFileId,
@@ -121,9 +124,10 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                       relatedTemplateId: value.relationshipReference.relatedTemplateId,
                       relatedTemplateField: value.relationshipReference.relatedTemplateField,
                       filters: value.relationshipReference.filters
-                          ? SearchFilterToFilterRelationList(
-                                value.relationshipReference.relatedTemplateId,
+                          ? FilterModelToFilterRecord(
                                 parseFilters(value.relationshipReference.filters),
+                                value.relationshipReference.relatedTemplateId,
+                                queryClient,
                             )
                           : undefined,
                   }
@@ -291,8 +295,7 @@ export const extractGroups = (
     };
 };
 
-export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
-    const queryClient = useQueryClient();
+export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
@@ -408,7 +411,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
-                          filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
+                          filters: relationshipReference.filters
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
                       }
                     : undefined,
                 comment,
@@ -517,7 +522,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
-                          filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
+                          filters: relationshipReference.filters
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
                       }
                     : undefined,
                 comment,
@@ -603,10 +610,10 @@ const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) =>
     return data;
 };
 
-const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
+const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues, queryClient: QueryClient) => {
     const formData = new FormData();
 
-    const entityTemplate = formToJSONSchema(newEntityTemplate, false);
+    const entityTemplate = formToJSONSchema(newEntityTemplate, false, queryClient);
 
     if (newEntityTemplate.icon) {
         if (newEntityTemplate.icon.file instanceof File) {
@@ -662,12 +669,16 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
     return data;
 };
 
-const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
+const updateEntityTemplateRequest = async (
+    entityTemplateId: string,
+    updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues,
+    queryClient: QueryClient,
+) => {
     const formData = new FormData();
 
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate
-            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
+            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true, queryClient)
             : updatedEntityTemplate;
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
@@ -748,12 +759,12 @@ const updateActionToEntity = async (entityTemplateId: string, actions: string) =
 
 export {
     createEntityTemplateRequest,
-    searchEntityTemplates,
-    updateEntityTemplateRequest,
-    entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
+    deleteEnumFieldRequest,
+    entityTemplateObjectToEntityTemplateForm,
+    searchEntityTemplates,
+    updateActionToEntity,
+    updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
     updateEnumFieldRequest,
-    deleteEnumFieldRequest,
-    updateActionToEntity,
 };

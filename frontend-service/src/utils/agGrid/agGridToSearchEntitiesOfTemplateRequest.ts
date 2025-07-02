@@ -1,17 +1,9 @@
 import { environment } from '../../globals';
-import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
-import {
-    IAGGidNumberFilter,
-    IAGGridDateFilter,
-    IAGGridFilterModel,
-    IAGGridRequest,
-    IAGGridSetFilter,
-    IAGGridSort,
-    IAGGridTextFilter,
-} from './interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridFilterModel, IAGGridRequest, IAGGridSort, IAGGridTextFilter } from './interfaces';
 
 export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[]): IFilterOfTemplate => {
     return { [field]: { $in: values } };
@@ -231,6 +223,28 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
     return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
 };
 
+export const getFilterModal = (
+    filterModel?: ISearchEntitiesOfTemplateBody['filter'],
+    defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
+): ISearchFilter | undefined => {
+    if (!filterModel && !defaultModal) return undefined;
+
+    const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
+        if (filter?.$and) {
+            return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
+        }
+
+        return [];
+    };
+
+    const filterModelAnds = extractAndArray(filterModel);
+    const defaultModalAnds = extractAndArray(defaultModal);
+
+    return {
+        $and: [...filterModelAnds, ...defaultModalAnds],
+    };
+};
+
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
@@ -241,7 +255,7 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
         skip: startRow,
         limit: endRow - startRow,
         textSearch: quickFilter,
-        filter: defaultFilter ?? filterModelToFilterOfTemplate(filterModel, entityTemplate),
+        filter: getFilterModal(filterModelToFilterOfTemplate(filterModel, entityTemplate), defaultFilter),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,

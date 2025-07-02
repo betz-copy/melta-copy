@@ -3,10 +3,10 @@ import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, In
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { keyBy } from 'lodash';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { keyBy } from 'lodash';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
@@ -21,17 +21,17 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IEntityChildTemplateMap, IEntityChildTemplate, IMongoChildEntityTemplate } from '../../../interfaces/entityChildTemplates';
+import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { updateCategoryRequest, updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-} from '../../../services/templates/enitityTemplatesService';
+} from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
-import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
@@ -1021,10 +1021,14 @@ const EntityTemplatesRow: React.FC = () => {
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return updateEntityTemplateRequest(entityTemplateId, {
-                ...entityTemplate,
-                category: category._id,
-            });
+            return updateEntityTemplateRequest(
+                entityTemplateId,
+                {
+                    ...entityTemplate,
+                    category: category._id,
+                },
+                queryClient,
+            );
         },
 
         {
@@ -1197,7 +1201,7 @@ const EntityTemplatesRow: React.FC = () => {
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
-                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
+                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />
