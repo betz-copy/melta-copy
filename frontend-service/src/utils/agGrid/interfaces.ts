@@ -1,4 +1,4 @@
-import { IUser } from "../../interfaces/users";
+import { IUser } from '../../interfaces/users';
 
 export interface IAGGridTextFilter {
     filterType: 'text';
