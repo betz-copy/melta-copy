@@ -57,7 +57,11 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
 
     const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
         async (file: Record<string, File>) => {
-            return getChangedEntitiesFromExcelRequest(template!._id, file, 'fatherTemplateId' in template!);
+            return getChangedEntitiesFromExcelRequest(
+                template!.fatherTemplateId ?? template!._id,
+                file,
+                template!.fatherTemplateId ? template!._id : undefined,
+            );
         },
         {
             async onSuccess(data) {
@@ -104,7 +108,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
+                toast.success(i18next.t('wizard.entity.loadEntities.editedSuccessfully'));
                 return data;
             },
             onError() {

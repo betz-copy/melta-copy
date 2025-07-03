@@ -117,7 +117,7 @@ export const editManyEntitiesByExcelRequest = async (
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
-    formData.append('templateId', template.fatherTemplateId ? template.fatherTemplateId : template._id);
+    formData.append('templateId', template.fatherTemplateId ?? template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);

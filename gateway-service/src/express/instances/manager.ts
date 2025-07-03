@@ -196,22 +196,32 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
     }
 
-    async getAllTemplateEntities(templateId: string) {
+    async getAllTemplateEntities(templateId: string, childTemplateId?: string) {
         const { searchEntitiesChunkSize } = config.service;
-        const templateCount = await this.getEntitiesCountByTemplates(true, {
-            templateIds: [templateId],
+
+        let filter = {};
+        if (childTemplateId) {
+            const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
+            filter = getFilterFromChildTemplate(childTemplate);
+        }
+
+        const { count } = await this.service.searchEntitiesOfTemplateRequest(templateId, {
+            skip: 0,
+            limit: 1,
+            filter,
+            showRelationships: false,
+            sort: [],
         });
 
-        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
         const entities: IEntityWithDirectRelationships[] = [];
 
         for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(templateId, {
                 skip,
                 limit: searchEntitiesChunkSize,
-                entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
                 showRelationships: true,
                 sort: [],
+                filter,
             });
             entities.push(...chunk);
         }
@@ -383,7 +393,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
 
-        const oldEntities = await this.getAllTemplateEntities(template._id);
+        const oldEntities = await this.getAllTemplateEntities(templateId, childTemplateId);
 
         const entitiesWithIgnoresRules = await readExcelFile(
             [file],
