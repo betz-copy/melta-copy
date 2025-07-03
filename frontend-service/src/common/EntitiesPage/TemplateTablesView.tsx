@@ -128,6 +128,7 @@ const TemplateTablesViewResults = forwardRef<
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
                             defaultFilter={defaultFilter}
+                            childTemplateId={isChildTemplate ? template._id : undefined}
                         />
                     </Grid>
                 );

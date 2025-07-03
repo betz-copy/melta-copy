@@ -159,6 +159,18 @@ export const updateEntityTemplateSchema = Joi.object({
     files: Joi.array().items(fileSchema),
 });
 
+// PATCH /api/entities/templates/:templateId/actions
+export const updateEntityTemplateActionSchema = Joi.object({
+    body: {
+        actions: Joi.string().required(),
+        isChildTemplate: Joi.boolean(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});
+
 // PATCH /api/templates/entities/:id/status
 export const updateEntityTemplateStatusSchema = Joi.object({
     body: {

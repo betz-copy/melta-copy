@@ -79,32 +79,32 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/export',
-    InstancesValidatorMiddleware.validateUserCanExportEntities,
     ValidateRequest(exportEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanExportEntities,
     InstancesControllerMiddleware.exportEntities,
 );
 
 InstancesRouter.post(
     '/entities/loadEntities',
     busboyMiddleware,
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.loadEntities,
 );
 
 InstancesRouter.post(
     '/entities/getChangedEntitiesFromExcel',
     busboyMiddleware,
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.getChangedEntitiesFromExcel,
 );
 
 InstancesRouter.put(
     '/entities/editManyEntitiesByExcel',
     busboyMiddleware,
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(editManyEntitiesByExcelSchema),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.editManyEntitiesByExcel,
 );
 

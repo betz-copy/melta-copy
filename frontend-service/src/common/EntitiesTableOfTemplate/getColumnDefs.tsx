@@ -364,7 +364,11 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 <Link
                                     href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
                                         getEntityPropertiesData(data)._id
-                                    }${pageType === environment.clientSideId ? '' : `/${template.childTemplateId ?? template._id}`}`}
+                                    }${
+                                        pageType === environment.clientSideId
+                                            ? ''
+                                            : `/${template.childTemplateId ?? template._id}?childTemplateId=${template.childTemplateId}`
+                                    }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -444,7 +448,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
+                                        navigate(`/entity/${getRowId(data)}/duplicate?childTemplateId=${template.childTemplateId}`, {
                                             state: { entityTemplate: template, expandedEntity: { entity: data } },
                                         });
                                     }}
