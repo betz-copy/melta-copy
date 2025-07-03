@@ -85,19 +85,15 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
-    const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
-    const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-    const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    const isSignature = propertyTemplate.format === 'signature';
-    const isUser = propertyTemplate.format === 'user';
-    const isUsers = propertyTemplate.items?.format === 'user';
-    const isComment = propertyTemplate.format === 'comment';
-    const isKartoffelUserField = propertyTemplate.format === 'kartoffelUserField';
-    const isUnitField = propertyTemplate.format === 'unitField';
+    const formats = ['relationshipReference', 'fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
+    const itemsFormats = ['fileId', 'user'];
 
-    return (
-        !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField && !isUnitField
-    );
+    const unValidFormats =
+        formats.includes(propertyTemplate.format ?? '') ||
+        (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
+    const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
+
+    return !unValidFormats && !isSerialNumber;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>

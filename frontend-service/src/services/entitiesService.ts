@@ -38,8 +38,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated,
-    childTemplateId?: string,
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -48,11 +47,10 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', template._id);
-    formData.append('isChildTemplate', String('fatherTemplateId' in template));
+    formData.append('templateId', template.fatherTemplateId ?? template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    if (template.fatherTemplateId) {
+        formData.append('childTemplateId', template._id);
     }
 
     if (insertBrokenEntities) {
@@ -93,7 +91,7 @@ export const loadEntitiesRequest = async (
 export const getChangedEntitiesFromExcelRequest = async (
     templateId: string,
     file: Record<string, File>,
-    isChildTemplate: boolean,
+    childTemplateId?: string,
 ): Promise<IEditReadExcel> => {
     const formData = new FormData();
 
@@ -101,7 +99,10 @@ export const getChangedEntitiesFromExcelRequest = async (
         formData.append(key, value as Blob);
     });
     formData.append('templateId', templateId);
-    formData.append('isChildTemplate', String(isChildTemplate));
+
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
 
     const { data } = await axios.post(`${entities}/getChangedEntitiesFromExcel`, formData);
 
@@ -109,15 +110,14 @@ export const getChangedEntitiesFromExcelRequest = async (
 };
 
 export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
     entitiesToUpdate: IEntityWithIgnoredRules[],
     childTemplateId?: string,
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
-    formData.append('templateId', template._id);
-    formData.append('isChildTemplate', String('fatherTemplateId' in template));
+    formData.append('templateId', template.fatherTemplateId ? template.fatherTemplateId : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);

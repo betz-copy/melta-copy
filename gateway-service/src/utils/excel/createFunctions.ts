@@ -6,6 +6,7 @@ import config from '../../config/index';
 import hexToARGB from './colors';
 import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
+import { getFullChildTemplateProperties } from '../childTemplate';
 
 interface IExcelStyle {
     columnHeader: {
@@ -121,7 +122,11 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
     const { type: templateType, metaData: template } = templateItem;
 
     const worksheet = workbook.addWorksheet(template.displayName);
-    const { properties } = templateType === EntityTemplateType.Parent ? template.properties : template;
+
+    const properties =
+        templateType === EntityTemplateType.Parent
+            ? template.properties.properties
+            : getFullChildTemplateProperties(template, template.fatherTemplateId);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -222,7 +227,9 @@ const styleAWorksheet = (
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
     });
-    const { properties } = type === EntityTemplateType.Parent ? template.properties : template;
+    const properties =
+        type === EntityTemplateType.Parent ? template.properties.properties : getFullChildTemplateProperties(template, template.fatherTemplateId);
+
     const { disabled } = template;
     let additionalProps = {};
     if (type === EntityTemplateType.Parent) {

@@ -5,7 +5,7 @@ import { IBrokenRule, IBrokenRulePopulated } from './ruleBreaches/ruleBreach';
 
 export interface EntitiesWizardValues {
     files?: File[];
-    template?: IMongoEntityTemplatePopulated;
+    template?: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
 }
 
 export type IValidationError = {

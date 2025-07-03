@@ -208,7 +208,6 @@ export const filterModelToFilterOfTemplate = (
         const fieldTemplate = entityTemplateWithDefaultFields.properties.properties[field];
         const filter = filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
 
-        console.log('filter', { filter });
         if (filter[field] && typeof filter[field] === 'object' && '$and' in (filter[field] as object)) {
             return (filter[field] as { $and: IFilterOfField[] })['$and'].map((condition) => ({ [field]: condition }));
         }
