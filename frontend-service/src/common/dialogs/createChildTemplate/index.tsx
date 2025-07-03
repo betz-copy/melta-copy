@@ -364,12 +364,14 @@ const CreateChildTemplateDialog: React.FC<{
     ]);
 
     const handleCheckboxChange = (fieldName: string, checked: boolean) => {
+        const newFieldFilters = { ...templateFieldsFilters };
         if (!checked) {
             setFieldChips((prev) => prev.filter((chip) => chip.fieldName !== fieldName));
+            newFieldFilters[fieldName].isEditableByUser = false;
         }
 
-        const newFieldFilters = { ...templateFieldsFilters };
         newFieldFilters[fieldName].selected = checked;
+
         setTemplateFieldsFilters(newFieldFilters);
     };
 
@@ -573,6 +575,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 onChange={(e) => {
                                                                     setChildTemplateFilterByCurrentUser(e.target.checked);
                                                                     if (e.target.checked) setSelectUserFieldDialogOpen(true);
+                                                                    else setSelectedUserField(null);
                                                                 }}
                                                             />
                                                         }
@@ -739,7 +742,11 @@ const CreateChildTemplateDialog: React.FC<{
                 open={selectUserFieldDialogOpen}
                 userFields={userFields}
                 selectedField={selectedUserField}
-                onClose={() => setSelectUserFieldDialogOpen(false)}
+                onClose={() => {
+                    setSelectedUserField(null);
+                    setSelectUserFieldDialogOpen(false);
+                    setChildTemplateFilterByCurrentUser(false);
+                }}
                 onSubmit={(field) => {
                     setSelectedUserField(field);
                     setSelectUserFieldDialogOpen(false);
