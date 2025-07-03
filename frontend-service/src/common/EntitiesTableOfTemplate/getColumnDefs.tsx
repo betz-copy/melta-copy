@@ -1,13 +1,17 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import { Grid } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { Grid, Typography, useTheme } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
-import { Link } from 'wouter';
-import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
+import { Link } from 'wouter';
 import { IButtonPopoverProps } from '.';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import {
     booleanColDef,
     dateColDef,
@@ -23,11 +27,9 @@ import {
     userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
+import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childId?: string };
@@ -35,6 +37,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
+    addRelationshipReferenceButtonProps?: { relatedTemplate?: IMongoEntityTemplatePopulated; relatedRelationshipReferenceProperties?: string[] };
     menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
@@ -66,6 +69,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     onNavigateToRow,
     hideNonPreview = false,
     deleteRowButtonProps,
+    addRelationshipReferenceButtonProps,
     editRowButtonProps,
     menuRowButtonProps,
     hasPermissionToTemplate = true,
@@ -83,6 +87,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
     entityTemplates,
     pageType,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
+    const theme = useTheme();
+
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
@@ -321,7 +327,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         return orderA - orderB;
     });
 
-    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps) {
+    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps || addRelationshipReferenceButtonProps?.relatedTemplate) {
         columnDefs.push({
             field: `actions-${template._id}`,
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
@@ -424,7 +430,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </Link>
                             </Grid>
                         )}
-
                         {menuRowButtonProps && !template?.disabled && pageType !== 'simba' && (
                             <Grid item>
                                 <CardMenu
@@ -446,6 +451,38 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
                                 />
+                            </Grid>
+                        )}
+                        {addRelationshipReferenceButtonProps?.relatedTemplate && (
+                            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                                <AddEntityButton
+                                    initialStep={1}
+                                    disabled={template.disabled}
+                                    initialValues={{
+                                        template: addRelationshipReferenceButtonProps.relatedTemplate,
+                                        properties: {
+                                            disabled: false,
+                                            ...(addRelationshipReferenceButtonProps.relatedRelationshipReferenceProperties?.reduce(
+                                                (acc, property) => {
+                                                    acc[property] = {
+                                                        templateId: template._id,
+                                                        properties: entity,
+                                                    };
+                                                    return acc;
+                                                },
+                                                {} as Record<string, any>,
+                                            ) ?? {}),
+                                        },
+                                        attachmentsProperties: {},
+                                    }}
+                                    style={{ borderRadius: '7px', width: '135px' }}
+                                    popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
+                                >
+                                    <AddIcon fontSize="small" />
+                                    <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 10px', color: theme.palette.primary.main }}>
+                                        {i18next.t('location.newRequest')}
+                                    </Typography>
+                                </AddEntityButton>
                             </Grid>
                         )}
                     </Grid>

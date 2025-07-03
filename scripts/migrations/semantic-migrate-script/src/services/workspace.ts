@@ -47,10 +47,9 @@ export interface IMetadata {
         carsInfoTemplateId: string;
         numOfPropsToShow: number;
     };
-    isAzarimWorkspace: boolean;
-    azarim: {
-        katalogTemplateId: string;
-        requestTemplateId: string;
+    mapPage: {
+        sourceTemplateId: string;
+        destTemplateId: string;
     };
 }
 export interface IWorkspace {

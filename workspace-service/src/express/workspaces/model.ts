@@ -37,10 +37,9 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             carsInfoTemplateId: { type: String },
             numOfPropsToShow: { type: Number },
         },
-        isAzarimWorkspace: { type: Boolean },
-        azarim: {
-            katalogTemplateId: { type: String },
-            requestTemplateId: { type: String },
+        mapPage: {
+            sourceTemplateId: { type: String },
+            destTemplateId: { type: String },
         },
     },
     { _id: false },

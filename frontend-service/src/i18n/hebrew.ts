@@ -1507,6 +1507,8 @@ export default {
             overlay: 'שכבות מיפוי',
         },
         coordinateSystem: 'קואורדינטות',
+        searchResults: 'תוצאות חיפוש מקטלוג',
+        newRequest: 'בקשה חדשה',
     },
     filters: {
         equals: 'שווה',
@@ -1555,10 +1557,9 @@ export default {
             carsInfoTemplateId: 'ID תבנית רכבים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
         },
-        isAzarimWorkspace: 'סביבת עבודה של עזרים',
-        azarim: {
-            katalogTemplateId: 'ID תבנית קטלוג',
-            requestTemplateId: 'ID תבנית בקשה',
+        mapPage: {
+            sourceTemplateId: 'ID תבנית מקור',
+            destTemplateId: 'ID תבנית יעד',
         },
     },
     createChildTemplateDialog: {

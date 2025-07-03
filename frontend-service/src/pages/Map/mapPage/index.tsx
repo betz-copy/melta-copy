@@ -57,6 +57,17 @@ const MapPage = () => {
 
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
+    const { metadata } = useWorkspaceStore((state) => state.workspace);
+    const { sourceTemplateId, destTemplateId } = metadata.mapPage;
+
+    const sourceTemplate = entityTemplateMap!.get(sourceTemplateId);
+    const destTemplate = entityTemplateMap!.get(destTemplateId);
+    const relatedRelationshipReferenceProperties = Object.entries(destTemplate?.properties.properties ?? {})
+        .filter(([_, property]) => property.relationshipReference?.relatedTemplateId === sourceTemplateId)
+        .map(([key]) => key);
+
+    const sourceSearchResults = searchedMarkers.filter(({ node }) => node.templateId === sourceTemplate?._id).map(({ node }) => node);
+
     const {
         bounds: searchedEntityBounds,
         markers: searchedEntityMarkers,
@@ -267,13 +278,6 @@ const MapPage = () => {
         setDrawingMode(newShape);
     };
 
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const {
-        azarim: { katalogTemplateId },
-        isAzarimWorkspace,
-    } = workspace.metadata;
-    const katalogTemplate = entityTemplateMap!.get(katalogTemplateId);
-
     return (
         <div style={{ height: '100vh', width: '100%' }}>
             <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
@@ -421,17 +425,21 @@ const MapPage = () => {
                         )}
                     </Viewer>
                 </Grid>
-                {isAzarimWorkspace && searchedMarkers.length > 0 && (
+
+                {sourceSearchResults.length > 0 && (
                     <Grid item width="98%">
                         <EntitiesTable
-                            rowData={searchedMarkers.map(({ node }) => node)}
-                            rowModelType="infinite"
-                            template={katalogTemplate!}
-                            defaultExpanded={false}
-                            title={i18next.t('charts.viewData')}
-                            defaultFilter={{}}
+                            rowData={sourceSearchResults}
+                            rowModelType="clientSide"
+                            template={sourceTemplate!}
+                            defaultExpanded
+                            title={i18next.t('location.searchResults')}
                             infiniteModeWithoutExpand
-                            disableFilter
+                            relatedTemplateProperties={{
+                                relatedTemplate: destTemplate,
+                                relatedRelationshipReferenceProperties,
+                            }}
+                            overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}
                         />
                     </Grid>
                 )}

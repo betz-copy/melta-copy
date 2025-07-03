@@ -15,7 +15,7 @@ const AddEntityButton: React.FC<{
     style?: CSSProperties;
     disabled?: boolean;
     initialStep?: number;
-    initialValues?: EntityWizardValues;
+    initialValues: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
@@ -96,7 +96,7 @@ const AddEntityButton: React.FC<{
                         onSuccess: handleSuccess,
                     }}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
-                    initialCurrValues={addEntityWizardState.initialCurrValues}
+                    initialCurrValues={addEntityWizardState.initialCurrValues ?? addEntityWizardState.initialValues}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}

@@ -203,6 +203,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
     editRowButtonProps?: IButtonPopoverProps<Data>;
     menuRowButtonProps?: boolean;
+    addRelationshipReferenceButtonProps?: { relatedTemplate?: IMongoEntityTemplatePopulated; relatedRelationshipReferenceProperties?: string[] };
     hasPermissionToTemplate?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
@@ -260,6 +261,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             getEntityPropertiesData,
             rowModelType,
             deleteRowButtonProps,
+            addRelationshipReferenceButtonProps,
             editRowButtonProps,
             menuRowButtonProps,
             rowData,
@@ -442,6 +444,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
             deleteRowButtonProps,
             menuRowButtonProps,
+            addRelationshipReferenceButtonProps,
             hideNonPreview,
             editRowButtonProps,
             hasPermissionToTemplate,

@@ -35,19 +35,11 @@ const metadataSchema = Joi.object({
         carsInfoTemplateId: Joi.string(),
         numOfPropsToShow: Joi.number(),
     }).optional(),
-    isAzarimWorkspace: Joi.boolean(),
-    azarim: Joi.when('isAzarimWorkspace', {
-        is: true,
-        then: Joi.object({
-            katalogTemplateId: Joi.string().allow(''),
-            requestTemplateId: Joi.string().allow(''),
-        }).required(),
-        otherwise: Joi.object({
-            katalogTemplateId: Joi.string().allow(''),
-            requestTemplateId: Joi.string().allow(''),
-        }).optional(),
-    }),
-}).optional();
+    mapPage: Joi.object({
+        sourceTemplateId: Joi.string().allow(''),
+        destTemplateId: Joi.string().allow(''),
+    }).optional(),
+});
 
 // Joi schema for Workspace
 const workspaceSchema = Joi.object({
