@@ -104,6 +104,10 @@ const AddEntityButton: React.FC<{
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    enableSaveButton={Boolean(
+                        addEntityWizardState.initialValues?.properties &&
+                            Object.keys(addEntityWizardState.initialValues.properties).some((key) => key !== 'disabled'),
+                    )}
                 />
             </Dialog>
         </>

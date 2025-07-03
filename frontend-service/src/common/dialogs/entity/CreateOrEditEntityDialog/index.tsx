@@ -71,6 +71,7 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
+    enableSaveButton?: boolean;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -81,6 +82,7 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
     showActionButtons = true,
+    enableSaveButton = false,
 }) => {
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
@@ -245,7 +247,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 ? ''
                                                                 : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
                                                         }
-                                                        disabled={!dirty || isLoading}
+                                                        disabled={!(enableSaveButton && (dirty || !isLoading))}
                                                     >
                                                         {i18next.t('entityPage.save')}
                                                     </Button>
