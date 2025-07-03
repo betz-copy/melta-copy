@@ -83,7 +83,7 @@ const createEntityClientSideRequest = async (
     const entityTemplateProperties = childTemplate!.fatherTemplateId.properties.properties;
 
     const propertiesWithDefaults = childTemplate
-        ? Object.entries(entityTemplateProperties).reduce((acc, [key, prop]) => {
+        ? Object.entries(entityTemplateProperties).reduce((acc, [key]) => {
               if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
                   acc[key] = childTemplate.properties[key].defaultValue;
               } else {

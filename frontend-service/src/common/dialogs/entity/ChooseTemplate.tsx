@@ -42,9 +42,9 @@ const ChooseTemplate: React.FC<{
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, { _id: categoryId }, templateId, PermissionScope.write);
 
     const filterEntityTemplates = Array.from(entityTemplates.values()).filter((template) =>
-        !categoryId
-            ? isAuthorized(template._id, template.category._id)
-            : template.category._id === categoryId && isAuthorized(template._id, categoryId),
+        categoryId
+            ? template.category._id === categoryId && isAuthorized(template._id, categoryId)
+            : isAuthorized(template._id, template.category._id),
     );
 
     const filterChildEntityTemplate = Array.from(entityChildTemplates.values())

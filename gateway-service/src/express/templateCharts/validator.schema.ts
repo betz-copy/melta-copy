@@ -87,14 +87,16 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
 // POST /api/charts
 export const createChartRequestSchema = Joi.object({
     body: chartSchema.required(),
-    query: {},
+    query: { toDashboard: Joi.bool() },
     params: {},
 });
 
 // PUT /api/charts/:chartId
 export const updateChartRequestSchema = Joi.object({
     body: chartSchema.required(),
-    query: {},
+    query: {
+        deleteReferenceDashboardItems: Joi.bool().optional().default(false),
+    },
     params: {
         chartId: MongoIdSchema.required(),
     },
@@ -103,7 +105,9 @@ export const updateChartRequestSchema = Joi.object({
 // DELETE /api/charts/:chartId
 export const deleteChartRequestSchema = Joi.object({
     body: {},
-    query: {},
+    query: {
+        deleteReferenceDashboardItems: Joi.bool().optional().default(false),
+    },
     params: {
         chartId: MongoIdSchema.required(),
     },

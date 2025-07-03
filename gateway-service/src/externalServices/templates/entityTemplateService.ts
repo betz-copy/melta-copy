@@ -1,19 +1,18 @@
 import {
+    ConfigTypes,
     ICategory,
-    IMongoCategory,
+    ICategoryOrderConfig,
+    IEntityChildTemplatePopulated,
     IEntityTemplate,
+    IMongoBaseConfig,
+    IMongoCategory,
+    IMongoCategoryOrderConfig,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-    ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
-    ISubCompactPermissions,
-    IEntityChildTemplatePopulated,
-    IMongoCategoryOrderConfig,
-    IMongoBaseConfig,
-    ConfigTypes,
-    ICategoryOrderConfig,
     ISearchEntityChildTemplatesBody,
-    IMongoEntityChildTemplatePopulated,
+    ISearchEntityTemplatesBody,
+    ISubCompactPermissions,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -133,6 +132,18 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
+    async updateEntityTemplateAction(templateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${templateId}/actions`, { actions });
+
+        return data;
+    }
+
+    async updateChildEntityTemplateAction(templateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${templateId}/actions`, { actions });
+
+        return data;
+    }
+
     async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.api.put<{
             updatedRelationShipTemplate: IMongoRelationshipTemplate;
@@ -204,7 +215,7 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IMongoEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 

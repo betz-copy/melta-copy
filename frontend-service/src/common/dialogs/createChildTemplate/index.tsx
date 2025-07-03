@@ -69,7 +69,7 @@ const CreateChildTemplateDialog: React.FC<{
             const initialFields: ITemplateFieldsFilters = {};
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
-                const isSelected = childTemplate ? key in childTemplate.properties || isRequired : false;
+                const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
 
                 initialFields[key] = {
                     selected: isSelected,
@@ -308,8 +308,8 @@ const CreateChildTemplateDialog: React.FC<{
             const currentDefaultValue = fieldChips.find((chip) => chip.fieldName === fieldName && chip.chipType === 'default')?.value;
 
             if (
-                (originalDefaultValue === undefined && currentDefaultValue !== undefined) ||
-                (originalDefaultValue !== undefined && currentDefaultValue === undefined) ||
+                (!originalDefaultValue && !!currentDefaultValue) ||
+                (!!originalDefaultValue && !currentDefaultValue) ||
                 JSON.stringify(originalDefaultValue) !== JSON.stringify(currentDefaultValue)
             ) {
                 return true;
@@ -384,9 +384,12 @@ const CreateChildTemplateDialog: React.FC<{
             <Formik
                 initialValues={{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
-                    displayName: childTemplate ? childTemplate.displayName : '',
+                    displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
                     categories: selectedCategories,
+                    isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
+                    isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
+                    filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, categories }) => {
@@ -464,7 +467,7 @@ const CreateChildTemplateDialog: React.FC<{
                         <Form>
                             <DialogTitle>
                                 {childTemplate
-                                    ? `${i18next.t('createChildTemplateDialog.updateTemplateTitle')}- ${entityTemplate.displayName}`
+                                    ? `${i18next.t('createChildTemplateDialog.updateTemplateTitle')}- ${childTemplate.displayName}`
                                     : `${i18next.t('createChildTemplateDialog.templateTitle')}- ${entityTemplate.displayName}`}
                             </DialogTitle>
                             <DialogContent>

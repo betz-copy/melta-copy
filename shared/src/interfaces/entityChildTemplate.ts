@@ -40,12 +40,6 @@ export interface IEntityChildTemplatePopulated extends Omit<IMongoEntityChildTem
     categories: IMongoCategory[];
 }
 
-export interface IMongoEntityChildTemplatePopulated extends IEntityChildTemplatePopulated {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
 export interface ISearchEntityChildTemplatesBody extends ISearchBody {
     ids?: string[];
     categoryIds?: string[];
@@ -67,7 +61,7 @@ export interface EntityTemplateBase {
 
 export interface ChildTemplate extends EntityTemplateBase {
     type: EntityTemplateType.Child;
-    metaData: IMongoEntityChildTemplatePopulated;
+    metaData: IEntityChildTemplatePopulated;
 }
 
 export interface ParentTemplate extends EntityTemplateBase {

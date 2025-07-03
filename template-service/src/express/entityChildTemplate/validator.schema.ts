@@ -38,7 +38,6 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     params: {},
 });
@@ -95,5 +94,16 @@ export const deleteEntityChildTemplateSchema = Joi.object({
     query: {},
     params: {
         id: MongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/templates/child/:templateId/actions
+export const updateEntityTemplateActionSchema = Joi.object({
+    body: {
+        actions: Joi.string().required(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
     },
 });

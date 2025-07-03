@@ -1,23 +1,25 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useMemo, useState } from 'react';
+import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
-import i18next from 'i18next';
-import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
-import { editor } from 'monaco-editor';
-import * as ts from 'typescript-actions';
-import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import { editor } from 'monaco-editor';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ErrorToast } from '../../../../common/ErrorToast';
-import { ActionManagement } from './actionsManagement';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
-import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
-import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
-import { environment } from '../../../../globals';
+import * as ts from 'typescript-actions';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+import { ErrorToast } from '../../../../common/ErrorToast';
+import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
+import { environment } from '../../../../globals';
 import { IMongoCategory } from '../../../../interfaces/categories';
+import { EntityTemplateType, IEntityChildTemplateMap, TemplateItem } from '../../../../interfaces/entityChildTemplates';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
+import { getFullChildTemplateProperties } from '../../../../utils/entityChildTemplates';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
+import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
+import { ActionManagement } from './actionsManagement';
 
 const {
     systemManagement: {
@@ -28,13 +30,17 @@ const {
 const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
+    templateItem: TemplateItem | null;
     searchText: string;
     categoriesToShow: IMongoCategory[];
-}> = ({ open, handleClose, entityTemplate, searchText, categoriesToShow }) => {
-    if (!entityTemplate) return null;
+    isChild?: boolean;
+}> = ({ open, handleClose, templateItem, searchText, categoriesToShow }) => {
+    if (!templateItem) return null;
+
+    const { type, metaData: entityTemplate } = templateItem;
 
     const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [validationErrors, setValidationErrors] = useState(false);
     const [isImportUsing, setIsImportUsing] = useState(false);
@@ -46,7 +52,13 @@ const CodeEditorDialog: React.FC<{
         '/// To throw a custom error in your code, use the following syntax:',
         '// throw new CustomError("Your error message")',
         '',
-        `${generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name, queryClient)}`,
+        `${generateInterfaceWithRelationships(
+            type === EntityTemplateType.Parent
+                ? entityTemplate.properties.properties
+                : getFullChildTemplateProperties(entityTemplate, entityTemplates!.get(entityTemplate.fatherTemplateId)!),
+            entityTemplate.name,
+            queryClient,
+        )}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',
@@ -62,7 +74,7 @@ const CodeEditorDialog: React.FC<{
 
     const { mutateAsync, isLoading } = useMutation(
         () => {
-            return updateActionToEntity(entityTemplate._id, editorValue);
+            return updateActionToEntity(entityTemplate._id, editorValue, type === EntityTemplateType.Child);
         },
         {
             onError: (err: AxiosError) => {
@@ -70,10 +82,14 @@ const CodeEditorDialog: React.FC<{
             },
             onSuccess: (data) => {
                 const { actions } = data;
-
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
-                );
+                if (type === EntityTemplateType.Parent)
+                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                        entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    );
+                else
+                    queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (entityTemplateMap) =>
+                        entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    );
 
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));

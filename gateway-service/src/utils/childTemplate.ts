@@ -3,7 +3,6 @@ import {
     IEntitySingleProperty,
     IFilterOfTemplate,
     IFullMongoEntityTemplate,
-    IMongoEntityChildTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     ISearchFilter,
@@ -105,7 +104,7 @@ const getFullChildTemplateProperties = (
 };
 
 const transformChild = (
-    child: IMongoEntityChildTemplatePopulated,
+    child: IEntityChildTemplatePopulated,
     parent: IMongoEntityTemplatePopulated,
 ): IMongoEntityTemplatePopulated & { fatherTemplateId?: IFullMongoEntityTemplate } => {
     const childPropertyKeys = Object.keys(child.properties);

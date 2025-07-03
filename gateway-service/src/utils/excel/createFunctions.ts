@@ -223,9 +223,14 @@ const styleAWorksheet = (
         cell.alignment = excelStyle.columnHeader.alignment;
     });
     const { properties } = type === EntityTemplateType.Parent ? template.properties : template;
-    const { createdAt, updatedAt, disabled } = template;
+    const { disabled } = template;
+    let additionalProps = {};
+    if (type === EntityTemplateType.Parent) {
+        const { createdAt, updatedAt } = template;
+        additionalProps = { createdAt, updatedAt };
+    }
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, ...additionalProps })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;

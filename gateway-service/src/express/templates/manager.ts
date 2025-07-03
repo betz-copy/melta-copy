@@ -1,57 +1,61 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-param-reassign */
-import _, { groupBy } from 'lodash';
-import { AxiosError, AxiosResponse } from 'axios';
-import _isEqual from 'lodash.isequal';
-import _omit from 'lodash/omit';
-import lodashUniqby from 'lodash.uniqby';
-import { StatusCodes } from 'http-status-codes';
 import {
+    BadRequestError,
+    ConfigTypes,
+    DashboardItemType,
+    IAxisField,
     ICategory,
+    ICategoryOrderConfig,
+    IChartType,
+    IColumnOrLineMetaData,
+    IConstraintsOfTemplate,
+    IEntity,
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IEntityTemplateWithConstraints,
+    IFormula,
     IMongoBaseConfig,
     IMongoCategory,
-    IMongoEntityTemplatePopulated,
     IMongoCategoryOrderConfig,
-    ICategoryOrderConfig,
-    ISearchEntityTemplatesBody,
-    IMongoRelationshipTemplate,
-    ISearchRelationshipTemplatesBody,
-    IRule,
-    IMongoRule,
-    IRelationship,
-    ISearchRulesBody,
-    IFormula,
-    IUniqueConstraintOfTemplate,
-    IConstraintsOfTemplate,
-    PermissionType,
-    IEntityTemplateWithConstraints,
+    IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
-    IUpdateOrDeleteEnumFieldReqData,
-    BadRequestError,
-    NotFoundError,
-    ServiceError,
-    ISubCompactPermissions,
-    PermissionScope,
-    IAxisField,
-    IChartType,
-    IColumnOrLineMetaData,
-    IEntity,
-    IMongoChart,
+    IMongoRelationshipTemplate,
+    IMongoRule,
     INUmberMetaData,
     IPieMetaData,
-    ISearchFilter,
-    UploadedFile,
+    IRelationship,
+    IRule,
+    ISearchEntityTemplatesBody,
+    ISearchRelationshipTemplatesBody,
+    ISearchRulesBody,
+    ISubCompactPermissions,
+    IUniqueConstraintOfTemplate,
+    IUpdateOrDeleteEnumFieldReqData,
     logger,
+    MongoBaseFields,
+    NotFoundError,
+    PermissionScope,
+    PermissionType,
     RelatedPermission,
-    ConfigTypes,
     IMongoEntityChildTemplate,
+    ServiceError,
+    TableItem,
+    UploadedFile,
 } from '@microservices/shared';
+import { AxiosError, AxiosResponse } from 'axios';
+import { StatusCodes } from 'http-status-codes';
+import _, { groupBy } from 'lodash';
+import _isEqual from 'lodash.isequal';
+import lodashUniqby from 'lodash.uniqby';
+import _omit from 'lodash/omit';
 import config from '../../config';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
+import GanttsService from '../../externalServices/ganttsService';
 import InstancesService from '../../externalServices/instanceService';
+import Kartoffel from '../../externalServices/kartoffel';
 import ProcessService from '../../externalServices/processService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
@@ -60,15 +64,14 @@ import RelationshipsTemplateService from '../../externalServices/templates/relat
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import { prepareChartForUpdate, prepareDashboardItemForUpdate, processAndUpdateItems } from '../../utils/templates/deletePropertyFromFilter';
+import InstancesManager from '../instances/manager';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
+import ChartManager from '../templateCharts/manager';
 import UsersManager from '../users/manager';
 import { getParametersOfFormula } from './rules';
-import GanttsService from '../../externalServices/ganttsService';
 import checkPropertyInUsedFromFormula from './rules/checkIfPropertyInUsed';
-import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
-import InstancesManager from '../instances/manager';
-import ChartManager from '../templateCharts/manager';
-import Kartoffel from '../../externalServices/kartoffel';
 
 const {
     categoryHasTemplates,
@@ -498,6 +501,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, { [this.workspaceId]: updatedPermissions });
     }
 
+    async updateEntityTemplateAction(templateId: string, actions: string, isChildTemplate?: boolean): Promise<IMongoEntityTemplatePopulated> {
+        if (isChildTemplate) return this.entityTemplateService.updateChildEntityTemplateAction(templateId, actions);
+        return this.entityTemplateService.updateEntityTemplateAction(templateId, actions);
+    }
+
     async searchEntityTemplates(
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
         searchQuery: ISearchEntityTemplatesBody,
@@ -796,31 +804,41 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private async deletePropertyFromChartFilter(templateId: string, removedProperties: string[]) {
         const chartManager = new ChartManager(this.workspaceId);
-
         const allChartsOfTemplate = await chartManager.getChartsByTemplateId(templateId);
 
-        const updatedCharts = allChartsOfTemplate
-            .filter(({ filter }) => filter)
-            .map((chart) => {
-                try {
-                    const parsedFilter: ISearchFilter = JSON.parse(chart.filter!);
-                    parsedFilter.$and = Array.isArray(parsedFilter.$and) ? parsedFilter.$and : [];
-                    parsedFilter.$and = parsedFilter.$and.filter((filterProperty) => {
-                        const propertyKey = Object.keys(filterProperty)[0];
-                        return !removedProperties.includes(propertyKey);
-                    });
+        return processAndUpdateItems(
+            allChartsOfTemplate,
+            removedProperties,
+            (chart) => chart.filter,
+            (chart, filter) => {
+                chart.filter = filter;
+            },
+            (chart) => chart._id,
+            (chartId, updatedChart) => chartManager.updateChart(chartId, updatedChart),
+            prepareChartForUpdate,
+        );
+    }
 
-                    chart.filter = parsedFilter.$and.length > 0 ? JSON.stringify(parsedFilter) : undefined;
+    private async deletePropertyFromTableDashboardFilter(templateId: string, removedProperties: string[]) {
+        const dashboardItemService = new DashboardItemService(this.workspaceId);
+        const allDashboardItems = await dashboardItemService.searchDashboardItems();
 
-                    return { chartId: chart._id, updatedChart: chart };
-                } catch (error) {
-                    logger.error(`Error parsing filter for chart ${chart._id}:`, { error });
-                    return null;
-                }
-            })
-            .filter(Boolean) as { chartId: string; updatedChart: IMongoChart }[];
+        const filteredTableItems = allDashboardItems.filter(
+            ({ type, metaData }) => type === DashboardItemType.Table && metaData.templateId === templateId && metaData.filter,
+        ) as (TableItem & MongoBaseFields)[];
 
-        await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => chartManager.updateChart(chartId, updatedChart)));
+        return processAndUpdateItems(
+            filteredTableItems,
+            removedProperties,
+            (item) => item.metaData.filter,
+            (item, filter) => {
+                item.metaData.filter = filter;
+                item.metaData.columns = item.metaData.columns.filter((column) => !removedProperties.includes(column));
+            },
+            (item) => item._id,
+            (itemId, updatedItem) => dashboardItemService.updateDashboardItem(itemId, updatedItem),
+            prepareDashboardItemForUpdate,
+        );
     }
 
     private async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
@@ -904,9 +922,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
-
         if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
             await this.deletePropertyFromChartFilter(id, removedProperties);
+            await this.deletePropertyFromTableDashboardFilter(id, removedProperties);
 
             const { err } = await trycatch(() =>
                 this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
@@ -1089,7 +1107,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             isSingularToPlural
                         )
                     ) {
-                        throw new BadRequestError('can not change property format');
+                        throw new BadRequestError('can not change property format', { value, newValue });
                     }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
