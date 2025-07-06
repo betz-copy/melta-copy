@@ -71,7 +71,7 @@ const config = {
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
             unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
             clientSideId: env.get('CLIENT_SIDE_ID').default('client-side').asString(),
-            clientSideEndURL: env.get('CLIENT_SIDE_END_URL').default('/client-side/test.mlt').asString(), // TODO: yona - change to better unique url for client side end user
+            clientSideEndURL: env.get('CLIENT_SIDE_END_URL').default('/client-side/main.mlt').asString(), // TODO: yona - change to better unique url for client side end user
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB

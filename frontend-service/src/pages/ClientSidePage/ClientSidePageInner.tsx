@@ -143,7 +143,7 @@ const ClientSidePageInner: React.FC = () => {
                             <Route path="client-side/user-not-exists">
                                 <UserNotExistsPage />
                             </Route>
-                            <Route path="client-side/test.mlt">
+                            <Route path="client-side/main.mlt">
                                 <ClientSideMainPage />
                             </Route>
                             <Route path="client-side/entity/:entityId">
