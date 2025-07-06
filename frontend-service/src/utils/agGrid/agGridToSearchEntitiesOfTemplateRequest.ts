@@ -224,20 +224,11 @@ const getFilterModal = (
     defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchFilter | undefined => {
     if (!filterModel && !defaultModal) return undefined;
-
-    const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
-        if (filter?.$and) {
-            return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
-        }
-        
-        return [];
-    };
-
-    const filterModelAnds = extractAndArray(filterModel);
-    const defaultModalAnds = extractAndArray(defaultModal);
+    if (!filterModel) return defaultModal;
+    if (!defaultModal) return filterModel;
 
     return {
-        $and: [...filterModelAnds, ...defaultModalAnds],
+        $and: [filterModel, defaultModal],
     };
 };
 
