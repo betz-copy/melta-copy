@@ -390,7 +390,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
-            childTemplateId,
             getEntityPropertiesData,
             getRowId,
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,

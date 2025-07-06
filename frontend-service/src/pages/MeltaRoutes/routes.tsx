@@ -281,12 +281,6 @@ export const MeltaRoutesInner: React.FC = () => {
                                 </EntityProtectedRoute>
                             </Route>
 
-                            <Route path="/entity/:entityId/:templateId">
-                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
-                                    <Entity />
-                                </EntityProtectedRoute>
-                            </Route>
-
                             <Route path="/entity/:entityId/duplicate">
                                 <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
                                     <Duplicate />

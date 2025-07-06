@@ -257,7 +257,9 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 variant="outlined"
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
-                                                                    navigate(`/entity/${entity.properties._id}`);
+                                                                    childTemplateId
+                                                                        ? navigate(`/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`)
+                                                                        : navigate(`/entity/${entity.properties._id}`);
                                                                     setExternalErrors({ files: false, unique: {}, action: '' });
                                                                 }}
                                                             >
