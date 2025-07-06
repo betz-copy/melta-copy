@@ -246,9 +246,28 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    private validateFilterOfTemplate(filterOfTemplate: IFilterOfTemplate, template: IMongoEntityTemplate, path: string) {
+    private validateFilterOfTemplate(filterOfTemplate: IFilterOfTemplate | ISearchFilter, template: IMongoEntityTemplate, path: string) {
         Object.entries(filterOfTemplate).forEach(([field, filterOfField]) => {
             if (!filterOfField) return;
+
+            if (field === '$and' || field === '$or') {
+                if (filterOfField) {
+                    if (field === '$and' && Array.isArray(filterOfField)) {
+                        filterOfField.map((currFilterOfTemplate, i) =>
+                            this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`$and\`[${i}]`),
+                        );
+                        return;
+                    }
+                    if (field === '$and') {
+                        this.validateFilterOfTemplate(filterOfField, template, `${path}.\`$and\``);
+                        return;
+                    }
+                    filterOfField.map((currFilterOfTemplate, i) =>
+                        this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`$or\`[${i}]`),
+                    );
+                    return;
+                }
+            }
 
             if (!template.propertiesOrder.includes(field)) throw new ValidationError(`field ${path}.${field} doesnt exist in template`);
             this.validateFilterOfField(filterOfField, template.properties.properties[field], `${path}.${field}`);
@@ -264,9 +283,7 @@ export class EntityValidator extends DefaultController {
         if ($or) {
             $or.forEach((orPart, index) => this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`));
         }
-
         if (!$and) return;
-
         if (Array.isArray($and)) {
             $and.forEach((andPart, index) => this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`));
         } else {
@@ -351,7 +368,7 @@ export class EntityValidator extends DefaultController {
 
         const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId]);
 
-        if (filter) this.validateFilter(filter, entityTemplateForValidation, 'filter');
+        if (filter) this.validateFilterOfTemplate(filter, entityTemplateForValidation, 'filter');
 
         this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
 

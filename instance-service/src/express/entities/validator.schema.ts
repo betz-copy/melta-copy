@@ -127,9 +127,18 @@ const filterOfFieldSchema = Joi.object({
 
 const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
 const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
+    $and: Joi.alternatives().try(
+        filterOfTemplateSchema,
+        Joi.array()
+            .items(Joi.alternatives().try(filterOfTemplateSchema, Joi.link('#searchFilter')))
+            .min(1),
+    ),
+    $or: Joi.array()
+        .items(Joi.alternatives().try(filterOfTemplateSchema, Joi.link('#searchFilter')))
+        .min(1),
+})
+    .xor('$and', '$or')
+    .id('searchFilter');
 
 /**
  * POST /api/instances/entities/expanded/:id
