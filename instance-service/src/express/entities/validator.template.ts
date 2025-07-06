@@ -10,7 +10,6 @@ import {
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     IFilterOfField,
-    IFilterOfTemplate,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
@@ -20,6 +19,7 @@ import {
     addPropertyToRequest,
     CoordinateSystem,
     ValidationError,
+    IFilterGroup,
 } from '@microservices/shared';
 import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
@@ -246,7 +246,7 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    private validateFilterOfTemplate(filterOfTemplate: IFilterOfTemplate | ISearchFilter, template: IMongoEntityTemplate, path: string) {
+    private validateFilterOfTemplate(filterOfTemplate: IFilterGroup, template: IMongoEntityTemplate, path: string) {
         Object.entries(filterOfTemplate).forEach(([field, filterOfField]) => {
             if (!filterOfField) return;
 
