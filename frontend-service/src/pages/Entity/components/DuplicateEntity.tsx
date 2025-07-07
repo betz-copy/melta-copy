@@ -23,6 +23,7 @@ import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
+import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 
 const { errorCodes } = environment;
 
@@ -42,6 +43,9 @@ const DuplicateEntity: React.FC<{}> = () => {
         navigate(`/entity/${entity?.properties._id}`);
     }
 
+    const [searchParams, _setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
+
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
 
     const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
@@ -54,7 +58,7 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
         ({ newEntityDate, ignoredRules }: { newEntityDate: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules),
+            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
@@ -253,7 +257,9 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 variant="outlined"
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
-                                                                    navigate(`/entity/${entity.properties._id}`);
+                                                                    childTemplateId
+                                                                        ? navigate(`/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`)
+                                                                        : navigate(`/entity/${entity.properties._id}`);
                                                                     setExternalErrors({ files: false, unique: {}, action: '' });
                                                                 }}
                                                             >

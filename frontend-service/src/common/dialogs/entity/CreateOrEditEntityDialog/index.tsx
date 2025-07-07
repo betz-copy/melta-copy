@@ -19,7 +19,7 @@ import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import EditProps from './EditProps';
-import { useSimbaUserStore } from '../../../../stores/simbaUser';
+import { useClientSideUserStore } from '../../../../stores/clientSideUser';
 
 const { signaturePrefix } = environment;
 
@@ -72,6 +72,7 @@ const CreateOrEditEntityDetails: React.FC<{
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
     enableSaveButton?: boolean;
+    childTemplateId?: string;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -81,6 +82,7 @@ const CreateOrEditEntityDetails: React.FC<{
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
+    childTemplateId,
     showActionButtons = true,
     enableSaveButton = false,
 }) => {
@@ -108,17 +110,17 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [payload, entityTemplate, initialTemplateFileKeys]);
 
-    const simbaUserEntity: IEntity = useSimbaUserStore((state) => state.simbaUserEntity);
+    const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const finalMutationProps = useMemo(() => {
-        if (Object.keys(simbaUserEntity).length > 0) {
+        if (Object.keys(clientSideUserEntity).length > 0) {
             return {
                 ...mutationProps,
-                actionType: ActionTypes.CreateSimbaEntity,
+                actionType: ActionTypes.CreateClientSideEntity,
             };
         }
         return mutationProps;
-    }, [mutationProps, simbaUserEntity]) as IMutationProps;
+    }, [mutationProps, clientSideUserEntity]) as IMutationProps;
 
     const [isLoading, mutationPromiseToastify] = useMutationHandler(
         externalErrors,
@@ -127,7 +129,8 @@ const CreateOrEditEntityDetails: React.FC<{
         finalMutationProps,
         setExternalErrors,
         setCreateOrUpdateWithRuleBreachDialogState,
-        simbaUserEntity,
+        childTemplateId,
+        clientSideUserEntity,
     );
 
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(

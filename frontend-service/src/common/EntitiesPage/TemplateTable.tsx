@@ -44,7 +44,7 @@ import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { useSimbaUserStore } from '../../stores/simbaUser';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 
 const {
     loadExcel: { excelExtension },
@@ -55,14 +55,15 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated & { childId?: string };
+        template: IMongoEntityTemplatePopulated & { childTemplateId?: string };
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
         defaultFilter?: FilterModel;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+        childTemplateId?: string;
     }
->(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds, childTemplateId }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
@@ -70,7 +71,7 @@ const TemplateTable = forwardRef<
 
     const currentUser = useUserStore((state) => state.user);
 
-    const currentSimbaUser = useSimbaUserStore((state) => state.simbaUser);
+    const currentClientSideUser = useClientSideUserStore((state) => state.clientSideUser);
 
     const theme = useTheme();
     const drafts = useDraftsStore((state) => state.drafts);
@@ -143,7 +144,7 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = currentSimbaUser
+    const userHasWritePermissions = currentClientSideUser
         ? true
         : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
 
@@ -300,12 +301,13 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    {page !== 'simba' && (
+                    {page !== 'client-side' && (
                         <EditExcelButton
                             disabled={isEditExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                             onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                             popoverText={editExcelTooltip}
+                            childTemplateId={childTemplateId}
                         >
                             <EditNote
                                 fontSize="small"
@@ -322,6 +324,7 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={loadExcelTooltip}
+                        childTemplateId={childTemplateId}
                     >
                         <Upload
                             fontSize="small"
@@ -353,6 +356,7 @@ const TemplateTable = forwardRef<
                             });
                         }}
                         setUpdatedEntities={setUpdatedEntities}
+                        childTemplateId={childTemplateId}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
@@ -402,6 +406,7 @@ const TemplateTable = forwardRef<
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
                     template={template}
+                    childTemplateId={childTemplateId}
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
@@ -479,6 +484,7 @@ const TemplateTable = forwardRef<
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    childTemplateId={childTemplateId}
                 />
             </Dialog>
         </Grid>

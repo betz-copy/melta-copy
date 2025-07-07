@@ -1,7 +1,6 @@
-import _cloneDeep from 'lodash.clonedeep';
+import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
 
 export const checkUserCategoryPermission = (
@@ -18,7 +17,7 @@ export const checkUserCategoryPermission = (
 
 export const checkUserTemplatePermission = (
     permissions: ISubCompactPermissions,
-    { _id: categoryId }: IMongoCategory,
+    { _id: categoryId }: Pick<IMongoCategory, '_id'>,
     templateId: string,
     scope: PermissionScope,
 ): boolean => {

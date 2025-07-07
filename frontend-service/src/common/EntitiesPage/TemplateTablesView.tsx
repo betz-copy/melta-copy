@@ -1,17 +1,17 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
-import { IMongoEntityTemplatePopulated, IEntitySingleProperty } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { useUserStore } from '../../stores/user';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -19,10 +19,49 @@ export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
+export function getDefaultFilterFromTemplate(
+    template: IMongoEntityTemplatePopulated & {
+        fatherTemplateId?: string;
+    },
+    isChildTemplate: boolean,
+    currentUserKartoffelId?: string,
+) {
+    if (!isChildTemplate) return undefined;
+
+    const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
+
+    for (const [key, prop] of Object.entries(template.properties.properties)) {
+        if (prop.isFilterByCurrentUser) {
+            result.$and!.push({ [key]: { $eq: currentUserKartoffelId } });
+        }
+        if (!prop.filters) continue;
+
+        const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+
+        if ('$and' in filters) {
+            const andFilters = filters.$and as any[];
+            const transformedFilters = andFilters
+                .map((filter) => {
+                    const fieldFilter = filter[key];
+                    return fieldFilter ? { [key]: fieldFilter } : null;
+                })
+                .filter(Boolean);
+
+            if (transformedFilters.length > 0) {
+                result.$and!.push(...transformedFilters);
+            }
+        } else {
+            result.$and!.push({ [key]: filters });
+        }
+    }
+
+    return result;
+}
+
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
-        templates: IMongoEntityTemplatePopulated[];
+        templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
         searchInput: string;
         pageSize?: number;
         pageType: string;
@@ -30,22 +69,12 @@ const TemplateTablesViewResults = forwardRef<
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
 >(({ templates, searchInput, pageType, setUpdatedEntities, setUpdatedTemplateIds }, ref) => {
-    const queryClient = useQueryClient();
-
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
     const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(() => {
         const savedCount = sessionStorage.getItem('visibleTemplatesCount');
         return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
     });
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
-    const childTemplatesList = Array.from(childTemplates?.values() || []);
-
     const loaderRef = useRef<HTMLDivElement | null>(null);
-
-    const templatesWithChildren = templates.map((template) => ({
-        ...template,
-        children: childTemplatesList.filter((child) => child.fatherTemplateId === template._id),
-    }));
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
@@ -75,101 +104,35 @@ const TemplateTablesViewResults = forwardRef<
         sessionStorage.setItem('visibleTemplatesCount', visibleTemplatesCount.toString());
     }, [visibleTemplatesCount]);
 
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+
     return (
         <Grid container direction="column" spacing={1}>
-            {templatesWithChildren.slice(0, visibleTemplatesCount).map((template) => (
-                <Grid item key={template._id}>
-                    <TemplateTable
-                        ref={(el) => {
-                            if (el) {
-                                templateTablesRefs.current[template._id] = el;
-                            } else {
-                                delete templateTablesRefs.current[template._id];
-                            }
-                        }}
-                        template={template}
-                        quickFilterText={searchInput}
-                        page={pageType}
-                        setUpdatedEntities={setUpdatedEntities}
-                        setUpdatedTemplateIds={setUpdatedTemplateIds}
-                    />
-                    {template.children.map((childTemplate) => {
-                        const childTemplatePropertiesList = Object.keys(childTemplate.properties);
-                        const childTemplateProperties = Object.fromEntries(
-                            Object.entries(template.properties.properties)
-                                .filter(([key]) => childTemplatePropertiesList.includes(key))
-                                .map(([key, value]) => [
-                                    key,
-                                    {
-                                        ...value,
-                                        defaultValue: childTemplate.properties[key].defaultValue,
-                                        filters: childTemplate.properties[key].filters,
-                                    },
-                                ]),
-                        ) as Record<string, IEntitySingleProperty>;
-
-                        const defaultFilter = childTemplate.properties
-                            ? Object.entries(childTemplate.properties).reduce(
-                                  (acc: { $and?: Array<Record<string, unknown>> }, [key, prop]) => {
-                                      if (prop.filters) {
-                                          const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                                          if (filters.$and) {
-                                              const transformedFilters = filters.$and
-                                                  .map((filter: any) => {
-                                                      const fieldFilter = filter[key];
-                                                      if (fieldFilter) {
-                                                          return { [key]: fieldFilter };
-                                                      }
-                                                      return null;
-                                                  })
-                                                  .filter(Boolean);
-
-                                              if (transformedFilters.length > 0) {
-                                                  if (!acc.$and) acc.$and = [];
-                                                  acc.$and = [...acc.$and, ...transformedFilters];
-                                              }
-                                          } else {
-                                              if (!acc.$and) acc.$and = [];
-                                              acc.$and.push({ [key]: filters });
-                                          }
-                                      }
-                                      return acc;
-                                  },
-                                  { $and: [{ disabled: { $eq: false } }] } as { $and?: Array<Record<string, unknown>> },
-                              )
-                            : {};
-
-                        const { children, ...childTemplatePopulated } = {
-                            ...template,
-                            childId: childTemplate._id,
-                            displayName: childTemplate.displayName,
-                            properties: {
-                                ...template.properties,
-                                properties: childTemplateProperties,
-                            },
-                            propertiesOrder: template.propertiesOrder.filter((property) => childTemplatePropertiesList.includes(property)),
-                        };
-                        return (
-                            <Grid item key={childTemplate._id}>
-                                <TemplateTable
-                                    ref={(el) => {
-                                        if (el) {
-                                            templateTablesRefs.current[childTemplate._id] = el;
-                                        } else {
-                                            delete templateTablesRefs.current[childTemplate._id];
-                                        }
-                                    }}
-                                    template={childTemplatePopulated}
-                                    quickFilterText={searchInput}
-                                    page={pageType}
-                                    setUpdatedEntities={setUpdatedEntities}
-                                    defaultFilter={defaultFilter}
-                                />
-                            </Grid>
-                        );
-                    })}
-                </Grid>
-            ))}
+            {templates.slice(0, visibleTemplatesCount).map((template) => {
+                const isChildTemplate = !!template.fatherTemplateId;
+                const defaultFilter = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
+                return (
+                    <Grid item key={template._id}>
+                        <TemplateTable
+                            ref={(el) => {
+                                if (el) {
+                                    templateTablesRefs.current[template._id] = el;
+                                } else {
+                                    delete templateTablesRefs.current[template._id];
+                                }
+                            }}
+                            template={template}
+                            quickFilterText={searchInput}
+                            page={pageType}
+                            setUpdatedEntities={setUpdatedEntities}
+                            setUpdatedTemplateIds={setUpdatedTemplateIds}
+                            defaultFilter={defaultFilter}
+                            childTemplateId={isChildTemplate ? template._id : undefined}
+                        />
+                    </Grid>
+                );
+            })}
             {visibleTemplatesCount < templates.length && (
                 <Grid item container justifyContent="center" ref={loaderRef}>
                     <CircularProgress />
@@ -180,24 +143,26 @@ const TemplateTablesViewResults = forwardRef<
 });
 
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
-    templates: IMongoEntityTemplatePopulated[],
+    templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[],
     searchInput: string,
     semanticSearch: boolean,
 ) => {
-    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
-        templates.map(({ _id }) => _id),
-        searchInput,
-        semanticSearch,
-    );
+    const countRequestTemplateIds = new Set<string>();
+    for (const template of templates) {
+        countRequestTemplateIds.add(template.fatherTemplateId || template._id);
+    }
+
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds), searchInput, semanticSearch);
 
     return templates.flatMap((template) => {
-        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
+        const countTemplateId = template.fatherTemplateId || template._id;
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === countTemplateId);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });
 };
 
 export interface TemplateTablesViewProps {
-    templates: IMongoEntityTemplatePopulated[];
+    templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
     searchInput: string;
     pageType: string;
     semanticSearch: boolean;

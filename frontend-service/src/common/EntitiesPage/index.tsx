@@ -19,10 +19,10 @@ import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
 
 const EntitiesPage: React.FC<{
-    templates: IMongoEntityTemplatePopulated[];
-    setTemplates?: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    templatesToShowCheckbox: IMongoEntityTemplatePopulated[];
-    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
+    setTemplates?: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[]>>;
+    templatesToShowCheckbox: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
+    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[]>>;
     isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
@@ -185,7 +185,8 @@ const EntitiesPage: React.FC<{
                 {viewMode === 'cards-view' && (
                     <CardsView
                         ref={cardsViewRef}
-                        templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}
+                        templateIds={templatesToShowCheckbox.map(({ fatherTemplateId, _id }) => fatherTemplateId || _id)}
+                        templates ={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                     />
                 )}

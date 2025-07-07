@@ -1,12 +1,10 @@
 import * as Joi from 'joi';
-import { ProcessPropertyFormats, MongoIdSchema } from '@microservices/shared';
+import { ProcessPropertyFormats, MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import config from '../config';
 import ajv from './ajv';
 
 const stringFormats = Object.values(ProcessPropertyFormats);
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array', 'signature'];
-
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
 export const updateAndCreateStepsSchema = Joi.object().pattern(MongoIdSchema, Joi.array().items(Joi.string()));
 

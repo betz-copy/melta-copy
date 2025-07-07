@@ -82,7 +82,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
 
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
-    const [chooseEntityAnchorEl, setChooseEntityAnchorEl] = React.useState<HTMLButtonElement | null>(null);
+    const [chooseEntityAnchorEl, setChooseEntityAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     const handleRemoveEntity = (event) => {
         setIsAnimatingOut(true);

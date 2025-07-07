@@ -2,24 +2,23 @@ import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { IBasicChart, OptionsType } from '../../../interfaces/charts';
+import { OptionsType } from '../../../interfaces/charts';
+import { ChartForm } from '../../../interfaces/dashboard';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AxisInput } from '../ChartPage/AggregationInput';
 
 const PieChart: React.FC<{
-    formik: FormikProps<IBasicChart>;
-    formikValues: IBasicChart;
+    formik: FormikProps<ChartForm>;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
-}> = ({ formik, formikValues, entityTemplate, disabled }) => {
+}> = ({ formik, entityTemplate, disabled }) => {
     return (
-        <Grid container direction="column" spacing={2} marginTop={2}>
+        <Grid container direction="column" spacing={2}>
             <Grid item>
                 <AxisInput
                     formikField="metaData.dividedByField"
                     formik={formik}
                     entityTemplate={entityTemplate}
-                    formikValues={formikValues}
                     label={`${i18next.t('charts.dividedBy')}`}
                     optionsType={OptionsType.AllProperties}
                     readonly={disabled}
@@ -30,7 +29,6 @@ const PieChart: React.FC<{
                     formikField="metaData.aggregationType"
                     formik={formik}
                     entityTemplate={entityTemplate}
-                    formikValues={formikValues}
                     label={`${i18next.t('charts.sumBy')}`}
                     optionsType={OptionsType.Aggregation}
                     readonly={disabled}

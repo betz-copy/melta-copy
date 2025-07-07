@@ -6,6 +6,7 @@ const metadataSchema = Joi.object({
     shouldNavigateToEntityPage: Joi.boolean(),
     isDrawerOpen: Joi.boolean(),
     flowCube: Joi.boolean(),
+    isDashboardHomePage: Joi.boolean(),
     agGrid: Joi.object({
         rowCount: Joi.number(),
         defaultExpandedRowCount: Joi.number(),
@@ -30,10 +31,10 @@ const metadataSchema = Joi.object({
         bulk: Joi.number(),
     }).optional(),
     unitFieldSplitDepth: Joi.number(),
-    simba: Joi.object({
+    clientSide: Joi.object({
         usersInfoChildTemplateId: Joi.string(),
-        carsInfoTemplateId: Joi.string(),
         numOfPropsToShow: Joi.number(),
+        clientSideWorkspaceName: Joi.string().valid('simba', 'azarim'),
     }).optional(),
     mapPage: Joi.object({
         sourceTemplateId: Joi.string().allow(''),

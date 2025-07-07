@@ -1,3 +1,4 @@
+import { variableNameValidation, searchFilterSchema } from '@microservices/shared';
 import Joi from 'joi';
 import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
@@ -96,38 +97,12 @@ export const createEntityRequestSchema = Joi.object({
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
         duplicatedFromId: Joi.string().optional(),
+        childTemplateId: Joi.string().optional(),
     },
     query: {},
     params: {},
 });
 
-// format of properties keys in entity template
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
-
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // regex syntax of Neo4j (Java Regular Expression). validated by neo itself
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-}).id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
-const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema)),
-    $or: Joi.array().items(filterOfTemplateSchema),
-});
 
 /**
  * POST /api/instances/entities/expanded/:id
@@ -383,6 +358,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
         updateOnlyGivenProps: Joi.boolean().default(false),
+        childTemplateId: Joi.string().optional(),
     },
     query: {},
     params: {

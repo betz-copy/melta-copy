@@ -1,20 +1,30 @@
 version: '3.8'
 
+x-common: &common
+  restart: always
+  networks: [network]
+  profiles: ['common']
+
+x-analytics_common: &analytics_common
+  restart: unless-stopped
+  networks: [network]
+  profiles: ['analytics']
+
 services:
   #-------------------------------------------#
   #*   Service infrastructure dependencies:   #
   #-------------------------------------------#
   mongo:
     image: mongo:4.4.1
-    restart: always
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
+    <<: *common
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0', '--wiredTigerCacheSizeGB', '0.25']
+    mem_limit: 600m
     ports:
       - 27017:27017
-    networks:
-      - network
 
   mongosetup:
     image: mongo:4.4.1
+    <<: *common
     depends_on:
       - mongo
     volumes:
@@ -25,24 +35,27 @@ services:
       - network
 
   rabbit:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.13-management-alpine
+    <<: *common
+    environment:
+      - VM_MEMORY_HIGH_WATERMARK=0.45
+    mem_limit: 400m
     ports:
       - 5672:5672
       - 15672:15672
-    restart: always
-    networks:
-      - network
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
+    <<: *common
+    command: ['redis-server', '--maxmemory', '256mb', '--maxmemory-policy', 'allkeys-lru']
+    mem_limit: 300m
     ports:
       - 6379:6379
-    restart: always
-    networks:
-      - network
 
   minio:
     image: minio/minio
+    command: 'minio server --console-address :4000 /data'
+    <<: *common
     ports:
       - '9000:9000'
       - '9001:9001'
@@ -50,44 +63,49 @@ services:
     environment:
       MINIO_ROOT_USER: 'minioadmin'
       MINIO_ROOT_PASSWORD: 'minioadmin'
-    command: 'minio server --console-address :4000 /data'
-    restart: always
-    networks:
-      - network
+    mem_limit: 400m
 
   neo4j:
     build:
       context: ./instance-service
       dockerfile: Dockerfile-neo4j
+    <<: *common
     environment:
       - NEO4J_AUTH=neo4j/test1234
+      - NEO4J_dbms_memory_heap_initial__size=256m
+      - NEO4J_dbms_memory_heap_max__size=256m
+      - NEO4J_dbms_memory_pagecache_size=256m
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
       - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     ports:
       - '7474:7474'
       - '7687:7687'
-    restart: always
-    networks:
-      - network
+    mem_limit: 1g
 
   mysql:
     image: mysql
-    restart: always
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --key_buffer_size=16M
+    <<: *analytics_common
     environment:
       - MYSQL_ROOT_PASSWORD=matomo
       - MYSQL_DATABASE=analytics
       - MYSQL_USER=matomo
       - MYSQL_PASSWORD=matomo
+    mem_limit: 512m
 
   matomo:
     image: matomo
-    restart: always
+    <<: *analytics_common
     environment:
       - MATOMO_DATABASE_HOST=mysql
       - MATOMO_DATABASE_USERNAME=matomo
       - MATOMO_DATABASE_PASSWORD=matomo
       - MATOMO_DATABASE_DBNAME=analytics
+      - PHP_MEMORY_LIMIT=256M
+    mem_limit: 400m
     ports:
       - 8016:80
 
@@ -95,6 +113,7 @@ services:
   elastic:
     image: elasticsearch:8.13.0
     container_name: elastic
+    <<: *common
     volumes:
       - elastic_data:/usr/share/elasticsearch/data/
       - ./elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -105,23 +124,20 @@ services:
       - xpack.security.enabled=false
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      - indices.memory.index_buffer_size=5%
     ports:
       - 9200:9200
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1024m
-    networks:
-      - network
+    mem_limit: 800m
+    profiles: ['common', 'analytics']
 
   logstash:
     image: logstash:8.13.0
     container_name: logstash
+    <<: *analytics_common
     environment:
-      - LS_JAVA_OPTS=-Xmx512m -Xms512m
-      - PIPELINE_WORKERS=2
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+      - PIPELINE_WORKERS=1
       - BATCH_SIZE=50
     ports:
       - '5044:5044'
@@ -132,16 +148,14 @@ services:
       - logstash_data:/usr/share/logstash/data
     depends_on:
       - elastic
-    deploy:
-      resources:
-        limits:
-          memory: 1024m
-    networks:
-      - network
+    mem_limit: 400m
 
   kibana:
     image: kibana:8.13.0
     container_name: kibana
+    <<: *analytics_common
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=512
     volumes:
       - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
       - kibana_data:/usr/share/kibana/data
@@ -149,25 +163,20 @@ services:
       - 5601:5601
     depends_on:
       - elastic
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1024m
-    networks:
-      - network
+    mem_limit: 600m
+
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.5.1
     container_name: filebeat
+    <<: *analytics_common
     user: root
     volumes:
       - logs:/var/log/test
       - ./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
     depends_on:
       - logstash
-    command: filebeat -e -strict.perms=false
-    networks:
-      - network
+    command: ['filebeat', '-e', '-strict.perms=false']
+    mem_limit: 200m
 
   mock-service:
     build:
@@ -197,9 +206,7 @@ services:
       - gantt-service
       - workspace-service
       - dashboard-service
-    restart: on-failure
-    networks:
-      - network
+    <<: *common
 
   #-------------------------------------------#
   #        microservices:                     #
@@ -208,47 +215,37 @@ services:
   template-service:
     ports:
       - 8002:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   gateway-service:
     ports:
       - 8003:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   user-service:
     ports:
       - 8005:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   storage-service:
     ports:
       - 8006:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   instance-service:
     ports:
       - 8007:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   # frontend-service:
   #   networks:
@@ -257,119 +254,91 @@ services:
   nginx:
     ports:
       - 80:80
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   global-search-service:
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   notification-service:
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   activity-log-service:
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   rule-breach-service:
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   process-service:
     ports:
       - 8008:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   gantt-service:
     ports:
       - 8009:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   mailer-service:
     depends_on:
       - redis
     ports:
       - 8010:8000
-    restart: always
-    networks:
-      - network
+    <<: *common
 
   preview-service:
     ports:
       - 8011:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   workspace-service:
     ports:
       - 8012:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   dashboard-service:
     ports:
       - 8017:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   cron-service:
     ports:
       - 8013:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
-    networks:
-      - network
 
   semantic-service:
     ports:
       - 8014:8000
-    restart: always
+    <<: *common
     volumes:
       - logs:/usr/src/app/logs
       - ../neo4j-graph-rag/src:/app/src
-    networks:
-      - network
 
   mock-model-api:
     ports:
       - 8015:8000
-    restart: always
-    networks:
-      - network
+    <<: *common
 
 volumes:
   elastic_data:

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Request, Response } from 'express';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
@@ -7,18 +6,19 @@ import { ShragaUser } from '../../utils/express/passport';
 import { AuthenticationManager } from './manager';
 import WorkspaceService from '../workspaces/service';
 
-const { accessTokenName, simbaEndURL, unauthorizedId } = config.authentication.shragaAuthentication;
+const { accessTokenName, clientSideEndURL, unauthorizedId } = config.authentication.shragaAuthentication;
 
 class AuthenticationController {
-    static async createSimbaToken(userId: string) {
-        const simbaWorkspace = await WorkspaceService.getFile(simbaEndURL);
-        const usersInfoChildTemplateId = simbaWorkspace.metadata?.simba?.usersInfoChildTemplateId;
+    static async createClientSideToken(userId: string) {
+        const clientSideWorkspace = await WorkspaceService.getFile(clientSideEndURL);
+        const { usersInfoChildTemplateId, clientSideWorkspaceName } = clientSideWorkspace.metadata?.clientSide || {};
 
         const token = AuthenticationManager.createAccessToken({
-            id: config.authentication.shragaAuthentication.simbaId,
+            id: config.authentication.shragaAuthentication.clientSideId,
             kartoffelId: userId,
-            simbaWorkspaceId: simbaWorkspace._id,
+            clientSideWorkspaceId: clientSideWorkspace._id,
             usersInfoChildTemplateId,
+            clientSideWorkspaceName,
         });
 
         return token;
@@ -39,8 +39,8 @@ class AuthenticationController {
 
         let token: string;
 
-        if (RelayState?.includes(simbaEndURL)) {
-            token = await AuthenticationController.createSimbaToken(id);
+        if (RelayState?.includes(clientSideEndURL)) {
+            token = await AuthenticationController.createClientSideToken(id);
         } else {
             token = await AuthenticationController.createUserToken(id);
         }

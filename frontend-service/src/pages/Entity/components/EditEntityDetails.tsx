@@ -29,7 +29,8 @@ const EditEntityDetails: React.FC<{
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+    childTemplateId?: string;
+}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate, childTemplateId }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -65,7 +66,7 @@ const EditEntityDetails: React.FC<{
     const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
+            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccessfully'));

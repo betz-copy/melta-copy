@@ -6,10 +6,13 @@ import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
 import { emptyEntityTemplate, EntityWizardValues } from '.';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { IEntityChildTemplateMap } from '../../../interfaces/entityChildTemplates';
+import { transformChild } from '../../../pages/Category';
+import { ICategoryMap } from '../../../interfaces/categories';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -31,22 +34,35 @@ const ChooseTemplate: React.FC<{
 
     const currentUser = useUserStore((state) => state.user);
 
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
 
-    let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[] = [];
+    const isAuthorized = (templateId: string, categoryId: string) =>
+        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, { _id: categoryId }, templateId, PermissionScope.write);
 
-    if (categoryId) {
-        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return (
-                entity.category._id === categoryId &&
-                checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entity.category, entity._id, PermissionScope.write)
-            );
+    const filterEntityTemplates = Array.from(entityTemplates.values()).filter((template) =>
+        categoryId
+            ? template.category._id === categoryId && isAuthorized(template._id, categoryId)
+            : isAuthorized(template._id, template.category._id),
+    );
+
+    const filterChildEntityTemplate = Array.from(entityChildTemplates.values())
+        .filter((child) => {
+            const hasValidCategory = categoryId
+                ? child.categories.includes(categoryId)
+                : child.categories.some((catId) => isAuthorized(child._id, catId));
+
+            return hasValidCategory;
+        })
+        .map((child) => {
+            const parent = entityTemplates.get(child.fatherTemplateId!)!;
+            const category = categoryId ? categories.get(categoryId)! : categories.get(child.categories[0])!;
+
+            return transformChild(child, parent, category);
         });
-    } else {
-        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entity.category, entity._id, PermissionScope.write);
-        });
-    }
+
+    const entityTemplatesFilteredByCategory = [...filterEntityTemplates, ...filterChildEntityTemplate];
 
     const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);
 

@@ -1,14 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppRegistration as AppRegistrationIcon, Edit, SubdirectoryArrowLeft, InfoOutlined } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, Edit, InfoOutlined, SubdirectoryArrowLeft } from '@mui/icons-material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { keyBy } from 'lodash';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { keyBy } from 'lodash';
+import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { CreateChildTemplateDialog } from '../../../common/dialogs/createChildTemplate';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
@@ -16,22 +19,39 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import {
+    EntityTemplateType,
+    IEntityChildTemplate,
+    IEntityChildTemplateMap,
+    IMongoChildEntityTemplate,
+    TemplateItem,
+} from '../../../interfaces/entityChildTemplates';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { IEntityChildTemplateMap, IEntityChildTemplate, IMongoChildEntityTemplate } from '../../../interfaces/entityChildTemplates';
+import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { updateCategoryRequest, updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
+import { deleteEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-} from '../../../services/templates/enitityTemplatesService';
+} from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
-import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import {
+    allowedCategories,
+    allowedEntitiesOfCategory,
+    checkUserChildTemplatePermission,
+    updateUserPermissionForEntityTemplate,
+} from '../../../utils/permissions/templatePermissions';
 import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
@@ -39,16 +59,6 @@ import { CardMenu } from './CardMenu';
 import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { environment } from '../../../globals';
-import { CreateChildTemplateDialog } from '../../../common/dialogs/createChildTemplate';
-import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { useUserStore } from '../../../stores/user';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
-import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
-import { deleteEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
-import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -114,7 +124,7 @@ interface EntityTemplateCardProps {
     setAddActionsDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: TemplateItem | null;
         }>
     >;
     setAddChildTemplateDialogState: React.Dispatch<
@@ -136,6 +146,7 @@ interface EntityTemplateCardProps {
     entityHasWritePermission: boolean;
     isDisabledView?: boolean;
     isChildTemplate?: boolean;
+    title?: string;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -148,6 +159,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     entityHasWritePermission,
     isDisabledView = false,
     isChildTemplate = false,
+    title = entityTemplate.displayName,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -174,7 +186,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints,fieldGroups } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
@@ -214,7 +226,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
                             <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
-                            {/* <FilterList fontSize="small" sx={{ fontSize: '14px' }} /> */}
                         </Grid>
 
                         <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
@@ -225,7 +236,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             )}
                         </Grid>
                         <Grid item>
-                            <MeltaTooltip title={entityTemplate.displayName}>
+                            <MeltaTooltip title={title}>
                                 <Typography
                                     style={{
                                         fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
@@ -237,7 +248,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         width: '130px',
                                     }}
                                 >
-                                    {entityTemplate.displayName}
+                                    {title}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>
@@ -287,11 +298,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                           }
                                 }
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
-                                onAddActionsClick={
-                                    childTemplates?.get(entityTemplate._id)
-                                        ? undefined
-                                        : () => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })
-                                }
+                                onAddActionsClick={() => {
+                                    setAddActionsDialogState({
+                                        isWizardOpen: true,
+                                        entityTemplate: isChildTemplate
+                                            ? { type: EntityTemplateType.Child, metaData: childTemplates!.get(entityTemplate._id)! }
+                                            : { type: EntityTemplateType.Parent, metaData: entityTemplate },
+                                    });
+                                }}
                                 onDisableClick={
                                     childTemplates?.get(entityTemplate._id)
                                         ? undefined
@@ -562,7 +576,7 @@ interface CategoryEntitiesBoxProps {
     setAddActionsDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: TemplateItem | null;
         }>
     >;
     setAddChildTemplateDialogState: React.Dispatch<
@@ -791,7 +805,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityTemplate={{
                                                         ...entityTemplate,
                                                         _id: childTemplate._id,
-                                                        displayName: childTemplate.displayName,
                                                     }}
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -801,6 +814,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityHasWritePermission={entityHasWritePermission}
                                                     isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
                                                     isChildTemplate={true}
+                                                    title={childTemplate.displayName}
                                                 />
                                             </Grid>
                                         ))}
@@ -850,7 +864,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityTemplate={{
                                                     ...parentTemplate,
                                                     _id: childTemplate._id,
-                                                    displayName: parentTemplate.disabled ? parentTemplate.displayName : childTemplate.displayName,
                                                 }}
                                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
@@ -860,6 +873,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 entityHasWritePermission={false}
                                                 isDisabledView={!childTemplate.categories.includes(entityTemplatesWithCategory.category._id)}
                                                 isChildTemplate={true}
+                                                title={childTemplate.displayName}
                                             />
                                         </Grid>
                                     ))}
@@ -911,7 +925,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [addActionsToEntityTemplateDialogState, setAddActionsToEntityTemplateDialogState] = useState<{
         isWizardOpen: boolean;
-        entityTemplate: IMongoEntityTemplatePopulated | null;
+        entityTemplate: TemplateItem | null;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -1020,10 +1034,14 @@ const EntityTemplatesRow: React.FC = () => {
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return updateEntityTemplateRequest(entityTemplateId, {
-                ...entityTemplate,
-                category: category._id,
-            });
+            return updateEntityTemplateRequest(
+                entityTemplateId,
+                {
+                    ...entityTemplate,
+                    category: category._id,
+                },
+                queryClient,
+            );
         },
 
         {
@@ -1196,7 +1214,7 @@ const EntityTemplatesRow: React.FC = () => {
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
-                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
+                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />
@@ -1211,7 +1229,7 @@ const EntityTemplatesRow: React.FC = () => {
             <CodeEditorDialog
                 open={addActionsToEntityTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
+                templateItem={addActionsToEntityTemplateDialogState.entityTemplate}
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />

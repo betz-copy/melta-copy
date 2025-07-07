@@ -18,6 +18,7 @@ export interface IMetadata {
     shouldNavigateToEntityPage: boolean;
     isDrawerOpen: boolean;
     flowCube: boolean;
+    isDashboardHomePage: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;
@@ -42,10 +43,10 @@ export interface IMetadata {
         bulk: number;
     };
     unitFieldSplitDepth: number;
-    simba: {
+    clientSide: {
         usersInfoChildTemplateId: string;
-        carsInfoTemplateId: string;
         numOfPropsToShow: number;
+        clientSideWorkspaceName: 'simba' | 'azarim';
     };
     mapPage: {
         sourceTemplateId: string;

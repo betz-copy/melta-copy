@@ -21,7 +21,9 @@ export const getIFrameByIdSchema = Joi.object({
 
 // POST /api/iframes
 export const createIFrameSchema = Joi.object({
-    query: {},
+    query: {
+        toDashboard: Joi.bool(),
+    },
     body: iFrameSchema,
     params: {},
     file: iconFileSchema,
@@ -29,7 +31,9 @@ export const createIFrameSchema = Joi.object({
 
 // DELETE /api/iframes/:iFrameId
 export const deleteIFrameSchema = Joi.object({
-    query: {},
+    query: {
+        deleteReferenceDashboardItems: Joi.bool().optional().default(false),
+    },
     body: {},
     params: {
         iFrameId: MongoIdSchema.required(),
