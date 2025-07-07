@@ -515,7 +515,7 @@ export const getChartOfTemplate = async (
     xAxis: IAxisField,
     yAxis: IAxisField | undefined,
     templateId: string,
-    filter?: ISearchFilter<Record<string, any>>,
+    filter?: ISearchFilter,
 ) => {
     const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
 

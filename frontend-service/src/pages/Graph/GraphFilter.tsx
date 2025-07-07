@@ -20,7 +20,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfa
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
 import { IUser } from '../../interfaces/users';
-import { initializedFilterField } from '../../common/FilterCompetent';
+import { initializedFilterField } from '../../common/FilterComponent';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];

@@ -147,7 +147,6 @@ const changeSpecificChildTemplate = (
                         ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates,
                         [childTemplateId]: {
                             scope: newScope,
-                            fields: {},
                         },
                     },
                 },

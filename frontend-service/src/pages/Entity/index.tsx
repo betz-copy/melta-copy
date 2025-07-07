@@ -347,7 +347,7 @@ export interface IConnectionTemplateOfExpandedEntity {
 const Entity: React.FC = () => {
     const theme = useTheme();
 
-    const { entityId, templateId } = useParams();
+    const { entityId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 

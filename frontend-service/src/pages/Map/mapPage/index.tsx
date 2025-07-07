@@ -237,7 +237,7 @@ const MapPage = () => {
                     filteredTemplatesIds.map(async (templateId) =>
                         mutateAsync({
                             textSearch: '',
-                            templates: { [templateId]: { filter: {} } },
+                            templates: { [templateId]: {} },
                             circle: { coordinate: [latitude, longitude], radius: circleData.radius! },
                         }),
                     ),
