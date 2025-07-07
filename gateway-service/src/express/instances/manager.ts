@@ -203,7 +203,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async getAllTemplateEntities(templateId: string, childTemplateId?: string) {
         const { searchEntitiesChunkSize } = config.service;
 
-        let filter = {};
+        let filter;
         if (childTemplateId) {
             const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
             filter = getFilterFromChildTemplate(childTemplate);

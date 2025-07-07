@@ -7,7 +7,7 @@ const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated
         (acc, [key, prop]) => {
             if (!prop.filters) return acc;
 
-            const parsedFilters: ISearchFilter<Record<string, any>> = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+            const parsedFilters: ISearchFilter = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
 
             if (Array.isArray(parsedFilters.$and)) {
                 const transformedFilters = parsedFilters.$and
