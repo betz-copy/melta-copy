@@ -90,18 +90,18 @@ export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any
 type IFilterGroup = IFilterOfTemplate | ISearchFilter;
 
 export enum FilterLogicalOperator {
-    And = '$and',
-    Or = '$or',
+    AND = '$and',
+    OR = '$or',
 }
 
 type AndFilter = {
-    [FilterLogicalOperator.And]: IFilterOfTemplate | IFilterGroup[];
-    [FilterLogicalOperator.Or]?: never;
+    [FilterLogicalOperator.AND]: IFilterOfTemplate | IFilterGroup[];
+    [FilterLogicalOperator.OR]?: never;
 };
 
 type OrFilter = {
-    [FilterLogicalOperator.Or]: IFilterGroup[];
-    [FilterLogicalOperator.And]?: never;
+    [FilterLogicalOperator.OR]: IFilterGroup[];
+    [FilterLogicalOperator.AND]?: never;
 };
 
 export type ISearchFilter = AndFilter | OrFilter;

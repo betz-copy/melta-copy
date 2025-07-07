@@ -219,7 +219,7 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
     return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
 };
 
-const getFilterModal = (
+export const getFilterModal = (
     filterModel?: ISearchEntitiesOfTemplateBody['filter'],
     defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchFilter | undefined => {

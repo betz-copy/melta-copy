@@ -20,6 +20,7 @@ import {
     CoordinateSystem,
     ValidationError,
     IFilterGroup,
+    FilterLogicalOperator,
 } from '@microservices/shared';
 import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
@@ -247,30 +248,22 @@ export class EntityValidator extends DefaultController {
     }
 
     private validateFilterOfTemplate(filterOfTemplate: IFilterGroup, template: IMongoEntityTemplate, path: string) {
-        Object.entries(filterOfTemplate).forEach(([field, filterOfField]) => {
+        Object.entries(filterOfTemplate).forEach(([filterKey, filterOfField]) => {
             if (!filterOfField) return;
 
-            if (field === '$and' || field === '$or') {
-                if (filterOfField) {
-                    if (field === '$and' && Array.isArray(filterOfField)) {
-                        filterOfField.map((currFilterOfTemplate, i) =>
-                            this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`$and\`[${i}]`),
-                        );
-                        return;
-                    }
-                    if (field === '$and') {
-                        this.validateFilterOfTemplate(filterOfField, template, `${path}.\`$and\``);
-                        return;
-                    }
+            if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
+                if (Array.isArray(filterOfField)) {
                     filterOfField.map((currFilterOfTemplate, i) =>
-                        this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`$or\`[${i}]`),
+                        this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`${filterKey}\`[${i}]`),
                     );
                     return;
                 }
+                this.validateFilterOfTemplate(filterOfField, template, `${path}.\`$and\``);
+                return;
             }
 
-            if (!template.propertiesOrder.includes(field)) throw new ValidationError(`field ${path}.${field} doesnt exist in template`);
-            this.validateFilterOfField(filterOfField, template.properties.properties[field], `${path}.${field}`);
+            if (!template.propertiesOrder.includes(filterKey)) throw new ValidationError(`field ${path}.${filterKey} doesnt exist in template`);
+            this.validateFilterOfField(filterOfField, template.properties.properties[filterKey], `${path}.${filterKey}`);
         });
     }
 

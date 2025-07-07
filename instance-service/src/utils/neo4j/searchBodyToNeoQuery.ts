@@ -260,21 +260,21 @@ const filterOfTemplateToNeoQuery = (
 ): CypherQueryWithParameters => {
     const fieldsNeoQueries: CypherQueryWithParameters[] = Object.entries(filterOfTemplate)
         .filter(([_field, filterOfField]) => Boolean(filterOfField))
-        .map(([field, filterOfField]) => {
-            if (field === FilterLogicalOperator.And || field === FilterLogicalOperator.Or) {
+        .map(([filterKey, filterOfField]) => {
+            if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
                 // eslint-disable-next-line no-use-before-define
-                return filterLogicalOperatorsToNeoQuery(field, filterOfField, parametersParentVariableName, entityTemplate);
+                return filterLogicalOperatorsToNeoQuery(filterKey, filterOfField, parametersParentVariableName, entityTemplate);
             }
 
             const filterOfFieldQuery = filterOfFieldToNeoQuery(
-                field,
+                filterKey,
                 filterOfField!,
-                `${parametersParentVariableName}.${field}`,
-                entityTemplate.properties.properties[field],
+                `${parametersParentVariableName}.${filterKey}`,
+                entityTemplate.properties.properties[filterKey],
             );
             return {
                 cypherQuery: filterOfFieldQuery.cypherQuery,
-                parameters: { [field]: filterOfFieldQuery.parameters },
+                parameters: { [filterKey]: filterOfFieldQuery.parameters },
             };
         });
 
@@ -297,7 +297,7 @@ const filterLogicalOperatorsToNeoQuery = (
             filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`${field}\`[${i}]`, entityTemplate),
         );
 
-        const logicalOperator = field === FilterLogicalOperator.And ? ' AND ' : ' OR ';
+        const logicalOperator = field === FilterLogicalOperator.AND ? ' AND ' : ' OR ';
 
         return {
             cypherQuery: queries.map(({ cypherQuery }) => `(${cypherQuery})`).join(logicalOperator),
@@ -325,7 +325,7 @@ export const templatesFilterToNeoQuery = (
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
         }
 
-        const field = filter?.$and ? FilterLogicalOperator.And : FilterLogicalOperator.Or;
+        const field = filter?.$and ? FilterLogicalOperator.AND : FilterLogicalOperator.OR;
 
         const filterOfTemplateQuery = filterLogicalOperatorsToNeoQuery(
             field,
