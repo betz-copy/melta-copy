@@ -197,6 +197,7 @@ export interface IExportEntitiesBody {
             displayColumns?: string[];
             headersOnly?: boolean;
             insertEntities?: Record<string, any>[];
+            isChildTemplate?: boolean;
         };
     };
 }
@@ -214,6 +215,7 @@ export interface IGraphFilterBodyBatch {
 export interface IDeleteEntityBodyBase {
     templateId: string;
     deleteAllRelationships?: boolean;
+    childTemplateId?: string;
 }
 
 export type IMultipleSelect<T extends boolean = boolean> = {

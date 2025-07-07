@@ -9,6 +9,7 @@ const {
     polygon: { polygonPrefix, polygonSuffix },
     epsgCode: { wgs84, epsg, southHemiUTM, northHemiUTM },
     utm: { utmPolygonRegex, utmRegex },
+    wgs84: { maxLongitude, maxLatitude },
 } = config.map;
 
 export enum CoordinateSystem {
@@ -185,8 +186,6 @@ export const isValidUTM = (location: UTM | UTM[]): boolean => {
 };
 
 export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) => {
-    const { maxLongitude, maxLatitude } = config.map.wgs84;
-
     return !Array.isArray(location)
         ? Math.abs(location.x) < maxLongitude && Math.abs(location.y) < maxLatitude
         : location.every((point) => Math.abs(point.x) < maxLongitude && Math.abs(point.y) < maxLatitude);

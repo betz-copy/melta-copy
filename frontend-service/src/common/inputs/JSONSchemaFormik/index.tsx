@@ -107,9 +107,13 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         errors: false,
     });
 
+    ajv.addKeyword({ keyword: 'filters' });
+    ajv.addKeyword({ keyword: 'isFilterByCurrentUser' });
+
+    const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
+        properties: pickBy(schema.properties, (value) => !formats.includes(value.format ?? '')),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);

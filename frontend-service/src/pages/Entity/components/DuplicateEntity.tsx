@@ -58,7 +58,7 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
         ({ newEntityDate, ignoredRules }: { newEntityDate: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules, childTemplateId),
+            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
@@ -258,7 +258,9 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
                                                                     childTemplateId
-                                                                        ? navigate(`/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`)
+                                                                        ? navigate(
+                                                                              `/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`,
+                                                                          )
                                                                         : navigate(`/entity/${entity.properties._id}`);
                                                                     setExternalErrors({ files: false, unique: {}, action: '' });
                                                                 }}

@@ -106,7 +106,7 @@ const useMutationHandler = (
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            createEntityRequest(newEntityData, ignoredRules, childTemplateId),
+            createEntityRequest(newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);

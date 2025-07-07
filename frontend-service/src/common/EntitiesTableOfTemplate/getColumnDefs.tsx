@@ -31,7 +31,7 @@ import { ImageWithDisable } from '../ImageWithDisable';
 import { environment } from '../../globals';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childTemplateId?: string };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; fatherTemplateId?: string };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -450,9 +450,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate${template.fatherTemplateId ? `?childTemplateId=${template._id}`: ''}`, {
-                                            state: { entityTemplate: template, expandedEntity: { entity: data } },
-                                        });
+                                        navigate(
+                                            `/entity/${getRowId(data)}/duplicate${
+                                                template.fatherTemplateId ? `?childTemplateId=${template._id}` : ''
+                                            }`,
+                                            {
+                                                state: { entityTemplate: template, expandedEntity: { entity: data } },
+                                            },
+                                        );
                                     }}
                                     onDeleteClick={() => {
                                         setSelectedRow(getRowId(data));

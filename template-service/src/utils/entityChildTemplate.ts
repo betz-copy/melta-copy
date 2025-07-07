@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { IEntityChildTemplatePopulated, IEntitySingleProperty, IEntityTemplatePopulated } from '@microservices/shared';
+import { IEntityChildTemplatePopulated, IEntitySingleProperty } from '@microservices/shared';
 
 const parseFilterObject = (filters: any): any | null => {
     if (typeof filters === 'string') {
@@ -33,12 +33,12 @@ const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any)
 
 const getFullChildTemplateProperties = (
     childTemplate: IEntityChildTemplatePopulated,
-    parentTemplate: IEntityTemplatePopulated,
+    parentProperties: Record<string, IEntitySingleProperty>,
 ): Record<string, IEntitySingleProperty> => {
     const result: Record<string, IEntitySingleProperty> = {};
 
     for (const key of Object.keys(childTemplate.properties)) {
-        const parentProp = parentTemplate.properties.properties[key];
+        const parentProp = parentProperties[key];
         const childProp = childTemplate.properties[key];
 
         const filterObj = parseFilterObject(childProp?.filters);

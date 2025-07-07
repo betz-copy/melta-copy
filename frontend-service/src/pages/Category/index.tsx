@@ -55,8 +55,6 @@ const Category: React.FC = () => {
     const category = categories.get(categoryId!)!;
     const currentUser = useUserStore((state) => state.user);
 
-    console.log('currentUser', JSON.stringify(currentUser, null, 2));
-
     const authorizedTemplates = Array.from(entityTemplates.values()).filter(
         (template) =>
             !!template &&

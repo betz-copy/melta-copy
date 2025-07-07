@@ -1,7 +1,7 @@
-import { variableNameValidation, searchFilterSchema } from '@microservices/shared';
+import { searchFilterSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
-import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
+import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 
 const { searchEntitiesMaxLimit } = config;
 
@@ -63,7 +63,7 @@ export const convertFieldsToPluralRequestSchema = Joi.object({
 /**
  * GET /api/instances/entities/get-is-field-used/:id
  */
-export const getIfValuefieldIsUsedRequestSchema = Joi.object({
+export const getIfValueFieldIsUsedRequestSchema = Joi.object({
     body: {},
     params: {
         id: Joi.string().required(),
@@ -102,7 +102,6 @@ export const createEntityRequestSchema = Joi.object({
     query: {},
     params: {},
 });
-
 
 /**
  * POST /api/instances/entities/expanded/:id
@@ -224,6 +223,7 @@ const baseDeleteSchema = Joi.object({
     templateId: Joi.string().required(),
     deleteAllRelationships: Joi.boolean(),
     selectAll: Joi.boolean().required(),
+    childTemplateId: Joi.string().optional(),
 });
 
 export const deleteEntitiesByIdsRequestSchema = Joi.object({

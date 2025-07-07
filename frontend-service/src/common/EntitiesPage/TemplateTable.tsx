@@ -55,7 +55,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated & { childTemplateId?: string };
+        template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
@@ -128,6 +128,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
+                        isChildTemplate: 'fatherTemplateId' in template,
                     },
                 },
             });

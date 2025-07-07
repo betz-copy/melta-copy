@@ -90,6 +90,12 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
     _id: string;
 }
 
+export interface IFullMongoEntityTemplate extends IEntityTemplate {
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface IEntityTemplatePopulated extends Omit<IMongoEntityTemplate, 'category'> {
     category: IMongoCategory;
 }
