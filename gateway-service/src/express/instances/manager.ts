@@ -932,7 +932,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 const notFilterValid = entities.find((entity) =>
                     matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IEntityChildTemplatePopulated)),
                 );
-                console.dir({ notFilterValid, filters: getFilterFromChildTemplate(template as IEntityChildTemplatePopulated) }, { depth: null });
 
                 if (notFilterValid)
                     throw new FilterValidation(`cannot delete, entity ${notFilterValid.properties._id} is not valid according to filters`);

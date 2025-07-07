@@ -173,9 +173,10 @@ export class EntityValidator extends DefaultController {
 
         this.validateEntity(entityTemplate, properties);
 
-        const filter = await this.getChildFilters(childTemplateId);
-        this.validatePropertiesMatchFilters(req.body.properties, filter);
-
+        if (childTemplateId) {
+            const filter = await this.getChildFilters(childTemplateId);
+            this.validatePropertiesMatchFilters(req.body.properties, filter);
+        }
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 

@@ -90,8 +90,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
 
-    const childTemplateId = template.fatherTemplateId ? template._id : undefined;
-
     const filteredProperties = template.propertiesOrder.filter((propertyOrder) => !template.properties.properties[propertyOrder].comment);
 
     const columnDefs = filteredProperties.map((property) => {
@@ -366,7 +364,13 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 <Link
                                     href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
                                         getEntityPropertiesData(data)._id
-                                    }${pageType === environment.clientSideId ? '' : `/${template._id}?childTemplateId=${childTemplateId}`}`}
+                                    }${
+                                        pageType === environment.clientSideId
+                                            ? ''
+                                            : template.fatherTemplateId
+                                            ? `?childTemplateId=${template._id}`
+                                            : ''
+                                    }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -446,9 +450,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate?childTemplateId=${childTemplateId}`, {
-                                            state: { entityTemplate: template, expandedEntity: { entity: data } },
-                                        });
+                                        navigate(
+                                            `/entity/${getRowId(data)}/duplicate${
+                                                template.fatherTemplateId ? `?childTemplateId=${template._id}` : ''
+                                            }`,
+                                            {
+                                                state: { entityTemplate: template, expandedEntity: { entity: data } },
+                                            },
+                                        );
                                     }}
                                     onDeleteClick={() => {
                                         setSelectedRow(getRowId(data));

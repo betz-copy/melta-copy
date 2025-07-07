@@ -403,7 +403,7 @@ const Entity: React.FC = () => {
     };
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = getCurrentEntityTemplate(templateId);
+    const currentEntityTemplate = getCurrentEntityTemplate(childTemplateId ?? expandedEntity?.entity.templateId);
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,

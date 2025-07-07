@@ -553,17 +553,6 @@ const entityTemplates: IEntityTemplateMock[] = [
                     format: 'user',
                     archive: false,
                 },
-                kartoffel: {
-                    title: 'שם פרטי קרטופל',
-                    type: 'string',
-                    format: 'kartoffelUserField',
-                    readOnly: true,
-                    archive: false,
-                    expandedUserField: {
-                        relatedUserField: 'user',
-                        kartoffelField: 'firstName',
-                    },
-                },
                 users: {
                     title: 'משתמשים',
                     type: 'array',
@@ -606,7 +595,6 @@ const entityTemplates: IEntityTemplateMock[] = [
             'signature',
             'comment',
             'user',
-            'kartoffel',
             'users',
             'file',
             'files',

@@ -16,8 +16,15 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         super(workspaceId, config.mongo.entityChildTemplatesCollectionName, EntityChildTemplateSchema);
     }
 
-    getChildTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
-        const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
+    getChildTemplates(searchQuery: {
+        search?: string;
+        ids?: string[];
+        categoryIds?: string[];
+        fatherTemplatesIds?: string[];
+        limit: number;
+        skip: number;
+    }): Promise<IEntityChildTemplatePopulated[]> {
+        const { search: displayName, ids, categoryIds, limit, skip, fatherTemplatesIds } = searchQuery;
         const query: FilterQuery<IEntityChildTemplate> = {};
 
         if (displayName) {
@@ -30,6 +37,10 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
 
         if (categoryIds) {
             query.category = { $in: categoryIds };
+        }
+
+        if (fatherTemplatesIds) {
+            query.fatherTemplateId = { $in: fatherTemplatesIds };
         }
 
         return this.model

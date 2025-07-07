@@ -2,15 +2,16 @@ import {
     ConfigTypes,
     ICategory,
     ICategoryOrderConfig,
+    IEntityChildTemplate,
     IEntityChildTemplatePopulated,
     IEntityTemplate,
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
+    IMongoEntityChildTemplate,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
-    ISearchEntityChildTemplatesBody,
     ISearchEntityTemplatesBody,
     ISubCompactPermissions,
 } from '@microservices/shared';
@@ -224,19 +225,21 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async searchChildTemplates(userId: string, body: ISearchEntityChildTemplatesBody = {}) {
-        const workspaceId = this.api.defaults.headers[workspaceIdHeaderName]!.toString();
-        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(userId);
+    async searchChildTemplates(searchBody: {
+        search?: string;
+        ids?: string[];
+        categoryIds?: string[];
+        limit?: number;
+        skip?: number;
+        fatherTemplatesIds?: string[];
+    }) {
+        const { data } = await this.api.post<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
+        return data;
+    }
 
-        const { data: childTemplates } = await this.api.post<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, body);
-        return usersPermissions.admin
-            ? childTemplates
-            : childTemplates.filter((childTemplate) => {
-                  const { fatherTemplateId: fatherTemplate } = childTemplate;
-                  const categoryPermission = usersPermissions.instances?.categories[fatherTemplate.category];
-                  const templatePermission = categoryPermission?.entityTemplates[fatherTemplate._id];
-                  return categoryPermission?.scope || templatePermission?.scope || templatePermission?.entityChildTemplates[childTemplate._id];
-              });
+    async updateEntityChildTemplate(id: string, childTemplate: IEntityChildTemplate) {
+        const { data } = await this.api.put<IMongoEntityChildTemplate | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+        return data;
     }
 }
 

@@ -1,4 +1,4 @@
-import { IEntityChildTemplatePopulated, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IEntityChildTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
 
@@ -16,13 +16,13 @@ class EntityChildTemplateManagerService extends TemplatesManagerService {
     }
 
     async getChildTemplatesUsingRelationshipReference(relatedTemplateId: string) {
-        const { data } = await this.api.get<IMongoEntityTemplate[]>(`${getRelatedByIdRoute}/${relatedTemplateId}`);
+        const { data } = await this.api.get<IEntityChildTemplatePopulated[]>(`${getRelatedByIdRoute}/${relatedTemplateId}`);
 
         return data;
     }
 
     async searchEntityChildTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.api.post<IMongoEntityTemplate[]>(searchRoute, body);
+        const { data } = await this.api.post<IEntityChildTemplatePopulated[]>(searchRoute, body);
 
         return data;
     }

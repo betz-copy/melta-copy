@@ -232,9 +232,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(`/entity/${entity.properties._id}/duplicate?childTemplateId=${childTemplateId}`, {
-                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                });
+                                                navigate(
+                                                    `/entity/${entity.properties._id}/duplicate${
+                                                        childTemplateId ? `?childTemplateId=${childTemplateId}` : ''
+                                                    }`,
+                                                    {
+                                                        state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                    },
+                                                );
                                             }
                                             handleClose();
                                         }}
