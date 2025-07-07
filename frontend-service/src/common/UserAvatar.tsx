@@ -13,9 +13,10 @@ interface UserAvatarProps {
     bgColor?: string;
     isDefaultProfile?: boolean;
     userProfileImage?: string;
+    addBorder?: boolean;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userProfileImage, isDefaultProfile = false }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userProfileImage, isDefaultProfile = false , addBorder = false}) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
@@ -39,7 +40,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userP
                 font: `${Math.round(size / 2)}px Rubik`,
                 fontSize: Math.round(size / 2),
                 fontWeight: 500,
-                border: '3px solid #FF006B',
+                border: addBorder ? '3px solid #FF006B' : null,
             }}
             onClick={() => {
                 trackEvent({

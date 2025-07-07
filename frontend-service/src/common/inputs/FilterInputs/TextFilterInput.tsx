@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
@@ -19,6 +19,8 @@ interface TextFilterProps {
     touched?: any;
     hideFilterType?: boolean;
     forceEqualsType?: boolean;
+    error?: boolean;
+    helperText?: string;
 }
 
 const TextFilterInput: React.FC<TextFilterProps> = ({
@@ -30,10 +32,12 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     handleFilterFieldChange,
     errors,
     touched,
+    error,
+    helperText,
     hideFilterType = false,
     forceEqualsType = false,
 }) => {
-    React.useEffect(() => {
+    useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
             handleFilterTypeChange('equals');
         }
@@ -60,19 +64,13 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
 
             <Grid item xs={hideFilterType ? 12 : 5.5}>
                 <StyledFilterInput
-                    inputProps={{
-                        readOnly,
-                        style: {
-                            textOverflow: 'ellipsis',
-                        },
-                    }}
                     size="small"
                     fullWidth
                     type={type}
-                    value={filterField?.filter ?? ''}
+                    value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
                     disabled={readOnly}
-                    error={Boolean(touched && errors?.filter)}
-                    helperText={touched ? errors?.filter : ''}
+                    error={error}
+                    helperText={helperText}
                     onChange={(e) => {
                         const { value } = e.target;
                         const updatedFilter =
@@ -82,10 +80,16 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                                       filter: value ? Number(value) : undefined,
                                       type: forceEqualsType ? 'equals' : filterField?.type,
                                   } as IAGGidNumberFilter)
-                                : ({ ...filterField, filter: value, type: forceEqualsType ? 'equals' : filterField?.type } as IAGGridTextFilter);
+                                : ({
+                                      ...filterField,
+                                      filter: value || undefined,
+                                      type: forceEqualsType ? 'equals' : filterField?.type,
+                                  } as IAGGridTextFilter);
 
                         handleFilterFieldChange(updatedFilter);
                     }}
+                    readOnly={readOnly}
+                    forceOutlined
                 />
             </Grid>
         </Grid>

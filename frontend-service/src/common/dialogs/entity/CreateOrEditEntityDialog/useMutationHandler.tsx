@@ -28,6 +28,7 @@ const useMutationHandler = (
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
+    childTemplateId?: string,
     clientSideUserEntity?: IEntity,
 ) => {
     const [_, navigate] = useLocation();
@@ -86,7 +87,7 @@ const useMutationHandler = (
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules),
+            updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);
@@ -105,7 +106,7 @@ const useMutationHandler = (
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            createEntityRequest(newEntityData, ignoredRules),
+            createEntityRequest(newEntityData, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);

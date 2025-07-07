@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { InputAdornment, styled, TextField, TextFieldProps } from '@mui/material';
 import i18next from 'i18next';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
@@ -46,7 +46,7 @@ const getRjsfDateOrDateTimeWidget =
         const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
         const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
         const { defaultValue } = options;
-        const [currDate, setCurrDate] = React.useState<Date | null>(defaultValue as Date);
+        const [currDate, setCurrDate] = useState<Date | null>(defaultValue as Date);
 
         useEffect(() => {
             if (value) setCurrDate(value);

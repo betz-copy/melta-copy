@@ -16,6 +16,7 @@ import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreat
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import CategoryManager from '../category/manager';
 import EntityTemplateSchema from './model';
+import EntityChildTemplateManager from '../entityChildTemplate/manager';
 
 export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {
     private globalSearchIndexCreator: GlobalSearchIndexCreator;
@@ -24,11 +25,14 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     private categoryManager: CategoryManager;
 
+    private entityChildTemplateManager: EntityChildTemplateManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
         this.globalSearchIndexCreator = new GlobalSearchIndexCreator(workspaceId);
         this.relationshipTemplateManager = new RelationshipTemplateManager(workspaceId);
         this.categoryManager = new CategoryManager(workspaceId);
+        this.entityChildTemplateManager = new EntityChildTemplateManager(workspaceId);
     }
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
@@ -285,6 +289,14 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 .map((property) => property.relationshipReference!.relationshipTemplateId!);
 
             await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
+        }
+
+        if (currentEntityTemplate.displayName !== updatedEntityTemplate.displayName) {
+            await this.entityChildTemplateManager.updateChildrenDisplayNames(
+                updatedEntityTemplate._id,
+                currentEntityTemplate.displayName,
+                updatedEntityTemplate.displayName,
+            );
         }
 
         return updatedEntityTemplate;

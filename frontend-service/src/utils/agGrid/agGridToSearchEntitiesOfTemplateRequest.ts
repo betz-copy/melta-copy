@@ -1,17 +1,9 @@
 import { environment } from '../../globals';
-import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
-import {
-    IAGGidNumberFilter,
-    IAGGridDateFilter,
-    IAGGridFilterModel,
-    IAGGridRequest,
-    IAGGridSetFilter,
-    IAGGridSort,
-    IAGGridTextFilter,
-} from './interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridFilterModel, IAGGridRequest, IAGGridSort, IAGGridTextFilter } from './interfaces';
 
 export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[]): IFilterOfTemplate => {
     return { [field]: { $in: values } };
@@ -180,37 +172,30 @@ export const filterModelToFilterOfTemplatePerField = (
     field: string,
     fieldFilter: IAGGridFilterModel[keyof IAGGridFilterModel],
 ) => {
-    let filter;
     switch (fieldFilter.filterType) {
         case 'text':
             if (fieldTemplate.format === 'fileId') {
-                filter = textFilterOfFileToFilterTemplate(field, fieldFilter);
+                return textFilterOfFileToFilterTemplate(field, fieldFilter);
             } else {
-                filter = textFilterToFilterOfTemplate(field, fieldFilter);
+                return textFilterToFilterOfTemplate(field, fieldFilter);
             }
-            break;
         case 'number':
-            filter = numberFilterToFilterOfTemplate(field, fieldFilter);
-            break;
+            return numberFilterToFilterOfTemplate(field, fieldFilter);
         case 'date':
             if (fieldTemplate.format === 'date') {
-                filter = dateFilterToFilterOfTemplate(field, fieldFilter);
+                return dateFilterToFilterOfTemplate(field, fieldFilter);
             } else {
-                filter = dateTimeFilterToFilterOfTemplate(field, fieldFilter);
+                return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
             }
-            break;
         case 'set':
-            const filtersValues = (
-                Array.isArray(fieldFilter.values) ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName : item)) : fieldFilter
-            ) as IAGGridSetFilter;
+            const filtersValues = Array.isArray(fieldFilter.values)
+                ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName || null : item))
+                : fieldFilter.values;
 
-            filter = setFilterToFilterOfTemplate(field, filtersValues);
-
-            break;
+            return setFilterToFilterOfTemplate(field, filtersValues);
         default:
             throw new Error('Invalid supported ag-grid filter type');
     }
-    return filter;
 };
 
 export const filterModelToFilterOfTemplate = (
@@ -223,8 +208,9 @@ export const filterModelToFilterOfTemplate = (
         const fieldTemplate = entityTemplateWithDefaultFields.properties.properties[field];
         const filter = filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
 
-        if (filter[field] && filter[field].$and) {
-            return filter[field].$and.map((condition: any) => ({ [field]: condition }));
+        console.log('filter', { filter });
+        if (filter[field] && typeof filter[field] === 'object' && '$and' in (filter[field] as object)) {
+            return (filter[field] as { $and: IFilterOfField[] })['$and'].map((condition) => ({ [field]: condition }));
         }
 
         return [filter];
@@ -237,17 +223,31 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
     return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
 };
 
+export const getFilterModal = (
+    filterModel?: ISearchEntitiesOfTemplateBody['filter'],
+    defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
+): ISearchFilter | undefined => {
+    if (!filterModel && !defaultModal) return undefined;
+    if (!filterModel) return defaultModal;
+    if (!defaultModal) return filterModel;
+
+    return {
+        $and: [filterModel, defaultModal],
+    };
+};
+
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
     defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
+
     return {
         skip: startRow,
         limit: endRow - startRow,
         textSearch: quickFilter,
-        filter: defaultFilter ?? filterModelToFilterOfTemplate(filterModel, entityTemplate),
+        filter: getFilterModal(filterModelToFilterOfTemplate(filterModel, entityTemplate), defaultFilter),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,

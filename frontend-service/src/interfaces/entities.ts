@@ -87,10 +87,24 @@ export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any
     [field in keyof T]?: IFilterOfField;
 };
 
-export type ISearchFilter<T extends Record<string, any> = Record<string, any>> = {
-    $and?: IFilterOfTemplate<T> | IFilterOfTemplate<T>[];
-    $or?: IFilterOfTemplate<T>[];
+type IFilterGroup = IFilterOfTemplate | ISearchFilter;
+
+export enum FilterLogicalOperator {
+    AND = '$and',
+    OR = '$or',
+}
+
+type AndFilter = {
+    [FilterLogicalOperator.AND]: IFilterOfTemplate | IFilterGroup[];
+    [FilterLogicalOperator.OR]?: never;
 };
+
+type OrFilter = {
+    [FilterLogicalOperator.OR]: IFilterGroup[];
+    [FilterLogicalOperator.AND]?: never;
+};
+
+export type ISearchFilter = AndFilter | OrFilter;
 
 export type ISearchSort<T extends Record<string, any> = Record<string, any>> = Array<{
     field: keyof T;

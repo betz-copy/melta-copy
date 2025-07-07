@@ -51,6 +51,9 @@ const EntityChildTemplateSchema = new mongoose.Schema(
             required: true,
             default: false,
         },
+        filterByCurrentUserField: {
+            type: String,
+        },
         isFilterByUserUnit: {
             type: Boolean,
             required: true,

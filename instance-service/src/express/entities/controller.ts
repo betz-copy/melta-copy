@@ -10,10 +10,9 @@ class EntityController extends DefaultController<EntityManager> {
 
     async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+        const { properties, ignoredRules, userId, duplicatedFromId, childTemplateId } = req.body;
 
-        res.json(
-            await this.manager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId),
-        );
+        res.json(await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplateId));
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -78,14 +77,17 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+        const { properties, ignoredRules, userId, childTemplateId, convertToRelationshipField } = req.body;
+
         res.json(
             await this.manager.updateEntityById(
                 req.params.id,
-                req.body.properties,
+                properties,
                 entityTemplate,
-                req.body.ignoredRules,
-                req.body.userId,
-                req.body.convertToRelationshipField,
+                ignoredRules,
+                userId,
+                childTemplateId,
+                convertToRelationshipField,
             ),
         );
     }
@@ -118,7 +120,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getChart(req.params.templateId, req.body));
+        res.json(await this.manager.getChartByTemplate(req.params.templateId, req.body));
     }
 
     async updateConstraintsOfTemplate(req: Request, res: Response) {

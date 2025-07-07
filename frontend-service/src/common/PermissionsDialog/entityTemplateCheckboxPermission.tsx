@@ -10,6 +10,7 @@ import { ColoredEnumChip } from '../ColoredEnumChip';
 import i18next from 'i18next';
 import { ViewType } from '../../interfaces/entityChildTemplates';
 import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
+
 const EntityTemplateCheckboxPermission: React.FC<{
     entityTemplate: entityTemplatePermissionDialog;
     changePermissions: (checked: boolean, entityId: string, permissionScope: PermissionScope, childTemplateId?: string) => void;

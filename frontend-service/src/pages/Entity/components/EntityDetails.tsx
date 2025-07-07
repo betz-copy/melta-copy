@@ -36,9 +36,10 @@ import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import LocationPreview from '../../Map/LocationPreview';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded; childTemplateId?: string }> = ({
     entityTemplate,
     expandedEntity,
+    childTemplateId,
 }) => {
     const { entity } = expandedEntity;
     const [_, navigate] = useLocation();
@@ -46,7 +47,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
     const queryClient = useQueryClient();
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
 
     const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
@@ -166,6 +167,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     });
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
+                childTemplateId={childTemplateId}
             />
         );
     }
@@ -229,9 +231,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(`/entity/${entity.properties._id}/duplicate`, {
-                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                });
+                                                navigate(
+                                                    `/entity/${entity.properties._id}/duplicate${
+                                                        childTemplateId ? `?childTemplateId=${childTemplateId}` : ''
+                                                    }`,
+                                                    {
+                                                        state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                    },
+                                                );
                                             }
                                             handleClose();
                                         }}

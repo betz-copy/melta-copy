@@ -282,7 +282,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     };
 
-    async loadEntities(templateId: string, userId: string, files?: UploadedFile[], insertBrokenEntities?: IEntityWithIgnoredRules[]) {
+    async loadEntities(
+        templateId: string,
+        userId: string,
+        childTemplateId?: string,
+        files?: UploadedFile[],
+        insertBrokenEntities?: IEntityWithIgnoredRules[],
+    ) {
         let entities = insertBrokenEntities;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
@@ -301,7 +307,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
-                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
+                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 
                 succeededEntities.push(result);
             } catch (error) {
@@ -341,7 +347,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { entities, failedEntities };
     }
 
-    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], userId: string) {
+    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], userId: string, childTemplateId?: string) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
@@ -349,7 +355,16 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const handleUpdateEntity = async (entity: IEntityWithIgnoredRules) => {
             try {
-                const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId, true, true);
+                const result = await this.updateEntityInstance(
+                    entity.properties._id,
+                    entity,
+                    [],
+                    entity.ignoredRules || [],
+                    userId,
+                    childTemplateId,
+                    true,
+                    true,
+                );
                 results.push(result);
             } catch (error) {
                 classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
@@ -388,6 +403,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         ignoredRules: Record<string, IBrokenRule[]>,
         userId: string,
+        childTemplateId?: string,
     ) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
@@ -411,6 +427,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     files,
                     ignoredRules[entity.properties._id] || [],
                     userId,
+                    childTemplateId,
                     true,
                     false,
                 );
@@ -495,6 +512,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
+        childTemplateId?: string,
         serialNumbers?: Record<string, number>,
         createAlert: boolean = true,
     ) {
@@ -502,7 +520,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
         const { createdEntity, actions } = await this.service
-            .createEntityInstance({ properties, templateId }, ignoredRules, userId)
+            .createEntityInstance({ properties, templateId }, ignoredRules, userId, undefined, childTemplateId)
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -685,6 +703,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
+        childTemplateId?: string,
         duplicateFileProperties = true,
         createAlert: boolean = true,
     ) {
@@ -714,7 +733,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
 
         const { createdEntity, actions } = await this.service
-            .createEntityInstance(newInstanceData, ignoredRules, userId, id)
+            .createEntityInstance(newInstanceData, ignoredRules, userId, id, childTemplateId)
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -762,6 +781,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
+        childTemplateId?: string,
         createAlert: boolean = true,
         isEditExcel: boolean = false,
     ) {
@@ -783,6 +803,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 ignoredRules,
                 userId,
+                childTemplateId,
             )
             .catch((err) => this.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>

@@ -62,7 +62,7 @@ export const createRuleBreachRequestRequestSchema = joi.object({
 // POST /api/rule-breaches/requests/:id/approve
 export const approveRuleBreachRequestRequestSchema = joi.object({
     query: {},
-    body: {},
+    body: { childTemplateId: joi.string() },
     params: {
         ruleBreachRequestId: MongoIdSchema.required(),
     },

@@ -24,6 +24,7 @@ export const transformChild = (
                     ...parentProp,
                     defaultValue: child.properties[key].defaultValue,
                     filters: child.properties[key].filters,
+                    isFilterByCurrentUser: child.filterByCurrentUserField === key,
                 },
             ]),
     );
@@ -53,6 +54,8 @@ const Category: React.FC = () => {
 
     const category = categories.get(categoryId!)!;
     const currentUser = useUserStore((state) => state.user);
+
+    console.log('currentUser', JSON.stringify(currentUser, null, 2));
 
     const authorizedTemplates = Array.from(entityTemplates.values()).filter(
         (template) =>

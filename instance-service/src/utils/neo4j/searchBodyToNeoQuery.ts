@@ -5,7 +5,8 @@ import {
     IEntitySingleProperty,
     ISearchBatchBody,
     IFilterOfField,
-    ISearchFilter,
+    IFilterGroup,
+    FilterLogicalOperator,
     IFilterOfTemplate,
 } from '@microservices/shared';
 import { getNeo4jDate, getNeo4jDateTime } from './lib';
@@ -243,7 +244,6 @@ const filterOfFieldToNeoQuery = (
         }
 
         if (fieldTemplate.format === 'user') {
-            // TODO: yona - refactor this to be more generic
             const userIdFilterString = simplePartFilterOfFieldToNeoQuery(
                 `\`${field}.id_userField\``,
                 filterType as '$eq' | '$ne' | '$rgx' | '$gt' | '$gte' | '$lt' | '$lte' | '$not',
@@ -267,22 +267,27 @@ const filterOfFieldToNeoQuery = (
 };
 
 const filterOfTemplateToNeoQuery = (
-    filterOfTemplate: IFilterOfTemplate,
+    filterOfTemplate: IFilterGroup,
     parametersParentVariableName: string,
     entityTemplate: IMongoEntityTemplate,
 ): CypherQueryWithParameters => {
     const fieldsNeoQueries: CypherQueryWithParameters[] = Object.entries(filterOfTemplate)
         .filter(([_field, filterOfField]) => Boolean(filterOfField))
-        .map(([field, filterOfField]) => {
+        .map(([filterKey, filterOfField]) => {
+            if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
+                // eslint-disable-next-line no-use-before-define
+                return filterLogicalOperatorsToNeoQuery(filterKey, filterOfField, parametersParentVariableName, entityTemplate);
+            }
+
             const filterOfFieldQuery = filterOfFieldToNeoQuery(
-                field,
+                filterKey,
                 filterOfField!,
-                `${parametersParentVariableName}.${field}`,
-                entityTemplate.properties.properties[field],
+                `${parametersParentVariableName}.${filterKey}`,
+                entityTemplate.properties.properties[filterKey],
             );
             return {
                 cypherQuery: filterOfFieldQuery.cypherQuery,
-                parameters: { [field]: filterOfFieldQuery.parameters },
+                parameters: { [filterKey]: filterOfFieldQuery.parameters },
             };
         });
 
@@ -294,65 +299,31 @@ const filterOfTemplateToNeoQuery = (
     };
 };
 
-const filterToNeoQuery = (
-    filter: ISearchFilter,
+const filterLogicalOperatorsToNeoQuery = (
+    field: FilterLogicalOperator,
+    filterOfField: IFilterOfTemplate | IFilterGroup[],
     parametersParentVariableName: string,
     entityTemplate: IMongoEntityTemplate,
-): CypherQueryWithParameters => {
-    const { $or, $and } = filter;
+) => {
+    if (Array.isArray(filterOfField)) {
+        const queries = filterOfField.map((currFilterOfTemplate, i) =>
+            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`${field}\`[${i}]`, entityTemplate),
+        );
 
-    let andQuery: CypherQueryWithParameters | null = null;
-    if (Array.isArray($and)) {
-        const andNeoQueries = $and
-            .map((currFilterOfTemplate, i) =>
-                filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$and\`[${i}]`, entityTemplate),
-            )
-            .filter((query) => query.cypherQuery);
-        if (andNeoQueries.length > 0) {
-            andQuery = {
-                cypherQuery: andNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' AND '),
-                parameters: {
-                    $and: andNeoQueries.map(({ parameters }) => parameters),
-                },
-            };
-        }
-    } else if ($and) {
-        const andSingleQuery = filterOfTemplateToNeoQuery($and, `${parametersParentVariableName}.\`$and\``, entityTemplate);
-        if (andSingleQuery.cypherQuery) {
-            andQuery = {
-                cypherQuery: andSingleQuery.cypherQuery,
-                parameters: { $and: andSingleQuery.parameters },
-            };
-        }
+        const logicalOperator = field === FilterLogicalOperator.AND ? ' AND ' : ' OR ';
+
+        return {
+            cypherQuery: queries.map(({ cypherQuery }) => `(${cypherQuery})`).join(logicalOperator),
+            parameters: {
+                [field]: queries.map(({ parameters }) => parameters),
+            },
+        };
     }
 
-    let orQuery: CypherQueryWithParameters | null = null;
-    if ($or) {
-        const orNeoQueries = $or
-            .map((currFilterOfTemplate, i) =>
-                filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$or\`[${i}]`, entityTemplate),
-            )
-            .filter((query) => query.cypherQuery);
-        if (orNeoQueries.length > 0) {
-            orQuery = {
-                cypherQuery: orNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
-                parameters: {
-                    $or: orNeoQueries.map(({ parameters }) => parameters),
-                },
-            };
-        }
-    }
-
-    const andCypherQuery = andQuery ? `(${andQuery.cypherQuery})` : '';
-    const orCypherQuery = orQuery ? `(${orQuery.cypherQuery})` : '';
-
-    if (!andCypherQuery && !orCypherQuery) {
-        return { cypherQuery: '', parameters: {} };
-    }
-
+    const andSingleQuery = filterOfTemplateToNeoQuery(filterOfField, `${parametersParentVariableName}.\`$and\``, entityTemplate);
     return {
-        cypherQuery: `${andCypherQuery}${andQuery && orQuery ? ' AND ' : ''}${orCypherQuery}`,
-        parameters: { ...andQuery?.parameters, ...orQuery?.parameters },
+        cypherQuery: andSingleQuery.cypherQuery,
+        parameters: { $and: andSingleQuery.parameters },
     };
 };
 
@@ -367,8 +338,11 @@ export const templatesFilterToNeoQuery = (
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
         }
 
-        const filterOfTemplateQuery = filterToNeoQuery(
-            filter,
+        const field = filter?.$and ? FilterLogicalOperator.AND : FilterLogicalOperator.OR;
+
+        const filterOfTemplateQuery = filterLogicalOperatorsToNeoQuery(
+            field,
+            filter[field]!,
             `${filterParamsVariableName}["${templateId}"]`,
             addDefaultFieldsToTemplate(entityTemplatesMap.get(templateId)!),
         );

@@ -1,13 +1,16 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
-import { Link } from 'wouter';
-import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
+import { Link } from 'wouter';
 import { IButtonPopoverProps } from '.';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import {
     booleanColDef,
     dateColDef,
@@ -25,12 +28,10 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { environment } from '../../globals';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childId?: string };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childTemplateId?: string };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -57,6 +58,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
     pageType?: string;
+    columnsToShow?: string[];
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -82,6 +84,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     disableEditCell,
     entityTemplates,
     pageType,
+    columnsToShow,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -101,13 +104,17 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
+        const isPreviewEmpty = template.propertiesPreview.length === 0;
+        const isPropertyInPreview = template.propertiesPreview.includes(property);
+        const isFirstTwoProperties = firstTwoPropsOrder.includes(property);
+        const isDefaultVisibilityColumn = defaultVisibleColumns[property] !== undefined;
+        const isColumnInDisplayList = columnsToShow?.includes(property) ?? true;
+
         const hideColumn =
-            template.propertiesPreview.length === 0 && hideNonPreview
-                ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
-                : archive ||
-                  (defaultVisibleColumns[property] !== undefined
-                      ? !defaultVisibleColumns[property]
-                      : hideNonPreview && !template.propertiesPreview.includes(property));
+            (isPreviewEmpty && hideNonPreview && !isFirstTwoProperties) ||
+            archive ||
+            (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
+            !isColumnInDisplayList;
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
@@ -237,7 +244,15 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 editable,
             );
         if (propertyTemplate.items?.format === 'fileId') {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight, isLastColumn);
+            return enumFilesColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                defaultColumnWidths[property],
+                rowHeight,
+                isLastColumn,
+                hideColumn,
+            );
         }
         if (propertyTemplate.format === 'user') {
             return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], isLastColumn, hideColumn);
@@ -347,8 +362,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/${pageType === 'client-side' ? 'client-side/entity' : 'entity'}/${getEntityPropertiesData(data)._id}${
-                                        pageType === 'client-side' ? '' : `/${template.childId ?? template._id}`
+                                    href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
+                                        getEntityPropertiesData(data)._id
+                                    }${
+                                        pageType === environment.clientSideId
+                                            ? ''
+                                            : template.fatherTemplateId
+                                            ? `?childTemplateId=${template._id}`
+                                            : ''
                                     }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
@@ -402,7 +423,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-                        {onNavigateToRow && pageType !== 'client-side' && (
+                        {onNavigateToRow && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
@@ -425,11 +446,11 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && !template?.disabled && pageType !== 'client-side' && (
+                        {menuRowButtonProps && !template?.disabled && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
+                                        navigate(`/entity/${getRowId(data)}/duplicate${template.fatherTemplateId ? `?childTemplateId=${template._id}`: ''}`, {
                                             state: { entityTemplate: template, expandedEntity: { entity: data } },
                                         });
                                     }}

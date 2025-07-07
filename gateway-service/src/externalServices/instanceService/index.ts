@@ -68,22 +68,31 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
+    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
             duplicatedFromId,
+            childTemplateId,
         });
 
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId?: string, convertToRelationshipField = false) {
+    async updateEntityInstance(
+        id: string,
+        entity: IEntity,
+        ignoredRules: IBrokenRule[],
+        userId?: string,
+        childTemplateId?: string,
+        convertToRelationshipField = false,
+    ) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
+            childTemplateId,
             convertToRelationshipField,
         });
 

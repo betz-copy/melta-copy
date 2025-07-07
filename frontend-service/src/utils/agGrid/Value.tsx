@@ -18,8 +18,8 @@ const Value: React.FC<{
     searchValue?: string;
 }> = ({ hideValue, value, color, calculateTime, isNumberField, searchValue }) => {
     const containsHtmlTags = containsHTMLTags(value);
-    const [hideField, setHideField] = React.useState(true);
-    const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
+    const [hideField, setHideField] = useState(true);
+    const [anchorEl, setAnchorEl] = useState<HTMLDivElement | HTMLButtonElement | null>(null);
     const [numLines, setNumLines] = useState(0);
 
     useEffect(() => {

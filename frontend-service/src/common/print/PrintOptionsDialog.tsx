@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -91,7 +91,7 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     options,
 }) => {
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const getPropertiesFiles = React.useCallback((): IFile[] => {
         if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
@@ -125,7 +125,7 @@ const PrintOptionsDialog: React.FC<{
         return [];
     }, [instance, template]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const currFiles = getPropertiesFiles()
             .filter((file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported')
             .concat(
@@ -137,7 +137,7 @@ const PrintOptionsDialog: React.FC<{
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setFilesLoadingStatus(
             selectedFiles.reduce((acc, file) => {
                 return { ...acc, [file.id]: true };
@@ -146,7 +146,7 @@ const PrintOptionsDialog: React.FC<{
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFiles]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (Object.keys(filesLoadingStatus).length === 0) {
             setIsLoading(false);
             return;

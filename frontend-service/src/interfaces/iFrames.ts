@@ -4,6 +4,7 @@ export interface IFrame {
     categoryIds: string[];
     iconFileId: string | null;
     placeInSideBar?: boolean;
+    usedInDashboard?: boolean;
 }
 export interface IMongoIFrame extends IFrame {
     values(): Iterable<unknown> | ArrayLike<unknown>;

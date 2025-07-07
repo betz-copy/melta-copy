@@ -27,7 +27,7 @@ const UserProfile: React.FC<{
                             setEditProfile(!editProfile);
                         }}
                     >
-                        <UserAvatar user={existingUser} size={100} userProfileImage={userProfileImage} isDefaultProfile={isDefaultProfile} />
+                        <UserAvatar user={existingUser} size={100} userProfileImage={userProfileImage} isDefaultProfile={isDefaultProfile} addBorder />
                     </IconButton>
                 </MeltaTooltip>
             </Grid>
