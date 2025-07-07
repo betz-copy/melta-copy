@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useMemo } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
@@ -107,11 +107,19 @@ const TemplateTablesViewResults = forwardRef<
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
+    const childTemplateDefaultFilters = useMemo(() => {
+        const filters: Record<string, any> = {};
+        templates.forEach((template) => {
+            const isChildTemplate = !!template.fatherTemplateId;
+            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
+        });
+        return filters;
+    }, [templates, currentUserKartoffelId]);
+
     return (
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 const isChildTemplate = !!template.fatherTemplateId;
-                const defaultFilter = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -127,7 +135,7 @@ const TemplateTablesViewResults = forwardRef<
                             page={pageType}
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
-                            defaultFilter={defaultFilter}
+                            defaultFilter={childTemplateDefaultFilters[template._id]}
                             childTemplateId={isChildTemplate ? template._id : undefined}
                         />
                     </Grid>

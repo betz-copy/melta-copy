@@ -13,7 +13,7 @@ import {
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useMemo } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -186,6 +186,8 @@ const TemplateTable = forwardRef<
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
         : undefined;
+
+    const memoizedDefaultFilter = useMemo(() => defaultFilter, [JSON.stringify(defaultFilter)]);
 
     return (
         <Grid container minWidth="fit-content">
@@ -416,7 +418,7 @@ const TemplateTable = forwardRef<
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     multipleSelect={multipleSelect}
-                    defaultFilter={defaultFilter}
+                    defaultFilter={memoizedDefaultFilter}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
