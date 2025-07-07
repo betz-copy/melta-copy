@@ -125,7 +125,7 @@ const createEntityClientSideRequest = async (
             }),
         ),
     );
-    formData.append('templateId', entity.template._id);
+    formData.append('templateId', entity.template.fatherTemplateId || entity.template._id);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));

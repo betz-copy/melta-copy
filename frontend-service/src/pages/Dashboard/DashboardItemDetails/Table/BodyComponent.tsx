@@ -7,7 +7,10 @@ import { TableForm } from '../../../../interfaces/dashboard';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../../stores/workspace';
+import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
+import { getCurrentTemplate } from '../Chart/BodyComponent';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
+import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const theme = useTheme();
@@ -19,7 +22,11 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = metadata.agGrid;
 
+    const template = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
+
+    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!values.childTemplateId);
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
+    const allFilters = getFilterModal(memoizedFilter, childTemplateFilter);
 
     return (
         <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">
@@ -54,7 +61,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
                         }}
                         showNavigateToRowButton={false}
                         editable={false}
-                        defaultFilter={memoizedFilter}
+                        defaultFilter={allFilters}
                         disableFilter
                         columnsToShow={values.columns}
                     />

@@ -13,9 +13,10 @@ import { NumberChartGenerator } from './NumberChartGenerator';
 interface IChartGeneratorProps {
     formikValues: ChartForm;
     template: IMongoEntityTemplatePopulated;
+    isChildTemplate?: boolean;
 }
 
-const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues }) => {
+const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, isChildTemplate }) => {
     const { type, metaData } = formikValues;
 
     const queryClient = useQueryClient();
@@ -37,7 +38,7 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
 
     const { data, isLoading, refetch } = useQuery(
         ['chart', template._id, xAxisField, yAxisField, memoizedFilter],
-        () => getChartOfTemplate(xAxisField, yAxisField, template._id, memoizedFilter),
+        () => getChartOfTemplate(xAxisField, yAxisField, template._id, memoizedFilter, isChildTemplate),
         {
             enabled: false,
         },

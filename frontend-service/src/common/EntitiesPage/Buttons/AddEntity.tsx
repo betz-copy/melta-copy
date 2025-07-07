@@ -20,6 +20,7 @@ const AddEntityButton: React.FC<{
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     childTemplateId?: string;
 }> = ({
     style,
@@ -31,6 +32,7 @@ const AddEntityButton: React.FC<{
     disabledToolTip = false,
     onSuccessCreate,
     setUpdatedEntities,
+    setUpdatedTemplateIds,
     childTemplateId,
 }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
@@ -62,6 +64,7 @@ const AddEntityButton: React.FC<{
 
         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
         setExternalErrors({ files: false, unique: {}, action: '' });
+        setUpdatedTemplateIds?.([entity.templateId]);
     };
 
     return (

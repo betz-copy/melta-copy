@@ -14,9 +14,9 @@ class ChartManager extends DefaultManagerMongo<IMongoChart> {
         return this.model.findById(chartId).orFail(new NotFoundError('Chart not found')).lean().exec();
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string) {
+    async getChartsByTemplateId(templateId: string, textSearch?: string, isChildTemplate?: boolean) {
         const query: FilterQuery<IMongoChart> = {
-            templateId,
+            ...(isChildTemplate ? { childTemplateId: templateId } : { templateId }),
             ...(textSearch && {
                 $or: [
                     { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },

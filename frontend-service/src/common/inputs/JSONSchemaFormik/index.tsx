@@ -76,7 +76,6 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'dateNotification',
         'isDailyAlert',
         'isEditableByUser',
-        'defaultValue',
         'isDatePastAlert',
         'calculateTime',
         'archive',
@@ -88,6 +87,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'hideFromDetailsPage',
         'color',
         'filters',
+        'defaultValue',
+        'isFilterByCurrentUser',
     ].forEach((keyword) => {
         ajv.addKeyword({ keyword });
     });
@@ -284,8 +285,18 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
 
+    const templateProperties = values.template.properties.properties as Record<string, any>;
+    const filteredFieldNames = Object.entries(templateProperties)
+        .filter(([_key, property]) => !!property.filters)
+        .map(([key]) => key);
+
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+    const notTouchedFiltered: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => filteredFieldNames.includes(key) && !touched[key]);
+
+    const notTouched: ErrorSchema<{}> = mergeErrorSchemas(notTouchedUnique, notTouchedFiltered);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
+
+    // console.log({ ajvExtraErrorsOnlyTouched, notTouchedUnique, mergedErrors, filteredFieldNames, notTouchedFiltered });
 
     const Widgets = React.useMemo(
         () => ({

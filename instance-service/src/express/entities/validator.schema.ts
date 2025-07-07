@@ -103,7 +103,6 @@ export const createEntityRequestSchema = Joi.object({
     params: {},
 });
 
-
 /**
  * POST /api/instances/entities/expanded/:id
  */
@@ -145,14 +144,19 @@ const searchByTemplateSchema = {
 };
 
 export const chartSchema = Joi.object({
-    body: Joi.array().items(
-        Joi.object({
-            _id: Joi.string(),
-            xAxis: Joi.any(),
-            yAxis: Joi.any(),
-            filter: searchFilterSchema,
-        }),
-    ),
+    body: Joi.object({
+        isChildTemplate: Joi.boolean(),
+        chartsData: Joi.array()
+            .items(
+                Joi.object({
+                    _id: Joi.string(),
+                    xAxis: Joi.any(),
+                    yAxis: Joi.any(),
+                    filter: searchFilterSchema,
+                }),
+            )
+            .required(),
+    }),
     query: {},
     params: {
         templateId: Joi.string().required(),

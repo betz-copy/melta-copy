@@ -10,12 +10,16 @@ import { DashboardItemType, TableForm, ViewMode } from '../../../../interfaces/d
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
 import { ChangeTemplate } from '../../Dialogs';
+import { IEntityChildTemplateMap } from '../../../../interfaces/entityChildTemplates';
 
 const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue, setValues } = formikProps;
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+
+    const entityTemplatesIds = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
 
     const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
         isOpen: false,
@@ -23,9 +27,13 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
     });
 
     const handleChangeTemplate = (newValue: string[] | string | null) => {
-        setFieldValue('templateId', newValue || null);
+        const childTemplate = childEntityTemplates.get(newValue as string);
 
-        if (typeof newValue === 'string') setFieldValue('columns', getTemplateProperties(entityTemplates, newValue));
+        setFieldValue('templateId', childTemplate?.fatherTemplateId || newValue || null);
+        setFieldValue('childTemplateId', childTemplate?._id || null);
+
+        if (typeof newValue === 'string')
+            setFieldValue('columns', getTemplateProperties(childTemplate ? childEntityTemplates : entityTemplates, newValue, !!childTemplate));
     };
 
     return (
@@ -33,14 +41,14 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
             <Grid item>
                 <FormikAutoComplete
                     formik={formikProps}
-                    formikField="templateId"
-                    options={Array.from(entityTemplates.keys())}
+                    formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
+                    options={entityTemplatesIds}
                     label={i18next.t('entity')}
                     onChange={(newValue) => {
                         if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
                         else handleChangeTemplate(newValue);
                     }}
-                    getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
+                    getOptionLabel={(id) => childEntityTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
                     multiple={false}
                     readonly={viewMode === ViewMode.ReadOnly}
                     style={{ width: '100%' }}

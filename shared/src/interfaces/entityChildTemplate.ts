@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import { IMongoCategory } from './category';
-import { IEntitySingleProperty, IEntityTemplatePopulated, IMongoEntityTemplate } from './entityTemplate';
+import { IEntitySingleProperty, IEntityTemplatePopulated, IFullMongoEntityTemplate } from './entityTemplate';
 
 export enum ViewType {
     categoryPage = 'categoryPage',
@@ -36,8 +36,14 @@ export interface IMongoEntityChildTemplate extends IEntityChildTemplate, Documen
 }
 
 export interface IEntityChildTemplatePopulated extends Omit<IMongoEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
-    fatherTemplateId: IMongoEntityTemplate;
+    fatherTemplateId: IFullMongoEntityTemplate;
     categories: IMongoCategory[];
+}
+
+export interface IMongoEntityChildTemplatePopulated extends IEntityChildTemplatePopulated {
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IEntityChildTemplatePropertiesPopulated extends Omit<IEntityChildTemplatePopulated, 'properties'> {

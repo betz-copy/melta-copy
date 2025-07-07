@@ -7,11 +7,11 @@ import {
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
     ISubCompactPermissions,
-    IEntityChildTemplatePopulated,
     IMongoCategoryOrderConfig,
     IMongoBaseConfig,
     ConfigTypes,
     ICategoryOrderConfig,
+    IMongoEntityChildTemplatePopulated,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -214,12 +214,12 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get<IMongoEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 
     async getAllChildTemplates() {
-        const { data } = await this.api.get<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
+        const { data } = await this.api.get<IMongoEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
         return data;
     }
 }

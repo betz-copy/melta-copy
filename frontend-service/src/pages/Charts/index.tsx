@@ -20,6 +20,9 @@ import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 import { AddNewChartButton } from './AddNewChartButton';
 import ChartItem from './chartsTemplatePage/chartItem';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { transformChild } from '../Category';
+import { ICategoryMap } from '../../interfaces/categories';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -29,7 +32,14 @@ const ChartsPage: React.FC = () => {
     const [currentLocation, navigate] = useLocation();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const template = entityTemplates.get(templateId!)!;
+    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+
+    const childEntityTemplate = childEntityTemplates.get(templateId as string);
+    const fatherEntityTemplate = entityTemplates.get((childEntityTemplate ? childEntityTemplate.fatherTemplateId : templateId) as string)!;
+    const template = childEntityTemplate
+        ? transformChild(childEntityTemplate, fatherEntityTemplate, categories.get(childEntityTemplate.categories[0])!)
+        : fatherEntityTemplate;
 
     const [textSearch, setTextSearch] = useState<string>();
     const [layout, setLayout] = useState<LayoutItem[]>([]);
@@ -51,8 +61,8 @@ const ChartsPage: React.FC = () => {
     });
 
     const { data, isFetching } = useQuery({
-        queryKey: ['getCharts', templateId, textSearch],
-        queryFn: () => getChartByTemplateId(templateId as string, textSearch),
+        queryKey: ['getCharts', templateId, textSearch, !!childEntityTemplate],
+        queryFn: () => getChartByTemplateId(templateId as string, textSearch, !!childEntityTemplate),
         initialData: [],
     });
 

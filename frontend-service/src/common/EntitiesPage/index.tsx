@@ -186,7 +186,7 @@ const EntitiesPage: React.FC<{
                     <CardsView
                         ref={cardsViewRef}
                         templateIds={templatesToShowCheckbox.map(({ fatherTemplateId, _id }) => fatherTemplateId || _id)}
-                        templates ={templatesToShowCheckbox}
+                        templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                     />
                 )}

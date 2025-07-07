@@ -55,7 +55,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated & { childTemplateId?: string };
+        template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
@@ -293,7 +293,7 @@ const TemplateTable = forwardRef<
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('pages.charts'),
-                            iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
+                            iconButtonProps: { onClick: () => navigate(`/charts/${childTemplateId || template._id}`) },
                         }}
                         icon={<BarChart fontSize="small" />}
                         text={i18next.t('pages.charts')}
@@ -357,6 +357,7 @@ const TemplateTable = forwardRef<
                         }}
                         setUpdatedEntities={setUpdatedEntities}
                         childTemplateId={childTemplateId}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.addEntityTitle')}

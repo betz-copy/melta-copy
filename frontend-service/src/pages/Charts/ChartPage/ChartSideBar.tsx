@@ -31,6 +31,7 @@ import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions
 import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
+import { getCurrentTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -40,13 +41,13 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
     const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
         isOpen: false,
         newTemplate: null,
     });
+    const template = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
@@ -157,11 +158,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                 </Grid>
 
                                 <Grid item marginTop={2}>
-                                    <ChartTypesEdit
-                                        formik={props}
-                                        entityTemplate={entityTemplates.get(values.templateId)!}
-                                        disabled={viewMode === ViewMode.ReadOnly}
-                                    />
+                                    <ChartTypesEdit formik={props} entityTemplate={template} disabled={viewMode === ViewMode.ReadOnly} />
                                 </Grid>
 
                                 <Grid item container direction="column" spacing={2}>

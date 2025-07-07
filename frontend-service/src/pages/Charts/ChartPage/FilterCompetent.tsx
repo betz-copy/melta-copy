@@ -12,6 +12,7 @@ import { IFilterTemplate } from '../../../common/wizards/entityTemplate/commonIn
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getCurrentTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 
 const FilterCompetent = <T extends TableForm | ChartForm>({
     formik: { values, errors, touched, setFieldValue },
@@ -29,13 +30,13 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = entityTemplates.get(values.templateId!);
+    const entityTemplate = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
     const [inputValue, setInputValue] = useState<string>('');
 
     const properties = entityTemplate?.properties.properties;
     const notIncludedFormats = ['fileId', 'signature', 'location', 'comment'];
     const filterProperties = Object.entries(properties ?? {})
-        .filter(([_, value]) => !notIncludedFormats.includes(value.format ?? '') && value.items?.format !== 'fileId')
+        .filter(([_, value]: [any, any]) => !notIncludedFormats.includes(value.format ?? '') && value.items?.format !== 'fileId')
         .map(([key]) => key);
 
     const handleFilterChange = (newFiltersArray: IFilterTemplate[]) => setFieldValue('filter', newFiltersArray);

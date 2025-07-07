@@ -43,6 +43,8 @@ import {
     ValidationError,
     BadRequestError,
     IMultipleSelect,
+    getFilterFromChildTemplate,
+    combineFilters,
 } from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
@@ -2126,13 +2128,18 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, chartBody: IChartBody[]) {
-        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-        const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
+    async getChartByTemplate(templateId: string, { chartsData, isChildTemplate }: { chartsData: IChartBody[]; isChildTemplate?: boolean }) {
+        const childEntityTemplate = isChildTemplate ? await this.entityChildTemplateManagerService.getEntityChildTemplateById(templateId) : undefined;
+
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(childEntityTemplate?.fatherTemplateId._id || templateId);
+
+        const entityTemplatesMap = new Map([[entityTemplate._id, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
-        const chartPromises = chartBody.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const templatesFilter = { [templateId]: { filter, showRelationships: false } };
+        const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
+            const filters = isChildTemplate ? combineFilters(getFilterFromChildTemplate(childEntityTemplate!), filter) : filter;
+
+            const templatesFilter = { [entityTemplate._id]: { filter: filters, showRelationships: false } };
 
             const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);

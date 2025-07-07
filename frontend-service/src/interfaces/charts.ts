@@ -8,6 +8,7 @@ export interface IChart {
     templateId: string;
     createdBy: string;
     usedInDashboard?: boolean;
+    childTemplateId?: string;
 }
 
 export interface IMongoChart extends IChart {

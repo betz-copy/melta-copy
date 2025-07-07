@@ -12,7 +12,7 @@ import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { getDefaultFilterFromChildTemplate } from './TemplateTablesView';
+import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 import { transformChild } from '../../pages/Category';
 import { useUserStore } from '../../stores/user';

@@ -41,8 +41,9 @@ class InstancesValidator extends DefaultController {
 
     // entities
     private async getCategoryIdFromTemplateId(templateId: string) {
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-        return template.category._id;
+        return childTemplate?.categories[0]._id || template.category._id;
     }
 
     private async getCategoryIdsFromTemplateIds(templateIds: string[], userId: string) {

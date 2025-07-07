@@ -209,7 +209,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             }),
         ),
     );
-    formData.append('templateId', entity.template._id);
+    formData.append('templateId', entity.template.fatherTemplateId || entity.template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -324,7 +324,7 @@ const getBodyForUpdateRequest = async (
         ),
     );
 
-    formData.append('templateId', newEntityData.template._id);
+    formData.append('templateId', newEntityData.template.fatherTemplateId || newEntityData.template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -510,8 +510,12 @@ export const getChartOfTemplate = async (
     yAxis: IAxisField | undefined,
     templateId: string,
     filter?: ISearchFilter<Record<string, any>>,
+    isChildTemplate?: boolean,
 ) => {
-    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
+    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, {
+        chartsData: [{ xAxis, yAxis, filter }],
+        isChildTemplate,
+    });
 
     return data;
 };

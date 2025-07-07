@@ -159,11 +159,11 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(
-            `${baseEntitiesRoute}/chart/${templateId}`,
+    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[], isChildTemplate?: boolean) => {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, {
             chartsData,
-        );
+            isChildTemplate,
+        });
 
         return data;
     };
