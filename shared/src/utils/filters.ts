@@ -1,4 +1,4 @@
-import { IFilterGroup, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { IFilterGroup, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
 
 const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     switch (op) {
