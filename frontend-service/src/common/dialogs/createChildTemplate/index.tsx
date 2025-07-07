@@ -53,6 +53,7 @@ const CreateChildTemplateDialog: React.FC<{
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
     const [selectedUserField, setSelectedUserField] = useState<string | null>(null);
@@ -376,9 +377,17 @@ const CreateChildTemplateDialog: React.FC<{
 
     if (!entityTemplate || !categories || !allTemplates) return null;
 
-    const templateValues = Array.from(allTemplates.values());
-    const existingNames = templateValues.filter((t) => !childTemplate || (childTemplate && t._id !== childTemplate._id)).map((t) => t.name);
-    const existingDisplayNames = templateValues.filter((t) => !childTemplate || t._id !== childTemplate._id).map((t) => t.displayName);
+    const existingNames = childTemplates
+        ? Array.from(childTemplates.values())
+              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .map((t) => t.name)
+        : [];
+    const existingDisplayNames = childTemplates
+        ? Array.from(childTemplates.values())
+              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .map((t) => t.displayName)
+        : [];
+    console.log({ existingDisplayNames });
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>

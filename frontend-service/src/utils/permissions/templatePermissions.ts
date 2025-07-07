@@ -4,7 +4,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { IMongoRule } from '../../interfaces/rules';
 import { ICurrentUser } from '../../interfaces/users';
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
-import { IEntityChildTemplate } from '../../interfaces/entityChildTemplates';
+import { IMongoChildEntityTemplate } from '../../interfaces/entityChildTemplates';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
@@ -93,7 +93,7 @@ export const updateUserPermissionForEntityTemplate = (
 
     const updatedEntityTemplates = {
         ...instances?.categories?.[categoryId]?.entityTemplates,
-        [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+        [newEntityTemplate._id]: { scope: PermissionScope.write },
     };
 
     const updatedCategories = {
@@ -151,7 +151,7 @@ export const updateUserPermissionForCategory = (newCategory: IMongoCategory, cur
 
 export const checkUserChildTemplatePermission = (
     userPermissions: ISubCompactPermissions,
-    childTemplate: IEntityChildTemplate,
+    childTemplate: IMongoChildEntityTemplate,
     scope: PermissionScope,
 ): boolean => {
     if (userPermissions.admin?.scope === PermissionScope.write) {
@@ -159,6 +159,34 @@ export const checkUserChildTemplatePermission = (
     }
 
     return childTemplate.categories.some((categoryId) => {
-        return userPermissions.instances?.categories[categoryId]?.scope === scope;
+        if (userPermissions.instances?.categories[categoryId]?.scope === scope) {
+            return true;
+        }
+
+        const categoryPermissions = userPermissions.instances?.categories[categoryId];
+        if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope === scope) {
+            return true;
+        }
+
+        return false;
+    });
+};
+
+export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompactPermissions, childTemplate: IMongoChildEntityTemplate): boolean => {
+    if (userPermissions.admin?.scope === PermissionScope.write) {
+        return true;
+    }
+
+    return childTemplate.categories.some((categoryId) => {
+        if (userPermissions.instances?.categories[categoryId]?.scope) {
+            return true;
+        }
+
+        const categoryPermissions = userPermissions.instances?.categories[categoryId];
+        if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope) {
+            return true;
+        }
+
+        return false;
     });
 };

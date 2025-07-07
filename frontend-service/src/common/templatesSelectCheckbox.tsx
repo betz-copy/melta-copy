@@ -25,8 +25,8 @@ const TemplatesSelectCheckbox: React.FC<{
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
-            getOptionId={({ _id }) => _id}
-            getOptionLabel={({ displayName }) => displayName}
+            getOptionId={(option) => option?._id || ''}
+            getOptionLabel={(option) => option?.displayName || ''}
             isDraggableDisabled={isDraggableDisabled}
             setOptions={setTemplates}
             size={size}
@@ -36,7 +36,7 @@ const TemplatesSelectCheckbox: React.FC<{
                 groups: categories,
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
-                getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
+                getGroupOfOption: (entityTemplate, _categories) => entityTemplate?.category,
             }}
             overrideSx={overrideSx}
         />

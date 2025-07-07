@@ -105,7 +105,7 @@ const Category: React.FC = () => {
             const parent = entityTemplates.get(child.fatherTemplateId);
             if (parent) {
                 const childTemplate = transformChild(child, parent, category);
-                allAuthorizedTemplatesMap.set(child._id, childTemplate); 
+                allAuthorizedTemplatesMap.set(child._id, childTemplate);
                 defaultOrderedTemplateIds.push(child._id);
                 addedTemplateIds.add(child._id);
             }
