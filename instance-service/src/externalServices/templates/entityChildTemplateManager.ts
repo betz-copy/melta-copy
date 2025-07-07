@@ -1,4 +1,4 @@
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IEntityChildTemplatePopulated, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
 
@@ -10,7 +10,7 @@ const {
 
 class EntityChildTemplateManagerService extends TemplatesManagerService {
     async getEntityChildTemplateById(id: string) {
-        const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
+        const { data } = await this.api.get<IEntityChildTemplatePopulated>(`${getByIdRoute}/${id}`);
 
         return data;
     }

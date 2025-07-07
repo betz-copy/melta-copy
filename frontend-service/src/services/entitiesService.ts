@@ -175,7 +175,7 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules'], childTemplateId?: string) => {
+export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
     // TODO: NOT USED - ask Amit
@@ -216,10 +216,11 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             }),
         ),
     );
-    formData.append('templateId', entity.template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    formData.append('templateId', entity.template.fatherTemplateId ?? entity.template._id);
+
+    if (entity.template.fatherTemplateId) {
+        formData.append('childTemplateId', entity.template._id);
     }
 
     if (ignoredRules) {
@@ -331,7 +332,7 @@ const getBodyForUpdateRequest = async (
         ),
     );
 
-    formData.append('templateId', newEntityData.template._id);
+    formData.append('templateId', newEntityData.template.fatherTemplateId ?? newEntityData.template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);

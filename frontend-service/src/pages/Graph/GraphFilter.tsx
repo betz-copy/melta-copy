@@ -64,14 +64,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     const options = templateOptions.filter((option) => graphEntityTemplateIds.includes(option._id));
     const properties = selectedTemplate?.properties.properties;
+    const notIncludedFormats = ['fileId', 'signature', 'location', 'comment'];
     const filterProperties = properties
         ? Object.keys(properties).filter(
-              (prop) =>
-                  properties[prop].format !== 'fileId' &&
-                  properties[prop].items?.format !== 'fileId' &&
-                  properties[prop].format !== 'signature' &&
-                  properties[prop].format !== 'location' &&
-                  properties[prop].format !== 'comment',
+              (prop) => !notIncludedFormats.includes(properties[prop].format ?? '') && properties[prop].items?.format !== 'fileId',
           )
         : [];
 

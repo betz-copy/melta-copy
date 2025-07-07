@@ -171,9 +171,9 @@ class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanWriteBulkEntityInstances(req: Request) {
-        const { templateId } = req.body;
+        const { templateId, childTemplateId } = req.body;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], userId: string) {

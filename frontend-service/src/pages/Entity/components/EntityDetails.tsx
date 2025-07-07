@@ -39,7 +39,7 @@ import LocationPreview from '../../Map/LocationPreview';
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded; childTemplateId?: string }> = ({
     entityTemplate,
     expandedEntity,
-    childTemplateId
+    childTemplateId,
 }) => {
     const { entity } = expandedEntity;
     const [_, navigate] = useLocation();
@@ -138,6 +138,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
+                childTemplateId,
             } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {

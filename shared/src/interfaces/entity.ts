@@ -249,6 +249,7 @@ export interface IGraphFilterBodyBatch {
 export interface IDeleteEntityBodyBase {
     selectAll: boolean;
     templateId: string;
+    childTemplateId?: string;
     deleteAllRelationships?: boolean;
 }
 

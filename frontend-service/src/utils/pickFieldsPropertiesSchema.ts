@@ -8,19 +8,17 @@ export const filterFieldsFromPropertiesSchema = (
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
 ): IMongoEntityTemplatePopulated['properties'] => {
     const getProperty = (key: string) => schema.properties[key];
-
+    const formats = ['fileId', 'entityReference'];
     return {
         ...schema,
         properties: pickBy(
             schema?.properties,
-
-            (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId' && !value.archive,
+            (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive,
         ),
         required:
             schema?.required?.filter(
                 (requiredKey) =>
-                    getProperty(requiredKey)?.format !== 'fileId' &&
-                    getProperty(requiredKey)?.format !== 'entityReference' &&
+                    !formats.includes(getProperty(requiredKey).format ?? '') &&
                     getProperty(requiredKey)?.items?.format !== 'fileId' &&
                     getProperty(requiredKey)?.serialCurrent === undefined &&
                     (!fieldsToFilter || !!fieldsToFilter?.[requiredKey]),

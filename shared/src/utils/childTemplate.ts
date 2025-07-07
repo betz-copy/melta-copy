@@ -1,12 +1,6 @@
-import {
-    IEntityChildTemplatePopulated,
-    IEntitySingleProperty,
-    IFilterOfTemplate,
-    IFullMongoEntityTemplate,
-    IMongoEntityTemplate,
-    IMongoEntityTemplatePopulated,
-    ISearchFilter,
-} from '@microservices/shared';
+import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
+import { IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
+import { IEntitySingleProperty, IFullMongoEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
 
 const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated): ISearchFilter => {
     return Object.entries(childTemplate.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
@@ -30,7 +24,7 @@ const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated
 
             return acc;
         },
-        { $and: [{ disabled: { $eq: false } }] },
+        { $and: [] },
     );
 };
 

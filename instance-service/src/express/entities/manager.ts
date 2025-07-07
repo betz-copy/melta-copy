@@ -1203,7 +1203,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string) {
-        let node;
+        let node: Record<string, any> | null;
         if (type === 'array') {
             node = await this.neo4jClient.readTransaction(
                 `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,

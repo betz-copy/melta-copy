@@ -1,12 +1,19 @@
 /* eslint-disable no-param-reassign */
-import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
+import {
+    CoordinateSystem,
+    EntityTemplateType,
+    getFullChildTemplateProperties,
+    IEntity,
+    IEntitySingleProperty,
+    locationConverterToString,
+    TemplateItem,
+} from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
 import hexToARGB from './colors';
 import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
-import { getFullChildTemplateProperties } from '../childTemplate';
 
 interface IExcelStyle {
     columnHeader: {

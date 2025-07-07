@@ -384,13 +384,14 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated => {
+    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated & { fatherTemplateId?: string } => {
         if (templateId) {
             const childTemplate = childTemplates.get(templateId);
             if (childTemplate) {
                 const fatherEntity = entityTemplates.get(childTemplate.fatherTemplateId)!;
                 return {
                     ...fatherEntity,
+                    fatherTemplateId: childTemplate.fatherTemplateId,
                     _id: childTemplate._id,
                     displayName: childTemplate.displayName,
                     properties: { ...fatherEntity.properties, properties: childTemplate.properties as Record<string, IEntitySingleProperty> },

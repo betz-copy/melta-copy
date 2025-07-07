@@ -201,6 +201,7 @@ export interface IGraphFilterBodyBatch {
 export interface IDeleteEntityBodyBase {
     templateId: string;
     deleteAllRelationships?: boolean;
+    childTemplateId?: string;
 }
 
 export type IMultipleSelect<T extends boolean = boolean> = {

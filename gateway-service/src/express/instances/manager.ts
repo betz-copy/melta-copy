@@ -5,7 +5,9 @@
 import {
     ActionTypes,
     BadRequestError,
+    combineFilters,
     EntityTemplateType,
+    getFilterFromChildTemplate,
     IAction,
     IBrokenRule,
     IBrokenRuleEntity,
@@ -14,12 +16,12 @@ import {
     ICreateRelationshipMetadata,
     IDeleteEntityBody,
     IEntity,
+    IEntityChildTemplatePopulated,
     IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IFailedEntity,
-    IFilterOfTemplate,
     IFullMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
@@ -33,7 +35,9 @@ import {
     ITemplateSearchBody,
     IUpdateEntityMetadata,
     logger,
+    matchValueAgainstFilter,
     TemplateItem,
+    transformChild,
     UploadedFile,
 } from '@microservices/shared';
 import axios from 'axios';
@@ -44,13 +48,13 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
+import FilterValidation from '../../error';
 import InstancesService from '../../externalServices/instanceService';
 import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { getFilterFromChildTemplate, transformChild } from '../../utils/childTemplate';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
@@ -228,28 +232,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return entities;
     }
 
-    private combineFilters = (
-        filterModel?: ISearchEntitiesOfTemplateBody['filter'],
-        defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
-    ): ISearchFilter | undefined => {
-        if (!filterModel && !defaultModal) return undefined;
-
-        const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
-            if (filter?.$and) {
-                return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
-            }
-
-            return [];
-        };
-
-        const filterModelAnds = extractAndArray(filterModel);
-        const defaultModalAnds = extractAndArray(defaultModal);
-
-        return {
-            $and: [...filterModelAnds, ...defaultModalAnds],
-        };
-    }; // TODO: match the function to the frontend after noa's assignment
-
     private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
         templateItem: TemplateItem,
@@ -274,7 +256,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return;
         }
 
-        const filters = type === EntityTemplateType.Parent ? filter : this.combineFilters(getFilterFromChildTemplate(template), filter);
+        const filters = type === EntityTemplateType.Parent ? filter : combineFilters(getFilterFromChildTemplate(template), filter);
 
         const { count } = await this.service.searchEntitiesOfTemplateRequest(parentTemplate._id, {
             skip: 0,
@@ -390,6 +372,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, childTemplateId?: string) {
         const template = await this.handleTemplate(templateId, childTemplateId);
+
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
 
@@ -510,10 +493,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
         return objectFilter(entityProperties, (key) => {
             const propertyTemplate = template.properties.properties[key];
-            return (
-                propertyTemplate &&
-                (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId' || propertyTemplate.format === 'signature')
-            );
+            const fileFormats = ['fileId', 'signature'];
+            return propertyTemplate && (fileFormats.includes(propertyTemplate.format ?? '') || propertyTemplate.items?.format === 'fileId');
         });
     }
 
@@ -935,7 +916,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
-        const template = await this.entityTemplateService.getEntityTemplateById(deleteBody.templateId);
+        const { childTemplateId, templateId } = deleteBody;
+        const template = childTemplateId
+            ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
 
         if (template.disabled) throw new BadRequestError('cannot delete entities with disabled template');
         if (!deleteBody.selectAll) {
@@ -944,6 +928,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
             const disabledEntity = entities.find((entity) => entity.properties.disabled === true);
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
+            if (childTemplateId) {
+                const notFilterValid = entities.find((entity) =>
+                    matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IEntityChildTemplatePopulated)),
+                );
+                console.dir({ notFilterValid, filters: getFilterFromChildTemplate(template as IEntityChildTemplatePopulated) }, { depth: null });
+
+                if (notFilterValid)
+                    throw new FilterValidation(`cannot delete, entity ${notFilterValid.properties._id} is not valid according to filters`);
+            }
         }
 
         const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);

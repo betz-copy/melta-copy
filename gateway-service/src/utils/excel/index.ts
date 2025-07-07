@@ -90,7 +90,9 @@ export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[]
                     break;
             }
         }
-        if (data.type === errorCodes.templateValidationError) getValidationErrorEntities(error as AxiosError, failedEntities);
+
+        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
+            getValidationErrorEntities(error as AxiosError, failedEntities);
     } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,

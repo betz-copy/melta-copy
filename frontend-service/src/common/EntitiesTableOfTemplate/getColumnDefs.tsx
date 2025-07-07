@@ -31,7 +31,7 @@ import { ImageWithDisable } from '../ImageWithDisable';
 import { environment } from '../../globals';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childTemplateId?: string };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; fatherTemplateId?: string };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -89,6 +89,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
+
+    const childTemplateId = template.fatherTemplateId ? template._id : undefined;
 
     const filteredProperties = template.propertiesOrder.filter((propertyOrder) => !template.properties.properties[propertyOrder].comment);
 
@@ -364,11 +366,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 <Link
                                     href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
                                         getEntityPropertiesData(data)._id
-                                    }${
-                                        pageType === environment.clientSideId
-                                            ? ''
-                                            : `/${template.childTemplateId ?? template._id}?childTemplateId=${template.childTemplateId}`
-                                    }`}
+                                    }${pageType === environment.clientSideId ? '' : `/${template._id}?childTemplateId=${childTemplateId}`}`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -448,7 +446,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate?childTemplateId=${template.childTemplateId}`, {
+                                        navigate(`/entity/${getRowId(data)}/duplicate?childTemplateId=${childTemplateId}`, {
                                             state: { entityTemplate: template, expandedEntity: { entity: data } },
                                         });
                                     }}
