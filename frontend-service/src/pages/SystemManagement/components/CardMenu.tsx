@@ -33,6 +33,7 @@ export const CardMenu: React.FC<{
     onAddActionsClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
     onOptionsIconClick?: () => Promise<void>;
+    optionsIconStyle?: React.CSSProperties;
 }> = ({
     onOptionsIconClose,
     onEditClick,
@@ -43,6 +44,7 @@ export const CardMenu: React.FC<{
     onAddActionsClick,
     onConvertToRelationShipFieldClick,
     onOptionsIconClick,
+    optionsIconStyle,
 }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -71,7 +73,7 @@ export const CardMenu: React.FC<{
 
     return (
         <>
-            <IconButton onClick={handleClick} style={{ ...iconSize }}>
+            <IconButton onClick={handleClick} style={{ ...iconSize, ...optionsIconStyle }} size="small">
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

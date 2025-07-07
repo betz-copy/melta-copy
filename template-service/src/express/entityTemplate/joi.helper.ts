@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { IEntityTemplate, IEnumPropertiesColors, IProperties, ColorSchema, variableNameValidation } from '@microservices/shared';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties, ColorSchema, variableNameValidation, searchFilterSchema } from '@microservices/shared';
 import config from '../../config';
 
 const { notifications, ajvCustomFormats } = config;
@@ -64,33 +64,6 @@ export const stringFormats = [
     'kartoffelUserField',
 ];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
-
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // regex syntax of Neo4j (Java Regular Expression). validated by neo itself
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
 
 const propertiesArraySchema = Joi.array()
     .items(

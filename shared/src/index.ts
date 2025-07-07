@@ -20,6 +20,7 @@ export * from './interfaces/globalSearch';
 export * from './interfaces/chart';
 export * from './interfaces/role';
 export * from './interfaces/workspaceConfigs';
+export * from './interfaces/dashboard';
 
 export * from './utils/express';
 export { default as logger } from './utils/logger/logsLogger';
@@ -49,6 +50,7 @@ export { default as DefaultManagerMongo } from './utils/mongo/manager';
 
 export * from './utils/map';
 export * from './utils/joi';
+export { searchFilterSchema } from './utils/validationSchema/searchFilterSchema';
 export { default as ValidateRequest } from './utils/joi';
 // export {
 //     ActionTypes,

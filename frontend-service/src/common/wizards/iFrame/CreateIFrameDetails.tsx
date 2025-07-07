@@ -5,10 +5,10 @@ import i18next from 'i18next';
 import { StepComponentProps } from '../index';
 import { IFrameWizardValues } from '.';
 
-const createIFrameDetailsSchema = {
+const createIFrameDetailsSchema = Yup.object({
     name: Yup.string().required(i18next.t('validation.required')),
     url: Yup.string().url(i18next.t('validation.url')).required(i18next.t('validation.required')),
-};
+});
 
 const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
     return (
