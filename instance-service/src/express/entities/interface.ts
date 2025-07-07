@@ -4,7 +4,7 @@ export interface IGetExpandedEntityBody {
     disabled: boolean | null;
     templateIds: string[];
     expandedParams: { [entityId: string]: number };
-    filters: { [templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean } };
+    filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
 }
 
 export const isRelationshipReference = (object: any): object is IEntity => {
