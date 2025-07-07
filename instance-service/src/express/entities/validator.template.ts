@@ -10,7 +10,6 @@ import {
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     IFilterOfField,
-    IFilterOfTemplate,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
@@ -20,6 +19,8 @@ import {
     addPropertyToRequest,
     CoordinateSystem,
     ValidationError,
+    IFilterGroup,
+    FilterLogicalOperator,
 } from '@microservices/shared';
 import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
@@ -246,12 +247,23 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    private validateFilterOfTemplate(filterOfTemplate: IFilterOfTemplate, template: IMongoEntityTemplate, path: string) {
-        Object.entries(filterOfTemplate).forEach(([field, filterOfField]) => {
+    private validateFilterOfTemplate(filterOfTemplate: IFilterGroup, template: IMongoEntityTemplate, path: string) {
+        Object.entries(filterOfTemplate).forEach(([filterKey, filterOfField]) => {
             if (!filterOfField) return;
 
-            if (!template.propertiesOrder.includes(field)) throw new ValidationError(`field ${path}.${field} doesnt exist in template`);
-            this.validateFilterOfField(filterOfField, template.properties.properties[field], `${path}.${field}`);
+            if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
+                if (Array.isArray(filterOfField)) {
+                    filterOfField.map((currFilterOfTemplate, i) =>
+                        this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`${filterKey}\`[${i}]`),
+                    );
+                    return;
+                }
+                this.validateFilterOfTemplate(filterOfField, template, `${path}.\`$and\``);
+                return;
+            }
+
+            if (!template.propertiesOrder.includes(filterKey)) throw new ValidationError(`field ${path}.${filterKey} doesnt exist in template`);
+            this.validateFilterOfField(filterOfField, template.properties.properties[filterKey], `${path}.${filterKey}`);
         });
     }
 
@@ -264,9 +276,7 @@ export class EntityValidator extends DefaultController {
         if ($or) {
             $or.forEach((orPart, index) => this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`));
         }
-
         if (!$and) return;
-
         if (Array.isArray($and)) {
             $and.forEach((andPart, index) => this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`));
         } else {
@@ -351,7 +361,7 @@ export class EntityValidator extends DefaultController {
 
         const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId]);
 
-        if (filter) this.validateFilter(filter, entityTemplateForValidation, 'filter');
+        if (filter) this.validateFilterOfTemplate(filter, entityTemplateForValidation, 'filter');
 
         this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
 
