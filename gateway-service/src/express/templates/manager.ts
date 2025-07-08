@@ -44,6 +44,7 @@ import {
     ServiceError,
     TableItem,
     UploadedFile,
+    IEntityChildTemplatePopulated,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -501,6 +502,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, { [this.workspaceId]: updatedPermissions });
     }
 
+    async updateEntityTemplateAction(templateId: string, actions: string, isChildTemplate?: boolean): Promise<IMongoEntityTemplatePopulated> {
+        if (isChildTemplate) return this.entityTemplateService.updateChildEntityTemplateAction(templateId, actions);
+        return this.entityTemplateService.updateEntityTemplateAction(templateId, actions);
+    }
+
     async searchEntityTemplates(
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
         searchQuery: ISearchEntityTemplatesBody,
@@ -898,6 +904,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         count: number,
         removedProperties: string[],
         currentTemplate: IMongoEntityTemplatePopulated,
+        childTemplatesToHandleRemove: IEntityChildTemplatePopulated[],
     ) {
         if (!removedProperties.length) return;
 
@@ -940,7 +947,24 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     category: currentTemplate.category._id,
                 };
 
-                await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
+                await Promise.all([
+                    this.entityTemplateService.updateEntityTemplate(id, updatedTemplate),
+                    ...childTemplatesToHandleRemove.map((childTemplate) =>
+                        this.entityTemplateService.updateEntityChildTemplate(id, {
+                            fatherTemplateId: childTemplate.fatherTemplateId._id,
+                            categories: childTemplate.categories.map((category) => category._id),
+                            properties: childTemplate.properties,
+                            actions: childTemplate.actions,
+                            description: childTemplate.description,
+                            disabled: childTemplate.disabled,
+                            displayName: childTemplate.displayName,
+                            isFilterByCurrentUser: childTemplate.isFilterByCurrentUser,
+                            isFilterByUserUnit: childTemplate.isFilterByUserUnit,
+                            name: childTemplate.name,
+                            viewType: childTemplate.viewType,
+                        }),
+                    ),
+                ]);
                 throw err;
             }
         }
@@ -1102,7 +1126,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             isSingularToPlural
                         )
                     ) {
-                        throw new BadRequestError('can not change property format');
+                        throw new BadRequestError('can not change property format', { value, newValue });
                     }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
@@ -1156,7 +1180,37 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             documentTemplatesIds,
         });
 
-        await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
+        const childTemplates = await this.entityTemplateService.searchChildTemplates({ fatherTemplatesIds: [id] });
+
+        const childTemplatesToHandleRemove: IEntityChildTemplatePopulated[] = [];
+
+        await Promise.all([
+            ...childTemplates.map((childTemplate) => {
+                if (removedProperties.some((removedPropertyKey) => Object.keys(childTemplate.properties).includes(removedPropertyKey))) {
+                    const filteredProperties = childTemplate.properties;
+                    removedProperties.forEach((removedPropertyKey) => delete filteredProperties[removedPropertyKey]);
+
+                    childTemplatesToHandleRemove.push(childTemplate);
+
+                    return this.entityTemplateService.updateEntityChildTemplate(childTemplate._id, {
+                        fatherTemplateId: childTemplate.fatherTemplateId._id,
+                        categories: childTemplate.categories.map((category) => category._id),
+                        properties: filteredProperties,
+                        actions: childTemplate.actions,
+                        description: childTemplate.description,
+                        disabled: childTemplate.disabled,
+                        displayName: childTemplate.displayName,
+                        isFilterByCurrentUser: childTemplate.isFilterByCurrentUser,
+                        isFilterByUserUnit: childTemplate.isFilterByUserUnit,
+                        name: childTemplate.name,
+                        viewType: childTemplate.viewType,
+                    });
+                }
+                return null;
+            }),
+        ]);
+
+        await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate, childTemplatesToHandleRemove);
 
         if (newExpandedUserFields.length) {
             await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);

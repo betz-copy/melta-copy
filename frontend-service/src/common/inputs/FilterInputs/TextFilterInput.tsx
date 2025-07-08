@@ -28,10 +28,10 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
-    hideFilterType = false,
-    forceEqualsType = false,
     error,
     helperText,
+    hideFilterType = false,
+    forceEqualsType = false,
 }) => {
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
@@ -76,7 +76,11 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                                       filter: value ? Number(value) : undefined,
                                       type: forceEqualsType ? 'equals' : filterField?.type,
                                   } as IAGGidNumberFilter)
-                                : ({ ...filterField, filter: value, type: forceEqualsType ? 'equals' : filterField?.type } as IAGGridTextFilter);
+                                : ({
+                                      ...filterField,
+                                      filter: value || undefined,
+                                      type: forceEqualsType ? 'equals' : filterField?.type,
+                                  } as IAGGridTextFilter);
 
                         handleFilterFieldChange(updatedFilter);
                     }}

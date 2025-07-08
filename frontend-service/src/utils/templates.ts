@@ -74,3 +74,17 @@ export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplateP
         },
     };
 };
+
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated): string[] => {
+    return [
+        ...entityTemplate.propertiesPreview,
+        ...entityTemplate.propertiesOrder
+            .filter(
+                (property) =>
+                    !entityTemplate.propertiesPreview.includes(property) &&
+                    entityTemplate.properties.properties[property].format !== 'fileId' &&
+                    entityTemplate.properties.properties[property].items?.format !== 'fileId',
+            )
+            .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
+    ];
+};

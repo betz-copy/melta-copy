@@ -32,6 +32,7 @@ import { RelationshipIcon } from './RelationshipIcon';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 export const getButtonState = (
@@ -346,9 +347,12 @@ export interface IConnectionTemplateOfExpandedEntity {
 const Entity: React.FC = () => {
     const theme = useTheme();
 
-    const { entityId, templateId } = useParams();
+    const { entityId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
+
+    const [searchParams, _setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -380,13 +384,14 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated => {
+    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated & { fatherTemplateId?: string } => {
         if (templateId) {
             const childTemplate = childTemplates.get(templateId);
             if (childTemplate) {
                 const fatherEntity = entityTemplates.get(childTemplate.fatherTemplateId)!;
                 return {
                     ...fatherEntity,
+                    fatherTemplateId: childTemplate.fatherTemplateId,
                     _id: childTemplate._id,
                     displayName: childTemplate.displayName,
                     properties: { ...fatherEntity.properties, properties: childTemplate.properties as Record<string, IEntitySingleProperty> },
@@ -398,7 +403,7 @@ const Entity: React.FC = () => {
     };
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = getCurrentEntityTemplate(templateId);
+    const currentEntityTemplate = getCurrentEntityTemplate(childTemplateId ?? expandedEntity?.entity.templateId);
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
@@ -486,7 +491,7 @@ const Entity: React.FC = () => {
             <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
+                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} childTemplateId={childTemplateId} />
                 </Grid>
                 {categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>

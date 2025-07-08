@@ -44,6 +44,9 @@ export const createInstances = async (
         return selectedFunction();
     });
 
+    JSONSchemaFaker.format('signature', (_value) => 'This is a fake comment');
+    JSONSchemaFaker.format('comment', () => 'This is a fake comment');
+
     JSONSchemaFaker.format('user', (_value) => {
         return JSON.stringify({
             _id: '5e5688d54203fc40043591ac',

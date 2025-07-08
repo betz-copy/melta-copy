@@ -25,7 +25,7 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
 };
 
 export interface EntityWizardValues {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
     properties: Record<string, any> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
 }

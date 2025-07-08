@@ -82,6 +82,11 @@ const config = {
                 .default('/api/templates/relationships/search')
                 .asString(),
         },
+        children: {
+            getByIdRoute: env.get('TEMPLATE_SERVICE_CHILDREN_GET_BY_ID_ROUTE').default('/api/templates/child').asString(),
+            getRelatedByIdRoute: env.get('TEMPLATE_SERVICE_CHILDREN_GET_RELATED_BY_ID_ROUTE').default('/api/templates/child/related').asString(),
+            searchRoute: env.get('TEMPLATE_SERVICE_CHILDREN_SEARCH_ROUTE').default('/api/templates/child/search').asString(),
+        },
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',

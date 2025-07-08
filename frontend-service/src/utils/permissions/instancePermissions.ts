@@ -1,7 +1,6 @@
-import _cloneDeep from 'lodash.clonedeep';
+import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
 
 export const checkUserCategoryPermission = (
@@ -82,7 +81,6 @@ export const getChangedCategoryPermissions = (
                 newTemplatePermission[key] = {
                     scope: PermissionScope.write,
                     entityChildTemplates: categoriesPermissions?.[id]?.entityTemplates?.[key]?.entityChildTemplates ?? {},
-                    fields: {},
                 };
         });
     }
@@ -149,7 +147,6 @@ const changeSpecificChildTemplate = (
                         ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates,
                         [childTemplateId]: {
                             scope: newScope,
-                            fields: {},
                         },
                     },
                 },

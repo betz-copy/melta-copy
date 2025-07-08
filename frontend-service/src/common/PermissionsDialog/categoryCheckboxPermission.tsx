@@ -79,16 +79,16 @@ const CategoryCheckboxPermission: React.FC<{
             </Grid>
             <Grid xs={12}>
                 <Collapse in={openEntitiesList}>
-                    {entityTemplates.map((entityCheck) => {
+                    {entityTemplates.map((entityTemplateDialog) => {
                         return (
                             <EntityTemplateCheckboxPermission
-                                entityTemplate={entityCheck}
+                                entityTemplate={entityTemplateDialog}
                                 changePermissions={changePermissions}
                                 disabled={disabled}
                                 permissionType={permissionType}
                                 viewMode={viewMode}
                                 categoryPermissions={categoryPermissions}
-                                key={entityCheck.id}
+                                key={entityTemplateDialog.id}
                             />
                         );
                     })}

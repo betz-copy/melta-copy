@@ -1,31 +1,40 @@
-import { Request } from 'express';
-import * as ts from 'typescript-actions';
 import {
     addPropertyToRequest,
     DefaultController,
-    IMongoEntityTemplate,
-    IEntitySingleProperty,
-    BadRequestError,
     EntityTemplateType,
-    TemplateItem,
+    IMongoEntityChildTemplate,
     IMongoEntityTemplatePopulated,
+    TemplateItem,
 } from '@microservices/shared';
+import { Request } from 'express';
+import * as ts from 'typescript-actions';
+import getFullChildTemplateProperties from '../../utils/entityChildTemplate';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import EntityTemplateManager from './manager';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
+import EntityTemplateManager from '../entityTemplate/manager';
+import EntityChildTemplateManager from './manager';
 
-class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
+class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTemplate, EntityChildTemplateManager> {
+    private entityTemplateManager: EntityTemplateManager;
+
     constructor(workspaceId: string) {
-        super(new EntityTemplateManager(workspaceId));
+        super(new EntityChildTemplateManager(workspaceId));
+        this.entityTemplateManager = new EntityTemplateManager(workspaceId);
     }
 
     getAllRelationshipReferencesEntityTemplates = async (templateId: string) => {
-        const entityTemplates = await this.manager.getTemplates({ limit: 0, skip: 0 });
-        const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
-        const baseTemplate = templatesMap.get(templateId)!;
-        const entityPropertiesQueue = [baseTemplate.properties.properties];
+        const childTemplates = await this.manager.getChildTemplates({ limit: 0, skip: 0 });
+        const childTemplatesMap = new Map(childTemplates.map((template) => [template._id, template]));
+        const baseChildTemplate = childTemplatesMap.get(templateId)!;
+
+        const entityParentTemplates = await this.entityTemplateManager.getTemplates({ limit: 0, skip: 0 });
+        const parentTemplatesMap = new Map(entityParentTemplates.map((template) => [template._id, template]));
+        const baseParentTemplate = parentTemplatesMap.get(baseChildTemplate.fatherTemplateId._id)!;
+
+        const entityProperties = getFullChildTemplateProperties(baseChildTemplate, baseParentTemplate.properties.properties);
+        const entityPropertiesQueue = [entityProperties];
         const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
-            [templateId, { type: EntityTemplateType.Parent, metaData: baseTemplate as IMongoEntityTemplatePopulated }],
+            [templateId, { type: EntityTemplateType.Child, metaData: baseChildTemplate }],
         ]);
 
         while (entityPropertiesQueue.length > 0) {
@@ -36,7 +45,7 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
                     const { relatedTemplateId = '' } = propertyValues.relationshipReference!;
 
                     if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
-                        const relatedTemplate = templatesMap.get(relatedTemplateId)!;
+                        const relatedTemplate = parentTemplatesMap.get(relatedTemplateId)!;
                         relationshipReferenceIdsMap.set(relatedTemplateId, {
                             type: EntityTemplateType.Parent,
                             metaData: relatedTemplate as IMongoEntityTemplatePopulated,
@@ -81,61 +90,18 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
             '    }',
             '}',
         ].join('\n');
+
         const code = `${customErrorCode}\n${actions}`;
 
         const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.ES5);
+
         compileTsCode(filename, sourceFile);
+
         // todo: ensure that the code doesn't use in global variables
         const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
 
         addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));
     };
-
-    private validateProperties(properties: Record<string, IEntitySingleProperty>) {
-        const relatedUserFieldsOfkartoffelFields: string[] = [];
-        const userFields: string[] = [];
-        Object.entries(properties).forEach(([key, value]) => {
-            if (value.format && value.format === 'user') {
-                userFields.push(key);
-            }
-            if (value.format && value.format === 'kartoffelUserField') {
-                relatedUserFieldsOfkartoffelFields.push(value.expandedUserField?.relatedUserField || '');
-                if (!value.expandedUserField?.relatedUserField)
-                    throw new BadRequestError('kartoffelField derived from user field that does not exist');
-
-                const relateUserField = properties[value.expandedUserField?.relatedUserField];
-
-                if (relateUserField && relateUserField.archive && !value.archive)
-                    throw new BadRequestError('Cannot archive user field that have unarchived kartoffelField');
-            }
-        });
-
-        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField)))
-            throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist');
-    }
-
-    validateEntityTemplateUpdate = async (req: Request) => {
-        const {
-            body: { actions, properties },
-            params: { templateId },
-        } = req;
-
-        if (actions) {
-            const { actions: existingActions } = await this.manager.getTemplateById(templateId);
-
-            if (actions !== existingActions) throw new BadRequestError('Cannot update actions in update entityTemplate request');
-        }
-
-        this.validateProperties(properties.properties);
-    };
-
-    validateCreateEntityTemplate = async (req: Request) => {
-        const {
-            body: { properties },
-        } = req;
-
-        this.validateProperties(properties.properties);
-    };
 }
 
-export default EntityTemplateValidator;
+export default EntityChildTemplateValidator;

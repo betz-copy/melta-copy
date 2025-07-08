@@ -11,8 +11,16 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async createEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id));
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
+        res.json(
+            await this.manager.createEntityInstance(
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+                childTemplateId,
+            ),
+        );
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -25,26 +33,32 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
+        const { templateId, insertBrokenEntities, childTemplateId } = req.body;
         res.json(
             await this.manager.loadEntities(
-                req.body.templateId,
+                templateId,
                 req.user!.id,
+                childTemplateId,
                 req.files || (req.file ? [req.file] : []),
-                req.body.insertBrokenEntities,
+                insertBrokenEntities,
             ),
         );
     }
 
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
-        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.files?.[0] || req.file!));
+        const { templateId, childTemplateId } = req.body;
+
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, childTemplateId));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {
-        res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
+        const { entities, childTemplateId } = req.body;
+
+        res.json(await this.manager.editManyEntitiesByExcel(entities, req.user!.id, childTemplateId));
     }
 
     async updateMultipleEntities(req: Request, res: Response) {
-        const { ignoredRules, entitiesToUpdate, propertiesToRemove, ...instanceData } = req.body;
+        const { ignoredRules, entitiesToUpdate, propertiesToRemove, childTemplateId, ...instanceData } = req.body;
         res.json(
             await this.manager.updateMultipleEntities(
                 instanceData,
@@ -53,12 +67,13 @@ class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }
 
     async updateEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
 
         res.json(
             await this.manager.updateEntityInstance(
@@ -67,6 +82,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }
@@ -90,7 +106,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async duplicateEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
         res.json(
             await this.manager.duplicateEntityInstance(
                 req.params.id,
@@ -98,6 +114,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }

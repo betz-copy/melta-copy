@@ -23,6 +23,7 @@ import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
+import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 
 const { errorCodes } = environment;
 
@@ -41,6 +42,9 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
+
+    const [searchParams, _setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
 
@@ -253,7 +257,11 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 variant="outlined"
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
-                                                                    navigate(`/entity/${entity.properties._id}`);
+                                                                    childTemplateId
+                                                                        ? navigate(
+                                                                              `/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`,
+                                                                          )
+                                                                        : navigate(`/entity/${entity.properties._id}`);
                                                                     setExternalErrors({ files: false, unique: {}, action: '' });
                                                                 }}
                                                             >

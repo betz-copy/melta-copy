@@ -271,8 +271,7 @@ export const FieldBlockWrapper = ({
             enabled: isEditMode,
             initialData: { count: 1, entities: [] },
             onError: (error: AxiosError) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to check areThereInstancesByTemplateId. error:', error);
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },

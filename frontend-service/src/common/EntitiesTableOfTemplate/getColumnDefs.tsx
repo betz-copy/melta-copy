@@ -28,9 +28,10 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
+import { environment } from '../../globals';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; childId?: string };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; fatherTemplateId?: string };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -361,8 +362,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/${pageType === 'client-side' ? 'client-side/entity' : 'entity'}/${getEntityPropertiesData(data)._id}${
-                                        pageType === 'client-side' ? '' : `/${template.childId ?? template._id}`
+                                    href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
+                                        getEntityPropertiesData(data)._id
+                                    }${
+                                        pageType === environment.clientSideId
+                                            ? ''
+                                            : template.fatherTemplateId
+                                            ? `?childTemplateId=${template._id}`
+                                            : ''
                                     }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
@@ -416,7 +423,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-                        {onNavigateToRow && pageType !== 'client-side' && (
+                        {onNavigateToRow && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
@@ -439,13 +446,18 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && !template?.disabled && pageType !== 'client-side' && (
+                        {menuRowButtonProps && !template?.disabled && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
-                                            state: { entityTemplate: template, expandedEntity: { entity: data } },
-                                        });
+                                        navigate(
+                                            `/entity/${getRowId(data)}/duplicate${
+                                                template.fatherTemplateId ? `?childTemplateId=${template._id}` : ''
+                                            }`,
+                                            {
+                                                state: { entityTemplate: template, expandedEntity: { entity: data } },
+                                            },
+                                        );
                                     }}
                                     onDeleteClick={() => {
                                         setSelectedRow(getRowId(data));

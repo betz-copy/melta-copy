@@ -23,9 +23,10 @@ import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/Cr
 
 const { excelExtension } = environment.loadExcel;
 
-const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
+const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTemplateId?: string }> = ({
     open,
     handleClose,
+    childTemplateId,
     initialValues = {},
     initialStep = 1,
     isEditMode = false,
@@ -56,7 +57,11 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
         async (file: Record<string, File>) => {
-            return getChangedEntitiesFromExcelRequest(template!._id, file);
+            return getChangedEntitiesFromExcelRequest(
+                template!.fatherTemplateId ?? template!._id,
+                file,
+                template!.fatherTemplateId ? template!._id : undefined,
+            );
         },
         {
             async onSuccess(data) {
@@ -82,7 +87,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editManyEntitiesByExcelRequest(template!, entities);
+            return editManyEntitiesByExcelRequest(template!, entities, childTemplateId);
         },
         {
             async onSuccess(data) {
@@ -98,12 +103,12 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editManyEntitiesByExcelRequest(template!, entities);
+            return editManyEntitiesByExcelRequest(template!, entities, childTemplateId);
         },
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
+                toast.success(i18next.t('wizard.entity.loadEntities.editedSuccessfully'));
                 return data;
             },
             onError() {
@@ -120,7 +125,12 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
+                    [template!._id]: {
+                        headersOnly,
+                        insertEntities,
+                        displayColumns: template?.propertiesOrder,
+                        isChildTemplate: 'fatherTemplateId' in template!,
+                    },
                 },
             });
         },

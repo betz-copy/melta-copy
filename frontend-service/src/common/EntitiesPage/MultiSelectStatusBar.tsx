@@ -30,7 +30,7 @@ import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -51,6 +51,9 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const queryClient = useQueryClient();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
+
+    const parentTemplateId = template.fatherTemplateId ?? template._id;
+    const childTemplateId = template.fatherTemplateId ? template._id : undefined;
 
     const currentUser = useUserStore((state) => state.user);
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
@@ -98,7 +101,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             entitiesToUpdate: IMultipleSelect<boolean>;
             propertiesToRemove: string[];
             ignoredRules?: Record<string, IBrokenRule[]>;
-        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, propertiesToRemove, ignoredRules),
+        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, propertiesToRemove, ignoredRules, childTemplateId),
         {
             onSuccess: (data) => {
                 setStepsData(data);
@@ -151,11 +154,11 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     };
 
     const handleMultipleDelete = (deleteAllRelationships = false) => {
-        const { _id: templateId } = template;
         const deleteBody: IDeleteEntityBody<boolean> = {
             ...getSelectedEntities(),
             deleteAllRelationships,
-            templateId,
+            templateId: parentTemplateId,
+            childTemplateId,
         };
 
         deleteMutation(deleteBody);

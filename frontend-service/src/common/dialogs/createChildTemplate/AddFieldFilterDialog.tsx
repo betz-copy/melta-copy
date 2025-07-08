@@ -181,7 +181,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         if (!localFilterField) return;
 
         if (dialogType === 'default') {
-            let defaultValue: any;
+            let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
+
             if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
                 defaultValue = localFilterField.filter;
             } else if (localFilterField.filterType === 'set') {

@@ -107,9 +107,13 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         errors: false,
     });
 
+    ajv.addKeyword({ keyword: 'filters' });
+    ajv.addKeyword({ keyword: 'isFilterByCurrentUser' });
+
+    const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
+        properties: pickBy(schema.properties, (value) => !formats.includes(value.format ?? '')),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
@@ -173,7 +177,7 @@ const getComponent = (
     }
 
     const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-        return <Component {...props} readonly={props.schema.isEditableByUser === false} />;
+        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
     };
 
     return getWrappedComponent;

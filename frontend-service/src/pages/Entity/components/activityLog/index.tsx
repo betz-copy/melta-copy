@@ -12,8 +12,8 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
     expandedEntity,
     entityTemplate,
 }) => {
-    const [openPopper, setOpenPopper] = useState(false);
     const theme = useTheme();
+    const [openPopper, setOpenPopper] = useState(false);
     const entityId = expandedEntity?.entity.properties._id || '';
     useEffect(() => {
         setOpenPopper(false);

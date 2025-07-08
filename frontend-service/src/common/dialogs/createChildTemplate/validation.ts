@@ -20,4 +20,11 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
                 }),
             )
             .min(1, i18next.t('validation.atLeastOneCategory')),
+        isFilterByCurrentUser: Yup.boolean(),
+        isFilterByUserUnit: Yup.boolean(),
+        filterByCurrentUserField: Yup.string().when('isFilterByCurrentUser', {
+            is: true,
+            then: Yup.string().required(i18next.t('validation.required')),
+            otherwise: Yup.string().notRequired(),
+        }),
     });

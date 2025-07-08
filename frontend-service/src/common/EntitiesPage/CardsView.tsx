@@ -71,7 +71,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const fatherTemplates = templates.filter((t) => !t.fatherTemplateId);
 
                             let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
-                            let totalCount = 0;
 
                             if (fatherTemplates.length > 0) {
                                 const result = await getEntitiesWithDirectConnections({
@@ -83,7 +82,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                 });
 
                                 entities.push(...result.entities);
-                                totalCount += result.count;
                             }
 
                             for (const template of childTemplates) {
@@ -108,10 +106,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                 }));
 
                                 entities.push(...mappedEntities);
-                                totalCount += result.count;
                             }
 
-                            setEntitiesCount(totalCount);
+                            setEntitiesCount(entities.length);
                             return entities;
                         }}
                         onQueryError={(error) => {

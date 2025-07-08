@@ -80,13 +80,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
     const isDisallowedFormat = (fieldName: string): boolean => {
         const prop = entityTemplate.properties.properties[fieldName];
-        return (
-            prop.format === 'fileId' ||
-            prop.format === 'signature' ||
-            prop.format === 'location' ||
-            prop.format === 'comment' ||
-            prop.items?.format === 'fileId'
-        );
+        const disabledFormats = ['fileId', 'signature', 'location', 'comment', 'user', 'kartoffelUserField'];
+        const disabledArrayFormats = ['fileId', 'user'];
+
+        return disabledFormats.includes(prop.format ?? '') || !!(prop.items && disabledArrayFormats.includes(prop.items.format ?? ''));
     };
 
     return (

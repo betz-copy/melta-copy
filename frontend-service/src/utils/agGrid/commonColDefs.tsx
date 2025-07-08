@@ -50,8 +50,9 @@ const isPropertyInvalid = <Data extends any = EntityData>(
                 return (error.metadata as IRequiredConstraint).property === property;
             case ActionErrors.unique:
                 return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
-            case ActionErrors.validation:
+            case ActionErrors.validation: {
                 return (error.metadata as IValidationError).path.slice(1).includes(property);
+            }
             default:
                 break;
         }
@@ -75,7 +76,9 @@ const errorColDef = <Data extends any = EntityData>(
         case ActionErrors.validation: {
             const metadata = error.metadata as IValidationError;
             if (value.patternCustomErrorMessage) message = value.patternCustomErrorMessage;
-            else if (metadata.message.includes('must')) {
+            else if (metadata.message.includes('FilterValidationError')) {
+                message = i18next.t('validation.notMatchingToFilter');
+            } else if (metadata.message.includes('must')) {
                 const allowedValues = metadata.params.allowedValues?.join(', ');
                 const typeDescription = i18next.t(`propertyTypes.${value.format ?? value.type}`);
                 message = `${i18next.t('wizard.entity.loadEntities.notValid')} ${allowedValues || typeDescription}`;

@@ -53,6 +53,7 @@ const CreateChildTemplateDialog: React.FC<{
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
     const [selectedUserField, setSelectedUserField] = useState<string | null>(childTemplate?.filterByCurrentUserField || null);
@@ -308,8 +309,8 @@ const CreateChildTemplateDialog: React.FC<{
             const currentDefaultValue = fieldChips.find((chip) => chip.fieldName === fieldName && chip.chipType === 'default')?.value;
 
             if (
-                (originalDefaultValue === undefined && currentDefaultValue !== undefined) ||
-                (originalDefaultValue !== undefined && currentDefaultValue === undefined) ||
+                (!originalDefaultValue && !!currentDefaultValue) ||
+                (!!originalDefaultValue && !currentDefaultValue) ||
                 JSON.stringify(originalDefaultValue) !== JSON.stringify(currentDefaultValue)
             ) {
                 return true;
@@ -364,20 +365,30 @@ const CreateChildTemplateDialog: React.FC<{
     ]);
 
     const handleCheckboxChange = (fieldName: string, checked: boolean) => {
+        const newFieldFilters = { ...templateFieldsFilters };
         if (!checked) {
             setFieldChips((prev) => prev.filter((chip) => chip.fieldName !== fieldName));
+            newFieldFilters[fieldName].isEditableByUser = false;
         }
 
-        const newFieldFilters = { ...templateFieldsFilters };
         newFieldFilters[fieldName].selected = checked;
+
         setTemplateFieldsFilters(newFieldFilters);
     };
 
     if (!entityTemplate || !categories || !allTemplates) return null;
 
-    const templateValues = Array.from(allTemplates.values());
-    const existingNames = templateValues.filter((t) => !childTemplate || (childTemplate && t._id !== childTemplate._id)).map((t) => t.name);
-    const existingDisplayNames = templateValues.filter((t) => !childTemplate || t._id !== childTemplate._id).map((t) => t.displayName);
+    const existingNames = childTemplates
+        ? Array.from(childTemplates.values())
+              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .map((t) => t.name)
+        : [];
+    const existingDisplayNames = childTemplates
+        ? Array.from(childTemplates.values())
+              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .map((t) => t.displayName)
+        : [];
+    console.log({ existingDisplayNames });
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -387,6 +398,9 @@ const CreateChildTemplateDialog: React.FC<{
                     displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
                     categories: selectedCategories,
+                    isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
+                    isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
+                    filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, categories }) => {
@@ -570,6 +584,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 onChange={(e) => {
                                                                     setChildTemplateFilterByCurrentUser(e.target.checked);
                                                                     if (e.target.checked) setSelectUserFieldDialogOpen(true);
+                                                                    else setSelectedUserField(null);
                                                                 }}
                                                             />
                                                         }
@@ -736,7 +751,11 @@ const CreateChildTemplateDialog: React.FC<{
                 open={selectUserFieldDialogOpen}
                 userFields={userFields}
                 selectedField={selectedUserField}
-                onClose={() => setSelectUserFieldDialogOpen(false)}
+                onClose={() => {
+                    setSelectedUserField(null);
+                    setSelectUserFieldDialogOpen(false);
+                    setChildTemplateFilterByCurrentUser(false);
+                }}
                 onSubmit={(field) => {
                     setSelectedUserField(field);
                     setSelectUserFieldDialogOpen(false);

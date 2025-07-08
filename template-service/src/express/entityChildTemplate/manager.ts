@@ -23,8 +23,8 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         fatherTemplatesIds?: string[];
         limit: number;
         skip: number;
-    }) {
-        const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
+    }): Promise<IEntityChildTemplatePopulated[]> {
+        const { search: displayName, ids, categoryIds, limit, skip, fatherTemplatesIds } = searchQuery;
         const query: FilterQuery<IEntityChildTemplate> = {};
 
         if (displayName) {
@@ -37,6 +37,10 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
 
         if (categoryIds) {
             query.category = { $in: categoryIds };
+        }
+
+        if (fatherTemplatesIds) {
+            query.fatherTemplateId = { $in: fatherTemplatesIds };
         }
 
         return this.model
@@ -88,6 +92,15 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
 
     async deleteChildTemplate(id: string): Promise<IMongoEntityChildTemplate | null> {
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Entity Child Template not found'));
+    }
+
+    async updateEntityTemplateAction(id: string, actions: string) {
+        return this.model
+            .findByIdAndUpdate(id, { actions }, { new: true })
+            .populate('categories')
+            .orFail(new NotFoundError('Entity Child Template not found'))
+            .lean()
+            .exec();
     }
 }
 

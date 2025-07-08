@@ -20,7 +20,19 @@ const AddEntityButton: React.FC<{
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedEntities }) => {
+    childTemplateId?: string;
+}> = ({
+    style,
+    children,
+    disabled,
+    initialStep,
+    initialValues,
+    popoverText,
+    disabledToolTip = false,
+    onSuccessCreate,
+    setUpdatedEntities,
+    childTemplateId,
+}) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -104,6 +116,7 @@ const AddEntityButton: React.FC<{
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    childTemplateId={childTemplateId}
                 />
             </Dialog>
         </>
