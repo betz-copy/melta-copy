@@ -8,6 +8,7 @@ import {
     IProperties,
     ISearchBody,
 } from './entityTemplate';
+import { IUniqueConstraintOfTemplate } from './entity';
 
 export enum ViewType {
     categoryPage = 'categoryPage',
@@ -85,3 +86,25 @@ export interface ParentTemplate extends EntityTemplateBase {
 }
 
 export type TemplateItem = ChildTemplate | ParentTemplate;
+
+export interface IChildTemplateWithConstraints extends IChildTemplate {
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
+    properties: IChildTemplate['properties'] & { required: string[] };
+}
+
+export interface IMongoChildTemplateWithConstraints extends IEntityChildTemplatePopulatedFromDb {
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
+    properties: IChildTemplate['properties'] & { required: string[] };
+}
+
+export interface IChildTemplateWithConstraintsPopulated extends IEntityChildTemplatePopulated {
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
+    properties: IEntityChildTemplatePopulated['properties'] & { required: string[] };
+}
+
+export interface IMongoChildTemplateWithConstraintsPopulated extends IEntityChildTemplatePopulatedFromDb {
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
+    properties: IChildTemplate['properties'] & { required: string[] };
+}
+
+export type IChildTemplateWithConstraintsMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;

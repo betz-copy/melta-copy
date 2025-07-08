@@ -44,7 +44,6 @@ import {
     TableItem,
     UploadedFile,
     IEntityChildTemplatePopulated,
-    IEntityChildTemplateWithFather,
     dePopulateChildProperties,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
@@ -269,19 +268,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...allowedEntityTemplatesBecauseOfRules,
         ].filter((template): template is IMongoEntityTemplatePopulated => !!template && typeof template !== 'string');
 
+        const uniqueConstraints = await this.instancesService.getAllConstraints();
+
         const [allAllowedEntityTemplatesWithConstraints, ...processTemplates] = await Promise.all([
-            this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates),
+            this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates, uniqueConstraints),
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
         const entityChildTemplatesPopulated = await this.entityTemplateService.getAllChildTemplates();
-        const allowedEntityChildTemplates = entityChildTemplatesPopulated.map((childTemplate) => {
-            return {
-                ...childTemplate,
-                categories: childTemplate.categories.map((category) => category._id),
-                fatherTemplateId: childTemplate.fatherTemplateId._id,
-            } as IEntityChildTemplateWithFather;
-        });
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
         try {
@@ -298,7 +292,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
             processTemplates,
-            childTemplates: allowedEntityChildTemplates,
+            childTemplates: this.getAndPopulateAllTemplatesConstraints(entityChildTemplatesPopulated, uniqueConstraints),
         };
     }
 
@@ -437,11 +431,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // entity templates
-    private populateTemplateConstraints(
-        entityTemplate: IMongoEntityTemplatePopulated,
+    private populateTemplateConstraints<T extends IMongoEntityTemplatePopulated | IEntityChildTemplatePopulated>(
+        entityTemplate: T,
         requiredConstraints: string[],
         uniqueConstraints: IUniqueConstraintOfTemplate[],
-    ): IMongoEntityTemplateWithConstraintsPopulated {
+    ): T & { uniqueConstraints: IUniqueConstraintOfTemplate[]; properties: T['properties'] & { required: string[] } } {
         return {
             ...entityTemplate,
             properties: {
@@ -452,11 +446,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
-    async getAndPopulateAllTemplatesConstraints(entityTemplates: IMongoEntityTemplatePopulated[]) {
-        const allConstraints = await this.instancesService.getAllConstraints();
-
-        const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = entityTemplates.map((entityTemplate) => {
-            const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === entityTemplate._id);
+    async getAndPopulateAllTemplatesConstraints<T extends IMongoEntityTemplatePopulated | IEntityChildTemplatePopulated>(
+        entityTemplates: T[],
+        allConstraints?: IConstraintsOfTemplate[],
+    ) {
+        const constraints = allConstraints || (await this.instancesService.getAllConstraints());
+        const entityTemplatesWithConstraints = entityTemplates.map((entityTemplate) => {
+            const constraintsOfTemplate = constraints.find(({ templateId }) => templateId === entityTemplate._id);
             return this.populateTemplateConstraints(
                 entityTemplate,
                 constraintsOfTemplate?.requiredConstraints ?? [],
