@@ -15,6 +15,7 @@ import {
     Radio,
     Autocomplete,
     InputAdornment,
+    IconButton,
 } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
@@ -41,6 +42,7 @@ import {
 import { Form, Formik } from 'formik';
 import { createChildTemplateSchema } from './validation';
 import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
+import { Close as CloseIcon } from '@mui/icons-material';
 
 const CreateChildTemplateDialog: React.FC<{
     open: boolean;
@@ -391,7 +393,7 @@ const CreateChildTemplateDialog: React.FC<{
     console.log({ existingDisplayNames });
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik
                 initialValues={{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
@@ -480,6 +482,20 @@ const CreateChildTemplateDialog: React.FC<{
                                 {childTemplate
                                     ? `${i18next.t('createChildTemplateDialog.updateTemplateTitle')}- ${childTemplate.displayName}`
                                     : `${i18next.t('createChildTemplateDialog.templateTitle')}- ${entityTemplate.displayName}`}
+                                <IconButton
+                                    aria-label="close"
+                                    onClick={async () => {
+                                        handleClose();
+                                    }}
+                                    sx={{
+                                        position: 'absolute',
+                                        right: 12,
+                                        top: 12,
+                                        color: (theme) => theme.palette.grey[500],
+                                    }}
+                                >
+                                    <CloseIcon />
+                                </IconButton>
                             </DialogTitle>
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
