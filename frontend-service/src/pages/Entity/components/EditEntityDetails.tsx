@@ -21,6 +21,7 @@ import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInp
 import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
+import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 
 const { errorCodes } = environment;
 
@@ -116,7 +117,10 @@ const EditEntityDetails: React.FC<{
 
     return (
         <Formik
-            initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
+            initialValues={getInitialValuesWithDefaults(
+                { properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate },
+                entityTemplate,
+            )}
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
@@ -195,7 +199,7 @@ const EditEntityDetails: React.FC<{
                                                                                 fieldTemplateTitle={value.title}
                                                                                 setFieldValue={setFieldValue}
                                                                                 required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key]}
+                                                                                value={values.attachmentsProperties[key] as File | undefined}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
                                                                                 setExternalErrors={setExternalErrors}
@@ -206,7 +210,7 @@ const EditEntityDetails: React.FC<{
                                                                                 fieldTemplateTitle={value.title}
                                                                                 setFieldValue={setFieldValue}
                                                                                 required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key]}
+                                                                                value={values.attachmentsProperties[key] as File[] | undefined}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
                                                                                 setExternalErrors={setExternalErrors}
