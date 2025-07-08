@@ -187,8 +187,6 @@ const TemplateTable = forwardRef<
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
         : undefined;
 
-    const memoizedDefaultFilter = useMemo(() => defaultFilter, [JSON.stringify(defaultFilter)]);
-
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -418,7 +416,7 @@ const TemplateTable = forwardRef<
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     multipleSelect={multipleSelect}
-                    defaultFilter={memoizedDefaultFilter}
+                    defaultFilter={defaultFilter}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
