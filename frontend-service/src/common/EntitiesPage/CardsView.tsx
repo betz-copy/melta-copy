@@ -13,7 +13,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { transformChild } from '../../pages/Category';
 import { useUserStore } from '../../stores/user';
 
@@ -128,7 +128,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     >
                         {({ entity, minioFileIdsWithTexts, childTemplateId }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-                            const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+                            const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             const childEntityTemplate = childTemplateId ? entityChildTemplates?.get(childTemplateId)! : undefined;
                             const template = childEntityTemplate

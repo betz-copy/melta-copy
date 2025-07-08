@@ -1,5 +1,5 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
-import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { useQuery, useQueryClient } from 'react-query';
@@ -11,12 +11,12 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 
 interface IUserEntityTablesProps {
-    childTemplates: IMongoChildEntityTemplatePopulated[];
+    childTemplates: IMongoChildTemplatePopulated[];
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IMongoChildEntityTemplatePopulated;
+    usersInfoChildTemplate: IMongoChildTemplatePopulated;
 }
 
-const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildEntityTemplatePopulated[], userEntityId: string) => {
+const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildTemplatePopulated[], userEntityId: string) => {
     const entitiesCountByTemplates = await countEntitiesOfTemplatesByUserEntityId(
         templates.map(({ fatherTemplateId }) => fatherTemplateId._id),
         userEntityId,

@@ -1,4 +1,4 @@
-import { IMongoChildEntityTemplatePopulated } from '../interfaces/entityChildTemplates';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IMongoCategory } from '../interfaces/categories';
@@ -19,7 +19,7 @@ export type GetAllClientSideTemplatesType = {
     categories: IMongoCategory[];
     entityTemplates: IMongoEntityTemplatePopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
-    childTemplates: IMongoChildEntityTemplatePopulated[];
+    childTemplates: IMongoChildTemplatePopulated[];
 };
 
 const getAllClientSideTemplates = async (usersInfoChildTemplateId: string) => {
@@ -76,7 +76,7 @@ const getClientSideExpandedEntityByIdRequest = async (
 const createEntityClientSideRequest = async (
     entity: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
-    childTemplate?: IMongoChildEntityTemplatePopulated,
+    childTemplate?: IMongoChildTemplatePopulated,
     clientSideUserEntity?: IEntity,
 ) => {
     const formData = new FormData();

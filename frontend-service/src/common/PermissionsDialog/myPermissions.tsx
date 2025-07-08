@@ -28,7 +28,7 @@ import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 export const defaultEmptyUser = {
     _id: '',
@@ -63,7 +63,7 @@ const MyPermissions: React.FC<{
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 

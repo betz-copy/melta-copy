@@ -6,10 +6,10 @@ import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useUserStore } from '../../stores/user';
-import { IEntityChildTemplateMap, IMongoChildEntityTemplate } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export const transformChild = (
-    child: IMongoChildEntityTemplate,
+    child: IMongoChildTemplate,
     parent: IMongoEntityTemplatePopulated,
     category: IMongoCategory,
 ): IMongoEntityTemplatePopulated & { fatherTemplateId: string } => {
@@ -49,7 +49,7 @@ const Category: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const childTemplatesList = Array.from(childTemplates.values());
 
     const category = categories.get(categoryId!)!;
@@ -67,16 +67,17 @@ const Category: React.FC = () => {
     const authorizedChildTemplates = childTemplatesList.filter(
         (template) =>
             !!template &&
-            template.categories.includes(category._id) &&
+            template.categories.includes(category) &&
             (currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.entityTemplates?.[template._id] ||
                 currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.scope ||
                 currentUser.currentWorkspacePermissions?.admin?.scope),
     );
 
-    const allAuthorizedTemplatesMap = new Map<string, IMongoEntityTemplatePopulated>();
+    const parentAuthorizedTemplatesMap = new Map<string, IMongoEntityTemplatePopulated>();
+    const childAuthorizedTemplatesMap = new Map<string, IMongoChildTemplatePopulated>();
 
     authorizedTemplates.forEach((template) => {
-        allAuthorizedTemplatesMap.set(template._id, template);
+        parentAuthorizedTemplatesMap.set(template._id, template);
     });
 
     const defaultOrderedTemplateIds: string[] = [];
@@ -89,45 +90,47 @@ const Category: React.FC = () => {
         defaultOrderedTemplateIds.push(parentId);
         addedTemplateIds.add(parentId);
 
-        const children = authorizedChildTemplates.filter((child) => child.fatherTemplateId === parentId);
+        const children = authorizedChildTemplates.filter((child) => child.fatherTemplateId._id === parentId);
 
         children.forEach((child) => {
             defaultOrderedTemplateIds.push(child._id);
             addedTemplateIds.add(child._id);
 
-            const childTemplate = transformChild(child, parent, category);
-            allAuthorizedTemplatesMap.set(child._id, childTemplate);
-            allAuthorizedTemplatesMap.set(child._id, childTemplate);
+            childAuthorizedTemplatesMap.set(child._id, child);
         });
     });
 
-    authorizedChildTemplates.forEach((child) => {
-        if (!addedTemplateIds.has(child._id)) {
-            const parent = entityTemplates.get(child.fatherTemplateId);
-            if (parent) {
-                const childTemplate = transformChild(child, parent, category);
-                allAuthorizedTemplatesMap.set(child._id, childTemplate);
-                defaultOrderedTemplateIds.push(child._id);
-                addedTemplateIds.add(child._id);
-            }
-        }
-    });
+    const getParentOrChildTemplate = (id: string) => (parentAuthorizedTemplatesMap.get(id) ?? childAuthorizedTemplatesMap.get(id))!;
+
+    // authorizedChildTemplates.forEach((child) => {
+    //     if (!addedTemplateIds.has(child._id)) {
+    //         const parent = entityTemplates.get(child.fatherTemplateId._id);
+    //         if (parent) {
+    //             const childTemplate = transformChild(child, parent, category);
+    //             parentAuthorizedTemplatesMap.set(child._id, childTemplate);
+    //             defaultOrderedTemplateIds.push(child._id);
+    //             addedTemplateIds.add(child._id);
+    //         }
+    //     }
+    // });
 
     const [categoryTemplatesId, setCategoryTemplatesId] = useLocalStorage<string[]>(`tableOrder-${categoryId}`, defaultOrderedTemplateIds);
 
-    const categoryTemplates = categoryTemplatesId.map((id) => allAuthorizedTemplatesMap.get(id)!);
+    const categoryTemplates = categoryTemplatesId.map((id) => getParentOrChildTemplate(id));
 
     const [templateIdsToShowCheckbox, setTemplateIdsToShowCheckbox] = useLocalStorage<string[]>(
         `templatesToShow-${categoryId}`,
         categoryTemplates.map((template) => template._id),
     );
 
-    const templatesToShowCheckbox: IMongoEntityTemplatePopulated[] = templateIdsToShowCheckbox.map((id) => allAuthorizedTemplatesMap.get(id)!);
+    const templatesToShowCheckbox: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[] = templateIdsToShowCheckbox.map((id) =>
+        getParentOrChildTemplate(id),
+    );
 
     const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
         setTemplateIdsToShowCheckbox((prevTemplateIdsToShowCheckbox) => {
             const prevTemplates = prevTemplateIdsToShowCheckbox
-                .map((id) => allAuthorizedTemplatesMap.get(id))
+                .map((id) => getParentOrChildTemplate(id))
                 .filter((template): template is IMongoEntityTemplatePopulated => !!template);
             const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
             return updatedTemplates.map((template) => template._id);
@@ -136,21 +139,21 @@ const Category: React.FC = () => {
 
     useEffect(() => {
         setCategoryTemplatesId((prevCategoryTemplatesId) => {
-            const allAuthorizedTemplatesList = Array.from(allAuthorizedTemplatesMap.values());
+            const allAuthorizedTemplatesList = Array.from(parentAuthorizedTemplatesMap.values());
 
             const templatesToAdd = allAuthorizedTemplatesList.filter((template) => !prevCategoryTemplatesId.includes(template._id));
             const templatesToAddIds = templatesToAdd.map((template) => template._id);
 
-            const existingTemplateIds = prevCategoryTemplatesId.filter((id) => allAuthorizedTemplatesMap.has(id));
+            const existingTemplateIds = prevCategoryTemplatesId.filter((id) => parentAuthorizedTemplatesMap.has(id));
 
             setTemplateIdsToShowCheckbox((prevTemplatesToShowCheckbox) => [
-                ...prevTemplatesToShowCheckbox.filter((id) => allAuthorizedTemplatesMap.has(id)),
+                ...prevTemplatesToShowCheckbox.filter((id) => parentAuthorizedTemplatesMap.has(id)),
                 ...templatesToAddIds,
             ]);
             return [...existingTemplateIds, ...templatesToAddIds];
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allAuthorizedTemplatesMap.size, category._id]);
+    }, [parentAuthorizedTemplatesMap.size, category._id]);
 
     return (
         <EntitiesPage

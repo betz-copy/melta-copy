@@ -8,7 +8,7 @@ import { entityTemplatePermissionDialog } from '../../utils/permissions/permissi
 import { FilterList } from '@mui/icons-material';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import i18next from 'i18next';
-import { ViewType } from '../../interfaces/entityChildTemplates';
+import { ViewType } from '../../interfaces/childTemplates';
 import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 
 const EntityTemplateCheckboxPermission: React.FC<{

@@ -25,7 +25,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
-import { IEntityChildTemplateMap, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
+import { IChildTemplateMap, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { getAllEntityChildTemplates } from '../../../services/templates/entityChildTemplatesService';
 
 const { errorCodes } = environment;
@@ -130,8 +130,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
 
                     try {
-                        const childTemplates: IMongoChildEntityTemplatePopulated[] = await getAllEntityChildTemplates();
-                        queryClient.setQueryData<IEntityChildTemplateMap>(
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllEntityChildTemplates();
+                        queryClient.setQueryData<IChildTemplateMap>(
                             'getChildEntityTemplates',
                             mapTemplates(
                                 childTemplates.map((childTemplate) => {
@@ -139,7 +139,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                                         ...childTemplate,
                                         categories: childTemplate.categories.map((category) => category._id),
                                         fatherTemplateId: childTemplate.fatherTemplateId._id,
-                                    } as IMongoChildEntityTemplate;
+                                    } as IMongoChildTemplate;
                                 }),
                                 'name',
                             ),

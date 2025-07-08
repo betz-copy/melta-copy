@@ -6,7 +6,7 @@ import ContactInfoCard from './ContactInfoCard';
 import UserEntityTables, { UserEntityTablesRef } from './UserEntityTables';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useQueryClient } from 'react-query';
-import { IEntityChildTemplateMapPopulated } from '../../../interfaces/entityChildTemplates';
+import { IChildTemplateMapPopulated } from '../../../interfaces/childTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getFirstXPropsKeys } from '../../../utils/templates';
 
@@ -16,7 +16,7 @@ const ClientSideMainPage: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.clientSide;
 
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);

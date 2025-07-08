@@ -25,13 +25,13 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
     IChildTemplateProperty,
-    IEntityChildTemplate,
-    IEntityChildTemplateMap,
+    IChildTemplate,
+    IChildTemplateMap,
     IFieldChip,
-    IMongoChildEntityTemplate,
+    IMongoChildTemplate,
     ITemplateFieldsFilters,
     ViewType,
-} from '../../../interfaces/entityChildTemplates';
+} from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createEntityChildTemplate, updateEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -49,14 +49,14 @@ const CreateChildTemplateDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    childTemplate?: IMongoChildEntityTemplate;
+    childTemplate?: IMongoChildTemplate;
 }> = ({ open, handleClose, entityTemplate, childTemplate }) => {
     if (!entityTemplate) return null;
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
     const [selectedUserField, setSelectedUserField] = useState<string | null>(childTemplate?.filterByCurrentUserField || null);
@@ -235,11 +235,7 @@ const CreateChildTemplateDialog: React.FC<{
         [entityTemplate],
     );
 
-    const { mutateAsync: handleEntityChildTemplate } = useMutation<
-        IMongoChildEntityTemplate,
-        AxiosError,
-        IEntityChildTemplate | [IEntityChildTemplate, string]
-    >({
+    const { mutateAsync: handleEntityChildTemplate } = useMutation<IMongoChildTemplate, AxiosError, IChildTemplate | [IChildTemplate, string]>({
         mutationFn: (template) => {
             if (Array.isArray(template)) {
                 const [templateData, id] = template;
@@ -248,7 +244,7 @@ const CreateChildTemplateDialog: React.FC<{
             return createEntityChildTemplate(template);
         },
         onSuccess: (data) => {
-            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prevData) => {
+            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prevData) => {
                 const newMap = new Map(prevData || new Map());
                 newMap.set(data._id, data);
                 return newMap;
@@ -411,7 +407,7 @@ const CreateChildTemplateDialog: React.FC<{
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
-                    const properties: IEntityChildTemplate['properties'] = {};
+                    const properties: IChildTemplate['properties'] = {};
 
                     latestFields.forEach(([fieldName, fieldConfig]) => {
                         const { title, type, format } = fieldConfig.fieldValue;
@@ -443,7 +439,7 @@ const CreateChildTemplateDialog: React.FC<{
                         properties[fieldName] = childProp;
                     });
 
-                    const baseTemplate: IEntityChildTemplate = {
+                    const baseTemplate: IChildTemplate = {
                         name: fullName,
                         displayName: displayNameToUse,
                         description,

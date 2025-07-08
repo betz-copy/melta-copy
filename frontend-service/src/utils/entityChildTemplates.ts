@@ -1,4 +1,4 @@
-import { IEntityChildTemplate } from '../interfaces/entityChildTemplates';
+import { IChildTemplate, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const parseFilterObject = (filters: any): any | null => {
@@ -32,7 +32,7 @@ const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any)
 };
 
 export const getFullChildTemplateProperties = (
-    childTemplate: IEntityChildTemplate,
+    childTemplate: IMongoChildTemplatePopulated,
     parentTemplate: IMongoEntityTemplatePopulated,
 ): Record<string, IEntitySingleProperty> => {
     const result: Record<string, IEntitySingleProperty> = {};

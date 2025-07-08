@@ -6,7 +6,7 @@ import { CustomIcon } from '../../../common/CustomIcon';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
-import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityDates } from '../../Entity/components/EntityDates';
@@ -17,7 +17,7 @@ import { Link } from 'wouter';
 
 interface IUserInfoCardProps {
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IMongoChildEntityTemplatePopulated;
+    usersInfoChildTemplate: IMongoChildTemplatePopulated;
     overridePropertiesToShow?: string[];
     displayTilte?: boolean;
 }

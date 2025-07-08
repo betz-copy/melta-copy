@@ -25,7 +25,7 @@ import {
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -46,7 +46,7 @@ const RoleDialog: React.FC<{
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((template) => {

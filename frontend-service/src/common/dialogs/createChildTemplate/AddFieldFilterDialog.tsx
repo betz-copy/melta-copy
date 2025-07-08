@@ -9,7 +9,7 @@ import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSel
 import { MultipleUserFilterInput } from '../../inputs/FilterInputs/MultipleUserFilterInput';
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
-import { IFieldFilter } from '../../../interfaces/entityChildTemplates';
+import { IFieldFilter } from '../../../interfaces/childTemplates';
 import { IUser } from '../../../interfaces/users';
 import { format } from 'date-fns';
 

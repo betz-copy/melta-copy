@@ -10,7 +10,7 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { IEntityChildTemplateMap } from '../../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { transformChild } from '../../../pages/Category';
 import { ICategoryMap } from '../../../interfaces/categories';
 
@@ -36,7 +36,7 @@ const ChooseTemplate: React.FC<{
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const isAuthorized = (templateId: string, categoryId: string) =>
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, { _id: categoryId }, templateId, PermissionScope.write);

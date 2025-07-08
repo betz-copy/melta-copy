@@ -23,11 +23,13 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
     EntityTemplateType,
-    IEntityChildTemplate,
-    IEntityChildTemplateMap,
-    IMongoChildEntityTemplate,
+    IChildTemplate,
+    IChildTemplateMap,
+    IChildTemplatePopulated,
+    IMongoChildTemplate,
+    IMongoChildTemplatePopulated,
     TemplateItem,
-} from '../../../interfaces/entityChildTemplates';
+} from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -80,7 +82,7 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     },
 };
 
-const getChildTemplateChips = (childTemplate: IEntityChildTemplate) => {
+const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];
 
     if (childTemplate.isFilterByUserUnit) {
@@ -131,7 +133,7 @@ interface EntityTemplateCardProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildEntityTemplate;
+            childTemplate?: IMongoChildTemplatePopulated;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -164,7 +166,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
     const hasWritePermission = useMemo(() => {
         if (isChildTemplate) {
@@ -179,7 +181,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         if (!childTemplates) return [];
         const templates = Array.from(childTemplates.values());
         const filtered = templates.filter((child) => {
-            return child.fatherTemplateId === entityTemplate._id;
+            return child.fatherTemplateId._id === entityTemplate._id;
         });
         return filtered;
     }, [childTemplates, entityTemplate._id]);
@@ -270,7 +272,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             isWizardOpen: true,
                                             entityTemplate: {
                                                 ...entityTemplate,
-                                                _id: childTemplate.fatherTemplateId,
+                                                _id: childTemplate.fatherTemplateId._id,
                                             },
                                             childTemplate,
                                         });
@@ -377,7 +379,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </Typography>
                         </Grid>
                     )}
-                    {childTemplatesList.map((childTemplate: IMongoChildEntityTemplate) => (
+                    {childTemplatesList.map((childTemplate: IMongoChildTemplate) => (
                         <Grid key={childTemplate._id} item container gap="10px" alignItems="center">
                             <Grid item>
                                 <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ marginRight: '10px' }} />
@@ -583,7 +585,7 @@ interface CategoryEntitiesBoxProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildEntityTemplate;
+            childTemplate?: IMongoChildTemplate;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -622,7 +624,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
@@ -644,7 +646,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const categoryChildTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return [];
 
-        const allChildTemplates = Array.from(childTemplates.values()) as IMongoChildEntityTemplate[];
+        const allChildTemplates = Array.from(childTemplates.values()) as IMongoChildTemplate[];
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
         return allChildTemplates.filter((child) => {
@@ -784,7 +786,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 </Grid>
                                             )}
                                         </Draggable>
-                                        {templateChildTemplates.map((childTemplate: IMongoChildEntityTemplate) => (
+                                        {templateChildTemplates.map((childTemplate: IMongoChildTemplate) => (
                                             <Grid
                                                 key={childTemplate._id}
                                                 sx={{
@@ -842,7 +844,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             isChildTemplate={false}
                                         />
                                     </Grid>
-                                    {childTemplatesForParent.map((childTemplate: IMongoChildEntityTemplate) => (
+                                    {childTemplatesForParent.map((childTemplate: IMongoChildTemplate) => (
                                         <Grid
                                             key={childTemplate._id}
                                             sx={{
@@ -934,7 +936,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
-        childTemplate?: IMongoChildEntityTemplate;
+        childTemplate?: IMongoChildTemplate;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -1016,7 +1018,7 @@ const EntityTemplatesRow: React.FC = () => {
         const templateId = deleteEntityTemplateDialogState.entityTemplateId;
         if (!templateId) return;
 
-        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
         const isChildTemplate = childTemplates?.has(templateId);
 
         try {

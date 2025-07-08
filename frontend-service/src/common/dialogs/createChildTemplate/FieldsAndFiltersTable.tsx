@@ -7,7 +7,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
-import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
+import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
 import { IUser } from '../../../interfaces/users';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 

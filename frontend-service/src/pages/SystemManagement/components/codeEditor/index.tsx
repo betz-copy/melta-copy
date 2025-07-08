@@ -13,7 +13,7 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { environment } from '../../../../globals';
 import { IMongoCategory } from '../../../../interfaces/categories';
-import { EntityTemplateType, IEntityChildTemplateMap, TemplateItem } from '../../../../interfaces/entityChildTemplates';
+import { EntityTemplateType, IChildTemplateMap, TemplateItem } from '../../../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
 import { getFullChildTemplateProperties } from '../../../../utils/entityChildTemplates';
@@ -40,7 +40,6 @@ const CodeEditorDialog: React.FC<{
     const { type, metaData: entityTemplate } = templateItem;
 
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [validationErrors, setValidationErrors] = useState(false);
     const [isImportUsing, setIsImportUsing] = useState(false);
@@ -55,7 +54,7 @@ const CodeEditorDialog: React.FC<{
         `${generateInterfaceWithRelationships(
             type === EntityTemplateType.Parent
                 ? entityTemplate.properties.properties
-                : getFullChildTemplateProperties(entityTemplate, entityTemplates!.get(entityTemplate.fatherTemplateId)!),
+                : getFullChildTemplateProperties(entityTemplate, entityTemplate.fatherTemplateId),
             entityTemplate.name,
             queryClient,
         )}`,
@@ -87,8 +86,8 @@ const CodeEditorDialog: React.FC<{
                         entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                     );
                 else
-                    queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (entityTemplateMap) =>
-                        entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) =>
+                        childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                     );
 
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);

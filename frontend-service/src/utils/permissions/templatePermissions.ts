@@ -4,7 +4,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { IMongoRule } from '../../interfaces/rules';
 import { ICurrentUser } from '../../interfaces/users';
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
-import { IMongoChildEntityTemplate } from '../../interfaces/entityChildTemplates';
+import { IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
@@ -151,19 +151,19 @@ export const updateUserPermissionForCategory = (newCategory: IMongoCategory, cur
 
 export const checkUserChildTemplatePermission = (
     userPermissions: ISubCompactPermissions,
-    childTemplate: IMongoChildEntityTemplate,
+    childTemplate: IMongoChildTemplatePopulated,
     scope: PermissionScope,
 ): boolean => {
     if (userPermissions.admin?.scope === PermissionScope.write) {
         return true;
     }
 
-    return childTemplate.categories.some((categoryId) => {
-        if (userPermissions.instances?.categories[categoryId]?.scope === scope) {
+    return childTemplate.categories.some((category) => {
+        if (userPermissions.instances?.categories[category._id]?.scope === scope) {
             return true;
         }
 
-        const categoryPermissions = userPermissions.instances?.categories[categoryId];
+        const categoryPermissions = userPermissions.instances?.categories[category._id];
         if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope === scope) {
             return true;
         }
@@ -172,7 +172,7 @@ export const checkUserChildTemplatePermission = (
     });
 };
 
-export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompactPermissions, childTemplate: IMongoChildEntityTemplate): boolean => {
+export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompactPermissions, childTemplate: IMongoChildTemplate): boolean => {
     if (userPermissions.admin?.scope === PermissionScope.write) {
         return true;
     }

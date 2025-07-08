@@ -10,7 +10,7 @@ import { MainBox } from '../../Main.styled';
 import ScrollToTop from '../../ScrollToTop';
 import i18next from 'i18next';
 import { getCurrentUserEntity } from '../../services/clientSideService';
-import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
 import { IKartoffelUser } from '../../interfaces/users';
 import { Topbar } from './mainPage/Topbar';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
@@ -33,7 +33,7 @@ const ClientSidePageInner: React.FC = () => {
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
 
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
     const {
