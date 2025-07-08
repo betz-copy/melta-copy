@@ -2,13 +2,13 @@ import {
     ConfigTypes,
     ICategory,
     ICategoryOrderConfig,
-    IEntityChildTemplate,
+    IChildTemplate,
     IEntityChildTemplatePopulated,
     IEntityTemplate,
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
-    IMongoEntityChildTemplate,
+    IMongoChildTemplate,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
@@ -237,8 +237,8 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateEntityChildTemplate(id: string, childTemplate: IEntityChildTemplate) {
-        const { data } = await this.api.put<IMongoEntityChildTemplate | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+    async updateEntityChildTemplate(id: string, childTemplate: IChildTemplate) {
+        const { data } = await this.api.put<IMongoChildTemplate | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
         return data;
     }
 }

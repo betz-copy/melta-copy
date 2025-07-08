@@ -14,19 +14,19 @@ export enum ViewType {
     userPage = 'userPage',
 }
 
-export interface IEntityChildTemplateProperty {
+export interface IChildTemplateProperty {
     defaultValue?: string | number | boolean | Date | string[];
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
 }
 
-export interface IEntityChildTemplate {
+export interface IChildTemplate {
     name: string;
     displayName: string;
     description: string;
     fatherTemplateId: string;
     categories: IMongoCategory['_id'][];
-    properties: { properties: Record<string, IEntityChildTemplateProperty> };
+    properties: { properties: Record<string, IChildTemplateProperty> };
     disabled: boolean;
     actions?: string;
     viewType: ViewType;
@@ -35,11 +35,11 @@ export interface IEntityChildTemplate {
     filterByCurrentUserField?: string;
 }
 
-export interface IMongoEntityChildTemplate extends IEntityChildTemplate, Document<string> {
+export interface IMongoChildTemplate extends IChildTemplate, Document<string> {
     _id: string;
 }
 
-export interface IEntityChildTemplatePopulatedFromDb extends Omit<IMongoEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
+export interface IEntityChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'categories' | 'fatherTemplateId'> {
     fatherTemplateId: IFullMongoEntityTemplate;
     categories: IMongoCategory[];
 }
@@ -52,16 +52,16 @@ export interface ISearchEntityChildTemplatesBody extends ISearchBody {
 
 // When populating child, it will ask the parent for all of its properties.
 export interface IEntityChildTemplatePopulated
-    extends Omit<IMongoEntityTemplate, 'properties'>,
+    extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
         Omit<IEntityChildTemplatePopulatedFromDb, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
-        properties: Record<string, IEntitySingleProperty & IEntityChildTemplateProperty>;
+        properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
 }
 
-export interface IEntityChildTemplateWithFather extends Omit<IMongoEntityTemplate, 'properties'>, Omit<IEntityChildTemplate, 'properties'> {
+export interface IEntityChildTemplateWithFather extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
-        properties: Record<string, IEntitySingleProperty & IEntityChildTemplateProperty>;
+        properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
 }
 

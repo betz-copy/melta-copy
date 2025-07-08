@@ -1,5 +1,5 @@
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
-import { IEntityChildTemplate, IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
+import { IChildTemplate, IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '../interfaces/entityTemplate';
 
 const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated): ISearchFilter => {
@@ -99,7 +99,7 @@ const getFullChildTemplateProperties = (
 
 const dePopulateChildProperties = (
     childProperties: IEntityChildTemplatePopulated['properties']['properties'],
-): IEntityChildTemplate['properties']['properties'] => {
+): IChildTemplate['properties']['properties'] => {
     return Object.entries(childProperties).reduce((acc, [key, value]) => {
         acc[key] = {
             defaultValue: value.defaultValue,

@@ -32,7 +32,7 @@ const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any)
 };
 
 export const populateChildTemplateWithParent = (childTemplate: IEntityChildTemplatePopulatedFromDb): IEntityChildTemplatePopulated => {
-    const parent = childTemplate.fatherTemplateId;
+    const { category: _unused, ...parent } = childTemplate.fatherTemplateId;
     const childPropertyKeys = Object.keys(childTemplate.properties);
 
     const childProperties = Object.fromEntries(

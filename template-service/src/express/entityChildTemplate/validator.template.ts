@@ -2,7 +2,7 @@ import {
     addPropertyToRequest,
     DefaultController,
     EntityTemplateType,
-    IMongoEntityChildTemplate,
+    IMongoChildTemplate,
     IMongoEntityTemplatePopulated,
     TemplateItem,
 } from '@microservices/shared';
@@ -14,7 +14,7 @@ import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 import EntityTemplateManager from '../entityTemplate/manager';
 import EntityChildTemplateManager from './manager';
 
-class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTemplate, EntityChildTemplateManager> {
+class EntityChildTemplateValidator extends DefaultController<IMongoChildTemplate, EntityChildTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {

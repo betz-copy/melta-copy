@@ -1,9 +1,9 @@
 import {
     DefaultManagerMongo,
     NotFoundError,
-    IEntityChildTemplate,
+    IChildTemplate,
     IEntityChildTemplatePopulated,
-    IMongoEntityChildTemplate,
+    IMongoChildTemplate,
     IEntityChildTemplatePopulatedFromDb,
 } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
@@ -13,7 +13,7 @@ import { escapeRegExp } from '../../utils';
 
 import EntityChildTemplateSchema from './model';
 
-class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTemplate> {
+class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.entityChildTemplatesCollectionName, EntityChildTemplateSchema);
     }
@@ -27,7 +27,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         skip: number;
     }): Promise<IEntityChildTemplatePopulated[]> {
         const { search: displayName, ids, categoryIds, limit, skip, fatherTemplatesIds } = searchQuery;
-        const query: FilterQuery<IEntityChildTemplate> = {};
+        const query: FilterQuery<IChildTemplate> = {};
 
         if (displayName) {
             query.displayName = { $regex: escapeRegExp(displayName) };
@@ -80,11 +80,11 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         return populateChildTemplateWithParent(populatedWithParent);
     }
 
-    async createChildTemplate(childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate> {
+    async createChildTemplate(childTemplate: IChildTemplate): Promise<IMongoChildTemplate> {
         return this.model.create(childTemplate);
     }
 
-    async updateChildTemplate(id: string, childTemplate: IEntityChildTemplate): Promise<IMongoEntityChildTemplate | null> {
+    async updateChildTemplate(id: string, childTemplate: IChildTemplate): Promise<IMongoChildTemplate | null> {
         return this.model.findByIdAndUpdate(id, childTemplate, { new: true }).orFail(new NotFoundError('Entity Child Template not found'));
     }
 
@@ -98,7 +98,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTe
         }
     }
 
-    async deleteChildTemplate(id: string): Promise<IMongoEntityChildTemplate | null> {
+    async deleteChildTemplate(id: string): Promise<IMongoChildTemplate | null> {
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Entity Child Template not found'));
     }
 

@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { IEntityChildTemplate, IMongoEntityChildTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IChildTemplate, IMongoChildTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 
@@ -10,12 +10,12 @@ const {
 
 export const createEntityChildTemplate = async (
     workspaceId: string,
-    entityChildTemplateToCreate: IEntityChildTemplate,
+    entityChildTemplateToCreate: IChildTemplate,
     fatherTemplate: IMongoEntityTemplateWithConstraintsPopulated,
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
-    const { data } = await axiosInstance.post<IMongoEntityChildTemplate>(url + createEntityChildTemplateRoute, {
+    const { data } = await axiosInstance.post<IMongoChildTemplate>(url + createEntityChildTemplateRoute, {
         ...entityChildTemplateToCreate,
         categories: [fatherTemplate.category._id],
         fatherTemplateId: fatherTemplate._id,
