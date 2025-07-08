@@ -13,7 +13,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { transformChild } from '../../pages/Category';
 import { useUserStore } from '../../stores/user';
 
@@ -26,9 +26,7 @@ export interface CardsViewRef {
 export interface CardsViewProps {
     templateIds: string[];
     searchInput: string;
-    templates: (IMongoEntityTemplatePopulated & {
-        fatherTemplateId?: string;
-    })[];
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
 }
 
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput, templates }, ref) => {

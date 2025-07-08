@@ -5,7 +5,7 @@ import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplat
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoChildTemplate } from '../../interfaces/childTemplates';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IMongoCategoryOrderConfig } from '../../interfaces/config';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
@@ -17,7 +17,7 @@ export type GetAllTemplatesType = {
     relationshipTemplates: IMongoRelationshipTemplate[];
     processTemplates: IMongoProcessTemplatePopulated[];
     rules: IMongoRule[];
-    childTemplates: IMongoChildTemplate[];
+    childTemplates: IMongoChildTemplatePopulated[];
 };
 
 const getAllTemplates = async () => {

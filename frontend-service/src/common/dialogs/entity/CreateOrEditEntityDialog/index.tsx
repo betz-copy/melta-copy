@@ -20,10 +20,11 @@ import useMutationHandler from './useMutationHandler';
 import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import EditProps from './EditProps';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
+import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 const { signaturePrefix } = environment;
 
-export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
+export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
@@ -36,7 +37,7 @@ export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTem
 
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
     const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
@@ -63,7 +64,7 @@ const convertIEntityToEntityWizardValues = (
 
 export const getInitialValuesWithDefaults = (
     initialCurrValues: EntityWizardValues,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): EntityWizardValues => {
     const { attachmentsProperties, properties } = initialCurrValues;
 
@@ -81,7 +82,7 @@ export const getInitialValuesWithDefaults = (
 
 const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
     handleClose: () => void;
     externalErrors: IExternalErrors;

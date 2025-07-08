@@ -1,4 +1,4 @@
-import { IChildTemplate, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const parseFilterObject = (filters: any): any | null => {

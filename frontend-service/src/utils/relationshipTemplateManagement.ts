@@ -1,10 +1,11 @@
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
 const isRelationshipMatchSourceAndDestTemplate = (
     relationshipTemplate: IMongoRelationshipTemplatePopulated,
-    sourceEntityTemplatesToShow: IMongoEntityTemplatePopulated[],
-    destinationEntityTemplatesToShow: IMongoEntityTemplatePopulated[],
+    sourceEntityTemplatesToShow: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[],
+    destinationEntityTemplatesToShow: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[],
 ) => {
     return (
         sourceEntityTemplatesToShow.some((sourceEntityTemplateToShow) => sourceEntityTemplateToShow._id === relationshipTemplate.sourceEntity._id) &&
@@ -26,8 +27,8 @@ const isRelationshipMatchSearchText = (relationshipTemplate: IMongoRelationshipT
 export const filterRelationships = (filterData: {
     relationshipTemplates: IMongoRelationshipTemplatePopulated[];
     searchText: string;
-    sourceEntityTemplatesToShow: IMongoEntityTemplatePopulated[];
-    destinationEntityTemplatesToShow: IMongoEntityTemplatePopulated[];
+    sourceEntityTemplatesToShow: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+    destinationEntityTemplatesToShow: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
 }) => {
     const { relationshipTemplates, searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow } = filterData;
     return relationshipTemplates.filter(

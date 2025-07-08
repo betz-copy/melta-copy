@@ -63,7 +63,7 @@ export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate,
 export interface IChildTemplatePopulated
     extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
         Omit<IChildTemplatePopulatedFromDb, 'properties'> {
-    properties: Omit<IProperties, 'properties'> & {
+    properties: IMongoEntityTemplate['properties'] & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
 }

@@ -65,6 +65,7 @@ import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -89,7 +90,7 @@ export interface IButtonProps<Data> {
 }
 
 export const getDatasource = <Data extends any = EntityData>(
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -98,7 +99,7 @@ export const getDatasource = <Data extends any = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
-    const parentTemplateId = template.fatherTemplateId ?? template._id;
+    const parentTemplateId = 'fatherTemplateId' in template ? template.fatherTemplateId._id : template._id;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -157,7 +158,7 @@ export type IConnection = {
 
 export const getRowModelProps = <Data extends any = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
     // tableCount: number,// comment out  waiting for Itay
@@ -198,7 +199,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; fatherTemplateId?: string };
+    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -298,7 +299,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
 
-        const childTemplateId = template.fatherTemplateId ? template._id : undefined;
+        const childTemplateId = 'fatherTemplateId' in template && template.fatherTemplateId ? template._id : undefined;
 
         const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -340,7 +341,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             (id: string) =>
                 deleteEntityRequest({
                     selectAll: false,
-                    templateId: template.fatherTemplateId ?? template?._id,
+                    templateId: 'fatherTemplateId' in template ? template.fatherTemplateId._id : template?._id,
                     idsToInclude: [id],
                     deleteAllRelationships: false,
                     childTemplateId,

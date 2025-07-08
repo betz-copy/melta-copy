@@ -22,6 +22,7 @@ import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { AddEntityButton } from './Buttons/AddEntity';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -158,10 +159,10 @@ const EntitiesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     entityTemplateSelectCheckboxProps: {
         categories?: IMongoCategory[];
-        templates: IMongoEntityTemplatePopulated[];
-        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
-        templatesToShow: IMongoEntityTemplatePopulated[];
-        setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
+        templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+        setTemplates?: Dispatch<SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
+        templatesToShow: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+        setTemplatesToShow: Dispatch<SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
         isDraggableDisabled?: boolean;
     };
     excelExportProps?: {

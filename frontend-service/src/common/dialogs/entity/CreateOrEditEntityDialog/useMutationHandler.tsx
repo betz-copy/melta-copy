@@ -24,7 +24,7 @@ type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
@@ -36,7 +36,11 @@ const useMutationHandler = (
     let mutateAsync: MutateAsyncFn | undefined;
     let childTemplate: IMongoChildTemplatePopulated | undefined = undefined;
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
+    const handleMutationError = (
+        err: AxiosError,
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        newEntityData?: EntityWizardValues | undefined,
+    ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
         const errorMetadata = err.response?.data?.metadata;
 

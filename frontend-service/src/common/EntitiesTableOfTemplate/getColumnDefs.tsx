@@ -29,9 +29,10 @@ import {
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string]; fatherTemplateId?: string };
+    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -367,7 +368,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     }${
                                         pageType === environment.clientSideId
                                             ? ''
-                                            : template.fatherTemplateId
+                                            : 'fatherTemplateId' in template && template.fatherTemplateId
                                             ? `?childTemplateId=${template._id}`
                                             : ''
                                     }`}
@@ -452,7 +453,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     onDuplicateClick={() => {
                                         navigate(
                                             `/entity/${getRowId(data)}/duplicate${
-                                                template.fatherTemplateId ? `?childTemplateId=${template._id}` : ''
+                                                'fatherTemplateId' in template ? `?childTemplateId=${template._id}` : ''
                                             }`,
                                             {
                                                 state: { entityTemplate: template, expandedEntity: { entity: data } },

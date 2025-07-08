@@ -19,17 +19,19 @@ import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
-const EntitiesPage: React.FC<{
-    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
-    setTemplates?: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
-    templatesToShowCheckbox: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
-    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
+type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+    templates: T[];
+    setTemplates?: React.Dispatch<React.SetStateAction<T[]>>;
+    templatesToShowCheckbox: T[];
+    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<T[]>>;
     isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
     pageType: string;
     pageTitle: string;
-}> = ({
+};
+
+const EntitiesPage: React.FC<EntitiesPageProps> = ({
     templates,
     setTemplates,
     categories,

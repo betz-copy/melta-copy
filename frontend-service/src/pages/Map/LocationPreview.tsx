@@ -10,6 +10,7 @@ import { locationToWGS84String, jerusalemCoordinates } from '../../utils/map';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { convertWGS94ToECEF } from '../../utils/map/convert';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
     <Entity name={name} description={locationToWGS84String(polygon)} onClick={onClick}>
@@ -32,7 +33,7 @@ export const MeltaCoordinate = ({ name, position, onClick }: { name: string; pos
 
 type Props = {
     entityProperties: IEntity['properties'];
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
 };
 
 const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {

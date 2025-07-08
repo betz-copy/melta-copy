@@ -23,10 +23,8 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
     EntityTemplateType,
-    IChildTemplate,
     IChildTemplateMap,
     IChildTemplatePopulated,
-    IMongoChildTemplate,
     IMongoChildTemplatePopulated,
     TemplateItem,
 } from '../../../interfaces/childTemplates';
@@ -379,7 +377,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </Typography>
                         </Grid>
                     )}
-                    {childTemplatesList.map((childTemplate: IMongoChildTemplate) => (
+                    {childTemplatesList.map((childTemplate) => (
                         <Grid key={childTemplate._id} item container gap="10px" alignItems="center">
                             <Grid item>
                                 <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ marginRight: '10px' }} />
@@ -585,7 +583,7 @@ interface CategoryEntitiesBoxProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildTemplate;
+            childTemplate?: IMongoChildTemplatePopulated;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -646,12 +644,10 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const categoryChildTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return [];
 
-        const allChildTemplates = Array.from(childTemplates.values()) as IMongoChildTemplate[];
+        const allChildTemplates = Array.from(childTemplates.values());
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
-        return allChildTemplates.filter((child) => {
-            return child.categories.includes(currentCategoryId);
-        });
+        return allChildTemplates.filter((child) => child.categories.find(({ _id }) => _id === currentCategoryId));
     }, [childTemplates, entityTemplatesWithCategory.category._id]);
 
     const disabledParentTemplates = useMemo(() => {
@@ -660,7 +656,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const result = new Map<string, IMongoEntityTemplatePopulated>();
 
         categoryChildTemplates.forEach((child) => {
-            const fatherTemplate = entityTemplates.get(child.fatherTemplateId);
+            const fatherTemplate = entityTemplates.get(child.fatherTemplateId._id);
             if (fatherTemplate && !entityTemplatesWithCategory.entityTemplates.some((t) => t._id === fatherTemplate._id)) {
                 result.set(fatherTemplate._id, fatherTemplate);
             }
@@ -673,12 +669,12 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
             // If this is the parent template's category, always show the child
-            const parentTemplate = entityTemplates?.get(child.fatherTemplateId);
+            const parentTemplate = entityTemplates?.get(child.fatherTemplateId._id);
             if (parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
                 return true;
             }
             // If this is one of the child's selected categories, show it enabled
-            return child.categories.includes(entityTemplatesWithCategory.category._id);
+            return child.categories.some((category) => category._id === entityTemplatesWithCategory.category._id);
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
 
@@ -756,7 +752,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                 );
 
                                 const templateChildTemplates = categoryChildTemplatesFiltered.filter(
-                                    (child) => child.fatherTemplateId === entityTemplate._id,
+                                    (child) => child.fatherTemplateId._id === entityTemplate._id,
                                 );
 
                                 return (
@@ -786,7 +782,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 </Grid>
                                             )}
                                         </Draggable>
-                                        {templateChildTemplates.map((childTemplate: IMongoChildTemplate) => (
+                                        {templateChildTemplates.map((childTemplate) => (
                                             <Grid
                                                 key={childTemplate._id}
                                                 sx={{
@@ -844,13 +840,15 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             isChildTemplate={false}
                                         />
                                     </Grid>
-                                    {childTemplatesForParent.map((childTemplate: IMongoChildTemplate) => (
+                                    {childTemplatesForParent.map((childTemplate) => (
                                         <Grid
                                             key={childTemplate._id}
                                             sx={{
                                                 pl: 4,
                                                 position: 'relative',
-                                                opacity: childTemplate.categories.includes(entityTemplatesWithCategory.category._id) ? 1 : 0.6,
+                                                opacity: childTemplate.categories.find(({ _id }) => _id === entityTemplatesWithCategory.category._id)
+                                                    ? 1
+                                                    : 0.6,
                                             }}
                                         >
                                             <SubdirectoryArrowLeft
@@ -873,7 +871,9 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                                 setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                 entityHasWritePermission={false}
-                                                isDisabledView={!childTemplate.categories.includes(entityTemplatesWithCategory.category._id)}
+                                                isDisabledView={
+                                                    !childTemplate.categories.find((c) => c._id === entityTemplatesWithCategory.category._id)
+                                                }
                                                 isChildTemplate={true}
                                                 title={childTemplate.displayName}
                                             />
@@ -936,7 +936,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
-        childTemplate?: IMongoChildTemplate;
+        childTemplate?: IMongoChildTemplatePopulated;
     }>({
         isWizardOpen: false,
         entityTemplate: null,

@@ -217,9 +217,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         ),
     );
 
-    formData.append('templateId', entity.template.fatherTemplateId ?? entity.template._id);
+    formData.append('templateId', 'fatherTemplateId' in entity.template ? entity.template.fatherTemplateId._id : entity.template._id);
 
-    if (entity.template.fatherTemplateId) {
+    if ('fatherTemplateId' in entity.template && entity.template.fatherTemplateId) {
         formData.append('childTemplateId', entity.template._id);
     }
 
@@ -333,7 +333,7 @@ const getBodyForUpdateRequest = async (
         ),
     );
 
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', 'fatherTemplateId' in template ? template.fatherTemplateId._id : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -456,9 +456,9 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
         ),
     );
 
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', 'fatherTemplateId' in template ? template.fatherTemplateId._id : template._id);
 
-    if (template.fatherTemplateId) {
+    if ('fatherTemplateId' in template && template.fatherTemplateId._id) {
         formData.append('childTemplateId', template._id);
     }
 
@@ -511,12 +511,7 @@ export const exportEntityToDocumentRequest = async (documentTemplateId: string, 
     return data;
 };
 
-export const getChartOfTemplate = async (
-    xAxis: IAxisField,
-    yAxis: IAxisField | undefined,
-    templateId: string,
-    filter?: ISearchFilter,
-) => {
+export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string, filter?: ISearchFilter) => {
     const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
 
     return data;

@@ -31,6 +31,7 @@ import {
     IMongoChildTemplate,
     ITemplateFieldsFilters,
     ViewType,
+    IMongoChildTemplatePopulated,
 } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createEntityChildTemplate, updateEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
@@ -49,7 +50,7 @@ const CreateChildTemplateDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    childTemplate?: IMongoChildTemplate;
+    childTemplate?: IMongoChildTemplatePopulated;
 }> = ({ open, handleClose, entityTemplate, childTemplate }) => {
     if (!entityTemplate) return null;
 
@@ -85,10 +86,8 @@ const CreateChildTemplateDialog: React.FC<{
             setTemplateFieldsFilters(initialFields);
             setSelectedCategories(
                 childTemplate?.categories
-                    ? childTemplate.categories.map((id) => categories.get(id)!).filter(Boolean)
-                    : entityTemplate.category
-                    ? [entityTemplate.category]
-                    : [],
+                    ? childTemplate.categories.flatMap(({ _id }) => categories.get(_id) ?? [])
+                    : [entityTemplate?.category ?? []].flat(),
             );
         }
     }, [entityTemplate, childTemplate, categories]);
@@ -293,7 +292,7 @@ const CreateChildTemplateDialog: React.FC<{
         const hasFieldChanges =
             ![...originalFields].every((field) => currentFields.has(field)) || ![...currentFields].every((field) => originalFields.has(field));
 
-        const originalCategories = new Set(childTemplate.categories);
+        const originalCategories = new Set(childTemplate.categories.map((c) => c._id));
         const currentCategories = new Set(selectedCategories.map((c) => c._id));
 
         const hasCategoryChanges =
@@ -379,12 +378,12 @@ const CreateChildTemplateDialog: React.FC<{
 
     const existingNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.fatherTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.name)
         : [];
     const existingDisplayNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.fatherTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
     console.log({ existingDisplayNames });
@@ -407,36 +406,22 @@ const CreateChildTemplateDialog: React.FC<{
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
-                    const properties: IChildTemplate['properties'] = {};
+                    const properties: IChildTemplate['properties'] = { properties: {} };
 
                     latestFields.forEach(([fieldName, fieldConfig]) => {
-                        const { title, type, format } = fieldConfig.fieldValue;
+                        const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
+                        const filtersArray = filterChips.map((chip) =>
+                            filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!),
+                        );
 
                         const childProp: IChildTemplateProperty = {
-                            title,
-                            type,
-                            ...(format && { format }),
+                            ...(childTemplateViewType === ViewType.userPage && { isEditableByUser: fieldConfig.isEditableByUser || false }),
+                            ...(filterChips.length > 0 && { filters: { $and: filtersArray } }),
+                            ...('defaultValue' in fieldConfig &&
+                                fieldConfig.defaultValue !== undefined && { defaultValue: fieldConfig.defaultValue }),
                         };
 
-                        if (childTemplateViewType === ViewType.userPage) {
-                            childProp.isEditableByUser = fieldConfig.isEditableByUser || false;
-                        }
-
-                        const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
-
-                        if (filterChips.length > 0) {
-                            const filtersArray = filterChips.map((chip) => {
-                                const filter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!);
-                                return filter;
-                            });
-                            childProp.filters = { $and: filtersArray };
-                        }
-
-                        if ('defaultValue' in fieldConfig && fieldConfig.defaultValue !== undefined) {
-                            childProp.defaultValue = fieldConfig.defaultValue;
-                        }
-
-                        properties[fieldName] = childProp;
+                        properties.properties[fieldName] = childProp;
                     });
 
                     const baseTemplate: IChildTemplate = {

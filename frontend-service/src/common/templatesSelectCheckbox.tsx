@@ -4,21 +4,22 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox } from './SelectCheckBox';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { IMongoCategory } from '../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
-    templates: IMongoEntityTemplatePopulated[];
-    selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+    selectedTemplates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated)[]>>;
     categories: IMongoCategory[];
     isDraggableDisabled?: boolean;
-    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    setTemplates?: Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
     overrideSx?: object;
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar, overrideSx }) => {
     return (
-        <SelectCheckbox<IMongoEntityTemplatePopulated, IMongoCategory>
+        <SelectCheckbox<IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated, IMongoCategory>
             treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
             title={title}
             filterIcon={title === i18next.t('entityTemplatesCheckboxLabel')}
@@ -36,7 +37,8 @@ const TemplatesSelectCheckbox: React.FC<{
                 groups: categories,
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
-                getGroupOfOption: (entityTemplate, _categories) => entityTemplate?.category,
+                getGroupOfOption: (entityTemplate, _categories) =>
+                    'fatherTemplateId' in entityTemplate ? entityTemplate.categories[0] : entityTemplate.category, // TODO: [0] is bad
             }}
             overrideSx={overrideSx}
         />

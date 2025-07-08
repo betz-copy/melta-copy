@@ -12,6 +12,7 @@ import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -20,9 +21,7 @@ export type TemplateTablesViewResultsRef = {
 };
 
 export function getDefaultFilterFromTemplate(
-    template: IMongoEntityTemplatePopulated & {
-        fatherTemplateId?: string;
-    },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
     currentUserKartoffelId?: string,
 ) {
@@ -61,7 +60,7 @@ export function getDefaultFilterFromTemplate(
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
-        templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
+        templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
         searchInput: string;
         pageSize?: number;
         pageType: string;
@@ -110,7 +109,7 @@ const TemplateTablesViewResults = forwardRef<
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            const isChildTemplate = !!template.fatherTemplateId;
+            const isChildTemplate = 'fatherTemplateId' in template;
             filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
         });
         return filters;
@@ -119,7 +118,7 @@ const TemplateTablesViewResults = forwardRef<
     return (
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
-                const isChildTemplate = !!template.fatherTemplateId;
+                const isChildTemplate = 'fatherTemplateId' in template;
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -151,26 +150,30 @@ const TemplateTablesViewResults = forwardRef<
 });
 
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
-    templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[],
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[],
     searchInput: string,
     semanticSearch: boolean,
 ) => {
     const countRequestTemplateIds = new Set<string>();
     for (const template of templates) {
-        countRequestTemplateIds.add(template.fatherTemplateId || template._id);
+        if ('fatherTemplateId' in template) {
+            countRequestTemplateIds.add(template.fatherTemplateId._id);
+        } else {
+            countRequestTemplateIds.add(template._id);
+        }
     }
 
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds), searchInput, semanticSearch);
 
     return templates.flatMap((template) => {
-        const countTemplateId = template.fatherTemplateId || template._id;
+        const countTemplateId = 'fatherTemplateId' in template ? template.fatherTemplateId._id : template._id;
         const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === countTemplateId);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });
 };
 
 export interface TemplateTablesViewProps {
-    templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
     searchInput: string;
     pageType: string;
     semanticSearch: boolean;

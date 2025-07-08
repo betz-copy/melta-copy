@@ -127,7 +127,7 @@ const Category: React.FC = () => {
         getParentOrChildTemplate(id),
     );
 
-    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
+    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>) => {
         setTemplateIdsToShowCheckbox((prevTemplateIdsToShowCheckbox) => {
             const prevTemplates = prevTemplateIdsToShowCheckbox
                 .map((id) => getParentOrChildTemplate(id))

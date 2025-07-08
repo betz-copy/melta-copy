@@ -238,7 +238,7 @@ export const getFilterModal = (
 
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
-    entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
+    entityTemplate: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
     defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
