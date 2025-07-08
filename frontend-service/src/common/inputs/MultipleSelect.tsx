@@ -38,6 +38,7 @@ const MultipleSelect: React.FC<{
     label?: string;
     color?: string;
     value: any;
+    placeholder?: string;
 }> = ({
     items,
     id,
@@ -55,6 +56,7 @@ const MultipleSelect: React.FC<{
     label,
     color,
     value,
+    placeholder,
 }) => {
     return (
         <Autocomplete<(typeof items)[number], boolean>
@@ -65,6 +67,7 @@ const MultipleSelect: React.FC<{
             disableCloseOnSelect={multiple}
             value={selectedValue}
             options={items}
+            placeholder={placeholder}
             getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, val) => option.value === val.value}
             onChange={onChange}

@@ -106,6 +106,12 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
+    entityTemplatesRow: {
+        areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',
+        areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
+        succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
+        failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+    },
     clientSidePage: {
         simba: {
             contactInfoCard: {
