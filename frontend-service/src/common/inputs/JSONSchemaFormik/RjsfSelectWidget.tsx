@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
+import React from 'react';
 import MultipleSelect from '../MultipleSelect';
 import './form.css';
 
@@ -62,13 +62,13 @@ const RjsfSelectWidget = ({
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
     if (multiple) {
-        if (Array.isArray(value) && value.length > 0) {
+        if (Array.isArray(value)) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
         } else {
-            selectedValue = items.filter((opt) => (defaultValue as string[]).includes(opt.value));
+            selectedValue = [];
         }
     } else {
-        selectedValue = items.find((opt) => opt.value === (value ?? defaultValue)) ?? null;
+        selectedValue = items.find((opt) => opt.value === value) || null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -95,10 +95,10 @@ const RjsfSelectWidget = ({
                 event.preventDefault();
                 if (multiple) {
                     const mapped = (newVal as (typeof items)[number][]).map((opt) => processValue(schema, opt.value));
-                    onChange(mapped.length ? mapped : undefined);
+                    onChange(mapped.length ? mapped : defaultValue);
                 } else {
                     const val = (newVal as (typeof items)[number] | null)?.value;
-                    onChange(val ? processValue(schema, val) : undefined);
+                    onChange(val ? processValue(schema, val) : defaultValue);
                 }
             }}
             textFieldProps={textFieldProps}
@@ -111,6 +111,7 @@ const RjsfSelectWidget = ({
             label={!hideLabel ? label || schema.title : undefined}
             color={color}
             value={value}
+            placeholder={Array.isArray(defaultValue) ? defaultValue.join(', ') : (defaultValue as string | undefined)}
         />
     );
 };

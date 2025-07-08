@@ -28,6 +28,7 @@ import { ajvValidate } from '../inputs/JSONSchemaFormik';
 import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsPropertiesSchema';
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
+import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
@@ -42,11 +43,14 @@ export interface IUpdateMultipleEntitiesResponse {
 }
 
 export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
-    const initialValues: EntityWizardValues = {
+    const initialValues: EntityWizardValues = getInitialValuesWithDefaults(
+        {
+            template,
+            attachmentsProperties: {},
+            properties: { disabled: false },
+        },
         template,
-        attachmentsProperties: {},
-        properties: { disabled: false },
-    };
+    );
 
     const queryClient = useQueryClient();
     const darkMode = useDarkModeStore((state) => state.darkMode);

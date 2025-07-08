@@ -1008,7 +1008,7 @@ const EntityTemplatesRow: React.FC = () => {
             toast.success(i18next.t('entityTemplatesRow.succeededToDeleteEntityTemplate'));
         },
         onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage="Failed to delete child template" />);
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('entityTemplatesRow.failedToDeleteEntityTemplate')} />);
         },
     });
 
