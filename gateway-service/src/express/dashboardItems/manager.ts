@@ -13,6 +13,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         this.templateManager = new TemplatesManager(workspaceId);
     }
 
+    // todo shir: check that its ok after itay refactor
     private isItemAllowed(
         dashboardItem: MongoDashboardItemPopulated,
         allowedTemplateIds: Set<string>,
@@ -40,13 +41,22 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
 
     private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager) {
         const chartMetaList = map(chartItems, 'metaData');
-        const chartsByTemplateId = groupBy(chartMetaList, 'templateId');
+        const [childChartsItems, parentChartItems] = partition(chartMetaList, (item) => !!item.childTemplateId);
+
+        const chartsByTemplateId = groupBy(parentChartItems, 'templateId');
+        const chartsByChildTemplateId = groupBy(childChartsItems, 'childTemplateId');
 
         const generatedCharts = flatten(
             await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId))),
         );
 
-        const generatedChartsMap = keyBy(generatedCharts, '_id');
+        const generatedChildCharts = flatten(
+            await Promise.all(map(chartsByChildTemplateId, (charts, childTemplateId) => chartManager.generateCharts(charts, childTemplateId, true))),
+        );
+
+        const allGeneratedCharts = [...generatedCharts, ...generatedChildCharts];
+
+        const generatedChartsMap = keyBy(allGeneratedCharts, '_id');
 
         return chartItems.map((chartItem) => ({
             ...chartItem,
@@ -67,6 +77,8 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         const allowedCategoryIds = new Set(allowedCategories);
 
         const dashboardItems = await this.service.searchDashboardItems(textSearch);
+
+        console.dir({ dashboardItems }, { depth: null });
 
         const allowedItems = dashboardItems.filter((item) =>
             this.isItemAllowed(item, allowedTemplateIds, allowedCategoryIds, userId, permissionsOfUserId, chartManager),

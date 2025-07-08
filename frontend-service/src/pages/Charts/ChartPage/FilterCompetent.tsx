@@ -12,7 +12,7 @@ import { IFilterTemplate } from '../../../common/wizards/entityTemplate/commonIn
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { getCurrentTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 
 const FilterCompetent = <T extends TableForm | ChartForm>({
     formik: { values, errors, touched, setFieldValue },
@@ -30,7 +30,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
+    const entityTemplate = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
     const [inputValue, setInputValue] = useState<string>('');
 
     const properties = entityTemplate?.properties.properties;

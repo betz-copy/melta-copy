@@ -16,7 +16,12 @@ class ChartManager extends DefaultManagerMongo<IMongoChart> {
 
     async getChartsByTemplateId(templateId: string, textSearch?: string, isChildTemplate?: boolean) {
         const query: FilterQuery<IMongoChart> = {
-            ...(isChildTemplate ? { childTemplateId: templateId } : { templateId }),
+            ...(isChildTemplate
+                ? { childTemplateId: templateId }
+                : {
+                      templateId,
+                      $or: [{ childTemplateId: { $exists: false } }, { childTemplateId: null }],
+                  }),
             ...(textSearch && {
                 $or: [
                     { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },

@@ -35,6 +35,7 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
         type === IChartType.Number ? isAggregationValid(xAxisField) : isAggregationValid(xAxisField) && isAggregationValid(yAxisField as IAxisField);
 
     const memoizedFilter = useDebouncedFilter(formikValues, queryClient, 500);
+    console.log({ template });
 
     const { data, isLoading, refetch } = useQuery(
         ['chart', template._id, xAxisField, yAxisField, memoizedFilter],

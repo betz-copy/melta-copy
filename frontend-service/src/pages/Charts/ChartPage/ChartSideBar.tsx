@@ -31,7 +31,8 @@ import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions
 import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
-import { getCurrentTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
+import { IEntityChildTemplateMap } from '../../../interfaces/entityChildTemplates';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -41,13 +42,16 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const entityTemplateOptions = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
+
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
     const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
         isOpen: false,
         newTemplate: null,
     });
-    const template = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
+    const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
@@ -55,14 +59,18 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                 <Grid item>
                     <FormikAutoComplete
                         formik={props}
-                        formikField="templateId"
-                        options={Array.from(entityTemplates.keys())}
+                        formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
+                        options={entityTemplateOptions}
                         label={i18next.t('entity')}
                         onChange={(newValue) => {
                             if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
-                            else setFieldValue('templateId', newValue || '');
+                            else {
+                                const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
+                                setFieldValue('templateId', childTemplate?.fatherTemplateId || newValue || '');
+                                if (!!childTemplate) setFieldValue('childTemplateId', newValue!);
+                            }
                         }}
-                        getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
+                        getOptionLabel={(id) => childEntityTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
                         multiple={false}
                         readonly={viewMode === ViewMode.ReadOnly}
                         style={{ width: 295 }}

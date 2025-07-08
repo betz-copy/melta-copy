@@ -296,7 +296,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouched: ErrorSchema<{}> = mergeErrorSchemas(notTouchedUnique, notTouchedFiltered);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
-    // console.log({ ajvExtraErrorsOnlyTouched, notTouchedUnique, mergedErrors, filteredFieldNames, notTouchedFiltered });
 
     const Widgets = React.useMemo(
         () => ({

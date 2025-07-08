@@ -14,7 +14,7 @@ import { transformChild } from '../../../Category';
 import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
 import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
-export const getCurrentTemplate = (entityTemplates, templateId: string, childTemplateId?: string) => {
+export const getRelevantEntityTemplate = (entityTemplates, templateId: string, childTemplateId?: string) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
@@ -29,10 +29,10 @@ export const getCurrentTemplate = (entityTemplates, templateId: string, childTem
 const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const template = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
+    const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
-    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!template.fatherTemplateId);
+    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!values.childTemplateId);
     const allFilters = getFilterModal(memoizedFilter, childTemplateFilter);
 
     if (!values.templateId) return null;

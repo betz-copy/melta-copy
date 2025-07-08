@@ -9,7 +9,7 @@ import { IAGGridFilter, IFilterTemplate } from '../../../common/wizards/entityTe
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import FilterCompetent from './FilterCompetent';
-import { getCurrentTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 
 const FilterSideBar = <T extends TableForm | ChartForm>(
     props: StepComponentProps<T> & {
@@ -20,7 +20,7 @@ const FilterSideBar = <T extends TableForm | ChartForm>(
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const entityTemplate = getCurrentTemplate(entityTemplates, values.templateId, values.childTemplateId);
+    const entityTemplate = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
 
     const filterInitialValues: IFilterTemplate = {

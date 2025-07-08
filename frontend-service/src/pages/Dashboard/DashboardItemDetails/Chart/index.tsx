@@ -57,7 +57,7 @@ const Chart: React.FC = () => {
             };
 
             if (viewMode === ViewMode.Edit && chartId) {
-                return editChart(chartId, baseChart);
+                return editChart(chartId, baseChart, chart?.childTemplateId);
             }
 
             // Add existing chart to dashboard

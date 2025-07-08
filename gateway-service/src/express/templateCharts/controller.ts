@@ -21,7 +21,7 @@ class ChartController extends DefaultController<ChartManager> {
     async searchChartByUserId(req: Request, res: Response) {
         const { body, params, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.searchChartByUserId(params.templateId, user!.id, body.textSearch));
+        res.json(await this.manager.searchChartByUserId(params.templateId, user!.id, body));
     }
 
     async createChart(req: Request, res: Response) {

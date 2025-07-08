@@ -95,7 +95,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
 
     const { data: charts, isLoading } = useQuery({
         queryKey: ['getUserCharts', values.templateId!, inputValue],
-        queryFn: () => getChartsByUserId(values.templateId!, inputValue),
+        queryFn: () => getChartsByUserId(values.childTemplateId || values.templateId!, inputValue, !!values.childTemplateId),
         initialData: [],
     });
 

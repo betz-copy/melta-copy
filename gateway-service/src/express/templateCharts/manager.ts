@@ -97,7 +97,6 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         return chartPermissionChecks.filter((chart): chart is IMongoChart => chart !== null);
     }
 
-    // todo shirel - check the use in the other places with isChildTemplte
     async getChartsByTemplateId(templateId: string, textSearch?: string, isChildTemplate?: boolean) {
         return this.service.getChartsByTemplateId(templateId, textSearch, isChildTemplate);
     }
@@ -139,8 +138,9 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         return generatedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
-    async searchChartByUserId(templateId: string, userId: string, textSearch?: string) {
-        const charts = await this.getChartsByTemplateId(templateId, textSearch);
+    async searchChartByUserId(templateId: string, userId: string, body: { textSearch?: string; isChildTemplate?: boolean }) {
+        const { textSearch, isChildTemplate } = body;
+        const charts = await this.getChartsByTemplateId(templateId, textSearch, isChildTemplate);
 
         return charts.filter((chart) => chart.createdBy === userId && chart.permission === IChartPermission.Protected);
     }

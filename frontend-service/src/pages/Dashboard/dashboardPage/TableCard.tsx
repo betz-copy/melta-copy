@@ -16,6 +16,8 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
+import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -51,13 +53,15 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const template = entityTemplates.get(metaData.templateId)!;
+    const template = getRelevantEntityTemplate(entityTemplates, metaData.templateId, metaData.childTemplateId);
 
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
 
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = React.useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!metaData.childTemplateId);
+    const allFilters = getFilterModal(memorizedFilter, childTemplateFilter);
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
@@ -141,7 +145,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                         }}
                         showNavigateToRowButton={false}
                         editable={false}
-                        defaultFilter={memorizedFilter}
+                        defaultFilter={allFilters}
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
                         onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}

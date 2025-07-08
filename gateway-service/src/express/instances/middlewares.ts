@@ -9,6 +9,7 @@ import {
     ForbiddenError,
     ServiceError,
     IBrokenRule,
+    IMongoEntityChildTemplatePopulated,
 } from '@microservices/shared';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -40,10 +41,14 @@ class InstancesValidator extends DefaultController {
     }
 
     // entities
-    private async getCategoryIdFromTemplateId(templateId: string) {
-        const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-        return childTemplate?.categories[0]._id || template.category._id;
+    private async getCategoryIdFromTemplateId(templateId: string, isChildTemplate?: boolean) {
+        const template = isChildTemplate
+            ? await this.entityTemplateService.getChildTemplateById(templateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        return isChildTemplate
+            ? (template as IMongoEntityChildTemplatePopulated).categories[0]._id
+            : (template as IMongoEntityTemplatePopulated).category._id;
     }
 
     private async getCategoryIdsFromTemplateIds(templateIds: string[], userId: string) {
@@ -102,8 +107,9 @@ class InstancesValidator extends DefaultController {
         templateId: string,
         permissionScope: PermissionScope,
         givenCategoryId?: string,
+        isChildTemplate?: boolean,
     ) {
-        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
+        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId, isChildTemplate));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         if (
@@ -180,7 +186,7 @@ class InstancesValidator extends DefaultController {
     async validateUserCanGetChart(req: Request) {
         const { templateId } = req.params;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, req.body.isChildTemplate);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {
