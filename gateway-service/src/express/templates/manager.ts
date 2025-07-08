@@ -40,11 +40,12 @@ import {
     PermissionScope,
     PermissionType,
     RelatedPermission,
-    IMongoEntityChildTemplate,
     ServiceError,
     TableItem,
     UploadedFile,
     IEntityChildTemplatePopulated,
+    IEntityChildTemplateWithFather,
+    dePopulateChildProperties,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -279,7 +280,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 ...childTemplate,
                 categories: childTemplate.categories.map((category) => category._id),
                 fatherTemplateId: childTemplate.fatherTemplateId._id,
-            } as IMongoEntityChildTemplate;
+            } as IEntityChildTemplateWithFather;
         });
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
@@ -1195,7 +1196,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     return this.entityTemplateService.updateEntityChildTemplate(childTemplate._id, {
                         fatherTemplateId: childTemplate.fatherTemplateId._id,
                         categories: childTemplate.categories.map((category) => category._id),
-                        properties: filteredProperties,
+                        properties: { properties: dePopulateChildProperties(filteredProperties.properties) },
                         actions: childTemplate.actions,
                         description: childTemplate.description,
                         disabled: childTemplate.disabled,

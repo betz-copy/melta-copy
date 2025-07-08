@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { IEntityChildTemplatePopulated, IEntitySingleProperty } from '@microservices/shared';
+import { IEntityChildTemplatePopulated, IEntityChildTemplatePopulatedFromDb, IEntitySingleProperty } from '@microservices/shared';
 
 const parseFilterObject = (filters: any): any | null => {
     if (typeof filters === 'string') {
@@ -29,6 +29,35 @@ const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any)
         .flat();
 
     return multiEnumIn.length > 0 ? parentProp.items.enum.filter((val) => multiEnumIn.includes(val)) : parentProp.items.enum;
+};
+
+export const populateChildTemplateWithParent = (childTemplate: IEntityChildTemplatePopulatedFromDb): IEntityChildTemplatePopulated => {
+    const parent = childTemplate.fatherTemplateId;
+    const childPropertyKeys = Object.keys(childTemplate.properties);
+
+    const childProperties = Object.fromEntries(
+        Object.entries(parent.properties.properties)
+            .filter(([key]) => childPropertyKeys.includes(key))
+            .map(([key, parentProp]) => [
+                key,
+                {
+                    ...parentProp,
+                    defaultValue: childTemplate.properties[key].defaultValue,
+                    filters: childTemplate.properties[key].filters,
+                    isFilterByCurrentUser: childTemplate.filterByCurrentUserField === key,
+                },
+            ]),
+    );
+
+    return {
+        ...parent,
+        ...childTemplate,
+        properties: {
+            ...parent.properties,
+            properties: childProperties,
+        },
+        propertiesOrder: parent.propertiesOrder.filter((key) => key in childProperties),
+    };
 };
 
 const getFullChildTemplateProperties = (

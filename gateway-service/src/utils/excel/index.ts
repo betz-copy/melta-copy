@@ -5,8 +5,8 @@ import {
     IBrokenRuleEntity,
     IBrokenRulesError,
     IEntity,
+    IEntityChildTemplatePopulated,
     IFailedEntity,
-    IFullMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IWorkspace,
     ServiceError,
@@ -21,7 +21,7 @@ const { errorCodes, loadExcel } = config;
 
 export const getAllEntitiesFromExcel = async (
     files: UploadedFile[],
-    template: IMongoEntityTemplatePopulated & { fatherTemplate?: IFullMongoEntityTemplate },
+    template: IMongoEntityTemplatePopulated | IEntityChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
 ) => {
@@ -36,9 +36,7 @@ export const getAllEntitiesFromExcel = async (
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
     Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
 
-export const getSerialStarters = (
-    template: IMongoEntityTemplatePopulated & { fatherTemplate?: IFullMongoEntityTemplate },
-): Record<string, number> => {
+export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IEntityChildTemplatePopulated): Record<string, number> => {
     return Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
         .reduce((acc, [key, value]) => {

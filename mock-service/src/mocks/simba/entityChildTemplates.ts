@@ -7,37 +7,25 @@ const driverEntityChildTemplate: IEntityChildTemplate = {
     fatherTemplateId: '683829d2657d1b63a9f4f25b',
     categories: ['683829d2657d1b63a9f4f257'],
     properties: {
-        tz: {
-            title: 'ת.ז',
-            type: 'string',
-            isEditableByUser: false,
-        },
-        bd: {
-            title: 'תאריך לידה',
-            type: 'string',
-            format: 'date',
-            isEditableByUser: false,
-        },
-        phone: {
-            title: 'מס טלפון',
-            type: 'string',
-            isEditableByUser: false,
-        },
-        unit: {
-            title: 'יחידה',
-            type: 'string',
-            isEditableByUser: false,
-        },
-        gios_end: {
-            title: 'תאריך שחרור',
-            type: 'string',
-            format: 'date',
-            isEditableByUser: false,
-        },
-        license_status: {
-            title: 'סטטוס רישיון',
-            type: 'string',
-            isEditableByUser: false,
+        properties: {
+            tz: {
+                isEditableByUser: false,
+            },
+            bd: {
+                isEditableByUser: false,
+            },
+            phone: {
+                isEditableByUser: false,
+            },
+            unit: {
+                isEditableByUser: false,
+            },
+            gios_end: {
+                isEditableByUser: false,
+            },
+            license_status: {
+                isEditableByUser: false,
+            },
         },
     },
     disabled: false,
@@ -53,27 +41,19 @@ const carEntityChildTemplate: IEntityChildTemplate = {
     fatherTemplateId: '683829d2657d1b63a9f4f26e',
     categories: ['683829d2657d1b63a9f4f257'],
     properties: {
-        ID: {
-            title: 'מספר רכב אזרחי',
-            type: 'string',
-            isEditableByUser: false,
-        },
-        base: {
-            title: 'יחידה',
-            type: 'string',
-            isEditableByUser: false,
-        },
-        last_test: {
-            title: 'תאריך טסט אחרון',
-            type: 'string',
-            format: 'date',
-            isEditableByUser: false,
-        },
-        next_test: {
-            title: 'תאריך יעד לטסט הבא',
-            type: 'string',
-            format: 'date',
-            isEditableByUser: false,
+        properties: {
+            ID: {
+                isEditableByUser: false,
+            },
+            base: {
+                isEditableByUser: false,
+            },
+            last_test: {
+                isEditableByUser: false,
+            },
+            next_test: {
+                isEditableByUser: false,
+            },
         },
     },
     disabled: false,
@@ -89,26 +69,17 @@ const crashEntityChildTemplate: IEntityChildTemplate = {
     fatherTemplateId: '683829d2657d1b63a9f4f257',
     categories: ['683829d2657d1b63a9f4f257'],
     properties: {
-        car: {
-            title: 'רכב',
-            type: 'string',
-            isEditableByUser: true,
-        },
-        date: {
-            title: 'תאריך התאונה',
-            type: 'string',
-            format: 'date-time',
-            isEditableByUser: true,
-        },
-        place: {
-            title: 'מיקום',
-            type: 'string',
-            isEditableByUser: true,
-        },
-        mishpat: {
-            title: 'משפט',
-            type: 'string',
-            format: 'date',
+        properties: {
+            car: {
+                isEditableByUser: true,
+            },
+            date: {
+                isEditableByUser: true,
+            },
+            place: {
+                isEditableByUser: true,
+            },
+            mishpat: {},
         },
     },
     disabled: false,

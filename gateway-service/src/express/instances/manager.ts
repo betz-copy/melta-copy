@@ -37,7 +37,6 @@ import {
     logger,
     matchValueAgainstFilter,
     TemplateItem,
-    transformChild,
     UploadedFile,
 } from '@microservices/shared';
 import axios from 'axios';
@@ -313,14 +312,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             ? { type: EntityTemplateType.Child, metaData: await this.entityTemplateService.getChildTemplateById(childTemplateId) }
             : { type: EntityTemplateType.Parent, metaData: await this.entityTemplateService.getEntityTemplateById(templateId) };
 
-        const { type, metaData: template } = templateItem;
-
-        const templateAsParent: IMongoEntityTemplatePopulated & { fatherTemplateId?: IFullMongoEntityTemplate } =
-            type === EntityTemplateType.Parent
-                ? template
-                : transformChild(template, await this.entityTemplateService.getEntityTemplateById(template.fatherTemplateId._id));
-
-        return templateAsParent;
+        return templateItem;
     }
 
     async loadEntities(
@@ -331,7 +323,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         insertBrokenEntities?: IEntityWithIgnoredRules[],
     ) {
         let entities = insertBrokenEntities;
-        const template = await this.handleTemplate(templateId, childTemplateId);
+        const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
 
         const failedEntities: IFailedEntity[] = [];
 
@@ -362,7 +354,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters)
             await this.updateTemplateCurrentNumbers(
-                template.fatherTemplateId ?? { ...template, category: template.category._id },
+                type === EntityTemplateType.Child ? template.fatherTemplateId : { ...template, category: template.category._id },
                 serialStarters,
                 succeededEntities.length,
             );
@@ -371,7 +363,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, childTemplateId?: string) {
-        const template = await this.handleTemplate(templateId, childTemplateId);
+        const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
 
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
@@ -387,7 +379,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         const entities = entitiesWithIgnoresRules.map(({ properties }) => ({
-            templateId: template.fatherTemplateId ? template.fatherTemplateId?._id : templateId,
+            templateId: type === EntityTemplateType.Child ? template.fatherTemplateId?._id : templateId,
             properties,
         }));
 

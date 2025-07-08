@@ -1,9 +1,9 @@
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
-import { IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
-import { IEntitySingleProperty, IFullMongoEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+import { IEntityChildTemplate, IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../interfaces/entityTemplate';
 
 const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated): ISearchFilter => {
-    return Object.entries(childTemplate.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
+    return Object.entries(childTemplate.properties.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
         (acc, [key, prop]) => {
             if (!prop.filters) return acc;
 
@@ -64,9 +64,9 @@ const getFullChildTemplateProperties = (
 ): Record<string, IEntitySingleProperty> => {
     const result: Record<string, IEntitySingleProperty> = {};
 
-    for (const key of Object.keys(childTemplate.properties)) {
+    for (const key of Object.keys(childTemplate.properties.properties)) {
         const parentProp = parentTemplate.properties.properties[key];
-        const childProp = childTemplate.properties[key];
+        const childProp = childTemplate.properties.properties[key];
 
         const filterObj = parseFilterObject(childProp?.filters);
 
@@ -97,35 +97,17 @@ const getFullChildTemplateProperties = (
     return result;
 };
 
-const transformChild = (
-    child: IEntityChildTemplatePopulated,
-    parent: IMongoEntityTemplatePopulated,
-): IMongoEntityTemplatePopulated & { fatherTemplateId?: IFullMongoEntityTemplate } => {
-    const childPropertyKeys = Object.keys(child.properties);
-
-    const childProperties = Object.fromEntries(
-        Object.entries(parent.properties.properties)
-            .filter(([key]) => childPropertyKeys.includes(key))
-            .map(([key, parentProp]) => [
-                key,
-                {
-                    ...parentProp,
-                    defaultValue: child.properties[key].defaultValue,
-                    filters: child.properties[key].filters,
-                },
-            ]),
-    );
-
-    return {
-        ...parent,
-        _id: child._id,
-        displayName: child.displayName,
-        fatherTemplateId: child.fatherTemplateId,
-        properties: {
-            ...parent.properties,
-            properties: childProperties,
-        },
-        propertiesOrder: parent.propertiesOrder.filter((key) => key in childProperties),
-    };
+const dePopulateChildProperties = (
+    childProperties: IEntityChildTemplatePopulated['properties']['properties'],
+): IEntityChildTemplate['properties']['properties'] => {
+    return Object.entries(childProperties).reduce((acc, [key, value]) => {
+        acc[key] = {
+            defaultValue: value.defaultValue,
+            filters: value.filters,
+            isEditableByUser: value.isEditableByUser,
+        };
+        return acc;
+    }, {});
 };
-export { getFilterFromChildTemplate, getFullChildTemplateProperties, transformChild };
+
+export { getFilterFromChildTemplate, getFullChildTemplateProperties, dePopulateChildProperties };
