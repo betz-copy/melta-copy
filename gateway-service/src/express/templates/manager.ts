@@ -292,7 +292,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
             processTemplates,
-            childTemplates: this.getAndPopulateAllTemplatesConstraints(entityChildTemplatesPopulated, uniqueConstraints),
+            childTemplates: await this.getAndPopulateAllTemplatesConstraints(entityChildTemplatesPopulated, uniqueConstraints),
         };
     }
 

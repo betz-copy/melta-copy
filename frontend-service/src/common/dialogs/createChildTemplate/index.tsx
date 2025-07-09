@@ -64,7 +64,7 @@ const CreateChildTemplateDialog: React.FC<{
     const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
     const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState(childTemplate?.isFilterByCurrentUser || false);
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(childTemplate?.isFilterByUserUnit || false);
-    const [selectedCategories, setSelectedCategories] = useState<IMongoCategory[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<IMongoCategory>();
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(childTemplate?.viewType || ViewType.categoryPage);
     const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
@@ -84,7 +84,7 @@ const CreateChildTemplateDialog: React.FC<{
                 };
             });
             setTemplateFieldsFilters(initialFields);
-            setSelectedCategories(entityTemplate?.category ? [entityTemplate.category] : []);
+            setSelectedCategory(entityTemplate?.category);
         }
     }, [entityTemplate, childTemplate, categories]);
 
@@ -288,12 +288,7 @@ const CreateChildTemplateDialog: React.FC<{
         const hasFieldChanges =
             ![...originalFields].every((field) => currentFields.has(field)) || ![...currentFields].every((field) => originalFields.has(field));
 
-        const originalCategories = new Set(childTemplate.category._id);
-        const currentCategories = new Set(selectedCategories.map((c) => c._id));
-
-        const hasCategoryChanges =
-            ![...originalCategories].every((cat) => currentCategories.has(cat)) ||
-            ![...currentCategories].every((cat) => originalCategories.has(cat));
+        const hasCategoryChanges = selectedCategory?._id !== childTemplate.category._id;
 
         const hasFilterOrDefaultChanges = Object.entries(childTemplate.properties).some(([fieldName, prop]) => {
             const currentField = templateFieldsFilters[fieldName];
@@ -351,7 +346,7 @@ const CreateChildTemplateDialog: React.FC<{
     }, [
         childTemplate,
         templateFieldsFilters,
-        selectedCategories,
+        selectedCategory,
         fieldChips,
         childTemplateViewType,
         childTemplateFilterByCurrentUser,
@@ -391,13 +386,13 @@ const CreateChildTemplateDialog: React.FC<{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
                     displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
-                    categories: selectedCategories,
+                    category: selectedCategory,
                     isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
                     isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
                     filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
-                onSubmit={async ({ name, displayName, description, categories }) => {
+                onSubmit={async ({ name, displayName, description, category }) => {
                     const fullName = `${entityTemplate.name}_${name}`;
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
@@ -425,7 +420,7 @@ const CreateChildTemplateDialog: React.FC<{
                         displayName: displayNameToUse,
                         description,
                         parentTemplateId: entityTemplate._id,
-                        category: categories.map((c) => c._id),
+                        category: category!._id,
                         properties,
                         disabled: false,
                         viewType: childTemplateViewType,
@@ -447,13 +442,12 @@ const CreateChildTemplateDialog: React.FC<{
                         if (!childTemplate) return;
 
                         const hasDescriptionChange = values.description !== (childTemplate.description || '');
-                        const hasCategoryChange =
-                            JSON.stringify(values.categories.map((c) => c._id).sort()) !== JSON.stringify(childTemplate.category);
+                        const hasCategoryChange = JSON.stringify(values.category?._id) !== JSON.stringify(childTemplate.category);
 
                         if (hasDescriptionChange || hasCategoryChange) {
                             setHasChanges(true);
                         }
-                    }, [values.description, values.categories]);
+                    }, [values.description, values.category]);
 
                     return (
                         <Form>
@@ -608,13 +602,12 @@ const CreateChildTemplateDialog: React.FC<{
                                                 <Autocomplete
                                                     id="category"
                                                     options={Array.from(categories.values())}
-                                                    multiple
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
-                                                        setFieldValue('categories', newVal);
+                                                        setFieldValue('category', newVal);
                                                     }}
-                                                    value={values.categories}
+                                                    value={values.category}
                                                     getOptionLabel={(option) => option.displayName}
                                                     isOptionEqualToValue={(option, value) => option._id === value._id}
                                                     renderInput={(params) => (
@@ -624,8 +617,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                             name="category"
                                                             variant="outlined"
                                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
-                                                            error={touched.categories && Boolean(errors.categories)}
-                                                            helperText={touched.categories && errors.categories}
+                                                            error={touched.category && Boolean(errors.category)}
+                                                            helperText={touched.category && errors.category}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (

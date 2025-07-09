@@ -21,7 +21,7 @@ const EntityChildTemplateSchema = {
     displayName: Joi.string().required(),
     description: Joi.string(),
     parentTemplateId: MongoIdSchema.required(),
-    categories: Joi.array().items(MongoIdSchema).required(),
+    category: MongoIdSchema.required(),
     properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
