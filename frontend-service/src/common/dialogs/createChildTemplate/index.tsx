@@ -29,6 +29,7 @@ import {
     IEntityChildTemplate,
     IEntityChildTemplateMap,
     IFieldChip,
+    IFieldFilter,
     IMongoChildEntityTemplate,
     ITemplateFieldsFilters,
     ViewType,
@@ -103,8 +104,8 @@ const CreateChildTemplateDialog: React.FC<{
                 if (prop.filters) {
                     try {
                         const parsedFilters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                        if (parsedFilters.$and) {
-                            parsedFilters.$and.forEach((filter: any) => {
+                        if (parsedFilters.$or) {
+                            parsedFilters.$or.forEach((filter: IFieldFilter) => {
                                 const fieldValue = filter[fieldName];
                                 let filterType = '';
                                 let value = '';
@@ -427,7 +428,7 @@ const CreateChildTemplateDialog: React.FC<{
                                 const filter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterField!);
                                 return filter;
                             });
-                            childProp.filters = { $and: filtersArray };
+                            childProp.filters = { $or: filtersArray };
                         }
 
                         if ('defaultValue' in fieldConfig && fieldConfig.defaultValue !== undefined) {
