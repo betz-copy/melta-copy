@@ -2,9 +2,6 @@ import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@micr
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({
-    title: Joi.string().required(),
-    type: Joi.string().required(),
-    format: Joi.string(),
     defaultValue: Joi.any(),
     filters: searchFilterSchema.custom((value) => {
         // todo: upgrade mongo version up to 5 and then delete that convert
@@ -20,7 +17,9 @@ const childEntityTemplateSchema = {
     description: Joi.string(),
     parentTemplateId: MongoIdSchema.required(),
     category: MongoIdSchema.required(),
-    properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    properties: Joi.object({
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
     viewType: Joi.string().valid('categoryPage', 'userPage').required(),

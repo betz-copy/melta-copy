@@ -8,9 +8,6 @@ const searchFilterSchema = Joi.object({
 });
 
 const childTemplatePropertySchema = Joi.object({
-    title: Joi.string().required(),
-    type: Joi.string().required(),
-    format: Joi.string(),
     defaultValue: Joi.any(),
     filters: searchFilterSchema,
     isEditableByUser: Joi.boolean(),
@@ -22,7 +19,9 @@ const EntityChildTemplateSchema = {
     description: Joi.string(),
     parentTemplateId: MongoIdSchema.required(),
     category: MongoIdSchema.required(),
-    properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    properties: Joi.object({
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
     viewType: Joi.string().valid('categoryPage', 'userPage').required(),
