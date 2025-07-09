@@ -40,7 +40,7 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     return (
         <Grid container direction="column" height="100%" alignContent="center">
             <Grid container item flexGrow={1} alignItems="center" justifyContent="center">
-                <ChartGenerator formikValues={values} template={template} isChildTemplate={!!values.childTemplateId} />
+                <ChartGenerator formikValues={values} template={template} />
             </Grid>
             <Grid item width="98%" sx={{ mx: 'auto' }}>
                 <EntitiesTable

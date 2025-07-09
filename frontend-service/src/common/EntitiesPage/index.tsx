@@ -92,6 +92,7 @@ const EntitiesPage: React.FC<{
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
                         displayColumns: templateTableRef.getDisplayColumns(),
+                        isChildTemplate: 'fatherTemplateId' in template,
                     };
                 },
             );

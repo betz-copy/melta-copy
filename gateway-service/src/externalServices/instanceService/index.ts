@@ -162,7 +162,7 @@ class InstancesService extends DefaultExternalServiceApi {
     getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[], isChildTemplate?: boolean) => {
         const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, {
             chartsData,
-            isChildTemplate,
+            childTemplateId: isChildTemplate ? templateId : undefined,
         });
 
         return data;

@@ -111,4 +111,5 @@ export enum ActionErrors {
     validation = 'VALIDATION',
     unique = 'UNIQUE',
     required = 'REQUIRED',
+    filterValidation = 'FILTER_VALIDATION',
 }

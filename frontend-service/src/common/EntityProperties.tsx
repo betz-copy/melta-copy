@@ -410,11 +410,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
+        const formats = ['fileId', 'signature'];
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) =>
-                getCurrProperty(propertyKey).format !== 'fileId' &&
-                getCurrProperty(propertyKey).items?.format !== 'fileId' &&
-                getCurrProperty(propertyKey).format !== 'signature',
+            (propertyKey) => formats.includes(getCurrProperty(propertyKey).format ?? '') && getCurrProperty(propertyKey).items?.format !== 'fileId',
         );
     } else
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>

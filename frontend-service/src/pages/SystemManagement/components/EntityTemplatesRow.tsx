@@ -1001,14 +1001,20 @@ const EntityTemplatesRow: React.FC = () => {
     );
 
     const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteEntityChildTemplate(id), {
-        onSuccess: async () => {
+        onSuccess: async (_data, id) => {
+            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prev) => {
+                const updated = new Map(prev);
+                updated.delete(id);
+                return updated;
+            });
+
             queryClient.invalidateQueries('getChildEntityTemplates');
             queryClient.invalidateQueries('getEntityTemplates');
             setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
             toast.success(i18next.t('entityTemplatesRow.succeededToDeleteEntityTemplate'));
         },
         onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage="Failed to delete child template" />);
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('entityTemplatesRow.failedToDeleteEntityTemplate')} />);
         },
     });
 

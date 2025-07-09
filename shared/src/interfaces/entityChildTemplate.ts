@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import { IMongoCategory } from './category';
-import { IEntitySingleProperty, IEntityTemplatePopulated, IFullMongoEntityTemplate } from './entityTemplate';
+import { IEntitySingleProperty, IFullMongoEntityTemplate, IMongoEntityTemplatePopulated, ISearchBody } from './entityTemplate';
 
 export enum ViewType {
     categoryPage = 'categoryPage',
@@ -45,6 +45,11 @@ export interface IMongoEntityChildTemplatePopulated extends IEntityChildTemplate
     createdAt: Date;
     updatedAt: Date;
 }
+export interface ISearchEntityChildTemplatesBody extends ISearchBody {
+    ids?: string[];
+    categoryIds?: string[];
+    fatherTemplatesIds?: string[];
+}
 
 export interface IEntityChildTemplatePropertiesPopulated extends Omit<IEntityChildTemplatePopulated, 'properties'> {
     properties: Record<string, IEntitySingleProperty>;
@@ -61,12 +66,12 @@ export interface EntityTemplateBase {
 
 export interface ChildTemplate extends EntityTemplateBase {
     type: EntityTemplateType.Child;
-    metaData: IEntityChildTemplatePropertiesPopulated;
+    metaData: IEntityChildTemplatePopulated;
 }
 
 export interface ParentTemplate extends EntityTemplateBase {
     type: EntityTemplateType.Parent;
-    metaData: IEntityTemplatePopulated;
+    metaData: IMongoEntityTemplatePopulated;
 }
 
 export type TemplateItem = ChildTemplate | ParentTemplate;

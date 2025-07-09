@@ -208,7 +208,6 @@ export const filterModelToFilterOfTemplate = (
         const fieldTemplate = entityTemplateWithDefaultFields.properties.properties[field];
         const filter = filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
 
-        console.log('filter', { filter });
         if (filter[field] && typeof filter[field] === 'object' && '$and' in (filter[field] as object)) {
             return (filter[field] as { $and: IFilterOfField[] })['$and'].map((condition) => ({ [field]: condition }));
         }
@@ -228,20 +227,11 @@ export const getFilterModal = (
     defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchFilter | undefined => {
     if (!filterModel && !defaultModal) return undefined;
-
-    const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
-        if (filter?.$and) {
-            return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
-        }
-
-        return [];
-    };
-
-    const filterModelAnds = extractAndArray(filterModel);
-    const defaultModalAnds = extractAndArray(defaultModal);
+    if (!filterModel) return defaultModal;
+    if (!defaultModal) return filterModel;
 
     return {
-        $and: [...filterModelAnds, ...defaultModalAnds],
+        $and: [filterModel, defaultModal],
     };
 };
 
@@ -251,6 +241,7 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
     defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
+
     return {
         skip: startRow,
         limit: endRow - startRow,

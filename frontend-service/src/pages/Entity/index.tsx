@@ -347,7 +347,7 @@ export interface IConnectionTemplateOfExpandedEntity {
 const Entity: React.FC = () => {
     const theme = useTheme();
 
-    const { entityId, templateId } = useParams();
+    const { entityId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
@@ -384,13 +384,14 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated => {
+    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated & { fatherTemplateId?: string } => {
         if (templateId) {
             const childTemplate = childTemplates.get(templateId);
             if (childTemplate) {
                 const fatherEntity = entityTemplates.get(childTemplate.fatherTemplateId)!;
                 return {
                     ...fatherEntity,
+                    fatherTemplateId: childTemplate.fatherTemplateId,
                     _id: childTemplate._id,
                     displayName: childTemplate.displayName,
                     properties: { ...fatherEntity.properties, properties: childTemplate.properties as Record<string, IEntitySingleProperty> },
@@ -402,7 +403,7 @@ const Entity: React.FC = () => {
     };
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = getCurrentEntityTemplate(templateId);
+    const currentEntityTemplate = getCurrentEntityTemplate(childTemplateId ?? expandedEntity?.entity.templateId);
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,

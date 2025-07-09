@@ -12,4 +12,4 @@ else
     exit 1
 fi
 
-$DOCKER_COMPOSE_CMD -f docker-compose.yml -f docker-compose.dev.yml --profile common "$@"
+$DOCKER_COMPOSE_CMD -f docker-compose.yml  -f docker-compose.dev.yml --profile analytics up -d --build "$@"

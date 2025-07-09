@@ -1,30 +1,31 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { memo, useEffect, useState } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
+import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
-import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
+import i18next from 'i18next';
+import { cloneDeep } from 'lodash';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
-import validator from '@rjsf/validator-ajv8';
-import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
-import { cloneDeep } from 'lodash';
+import React, { memo, useEffect, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { RjsfDateWidget, RjsfDateTimeWidget } from './RjsfDatesWidgets';
-import RjsfSelectWidget from './RjsfSelectWidget';
-import RjsfTextWidget from './RjsfStringWidget';
-import RjsfTextAreaWidget from './RjsfTextAreaWidget';
+import { IKartoffelUser } from '../../../interfaces/users';
+import { matchValueAgainstFilter } from '../../../utils/filters';
 import './form.css';
-import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
-import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-import RjsfUserWidget from './RjsfUserWidget';
-import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
-import RjsfSignatureWidgets from './RjsfSignatureWidgets';
-import { IKartoffelUser } from '../../../interfaces/users';
 import RjsfCommentWidget from './RjsfCommentWidget';
+import { RjsfDateTimeWidget, RjsfDateWidget } from './RjsfDatesWidgets';
+import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
+import RjsfSelectWidget from './RjsfSelectWidget';
+import RjsfSignatureWidgets from './RjsfSignatureWidgets';
+import RjsfTextWidget from './RjsfStringWidget';
+import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
+import RjsfTextAreaWidget from './RjsfTextAreaWidget';
+import RjsfUserArrayWidget from './RjsfUserArrayWidget';
+import RjsfUserWidget from './RjsfUserWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -101,9 +102,10 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         errors: false,
     });
 
+    const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (v) => v.format !== 'relationshipReference' && v.format !== 'location'),
+        properties: pickBy(schema.properties, (value) => !formats.includes(value.format ?? '')),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
@@ -128,52 +130,6 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
 
     return { ...formikErrors, ...filterErrors };
-};
-
-const matchValueAgainstFilter = (data: any, filter: any): boolean => {
-    if ('$and' in filter) return filter.$and.every((f: any) => matchValueAgainstFilter(data, f));
-    if ('$or' in filter) return filter.$or.some((f: any) => matchValueAgainstFilter(data, f));
-
-    const [field, condition] = Object.entries(filter)[0];
-    const actual = data[field];
-
-    if (!condition || typeof condition !== 'object') return true;
-
-    return Object.entries(condition).every(([op, expected]) => evaluateOperator(op, actual, expected));
-};
-
-const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
-    switch (op) {
-        case '$eq':
-            return actual === expected;
-        case '$ne':
-        case '$nw':
-            return actual !== expected;
-        case '$lt':
-            return actual < expected;
-        case '$lte':
-            return actual <= expected;
-        case '$gt':
-            return actual > expected;
-        case '$gte':
-            return actual >= expected;
-        case '$in':
-            return Array.isArray(expected) && expected.includes(actual);
-        case '$rgx':
-            try {
-                return new RegExp(expected).test(actual);
-            } catch {
-                return false;
-            }
-        case '$startWith':
-            return typeof actual === 'string' && actual.startsWith(expected);
-        case '$endWith':
-            return typeof actual === 'string' && actual.endsWith(expected);
-        case '$notContains':
-            return typeof actual === 'string' && !actual.includes(expected);
-        default:
-            return true;
-    }
 };
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
@@ -327,7 +283,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:options': {
                             hide: schema.hide.includes(propertyKey),
-                            defaultValue,
                         },
                         'ui:classNames': 'fullWidth',
                         'ui:widget': 'CommentWidget',

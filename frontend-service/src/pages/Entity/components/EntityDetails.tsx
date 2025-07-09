@@ -39,7 +39,7 @@ import LocationPreview from '../../Map/LocationPreview';
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded; childTemplateId?: string }> = ({
     entityTemplate,
     expandedEntity,
-    childTemplateId
+    childTemplateId,
 }) => {
     const { entity } = expandedEntity;
     const [_, navigate] = useLocation();
@@ -138,6 +138,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
+                childTemplateId,
             } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {
@@ -231,9 +232,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(`/entity/${entity.properties._id}/duplicate?childTemplateId=${childTemplateId}`, {
-                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                });
+                                                navigate(
+                                                    `/entity/${entity.properties._id}/duplicate${
+                                                        childTemplateId ? `?childTemplateId=${childTemplateId}` : ''
+                                                    }`,
+                                                    {
+                                                        state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                    },
+                                                );
                                             }
                                             handleClose();
                                         }}

@@ -62,6 +62,24 @@ const convertIEntityToEntityWizardValues = (
     };
 };
 
+export const getInitialValuesWithDefaults = (
+    initialCurrValues: EntityWizardValues,
+    entityTemplate: IMongoEntityTemplatePopulated,
+): EntityWizardValues => {
+    const { attachmentsProperties, properties } = initialCurrValues;
+
+    const mergedProperties = {
+        ...Object.fromEntries(Object.entries(entityTemplate.properties.properties).map(([key, prop]) => [key, properties[key] ?? prop.defaultValue])),
+        disabled: properties.disabled ?? false,
+    };
+
+    return {
+        properties: mergedProperties,
+        attachmentsProperties: attachmentsProperties,
+        template: entityTemplate,
+    };
+};
+
 const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -97,16 +115,23 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     const initialValues = useMemo(() => {
-        if (isEditMode) return convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys);
-        if (initialCurrValues) return initialCurrValues;
+        if (isEditMode)
+            return getInitialValuesWithDefaults(
+                convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys),
+                entityTemplate,
+            );
+        if (initialCurrValues) return getInitialValuesWithDefaults(initialCurrValues, entityTemplate);
 
-        return {
-            properties: {
-                disabled: false,
+        return getInitialValuesWithDefaults(
+            {
+                properties: {
+                    disabled: false,
+                },
+                attachmentsProperties: {},
+                template: entityTemplate,
             },
-            attachmentsProperties: {},
-            template: entityTemplate,
-        };
+            entityTemplate,
+        );
     }, [payload, entityTemplate, initialTemplateFileKeys]);
 
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
@@ -145,8 +170,8 @@ const CreateOrEditEntityDetails: React.FC<{
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
 
-                const allTouched = markTouched(values);
-                await formikHelpers.setTouched(allTouched);
+                // const allTouched = markTouched(values);
+                // await formikHelpers.setTouched(allTouched);
 
                 await mutationPromiseToastify(values);
                 if (!draftId) return;

@@ -30,8 +30,6 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
-    errors,
-    touched,
     error,
     helperText,
     hideFilterType = false,

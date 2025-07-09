@@ -106,6 +106,12 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
+    entityTemplatesRow: {
+        areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',
+        areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
+        succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
+        failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+    },
     clientSidePage: {
         simba: {
             contactInfoCard: {
@@ -802,6 +808,7 @@ export default {
                 failedUploadEntities: 'יצירת יישויות נכשלה',
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
+                editedSuccessfully: 'ישויות נערכו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
                 tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
@@ -982,6 +989,7 @@ export default {
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
+        notMatchingToFilter: 'לא תואם לסינון',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },

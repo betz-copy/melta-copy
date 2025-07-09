@@ -8,6 +8,7 @@ import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocat
 const {
     polygon: { polygonPrefix, polygonSuffix },
     epsgCode: { wgs84, epsg, southHemiUTM, northHemiUTM },
+    wgs84: { maxLongitude, maxLatitude },
 } = environment.map;
 
 enum Hemisphere {
@@ -40,25 +41,22 @@ export const isValidUTM = (location: UTM | UTM[]): boolean => {
 };
 
 export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) => {
-    const { maxLongitude, maxLatitude } = environment.map.wgs84;
-
     return !Array.isArray(location)
         ? Math.abs(location.x) < maxLongitude && Math.abs(location.y) < maxLatitude
         : location.every((point) => Math.abs(point.x) < maxLongitude && Math.abs(point.y) < maxLatitude);
 };
 
-export const convertWGS94ToECEF = (location: Cartesian3 | Cartesian3[]) =>
-    !Array.isArray(location) ? Cartesian3.fromDegrees(location.x, location.y) : location.map((point) => Cartesian3.fromDegrees(point.x, point.y));
+export const convertWGS94ToECEF = (location: Cartesian3 | Cartesian3[]) => {
+    const convertPoint = (point: Cartesian3) => Cartesian3.fromDegrees(point.x, point.y);
+    return !Array.isArray(location) ? convertPoint(location) : location.map((point) => convertPoint(point));
+};
 
 export const convertECEFToWGS84 = (point: Cartesian3): { longitude: number; latitude: number } => {
     const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(point);
 
     if (!cartographic) throw new Error('Invalid Point');
 
-    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-
-    return { longitude, latitude };
+    return { longitude: Cesium.Math.toDegrees(cartographic.longitude), latitude: Cesium.Math.toDegrees(cartographic.latitude) };
 };
 
 const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string; zone: number; hemi: Hemisphere } => {

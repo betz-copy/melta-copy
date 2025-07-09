@@ -28,12 +28,12 @@ import { ajvValidate } from '../inputs/JSONSchemaFormik';
 import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsPropertiesSchema';
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
+import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
-    childTemplateId?: string;
 }
 
 export interface IUpdateMultipleEntitiesResponse {
@@ -42,22 +42,22 @@ export interface IUpdateMultipleEntitiesResponse {
     brokenRulesEntities?: IBrokenRuleEntity[];
 }
 
-export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
-    api,
-    template,
-    quickFilterText,
-    setUpdatedTemplateIds,
-    childTemplateId,
-}) => {
-    const initialValues: EntityWizardValues = {
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
+    const initialValues: EntityWizardValues = getInitialValuesWithDefaults(
+        {
+            template,
+            attachmentsProperties: {},
+            properties: { disabled: false },
+        },
         template,
-        attachmentsProperties: {},
-        properties: { disabled: false },
-    };
+    );
 
     const queryClient = useQueryClient();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
+
+    const parentTemplateId = template.fatherTemplateId ?? template._id;
+    const childTemplateId = template.fatherTemplateId ? template._id : undefined;
 
     const currentUser = useUserStore((state) => state.user);
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
@@ -158,11 +158,11 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
     };
 
     const handleMultipleDelete = (deleteAllRelationships = false) => {
-        const { _id: templateId } = template;
         const deleteBody: IDeleteEntityBody<boolean> = {
             ...getSelectedEntities(),
             deleteAllRelationships,
-            templateId,
+            templateId: parentTemplateId,
+            childTemplateId,
         };
 
         deleteMutation(deleteBody);

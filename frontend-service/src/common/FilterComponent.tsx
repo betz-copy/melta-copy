@@ -10,6 +10,7 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
+import { IUser } from '../interfaces/users';
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -129,7 +130,7 @@ const handleTypedFilterTypeChange = (
 
 const handleCheckboxChange = (
     filters: IFilterTemplate[],
-    option: string,
+    option: string | IUser,
     checked: boolean,
     filterField: IAGGridSetFilter,
     index: number,
@@ -137,7 +138,7 @@ const handleCheckboxChange = (
 ) => {
     const currentValues = filterField.values || [];
 
-    let updatedValues: (string | null)[];
+    let updatedValues: (string | IUser | null)[];
     if (checked) updatedValues = currentValues.includes(option) ? currentValues : [...currentValues, option];
     else updatedValues = currentValues.filter((item) => item !== option);
 
@@ -247,7 +248,7 @@ export const renderFilterInput = (
                 filterField={field?.filterType === 'set' ? field : undefined}
                 inputValue={userInput.value}
                 setInputValue={userInput.set}
-                handleCheckboxChange={(option: string, checked: boolean) =>
+                handleCheckboxChange={(option: string | IUser, checked: boolean) =>
                     handleCheckboxChange(filters, option, checked, filter.filterField as IAGGridSetFilter, index, onChange)
                 }
                 readOnly={Boolean(readonly)}

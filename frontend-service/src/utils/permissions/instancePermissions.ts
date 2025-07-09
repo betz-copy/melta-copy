@@ -81,7 +81,6 @@ export const getChangedCategoryPermissions = (
                 newTemplatePermission[key] = {
                     scope: PermissionScope.write,
                     entityChildTemplates: categoriesPermissions?.[id]?.entityTemplates?.[key]?.entityChildTemplates ?? {},
-                    fields: {},
                 };
         });
     }
@@ -148,7 +147,6 @@ const changeSpecificChildTemplate = (
                         ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates,
                         [childTemplateId]: {
                             scope: newScope,
-                            fields: {},
                         },
                     },
                 },

@@ -13,10 +13,9 @@ import { NumberChartGenerator } from './NumberChartGenerator';
 interface IChartGeneratorProps {
     formikValues: ChartForm;
     template: IMongoEntityTemplatePopulated;
-    isChildTemplate?: boolean;
 }
 
-const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, isChildTemplate }) => {
+const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues }) => {
     const { type, metaData } = formikValues;
 
     const queryClient = useQueryClient();
@@ -35,11 +34,17 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
         type === IChartType.Number ? isAggregationValid(xAxisField) : isAggregationValid(xAxisField) && isAggregationValid(yAxisField as IAxisField);
 
     const memoizedFilter = useDebouncedFilter(formikValues, queryClient, 500);
-    console.log({ template });
 
     const { data, isLoading, refetch } = useQuery(
-        ['chart', template._id, xAxisField, yAxisField, memoizedFilter],
-        () => getChartOfTemplate(xAxisField, yAxisField, template._id, memoizedFilter, isChildTemplate),
+        ['chart', template.fatherTemplateId || template._id, , xAxisField, yAxisField, memoizedFilter],
+        () =>
+            getChartOfTemplate(
+                xAxisField,
+                yAxisField,
+                template.fatherTemplateId || template._id,
+                memoizedFilter,
+                template.fatherTemplateId ? template._id : undefined,
+            ),
         {
             enabled: false,
         },

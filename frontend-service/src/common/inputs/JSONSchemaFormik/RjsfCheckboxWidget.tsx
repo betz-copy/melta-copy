@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { WidgetProps } from '@rjsf/utils';
 import { Box, Typography } from '@mui/material';
+import { WidgetProps } from '@rjsf/utils';
+import React from 'react';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 
 const RjsfCheckboxWidget = ({
@@ -26,14 +26,6 @@ const RjsfCheckboxWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
-    const { defaultValue } = options;
-
-    useEffect(() => {
-        if (!value && !!defaultValue) {
-            onChange(defaultValue || false);
-        }
-    }, [value, defaultValue, onChange]);
-
     const _onChange = ({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) => {
         onChange(checked);
     };

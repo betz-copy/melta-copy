@@ -1,4 +1,4 @@
-import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { IFilterGroup, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
 
 const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     switch (op) {
@@ -34,7 +34,7 @@ const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     }
 };
 
-const matchValueAgainstFilter = (data: Record<string, any>, filter: ISearchFilter): string | undefined => {
+const matchValueAgainstFilter = (data: Record<string, any>, filter: ISearchFilter | IFilterGroup): string | undefined => {
     if ('$and' in filter && Array.isArray(filter.$and)) {
         for (const subFilter of filter.$and) {
             const result = matchValueAgainstFilter(data, subFilter);
@@ -67,20 +67,12 @@ const combineFilters = (
 ): ISearchFilter | undefined => {
     if (!filterModel && !defaultModal) return undefined;
 
-    const extractAndArray = (filter?: ISearchFilter): IFilterOfTemplate[] => {
-        if (filter?.$and) {
-            return Array.isArray(filter.$and) ? filter.$and : [filter.$and];
-        }
-
-        return [];
-    };
-
-    const filterModelAnds = extractAndArray(filterModel);
-    const defaultModalAnds = extractAndArray(defaultModal);
+    if (!filterModel) return defaultModal;
+    if (!defaultModal) return filterModel;
 
     return {
-        $and: [...filterModelAnds, ...defaultModalAnds],
+        $and: [filterModel, defaultModal],
     };
-}; // TODO: match the function to the frontend after noa's assignment
+};
 
 export { combineFilters, evaluateOperator, matchValueAgainstFilter };

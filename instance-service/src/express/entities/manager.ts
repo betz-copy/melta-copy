@@ -1205,7 +1205,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string) {
-        let node;
+        let node: Record<string, any> | null;
         if (type === 'array') {
             node = await this.neo4jClient.readTransaction(
                 `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
@@ -2128,8 +2128,10 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, { chartsData, isChildTemplate }: { chartsData: IChartBody[]; isChildTemplate?: boolean }) {
-        const childEntityTemplate = isChildTemplate ? await this.entityChildTemplateManagerService.getEntityChildTemplateById(templateId) : undefined;
+    async getChartByTemplate(templateId: string, { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string }) {
+        const childEntityTemplate = childTemplateId
+            ? await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId)
+            : undefined;
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(childEntityTemplate?.fatherTemplateId._id || templateId);
 
@@ -2137,7 +2139,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const filters = isChildTemplate ? combineFilters(getFilterFromChildTemplate(childEntityTemplate!), filter) : filter;
+            const filters = childTemplateId ? combineFilters(getFilterFromChildTemplate(childEntityTemplate!), filter) : filter;
 
             const templatesFilter = { [entityTemplate._id]: { filter: filters, showRelationships: false } };
 
