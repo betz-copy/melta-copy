@@ -24,6 +24,7 @@ import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
+    ChipType,
     IChildTemplateProperty,
     IEntityChildTemplate,
     IEntityChildTemplateMap,
@@ -74,12 +75,14 @@ const CreateChildTemplateDialog: React.FC<{
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
                 const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
+                const defaultValue = childTemplate?.properties[key]?.defaultValue;
+                const isEditableByUser = childTemplate?.properties[key]?.isEditableByUser;
 
                 initialFields[key] = {
                     selected: isSelected,
                     fieldValue: value,
-                    ...(childTemplate?.properties[key]?.defaultValue && { defaultValue: childTemplate.properties[key].defaultValue }),
-                    ...(childTemplate?.properties[key]?.isEditableByUser && { isEditableByUser: childTemplate.properties[key].isEditableByUser }),
+                    ...(defaultValue && { defaultValue }),
+                    ...(isEditableByUser && { isEditableByUser }),
                 };
             });
             setTemplateFieldsFilters(initialFields);
@@ -152,7 +155,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     if (fieldValue.$in) {
                                         return {
                                             filterType: 'set',
-                                            values: fieldValue.$in as (string | null)[],
+                                            values: fieldValue.$in,
                                         };
                                     }
 
@@ -182,9 +185,9 @@ const CreateChildTemplateDialog: React.FC<{
 
                                 chips.push({
                                     fieldName,
-                                    chipType: 'filter',
-                                    value: `${i18next.t(`filters.${filterType}`)}: ${value}`,
-                                    filterType: filterTypeObj,
+                                    chipType: ChipType.Filter,
+                                    defaultValue: `${i18next.t(`filters.${filterType}`)}: ${value}`,
+                                    filterField: filterTypeObj,
                                 });
                             });
                         }
@@ -212,8 +215,8 @@ const CreateChildTemplateDialog: React.FC<{
 
                     chips.push({
                         fieldName,
-                        chipType: 'default',
-                        value: displayValue,
+                        chipType: ChipType.Default,
+                        defaultValue: displayValue,
                     });
                 }
             });
@@ -259,11 +262,7 @@ const CreateChildTemplateDialog: React.FC<{
                 queryClient.invalidateQueries('getEntityTemplates'),
                 queryClient.invalidateQueries('searchEntityTemplates'),
             ]).then(() => {
-                toast.success(
-                    childTemplate
-                        ? i18next.t('createChildTemplateDialog.succeededToUpdateEntityChildTemplate')
-                        : i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'),
-                );
+                toast.success(i18next.t(`createChildTemplateDialog.succeededTo${childTemplate ? 'Update' : 'Create'}EntityChildTemplate`));
                 handleClose();
             });
         },
@@ -271,11 +270,7 @@ const CreateChildTemplateDialog: React.FC<{
             toast.error(
                 <ErrorToast
                     axiosError={err}
-                    defaultErrorMessage={
-                        childTemplate
-                            ? i18next.t('createChildTemplateDialog.failedToUpdateEntityChildTemplate')
-                            : i18next.t('createChildTemplateDialog.failedToCreateEntityChildTemplate')
-                    }
+                    defaultErrorMessage={i18next.t(`createChildTemplateDialog.failedTo${childTemplate ? 'Update' : 'Create'}EntityChildTemplate`)}
                 />,
             );
         },
@@ -309,7 +304,7 @@ const CreateChildTemplateDialog: React.FC<{
             if (!currentField?.selected) return true;
 
             const originalDefaultValue = prop.defaultValue;
-            const currentDefaultValue = fieldChips.find((chip) => chip.fieldName === fieldName && chip.chipType === 'default')?.value;
+            const currentDefaultValue = fieldChips.find((chip) => chip.fieldName === fieldName && chip.chipType === 'default')?.defaultValue;
 
             if (
                 (!originalDefaultValue && !!currentDefaultValue) ||
@@ -329,7 +324,7 @@ const CreateChildTemplateDialog: React.FC<{
 
             const currentFilters = fieldChips
                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
-                .map((chip) => chip.filterType);
+                .map((chip) => chip.filterField);
 
             const hasFilters = currentFilters.length > 0;
             const hadFilters = !!prop.filters;
@@ -391,7 +386,6 @@ const CreateChildTemplateDialog: React.FC<{
               .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
-    console.log({ existingDisplayNames });
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -430,7 +424,7 @@ const CreateChildTemplateDialog: React.FC<{
 
                         if (filterChips.length > 0) {
                             const filtersArray = filterChips.map((chip) => {
-                                const filter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterType!);
+                                const filter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterField!);
                                 return filter;
                             });
                             childProp.filters = { $and: filtersArray };
@@ -481,9 +475,9 @@ const CreateChildTemplateDialog: React.FC<{
                     return (
                         <Form>
                             <DialogTitle>
-                                {childTemplate
-                                    ? `${i18next.t('createChildTemplateDialog.updateTemplateTitle')}- ${childTemplate.displayName}`
-                                    : `${i18next.t('createChildTemplateDialog.templateTitle')}- ${entityTemplate.displayName}`}
+                                {`${i18next.t(`createChildTemplateDialog.${childTemplate ? 'updateTemplate' : 'template'}Title`)}- ${
+                                    childTemplate ? childTemplate.displayName : entityTemplate.displayName
+                                }`}
                             </DialogTitle>
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
@@ -631,7 +625,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 <Autocomplete
                                                     id="category"
                                                     options={Array.from(categories.values())}
-                                                    multiple
+                                                    multiple //convert to only single selection
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
@@ -742,9 +736,7 @@ const CreateChildTemplateDialog: React.FC<{
                             <DialogActions>
                                 <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
                                 <Button type="submit" variant="contained" disabled={childTemplate && !hasChanges}>
-                                    {childTemplate
-                                        ? i18next.t('createChildTemplateDialog.buttons.update')
-                                        : i18next.t('createChildTemplateDialog.buttons.create')}
+                                    {i18next.t(`createChildTemplateDialog.buttons.${childTemplate ? 'update' : 'create'}`)}
                                 </Button>
                             </DialogActions>
                         </Form>

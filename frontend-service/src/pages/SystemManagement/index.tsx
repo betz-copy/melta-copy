@@ -2,7 +2,7 @@ import React, { ReactElement, useEffect } from 'react';
 import { Box } from '@mui/material';
 import i18next from 'i18next';
 import { CategoriesRow } from './components/CategoriesRow';
-import { EntityTemplatesRow } from './components/EntityTemplatesRow';
+import EntityTemplatesRow from './entityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
 import { RulesRow } from './components/RulesRow';
 import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
