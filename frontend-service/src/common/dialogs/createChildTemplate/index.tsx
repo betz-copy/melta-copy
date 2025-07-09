@@ -378,12 +378,12 @@ const CreateChildTemplateDialog: React.FC<{
 
     const existingNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.fatherTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.parentTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.name)
         : [];
     const existingDisplayNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.fatherTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.parentTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
     console.log({ existingDisplayNames });
@@ -428,7 +428,7 @@ const CreateChildTemplateDialog: React.FC<{
                         name: fullName,
                         displayName: displayNameToUse,
                         description,
-                        fatherTemplateId: entityTemplate._id,
+                        parentTemplateId: entityTemplate._id,
                         categories: categories.map((c) => c._id),
                         properties,
                         disabled: false,

@@ -95,7 +95,7 @@ const EntitiesPage: React.FC<EntitiesPageProps> = ({
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
                         displayColumns: templateTableRef.getDisplayColumns(),
-                        isChildTemplate: 'fatherTemplateId' in template,
+                        isChildTemplate: 'parentTemplateId' in template,
                     };
                 },
             );
@@ -189,7 +189,7 @@ const EntitiesPage: React.FC<EntitiesPageProps> = ({
                 {viewMode === 'cards-view' && (
                     <CardsView
                         ref={cardsViewRef}
-                        templateIds={templatesToShowCheckbox.map(({ fatherTemplateId, _id }) => fatherTemplateId || _id)}
+                        templateIds={templatesToShowCheckbox.map(({ parentTemplateId, _id }) => parentTemplateId || _id)}
                         templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                     />

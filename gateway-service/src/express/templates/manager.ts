@@ -948,8 +948,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     this.entityTemplateService.updateEntityTemplate(id, updatedTemplate),
                     ...childTemplatesToHandleRemove.map((childTemplate) =>
                         this.entityTemplateService.updateEntityChildTemplate(id, {
-                            fatherTemplateId: childTemplate.fatherTemplateId._id,
-                            categories: childTemplate.categories.map((category) => category._id),
+                            parentTemplateId: childTemplate.parentTemplate._id,
+                            category: childTemplate.category._id,
                             properties: childTemplate.properties,
                             actions: childTemplate.actions,
                             description: childTemplate.description,
@@ -1177,7 +1177,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             documentTemplatesIds,
         });
 
-        const childTemplates = await this.entityTemplateService.searchChildTemplates({ fatherTemplatesIds: [id] });
+        const childTemplates = await this.entityTemplateService.searchChildTemplates({ parentTemplatesIds: [id] });
 
         const childTemplatesToHandleRemove: IEntityChildTemplatePopulated[] = [];
 
@@ -1190,8 +1190,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     childTemplatesToHandleRemove.push(childTemplate);
 
                     return this.entityTemplateService.updateEntityChildTemplate(childTemplate._id, {
-                        fatherTemplateId: childTemplate.fatherTemplateId._id,
-                        categories: childTemplate.categories.map((category) => category._id),
+                        parentTemplateId: childTemplate.parentTemplate._id,
+                        category: childTemplate.category._id,
                         properties: { properties: dePopulateChildProperties(filteredProperties.properties) },
                         actions: childTemplate.actions,
                         description: childTemplate.description,

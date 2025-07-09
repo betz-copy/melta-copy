@@ -133,7 +133,7 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
     const properties =
         templateType === EntityTemplateType.Parent
             ? template.properties.properties
-            : getFullChildTemplateProperties(template, template.fatherTemplateId);
+            : getFullChildTemplateProperties(template, template.parentTemplate);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -228,14 +228,14 @@ const styleAWorksheet = (
     skip: number = 0,
 ) => {
     const { type, metaData: template } = templateItem;
-    const parentTemplate = type === EntityTemplateType.Child ? template.fatherTemplateId : template;
+    const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
 
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
     });
     const properties =
-        type === EntityTemplateType.Parent ? template.properties.properties : getFullChildTemplateProperties(template, template.fatherTemplateId);
+        type === EntityTemplateType.Parent ? template.properties.properties : getFullChildTemplateProperties(template, template.parentTemplate);
 
     const { disabled } = template;
     let additionalProps = {};

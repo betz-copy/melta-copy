@@ -29,7 +29,7 @@ class EntityChildTemplateValidator extends DefaultController<IMongoChildTemplate
 
         const entityParentTemplates = await this.entityTemplateManager.getTemplates({ limit: 0, skip: 0 });
         const parentTemplatesMap = new Map(entityParentTemplates.map((template) => [template._id, template]));
-        const baseParentTemplate = parentTemplatesMap.get(baseChildTemplate.fatherTemplateId._id)!;
+        const baseParentTemplate = parentTemplatesMap.get(baseChildTemplate.parentTemplate._id)!;
 
         const entityProperties = getFullChildTemplateProperties(baseChildTemplate, baseParentTemplate.properties.properties);
         const entityPropertiesQueue = [entityProperties];

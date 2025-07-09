@@ -80,7 +80,7 @@ const createEntityClientSideRequest = async (
     clientSideUserEntity?: IEntity,
 ) => {
     const formData = new FormData();
-    const entityTemplateProperties = childTemplate!.fatherTemplateId.properties.properties;
+    const entityTemplateProperties = childTemplate!.parentTemplateId.properties.properties;
 
     const propertiesWithDefaults = childTemplate
         ? Object.entries(entityTemplateProperties).reduce((acc, [key]) => {

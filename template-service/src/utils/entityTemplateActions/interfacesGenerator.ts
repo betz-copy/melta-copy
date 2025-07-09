@@ -68,7 +68,7 @@ export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<s
             const { name } = metaData;
             const properties =
                 type === EntityTemplateType.Child
-                    ? getFullChildTemplateProperties(metaData, metaData.fatherTemplateId.properties.properties)
+                    ? getFullChildTemplateProperties(metaData, metaData.parentTemplate.properties.properties)
                     : metaData.properties.properties;
             return generateInterface(properties, name, entitiesTemplatesByIds);
         })

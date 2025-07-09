@@ -56,7 +56,7 @@ const ChooseTemplate: React.FC<{
             return hasValidCategory;
         })
         .map((child) => {
-            const parent = entityTemplates.get(child.fatherTemplateId!)!;
+            const parent = entityTemplates.get(child.parentTemplateId!)!;
             const category = categoryId ? categories.get(categoryId)! : categories.get(child.categories[0])!;
 
             return transformChild(child, parent, category);

@@ -99,7 +99,7 @@ export const getDatasource = <Data extends any = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
-    const parentTemplateId = 'fatherTemplateId' in template ? template.fatherTemplateId._id : template._id;
+    const parentTemplateId = 'parentTemplateId' in template ? template.parentTemplateId._id : template._id;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -299,7 +299,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
 
-        const childTemplateId = 'fatherTemplateId' in template && template.fatherTemplateId ? template._id : undefined;
+        const childTemplateId = 'parentTemplateId' in template && template.parentTemplateId ? template._id : undefined;
 
         const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -341,7 +341,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             (id: string) =>
                 deleteEntityRequest({
                     selectAll: false,
-                    templateId: 'fatherTemplateId' in template ? template.fatherTemplateId._id : template?._id,
+                    templateId: 'parentTemplateId' in template ? template.parentTemplateId._id : template?._id,
                     idsToInclude: [id],
                     deleteAllRelationships: false,
                     childTemplateId,

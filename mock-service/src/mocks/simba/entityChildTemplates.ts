@@ -4,8 +4,8 @@ const driverEntityChildTemplate: IChildTemplate = {
     name: 'driver_view',
     displayName: 'נהג_פרטי הנוהג',
     description: 'פרטי הנוהג',
-    fatherTemplateId: '683829d2657d1b63a9f4f25b',
-    categories: ['683829d2657d1b63a9f4f257'],
+    parentTemplateId: '683829d2657d1b63a9f4f25b',
+    category: '683829d2657d1b63a9f4f257',
     properties: {
         properties: {
             tz: {
@@ -38,8 +38,8 @@ const carEntityChildTemplate: IChildTemplate = {
     name: 'car_view',
     displayName: 'רכב_פרטי רכב',
     description: 'פרטי רכב',
-    fatherTemplateId: '683829d2657d1b63a9f4f26e',
-    categories: ['683829d2657d1b63a9f4f257'],
+    parentTemplateId: '683829d2657d1b63a9f4f26e',
+    category: '683829d2657d1b63a9f4f257',
     properties: {
         properties: {
             ID: {
@@ -66,8 +66,8 @@ const crashEntityChildTemplate: IChildTemplate = {
     name: 'crash_view',
     displayName: 'תאונה_פרטי תאונה',
     description: 'פרטי תאונה',
-    fatherTemplateId: '683829d2657d1b63a9f4f257',
-    categories: ['683829d2657d1b63a9f4f257'],
+    parentTemplateId: '683829d2657d1b63a9f4f257',
+    category: '683829d2657d1b63a9f4f257',
     properties: {
         properties: {
             car: {

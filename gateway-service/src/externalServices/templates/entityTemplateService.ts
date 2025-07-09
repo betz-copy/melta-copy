@@ -231,7 +231,7 @@ class EntityTemplateService extends TemplatesManagerService {
         categoryIds?: string[];
         limit?: number;
         skip?: number;
-        fatherTemplatesIds?: string[];
+        parentTemplatesIds?: string[];
     }) {
         const { data } = await this.api.post<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
         return data;

@@ -60,7 +60,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
     const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
         async (file: Record<string, File>) => {
             const isChild = isChildTemplate(template!);
-            const parentTemplateId = isChild ? template!.fatherTemplateId._id : template!._id;
+            const parentTemplateId = isChild ? template!.parentTemplateId._id : template!._id;
             const childTemplateId = isChild ? template!._id : undefined;
 
             return getChangedEntitiesFromExcelRequest(parentTemplateId, file, childTemplateId);
@@ -131,7 +131,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
                         headersOnly,
                         insertEntities,
                         displayColumns: template?.propertiesOrder,
-                        isChildTemplate: 'fatherTemplateId' in template!,
+                        isChildTemplate: 'parentTemplateId' in template!,
                     },
                 },
             });

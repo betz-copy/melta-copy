@@ -368,7 +368,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     }${
                                         pageType === environment.clientSideId
                                             ? ''
-                                            : 'fatherTemplateId' in template && template.fatherTemplateId
+                                            : 'parentTemplateId' in template && template.parentTemplateId
                                             ? `?childTemplateId=${template._id}`
                                             : ''
                                     }`}
@@ -453,7 +453,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     onDuplicateClick={() => {
                                         navigate(
                                             `/entity/${getRowId(data)}/duplicate${
-                                                'fatherTemplateId' in template ? `?childTemplateId=${template._id}` : ''
+                                                'parentTemplateId' in template ? `?childTemplateId=${template._id}` : ''
                                             }`,
                                             {
                                                 state: { entityTemplate: template, expandedEntity: { entity: data } },

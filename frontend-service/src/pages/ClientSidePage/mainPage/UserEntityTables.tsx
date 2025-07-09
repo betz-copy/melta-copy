@@ -18,12 +18,12 @@ interface IUserEntityTablesProps {
 
 const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildTemplatePopulated[], userEntityId: string) => {
     const entitiesCountByTemplates = await countEntitiesOfTemplatesByUserEntityId(
-        templates.map(({ fatherTemplateId }) => fatherTemplateId._id),
+        templates.map(({ parentTemplateId }) => parentTemplateId._id),
         userEntityId,
     );
 
     return templates.flatMap((template) => {
-        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template.fatherTemplateId._id);
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template.parentTemplateId._id);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });
 };
@@ -40,7 +40,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
             refetch: refetchTemplatesFilteredByCount,
             isFetching: isLoadingTemplatesFilteredByCount,
         } = useQuery({
-            queryKey: ['countEntitiesOfTemplatesByUser', usersInfoChildTemplate?.fatherTemplateId._id, currentUserFromClientSide.properties._id],
+            queryKey: ['countEntitiesOfTemplatesByUser', usersInfoChildTemplate?.parentTemplateId._id, currentUserFromClientSide.properties._id],
             queryFn: () => filterEmptyTemplateTablesOnClientSidePage(Array.from(childTemplates.values()), currentUserFromClientSide.properties._id!),
             enabled: !!currentUserFromClientSide,
         });
@@ -72,12 +72,12 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                     {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
                         <Grid container direction="column" spacing={1}>
                             {templatesFilteredByCount.map((childTemplate) => {
-                                const fatherTemplate = entityTemplates.get(childTemplate.fatherTemplateId._id);
-                                if (!fatherTemplate) return null;
+                                const parentTemplate = entityTemplates.get(childTemplate.parentTemplateId._id);
+                                if (!parentTemplate) return null;
 
                                 const childTemplatePropertiesList = Object.keys(childTemplate.properties);
                                 const childTemplateProperties = Object.fromEntries(
-                                    Object.entries(fatherTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
+                                    Object.entries(parentTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
                                 ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
 
                                 Object.keys(childTemplateProperties).forEach(
@@ -119,13 +119,13 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     : {};
 
                                 const childTemplatePopulated = {
-                                    ...fatherTemplate,
+                                    ...parentTemplate,
                                     displayName: childTemplate.displayName,
                                     properties: {
-                                        ...fatherTemplate.properties,
+                                        ...parentTemplate.properties,
                                         properties: childTemplateProperties,
                                     },
-                                    propertiesOrder: fatherTemplate.propertiesOrder.filter((property) =>
+                                    propertiesOrder: parentTemplate.propertiesOrder.filter((property) =>
                                         childTemplatePropertiesList.includes(property),
                                     ),
                                 };

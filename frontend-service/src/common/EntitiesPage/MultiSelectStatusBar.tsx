@@ -31,7 +31,7 @@ import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
+    template: IMongoEntityTemplatePopulated & { parentTemplateId?: string };
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -56,8 +56,8 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
 
-    const parentTemplateId = template.fatherTemplateId ?? template._id;
-    const childTemplateId = template.fatherTemplateId ? template._id : undefined;
+    const parentTemplateId = template.parentTemplateId ?? template._id;
+    const childTemplateId = template.parentTemplateId ? template._id : undefined;
 
     const currentUser = useUserStore((state) => state.user);
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);

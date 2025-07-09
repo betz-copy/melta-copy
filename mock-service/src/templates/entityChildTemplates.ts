@@ -11,14 +11,14 @@ const {
 export const createEntityChildTemplate = async (
     workspaceId: string,
     entityChildTemplateToCreate: IChildTemplate,
-    fatherTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    parentTemplate: IMongoEntityTemplateWithConstraintsPopulated,
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
     const { data } = await axiosInstance.post<IMongoChildTemplate>(url + createEntityChildTemplateRoute, {
         ...entityChildTemplateToCreate,
-        categories: [fatherTemplate.category._id],
-        fatherTemplateId: fatherTemplate._id,
+        categories: [parentTemplate.category._id],
+        parentTemplateId: parentTemplate._id,
     });
 
     return data;

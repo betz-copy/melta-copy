@@ -217,7 +217,7 @@ const readExcelFile = async (
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
                     entities.push({
-                        templateId: 'fatherTemplateId' in template && template.fatherTemplateId ? template.fatherTemplateId._id : template._id,
+                        templateId: 'parentTemplate' in template && template.parentTemplate ? template.parentTemplate._id : template._id,
                         properties: rowData,
                         ignoredRules: [],
                     });

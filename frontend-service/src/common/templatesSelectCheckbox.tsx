@@ -38,7 +38,7 @@ const TemplatesSelectCheckbox: React.FC<{
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
                 getGroupOfOption: (entityTemplate, _categories) =>
-                    'fatherTemplateId' in entityTemplate ? entityTemplate.categories[0] : entityTemplate.category, // TODO: [0] is bad
+                    'parentTemplateId' in entityTemplate ? entityTemplate.categories[0] : entityTemplate.category, // TODO: [0] is bad
             }}
             overrideSx={overrideSx}
         />

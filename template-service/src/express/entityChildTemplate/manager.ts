@@ -22,11 +22,11 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate
         search?: string;
         ids?: string[];
         categoryIds?: string[];
-        fatherTemplatesIds?: string[];
+        parentTemplatesIds?: string[];
         limit: number;
         skip: number;
     }): Promise<IEntityChildTemplatePopulated[]> {
-        const { search: displayName, ids, categoryIds, limit, skip, fatherTemplatesIds } = searchQuery;
+        const { search: displayName, ids, categoryIds, limit, skip, parentTemplatesIds } = searchQuery;
         const query: FilterQuery<IChildTemplate> = {};
 
         if (displayName) {
@@ -41,14 +41,14 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate
             query.category = { $in: categoryIds };
         }
 
-        if (fatherTemplatesIds) {
-            query.fatherTemplateId = { $in: fatherTemplatesIds };
+        if (parentTemplatesIds) {
+            query.parentTemplateId = { $in: parentTemplatesIds };
         }
 
         const populatedWithParent = await this.model
             .find(query)
-            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'categories'>>('categories')
-            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'fatherTemplateId'>>('fatherTemplateId')
+            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .limit(limit)
             .skip(skip)
             .lean()
@@ -60,8 +60,8 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate
     async getAllChildTemplates(): Promise<IEntityChildTemplatePopulated[]> {
         const populatedWithParent = await this.model
             .find()
-            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'categories'>>('categories')
-            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'fatherTemplateId'>>('fatherTemplateId')
+            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .lean()
             .exec();
 
@@ -71,8 +71,8 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate
     async getChildTemplateById(id: string): Promise<IEntityChildTemplatePopulated> {
         const populatedWithParent = await this.model
             .findById(id)
-            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'categories'>>('categories')
-            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'fatherTemplateId'>>('fatherTemplateId')
+            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IEntityChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .orFail(new NotFoundError('Entity Child Template not found'))
             .lean()
             .exec();
@@ -88,8 +88,8 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate
         return this.model.findByIdAndUpdate(id, childTemplate, { new: true }).orFail(new NotFoundError('Entity Child Template not found'));
     }
 
-    async updateChildrenDisplayNames(fatherTemplateId: string, oldDisplayName: string, newDisplayName: string): Promise<void> {
-        const result = await this.model.updateMany({ fatherTemplateId }, [
+    async updateChildrenDisplayNames(parentTemplateId: string, oldDisplayName: string, newDisplayName: string): Promise<void> {
+        const result = await this.model.updateMany({ parentTemplateId }, [
             { $set: { displayName: { $replaceOne: { input: '$displayName', find: oldDisplayName, replacement: newDisplayName } } } },
         ]);
 
@@ -105,7 +105,7 @@ class EntityChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate
     async updateEntityTemplateAction(id: string, actions: string) {
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
-            .populate('categories')
+            .populate('category')
             .orFail(new NotFoundError('Entity Child Template not found'))
             .lean()
             .exec();

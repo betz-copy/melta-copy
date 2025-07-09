@@ -17,7 +17,7 @@ const EntityChildTemplateSchema = new mongoose.Schema(
         description: {
             type: String,
         },
-        fatherTemplateId: {
+        parentTemplateId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: config.mongo.entityTemplatesCollectionName,
             required: true,
@@ -75,7 +75,7 @@ EntityChildTemplateSchema.index({
     description: 'text',
 });
 
-EntityChildTemplateSchema.index({ fatherTemplateId: 1 });
+EntityChildTemplateSchema.index({ parentTemplateId: 1 });
 
 EntityChildTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);

@@ -148,17 +148,15 @@ class TemplatesValidator extends DefaultController {
                 throw new NotFoundError('Child Template not found');
             }
 
-            if (!Array.isArray(childTemplate.categories)) {
-                throw new NotFoundError('Child Template categories are invalid');
+            if (!Array.isArray(childTemplate.category)) {
+                throw new NotFoundError('Child Template category are invalid');
             }
 
             if (req.permissionsOfUserId?.admin?.scope === PermissionScope.write) {
                 return next();
             }
 
-            const hasWritePermission = childTemplate.categories.some((category) => {
-                return req.permissionsOfUserId?.instances?.categories[category._id]?.scope === PermissionScope.write;
-            });
+            const hasWritePermission = req.permissionsOfUserId?.instances?.categories[childTemplate.category._id]?.scope === PermissionScope.write;
 
             if (!hasWritePermission) {
                 throw new ForbiddenError('User does not have permission to modify this child template');

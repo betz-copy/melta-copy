@@ -93,7 +93,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         headersOnly,
                         insertEntities,
                         displayColumns: template?.propertiesOrder,
-                        isChildTemplate: 'fatherTemplateId' in template!,
+                        isChildTemplate: 'parentTemplateId' in template!,
                     },
                 },
             });

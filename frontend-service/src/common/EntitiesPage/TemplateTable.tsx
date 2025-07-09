@@ -129,7 +129,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
-                        isChildTemplate: 'fatherTemplateId' in template,
+                        isChildTemplate: 'parentTemplateId' in template,
                     },
                 },
             });

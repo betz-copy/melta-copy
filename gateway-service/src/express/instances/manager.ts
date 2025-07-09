@@ -243,7 +243,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         insertEntities?: Record<string, any>[],
     ) {
         const { type, metaData: template } = templateItem;
-        const parentTemplate = type === EntityTemplateType.Child ? template.fatherTemplateId : template;
+        const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
 
         const worksheet = await createWorksheet(workbook, templateItem, displayColumns, headersOnly || !!insertEntities);
         const { searchEntitiesChunkSize } = config.service;
@@ -354,7 +354,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters)
             await this.updateTemplateCurrentNumbers(
-                type === EntityTemplateType.Child ? template.fatherTemplateId : { ...template, category: template.category._id },
+                type === EntityTemplateType.Child ? template.parentTemplate : { ...template, category: template.category._id },
                 serialStarters,
                 succeededEntities.length,
             );
@@ -379,7 +379,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         const entities = entitiesWithIgnoresRules.map(({ properties }) => ({
-            templateId: type === EntityTemplateType.Child ? template.fatherTemplateId?._id : templateId,
+            templateId: type === EntityTemplateType.Child ? template.parentTemplate?._id : templateId,
             properties,
         }));
 

@@ -25,8 +25,8 @@ export interface IChildTemplate {
     name: string;
     displayName: string;
     description: string;
-    fatherTemplateId: string;
-    categories: IMongoCategory['_id'][];
+    parentTemplateId: string;
+    category: IMongoCategory['_id'];
     properties: { properties: Record<string, IChildTemplateProperty> };
     disabled: boolean;
     actions?: string;
@@ -40,15 +40,15 @@ export interface IMongoChildTemplate extends IChildTemplate, Document<string> {
     _id: string;
 }
 
-export interface IEntityChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'categories' | 'fatherTemplateId'> {
-    fatherTemplateId: IFullMongoEntityTemplate;
-    categories: IMongoCategory[];
+export interface IEntityChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
+    parentTemplate: IFullMongoEntityTemplate;
+    category: IMongoCategory;
 }
 
 export interface ISearchEntityChildTemplatesBody extends ISearchBody {
     ids?: string[];
     categoryIds?: string[];
-    fatherTemplatesIds?: string[];
+    parentTemplatesIds?: string[];
 }
 
 // When populating child, it will ask the parent for all of its properties.
@@ -60,7 +60,7 @@ export interface IEntityChildTemplatePopulated
     };
 }
 
-export interface IEntityChildTemplateWithFather extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
+export interface IEntityChildTemplateWithParent extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };

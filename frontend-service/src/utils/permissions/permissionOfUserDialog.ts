@@ -21,7 +21,7 @@ export const didPermissionsChange = (currentPermissions: IUser['permissions'], n
 export type entityChildTemplatePermissionDialog = {
     id: string;
     name: string;
-    fatherTemplateId: string;
+    parentTemplateId: string;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
     viewType: ViewType;

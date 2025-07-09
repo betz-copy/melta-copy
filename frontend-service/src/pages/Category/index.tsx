@@ -12,7 +12,7 @@ export const transformChild = (
     child: IMongoChildTemplatePopulated,
     parent: IMongoEntityTemplatePopulated,
     category: IMongoCategory,
-): IMongoEntityTemplatePopulated & { fatherTemplateId: string } => {
+): IMongoEntityTemplatePopulated & { parentTemplateId: string } => {
     const childPropertyKeys = Object.keys(child.properties);
 
     const childProperties = Object.fromEntries(
@@ -33,7 +33,7 @@ export const transformChild = (
         ...parent,
         _id: child._id,
         displayName: child.displayName,
-        fatherTemplateId: parent._id,
+        parentTemplateId: parent._id,
         properties: {
             ...parent.properties,
             properties: childProperties,
@@ -90,7 +90,7 @@ const Category: React.FC = () => {
         defaultOrderedTemplateIds.push(parentId);
         addedTemplateIds.add(parentId);
 
-        const children = authorizedChildTemplates.filter((child) => child.fatherTemplateId._id === parentId);
+        const children = authorizedChildTemplates.filter((child) => child.parentTemplateId._id === parentId);
 
         children.forEach((child) => {
             defaultOrderedTemplateIds.push(child._id);
@@ -104,7 +104,7 @@ const Category: React.FC = () => {
 
     // authorizedChildTemplates.forEach((child) => {
     //     if (!addedTemplateIds.has(child._id)) {
-    //         const parent = entityTemplates.get(child.fatherTemplateId._id);
+    //         const parent = entityTemplates.get(child.parentTemplateId._id);
     //         if (parent) {
     //             const childTemplate = transformChild(child, parent, category);
     //             parentAuthorizedTemplatesMap.set(child._id, childTemplate);

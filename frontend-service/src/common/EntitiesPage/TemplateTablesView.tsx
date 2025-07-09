@@ -109,7 +109,7 @@ const TemplateTablesViewResults = forwardRef<
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            const isChildTemplate = 'fatherTemplateId' in template;
+            const isChildTemplate = 'parentTemplateId' in template;
             filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
         });
         return filters;
@@ -118,7 +118,7 @@ const TemplateTablesViewResults = forwardRef<
     return (
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
-                const isChildTemplate = 'fatherTemplateId' in template;
+                const isChildTemplate = 'parentTemplateId' in template;
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -156,8 +156,8 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 ) => {
     const countRequestTemplateIds = new Set<string>();
     for (const template of templates) {
-        if ('fatherTemplateId' in template) {
-            countRequestTemplateIds.add(template.fatherTemplateId._id);
+        if ('parentTemplateId' in template) {
+            countRequestTemplateIds.add(template.parentTemplateId._id);
         } else {
             countRequestTemplateIds.add(template._id);
         }
@@ -166,7 +166,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds), searchInput, semanticSearch);
 
     return templates.flatMap((template) => {
-        const countTemplateId = 'fatherTemplateId' in template ? template.fatherTemplateId._id : template._id;
+        const countTemplateId = 'parentTemplateId' in template ? template.parentTemplateId._id : template._id;
         const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === countTemplateId);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });

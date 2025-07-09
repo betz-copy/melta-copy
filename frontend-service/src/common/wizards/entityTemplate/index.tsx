@@ -138,7 +138,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                                     return {
                                         ...childTemplate,
                                         categories: childTemplate.categories.map((category) => category._id),
-                                        fatherTemplateId: childTemplate.fatherTemplateId._id,
+                                        parentTemplateId: childTemplate.parentTemplateId._id,
                                     } as IMongoChildTemplate;
                                 }),
                                 'name',

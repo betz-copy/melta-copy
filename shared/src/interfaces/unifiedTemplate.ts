@@ -18,7 +18,7 @@
 //     name: string;
 //     displayName: string;
 //     description: string;
-//     fatherTemplateId: string;
+//     parentTemplateId: string;
 //     categories: IMongoCategory['_id'][];
 //     properties: Record<string, unknown>;
 //     disabled: boolean;
@@ -33,15 +33,15 @@
 //     _id: string;
 // }
 
-// export interface IEntityUnifiedTemplatePopulatedFromDb extends Omit<IMongoUnifiedTemplate, 'categories' | 'fatherTemplateId'> {
-//     fatherTemplateId: IFullMongoEntityTemplate;
+// export interface IEntityUnifiedTemplatePopulatedFromDb extends Omit<IMongoUnifiedTemplate, 'categories' | 'parentTemplateId'> {
+//     parentTemplateId: IFullMongoEntityTemplate;
 //     categories: IMongoCategory[];
 // }
 
 // export interface ISearchEntityUnifiedTemplatesBody extends ISearchBody {
 //     ids?: string[];
 //     categoryIds?: string[];
-//     fatherTemplatesIds?: string[];
+//     parentTemplatesIds?: string[];
 // }
 
 // // When populating child, it will ask the parent for all of its properties.
@@ -53,7 +53,7 @@
 //     };
 // }
 
-// export interface IEntityUnifiedTemplateWithFather extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
+// export interface IEntityUnifiedTemplateWithParent extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
 //     properties: Omit<IProperties, 'properties'> & {
 //         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
 //     };

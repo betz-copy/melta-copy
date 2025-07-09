@@ -18,7 +18,7 @@ const childEntityTemplateSchema = {
     name: variableNameValidation.required(),
     displayName: Joi.string().required(),
     description: Joi.string(),
-    fatherTemplateId: MongoIdSchema.required(),
+    parentTemplateId: MongoIdSchema.required(),
     categories: Joi.array().items(MongoIdSchema).required(),
     properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
     disabled: Joi.boolean().default(false),
@@ -38,7 +38,7 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
+        parentTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     params: {},
 });

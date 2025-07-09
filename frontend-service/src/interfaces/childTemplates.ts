@@ -36,8 +36,8 @@ export interface IChildTemplate {
     name: string;
     displayName: string;
     description?: string;
-    fatherTemplateId: string;
-    categories: string[];
+    parentTemplateId: string;
+    category: string[];
     properties: { properties: Record<string, IChildTemplateProperty> };
     disabled: boolean;
     viewType: ViewType;
@@ -55,8 +55,8 @@ export interface IMongoChildTemplate extends IChildTemplate {
 
 export type IChildTemplateMap = Map<string, IChildTemplatePopulated>;
 
-export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'categories' | 'fatherTemplateId'> {
-    fatherTemplateId: IMongoEntityTemplatePopulated;
+export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
+    parentTemplate: IMongoEntityTemplatePopulated;
     category: IMongoCategory;
 }
 
