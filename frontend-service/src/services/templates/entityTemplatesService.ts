@@ -86,6 +86,7 @@ const entityTemplateObjectToEntityTemplateForm = (
         const value = properties.properties[key];
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
+        else if (value.format === 'unitField') type = 'unitField';
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.format && value.format === 'text-area') type = 'text-area';
@@ -766,6 +767,5 @@ export {
     updateActionToEntity,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-    updateEnumFieldRequest
+    updateEnumFieldRequest,
 };
-
