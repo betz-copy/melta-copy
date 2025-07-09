@@ -18,6 +18,7 @@ import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { isChildTemplate } from '../../../utils/templates';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -93,7 +94,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         headersOnly,
                         insertEntities,
                         displayColumns: template?.propertiesOrder,
-                        isChildTemplate: 'parentTemplateId' in template!,
+                        isChildTemplate: isChildTemplate(template!),
                     },
                 },
             });

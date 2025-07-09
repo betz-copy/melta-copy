@@ -129,7 +129,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
-                        isChildTemplate: 'parentTemplateId' in template,
+                        isChildTemplate: 'fatherTemplateId' in template,
                     },
                 },
             });
@@ -327,7 +327,6 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={loadExcelTooltip}
-                        childTemplateId={childTemplateId}
                     >
                         <Upload
                             fontSize="small"

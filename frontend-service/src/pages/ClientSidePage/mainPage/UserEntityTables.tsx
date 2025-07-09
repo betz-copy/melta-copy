@@ -18,12 +18,12 @@ interface IUserEntityTablesProps {
 
 const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildTemplatePopulated[], userEntityId: string) => {
     const entitiesCountByTemplates = await countEntitiesOfTemplatesByUserEntityId(
-        templates.map(({ parentTemplateId }) => parentTemplateId._id),
+        templates.map(({ parentTemplate }) => parentTemplate._id),
         userEntityId,
     );
 
     return templates.flatMap((template) => {
-        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template.parentTemplateId._id);
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template.parentTemplate._id);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });
 };
@@ -40,7 +40,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
             refetch: refetchTemplatesFilteredByCount,
             isFetching: isLoadingTemplatesFilteredByCount,
         } = useQuery({
-            queryKey: ['countEntitiesOfTemplatesByUser', usersInfoChildTemplate?.parentTemplateId._id, currentUserFromClientSide.properties._id],
+            queryKey: ['countEntitiesOfTemplatesByUser', usersInfoChildTemplate?.parentTemplate._id, currentUserFromClientSide.properties._id],
             queryFn: () => filterEmptyTemplateTablesOnClientSidePage(Array.from(childTemplates.values()), currentUserFromClientSide.properties._id!),
             enabled: !!currentUserFromClientSide,
         });
@@ -72,7 +72,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                     {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
                         <Grid container direction="column" spacing={1}>
                             {templatesFilteredByCount.map((childTemplate) => {
-                                const parentTemplate = entityTemplates.get(childTemplate.parentTemplateId._id);
+                                const parentTemplate = entityTemplates.get(childTemplate.parentTemplate._id);
                                 if (!parentTemplate) return null;
 
                                 const childTemplatePropertiesList = Object.keys(childTemplate.properties);

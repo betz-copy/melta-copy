@@ -56,14 +56,14 @@ const RoleDialog: React.FC<{
         };
 
         const displayEntityChildTemplates: entityChildTemplatePermissionDialog[] = Array.from(entityChildTemplates.values())
-            .filter((child) => child.parentTemplateId === template._id)
+            .filter((child) => child.parentTemplate._id === template._id)
             .map((child) => ({
                 id: child._id,
                 name: child.displayName,
                 isFilterByCurrentUser: child.isFilterByCurrentUser,
                 isFilterByUserUnit: child.isFilterByUserUnit,
                 viewType: child.viewType,
-                parentTemplateId: child.parentTemplateId,
+                parentTemplateId: child.parentTemplate._id,
             }));
 
         const displayEntity: entityTemplatePermissionDialog = {

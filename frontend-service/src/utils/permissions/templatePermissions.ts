@@ -176,16 +176,14 @@ export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompact
         return true;
     }
 
-    return childTemplate.categories.some((categoryId) => {
-        if (userPermissions.instances?.categories[categoryId]?.scope) {
-            return true;
-        }
+    if (userPermissions.instances?.categories[childTemplate.category]?.scope) {
+        return true;
+    }
 
-        const categoryPermissions = userPermissions.instances?.categories[categoryId];
-        if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope) {
-            return true;
-        }
+    const categoryPermissions = userPermissions.instances?.categories[childTemplate.category];
+    if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope) {
+        return true;
+    }
 
-        return false;
-    });
+    return false;
 };

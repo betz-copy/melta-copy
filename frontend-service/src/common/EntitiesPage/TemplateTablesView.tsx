@@ -13,6 +13,7 @@ import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -109,8 +110,7 @@ const TemplateTablesViewResults = forwardRef<
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            const isChildTemplate = 'parentTemplateId' in template;
-            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
+            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId);
         });
         return filters;
     }, [templates, currentUserKartoffelId]);
@@ -118,7 +118,6 @@ const TemplateTablesViewResults = forwardRef<
     return (
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
-                const isChildTemplate = 'parentTemplateId' in template;
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -135,7 +134,7 @@ const TemplateTablesViewResults = forwardRef<
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
                             defaultFilter={childTemplateDefaultFilters[template._id]}
-                            childTemplateId={isChildTemplate ? template._id : undefined}
+                            childTemplateId={isChildTemplate(template) ? template._id : undefined}
                         />
                     </Grid>
                 );
@@ -156,8 +155,8 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 ) => {
     const countRequestTemplateIds = new Set<string>();
     for (const template of templates) {
-        if ('parentTemplateId' in template) {
-            countRequestTemplateIds.add(template.parentTemplateId._id);
+        if (isChildTemplate(template)) {
+            countRequestTemplateIds.add(template.parentTemplate._id);
         } else {
             countRequestTemplateIds.add(template._id);
         }
@@ -166,7 +165,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds), searchInput, semanticSearch);
 
     return templates.flatMap((template) => {
-        const countTemplateId = 'parentTemplateId' in template ? template.parentTemplateId._id : template._id;
+        const countTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
         const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === countTemplateId);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });

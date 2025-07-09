@@ -21,7 +21,7 @@ const ClientSideMainPage: React.FC = () => {
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
 
-    const firstXPropsKeys: string[] = getFirstXPropsKeys(numOfPropsToShow, usersInfoChildTemplate.parentTemplateId);
+    const firstXPropsKeys: string[] = getFirstXPropsKeys(numOfPropsToShow, usersInfoChildTemplate.parentTemplate);
 
     return (
         <>

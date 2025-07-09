@@ -84,11 +84,7 @@ const CreateChildTemplateDialog: React.FC<{
                 };
             });
             setTemplateFieldsFilters(initialFields);
-            setSelectedCategories(
-                childTemplate?.categories
-                    ? childTemplate.categories.flatMap(({ _id }) => categories.get(_id) ?? [])
-                    : [entityTemplate?.category ?? []].flat(),
-            );
+            setSelectedCategories(entityTemplate?.category ? [entityTemplate.category] : []);
         }
     }, [entityTemplate, childTemplate, categories]);
 
@@ -292,7 +288,7 @@ const CreateChildTemplateDialog: React.FC<{
         const hasFieldChanges =
             ![...originalFields].every((field) => currentFields.has(field)) || ![...currentFields].every((field) => originalFields.has(field));
 
-        const originalCategories = new Set(childTemplate.categories.map((c) => c._id));
+        const originalCategories = new Set(childTemplate.category._id);
         const currentCategories = new Set(selectedCategories.map((c) => c._id));
 
         const hasCategoryChanges =
@@ -378,12 +374,12 @@ const CreateChildTemplateDialog: React.FC<{
 
     const existingNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.parentTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.name)
         : [];
     const existingDisplayNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.parentTemplateId._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
     console.log({ existingDisplayNames });
@@ -429,7 +425,7 @@ const CreateChildTemplateDialog: React.FC<{
                         displayName: displayNameToUse,
                         description,
                         parentTemplateId: entityTemplate._id,
-                        categories: categories.map((c) => c._id),
+                        category: categories.map((c) => c._id),
                         properties,
                         disabled: false,
                         viewType: childTemplateViewType,
@@ -452,7 +448,7 @@ const CreateChildTemplateDialog: React.FC<{
 
                         const hasDescriptionChange = values.description !== (childTemplate.description || '');
                         const hasCategoryChange =
-                            JSON.stringify(values.categories.map((c) => c._id).sort()) !== JSON.stringify(childTemplate.categories.sort());
+                            JSON.stringify(values.categories.map((c) => c._id).sort()) !== JSON.stringify(childTemplate.category);
 
                         if (hasDescriptionChange || hasCategoryChange) {
                             setHasChanges(true);

@@ -49,7 +49,7 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', isChildTemplate(template) ? template.parentTemplateId._id : template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
     if (isChildTemplate(template)) {
         formData.append('childTemplateId', template._id);
@@ -119,7 +119,7 @@ export const editManyEntitiesByExcelRequest = async (
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
-    formData.append('templateId', isChildTemplate(template) ? template.parentTemplateId?._id : template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate?._id : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -219,9 +219,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         ),
     );
 
-    formData.append('templateId', 'parentTemplateId' in entity.template ? entity.template.parentTemplateId._id : entity.template._id);
+    formData.append('templateId', isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id);
 
-    if ('parentTemplateId' in entity.template && entity.template.parentTemplateId) {
+    if (isChildTemplate(entity.template)) {
         formData.append('childTemplateId', entity.template._id);
     }
 
@@ -335,7 +335,7 @@ const getBodyForUpdateRequest = async (
         ),
     );
 
-    formData.append('templateId', 'parentTemplateId' in template ? template.parentTemplateId._id : template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -458,9 +458,9 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
         ),
     );
 
-    formData.append('templateId', 'parentTemplateId' in template ? template.parentTemplateId._id : template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if ('parentTemplateId' in template && template.parentTemplateId._id) {
+    if (isChildTemplate(template)) {
         formData.append('childTemplateId', template._id);
     }
 

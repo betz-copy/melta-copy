@@ -91,7 +91,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
                                     templates: {
-                                        [template.parentTemplateId._id!]: {
+                                        [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
                                         },

@@ -39,7 +39,7 @@ const ChooseTemplate: React.FC<{
     const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const isAuthorized = (templateId: string, categoryId: string) =>
-        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, { _id: categoryId }, templateId, PermissionScope.write);
+        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, categoryId, templateId, PermissionScope.write);
 
     const filterEntityTemplates = Array.from(entityTemplates.values()).filter((template) =>
         categoryId
@@ -49,15 +49,13 @@ const ChooseTemplate: React.FC<{
 
     const filterChildEntityTemplate = Array.from(entityChildTemplates.values())
         .filter((child) => {
-            const hasValidCategory = categoryId
-                ? child.categories.includes(categoryId)
-                : child.categories.some((catId) => isAuthorized(child._id, catId));
+            const hasValidCategory = categoryId ? child.category._id === categoryId : isAuthorized(child._id, child.category._id);
 
             return hasValidCategory;
         })
         .map((child) => {
-            const parent = entityTemplates.get(child.parentTemplateId!)!;
-            const category = categoryId ? categories.get(categoryId)! : categories.get(child.categories[0])!;
+            const parent = entityTemplates.get(child.parentTemplate._id!)!;
+            const category = categoryId ? categories.get(categoryId)! : categories.get(child.category._id)!;
 
             return transformChild(child, parent, category);
         });

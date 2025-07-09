@@ -37,7 +37,7 @@ export interface IChildTemplate {
     displayName: string;
     description?: string;
     parentTemplateId: string;
-    category: string[];
+    category: string;
     properties: { properties: Record<string, IChildTemplateProperty> };
     disabled: boolean;
     viewType: ViewType;

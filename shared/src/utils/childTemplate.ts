@@ -1,6 +1,14 @@
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
-import { IChildTemplate, IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../interfaces/entityTemplate';
+import { IChildTemplate, IEntityChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '../interfaces/entityChildTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+
+export const isChildTemplate = (
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IEntityChildTemplatePopulated,
+): template is IMongoChildTemplateWithConstraintsPopulated => {
+    return (
+        ('parentTemplateId' in template && Boolean(template.parentTemplateId)) || ('parentTemplate' in template && Boolean(template.parentTemplate))
+    );
+};
 
 const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated): ISearchFilter => {
     return Object.entries(childTemplate.properties.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(

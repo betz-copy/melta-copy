@@ -19,6 +19,7 @@ import {
     IEntityWithIgnoredRules,
     IFailedEntity,
     IMongoEntityTemplatePopulated,
+    isChildTemplate,
     isValidUTM,
     isValidWGS84,
     IUpdateEntityMetadataPopulated,
@@ -217,7 +218,7 @@ const readExcelFile = async (
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
                     entities.push({
-                        templateId: 'parentTemplate' in template && template.parentTemplate ? template.parentTemplate._id : template._id,
+                        templateId: isChildTemplate(template) ? template.parentTemplate._id : template._id,
                         properties: rowData,
                         ignoredRules: [],
                     });

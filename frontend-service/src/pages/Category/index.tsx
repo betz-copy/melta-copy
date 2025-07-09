@@ -90,7 +90,7 @@ const Category: React.FC = () => {
         defaultOrderedTemplateIds.push(parentId);
         addedTemplateIds.add(parentId);
 
-        const children = authorizedChildTemplates.filter((child) => child.parentTemplateId._id === parentId);
+        const children = authorizedChildTemplates.filter((child) => child.parentTemplate._id === parentId);
 
         children.forEach((child) => {
             defaultOrderedTemplateIds.push(child._id);

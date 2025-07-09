@@ -131,7 +131,7 @@ const useMutationHandler = (
         const queryClient = useQueryClient();
 
         const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
-        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplateId._id === entityTemplate._id);
+        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>

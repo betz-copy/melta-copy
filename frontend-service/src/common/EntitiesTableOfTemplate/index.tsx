@@ -66,6 +66,7 @@ import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -99,7 +100,7 @@ export const getDatasource = <Data extends any = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
-    const parentTemplateId = 'parentTemplateId' in template ? template.parentTemplateId._id : template._id;
+    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -299,7 +300,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
 
-        const childTemplateId = 'parentTemplateId' in template && template.parentTemplateId ? template._id : undefined;
+        const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
         const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -341,7 +342,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             (id: string) =>
                 deleteEntityRequest({
                     selectAll: false,
-                    templateId: 'parentTemplateId' in template ? template.parentTemplateId._id : template?._id,
+                    templateId: isChildTemplate(template) ? template.parentTemplate._id : template?._id,
                     idsToInclude: [id],
                     deleteAllRelationships: false,
                     childTemplateId,

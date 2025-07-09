@@ -179,7 +179,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         if (!childTemplates) return [];
         const templates = Array.from(childTemplates.values());
         const filtered = templates.filter((child) => {
-            return child.parentTemplateId._id === entityTemplate._id;
+            return child.parentTemplate._id === entityTemplate._id;
         });
         return filtered;
     }, [childTemplates, entityTemplate._id]);
@@ -270,7 +270,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             isWizardOpen: true,
                                             entityTemplate: {
                                                 ...entityTemplate,
-                                                _id: childTemplate.parentTemplateId._id,
+                                                _id: childTemplate.parentTemplate._id,
                                             },
                                             childTemplate,
                                         });
@@ -656,7 +656,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const result = new Map<string, IMongoEntityTemplatePopulated>();
 
         categoryChildTemplates.forEach((child) => {
-            const parentTemplate = entityTemplates.get(child.parentTemplateId._id);
+            const parentTemplate = entityTemplates.get(child.parentTemplate._id);
             if (parentTemplate && !entityTemplatesWithCategory.entityTemplates.some((t) => t._id === parentTemplate._id)) {
                 result.set(parentTemplate._id, parentTemplate);
             }
@@ -669,7 +669,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
             // If this is the parent template's category, always show the child
-            const parentTemplate = entityTemplates?.get(child.parentTemplateId._id);
+            const parentTemplate = entityTemplates?.get(child.parentTemplate._id);
             if (parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
                 return true;
             }
@@ -752,7 +752,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                 );
 
                                 const templateChildTemplates = categoryChildTemplatesFiltered.filter(
-                                    (child) => child.parentTemplateId._id === entityTemplate._id,
+                                    (child) => child.parentTemplate._id === entityTemplate._id,
                                 );
 
                                 return (
@@ -822,7 +822,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
                         {Array.from(disabledParentTemplates.values()).map((parentTemplate) => {
                             const childTemplatesForParent = categoryChildTemplatesFiltered.filter(
-                                (child) => child.parentTemplateId === parentTemplate._id,
+                                (child) => child.parentTemplate === parentTemplate._id,
                             );
 
                             return (

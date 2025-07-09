@@ -54,7 +54,7 @@ const CodeEditorDialog: React.FC<{
         `${generateInterfaceWithRelationships(
             type === EntityTemplateType.Parent
                 ? entityTemplate.properties.properties
-                : getFullChildTemplateProperties(entityTemplate, entityTemplate.parentTemplateId),
+                : getFullChildTemplateProperties(entityTemplate, entityTemplate.parentTemplate),
             entityTemplate.name,
             queryClient,
         )}`,

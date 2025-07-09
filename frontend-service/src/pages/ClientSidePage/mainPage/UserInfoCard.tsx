@@ -32,7 +32,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-    const usersInfoTemplate = usersInfoChildTemplate.parentTemplateId;
+    const usersInfoTemplate = usersInfoChildTemplate.parentTemplate;
     const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
     const { height, width } = workspace!.metadata!.iconSize!;
 
@@ -102,7 +102,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item height="40%">
                             <EntityProperties
-                                entityTemplate={usersInfoChildTemplate!.parentTemplateId}
+                                entityTemplate={usersInfoChildTemplate!.parentTemplate}
                                 properties={currentUserFromClientSide.properties}
                                 overridePropertiesToShow={overridePropertiesToShow}
                                 style={{

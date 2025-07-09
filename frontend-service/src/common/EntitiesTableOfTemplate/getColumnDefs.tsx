@@ -30,6 +30,7 @@ import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
@@ -368,7 +369,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     }${
                                         pageType === environment.clientSideId
                                             ? ''
-                                            : 'parentTemplateId' in template && template.parentTemplateId
+                                            : isChildTemplate(template)
                                             ? `?childTemplateId=${template._id}`
                                             : ''
                                     }`}
@@ -453,7 +454,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     onDuplicateClick={() => {
                                         navigate(
                                             `/entity/${getRowId(data)}/duplicate${
-                                                'parentTemplateId' in template ? `?childTemplateId=${template._id}` : ''
+                                                isChildTemplate(template) ? `?childTemplateId=${template._id}` : ''
                                             }`,
                                             {
                                                 state: { entityTemplate: template, expandedEntity: { entity: data } },

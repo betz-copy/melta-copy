@@ -23,7 +23,7 @@ const EntityChildTemplateSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
-        categories: {
+        category: {
             type: [mongoose.Schema.Types.ObjectId],
             ref: config.mongo.categoriesCollectionName,
             required: true,

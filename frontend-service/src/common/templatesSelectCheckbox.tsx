@@ -5,6 +5,7 @@ import { SelectCheckbox } from './SelectCheckBox';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { isChildTemplate } from '../utils/templates';
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
@@ -38,7 +39,7 @@ const TemplatesSelectCheckbox: React.FC<{
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
                 getGroupOfOption: (entityTemplate, _categories) =>
-                    'parentTemplateId' in entityTemplate ? entityTemplate.categories[0] : entityTemplate.category, // TODO: [0] is bad
+                    isChildTemplate(entityTemplate) ? entityTemplate.category : entityTemplate.category,
             }}
             overrideSx={overrideSx}
         />

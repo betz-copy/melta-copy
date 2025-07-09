@@ -19,7 +19,7 @@
 //     displayName: string;
 //     description: string;
 //     parentTemplateId: string;
-//     categories: IMongoCategory['_id'][];
+//     category: IMongoCategory['_id'][];
 //     properties: Record<string, unknown>;
 //     disabled: boolean;
 //     actions?: string;

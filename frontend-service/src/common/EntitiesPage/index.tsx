@@ -18,6 +18,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     templates: T[];
@@ -95,7 +96,7 @@ const EntitiesPage: React.FC<EntitiesPageProps> = ({
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
                         displayColumns: templateTableRef.getDisplayColumns(),
-                        isChildTemplate: 'parentTemplateId' in template,
+                        isChildTemplate: isChildTemplate(template),
                     };
                 },
             );
