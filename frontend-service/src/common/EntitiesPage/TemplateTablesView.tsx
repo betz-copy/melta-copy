@@ -28,10 +28,11 @@ export function getDefaultFilterFromTemplate(
 ) {
     if (!isChildTemplate) return undefined;
 
-    const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
+    let result;
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         if (prop.isFilterByCurrentUser) {
+            if (!result?.$and) result = { $and: [] };
             result.$and!.push({ [key]: { $eq: currentUserKartoffelId } });
         }
         if (!prop.filters) continue;
@@ -48,9 +49,11 @@ export function getDefaultFilterFromTemplate(
                 .filter(Boolean);
 
             if (transformedFilters.length > 0) {
+                if (!result?.$and) result = { $and: [] };
                 result.$and!.push(...transformedFilters);
             }
         } else {
+            if (!result?.$and) result = { $and: [] };
             result.$and!.push({ [key]: filters });
         }
     }
