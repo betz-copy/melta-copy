@@ -17,11 +17,10 @@ export const checkUserCategoryPermission = (
 
 export const checkUserTemplatePermission = (
     permissions: ISubCompactPermissions,
-    categoryIds: string[],
+    categoryId: string,
     templateId: string,
     scope: PermissionScope,
 ): boolean => {
-    categoryIds
     return (
         Boolean(permissions?.admin) ||
         permissions?.instances?.categories[categoryId]?.scope === scope ||
@@ -30,7 +29,6 @@ export const checkUserTemplatePermission = (
         permissions?.instances?.categories[categoryId]?.entityTemplates?.[templateId]?.scope === PermissionScope.write
     );
 };
-
 export const getUserPermissionScopeOfCategory = (categoriesPermissions: ICompact<IInstancesPermission>['categories'], categoryId: string) => {
     return categoriesPermissions[categoryId]?.scope ?? undefined;
 };

@@ -28,6 +28,8 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { isChildTemplate } from '../utils/templates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -38,7 +40,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -47,9 +49,9 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.fatherTemplateId._id : template._id);
 
-    if (template.fatherTemplateId) {
+    if (isChildTemplate(template)) {
         formData.append('childTemplateId', template._id);
     }
 
@@ -110,14 +112,14 @@ export const getChangedEntitiesFromExcelRequest = async (
 };
 
 export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     entitiesToUpdate: IEntityWithIgnoredRules[],
     childTemplateId?: string,
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.fatherTemplateId?._id : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);

@@ -149,7 +149,7 @@ const TemplateTable = forwardRef<
     // TODO: what about categories?
     const userHasWritePermissions =
         !!currentClientSideUser ||
-        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
+        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());

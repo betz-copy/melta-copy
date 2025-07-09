@@ -16,6 +16,7 @@ import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { transformChild } from '../../pages/Category';
 import { useUserStore } from '../../stores/user';
+import { isChildTemplate } from '../../utils/templates';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -65,17 +66,17 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                 setEntitiesCount(null);
                             }
 
-                            const childTemplates = templates.filter((t) => !!t.fatherTemplateId);
-                            const fatherTemplates = templates.filter((t) => !t.fatherTemplateId);
+                            const childTemplates = templates.filter(isChildTemplate);
+                            const parentTemplates = templates.filter((template) => !isChildTemplate(template));
 
                             let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
 
-                            if (fatherTemplates.length > 0) {
+                            if (parentTemplates.length > 0) {
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
-                                    templates: Object.fromEntries(fatherTemplates.map((t) => [t._id, { showRelationships: false }])),
+                                    templates: Object.fromEntries(parentTemplates.map((t) => [t._id, { showRelationships: false }])),
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),
                                 });
 
@@ -90,7 +91,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
                                     templates: {
-                                        [template.fatherTemplateId!]: {
+                                        [template.fatherTemplateId._id!]: {
                                             showRelationships: false,
                                             filter,
                                         },

@@ -158,18 +158,17 @@ export const checkUserChildTemplatePermission = (
         return true;
     }
 
-    return childTemplate.categories.some((category) => {
-        if (userPermissions.instances?.categories[category._id]?.scope === scope) {
-            return true;
-        }
+    const category = childTemplate.category;
+    if (userPermissions.instances?.categories[category._id]?.scope === scope) {
+        return true;
+    }
 
-        const categoryPermissions = userPermissions.instances?.categories[category._id];
-        if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope === scope) {
-            return true;
-        }
+    const categoryPermissions = userPermissions.instances?.categories[category._id];
+    if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope === scope) {
+        return true;
+    }
 
-        return false;
-    });
+    return false;
 };
 
 export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompactPermissions, childTemplate: IMongoChildTemplate): boolean => {

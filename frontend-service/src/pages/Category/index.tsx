@@ -6,10 +6,10 @@ import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useUserStore } from '../../stores/user';
-import { IChildTemplateMap, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export const transformChild = (
-    child: IMongoChildTemplate,
+    child: IMongoChildTemplatePopulated,
     parent: IMongoEntityTemplatePopulated,
     category: IMongoCategory,
 ): IMongoEntityTemplatePopulated & { fatherTemplateId: string } => {
@@ -67,7 +67,7 @@ const Category: React.FC = () => {
     const authorizedChildTemplates = childTemplatesList.filter(
         (template) =>
             !!template &&
-            template.categories.includes(category) &&
+            template.category._id === category._id &&
             (currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.entityTemplates?.[template._id] ||
                 currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.scope ||
                 currentUser.currentWorkspacePermissions?.admin?.scope),

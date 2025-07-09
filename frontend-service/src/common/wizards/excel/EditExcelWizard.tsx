@@ -20,6 +20,7 @@ import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { isChildTemplate } from '../../../utils/templates';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -58,11 +59,11 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
 
     const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
         async (file: Record<string, File>) => {
-            return getChangedEntitiesFromExcelRequest(
-                template!.fatherTemplateId ?? template!._id,
-                file,
-                template!.fatherTemplateId ? template!._id : undefined,
-            );
+            const isChild = isChildTemplate(template!);
+            const parentTemplateId = isChild ? template!.fatherTemplateId._id : template!._id;
+            const childTemplateId = isChild ? template!._id : undefined;
+
+            return getChangedEntitiesFromExcelRequest(parentTemplateId, file, childTemplateId);
         },
         {
             async onSuccess(data) {

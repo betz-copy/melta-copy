@@ -647,7 +647,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const allChildTemplates = Array.from(childTemplates.values());
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
-        return allChildTemplates.filter((child) => child.categories.find(({ _id }) => _id === currentCategoryId));
+        return allChildTemplates.filter((child) => child.category._id === currentCategoryId);
     }, [childTemplates, entityTemplatesWithCategory.category._id]);
 
     const disabledParentTemplates = useMemo(() => {
@@ -674,7 +674,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                 return true;
             }
             // If this is one of the child's selected categories, show it enabled
-            return child.categories.some((category) => category._id === entityTemplatesWithCategory.category._id);
+            return child.category._id === entityTemplatesWithCategory.category._id;
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
 
@@ -746,7 +746,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                             entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => {
                                 const entityHasWritePermission = checkUserTemplatePermission(
                                     currentUser.currentWorkspacePermissions,
-                                    entityTemplate.category,
+                                    entityTemplate.category._id,
                                     entityTemplate._id,
                                     PermissionScope.write,
                                 );
@@ -846,7 +846,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             sx={{
                                                 pl: 4,
                                                 position: 'relative',
-                                                opacity: childTemplate.categories.find(({ _id }) => _id === entityTemplatesWithCategory.category._id)
+                                                opacity: childTemplate.category._id === entityTemplatesWithCategory.category._id
                                                     ? 1
                                                     : 0.6,
                                             }}
@@ -872,7 +872,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                 entityHasWritePermission={false}
                                                 isDisabledView={
-                                                    !childTemplate.categories.find((c) => c._id === entityTemplatesWithCategory.category._id)
+                                                    childTemplate.category._id !== entityTemplatesWithCategory.category._id
                                                 }
                                                 isChildTemplate={true}
                                                 title={childTemplate.displayName}

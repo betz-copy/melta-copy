@@ -89,3 +89,7 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
             .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
     ];
 };
+
+export const isChildTemplate = (template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): template is IMongoChildTemplatePopulated => {
+    return 'fatherTemplateId' in template && Boolean(template.fatherTemplateId);
+};

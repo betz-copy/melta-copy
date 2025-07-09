@@ -90,7 +90,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
     const canWriteInstance = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         entityTemplate._id,
         PermissionScope.write,
     );

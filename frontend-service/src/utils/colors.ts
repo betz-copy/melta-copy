@@ -5,8 +5,7 @@ import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 
 export const getEntityTemplateColor = (entityTemplate: IEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     return randomColor({
-        // TODO: [0] is shit
-        hue: 'fatherTemplateId' in entityTemplate ? entityTemplate.categories[0].color : entityTemplate.category.color,
+        hue: entityTemplate.category.color,
         seed: entityTemplate.name,
         luminosity: 'bright',
     });

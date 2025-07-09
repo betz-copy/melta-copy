@@ -81,13 +81,13 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     const checkRelationshipTemplateHasRelationships = async () => {
         const isSourceEntityHasWritePermission = checkUserTemplatePermission(
             currentUser.currentWorkspacePermissions,
-            relationshipTemplate.sourceEntity.category,
+            relationshipTemplate.sourceEntity.category._id,
             relationshipTemplate.sourceEntity._id,
             PermissionScope.write,
         );
         const isDestEntityHasWritePermission = checkUserTemplatePermission(
             currentUser.currentWorkspacePermissions,
-            relationshipTemplate.destinationEntity.category,
+            relationshipTemplate.destinationEntity.category._id,
             relationshipTemplate.destinationEntity._id,
             PermissionScope.write,
         );
