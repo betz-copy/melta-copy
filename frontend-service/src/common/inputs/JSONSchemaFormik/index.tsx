@@ -123,8 +123,11 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
         const value = data[field];
+        console.log({ value }, propertySchema.title);
 
         if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+            console.log({ field });
+
             filterErrors[field] = i18next.t('validation.fieldFilterCondition');
         }
     });
@@ -249,9 +252,19 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const notTouchedFiltered: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => filteredFieldNames.includes(key) && !touched[key]);
 
-    const notTouched: ErrorSchema<{}> = mergeErrorSchemas(notTouchedUnique, notTouchedFiltered);
+    // const notTouched: ErrorSchema<{}> = mergeErrorSchemas(notTouchedUnique, notTouchedFiltered);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
+    console.log({
+        errors,
+        all: rjsfExtraErrors,
+        onlyTouched: ajvExtraErrorsOnlyTouched,
+        unique: rjsfExtraUniqueErrors,
+        childFilterKeys: filteredFieldNames,
+        notTouchedUnique,
+        notTouchedFiltered,
+        mergedErrors,
+    });
 
     const Widgets = React.useMemo(
         () => ({

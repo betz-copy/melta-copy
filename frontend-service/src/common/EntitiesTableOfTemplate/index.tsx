@@ -350,6 +350,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                 },
                 onSuccess: () => {
+                    setUpdatedTemplateIds?.([template.fatherTemplateId || template._id]);
                     refetch?.();
                     toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
                 },
@@ -374,6 +375,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 onSuccess: (data) => {
                     if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
                     else toast.success(i18next.t('entityPage.activatedSuccessfully'));
+                    setUpdatedTemplateIds?.([data.templateId]);
                     refetch?.();
                 },
                 onError: (_err: AxiosError, { disabled }) => {
@@ -565,6 +567,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
             ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
                 updateEntityRequestForMultiple(newEntityData.properties._id, newEntityData, ignoredRules),
+
             {
                 onSuccess: () => {
                     toast.success(i18next.t('wizard.entity.editedSuccessfully'));

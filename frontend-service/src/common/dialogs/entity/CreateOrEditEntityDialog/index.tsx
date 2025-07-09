@@ -202,7 +202,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
                 }, [initialCurrValues]);
-                console.log({ touched, errors });
 
                 return (
                     <>

@@ -81,6 +81,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                             metaData.filter && JSON.parse(metaData.filter),
                         ),
                         displayColumns: metaData.columns,
+                        isChildTemplate: !!template.fatherTemplateId
                     },
                 },
             }),

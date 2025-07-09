@@ -47,9 +47,14 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
-    const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
+    const [changeTemplateWarning, setChangeTemplateWarning] = useState<{
+        isOpen: boolean;
+        newTemplate: string | string[] | null;
+        fatherTemplateId?: string;
+    }>({
         isOpen: false,
         newTemplate: null,
+        fatherTemplateId: undefined,
     });
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
@@ -63,7 +68,12 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                         options={entityTemplateOptions}
                         label={i18next.t('entity')}
                         onChange={(newValue) => {
-                            if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
+                            if (values.templateId)
+                                setChangeTemplateWarning({
+                                    isOpen: true,
+                                    newTemplate: newValue,
+                                    fatherTemplateId: childEntityTemplates.get(newValue as string)?.fatherTemplateId,
+                                });
                             else {
                                 const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
                                 setFieldValue('templateId', childTemplate?.fatherTemplateId || newValue || '');
@@ -243,10 +253,11 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                 isDialogOpen={changeTemplateWarning.isOpen}
                 onYes={() => {
                     setValues({ ...dashboardInitialValues.chart, filter: undefined });
-                    setFieldValue('templateId', changeTemplateWarning.newTemplate || '');
-                    setChangeTemplateWarning({ isOpen: false, newTemplate: null });
+                    setFieldValue('templateId', changeTemplateWarning.fatherTemplateId || changeTemplateWarning.newTemplate || '');
+                    setFieldValue('childTemplateId', changeTemplateWarning.fatherTemplateId ? changeTemplateWarning.newTemplate : '');
+                    setChangeTemplateWarning({ isOpen: false, newTemplate: null, fatherTemplateId: undefined });
                 }}
-                handleClose={() => setChangeTemplateWarning({ isOpen: false, newTemplate: null })}
+                handleClose={() => setChangeTemplateWarning({ isOpen: false, newTemplate: null, fatherTemplateId: undefined })}
                 type={DashboardItemType.Chart}
             />
         </Grid>

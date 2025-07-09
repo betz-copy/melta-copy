@@ -33,7 +33,7 @@ const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
-    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
+    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob'});
     return data;
 };
 

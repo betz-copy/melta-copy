@@ -78,8 +78,6 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
 
         const dashboardItems = await this.service.searchDashboardItems(textSearch);
 
-        console.dir({ dashboardItems }, { depth: null });
-
         const allowedItems = dashboardItems.filter((item) =>
             this.isItemAllowed(item, allowedTemplateIds, allowedCategoryIds, userId, permissionsOfUserId, chartManager),
         );

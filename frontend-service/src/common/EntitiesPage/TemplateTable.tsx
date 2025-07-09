@@ -408,7 +408,6 @@ const TemplateTable = forwardRef<
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
                     template={template}
-                    childTemplateId={childTemplateId}
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
@@ -473,6 +472,7 @@ const TemplateTable = forwardRef<
                                     ),
                                 );
                             } else entitiesTableRef.current?.refreshServerSide();
+                            setUpdatedTemplateIds?.([entity.templateId]);
                             setEditDialog((prev) => ({ ...prev, isOpen: false }));
                             setExternalErrors(initializedExternalErrors);
                         },
