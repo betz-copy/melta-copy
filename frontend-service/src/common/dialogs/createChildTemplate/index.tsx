@@ -391,7 +391,6 @@ const CreateChildTemplateDialog: React.FC<{
               .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
-    console.log({ existingDisplayNames });
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
