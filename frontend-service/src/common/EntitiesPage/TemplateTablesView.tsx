@@ -9,7 +9,7 @@ import { _debounce } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, IFilterGroup, IFilterOfTemplate } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 
@@ -28,34 +28,19 @@ export function getDefaultFilterFromTemplate(
 ) {
     if (!isChildTemplate) return undefined;
 
-    const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
+    const result: (IFilterOfTemplate | IFilterGroup[])[] = [];
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         if (prop.isFilterByCurrentUser) {
-            result.$and!.push({ [key]: { $eq: currentUserKartoffelId } });
+            result.push({ [key]: { $eq: currentUserKartoffelId } });
         }
         if (!prop.filters) continue;
 
         const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+        result.push(filters);
+    }    
 
-        if ('$and' in filters) {
-            const andFilters = filters.$and as any[];
-            const transformedFilters = andFilters
-                .map((filter) => {
-                    const fieldFilter = filter[key];
-                    return fieldFilter ? { [key]: fieldFilter } : null;
-                })
-                .filter(Boolean);
-
-            if (transformedFilters.length > 0) {
-                result.$and!.push(...transformedFilters);
-            }
-        } else {
-            result.$and!.push({ [key]: filters });
-        }
-    }
-
-    return result;
+    return result.length > 0 ? { $and: result } : undefined;
 }
 
 const TemplateTablesViewResults = forwardRef<

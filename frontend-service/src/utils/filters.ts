@@ -1,5 +1,7 @@
-export const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
-    switch (op) {
+import { ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entities';
+
+const evaluateOperator = (operator: string, actual: any, expected: any): boolean => {
+    switch (operator) {
         case '$eq':
             return actual === expected;
         case '$ne':
@@ -33,7 +35,7 @@ export const evaluateOperator = (op: string, actual: any, expected: any): boolea
     }
 };
 
-export const matchValueAgainstFilter = (data: any, filter: any): boolean => {
+const matchValueAgainstFilter = (data: any, filter: any): boolean => {
     if ('$and' in filter) return filter.$and.every((f: any) => matchValueAgainstFilter(data, f));
     if ('$or' in filter) return filter.$or.some((f: any) => matchValueAgainstFilter(data, f));
 
@@ -44,3 +46,19 @@ export const matchValueAgainstFilter = (data: any, filter: any): boolean => {
 
     return Object.entries(condition).every(([op, expected]) => evaluateOperator(op, actual, expected));
 };
+
+const combineFilters = (
+    filterModel?: ISearchEntitiesOfTemplateBody['filter'],
+    defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
+): ISearchFilter | undefined => {
+    if (!filterModel && !defaultModal) return undefined;
+
+    if (!filterModel) return defaultModal;
+    if (!defaultModal) return filterModel;
+
+    return {
+        $and: [filterModel, defaultModal],
+    };
+};
+
+export { combineFilters, evaluateOperator, matchValueAgainstFilter };
