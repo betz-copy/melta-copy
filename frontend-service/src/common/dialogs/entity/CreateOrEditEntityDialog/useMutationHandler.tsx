@@ -15,7 +15,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import { environment } from '../../../../globals';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
-import { IEntityChildTemplateMapPopulated, IMongoChildEntityTemplatePopulated } from '../../../../interfaces/entityChildTemplates';
+import { IChildTemplateMapPopulated, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 const { errorCodes } = environment;
 
@@ -24,7 +24,7 @@ type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
@@ -34,9 +34,13 @@ const useMutationHandler = (
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
-    let childTemplate: IMongoChildEntityTemplatePopulated | undefined = undefined;
+    let childTemplate: IMongoChildTemplatePopulated | undefined = undefined;
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
+    const handleMutationError = (
+        err: AxiosError,
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        newEntityData?: EntityWizardValues | undefined,
+    ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
         const errorMetadata = err.response?.data?.metadata;
 
@@ -126,8 +130,8 @@ const useMutationHandler = (
     if (Object.keys(clientSideUserEntity || {}).length > 0) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
-        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.fatherTemplateId._id === entityTemplate._id);
+        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>

@@ -26,7 +26,7 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import FilterValidation from '../../error';
 import config from '../../config';
-import EntityChildTemplateManagerService from '../../externalServices/templates/entityChildTemplateManager';
+import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
@@ -97,14 +97,14 @@ export class EntityValidator extends DefaultController {
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    private entityChildTemplateManagerService: EntityChildTemplateManagerService;
+    private childTemplateManagerService: ChildTemplateManagerService;
 
     constructor(workspaceId: string) {
         super(undefined);
 
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
-        this.entityChildTemplateManagerService = new EntityChildTemplateManagerService(workspaceId);
+        this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
@@ -144,7 +144,7 @@ export class EntityValidator extends DefaultController {
     }
 
     async getChildFilters(childTemplateId: string): Promise<ISearchFilter> {
-        const childTemplate = await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId);
+        const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
         return getFilterFromChildTemplate(childTemplate);
     }
 

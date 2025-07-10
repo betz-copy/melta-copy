@@ -94,7 +94,7 @@ const sendNotificationsForEntityTemplate = async (
                     [entityTemplate.category._id]: {
                         [InstancesSubclassesPermissions.entityTemplates]: {
                             [entityTemplate._id]: {
-                                [InstancesSubclassesPermissions.entityChildTemplates]: {
+                                [InstancesSubclassesPermissions.childTemplates]: {
                                     '*': {
                                         fields: {
                                             '*': {

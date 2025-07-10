@@ -6,13 +6,11 @@ import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
 import { emptyEntityTemplate, EntityWizardValues } from '.';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { IEntityChildTemplateMap } from '../../../interfaces/entityChildTemplates';
-import { transformChild } from '../../../pages/Category';
-import { ICategoryMap } from '../../../interfaces/categories';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -34,12 +32,11 @@ const ChooseTemplate: React.FC<{
 
     const currentUser = useUserStore((state) => state.user);
 
-    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const isAuthorized = (templateId: string, categoryId: string) =>
-        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, { _id: categoryId }, templateId, PermissionScope.write);
+        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, categoryId, templateId, PermissionScope.write);
 
     const filterEntityTemplates = Array.from(entityTemplates.values()).filter((template) =>
         categoryId
@@ -47,20 +44,11 @@ const ChooseTemplate: React.FC<{
             : isAuthorized(template._id, template.category._id),
     );
 
-    const filterChildEntityTemplate = Array.from(entityChildTemplates.values())
-        .filter((child) => {
-            const hasValidCategory = categoryId
-                ? child.categories.includes(categoryId)
-                : child.categories.some((catId) => isAuthorized(child._id, catId));
+    const filterChildEntityTemplate = Array.from(childTemplates.values()).filter((child) => {
+        const hasValidCategory = categoryId ? child.category._id === categoryId : isAuthorized(child._id, child.category._id);
 
-            return hasValidCategory;
-        })
-        .map((child) => {
-            const parent = entityTemplates.get(child.fatherTemplateId!)!;
-            const category = categoryId ? categories.get(categoryId)! : categories.get(child.categories[0])!;
-
-            return transformChild(child, parent, category);
-        });
+        return hasValidCategory;
+    });
 
     const entityTemplatesFilteredByCategory = [...filterEntityTemplates, ...filterChildEntityTemplate];
 

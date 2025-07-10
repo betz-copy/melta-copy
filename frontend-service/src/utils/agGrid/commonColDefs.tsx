@@ -32,6 +32,7 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
@@ -250,7 +251,7 @@ export const locationColDef = <Data extends any = EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
     value: Partial<IEntitySingleProperty>,
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
     hideColumn = false,

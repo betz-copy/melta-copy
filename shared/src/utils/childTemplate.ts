@@ -1,9 +1,20 @@
+import {
+    IChildTemplate,
+    IChildTemplatePopulated,
+    IChildTemplateProperty,
+    IMongoChildTemplateWithConstraintsPopulated,
+} from '../interfaces/childTemplate';
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
-import { IEntityChildTemplatePopulated } from '../interfaces/entityChildTemplate';
-import { IEntitySingleProperty, IFullMongoEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
 
-const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated): ISearchFilter => {
-    return Object.entries(childTemplate.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
+export const isChildTemplate = (
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,
+): template is IMongoChildTemplateWithConstraintsPopulated => {
+    return 'parentTemplate' in template && Boolean(template.parentTemplate);
+};
+
+const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated): ISearchFilter => {
+    return Object.entries(childTemplate.properties.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
         (acc, [key, prop]) => {
             if (!prop.filters) return acc;
 
@@ -39,93 +50,62 @@ const parseFilterObject = (filters: any): any | null => {
     return typeof filters === 'object' && filters !== null ? filters : null;
 };
 
-const getFilteredEnum = (parentProp: IEntitySingleProperty, filterObj: any): string[] | undefined => {
-    if (!parentProp.enum || !filterObj?.$and) return parentProp.enum;
-
+const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
     const enumEquals = filterObj.$and.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
 
-    return enumEquals.length > 0 ? parentProp.enum.filter((val) => enumEquals.includes(val)) : parentProp.enum;
+    return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
 };
 
-const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any): string[] | undefined => {
-    if (parentProp.type !== 'array' || !parentProp.items?.enum || !filterObj?.$and) return parentProp.items?.enum;
-
+const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
     const multiEnumIn = filterObj.$and
         .map((condition: any) => condition.multiEnum?.$in)
         .filter((val: any): val is string[] => Array.isArray(val))
         .flat();
 
-    return multiEnumIn.length > 0 ? parentProp.items.enum.filter((val) => multiEnumIn.includes(val)) : parentProp.items.enum;
+    return multiEnumIn.length > 0 ? enumVals.filter((val) => multiEnumIn.includes(val)) : enumVals;
 };
 
-const getFullChildTemplateProperties = (
-    childTemplate: IEntityChildTemplatePopulated,
-    parentTemplate: IMongoEntityTemplate,
+const getChildPropertiesFiltered = (
+    childProperties: Record<string, IEntitySingleProperty & IChildTemplateProperty>,
 ): Record<string, IEntitySingleProperty> => {
-    const result: Record<string, IEntitySingleProperty> = {};
+    const properties: Record<string, IEntitySingleProperty> = {};
 
-    for (const key of Object.keys(childTemplate.properties)) {
-        const parentProp = parentTemplate.properties.properties[key];
-        const childProp = childTemplate.properties[key];
+    for (const [key, value] of Object.entries(childProperties)) {
+        const filterObj = parseFilterObject(value.filters);
 
-        const filterObj = parseFilterObject(childProp?.filters);
+        let newValue = { ...value };
 
-        if (!filterObj?.$and) {
-            result[key] = parentProp;
-            // eslint-disable-next-line no-continue
-            continue;
+        if (value.enum && filterObj) {
+            newValue.enum = getFilteredEnum(value.enum, filterObj);
         }
 
-        if (parentProp?.enum) {
-            result[key] = {
-                ...parentProp,
-                enum: getFilteredEnum(parentProp, filterObj),
-            };
-        } else if (parentProp?.type === 'array' && parentProp.items?.enum) {
-            result[key] = {
-                ...parentProp,
+        if (value.type === 'array' && value.items?.enum && filterObj) {
+            newValue = {
+                ...value,
                 items: {
-                    ...parentProp.items,
-                    enum: getFilteredMultiEnum(parentProp, filterObj),
+                    ...value.items,
+                    enum: getFilteredMultiEnum(value.items.enum, filterObj),
                 },
             };
-        } else {
-            result[key] = parentProp;
         }
+
+        properties[key] = newValue;
     }
 
-    return result;
+    return properties;
 };
 
-const transformChild = (
-    child: IEntityChildTemplatePopulated,
-    parent: IMongoEntityTemplatePopulated,
-): IMongoEntityTemplatePopulated & { fatherTemplateId?: IFullMongoEntityTemplate } => {
-    const childPropertyKeys = Object.keys(child.properties);
-
-    const childProperties = Object.fromEntries(
-        Object.entries(parent.properties.properties)
-            .filter(([key]) => childPropertyKeys.includes(key))
-            .map(([key, parentProp]) => [
-                key,
-                {
-                    ...parentProp,
-                    defaultValue: child.properties[key].defaultValue,
-                    filters: child.properties[key].filters,
-                },
-            ]),
-    );
-
-    return {
-        ...parent,
-        _id: child._id,
-        displayName: child.displayName,
-        fatherTemplateId: child.fatherTemplateId,
-        properties: {
-            ...parent.properties,
-            properties: childProperties,
-        },
-        propertiesOrder: parent.propertiesOrder.filter((key) => key in childProperties),
-    };
+const dePopulateChildProperties = (
+    childProperties: IChildTemplatePopulated['properties']['properties'],
+): IChildTemplate['properties']['properties'] => {
+    return Object.entries(childProperties).reduce((acc, [key, value]) => {
+        acc[key] = {
+            defaultValue: value.defaultValue,
+            filters: value.filters,
+            isEditableByUser: value.isEditableByUser,
+        };
+        return acc;
+    }, {});
 };
-export { getFilterFromChildTemplate, getFullChildTemplateProperties, transformChild };
+
+export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate };

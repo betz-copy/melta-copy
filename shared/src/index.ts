@@ -3,7 +3,7 @@ export * from './interfaces/category';
 export * from './interfaces/chart';
 export * from './interfaces/dashboard';
 export * from './interfaces/entity';
-export * from './interfaces/entityChildTemplate';
+export * from './interfaces/childTemplate';
 export * from './interfaces/entityTemplate';
 export * from './interfaces/gantt';
 export * from './interfaces/globalSearch';

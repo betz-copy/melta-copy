@@ -28,6 +28,8 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { isChildTemplate } from '../utils/templates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -38,7 +40,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -47,9 +49,9 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (template.fatherTemplateId) {
+    if (isChildTemplate(template)) {
         formData.append('childTemplateId', template._id);
     }
 
@@ -110,14 +112,14 @@ export const getChangedEntitiesFromExcelRequest = async (
 };
 
 export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     entitiesToUpdate: IEntityWithIgnoredRules[],
     childTemplateId?: string,
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate?._id : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -178,18 +180,6 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
-    // TODO: NOT USED - ask Amit
-    // const propertiesWithDefaults = childTemplate
-    //     ? Object.entries(entity.template.properties.properties).reduce((acc, [key, prop]) => {
-    //           if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
-    //               acc[key] = childTemplate.properties[key].defaultValue;
-    //           } else {
-    //               acc[key] = entity.properties[key];
-    //           }
-    //           return acc;
-    //       }, {} as Record<string, any>)
-    //     : entity.properties;
-
     formData.append(
         'properties',
         JSON.stringify(
@@ -217,9 +207,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         ),
     );
 
-    formData.append('templateId', entity.template.fatherTemplateId ?? entity.template._id);
+    formData.append('templateId', isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id);
 
-    if (entity.template.fatherTemplateId) {
+    if (isChildTemplate(entity.template)) {
         formData.append('childTemplateId', entity.template._id);
     }
 
@@ -333,7 +323,7 @@ const getBodyForUpdateRequest = async (
         ),
     );
 
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
     if (childTemplateId) {
         formData.append('childTemplateId', childTemplateId);
@@ -456,9 +446,9 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
         ),
     );
 
-    formData.append('templateId', template.fatherTemplateId ?? template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (template.fatherTemplateId) {
+    if (isChildTemplate(template)) {
         formData.append('childTemplateId', template._id);
     }
 
@@ -511,12 +501,7 @@ export const exportEntityToDocumentRequest = async (documentTemplateId: string, 
     return data;
 };
 
-export const getChartOfTemplate = async (
-    xAxis: IAxisField,
-    yAxis: IAxisField | undefined,
-    templateId: string,
-    filter?: ISearchFilter,
-) => {
+export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string, filter?: ISearchFilter) => {
     const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
 
     return data;

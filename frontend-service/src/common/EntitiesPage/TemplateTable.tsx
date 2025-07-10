@@ -45,6 +45,8 @@ import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 const {
     loadExcel: { excelExtension },
@@ -55,7 +57,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string };
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
@@ -128,7 +130,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
-                        isChildTemplate: 'fatherTemplateId' in template,
+                        isChildTemplate: isChildTemplate(template),
                     },
                 },
             });
@@ -145,9 +147,10 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = currentClientSideUser
-        ? true
-        : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
+    // TODO: what about categories?
+    const userHasWritePermissions =
+        !!currentClientSideUser ||
+        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -325,7 +328,6 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={loadExcelTooltip}
-                        childTemplateId={childTemplateId}
                     >
                         <Upload
                             fontSize="small"
@@ -407,7 +409,6 @@ const TemplateTable = forwardRef<
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
                     template={template}
-                    childTemplateId={childTemplateId}
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}

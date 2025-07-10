@@ -10,7 +10,7 @@ export const environment = {
         getAllClientSideTemplates: '/client-side/templates/all',
         categories: '/templates/categories',
         entityTemplates: '/templates/entities',
-        entityChildTemplates: '/templates/child',
+        childTemplates: '/templates/child',
         clientSideRoutes: '/client-side',
         templatesConfig: '/templates/config',
         relationshipTemplates: '/templates/relationships',

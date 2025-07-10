@@ -18,14 +18,14 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import {
     CategoryWithTemplates,
     didPermissionsChange,
-    entityChildTemplatePermissionDialog,
+    childTemplatePermissionDialog,
     entityTemplatePermissionDialog,
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -46,7 +46,7 @@ const RoleDialog: React.FC<{
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((template) => {
@@ -55,21 +55,21 @@ const RoleDialog: React.FC<{
             ...template.category,
         };
 
-        const displayEntityChildTemplates: entityChildTemplatePermissionDialog[] = Array.from(entityChildTemplates.values())
-            .filter((child) => child.fatherTemplateId === template._id)
+        const displayChildTemplates: childTemplatePermissionDialog[] = Array.from(childTemplates.values())
+            .filter((child) => child.parentTemplate._id === template._id)
             .map((child) => ({
                 id: child._id,
                 name: child.displayName,
                 isFilterByCurrentUser: child.isFilterByCurrentUser,
                 isFilterByUserUnit: child.isFilterByUserUnit,
                 viewType: child.viewType,
-                fatherTemplateId: child.fatherTemplateId,
+                parentTemplateId: child.parentTemplate._id,
             }));
 
         const displayEntity: entityTemplatePermissionDialog = {
             id: template._id,
             name: template.displayName,
-            entityChildTemplates: displayEntityChildTemplates || [],
+            childTemplates: displayChildTemplates || [],
         };
         category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
         dialogPermissionData.set(template.category._id, category);

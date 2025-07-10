@@ -1,5 +1,5 @@
 import { IAGGridSetFilter, IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter } from '../utils/agGrid/interfaces';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoCategory } from './categories';
 
 export interface IFieldFilter {
@@ -35,21 +35,18 @@ export enum ViewType {
 }
 
 export interface IChildTemplateProperty {
-    title: string;
-    type: string;
-    format?: string;
-    defaultValue?: any;
-    filters?: string | Record<string, unknown>;
+    defaultValue?: string | number | boolean | Date | string[];
+    filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
 }
 
-export interface IEntityChildTemplate {
+export interface IChildTemplate {
     name: string;
     displayName: string;
     description?: string;
-    fatherTemplateId: string;
-    categories: string[];
-    properties: Record<string, IChildTemplateProperty>;
+    parentTemplateId: string;
+    category: string;
+    properties: { properties: Record<string, IChildTemplateProperty> };
     disabled: boolean;
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
@@ -58,20 +55,28 @@ export interface IEntityChildTemplate {
     actions?: string;
 }
 
-export interface IMongoChildEntityTemplate extends IEntityChildTemplate {
+export interface IMongoChildTemplate extends IChildTemplate {
     _id: string;
     createdAt: string;
     updatedAt: string;
 }
 
-export type IEntityChildTemplateMap = Map<string, IMongoChildEntityTemplate>;
+export type IChildTemplateMap = Map<string, IChildTemplatePopulated>;
 
-export interface IChildEntityTemplatePopulated extends Omit<IEntityChildTemplate, 'categories' | 'fatherTemplateId'> {
-    categories: IMongoCategory[];
-    fatherTemplateId: IMongoEntityTemplatePopulated;
+export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
+    parentTemplate: IMongoEntityTemplatePopulated;
+    category: IMongoCategory;
 }
 
-export interface IMongoChildEntityTemplatePopulated extends IChildEntityTemplatePopulated {
+export interface IChildTemplatePopulated
+    extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
+        Omit<IChildTemplatePopulatedFromDb, 'properties'> {
+    properties: IMongoEntityTemplate['properties'] & {
+        properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
+    };
+}
+
+export interface IMongoChildTemplatePopulated extends IChildTemplatePopulated {
     _id: string;
 }
 
@@ -86,7 +91,7 @@ export interface EntityTemplateBase {
 
 export interface ChildTemplate extends EntityTemplateBase {
     type: EntityTemplateType.Child;
-    metaData: IMongoChildEntityTemplate;
+    metaData: IMongoChildTemplatePopulated;
 }
 
 export interface ParentTemplate extends EntityTemplateBase {
@@ -95,4 +100,4 @@ export interface ParentTemplate extends EntityTemplateBase {
 }
 
 export type TemplateItem = ChildTemplate | ParentTemplate;
-export type IEntityChildTemplateMapPopulated = Map<string, IMongoChildEntityTemplatePopulated>;
+export type IChildTemplateMapPopulated = Map<string, IMongoChildTemplatePopulated>;

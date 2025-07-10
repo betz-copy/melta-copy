@@ -4,17 +4,18 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
+import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import {
     EntityTemplateType,
-    IEntityChildTemplate,
-    IEntityChildTemplateMap,
-    IMongoChildEntityTemplate,
+    IChildTemplateMap,
+    IChildTemplatePopulated,
+    IMongoChildTemplatePopulated,
     TemplateItem,
-} from '../../../interfaces/entityChildTemplates';
+} from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
@@ -25,9 +26,8 @@ import { getFileName } from '../../../utils/getFileName';
 import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
-import { defaultEntityTemplatePopulated } from '.';
 
-const getChildTemplateChips = (childTemplate: IEntityChildTemplate) => {
+const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];
 
     if (childTemplate.isFilterByUserUnit) {
@@ -78,7 +78,7 @@ interface EntityTemplateCardProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildEntityTemplate;
+            childTemplate?: IMongoChildTemplatePopulated;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -111,7 +111,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
     const hasWritePermission = useMemo(() => {
         if (isChildTemplate) {
@@ -126,7 +126,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         if (!childTemplates) return [];
         const templates = Array.from(childTemplates.values());
         const filtered = templates.filter((child) => {
-            return child.fatherTemplateId === entityTemplate._id;
+            return child.parentTemplate._id === entityTemplate._id;
         });
         return filtered;
     }, [childTemplates, entityTemplate._id]);
@@ -217,7 +217,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             isWizardOpen: true,
                                             entityTemplate: {
                                                 ...entityTemplate,
-                                                _id: childTemplate.fatherTemplateId,
+                                                _id: childTemplate.parentTemplate._id,
                                             },
                                             childTemplate,
                                         });
@@ -324,7 +324,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </Typography>
                         </Grid>
                     )}
-                    {childTemplatesList.map((childTemplate: IMongoChildEntityTemplate) => (
+                    {childTemplatesList.map((childTemplate) => (
                         <Grid key={childTemplate._id} item container gap="10px" alignItems="center">
                             <Grid item>
                                 <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ marginRight: '10px' }} />
@@ -399,7 +399,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     </Grid>
                     {Object.entries(
                         childTemplates?.get(entityTemplate._id)
-                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                             : entityTemplate.properties?.properties || {},
                     )
                         .filter(([, value]) => !isFile(value))
@@ -437,7 +437,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     </Grid>
                     {Object.entries(
                         childTemplates?.get(entityTemplate._id)
-                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                             : entityTemplate.properties?.properties || {},
                     )
                         .filter(([, value]) => isFile(value))

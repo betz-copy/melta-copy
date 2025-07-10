@@ -87,7 +87,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const userHasWritePermissions = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         entityTemplate._id,
         PermissionScope.write,
     );

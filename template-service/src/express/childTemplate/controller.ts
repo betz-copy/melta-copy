@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
-import { DefaultController, fetchPropertyFromRequest, IMongoEntityChildTemplate } from '@microservices/shared';
-import EntityChildTemplateManager from './manager';
+import { DefaultController, fetchPropertyFromRequest, IMongoChildTemplate } from '@microservices/shared';
+import ChildTemplateManager from './manager';
 
-class EntityChildTemplateController extends DefaultController<IMongoEntityChildTemplate, EntityChildTemplateManager> {
+class ChildTemplateController extends DefaultController<IMongoChildTemplate, ChildTemplateManager> {
     constructor(workspaceId: string) {
-        super(new EntityChildTemplateManager(workspaceId));
+        super(new ChildTemplateManager(workspaceId));
     }
 
-    async searchEntityChildTemplates(req: Request, res: Response) {
-        res.json(await this.manager.getChildTemplates(req.body));
+    async searchChildTemplates(req: Request, res: Response) {
+        res.json(await this.manager.searchChildTemplates(req.body));
     }
 
-    async createEntityChildTemplate(req: Request, res: Response) {
+    async createChildTemplate(req: Request, res: Response) {
         res.json(await this.manager.createChildTemplate(req.body));
     }
 
@@ -23,11 +23,11 @@ class EntityChildTemplateController extends DefaultController<IMongoEntityChildT
         res.json(await this.manager.getChildTemplateById(req.params.id));
     }
 
-    async updateEntityChildTemplate(req: Request, res: Response) {
+    async updateChildTemplate(req: Request, res: Response) {
         res.json(await this.manager.updateChildTemplate(req.params.id, req.body));
     }
 
-    async deleteEntityChildTemplate(req: Request, res: Response) {
+    async deleteChildTemplate(req: Request, res: Response) {
         res.json(await this.manager.deleteChildTemplate(req.params.id));
     }
 
@@ -39,4 +39,4 @@ class EntityChildTemplateController extends DefaultController<IMongoEntityChildT
     }
 }
 
-export default EntityChildTemplateController;
+export default ChildTemplateController;

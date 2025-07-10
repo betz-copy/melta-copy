@@ -4,18 +4,18 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
-import { InfiniteScroll } from '../InfiniteScroll';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { convertToBool } from '../../utils/convertStringToBool';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { getDefaultFilterFromTemplate } from './TemplateTablesView';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
-import { transformChild } from '../../pages/Category';
 import { useUserStore } from '../../stores/user';
+import { convertToBool } from '../../utils/convertStringToBool';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { isChildTemplate } from '../../utils/templates';
+import { InfiniteScroll } from '../InfiniteScroll';
+import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -26,9 +26,7 @@ export interface CardsViewRef {
 export interface CardsViewProps {
     templateIds: string[];
     searchInput: string;
-    templates: (IMongoEntityTemplatePopulated & {
-        fatherTemplateId?: string;
-    })[];
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
 }
 
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput, templates }, ref) => {
@@ -67,17 +65,17 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                 setEntitiesCount(null);
                             }
 
-                            const childTemplates = templates.filter((t) => !!t.fatherTemplateId);
-                            const fatherTemplates = templates.filter((t) => !t.fatherTemplateId);
+                            const childTemplates = templates.filter(isChildTemplate);
+                            const parentTemplates = templates.filter((template) => !isChildTemplate(template));
 
                             let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
 
-                            if (fatherTemplates.length > 0) {
+                            if (parentTemplates.length > 0) {
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
-                                    templates: Object.fromEntries(fatherTemplates.map((t) => [t._id, { showRelationships: false }])),
+                                    templates: Object.fromEntries(parentTemplates.map((t) => [t._id, { showRelationships: false }])),
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),
                                 });
 
@@ -92,7 +90,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
                                     templates: {
-                                        [template.fatherTemplateId!]: {
+                                        [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
                                         },
@@ -128,12 +126,10 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     >
                         {({ entity, minioFileIdsWithTexts, childTemplateId }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-                            const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+                            const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
-                            const childEntityTemplate = childTemplateId ? entityChildTemplates?.get(childTemplateId)! : undefined;
-                            const template = childEntityTemplate
-                                ? transformChild(childEntityTemplate, entityTemplate, entityTemplate.category)
-                                : entityTemplate;
+                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;
+                            const template = childEntityTemplate ?? entityTemplate;
 
                             return (
                                 <EntityCard

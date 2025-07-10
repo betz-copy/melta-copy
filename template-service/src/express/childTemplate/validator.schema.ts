@@ -2,9 +2,6 @@ import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@micr
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({
-    title: Joi.string().required(),
-    type: Joi.string().required(),
-    format: Joi.string(),
     defaultValue: Joi.any(),
     filters: searchFilterSchema.custom((value) => {
         // todo: upgrade mongo version up to 5 and then delete that convert
@@ -18,9 +15,11 @@ const childEntityTemplateSchema = {
     name: variableNameValidation.required(),
     displayName: Joi.string().required(),
     description: Joi.string(),
-    fatherTemplateId: MongoIdSchema.required(),
-    categories: Joi.array().items(MongoIdSchema).required(),
-    properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    parentTemplateId: MongoIdSchema.required(),
+    category: MongoIdSchema.required(),
+    properties: Joi.object({
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
     viewType: Joi.string().valid('categoryPage', 'userPage').required(),
@@ -30,7 +29,7 @@ const childEntityTemplateSchema = {
 };
 
 // POST /api/templates/child/search
-export const searchEntityChildTemplatesSchema = Joi.object({
+export const searchChildTemplatesSchema = Joi.object({
     query: {},
     body: {
         search: Joi.string(),
@@ -38,7 +37,7 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
+        parentTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     params: {},
 });
@@ -51,7 +50,7 @@ export const getAllChildTemplatesSchema = Joi.object({
 });
 
 // POST /api/templates/child
-export const createEntityChildTemplateSchema = Joi.object({
+export const createChildTemplateSchema = Joi.object({
     body: {
         ...childEntityTemplateSchema,
     },
@@ -69,7 +68,7 @@ export const getChildTemplateByIdSchema = Joi.object({
 });
 
 // PUT /api/templates/child/:id
-export const updateEntityChildTemplateSchema = Joi.object({
+export const updateChildTemplateSchema = Joi.object({
     body: {
         ...childEntityTemplateSchema,
     },
@@ -80,7 +79,7 @@ export const updateEntityChildTemplateSchema = Joi.object({
 });
 
 // GET /api/templates/child/search-by-user
-export const searchEntityChildTemplatesByUserSchema = Joi.object({
+export const searchChildTemplatesByUserSchema = Joi.object({
     query: {},
     body: {
         kartoffelId: Joi.string().required(),
@@ -90,7 +89,7 @@ export const searchEntityChildTemplatesByUserSchema = Joi.object({
 });
 
 // DELETE /api/templates/child/:id
-export const deleteEntityChildTemplateSchema = Joi.object({
+export const deleteChildTemplateSchema = Joi.object({
     body: {},
     query: {},
     params: {
