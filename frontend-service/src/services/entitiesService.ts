@@ -180,18 +180,6 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
-    // TODO: NOT USED - ask Amit
-    // const propertiesWithDefaults = childTemplate
-    //     ? Object.entries(entity.template.properties.properties).reduce((acc, [key, prop]) => {
-    //           if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
-    //               acc[key] = childTemplate.properties[key].defaultValue;
-    //           } else {
-    //               acc[key] = entity.properties[key];
-    //           }
-    //           return acc;
-    //       }, {} as Record<string, any>)
-    //     : entity.properties;
-
     formData.append(
         'properties',
         JSON.stringify(

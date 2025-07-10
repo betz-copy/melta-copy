@@ -1,4 +1,9 @@
-import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '../interfaces/childTemplate';
+import {
+    IChildTemplate,
+    IChildTemplatePopulated,
+    IChildTemplateProperty,
+    IMongoChildTemplateWithConstraintsPopulated,
+} from '../interfaces/childTemplate';
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
 
@@ -60,10 +65,12 @@ const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | un
     return multiEnumIn.length > 0 ? enumVals.filter((val) => multiEnumIn.includes(val)) : enumVals;
 };
 
-const getChildPropertiesFiltered = (childTemplate: IChildTemplatePopulated): Record<string, IEntitySingleProperty> => {
+const getChildPropertiesFiltered = (
+    childProperties: Record<string, IEntitySingleProperty & IChildTemplateProperty>,
+): Record<string, IEntitySingleProperty> => {
     const properties: Record<string, IEntitySingleProperty> = {};
 
-    for (const [key, value] of Object.entries(childTemplate.properties.properties)) {
+    for (const [key, value] of Object.entries(childProperties)) {
         const filterObj = parseFilterObject(value.filters);
 
         let newValue = { ...value };
