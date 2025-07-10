@@ -290,7 +290,7 @@ templatesRouter.put(
     '/child/:id',
     ValidateRequest(updateChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
-    TemplatesServiceProxy,
+    templatesControllerMiddleware.updateChildTemplateById,
 );
 
 templatesRouter.delete(

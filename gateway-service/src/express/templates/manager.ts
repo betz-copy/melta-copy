@@ -48,6 +48,7 @@ import {
     isChildTemplate,
     IFullMongoEntityTemplate,
     IChildTemplateWithConstraintsPopulated,
+    IChildTemplate,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -1634,6 +1635,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId);
         const rules = await this.relationshipTemplateService.getManyRulesByIds(rulesIds);
         return rules.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
+    }
+
+    // Child templates
+    async updateChildTemplateById(templateId: string, childTemplate: IChildTemplate) {
+        const updatedChild = await this.entityTemplateService.updateChildTemplate(templateId, childTemplate);
+        if (!updatedChild) throw new BadRequestError('Failed to updated child');
+
+        const [childTemplatePopulatedWithConstraints] = await this.getAndPopulateAllTemplatesConstraints([updatedChild]);
+        return childTemplatePopulatedWithConstraints;
     }
 }
 
