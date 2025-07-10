@@ -86,6 +86,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                         isStartDate
                         directionIsRow={false}
                         readOnly={readOnly}
+                        disableKeyboardInput
                     />
                 )}
             </Grid>

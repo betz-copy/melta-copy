@@ -13,6 +13,7 @@ import { IFieldFilter } from '../../../interfaces/entityChildTemplates';
 import { IUser } from '../../../interfaces/users';
 import { format } from 'date-fns';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { isValidAGGridFilter } from '../../FilterComponent';
 interface IAddFieldFilterDialogProps {
     open: boolean;
     onClose: () => void;
@@ -54,17 +55,16 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
     const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
         setCurrentFieldError(undefined);
-        if (!newValue && localFilterField?.filterType === 'date') {
-            const isRemovingStart = isStartDate && !localFilterField.dateTo;
-            const isRemovingEnd = !isStartDate && !localFilterField.dateFrom;
-            if (isRemovingStart || isRemovingEnd) return;
-        }
 
-        const dateString = newValue ? format(newValue, 'yyyy-MM-dd') : undefined;
+        const fieldSchema = entityTemplate.properties.properties[currentFieldName];
+
+        const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
+
+        const stringDate = newValue ? format(newValue, dateFormat) : null;
 
         setLocalFilterField({
             ...localFilterField,
-            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
+            ...(isStartDate ? { dateFrom: stringDate } : { dateTo: stringDate }),
         } as IAGGridDateFilter);
     };
 
@@ -84,8 +84,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         const property = entityTemplate.properties.properties[currentFieldName];
         if (!property) return null;
         const { format, enum: propEnum, type, items } = property;
-
-        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
         const defaultFilterProps =
             dialogType === 'default'
@@ -182,6 +180,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         if (dialogType === 'default') {
             let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
+            const fieldSchema = entityTemplate.properties.properties[currentFieldName];
 
             if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') {
                 defaultValue = localFilterField.filter;
@@ -191,8 +190,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 defaultValue = localFilterField.dateFrom;
             }
 
-            const fieldSchema = entityTemplate.properties.properties[currentFieldName];
-            const fakeTemplateSchema = {
+            const templateSchema = {
                 ...entityTemplate.properties,
                 required: [],
                 properties: {
@@ -202,13 +200,10 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
             const formData = { [currentFieldName]: defaultValue };
 
-            const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
+            const ajvErrors = ajvValidate(templateSchema, formData);
 
-            if (ajvErrors && ajvErrors[currentFieldName]) {
-                setCurrentFieldError(ajvErrors[currentFieldName] as string);
-            } else {
-                onSubmit(currentFieldName, defaultValue);
-            }
+            if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
+            else onSubmit(currentFieldName, defaultValue);
         } else {
             updateFieldFilter(localFilterField, currentFieldName);
             onSubmit(currentFieldName, localFilterField);
@@ -217,20 +212,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
     const isValueValid = () => {
         if (localFilterField === undefined) return false;
-
-        if (dialogType === 'filter' || dialogType === 'default') {
-            switch (localFilterField.filterType) {
-                case 'text':
-                case 'number':
-                    return !!localFilterField.filter || typeof localFilterField.filter === 'boolean';
-                case 'set':
-                    return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
-                case 'date':
-                    return !!localFilterField.dateFrom;
-                default:
-                    return true;
-            }
-        }
+        if (dialogType !== 'editByUser') return isValidAGGridFilter(localFilterField);
         return true;
     };
 

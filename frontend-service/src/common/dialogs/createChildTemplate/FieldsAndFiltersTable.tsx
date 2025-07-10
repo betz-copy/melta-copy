@@ -1,15 +1,40 @@
-import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
-import React, { useState } from 'react';
 import { AddRounded } from '@mui/icons-material';
+import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import AddFieldFilterDialog from './AddFieldFilterDialog';
+import React, { useState } from 'react';
+import { IFieldChip, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { ColoredEnumChip } from '../../ColoredEnumChip';
-import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
 import { IUser } from '../../../interfaces/users';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { ColoredEnumChip } from '../../ColoredEnumChip';
+import { initializedFilterField } from '../../FilterComponent';
+import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
+import AddFieldFilterDialog from './AddFieldFilterDialog';
+import { environment } from '../../../globals';
+
+const { dateOrDateTimeRegex } = environment;
+
+const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined): string => {
+    if (value === null || value === undefined) return '';
+    if (Array.isArray(value))
+        return value
+            .map((item) => {
+                if (typeof item === 'string') return item;
+                if (typeof item === 'object') {
+                    return (item as IUser).fullName;
+                }
+                return String(item);
+            })
+            .join(', ');
+    if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
+    if (typeof value === 'string') {
+        const isDateTime = dateOrDateTimeRegex.test(value);
+        return isDateTime ? new Date(value).toLocaleString('he-IL') : value;
+    }
+    return String(value);
+};
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -55,15 +80,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         if (!entityTemplate) return;
 
         const { format, type: fieldType } = entityTemplate.properties.properties[newProperty];
-
-        const initializedFilterField: Record<string, IFieldFilter['filterField']> = {
-            'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            date: { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            number: { filterType: 'number', type: 'equals' },
-            string: { filterType: 'text', type: 'contains' },
-            boolean: { filterType: 'text', type: 'equals' },
-            array: { filterType: 'set', values: [] },
-        };
 
         const selectedFilter = (format && initializedFilterField[format]) || (fieldType && initializedFilterField[fieldType]);
 
@@ -131,41 +147,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             {fieldChips
                                                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
                                                 .map((chip, index) => {
-                                                    const isArrayType = entityTemplate.properties.properties[fieldName]?.type === 'array';
-                                                    const filterTypeLabel =
-                                                        'type' in chip.filterType! ? chip.filterType.type : isArrayType ? 'contains' : '';
-
-                                                    let filterValue = '';
-
-                                                    if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
-                                                        filterValue = String(chip.filterType.filter);
-                                                    } else if ('values' in chip.filterType! && Array.isArray(chip.filterType.values)) {
-                                                        filterValue = chip.filterType.values
-                                                            .map((item) => {
-                                                                if (typeof item === 'string') return item;
-                                                                if (typeof item === 'object') {
-                                                                    return (item as IUser).fullName;
-                                                                }
-                                                                return String(item);
-                                                            })
-                                                            .join(', ');
-                                                    } else if ('dateFrom' in chip.filterType!) {
-                                                        if (chip.filterType.dateFrom) {
-                                                            filterValue = new Date(chip.filterType.dateFrom).toLocaleDateString();
-                                                        }
-                                                        if (chip.filterType.dateTo) {
-                                                            filterValue += ` - ${new Date(chip.filterType.dateTo).toLocaleDateString()}`;
-                                                        }
-                                                    }
+                                                    const readonlyField = getFilterFieldReadonly(
+                                                        chip.filterType,
+                                                        entityTemplate.properties.properties[fieldName].type,
+                                                    );
 
                                                     return (
                                                         <Grid item key={`${fieldName}-filter-${index}`}>
                                                             <ColoredEnumChip
-                                                                label={
-                                                                    filterValue
-                                                                        ? `${i18next.t(`filters.${filterTypeLabel}`)}: ${filterValue}`
-                                                                        : i18next.t(`filters.${filterTypeLabel}`)
-                                                                }
+                                                                label={readonlyField}
                                                                 onDelete={() => {
                                                                     setFieldChips((prev) =>
                                                                         prev.filter(
@@ -212,25 +202,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             {fieldChips
                                                 .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'default')
                                                 .map((chip) => {
-                                                    const filterValue =
-                                                        chip.value === null || chip.value === undefined
-                                                            ? ''
-                                                            : Array.isArray(chip.value)
-                                                            ? chip.value
-                                                                  .map((item) => {
-                                                                      if (typeof item === 'string') return item;
-                                                                      if (typeof item === 'object') {
-                                                                          return (item as IUser).fullName;
-                                                                      }
-                                                                      return String(item);
-                                                                  })
-                                                                  .join(', ')
-                                                            : String(chip.value);
+                                                    const defaultValue = getFormattedDefaultValue(chip.value);
 
                                                     return (
                                                         <Grid item key={`${fieldName}-default`}>
                                                             <ColoredEnumChip
-                                                                label={`${filterValue}`}
+                                                                label={`${defaultValue}`}
                                                                 onDelete={() => {
                                                                     setFieldChips((prev) =>
                                                                         prev.filter(

@@ -1,48 +1,49 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useMemo, useState } from 'react';
+import { Close as CloseIcon } from '@mui/icons-material';
 import {
+    Autocomplete,
+    Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    TextField,
-    Button,
-    Grid,
-    FormControlLabel,
-    Typography,
     FormControl,
-    RadioGroup,
-    Radio,
-    Autocomplete,
-    InputAdornment,
+    FormControlLabel,
+    Grid,
     IconButton,
+    InputAdornment,
+    Radio,
+    RadioGroup,
+    TextField,
+    Typography,
 } from '@mui/material';
-import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { ColoredEnumChip } from '../../ColoredEnumChip';
-import FieldsAndFiltersTable from './FieldsAndFiltersTable';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import SelectUserFieldDialog from './SelectUserFieldDialog';
-import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { createEntityChildTemplate, updateEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
-import { ErrorToast } from '../../ErrorToast';
-import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import {
-    ViewType,
-    ITemplateFieldsFilters,
-    IEntityChildTemplate,
-    IChildTemplateProperty,
-    IFieldChip,
-    IEntityChildTemplateMap,
-    IMongoChildEntityTemplate,
-} from '../../../interfaces/entityChildTemplates';
 import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { ISearchFilter } from '../../../interfaces/entities';
+import {
+    IChildTemplateProperty,
+    IEntityChildTemplate,
+    IEntityChildTemplateMap,
+    IFieldChip,
+    IMongoChildEntityTemplate,
+    ITemplateFieldsFilters,
+    ViewType,
+} from '../../../interfaces/entityChildTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { translateFieldFilter } from '../../../pages/Graph/GraphFilterToBackend';
+import { createEntityChildTemplate, updateEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
+import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { ColoredEnumChip } from '../../ColoredEnumChip';
+import { ErrorToast } from '../../ErrorToast';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
+import FieldsAndFiltersTable from './FieldsAndFiltersTable';
+import SelectUserFieldDialog from './SelectUserFieldDialog';
 import { createChildTemplateSchema } from './validation';
-import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
-import { Close as CloseIcon } from '@mui/icons-material';
 
 const CreateChildTemplateDialog: React.FC<{
     open: boolean;
@@ -72,10 +73,10 @@ const CreateChildTemplateDialog: React.FC<{
             const initialFields: ITemplateFieldsFilters = {};
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
-                const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
+                const isSelected = childTemplate ? key in childTemplate.properties : false;
 
                 initialFields[key] = {
-                    selected: isSelected,
+                    selected: isSelected || isRequired,
                     fieldValue: value,
                     ...(childTemplate?.properties[key]?.defaultValue && { defaultValue: childTemplate.properties[key].defaultValue }),
                     ...(childTemplate?.properties[key]?.isEditableByUser && { isEditableByUser: childTemplate.properties[key].isEditableByUser }),
@@ -93,132 +94,38 @@ const CreateChildTemplateDialog: React.FC<{
     }, [entityTemplate, childTemplate, categories]);
 
     useEffect(() => {
-        if (childTemplate) {
-            const chips: IFieldChip[] = [];
-            Object.entries(childTemplate.properties).forEach(([fieldName, prop]) => {
-                if (prop.filters) {
-                    try {
-                        const parsedFilters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                        if (parsedFilters.$and) {
-                            parsedFilters.$and.forEach((filter: any) => {
-                                const fieldValue = filter[fieldName];
-                                let filterType = '';
-                                let value = '';
+        if (!childTemplate) return;
 
-                                if (fieldValue.$rgx) {
-                                    filterType = 'contains';
-                                    value = fieldValue.$rgx.replace(/\.\*/g, '');
-                                } else if (fieldValue.$eq !== undefined) {
-                                    filterType = 'equals';
-                                    value = fieldValue.$eq;
-                                } else if (fieldValue.$ne !== undefined) {
-                                    filterType = 'notEqual';
-                                    value = fieldValue.$ne;
-                                } else if (fieldValue.$lt !== undefined) {
-                                    filterType = 'lessThan';
-                                    value = fieldValue.$lt;
-                                } else if (fieldValue.$lte !== undefined) {
-                                    filterType = 'lessThanOrEqual';
-                                    value = fieldValue.$lte;
-                                } else if (fieldValue.$gt !== undefined) {
-                                    filterType = 'greaterThan';
-                                    value = fieldValue.$gt;
-                                } else if (fieldValue.$gte !== undefined) {
-                                    filterType = 'greaterThanOrEqual';
-                                    value = fieldValue.$gte;
-                                } else if (fieldValue.$in) {
-                                    filterType = 'in';
-                                    value = fieldValue.$in.join(', ');
-                                } else if (fieldValue.$eq === null) {
-                                    filterType = 'blank';
-                                    value = '';
-                                } else if (fieldValue.$ne === null) {
-                                    filterType = 'notBlank';
-                                    value = '';
-                                } else if (fieldValue.$startsWith) {
-                                    filterType = 'startsWith';
-                                    value = fieldValue.$startsWith;
-                                } else if (fieldValue.$endsWith) {
-                                    filterType = 'endsWith';
-                                    value = fieldValue.$endsWith;
-                                } else if (fieldValue.$notContains) {
-                                    filterType = 'notContains';
-                                    value = fieldValue.$notContains;
-                                }
+        const chips: IFieldChip[] = [];
 
-                                const fieldTemplate = entityTemplate.properties.properties[fieldName];
-                                const filterTypeObj: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter = (() => {
-                                    if (fieldValue.$in) {
-                                        return {
-                                            filterType: 'set',
-                                            values: fieldValue.$in as (string | null)[],
-                                        };
-                                    }
+        Object.entries(childTemplate.properties).forEach(([propertyName, { filters, defaultValue }]) => {
+            const fieldTemplate = entityTemplate.properties.properties[propertyName];
 
-                                    if (fieldTemplate.type === 'number') {
-                                        return {
-                                            filterType: 'number',
-                                            type: filterType as IAGGidNumberFilter['type'],
-                                            filter: typeof value === 'string' ? parseFloat(value) : value,
-                                        };
-                                    }
+            if (filters) {
+                const parsedFilters: ISearchFilter = typeof filters === 'string' ? JSON.parse(filters) : filters;
+                if (parsedFilters.$and && Array.isArray(parsedFilters.$and)) {
+                    parsedFilters.$and.forEach((filter) => {
+                        const fieldValue = filter[propertyName];
+                        const translatedFilter = translateFieldFilter(fieldValue, fieldTemplate);
 
-                                    if (fieldTemplate.format === 'date' || fieldTemplate.format === 'date-time') {
-                                        return {
-                                            filterType: 'date',
-                                            type: filterType as IAGGridDateFilter['type'],
-                                            dateFrom: value,
-                                            dateTo: null,
-                                        };
-                                    }
-
-                                    return {
-                                        filterType: 'text',
-                                        type: filterType as IAGGridTextFilter['type'],
-                                        filter: String(value),
-                                    };
-                                })();
-
-                                chips.push({
-                                    fieldName,
-                                    chipType: 'filter',
-                                    value: `${i18next.t(`filters.${filterType}`)}: ${value}`,
-                                    filterType: filterTypeObj,
-                                });
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error parsing filters:', e);
-                    }
-                }
-
-                if (prop.defaultValue !== undefined) {
-                    const defaultValue = prop.defaultValue;
-                    let displayValue = defaultValue;
-
-                    const fieldTemplate = entityTemplate.properties.properties[fieldName];
-                    if (fieldTemplate.format === 'date-time' || fieldTemplate.format === 'date') {
-                        try {
-                            const date = new Date(defaultValue);
-                            if (!isNaN(date.getTime())) {
-                                displayValue = date.toLocaleDateString();
-                            }
-                        } catch (e) {
-                            console.error('Error formatting date:', e);
-                            displayValue = defaultValue;
-                        }
-                    }
-
-                    chips.push({
-                        fieldName,
-                        chipType: 'default',
-                        value: displayValue,
+                        chips.push({
+                            fieldName: propertyName,
+                            chipType: 'filter',
+                            filterType: translatedFilter,
+                        });
                     });
                 }
-            });
+            }
 
-            setFieldChips(chips);
-        }
+            if (defaultValue !== undefined)
+                chips.push({
+                    fieldName: propertyName,
+                    chipType: 'default',
+                    value: defaultValue,
+                });
+        });
+
+        setFieldChips(chips);
     }, [childTemplate]);
 
     const userFields = useMemo(() => {
@@ -390,7 +297,6 @@ const CreateChildTemplateDialog: React.FC<{
               .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
-    console.log({ existingDisplayNames });
 
     return (
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>

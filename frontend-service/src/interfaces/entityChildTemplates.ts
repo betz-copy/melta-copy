@@ -14,7 +14,7 @@ export interface IFieldChip {
     fieldName: string;
     chipType: 'filter' | 'default';
     filterType?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
-    value: string | number | boolean | Date | string[];
+    value?: string | number | boolean | Date | string[];
 }
 
 export interface ITemplateFieldsFilters {
