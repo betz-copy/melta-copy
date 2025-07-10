@@ -77,7 +77,7 @@ const CreateChildTemplateDialog: React.FC<{
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
                 const property = childTemplate?.properties.properties[key];
-                const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
+                const isSelected = (childTemplate ? key in childTemplate.properties.properties : false) || isRequired;
                 const defaultValue = property?.defaultValue;
                 const isEditableByUser = property?.isEditableByUser;
 
