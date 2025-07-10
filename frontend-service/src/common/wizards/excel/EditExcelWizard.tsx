@@ -24,7 +24,6 @@ import { isChildTemplate } from '../../../utils/templates';
 
 const { excelExtension } = environment.loadExcel;
 
-// TODO: childreTemplateId????
 const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTemplateId?: string }> = ({
     open,
     handleClose,
