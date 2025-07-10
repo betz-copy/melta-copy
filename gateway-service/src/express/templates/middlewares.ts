@@ -148,8 +148,8 @@ class TemplatesValidator extends DefaultController {
                 throw new NotFoundError('Child Template not found');
             }
 
-            if (!Array.isArray(childTemplate.category)) {
-                throw new NotFoundError('Child Template category are invalid');
+            if (typeof childTemplate.category !== 'string' && typeof childTemplate.category !== 'object') {
+                throw new NotFoundError('Child Template category is invalid');
             }
 
             if (req.permissionsOfUserId?.admin?.scope === PermissionScope.write) {

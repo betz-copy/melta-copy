@@ -17,9 +17,9 @@ export const createChildTemplate = async (
 
     const { data } = await axiosInstance.post<IMongoChildTemplate>(url + createChildTemplateRoute, {
         ...childTemplateToCreate,
-        categories: [parentTemplate.category._id],
+        category: parentTemplate.category._id,
         parentTemplateId: parentTemplate._id,
-    });
+    } as IChildTemplate);
 
     return data;
 };
