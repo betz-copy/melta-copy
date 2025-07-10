@@ -56,12 +56,6 @@ const AddEntityButton: React.FC<{
 
     const handleSuccess = (entity: IEntity) => {
         onSuccessCreate?.(entity);
-        setUpdatedEntities?.(
-            Object.values(entity.properties).filter(
-                (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
-            ),
-        );
-
         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
         setExternalErrors({ files: false, unique: {}, action: '' });
         setUpdatedTemplateIds?.([entity.templateId]);

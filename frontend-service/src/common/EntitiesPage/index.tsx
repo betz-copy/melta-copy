@@ -17,6 +17,7 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
+import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 const EntitiesPage: React.FC<{
     templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
@@ -58,6 +59,8 @@ const EntitiesPage: React.FC<{
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
 
+    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
             updatedEntities.forEach((entity) => {
@@ -71,9 +74,15 @@ const EntitiesPage: React.FC<{
     useEffect(() => {
         if (Array.isArray(updatedTemplateIds) && viewMode !== 'cards-view') {
             updatedTemplateIds.forEach((templateId) => {
-                const reference = templateTablesViewRef.current!.templateTablesRefs?.[templateId];
+                const childTemplateIds = Array.from(entityChildTemplates.values())
+                    .filter((child) => child.fatherTemplateId === templateId)
+                    .map((child) => child._id);
 
-                if (reference) reference.refreshServerSide();
+                [...childTemplateIds, templateId].map((tempId) => {
+                    const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
+
+                    if (reference) reference.refreshServerSide();
+                });
             });
         }
     }, [updatedTemplateIds, viewMode]);

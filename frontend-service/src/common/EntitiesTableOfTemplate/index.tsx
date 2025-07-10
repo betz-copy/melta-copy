@@ -276,7 +276,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onFilter,
             hasPermissionToTemplate,
             ignoreType,
-            refetch,
             hasInstances,
             multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
@@ -351,7 +350,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 onSuccess: () => {
                     setUpdatedTemplateIds?.([template.fatherTemplateId || template._id]);
-                    refetch?.();
                     toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
                 },
                 onSettled: () => {
@@ -376,7 +374,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
                     else toast.success(i18next.t('entityPage.activatedSuccessfully'));
                     setUpdatedTemplateIds?.([data.templateId]);
-                    refetch?.();
                 },
                 onError: (_err: AxiosError, { disabled }) => {
                     if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
@@ -567,11 +564,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
             ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
                 updateEntityRequestForMultiple(newEntityData.properties._id, newEntityData, ignoredRules),
-
             {
                 onSuccess: () => {
                     toast.success(i18next.t('wizard.entity.editedSuccessfully'));
-                    gridRef.current?.api.refreshServerSide();
+                    setUpdatedTemplateIds?.([template.fatherTemplateId || template._id]);
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
