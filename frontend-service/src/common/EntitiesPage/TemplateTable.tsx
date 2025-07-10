@@ -450,6 +450,7 @@ const TemplateTable = forwardRef<
                     menuRowButtonProps={userHasWritePermissions}
                     refetch={() => entitiesTableRef.current?.refreshServerSide()}
                     setUpdatedTemplateIds={setUpdatedTemplateIds}
+                    setUpdatedEntities={setUpdatedEntities}
                 />
             </Box>
 
@@ -464,14 +465,6 @@ const TemplateTable = forwardRef<
                             : { actionType: ActionTypes.CreateEntity, payload: undefined }),
                         onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
                         onSuccess: (entity: IEntity) => {
-                            if (editDialog.isEditMode) {
-                                entitiesTableRef.current?.updateRowDataClientSide(entity);
-                                setUpdatedEntities?.(
-                                    Object.values(entity.properties).filter(
-                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
-                                    ),
-                                );
-                            } else entitiesTableRef.current?.refreshServerSide();
                             setUpdatedTemplateIds?.([entity.templateId]);
                             setEditDialog((prev) => ({ ...prev, isOpen: false }));
                             setExternalErrors(initializedExternalErrors);
