@@ -322,7 +322,7 @@ const CreateChildTemplateDialog: React.FC<{
             if (hasFilters && hadFilters) {
                 const originalFilters = prop.filters;
                 const currentFilterObj = {
-                    $and: currentFilters.map((filter) => {
+                    $or: currentFilters.map((filter) => {
                         const filterResult = filterModelToFilterOfTemplatePerField(currentField.fieldValue, fieldName, filter!);
                         return filterResult;
                     }),
@@ -403,7 +403,7 @@ const CreateChildTemplateDialog: React.FC<{
 
                         const childProp: IChildTemplateProperty = {
                             ...(childTemplateViewType === ViewType.userPage && { isEditableByUser: fieldConfig.isEditableByUser || false }),
-                            ...(filterChips.length > 0 && { filters: { $and: filtersArray } }),
+                            ...(filterChips.length > 0 && { filters: { $or: filtersArray } }),
                             ...('defaultValue' in fieldConfig &&
                                 fieldConfig.defaultValue !== undefined && { defaultValue: fieldConfig.defaultValue }),
                         };
