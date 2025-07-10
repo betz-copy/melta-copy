@@ -46,6 +46,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 const {
     loadExcel: { excelExtension },
@@ -129,7 +130,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
-                        isChildTemplate: 'fatherTemplateId' in template,
+                        isChildTemplate: isChildTemplate(template),
                     },
                 },
             });

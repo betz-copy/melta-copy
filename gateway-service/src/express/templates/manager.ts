@@ -946,19 +946,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                 await Promise.all([
                     this.entityTemplateService.updateEntityTemplate(id, updatedTemplate),
-                    ...childTemplatesToHandleRemove.map((childTemplate) =>
+                    ...childTemplatesToHandleRemove.map(({ parentTemplate, category, ...restOfChildTemplate }) =>
                         this.entityTemplateService.updateChildTemplate(id, {
-                            parentTemplateId: childTemplate.parentTemplate._id,
-                            category: childTemplate.category._id,
-                            properties: childTemplate.properties,
-                            actions: childTemplate.actions,
-                            description: childTemplate.description,
-                            disabled: childTemplate.disabled,
-                            displayName: childTemplate.displayName,
-                            isFilterByCurrentUser: childTemplate.isFilterByCurrentUser,
-                            isFilterByUserUnit: childTemplate.isFilterByUserUnit,
-                            name: childTemplate.name,
-                            viewType: childTemplate.viewType,
+                            parentTemplateId: parentTemplate._id,
+                            category: category._id,
+                            ...restOfChildTemplate,
                         }),
                     ),
                 ]);
@@ -1183,24 +1175,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await Promise.all([
             ...childTemplates.map((childTemplate) => {
-                if (removedProperties.some((removedPropertyKey) => Object.keys(childTemplate.properties).includes(removedPropertyKey))) {
-                    const filteredProperties = childTemplate.properties;
-                    removedProperties.forEach((removedPropertyKey) => delete filteredProperties[removedPropertyKey]);
+                const { properties: childProperties, parentTemplate, category, ...restOfChildTemplate } = childTemplate;
+                if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties).includes(removedPropertyKey))) {
+                    removedProperties.forEach((removedPropertyKey) => delete childProperties[removedPropertyKey]);
 
                     childTemplatesToHandleRemove.push(childTemplate);
 
                     return this.entityTemplateService.updateChildTemplate(childTemplate._id, {
-                        parentTemplateId: childTemplate.parentTemplate._id,
-                        category: childTemplate.category._id,
-                        properties: { properties: dePopulateChildProperties(filteredProperties.properties) },
-                        actions: childTemplate.actions,
-                        description: childTemplate.description,
-                        disabled: childTemplate.disabled,
-                        displayName: childTemplate.displayName,
-                        isFilterByCurrentUser: childTemplate.isFilterByCurrentUser,
-                        isFilterByUserUnit: childTemplate.isFilterByUserUnit,
-                        name: childTemplate.name,
-                        viewType: childTemplate.viewType,
+                        parentTemplateId: parentTemplate._id,
+                        category: category._id,
+                        properties: { properties: dePopulateChildProperties(childProperties.properties) },
+                        ...restOfChildTemplate,
                     });
                 }
                 return null;

@@ -38,7 +38,7 @@ export function getDefaultFilterFromTemplate(
 
         const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
         result.push(filters);
-    }    
+    }
 
     return result.length > 0 ? { $and: result } : undefined;
 }

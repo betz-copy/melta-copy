@@ -4,19 +4,18 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
-import { InfiniteScroll } from '../InfiniteScroll';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { convertToBool } from '../../utils/convertStringToBool';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { getDefaultFilterFromTemplate } from './TemplateTablesView';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { transformChild } from '../../pages/Category';
 import { useUserStore } from '../../stores/user';
+import { convertToBool } from '../../utils/convertStringToBool';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isChildTemplate } from '../../utils/templates';
+import { InfiniteScroll } from '../InfiniteScroll';
+import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -130,9 +129,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;
-                            const template = childEntityTemplate
-                                ? transformChild(childEntityTemplate, entityTemplate, entityTemplate.category)
-                                : entityTemplate;
+                            const template = childEntityTemplate ?? entityTemplate;
 
                             return (
                                 <EntityCard
