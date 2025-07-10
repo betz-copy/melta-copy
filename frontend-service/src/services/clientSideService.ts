@@ -75,12 +75,12 @@ const getClientSideExpandedEntityByIdRequest = async (
 
 const createEntityClientSideRequest = async (
     entity: EntityWizardValues,
+    childTemplate: IMongoChildTemplatePopulated,
     ignoredRules?: IRuleBreach['brokenRules'],
-    childTemplate?: IMongoChildTemplatePopulated,
     clientSideUserEntity?: IEntity,
 ) => {
     const formData = new FormData();
-    const entityTemplateProperties = childTemplate!.parentTemplate.properties.properties;
+    const entityTemplateProperties = childTemplate.parentTemplate.properties.properties;
 
     const propertiesWithDefaults = childTemplate
         ? Object.entries(entityTemplateProperties).reduce((acc, [key]) => {
