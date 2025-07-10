@@ -91,7 +91,5 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
 };
 
 export const isChildTemplate = (template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): template is IMongoChildTemplatePopulated => {
-    return (
-        ('parentTemplateId' in template && Boolean(template.parentTemplateId)) || ('parentTemplate' in template && Boolean(template.parentTemplate))
-    );
+    return 'parentTemplate' in template && Boolean(template.parentTemplate);
 };
