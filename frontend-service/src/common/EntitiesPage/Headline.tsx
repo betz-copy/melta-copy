@@ -153,16 +153,17 @@ export const GlobalSearchBar: React.FC<{
         />
     );
 };
-const EntitiesPageHeadline: React.FC<{
+
+type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
     entityTemplateSelectCheckboxProps: {
         categories?: IMongoCategory[];
-        templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
-        setTemplates?: Dispatch<SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
-        templatesToShow: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
-        setTemplatesToShow: Dispatch<SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
+        templates: T[];
+        setTemplates?: Dispatch<SetStateAction<T[]>>;
+        templatesToShow: T[];
+        setTemplatesToShow: Dispatch<SetStateAction<T[]>>;
         isDraggableDisabled?: boolean;
     };
     excelExportProps?: {
@@ -177,7 +178,9 @@ const EntitiesPageHeadline: React.FC<{
     onAddEntity: (id: string) => void;
     refreshServerSide: (templateId: string) => void;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
-}> = ({
+};
+
+const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
     searchInput,
     setSearchInput,
     onSearch,
@@ -188,7 +191,7 @@ const EntitiesPageHeadline: React.FC<{
     onAddEntity,
     refreshServerSide,
     setUpdatedEntities,
-}) => {
+}: EntitiesPageHeadlineProps<T>) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();

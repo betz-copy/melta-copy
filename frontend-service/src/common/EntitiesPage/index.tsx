@@ -190,7 +190,9 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
                 {viewMode === 'cards-view' && (
                     <CardsView
                         ref={cardsViewRef}
-                        templateIds={templatesToShowCheckbox.map(({ parentTemplateId, _id }) => parentTemplateId || _id)}
+                        templateIds={templatesToShowCheckbox.map((template) =>
+                            isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        )}
                         templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                     />

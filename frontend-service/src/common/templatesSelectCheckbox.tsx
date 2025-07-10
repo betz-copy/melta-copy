@@ -7,20 +7,33 @@ import { IMongoCategory } from '../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { isChildTemplate } from '../utils/templates';
 
-const TemplatesSelectCheckbox: React.FC<{
+type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     title: string;
-    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
-    selectedTemplates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated)[]>>;
+    templates: T[];
+    selectedTemplates: T[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<T[]>>;
     categories: IMongoCategory[];
     isDraggableDisabled?: boolean;
-    setTemplates?: Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
+    setTemplates?: Dispatch<React.SetStateAction<T[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
     overrideSx?: object;
-}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar, overrideSx }) => {
+};
+
+const TemplatesSelectCheckbox = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+    title,
+    templates,
+    selectedTemplates,
+    setSelectedTemplates,
+    categories,
+    isDraggableDisabled,
+    setTemplates,
+    size,
+    toTopBar,
+    overrideSx,
+}: TemplatesSelectCheckboxProps<T>) => {
     return (
-        <SelectCheckbox<IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated, IMongoCategory>
+        <SelectCheckbox<T, IMongoCategory>
             treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
             title={title}
             filterIcon={title === i18next.t('entityTemplatesCheckboxLabel')}
