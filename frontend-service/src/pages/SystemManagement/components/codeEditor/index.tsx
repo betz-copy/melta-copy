@@ -16,7 +16,7 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { EntityTemplateType, IChildTemplateMap, TemplateItem } from '../../../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
-import { getFullChildTemplateProperties } from '../../../../utils/childTemplates';
+import { getChildPropertiesFiltered } from '../../../../utils/childTemplates';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { ActionManagement } from './actionsManagement';
@@ -52,9 +52,7 @@ const CodeEditorDialog: React.FC<{
         '// throw new CustomError("Your error message")',
         '',
         `${generateInterfaceWithRelationships(
-            type === EntityTemplateType.Parent
-                ? entityTemplate.properties.properties
-                : getFullChildTemplateProperties(entityTemplate, entityTemplate.parentTemplate),
+            type === EntityTemplateType.Parent ? entityTemplate.properties.properties : getChildPropertiesFiltered(entityTemplate),
             entityTemplate.name,
             queryClient,
         )}`,

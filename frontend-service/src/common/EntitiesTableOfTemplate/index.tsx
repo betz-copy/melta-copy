@@ -458,7 +458,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
                 const { disabled, ...rest } = params.api.getFilterModel();
-                const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
+                const filterModel = params.column.isVisible() ? rest : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
 

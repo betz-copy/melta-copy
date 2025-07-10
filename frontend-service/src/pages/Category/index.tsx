@@ -120,7 +120,7 @@ const Category: React.FC = () => {
 
     const [templateIdsToShowCheckbox, setTemplateIdsToShowCheckbox] = useLocalStorage<string[]>(
         `templatesToShow-${categoryId}`,
-        categoryTemplates.map((template) => template._id),
+        categoryTemplates.map((template) => template?._id ?? ''),
     );
 
     const templatesToShowCheckbox: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[] = templateIdsToShowCheckbox.map((id) =>

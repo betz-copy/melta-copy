@@ -32,6 +32,7 @@ const driverChildTemplate: IChildTemplate = {
     viewType: ViewType.userPage,
     isFilterByCurrentUser: true,
     isFilterByUserUnit: false,
+    filterByCurrentUserField: 'full_name',
 };
 
 const carChildTemplate: IChildTemplate = {

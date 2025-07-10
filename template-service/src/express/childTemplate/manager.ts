@@ -1,15 +1,15 @@
 import {
     DefaultManagerMongo,
-    NotFoundError,
     IChildTemplate,
     IChildTemplatePopulated,
-    IMongoChildTemplate,
     IChildTemplatePopulatedFromDb,
+    IMongoChildTemplate,
+    NotFoundError,
 } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
-import { populateChildTemplateWithParent } from '../../utils/childTemplate';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
+import populateChildTemplateWithParent from '../../utils/childTemplate';
 
 import ChildTemplateSchema from './model';
 
@@ -48,7 +48,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find(query)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
             .limit(limit)
             .skip(skip)
             .lean()
@@ -61,7 +61,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find()
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
             .lean()
             .exec();
 
@@ -72,7 +72,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .findById(id)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
             .orFail(new NotFoundError('Entity Child Template not found'))
             .lean()
             .exec();
@@ -80,12 +80,18 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         return populateChildTemplateWithParent(populatedWithParent);
     }
 
-    async createChildTemplate(childTemplate: IChildTemplate): Promise<IMongoChildTemplate> {
-        return this.model.create(childTemplate);
+    async createChildTemplate(childTemplate: IChildTemplate): Promise<IChildTemplatePopulated> {
+        const createdDoc = await this.model.create(childTemplate);
+        return this.getChildTemplateById(createdDoc._id);
     }
 
-    async updateChildTemplate(id: string, childTemplate: IChildTemplate): Promise<IMongoChildTemplate | null> {
-        return this.model.findByIdAndUpdate(id, childTemplate, { new: true }).orFail(new NotFoundError('Entity Child Template not found'));
+    async updateChildTemplate(id: string, childTemplate: IChildTemplate): Promise<IChildTemplatePopulated | null> {
+        // TODO: try to .populate with .findByIdAndUpdate
+        const updatedDoc = await this.model
+            .findByIdAndUpdate(id, childTemplate, { new: true })
+            .orFail(new NotFoundError('Entity Child Template not found'));
+
+        return this.getChildTemplateById(updatedDoc._id);
     }
 
     async updateChildrenDisplayNames(parentTemplateId: string, oldDisplayName: string, newDisplayName: string): Promise<void> {

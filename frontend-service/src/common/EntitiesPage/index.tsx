@@ -32,7 +32,7 @@ type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemp
     pageTitle: string;
 };
 
-const EntitiesPage: React.FC<EntitiesPageProps> = ({
+const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
     templates,
     setTemplates,
     categories,
@@ -42,7 +42,7 @@ const EntitiesPage: React.FC<EntitiesPageProps> = ({
     templatesToShowCheckbox,
     setTemplatesToShowCheckbox,
     isTemplatesCheckboxDraggableDisabled,
-}) => {
+}: EntitiesPageProps<T>) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
 
