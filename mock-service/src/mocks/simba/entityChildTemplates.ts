@@ -44,6 +44,7 @@ const driverEntityChildTemplate: IEntityChildTemplate = {
     viewType: ViewType.userPage,
     isFilterByCurrentUser: true,
     isFilterByUserUnit: false,
+    filterByCurrentUserField: 'full_name',
 };
 
 const carEntityChildTemplate: IEntityChildTemplate = {

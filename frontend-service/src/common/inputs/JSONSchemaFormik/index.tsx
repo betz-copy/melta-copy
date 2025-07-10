@@ -1,30 +1,30 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { memo, useEffect, useState } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
+import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
-import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
+import i18next from 'i18next';
+import { cloneDeep } from 'lodash';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
-import validator from '@rjsf/validator-ajv8';
-import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
-import { cloneDeep } from 'lodash';
+import React, { memo, useEffect, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { RjsfDateWidget, RjsfDateTimeWidget } from './RjsfDatesWidgets';
-import RjsfSelectWidget from './RjsfSelectWidget';
-import RjsfTextWidget from './RjsfStringWidget';
-import RjsfTextAreaWidget from './RjsfTextAreaWidget';
+import { IKartoffelUser } from '../../../interfaces/users';
 import './form.css';
-import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
-import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-import RjsfUserWidget from './RjsfUserWidget';
-import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
-import RjsfSignatureWidgets from './RjsfSignatureWidgets';
-import { IKartoffelUser } from '../../../interfaces/users';
 import RjsfCommentWidget from './RjsfCommentWidget';
+import { RjsfDateTimeWidget, RjsfDateWidget } from './RjsfDatesWidgets';
+import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
+import RjsfSelectWidget from './RjsfSelectWidget';
+import RjsfSignatureWidgets from './RjsfSignatureWidgets';
+import RjsfTextWidget from './RjsfStringWidget';
+import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
+import RjsfTextAreaWidget from './RjsfTextAreaWidget';
+import RjsfUserArrayWidget from './RjsfUserArrayWidget';
+import RjsfUserWidget from './RjsfUserWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -260,13 +260,12 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
-                const defaultValue = values.template?.properties?.properties?.[propertyKey].defaultValue ?? '';
+                const defaultValue = values.template?.properties?.properties?.[propertyKey].defaultValue ?? undefined;
                 if (propertySchema.archive) return {};
                 if (propertySchema.format === 'comment')
                     return {
                         'ui:options': {
                             hide: schema.hide.includes(propertyKey),
-                            defaultValue,
                         },
                         'ui:classNames': 'fullWidth',
                         'ui:widget': 'CommentWidget',

@@ -106,6 +106,12 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
+    entityTemplatesRow: {
+        areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',
+        areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
+        succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
+        failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+    },
     clientSidePage: {
         simba: {
             contactInfoCard: {
@@ -984,6 +990,7 @@ export default {
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         notMatchingToFilter: 'לא תואם לסינון',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
+        matchFilter: 'הערך לא תואם את הגדרות ה{{dialogType}}',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },
     propertyTypes: {
@@ -1712,6 +1719,10 @@ export default {
             create: 'צור תבנית בן',
             update: 'עדכן תבנית בן',
             cancel: 'ביטול',
+        },
+        dialogType: {
+            filter: 'סינון',
+            default: 'ברירת מחדל',
         },
     },
 };

@@ -10,11 +10,19 @@ export interface IFieldFilter {
     isEditableByUser?: boolean;
 }
 
+export enum ChipType {
+    Filter = 'filter',
+    Default = 'default',
+    EditByUser = 'editByUser',
+}
+
+export type AllowedChipType = Exclude<ChipType, ChipType.EditByUser>;
+
 export interface IFieldChip {
     fieldName: string;
-    chipType: 'filter' | 'default';
-    filterType?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
-    value?: string | number | boolean | Date | string[];
+    chipType: AllowedChipType;
+    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    defaultValue?: string | number | boolean | Date | string[];
 }
 
 export interface ITemplateFieldsFilters {

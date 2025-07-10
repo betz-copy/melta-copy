@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useMemo } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
@@ -9,7 +9,7 @@ import { _debounce } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, IFilterGroup, IFilterOfTemplate } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 
@@ -28,34 +28,19 @@ export function getDefaultFilterFromTemplate(
 ) {
     if (!isChildTemplate) return undefined;
 
-    const result: { $and } = { $and: [{ disabled: { $eq: false } }] };
+    const result: (IFilterOfTemplate | IFilterGroup[])[] = [];
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         if (prop.isFilterByCurrentUser) {
-            result.$and!.push({ [key]: { $eq: currentUserKartoffelId } });
+            result.push({ [key]: { $eq: currentUserKartoffelId } });
         }
         if (!prop.filters) continue;
 
         const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+        result.push(filters);
+    }    
 
-        if ('$and' in filters) {
-            const andFilters = filters.$and as any[];
-            const transformedFilters = andFilters
-                .map((filter) => {
-                    const fieldFilter = filter[key];
-                    return fieldFilter ? { [key]: fieldFilter } : null;
-                })
-                .filter(Boolean);
-
-            if (transformedFilters.length > 0) {
-                result.$and!.push(...transformedFilters);
-            }
-        } else {
-            result.$and!.push({ [key]: filters });
-        }
-    }
-
-    return result;
+    return result.length > 0 ? { $and: result } : undefined;
 }
 
 const TemplateTablesViewResults = forwardRef<
@@ -107,11 +92,19 @@ const TemplateTablesViewResults = forwardRef<
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
+    const childTemplateDefaultFilters = useMemo(() => {
+        const filters: Record<string, any> = {};
+        templates.forEach((template) => {
+            const isChildTemplate = !!template.fatherTemplateId;
+            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
+        });
+        return filters;
+    }, [templates, currentUserKartoffelId]);
+
     return (
         <Grid container direction="column" spacing={1}>
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 const isChildTemplate = !!template.fatherTemplateId;
-                const defaultFilter = getDefaultFilterFromTemplate(template, isChildTemplate, currentUserKartoffelId);
                 return (
                     <Grid item key={template._id}>
                         <TemplateTable
@@ -127,7 +120,7 @@ const TemplateTablesViewResults = forwardRef<
                             page={pageType}
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
-                            defaultFilter={defaultFilter}
+                            defaultFilter={childTemplateDefaultFilters[template._id]}
                             childTemplateId={isChildTemplate ? template._id : undefined}
                         />
                     </Grid>
