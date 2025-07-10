@@ -29,6 +29,7 @@ import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsProperti
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { isChildTemplate } from '../../utils/templates';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated & { parentTemplateId?: string };
@@ -56,8 +57,8 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
 
-    const parentTemplateId = template.parentTemplateId ?? template._id;
-    const childTemplateId = template.parentTemplateId ? template._id : undefined;
+    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
     const currentUser = useUserStore((state) => state.user);
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
