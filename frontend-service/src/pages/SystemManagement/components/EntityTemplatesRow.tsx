@@ -452,7 +452,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     </Grid>
                     {Object.entries(
                         childTemplates?.get(entityTemplate._id)
-                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                             : entityTemplate.properties?.properties || {},
                     )
                         .filter(([, value]) => !isFile(value))
@@ -490,7 +490,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     </Grid>
                     {Object.entries(
                         childTemplates?.get(entityTemplate._id)
-                            ? childTemplates.get(entityTemplate._id)?.properties || {}
+                            ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                             : entityTemplate.properties?.properties || {},
                     )
                         .filter(([, value]) => isFile(value))
@@ -822,7 +822,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
                         {Array.from(disabledParentTemplates.values()).map((parentTemplate) => {
                             const childTemplatesForParent = categoryChildTemplatesFiltered.filter(
-                                (child) => child.parentTemplate === parentTemplate._id,
+                                (child) => child.parentTemplate._id === parentTemplate._id,
                             );
 
                             return (

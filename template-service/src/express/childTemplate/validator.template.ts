@@ -2,13 +2,13 @@ import {
     addPropertyToRequest,
     DefaultController,
     EntityTemplateType,
+    getChildPropertiesFiltered,
     IMongoChildTemplate,
     IMongoEntityTemplatePopulated,
     TemplateItem,
 } from '@microservices/shared';
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import getFullChildTemplateProperties from '../../utils/childTemplate';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 import EntityTemplateManager from '../entityTemplate/manager';
@@ -29,9 +29,8 @@ class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, Chil
 
         const entityParentTemplates = await this.entityTemplateManager.getTemplates({ limit: 0, skip: 0 });
         const parentTemplatesMap = new Map(entityParentTemplates.map((template) => [template._id, template]));
-        const baseParentTemplate = parentTemplatesMap.get(baseChildTemplate.parentTemplate._id)!;
 
-        const entityProperties = getFullChildTemplateProperties(baseChildTemplate, baseParentTemplate.properties.properties);
+        const entityProperties = getChildPropertiesFiltered(baseChildTemplate);
         const entityPropertiesQueue = [entityProperties];
         const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
             [templateId, { type: EntityTemplateType.Child, metaData: baseChildTemplate }],

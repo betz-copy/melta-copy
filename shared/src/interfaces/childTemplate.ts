@@ -41,7 +41,7 @@ export interface IMongoChildTemplate extends IChildTemplate, Document<string> {
 }
 
 export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
-    parentTemplate: IFullMongoEntityTemplate;
+    parentTemplateId: IFullMongoEntityTemplate;
     category: IMongoCategory;
 }
 
@@ -54,7 +54,8 @@ export interface ISearchChildTemplatesBody extends ISearchBody {
 // When populating child, it will ask the parent for all of its properties.
 export interface IChildTemplatePopulated
     extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
-        Omit<IChildTemplatePopulatedFromDb, 'properties'> {
+        Omit<IChildTemplatePopulatedFromDb, 'properties' | 'parentTemplateId'> {
+    parentTemplate: IFullMongoEntityTemplate;
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
@@ -92,9 +93,9 @@ export interface IChildTemplateWithConstraints extends IChildTemplate {
     properties: IChildTemplate['properties'] & { required: string[] };
 }
 
-export interface IMongoChildTemplateWithConstraints extends IChildTemplatePopulatedFromDb {
+export interface IMongoChildTemplateWithConstraints extends IChildTemplatePopulated {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
-    properties: IChildTemplate['properties'] & { required: string[] };
+    properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
 
 export interface IChildTemplateWithConstraintsPopulated extends IChildTemplatePopulated {
@@ -102,9 +103,9 @@ export interface IChildTemplateWithConstraintsPopulated extends IChildTemplatePo
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
 
-export interface IMongoChildTemplateWithConstraintsPopulated extends IChildTemplatePopulatedFromDb {
+export interface IMongoChildTemplateWithConstraintsPopulated extends IChildTemplatePopulated {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
-    properties: IChildTemplate['properties'] & { required: string[] };
+    properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
 
 export type IChildTemplateWithConstraintsMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;

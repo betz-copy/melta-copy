@@ -74,13 +74,17 @@ const CreateChildTemplateDialog: React.FC<{
             const initialFields: ITemplateFieldsFilters = {};
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
-                const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
-
+                const isSelected = (childTemplate ? key in childTemplate.properties.properties : false) || isRequired;
+                const property = childTemplate?.properties.properties[key];
                 initialFields[key] = {
                     selected: isSelected,
                     fieldValue: value,
-                    ...(childTemplate?.properties[key]?.defaultValue && { defaultValue: childTemplate.properties[key].defaultValue }),
-                    ...(childTemplate?.properties[key]?.isEditableByUser && { isEditableByUser: childTemplate.properties[key].isEditableByUser }),
+                    ...(property?.defaultValue && {
+                        defaultValue: property.defaultValue,
+                    }),
+                    ...(property?.isEditableByUser && {
+                        isEditableByUser: property.isEditableByUser,
+                    }),
                 };
             });
             setTemplateFieldsFilters(initialFields);
@@ -91,7 +95,7 @@ const CreateChildTemplateDialog: React.FC<{
     useEffect(() => {
         if (childTemplate) {
             const chips: IFieldChip[] = [];
-            Object.entries(childTemplate.properties).forEach(([fieldName, prop]) => {
+            Object.entries(childTemplate.properties.properties).forEach(([fieldName, prop]) => {
                 if (prop.filters) {
                     try {
                         const parsedFilters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
@@ -278,7 +282,7 @@ const CreateChildTemplateDialog: React.FC<{
             return;
         }
 
-        const originalFields = new Set(Object.keys(childTemplate.properties));
+        const originalFields = new Set(Object.keys(childTemplate.properties.properties));
         const currentFields = new Set(
             Object.entries(templateFieldsFilters)
                 .filter(([_, field]) => field.selected)
@@ -290,7 +294,7 @@ const CreateChildTemplateDialog: React.FC<{
 
         const hasCategoryChanges = selectedCategory?._id !== childTemplate.category._id;
 
-        const hasFilterOrDefaultChanges = Object.entries(childTemplate.properties).some(([fieldName, prop]) => {
+        const hasFilterOrDefaultChanges = Object.entries(childTemplate.properties.properties).some(([fieldName, prop]) => {
             const currentField = templateFieldsFilters[fieldName];
             if (!currentField?.selected) return true;
 

@@ -1,13 +1,11 @@
-import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
 import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '../interfaces/childTemplate';
-import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
 
 export const isChildTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,
 ): template is IMongoChildTemplateWithConstraintsPopulated => {
-    return (
-        ('parentTemplateId' in template && Boolean(template.parentTemplateId)) || ('parentTemplate' in template && Boolean(template.parentTemplate))
-    );
+    return 'parentTemplate' in template && Boolean(template.parentTemplate);
 };
 
 const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated): ISearchFilter => {
@@ -47,62 +45,47 @@ const parseFilterObject = (filters: any): any | null => {
     return typeof filters === 'object' && filters !== null ? filters : null;
 };
 
-const getFilteredEnum = (parentProp: IEntitySingleProperty, filterObj: any): string[] | undefined => {
-    if (!parentProp.enum || !filterObj?.$and) return parentProp.enum;
-
+const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
     const enumEquals = filterObj.$and.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
 
-    return enumEquals.length > 0 ? parentProp.enum.filter((val) => enumEquals.includes(val)) : parentProp.enum;
+    return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
 };
 
-const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any): string[] | undefined => {
-    if (parentProp.type !== 'array' || !parentProp.items?.enum || !filterObj?.$and) return parentProp.items?.enum;
-
+const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
     const multiEnumIn = filterObj.$and
         .map((condition: any) => condition.multiEnum?.$in)
         .filter((val: any): val is string[] => Array.isArray(val))
         .flat();
 
-    return multiEnumIn.length > 0 ? parentProp.items.enum.filter((val) => multiEnumIn.includes(val)) : parentProp.items.enum;
+    return multiEnumIn.length > 0 ? enumVals.filter((val) => multiEnumIn.includes(val)) : enumVals;
 };
 
-const getFullChildTemplateProperties = (
-    childTemplate: IChildTemplatePopulated,
-    parentTemplate: IMongoEntityTemplate,
-): Record<string, IEntitySingleProperty> => {
-    const result: Record<string, IEntitySingleProperty> = {};
+const getChildPropertiesFiltered = (childTemplate: IChildTemplatePopulated): Record<string, IEntitySingleProperty> => {
+    const properties: Record<string, IEntitySingleProperty> = {};
 
-    for (const key of Object.keys(childTemplate.properties.properties)) {
-        const parentProp = parentTemplate.properties.properties[key];
-        const childProp = childTemplate.properties.properties[key];
+    for (const [key, value] of Object.entries(childTemplate.properties.properties)) {
+        const filterObj = parseFilterObject(value.filters);
 
-        const filterObj = parseFilterObject(childProp?.filters);
+        let newValue = { ...value };
 
-        if (!filterObj?.$and) {
-            result[key] = parentProp;
-            // eslint-disable-next-line no-continue
-            continue;
+        if (value.enum && filterObj) {
+            newValue.enum = getFilteredEnum(value.enum, filterObj);
         }
 
-        if (parentProp?.enum) {
-            result[key] = {
-                ...parentProp,
-                enum: getFilteredEnum(parentProp, filterObj),
-            };
-        } else if (parentProp?.type === 'array' && parentProp.items?.enum) {
-            result[key] = {
-                ...parentProp,
+        if (value.type === 'array' && value.items?.enum && filterObj) {
+            newValue = {
+                ...value,
                 items: {
-                    ...parentProp.items,
-                    enum: getFilteredMultiEnum(parentProp, filterObj),
+                    ...value.items,
+                    enum: getFilteredMultiEnum(value.items.enum, filterObj),
                 },
             };
-        } else {
-            result[key] = parentProp;
         }
+
+        properties[key] = newValue;
     }
 
-    return result;
+    return properties;
 };
 
 const dePopulateChildProperties = (
@@ -118,4 +101,4 @@ const dePopulateChildProperties = (
     }, {});
 };
 
-export { getFilterFromChildTemplate, getFullChildTemplateProperties, dePopulateChildProperties };
+export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate };
