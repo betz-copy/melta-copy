@@ -169,10 +169,6 @@ const CreateOrEditEntityDetails: React.FC<{
             initialValues={initialValues}
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
-
-                // const allTouched = markTouched(values);
-                // await formikHelpers.setTouched(allTouched);
-
                 await mutationPromiseToastify(values);
                 if (!draftId) return;
 
@@ -273,33 +269,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         type="submit"
                                                         variant="contained"
                                                         startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                        onClick={() => {
-                                                            console.log('llll', { errors });
-                                                            // const allFieldKeys = Object.keys(initialValues.template.properties.properties);
-
-                                                            // // Build a touched object:
-                                                            // const touchedObject = allFieldKeys.reduce((acc, key) => {
-                                                            //     acc[`properties.${key}`] = true;
-                                                            //     return acc;
-                                                            // }, {} as Record<string, boolean>);
-
-                                                            // const nestedTouched = {
-                                                            //     properties: Object.fromEntries(
-                                                            //         Object.entries(touchedObject)
-                                                            //             .filter(([key]) => key.startsWith('properties.'))
-                                                            //             .map(([key, value]) => [key.replace('properties.', ''), value]),
-                                                            //     ),
-                                                            // };
-                                                            // console.log({ errors, nestedTouched });
-
-                                                            Object.keys(errors).length > 0 //|| externalErrors
-                                                                ? // ? setTouched((prev: any) => ({
-                                                                  //   ...prev,
-                                                                  //   ...nestedTouched,
-                                                                  //   }))
-                                                                  ''
-                                                                : setTimeout(() => handleClose(), 5000);
-                                                        }}
+                                                        onClick={() =>
+                                                            Object.keys(errors).length > 0
+                                                                ? ''
+                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
+                                                        }
                                                         disabled={!dirty || isLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}

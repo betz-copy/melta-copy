@@ -13,7 +13,6 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         this.templateManager = new TemplatesManager(workspaceId);
     }
 
-    // todo shir: check that its ok after itay refactor
     private isItemAllowed(
         dashboardItem: MongoDashboardItemPopulated,
         allowedTemplateIds: Set<string>,

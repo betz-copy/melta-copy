@@ -17,6 +17,7 @@ export const evaluateOperator = (op: string, actual: any, expected: any): boolea
             return Array.isArray(expected) && expected.includes(actual);
         case '$rgx':
             try {
+                if (typeof actual !== 'string') return false;
                 return new RegExp(expected).test(actual);
             } catch {
                 return false;
@@ -33,8 +34,6 @@ export const evaluateOperator = (op: string, actual: any, expected: any): boolea
 };
 
 export const matchValueAgainstFilter = (data: any, filter: any): boolean => {
-    console.log({data, filter});
-    
     if ('$and' in filter) return filter.$and.every((f: any) => matchValueAgainstFilter(data, f));
     if ('$or' in filter) return filter.$or.some((f: any) => matchValueAgainstFilter(data, f));
 
