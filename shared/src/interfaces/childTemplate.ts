@@ -5,6 +5,7 @@ import {
     IFullMongoEntityTemplate,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraints,
     IProperties,
     ISearchBody,
 } from './entityTemplate';
@@ -98,9 +99,10 @@ export interface IMongoChildTemplateWithConstraints extends IChildTemplatePopula
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
 
-export interface IChildTemplateWithConstraintsPopulated extends IChildTemplatePopulated {
+export interface IChildTemplateWithConstraintsPopulated extends Omit<IChildTemplatePopulated, 'parentTemplate'> {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
+    parentTemplate: IMongoEntityTemplateWithConstraints;
 }
 
 export interface IMongoChildTemplateWithConstraintsPopulated extends IChildTemplatePopulated {

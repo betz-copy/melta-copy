@@ -45,6 +45,9 @@ import {
     UploadedFile,
     IChildTemplatePopulated,
     dePopulateChildProperties,
+    isChildTemplate,
+    IFullMongoEntityTemplate,
+    IChildTemplateWithConstraintsPopulated,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -431,7 +434,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // entity templates
-    private populateTemplateConstraints<T extends IMongoEntityTemplatePopulated | IChildTemplatePopulated>(
+    private populateTemplateConstraints<T extends IMongoEntityTemplatePopulated | IChildTemplatePopulated | IFullMongoEntityTemplate>(
         entityTemplate: T,
         requiredConstraints: string[],
         uniqueConstraints: IUniqueConstraintOfTemplate[],
@@ -446,13 +449,31 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
+    async getAndPopulateAllTemplatesConstraints(
+        entityTemplates: IChildTemplatePopulated[],
+        allConstraints?: IConstraintsOfTemplate[],
+    ): Promise<IChildTemplateWithConstraintsPopulated[]>;
+
+    async getAndPopulateAllTemplatesConstraints(
+        entityTemplates: IMongoEntityTemplatePopulated[],
+        allConstraints?: IConstraintsOfTemplate[],
+    ): Promise<IMongoEntityTemplateWithConstraintsPopulated[]>;
+
     async getAndPopulateAllTemplatesConstraints<T extends IMongoEntityTemplatePopulated | IChildTemplatePopulated>(
         entityTemplates: T[],
         allConstraints?: IConstraintsOfTemplate[],
-    ) {
+    ): Promise<T[]> {
         const constraints = allConstraints || (await this.instancesService.getAllConstraints());
         const entityTemplatesWithConstraints = entityTemplates.map((entityTemplate) => {
             const constraintsOfTemplate = constraints.find(({ templateId }) => templateId === entityTemplate._id);
+
+            if (isChildTemplate(entityTemplate)) {
+                entityTemplate.parentTemplate = this.populateTemplateConstraints(
+                    entityTemplate.parentTemplate,
+                    constraintsOfTemplate?.requiredConstraints ?? [],
+                    constraintsOfTemplate?.uniqueConstraints ?? [],
+                );
+            }
             return this.populateTemplateConstraints(
                 entityTemplate,
                 constraintsOfTemplate?.requiredConstraints ?? [],
@@ -460,7 +481,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             );
         });
 
-        return entityTemplatesWithConstraints;
+        return entityTemplatesWithConstraints as T[];
     }
 
     private async updateEntityTemplateScope(
@@ -499,8 +520,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, { [this.workspaceId]: updatedPermissions });
     }
 
-    async updateEntityTemplateAction(templateId: string, actions: string, isChildTemplate?: boolean): Promise<IMongoEntityTemplatePopulated> {
-        if (isChildTemplate) return this.entityTemplateService.updateChildEntityTemplateAction(templateId, actions);
+    async updateEntityTemplateAction(templateId: string, actions: string, isChild?: boolean): Promise<IMongoEntityTemplatePopulated> {
+        if (isChild) return this.entityTemplateService.updateChildEntityTemplateAction(templateId, actions);
         return this.entityTemplateService.updateEntityTemplateAction(templateId, actions);
     }
 

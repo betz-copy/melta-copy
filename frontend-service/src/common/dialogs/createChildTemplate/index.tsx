@@ -89,7 +89,7 @@ const CreateChildTemplateDialog: React.FC<{
                 };
             });
             setTemplateFieldsFilters(initialFields);
-            setSelectedCategory(entityTemplate?.category);
+            setSelectedCategory(childTemplate?.category ?? entityTemplate?.category);
         }
     }, [entityTemplate, childTemplate, categories]);
 
