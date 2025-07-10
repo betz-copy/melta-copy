@@ -9,7 +9,6 @@ import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFil
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
-import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
 import { environment } from '../../../globals';
@@ -301,44 +300,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     fieldName,
                                     chipType: 'filter' as const,
                                     filterType: structuredClone(fieldValue),
-                                    value:
-                                        'filter' in fieldValue
-                                            ? fieldValue.filter
-                                            : 'values' in fieldValue
-                                            ? fieldValue.values
-                                            : 'dateFrom' in fieldValue
-                                            ? fieldValue.dateFrom
-                                            : '',
                                 };
 
                                 return [...prev, newChip];
                             });
                         } else if (dialogType === 'default') {
                             if (fieldValue === undefined || fieldValue === null || fieldValue === '') return;
-
-                            const fieldSchema = entityTemplate.properties.properties[fieldName];
-                            const fakeTemplateSchema = {
-                                ...entityTemplate.properties,
-                                required: [],
-                                properties: {
-                                    [fieldName]: fieldSchema,
-                                },
-                            };
-
-                            const formData = { [fieldName]: fieldValue };
-
-                            const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
-
-                            if (ajvErrors && ajvErrors[fieldName]) {
-                                setTemplateFieldsFilters((prev) => ({
-                                    ...prev,
-                                    [fieldName]: {
-                                        ...prev[fieldName],
-                                        error: ajvErrors[fieldName],
-                                    },
-                                }));
-                                return;
-                            }
 
                             setTemplateFieldsFilters((prev) => ({
                                 ...prev,
@@ -348,24 +315,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 },
                             }));
 
-                            const propertySchema = entityTemplate.properties.properties[fieldName];
-                            const isDateField = propertySchema.format === 'date' || propertySchema.format === 'date-time';
-                            const isUsersArray = propertySchema.type === 'array' && propertySchema.items?.format === 'user';
-
-                            let displayValue = fieldValue;
-                            if (isDateField && fieldValue) {
-                                try {
-                                    displayValue = new Date(fieldValue).toLocaleDateString('en-uk');
-                                } catch (e) {
-                                    console.error('Error formatting date:', e);
-                                    displayValue = fieldValue;
-                                }
-                            } else if (Array.isArray(fieldValue)) {
-                                if (isUsersArray) displayValue = fieldValue.map(({ fullName }) => fullName).join(', ');
-                                else displayValue = fieldValue.join(', ');
-                            } else if (typeof fieldValue === 'boolean') {
-                                displayValue = fieldValue ? 'true' : 'false';
-                            }
+                            const displayValue = getFormattedDefaultValue(fieldValue);
 
                             setFieldChips((prev) => [
                                 ...prev.filter((chip) => !(chip.fieldName === fieldName && chip.chipType === 'default')),

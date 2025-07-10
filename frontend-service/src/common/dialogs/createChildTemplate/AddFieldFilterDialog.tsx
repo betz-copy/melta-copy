@@ -100,6 +100,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     enumOptions={propEnum}
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    error={!!currentFieldError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -125,6 +127,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     isBooleanSelect
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    error={!!currentFieldError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -137,6 +141,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     enumOptions={items.enum}
                     readOnly={readOnly}
+                    isError={!!currentFieldError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -151,6 +157,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
                     isUsersArray
+                    isError={!!currentFieldError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -168,9 +176,9 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 handleFilterTypeChange={handleFilterTypeChange}
                 type={type}
                 readOnly={readOnly}
-                {...defaultFilterProps}
                 error={!!currentFieldError}
                 helperText={currentFieldError}
+                {...defaultFilterProps}
             />
         );
     };
@@ -251,7 +259,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} display="flex" justifyContent="center">
-                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={!isValueValid()}>
+                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={!isValueValid() || !!currentFieldError}>
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>
