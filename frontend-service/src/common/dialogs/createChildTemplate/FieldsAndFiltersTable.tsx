@@ -30,7 +30,7 @@ const getFormattedDefaultValue = (value: string | number | boolean | Date | stri
     if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
     if (typeof value === 'string') {
         const isDateTime = dateOrDateTimeRegex.test(value);
-        return isDateTime ? new Date(value).toLocaleString('he-IL') : value;
+        return isDateTime ? new Date(value).toLocaleDateString('he-IL') : value;
     }
     return String(value);
 };
