@@ -244,6 +244,7 @@ export default {
             printOptions: 'הגדרות הדפסה',
             accompanyingFiles: 'קבצים נלווים',
             relationships: 'קשרים',
+            noPreviewProperties: 'אין מאפייני תצוגה מקדימה',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
