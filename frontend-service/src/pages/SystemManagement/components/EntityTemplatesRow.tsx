@@ -33,7 +33,7 @@ import { PermissionScope } from '../../../interfaces/permissions';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { updateCategoryRequest, updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
-import { deleteEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
+import { deleteChildTemplate } from '../../../services/templates/childTemplatesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
@@ -998,7 +998,7 @@ const EntityTemplatesRow: React.FC = () => {
         },
     );
 
-    const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteEntityChildTemplate(id), {
+    const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteChildTemplate(id), {
         onSuccess: async () => {
             queryClient.invalidateQueries('getChildEntityTemplates');
             queryClient.invalidateQueries('getEntityTemplates');

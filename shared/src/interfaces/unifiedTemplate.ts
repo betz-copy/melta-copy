@@ -12,7 +12,7 @@
 //     IMongoEntityTemplateWithConstraintsPopulated,
 //     WithConstraints,
 // } from './entityTemplate';
-// import { IChildTemplate, IMongoChildTemplate, IEntityChildTemplatePopulated, ViewType } from './entityChildTemplate';
+// import { IChildTemplate, IMongoChildTemplate, IChildTemplatePopulated, ViewType } from './childTemplate';
 
 // export interface IUnifiedTemplate {
 //     name: string;
@@ -61,16 +61,16 @@
 
 // export type IUnifiedTemplateWithConstraints<T extends 'parent' | 'child' = 'parent'> = T extends 'parent'
 //     ? IEntityTemplateWithConstraints
-//     : WithConstraints<IEntityChildTemplatePopulated>;
+//     : WithConstraints<IChildTemplatePopulated>;
 
 // export type IMongoUnifiedTemplateWithConstraints<T extends 'parent' | 'child' = 'parent'> = T extends 'parent'
 //     ? IMongoEntityTemplateWithConstraints
-//     : WithConstraints<IEntityChildTemplatePopulated> & { _id: string };
+//     : WithConstraints<IChildTemplatePopulated> & { _id: string };
 
 // export type IUnifiedTemplateWithConstraintsPopulated<T extends 'parent' | 'child' = 'parent'> = T extends 'parent'
 //     ? IEntityTemplateWithConstraintsPopulated
-//     : WithConstraints<IEntityChildTemplatePopulated>;
+//     : WithConstraints<IChildTemplatePopulated>;
 
 // export type IMongoUnifiedTemplateWithConstraintsPopulated<T extends 'parent' | 'child' = 'parent'> = T extends 'parent'
 //     ? IMongoEntityTemplateWithConstraintsPopulated
-//     : WithConstraints<IEntityChildTemplatePopulated> & { _id: string; createdAt: Date; updatedAt: Date };
+//     : WithConstraints<IChildTemplatePopulated> & { _id: string; createdAt: Date; updatedAt: Date };

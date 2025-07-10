@@ -36,7 +36,7 @@ const ChooseTemplate: React.FC<{
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const isAuthorized = (templateId: string, categoryId: string) =>
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, categoryId, templateId, PermissionScope.write);
@@ -47,7 +47,7 @@ const ChooseTemplate: React.FC<{
             : isAuthorized(template._id, template.category._id),
     );
 
-    const filterChildEntityTemplate = Array.from(entityChildTemplates.values())
+    const filterChildEntityTemplate = Array.from(childTemplates.values())
         .filter((child) => {
             const hasValidCategory = categoryId ? child.category._id === categoryId : isAuthorized(child._id, child.category._id);
 

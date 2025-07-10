@@ -18,14 +18,14 @@ const EntityTemplateCheckboxPermission: React.FC<{
     permissionType: permissionTypeCheckboxProps;
     viewMode: boolean;
     categoryPermissions: IPermissionMetadata<
-        [InstancesSubclassesPermissions.entityTemplates, InstancesSubclassesPermissions.entityChildTemplates],
+        [InstancesSubclassesPermissions.entityTemplates, InstancesSubclassesPermissions.childTemplates],
         IDefaultPermissionDetails
     >;
     isParentTemplateInDifferentCategory?: boolean;
 }> = ({ entityTemplate, changePermissions, disabled, permissionType, viewMode, categoryPermissions, isParentTemplateInDifferentCategory }) => {
     const theme = useTheme();
     const [openChildTemplateList, setOpenChildTemplateList] = useState(false);
-    const childTemplates = entityTemplate.entityChildTemplates;
+    const childTemplates = entityTemplate.childTemplates;
     const hasChildTemplates = childTemplates && childTemplates.length > 0;
 
     return (
@@ -121,18 +121,16 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                             <PermissionScopeBtn
                                                 viewMode={viewMode}
                                                 defaultChecked={
-                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates?.[
-                                                        childTemplateCheck.id
-                                                    ]?.scope !== undefined || permissionType.read.checked
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.childTemplates?.[childTemplateCheck.id]
+                                                        ?.scope !== undefined || permissionType.read.checked
                                                 }
                                                 onChange={(_event, checked) =>
                                                     changePermissions(checked, entityTemplate.id, PermissionScope.read, childTemplateCheck.id)
                                                 }
                                                 disabled={
                                                     disabled ||
-                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates?.[
-                                                        childTemplateCheck.id
-                                                    ]?.scope === PermissionScope.write ||
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.childTemplates?.[childTemplateCheck.id]
+                                                        ?.scope === PermissionScope.write ||
                                                     permissionType.write.checked
                                                 }
                                                 checkboxSx={{ width: '17px', height: '17px' }}
@@ -143,9 +141,8 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                             <PermissionScopeBtn
                                                 viewMode={viewMode}
                                                 defaultChecked={
-                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates?.[
-                                                        childTemplateCheck.id
-                                                    ]?.scope === PermissionScope.write || permissionType.write.checked
+                                                    categoryPermissions?.entityTemplates?.[entityTemplate.id]?.childTemplates?.[childTemplateCheck.id]
+                                                        ?.scope === PermissionScope.write || permissionType.write.checked
                                                 }
                                                 onChange={(_event, checked) =>
                                                     changePermissions(checked, entityTemplate.id, PermissionScope.write, childTemplateCheck.id)

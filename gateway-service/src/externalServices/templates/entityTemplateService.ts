@@ -3,7 +3,7 @@ import {
     ICategory,
     ICategoryOrderConfig,
     IChildTemplate,
-    IEntityChildTemplatePopulated,
+    IChildTemplatePopulated,
     IEntityTemplate,
     IMongoBaseConfig,
     IMongoCategory,
@@ -216,12 +216,12 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 
     async getAllChildTemplates() {
-        const { data } = await this.api.get<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
+        const { data } = await this.api.get<IChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
         return data;
     }
 
@@ -233,11 +233,11 @@ class EntityTemplateService extends TemplatesManagerService {
         skip?: number;
         parentTemplatesIds?: string[];
     }) {
-        const { data } = await this.api.post<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
+        const { data } = await this.api.post<IChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
         return data;
     }
 
-    async updateEntityChildTemplate(id: string, childTemplate: IChildTemplate) {
+    async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
         const { data } = await this.api.put<IMongoChildTemplate | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
         return data;
     }

@@ -1,16 +1,16 @@
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
-import { IChildTemplate, IEntityChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '../interfaces/entityChildTemplate';
+import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '../interfaces/childTemplate';
 import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
 
 export const isChildTemplate = (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IEntityChildTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,
 ): template is IMongoChildTemplateWithConstraintsPopulated => {
     return (
         ('parentTemplateId' in template && Boolean(template.parentTemplateId)) || ('parentTemplate' in template && Boolean(template.parentTemplate))
     );
 };
 
-const getFilterFromChildTemplate = (childTemplate: IEntityChildTemplatePopulated): ISearchFilter => {
+const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated): ISearchFilter => {
     return Object.entries(childTemplate.properties.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
         (acc, [key, prop]) => {
             if (!prop.filters) return acc;
@@ -67,7 +67,7 @@ const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any)
 };
 
 const getFullChildTemplateProperties = (
-    childTemplate: IEntityChildTemplatePopulated,
+    childTemplate: IChildTemplatePopulated,
     parentTemplate: IMongoEntityTemplate,
 ): Record<string, IEntitySingleProperty> => {
     const result: Record<string, IEntitySingleProperty> = {};
@@ -106,7 +106,7 @@ const getFullChildTemplateProperties = (
 };
 
 const dePopulateChildProperties = (
-    childProperties: IEntityChildTemplatePopulated['properties']['properties'],
+    childProperties: IChildTemplatePopulated['properties']['properties'],
 ): IChildTemplate['properties']['properties'] => {
     return Object.entries(childProperties).reduce((acc, [key, value]) => {
         acc[key] = {

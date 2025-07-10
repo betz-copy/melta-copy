@@ -79,7 +79,7 @@ export const getChangedCategoryPermissions = (
             if (categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope === PermissionScope.write)
                 newTemplatePermission[key] = {
                     scope: PermissionScope.write,
-                    entityChildTemplates: categoriesPermissions?.[id]?.entityTemplates?.[key]?.entityChildTemplates ?? {},
+                    childTemplates: categoriesPermissions?.[id]?.entityTemplates?.[key]?.childTemplates ?? {},
                 };
         });
     }
@@ -109,7 +109,7 @@ const changeSpecificTemplate = (
                 ...categoriesPermissions[categoryId]?.entityTemplates,
                 [templateId]: {
                     scope: newScope,
-                    entityChildTemplates: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates ?? {},
+                    childTemplates: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.childTemplates ?? {},
                 },
             },
         };
@@ -128,13 +128,13 @@ const changeSpecificChildTemplate = (
 ) => {
     const categoriesPermissions = { ...permissions };
     const newScope = getNewScope(
-        categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates?.[childTemplateId]?.scope,
+        categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.childTemplates?.[childTemplateId]?.scope,
         scope,
         checked,
     );
 
     if (!newScope) {
-        delete categoriesPermissions[categoryId].entityTemplates[templateId].entityChildTemplates[childTemplateId];
+        delete categoriesPermissions[categoryId].entityTemplates[templateId].childTemplates[childTemplateId];
     } else {
         categoriesPermissions[categoryId] = {
             ...categoriesPermissions[categoryId],
@@ -142,8 +142,8 @@ const changeSpecificChildTemplate = (
                 ...categoriesPermissions[categoryId]?.entityTemplates,
                 [templateId]: {
                     ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId],
-                    entityChildTemplates: {
-                        ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.entityChildTemplates,
+                    childTemplates: {
+                        ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.childTemplates,
                         [childTemplateId]: {
                             scope: newScope,
                         },
@@ -203,7 +203,7 @@ const handleUncheckCategoryByTemplates = (
                         categoriesPermissions[categoryId]?.scope === PermissionScope.write
                             ? PermissionScope.write
                             : categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
-                    entityChildTemplates: categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.entityChildTemplates ?? {},
+                    childTemplates: categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.childTemplates ?? {},
                 };
             }
         });

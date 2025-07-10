@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
-const EntityChildTemplateSchema = new mongoose.Schema(
+const ChildTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -67,18 +67,18 @@ const EntityChildTemplateSchema = new mongoose.Schema(
     },
 );
 
-EntityChildTemplateSchema.index({ displayName: 'text' });
+ChildTemplateSchema.index({ displayName: 'text' });
 
-EntityChildTemplateSchema.index({
+ChildTemplateSchema.index({
     name: 'text',
     displayName: 'text',
     description: 'text',
 });
 
-EntityChildTemplateSchema.index({ parentTemplateId: 1 });
+ChildTemplateSchema.index({ parentTemplateId: 1 });
 
-EntityChildTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
+ChildTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
 
-export default EntityChildTemplateSchema;
+export default ChildTemplateSchema;

@@ -40,27 +40,27 @@ export interface IMongoChildTemplate extends IChildTemplate, Document<string> {
     _id: string;
 }
 
-export interface IEntityChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
+export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
     parentTemplate: IFullMongoEntityTemplate;
     category: IMongoCategory;
 }
 
-export interface ISearchEntityChildTemplatesBody extends ISearchBody {
+export interface ISearchChildTemplatesBody extends ISearchBody {
     ids?: string[];
     categoryIds?: string[];
     parentTemplatesIds?: string[];
 }
 
 // When populating child, it will ask the parent for all of its properties.
-export interface IEntityChildTemplatePopulated
+export interface IChildTemplatePopulated
     extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
-        Omit<IEntityChildTemplatePopulatedFromDb, 'properties'> {
+        Omit<IChildTemplatePopulatedFromDb, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
 }
 
-export interface IEntityChildTemplateWithParent extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
+export interface IChildTemplateWithParent extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
@@ -77,7 +77,7 @@ export interface EntityTemplateBase {
 
 export interface ChildTemplate extends EntityTemplateBase {
     type: EntityTemplateType.Child;
-    metaData: IEntityChildTemplatePopulated;
+    metaData: IChildTemplatePopulated;
 }
 
 export interface ParentTemplate extends EntityTemplateBase {
@@ -92,17 +92,17 @@ export interface IChildTemplateWithConstraints extends IChildTemplate {
     properties: IChildTemplate['properties'] & { required: string[] };
 }
 
-export interface IMongoChildTemplateWithConstraints extends IEntityChildTemplatePopulatedFromDb {
+export interface IMongoChildTemplateWithConstraints extends IChildTemplatePopulatedFromDb {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplate['properties'] & { required: string[] };
 }
 
-export interface IChildTemplateWithConstraintsPopulated extends IEntityChildTemplatePopulated {
+export interface IChildTemplateWithConstraintsPopulated extends IChildTemplatePopulated {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
-    properties: IEntityChildTemplatePopulated['properties'] & { required: string[] };
+    properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
 
-export interface IMongoChildTemplateWithConstraintsPopulated extends IEntityChildTemplatePopulatedFromDb {
+export interface IMongoChildTemplateWithConstraintsPopulated extends IChildTemplatePopulatedFromDb {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplate['properties'] & { required: string[] };
 }

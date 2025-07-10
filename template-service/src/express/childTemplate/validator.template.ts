@@ -8,22 +8,22 @@ import {
 } from '@microservices/shared';
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import getFullChildTemplateProperties from '../../utils/entityChildTemplate';
+import getFullChildTemplateProperties from '../../utils/childTemplate';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 import EntityTemplateManager from '../entityTemplate/manager';
-import EntityChildTemplateManager from './manager';
+import ChildTemplateManager from './manager';
 
-class EntityChildTemplateValidator extends DefaultController<IMongoChildTemplate, EntityChildTemplateManager> {
+class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, ChildTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {
-        super(new EntityChildTemplateManager(workspaceId));
+        super(new ChildTemplateManager(workspaceId));
         this.entityTemplateManager = new EntityTemplateManager(workspaceId);
     }
 
     getAllRelationshipReferencesEntityTemplates = async (templateId: string) => {
-        const childTemplates = await this.manager.getChildTemplates({ limit: 0, skip: 0 });
+        const childTemplates = await this.manager.searchChildTemplates({ limit: 0, skip: 0 });
         const childTemplatesMap = new Map(childTemplates.map((template) => [template._id, template]));
         const baseChildTemplate = childTemplatesMap.get(templateId)!;
 
@@ -104,4 +104,4 @@ class EntityChildTemplateValidator extends DefaultController<IMongoChildTemplate
     };
 }
 
-export default EntityChildTemplateValidator;
+export default ChildTemplateValidator;

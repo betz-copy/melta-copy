@@ -5,18 +5,18 @@ import createAxiosInstance from '../utils/axios';
 
 const {
     url,
-    entityChildTemplates: { createEntityChildTemplateRoute },
+    childTemplates: { createChildTemplateRoute },
 } = config.templateService;
 
-export const createEntityChildTemplate = async (
+export const createChildTemplate = async (
     workspaceId: string,
-    entityChildTemplateToCreate: IChildTemplate,
+    childTemplateToCreate: IChildTemplate,
     parentTemplate: IMongoEntityTemplateWithConstraintsPopulated,
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
-    const { data } = await axiosInstance.post<IMongoChildTemplate>(url + createEntityChildTemplateRoute, {
-        ...entityChildTemplateToCreate,
+    const { data } = await axiosInstance.post<IMongoChildTemplate>(url + createChildTemplateRoute, {
+        ...childTemplateToCreate,
         categories: [parentTemplate.category._id],
         parentTemplateId: parentTemplate._id,
     });

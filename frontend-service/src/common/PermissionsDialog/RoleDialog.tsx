@@ -18,7 +18,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import {
     CategoryWithTemplates,
     didPermissionsChange,
-    entityChildTemplatePermissionDialog,
+    childTemplatePermissionDialog,
     entityTemplatePermissionDialog,
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
@@ -46,7 +46,7 @@ const RoleDialog: React.FC<{
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((template) => {
@@ -55,7 +55,7 @@ const RoleDialog: React.FC<{
             ...template.category,
         };
 
-        const displayEntityChildTemplates: entityChildTemplatePermissionDialog[] = Array.from(entityChildTemplates.values())
+        const displayChildTemplates: childTemplatePermissionDialog[] = Array.from(childTemplates.values())
             .filter((child) => child.parentTemplate._id === template._id)
             .map((child) => ({
                 id: child._id,
@@ -69,7 +69,7 @@ const RoleDialog: React.FC<{
         const displayEntity: entityTemplatePermissionDialog = {
             id: template._id,
             name: template.displayName,
-            entityChildTemplates: displayEntityChildTemplates || [],
+            childTemplates: displayChildTemplates || [],
         };
         category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
         dialogPermissionData.set(template.category._id, category);

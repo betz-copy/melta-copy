@@ -13,7 +13,7 @@ import {
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
     IEntity,
-    IEntityChildTemplatePopulated,
+    IChildTemplatePopulated,
     IEntitySingleProperty,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
@@ -135,7 +135,7 @@ const getUpdatedEntity = (
     entities: IEntityWithDirectRelationships[],
     entity: IEntity,
     identifier: keyof IEntity['properties'],
-    template: IMongoEntityTemplatePopulated | IEntityChildTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
 ): IEntity | undefined => {
     const existingEntity = entities.find((e) => e.entity.properties[identifier] === entity.properties[identifier]);
 
@@ -157,7 +157,7 @@ const getUpdatedEntity = (
 
 const readExcelFile = async (
     files: UploadedFile[],
-    template: IMongoEntityTemplatePopulated | IEntityChildTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],

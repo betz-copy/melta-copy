@@ -18,7 +18,7 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
 export const didPermissionsChange = (currentPermissions: IUser['permissions'], newPermissions: IUser['permissions']) =>
     isEqualWith(currentPermissions, newPermissions);
 
-export type entityChildTemplatePermissionDialog = {
+export type childTemplatePermissionDialog = {
     id: string;
     name: string;
     parentTemplateId: string;
@@ -30,7 +30,7 @@ export type entityChildTemplatePermissionDialog = {
 export type entityTemplatePermissionDialog = {
     id: string;
     name: string;
-    entityChildTemplates: entityChildTemplatePermissionDialog[];
+    childTemplates: childTemplatePermissionDialog[];
 };
 
 export type CategoryWithTemplates = IMongoCategory & {

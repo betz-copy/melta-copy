@@ -16,7 +16,7 @@ import {
     ICreateRelationshipMetadata,
     IDeleteEntityBody,
     IEntity,
-    IEntityChildTemplatePopulated,
+    IChildTemplatePopulated,
     IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
@@ -922,7 +922,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
             if (childTemplateId) {
                 const notFilterValid = entities.find((entity) =>
-                    matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IEntityChildTemplatePopulated)),
+                    matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IChildTemplatePopulated)),
                 );
 
                 if (notFilterValid)

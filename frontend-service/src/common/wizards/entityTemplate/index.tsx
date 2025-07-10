@@ -26,7 +26,7 @@ import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterface
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { IChildTemplateMap, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { getAllEntityChildTemplates } from '../../../services/templates/entityChildTemplatesService';
+import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 
 const { errorCodes } = environment;
 
@@ -130,7 +130,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
 
                     try {
-                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllEntityChildTemplates();
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
                         queryClient.setQueryData<IChildTemplateMap>(
                             'getChildEntityTemplates',
                             mapTemplates(

@@ -16,7 +16,7 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { EntityTemplateType, IChildTemplateMap, TemplateItem } from '../../../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
-import { getFullChildTemplateProperties } from '../../../../utils/entityChildTemplates';
+import { getFullChildTemplateProperties } from '../../../../utils/childTemplates';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { ActionManagement } from './actionsManagement';

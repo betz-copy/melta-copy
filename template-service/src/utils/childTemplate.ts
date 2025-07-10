@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { IEntityChildTemplatePopulated, IEntityChildTemplatePopulatedFromDb, IEntitySingleProperty } from '@microservices/shared';
+import { IChildTemplatePopulated, IChildTemplatePopulatedFromDb, IEntitySingleProperty } from '@microservices/shared';
 
 const parseFilterObject = (filters: any): any | null => {
     if (typeof filters === 'string') {
@@ -31,7 +31,7 @@ const getFilteredMultiEnum = (parentProp: IEntitySingleProperty, filterObj: any)
     return multiEnumIn.length > 0 ? parentProp.items.enum.filter((val) => multiEnumIn.includes(val)) : parentProp.items.enum;
 };
 
-export const populateChildTemplateWithParent = (childTemplate: IEntityChildTemplatePopulatedFromDb): IEntityChildTemplatePopulated => {
+export const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IChildTemplatePopulated => {
     const { category: _unused, ...parent } = childTemplate.parentTemplate;
     const childPropertyKeys = Object.keys(childTemplate.properties);
 
@@ -61,7 +61,7 @@ export const populateChildTemplateWithParent = (childTemplate: IEntityChildTempl
 };
 
 const getFullChildTemplateProperties = (
-    childTemplate: IEntityChildTemplatePopulated,
+    childTemplate: IChildTemplatePopulated,
     parentProperties: Record<string, IEntitySingleProperty>,
 ): Record<string, IEntitySingleProperty> => {
     const result: Record<string, IEntitySingleProperty> = {};

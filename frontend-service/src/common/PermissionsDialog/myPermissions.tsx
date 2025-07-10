@@ -19,7 +19,7 @@ import UserAutocomplete from '../inputs/UserAutocomplete';
 import {
     CategoryWithTemplates,
     didPermissionsChange,
-    entityChildTemplatePermissionDialog,
+    childTemplatePermissionDialog,
     entityTemplatePermissionDialog,
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
@@ -63,7 +63,7 @@ const MyPermissions: React.FC<{
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
@@ -72,7 +72,7 @@ const MyPermissions: React.FC<{
             entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
             ...entity.category,
         };
-        const displayEntityChildTemplates: entityChildTemplatePermissionDialog[] = Array.from(entityChildTemplates.values())
+        const displayChildTemplates: childTemplatePermissionDialog[] = Array.from(childTemplates.values())
             .filter((child) => child.parentTemplate._id === entity._id)
             .map((child) => ({
                 id: child._id,
@@ -86,7 +86,7 @@ const MyPermissions: React.FC<{
         const displayEntity: entityTemplatePermissionDialog = {
             id: entity._id,
             name: entity.displayName,
-            entityChildTemplates: displayEntityChildTemplates || [],
+            childTemplates: displayChildTemplates || [],
         };
 
         category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];

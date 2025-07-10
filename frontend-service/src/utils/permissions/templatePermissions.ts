@@ -93,7 +93,7 @@ export const updateUserPermissionForEntityTemplate = (
 
     const updatedEntityTemplates = {
         ...instances?.categories?.[categoryId]?.entityTemplates,
-        [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {}, entityChildTemplates: {} },
+        [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {}, childTemplates: {} },
     };
 
     const updatedCategories = {
@@ -164,7 +164,7 @@ export const checkUserChildTemplatePermission = (
     }
 
     const categoryPermissions = userPermissions.instances?.categories[category._id];
-    if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope === scope) {
+    if (categoryPermissions && (categoryPermissions as any)?.childTemplates?.[childTemplate._id]?.scope === scope) {
         return true;
     }
 
@@ -181,7 +181,7 @@ export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompact
     }
 
     const categoryPermissions = userPermissions.instances?.categories[childTemplate.category];
-    if (categoryPermissions && (categoryPermissions as any)?.entityChildTemplates?.[childTemplate._id]?.scope) {
+    if (categoryPermissions && (categoryPermissions as any)?.childTemplates?.[childTemplate._id]?.scope) {
         return true;
     }
 

@@ -1,6 +1,6 @@
 import { IChildTemplate, ViewType } from '@microservices/shared';
 
-const driverEntityChildTemplate: IChildTemplate = {
+const driverChildTemplate: IChildTemplate = {
     name: 'driver_view',
     displayName: 'נהג_פרטי הנוהג',
     description: 'פרטי הנוהג',
@@ -34,7 +34,7 @@ const driverEntityChildTemplate: IChildTemplate = {
     isFilterByUserUnit: false,
 };
 
-const carEntityChildTemplate: IChildTemplate = {
+const carChildTemplate: IChildTemplate = {
     name: 'car_view',
     displayName: 'רכב_פרטי רכב',
     description: 'פרטי רכב',
@@ -62,7 +62,7 @@ const carEntityChildTemplate: IChildTemplate = {
     isFilterByUserUnit: false,
 };
 
-const crashEntityChildTemplate: IChildTemplate = {
+const crashChildTemplate: IChildTemplate = {
     name: 'crash_view',
     displayName: 'תאונה_פרטי תאונה',
     description: 'פרטי תאונה',
@@ -88,4 +88,4 @@ const crashEntityChildTemplate: IChildTemplate = {
     isFilterByUserUnit: false,
 };
 
-export { driverEntityChildTemplate, carEntityChildTemplate, crashEntityChildTemplate };
+export { driverChildTemplate, carChildTemplate, crashChildTemplate };

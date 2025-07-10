@@ -1,5 +1,5 @@
 import { EntityTemplateType, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
-import getFullChildTemplateProperties from '../entityChildTemplate';
+import getFullChildTemplateProperties from '../childTemplate';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,

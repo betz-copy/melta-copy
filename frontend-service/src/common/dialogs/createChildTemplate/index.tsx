@@ -34,7 +34,7 @@ import {
     IMongoChildTemplatePopulated,
 } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { createEntityChildTemplate, updateEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
+import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -230,13 +230,13 @@ const CreateChildTemplateDialog: React.FC<{
         [entityTemplate],
     );
 
-    const { mutateAsync: handleEntityChildTemplate } = useMutation<IMongoChildTemplate, AxiosError, IChildTemplate | [IChildTemplate, string]>({
+    const { mutateAsync: handleChildTemplate } = useMutation<IMongoChildTemplate, AxiosError, IChildTemplate | [IChildTemplate, string]>({
         mutationFn: (template) => {
             if (Array.isArray(template)) {
                 const [templateData, id] = template;
-                return updateEntityChildTemplate(id, templateData);
+                return updateChildTemplate(id, templateData);
             }
-            return createEntityChildTemplate(template);
+            return createChildTemplate(template);
         },
         onSuccess: (data) => {
             queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prevData) => {
@@ -252,8 +252,8 @@ const CreateChildTemplateDialog: React.FC<{
             ]).then(() => {
                 toast.success(
                     childTemplate
-                        ? i18next.t('createChildTemplateDialog.succeededToUpdateEntityChildTemplate')
-                        : i18next.t('createChildTemplateDialog.succeededToCreateEntityChildTemplate'),
+                        ? i18next.t('createChildTemplateDialog.succeededToUpdateChildTemplate')
+                        : i18next.t('createChildTemplateDialog.succeededToCreateChildTemplate'),
                 );
                 handleClose();
             });
@@ -264,8 +264,8 @@ const CreateChildTemplateDialog: React.FC<{
                     axiosError={err}
                     defaultErrorMessage={
                         childTemplate
-                            ? i18next.t('createChildTemplateDialog.failedToUpdateEntityChildTemplate')
-                            : i18next.t('createChildTemplateDialog.failedToCreateEntityChildTemplate')
+                            ? i18next.t('createChildTemplateDialog.failedToUpdateChildTemplate')
+                            : i18next.t('createChildTemplateDialog.failedToCreateChildTemplate')
                     }
                 />,
             );
@@ -430,9 +430,9 @@ const CreateChildTemplateDialog: React.FC<{
 
                     localStorage.removeItem(`${columnWidths}category-${childTemplate?._id ?? entityTemplate._id}`);
                     if (childTemplate) {
-                        await handleEntityChildTemplate([baseTemplate, childTemplate._id]);
+                        await handleChildTemplate([baseTemplate, childTemplate._id]);
                     } else {
-                        await handleEntityChildTemplate(baseTemplate);
+                        await handleChildTemplate(baseTemplate);
                     }
                 }}
             >

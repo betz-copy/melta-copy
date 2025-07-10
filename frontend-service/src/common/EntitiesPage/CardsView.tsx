@@ -127,9 +127,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     >
                         {({ entity, minioFileIdsWithTexts, childTemplateId }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-                            const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+                            const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
-                            const childEntityTemplate = childTemplateId ? entityChildTemplates?.get(childTemplateId)! : undefined;
+                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;
                             const template = childEntityTemplate
                                 ? transformChild(childEntityTemplate, entityTemplate, entityTemplate.category)
                                 : entityTemplate;
