@@ -9,6 +9,7 @@ import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTempla
 import '../../css/pages.css';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { PrintingTemplatesRow } from './components/PrintingTemplatesRow';
 import { ConfigurationManagement } from './components/ConfigurationManagement';
 import MeltaTabs from '../../common/MeltaTabs';
 
@@ -23,6 +24,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         relationshipTemplates: <RelationshipTemplatesRow />,
         rules: <RulesRow />,
         processTemplates: <ProcessTemplatesRow />,
+        printingTemplates: <PrintingTemplatesRow />,
         configurationManagement: <ConfigurationManagement />,
     };
 
@@ -41,6 +43,9 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         processTemplates:
             currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        printingTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         configurationManagement: !!currentUser.currentWorkspacePermissions.admin,
     };
