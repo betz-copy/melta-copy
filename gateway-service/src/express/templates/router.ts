@@ -269,7 +269,7 @@ templatesRouter.post(
     busboyMiddleware,
     ValidateRequest(createChildTemplateSchema),
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
-    TemplatesServiceProxy,
+    templatesControllerMiddleware.createChildTemplate,
 );
 
 templatesRouter.post(
@@ -290,7 +290,7 @@ templatesRouter.put(
     '/child/:id',
     ValidateRequest(updateChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
-    TemplatesServiceProxy,
+    templatesControllerMiddleware.updateChildTemplate,
 );
 
 templatesRouter.delete(

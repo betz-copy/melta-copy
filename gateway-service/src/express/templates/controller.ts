@@ -145,6 +145,19 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery, user.id));
     }
 
+    // childTemplates
+    async createChildTemplate(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.createChildTemplate(req.body, permissionsOfUserId, user!.id));
+    }
+
+    async updateChildTemplate(req: Request, res: Response) {
+        const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.updateChildTemplate(req.params.id, req.user!.id, req.body, permissionsOfUserId));
+    }
+
     // relationshipTemplates
     async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await this.manager.createRelationshipTemplate(req.body));

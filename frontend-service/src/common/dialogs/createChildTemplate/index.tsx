@@ -255,7 +255,7 @@ const CreateChildTemplateDialog: React.FC<{
                 queryClient.invalidateQueries('getEntityTemplates'),
                 queryClient.invalidateQueries('searchEntityTemplates'),
             ]).then(() => {
-                toast.success(i18next.t(`createChildTemplateDialog.succeededTo${childTemplate ? 'Update' : 'Create'}EntityChildTemplate`));
+                toast.success(i18next.t(`createChildTemplateDialog.succeededTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`));
                 handleClose();
             });
         },
@@ -263,7 +263,7 @@ const CreateChildTemplateDialog: React.FC<{
             toast.error(
                 <ErrorToast
                     axiosError={err}
-                    defaultErrorMessage={i18next.t(`createChildTemplateDialog.failedTo${childTemplate ? 'Update' : 'Create'}EntityChildTemplate`)}
+                    defaultErrorMessage={i18next.t(`createChildTemplateDialog.failedTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`)}
                 />,
             );
         },

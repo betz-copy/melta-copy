@@ -4,10 +4,14 @@ import {
     BadRequestError,
     ConfigTypes,
     DashboardItemType,
+    dePopulateChildProperties,
     IAxisField,
     ICategory,
     ICategoryOrderConfig,
     IChartType,
+    IChildTemplate,
+    IChildTemplatePopulated,
+    IChildTemplateWithConstraintsPopulated,
     IColumnOrLineMetaData,
     IConstraintsOfTemplate,
     IEntity,
@@ -16,6 +20,7 @@ import {
     IEntityTemplatePopulated,
     IEntityTemplateWithConstraints,
     IFormula,
+    IFullMongoEntityTemplate,
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
@@ -28,6 +33,7 @@ import {
     IPieMetaData,
     IRelationship,
     IRule,
+    isChildTemplate,
     ISearchEntityTemplatesBody,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
@@ -43,11 +49,7 @@ import {
     ServiceError,
     TableItem,
     UploadedFile,
-    IChildTemplatePopulated,
-    dePopulateChildProperties,
-    isChildTemplate,
-    IFullMongoEntityTemplate,
-    IChildTemplateWithConstraintsPopulated,
+    ValidationError,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -620,8 +622,39 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relastionships: IMongoRelationshipTemplate[]) {
-        return relastionships.some((relationship) => {
+    async createChildTemplate(
+        childTemplate: IChildTemplate,
+        _permissionsOfUserId: ISubCompactPermissions,
+        _userId: string,
+    ): Promise<IChildTemplateWithConstraintsPopulated> {
+        const {
+            category,
+            parentTemplateId,
+            properties: { properties },
+        } = childTemplate;
+
+        await this.entityTemplateService.getCategoryById(category);
+        await this.entityTemplateService.getEntityTemplateById(parentTemplateId);
+
+        const { uniqueConstraints, requiredConstraints } = await this.instancesService.getConstraintsOfTemplate(parentTemplateId);
+
+        const requiredNotInProperties = requiredConstraints.find((requiredKey) => !Object.keys(properties).includes(requiredKey));
+        if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
+
+        const { parentTemplate, ...createdChild } = await this.entityTemplateService.createChildTemplate(childTemplate);
+
+        // await this.updateEntityTemplateScope(childTemplate, permissionsOfUserId, userId); // TODO:fix updateEntityTemplateScope to support child template after changing the permissions
+
+        const { uniqueConstraints: currUnique, requiredConstraints: currRequired } =
+            await this.instancesService.getConstraintsOfTemplate(parentTemplateId);
+
+        const parentWithConstraints = this.populateTemplateConstraints(parentTemplate, currRequired, currUnique);
+
+        return this.populateTemplateConstraints({ ...createdChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
+    }
+
+    entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relationships: IMongoRelationshipTemplate[]) {
+        return relationships.some((relationship) => {
             const isUsedAsRelationshipReference =
                 entityTemplateToDelete.properties.properties[relationship.name].relationshipReference?.relationshipTemplateId === relationship._id;
 
@@ -1237,6 +1270,42 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.updateEntityTemplateScope(updatedTemplate, permissionsOfUserId, userId);
 
         return this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
+    }
+
+    async updateChildTemplate(
+        id: string,
+        _userId: string,
+        updatedTemplateData: IChildTemplate,
+        _permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+    ): Promise<IChildTemplateWithConstraintsPopulated> {
+        const {
+            parentTemplateId,
+            category,
+            properties: { properties },
+        } = updatedTemplateData;
+
+        await this.entityTemplateService.getCategoryById(category);
+        await this.entityTemplateService.getEntityTemplateById(parentTemplateId);
+
+        const { uniqueConstraints, requiredConstraints } = await this.instancesService.getConstraintsOfTemplate(parentTemplateId);
+
+        const currTemplate = await this.entityTemplateService.getChildTemplateById(id);
+        if (currTemplate.disabled === true) throw new BadRequestError('can not update disabled template');
+
+        const requiredNotInProperties = requiredConstraints.find((requiredKey) => !Object.keys(properties).includes(requiredKey));
+        if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
+
+        const { parentTemplate, ...updatedChild } = await this.entityTemplateService.updateChildTemplate(id, updatedTemplateData);
+
+        // if (updatedChild.category._id !== currTemplate.category._id)
+        // await this.updateEntityTemplateScope(childTemplate, permissionsOfUserId, userId); // TODO:fix updateEntityTemplateScope to support child template after changing the permissions
+
+        const { uniqueConstraints: currUnique, requiredConstraints: currRequired } =
+            await this.instancesService.getConstraintsOfTemplate(parentTemplateId);
+
+        const parentWithConstraints = this.populateTemplateConstraints(parentTemplate, currRequired, currUnique);
+
+        return this.populateTemplateConstraints({ ...updatedChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
     }
 
     private checkValidAmountOfArchiveProperties(updatedTemplateProperties: Record<string, IEntitySingleProperty>) {

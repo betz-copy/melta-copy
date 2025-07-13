@@ -8,7 +8,6 @@ import {
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
-    IMongoChildTemplate,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
@@ -237,8 +236,13 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
+    async createChildTemplate(childTemplate: IChildTemplate) {
+        const { data } = await this.api.post<IChildTemplatePopulated>(`${baseChildTemplatesRoute}`, childTemplate);
+        return data;
+    }
+
     async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
-        const { data } = await this.api.put<IMongoChildTemplate | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+        const { data } = await this.api.put<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
         return data;
     }
 }
