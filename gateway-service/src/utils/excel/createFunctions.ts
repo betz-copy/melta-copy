@@ -2,7 +2,7 @@
 import {
     CoordinateSystem,
     EntityTemplateType,
-    getFullChildTemplateProperties,
+    getChildPropertiesFiltered,
     IEntity,
     IEntitySingleProperty,
     locationConverterToString,
@@ -131,9 +131,7 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
     const worksheet = workbook.addWorksheet(template.displayName);
 
     const properties =
-        templateType === EntityTemplateType.Parent
-            ? template.properties.properties
-            : getFullChildTemplateProperties(template, template.fatherTemplateId);
+        templateType === EntityTemplateType.Parent ? template.properties.properties : getChildPropertiesFiltered(template.properties.properties);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -228,14 +226,14 @@ const styleAWorksheet = (
     skip: number = 0,
 ) => {
     const { type, metaData: template } = templateItem;
-    const parentTemplate = type === EntityTemplateType.Child ? template.fatherTemplateId : template;
+    const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
 
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
     });
     const properties =
-        type === EntityTemplateType.Parent ? template.properties.properties : getFullChildTemplateProperties(template, template.fatherTemplateId);
+        type === EntityTemplateType.Parent ? template.properties.properties : getChildPropertiesFiltered(template.properties.properties);
 
     const { disabled } = template;
     let additionalProps = {};

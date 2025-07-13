@@ -48,7 +48,7 @@ export const RuleCard: React.FC<{
 
     const entityHasWritePermission = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         entityTemplate._id,
         PermissionScope.write,
     );

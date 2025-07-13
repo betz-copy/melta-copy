@@ -1,6 +1,7 @@
 import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { keyBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
@@ -14,11 +15,11 @@ import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IEntityChildTemplateMap, IMongoChildEntityTemplate, TemplateItem } from '../../../interfaces/entityChildTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
-import { deleteEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
+import { deleteChildTemplate } from '../../../services/templates/childTemplatesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
@@ -32,7 +33,6 @@ import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEn
 import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { CodeEditorDialog } from '../components/codeEditor';
 import { FilterButton } from '../components/FilterButton';
-import { keyBy } from 'lodash';
 import CategoryEntitiesBox from './CategoryEntitiesBox';
 
 const { infiniteScrollPageCount } = environment.processInstances;
@@ -114,7 +114,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
-        childTemplate?: IMongoChildEntityTemplate;
+        childTemplate?: IMongoChildTemplatePopulated;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -180,9 +180,9 @@ const EntityTemplatesRow: React.FC = () => {
         },
     );
 
-    const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteEntityChildTemplate(id), {
+    const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteChildTemplate(id), {
         onSuccess: async (_data, id) => {
-            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prev) => {
+            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prev) => {
                 const updated = new Map(prev);
                 updated.delete(id);
                 return updated;
@@ -202,7 +202,7 @@ const EntityTemplatesRow: React.FC = () => {
         const templateId = deleteEntityTemplateDialogState.entityTemplateId;
         if (!templateId) return;
 
-        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
         const isChildTemplate = childTemplates?.has(templateId);
 
         try {

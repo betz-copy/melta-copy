@@ -656,7 +656,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                                 entityTemplateId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).templateId;
                                 break;
                             case ActionTypes.UpdateEntity: {
-                                const actionMetadata = action.actionMetadata as unknown as IUpdateEntityMetadata;
+                                const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                                 const entity = await this.instancesService.getEntityInstanceById(actionMetadata.entityId);
                                 entityTemplateId = entity.templateId || '-';
                                 break;

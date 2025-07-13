@@ -2,19 +2,17 @@ import {
     ConfigTypes,
     ICategory,
     ICategoryOrderConfig,
-    IEntityChildTemplate,
-    IEntityChildTemplatePopulated,
+    IChildTemplate,
+    IChildTemplatePopulated,
     IEntityTemplate,
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
-    IMongoEntityChildTemplate,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
     ISearchEntityTemplatesBody,
     ISubCompactPermissions,
-    IMongoEntityChildTemplatePopulated,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -217,12 +215,12 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IMongoEntityChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 
     async getAllChildTemplates() {
-        const { data } = await this.api.get<IMongoEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
+        const { data } = await this.api.get<IChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
         return data;
     }
 
@@ -232,14 +230,19 @@ class EntityTemplateService extends TemplatesManagerService {
         categoryIds?: string[];
         limit?: number;
         skip?: number;
-        fatherTemplatesIds?: string[];
+        parentTemplatesIds?: string[];
     }) {
-        const { data } = await this.api.post<IEntityChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
+        const { data } = await this.api.post<IChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
         return data;
     }
 
-    async updateEntityChildTemplate(id: string, childTemplate: IEntityChildTemplate) {
-        const { data } = await this.api.put<IMongoEntityChildTemplate | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+    async createChildTemplate(childTemplate: IChildTemplate) {
+        const { data } = await this.api.post<IChildTemplatePopulated>(`${baseChildTemplatesRoute}`, childTemplate);
+        return data;
+    }
+
+    async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
+        const { data } = await this.api.put<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
         return data;
     }
 }

@@ -26,16 +26,17 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
     ChipType,
     IChildTemplateProperty,
-    IEntityChildTemplate,
-    IEntityChildTemplateMap,
+    IChildTemplate,
+    IChildTemplateMap,
     IFieldChip,
+    IMongoChildTemplate,
     IFieldFilter,
-    IMongoChildEntityTemplate,
     ITemplateFieldsFilters,
     ViewType,
-} from '../../../interfaces/entityChildTemplates';
+    IMongoChildTemplatePopulated,
+} from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { createEntityChildTemplate, updateEntityChildTemplate } from '../../../services/templates/entityChildTemplatesService';
+import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -51,21 +52,21 @@ const CreateChildTemplateDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    childTemplate?: IMongoChildEntityTemplate;
+    childTemplate?: IMongoChildTemplatePopulated;
 }> = ({ open, handleClose, entityTemplate, childTemplate }) => {
     if (!entityTemplate) return null;
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
     const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
     const [selectedUserField, setSelectedUserField] = useState<string | null>(childTemplate?.filterByCurrentUserField || null);
     const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
     const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState(childTemplate?.isFilterByCurrentUser || false);
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(childTemplate?.isFilterByUserUnit || false);
-    const [selectedCategories, setSelectedCategories] = useState<IMongoCategory[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<IMongoCategory>();
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(childTemplate?.viewType || ViewType.categoryPage);
     const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
@@ -75,9 +76,10 @@ const CreateChildTemplateDialog: React.FC<{
             const initialFields: ITemplateFieldsFilters = {};
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
-                const isSelected = (childTemplate ? key in childTemplate.properties : false) || isRequired;
-                const defaultValue = childTemplate?.properties[key]?.defaultValue;
-                const isEditableByUser = childTemplate?.properties[key]?.isEditableByUser;
+                const property = childTemplate?.properties.properties[key];
+                const isSelected = (childTemplate ? key in childTemplate.properties.properties : false) || isRequired;
+                const defaultValue = property?.defaultValue;
+                const isEditableByUser = property?.isEditableByUser;
 
                 initialFields[key] = {
                     selected: isSelected,
@@ -87,20 +89,14 @@ const CreateChildTemplateDialog: React.FC<{
                 };
             });
             setTemplateFieldsFilters(initialFields);
-            setSelectedCategories(
-                childTemplate?.categories
-                    ? childTemplate.categories.map((id) => categories.get(id)!).filter(Boolean)
-                    : entityTemplate.category
-                    ? [entityTemplate.category]
-                    : [],
-            );
+            setSelectedCategory(childTemplate?.category ?? entityTemplate?.category);
         }
     }, [entityTemplate, childTemplate, categories]);
 
     useEffect(() => {
         if (childTemplate) {
             const chips: IFieldChip[] = [];
-            Object.entries(childTemplate.properties).forEach(([fieldName, prop]) => {
+            Object.entries(childTemplate.properties.properties).forEach(([fieldName, prop]) => {
                 if (prop.filters) {
                     try {
                         const parsedFilters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
@@ -239,20 +235,16 @@ const CreateChildTemplateDialog: React.FC<{
         [entityTemplate],
     );
 
-    const { mutateAsync: handleEntityChildTemplate } = useMutation<
-        IMongoChildEntityTemplate,
-        AxiosError,
-        IEntityChildTemplate | [IEntityChildTemplate, string]
-    >({
+    const { mutateAsync: handleChildTemplate } = useMutation<IMongoChildTemplate, AxiosError, IChildTemplate | [IChildTemplate, string]>({
         mutationFn: (template) => {
             if (Array.isArray(template)) {
                 const [templateData, id] = template;
-                return updateEntityChildTemplate(id, templateData);
+                return updateChildTemplate(id, templateData);
             }
-            return createEntityChildTemplate(template);
+            return createChildTemplate(template);
         },
         onSuccess: (data) => {
-            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', (prevData) => {
+            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prevData) => {
                 const newMap = new Map(prevData || new Map());
                 newMap.set(data._id, data);
                 return newMap;
@@ -263,7 +255,7 @@ const CreateChildTemplateDialog: React.FC<{
                 queryClient.invalidateQueries('getEntityTemplates'),
                 queryClient.invalidateQueries('searchEntityTemplates'),
             ]).then(() => {
-                toast.success(i18next.t(`createChildTemplateDialog.succeededTo${childTemplate ? 'Update' : 'Create'}EntityChildTemplate`));
+                toast.success(i18next.t(`createChildTemplateDialog.succeededTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`));
                 handleClose();
             });
         },
@@ -271,7 +263,7 @@ const CreateChildTemplateDialog: React.FC<{
             toast.error(
                 <ErrorToast
                     axiosError={err}
-                    defaultErrorMessage={i18next.t(`createChildTemplateDialog.failedTo${childTemplate ? 'Update' : 'Create'}EntityChildTemplate`)}
+                    defaultErrorMessage={i18next.t(`createChildTemplateDialog.failedTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`)}
                 />,
             );
         },
@@ -283,7 +275,7 @@ const CreateChildTemplateDialog: React.FC<{
             return;
         }
 
-        const originalFields = new Set(Object.keys(childTemplate.properties));
+        const originalFields = new Set(Object.keys(childTemplate.properties.properties));
         const currentFields = new Set(
             Object.entries(templateFieldsFilters)
                 .filter(([_, field]) => field.selected)
@@ -293,14 +285,9 @@ const CreateChildTemplateDialog: React.FC<{
         const hasFieldChanges =
             ![...originalFields].every((field) => currentFields.has(field)) || ![...currentFields].every((field) => originalFields.has(field));
 
-        const originalCategories = new Set(childTemplate.categories);
-        const currentCategories = new Set(selectedCategories.map((c) => c._id));
+        const hasCategoryChanges = selectedCategory?._id !== childTemplate.category._id;
 
-        const hasCategoryChanges =
-            ![...originalCategories].every((cat) => currentCategories.has(cat)) ||
-            ![...currentCategories].every((cat) => originalCategories.has(cat));
-
-        const hasFilterOrDefaultChanges = Object.entries(childTemplate.properties).some(([fieldName, prop]) => {
+        const hasFilterOrDefaultChanges = Object.entries(childTemplate.properties.properties).some(([fieldName, prop]) => {
             const currentField = templateFieldsFilters[fieldName];
             if (!currentField?.selected) return true;
 
@@ -335,7 +322,7 @@ const CreateChildTemplateDialog: React.FC<{
             if (hasFilters && hadFilters) {
                 const originalFilters = prop.filters;
                 const currentFilterObj = {
-                    $and: currentFilters.map((filter) => {
+                    $or: currentFilters.map((filter) => {
                         const filterResult = filterModelToFilterOfTemplatePerField(currentField.fieldValue, fieldName, filter!);
                         return filterResult;
                     }),
@@ -356,7 +343,7 @@ const CreateChildTemplateDialog: React.FC<{
     }, [
         childTemplate,
         templateFieldsFilters,
-        selectedCategories,
+        selectedCategory,
         fieldChips,
         childTemplateViewType,
         childTemplateFilterByCurrentUser,
@@ -376,15 +363,15 @@ const CreateChildTemplateDialog: React.FC<{
     };
 
     if (!entityTemplate || !categories || !allTemplates) return null;
-
     const existingNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.name)
         : [];
+
     const existingDisplayNames = childTemplates
         ? Array.from(childTemplates.values())
-              .filter((t) => t.fatherTemplateId === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+              .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
               .map((t) => t.displayName)
         : [];
 
@@ -395,55 +382,41 @@ const CreateChildTemplateDialog: React.FC<{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
                     displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
                     description: childTemplate?.description || '',
-                    categories: selectedCategories,
+                    category: selectedCategory,
                     isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
                     isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
                     filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
-                onSubmit={async ({ name, displayName, description, categories }) => {
+                onSubmit={async ({ name, displayName, description, category }) => {
                     const fullName = `${entityTemplate.name}_${name}`;
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
-                    const properties: IEntityChildTemplate['properties'] = {};
+                    const properties: IChildTemplate['properties'] = { properties: {} };
 
                     latestFields.forEach(([fieldName, fieldConfig]) => {
-                        const { title, type, format } = fieldConfig.fieldValue;
+                        const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
+                        const filtersArray = filterChips.map((chip) =>
+                            filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterField!),
+                        );
 
                         const childProp: IChildTemplateProperty = {
-                            title,
-                            type,
-                            ...(format && { format }),
+                            ...(childTemplateViewType === ViewType.userPage && { isEditableByUser: fieldConfig.isEditableByUser || false }),
+                            ...(filterChips.length > 0 && { filters: { $or: filtersArray } }),
+                            ...('defaultValue' in fieldConfig &&
+                                fieldConfig.defaultValue !== undefined && { defaultValue: fieldConfig.defaultValue }),
                         };
 
-                        if (childTemplateViewType === ViewType.userPage) {
-                            childProp.isEditableByUser = fieldConfig.isEditableByUser || false;
-                        }
-
-                        const filterChips = fieldChips.filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter');
-
-                        if (filterChips.length > 0) {
-                            const filtersArray = filterChips.map((chip) => {
-                                const filter = filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, chip.filterField!);
-                                return filter;
-                            });
-                            childProp.filters = { $or: filtersArray };
-                        }
-
-                        if ('defaultValue' in fieldConfig && fieldConfig.defaultValue !== undefined) {
-                            childProp.defaultValue = fieldConfig.defaultValue;
-                        }
-
-                        properties[fieldName] = childProp;
+                        properties.properties[fieldName] = childProp;
                     });
 
-                    const baseTemplate: IEntityChildTemplate = {
+                    const baseTemplate: IChildTemplate = {
                         name: fullName,
                         displayName: displayNameToUse,
                         description,
-                        fatherTemplateId: entityTemplate._id,
-                        categories: categories.map((c) => c._id),
+                        parentTemplateId: entityTemplate._id,
+                        category: category!._id,
                         properties,
                         disabled: false,
                         viewType: childTemplateViewType,
@@ -454,9 +427,9 @@ const CreateChildTemplateDialog: React.FC<{
 
                     localStorage.removeItem(`${columnWidths}category-${childTemplate?._id ?? entityTemplate._id}`);
                     if (childTemplate) {
-                        await handleEntityChildTemplate([baseTemplate, childTemplate._id]);
+                        await handleChildTemplate([baseTemplate, childTemplate._id]);
                     } else {
-                        await handleEntityChildTemplate(baseTemplate);
+                        await handleChildTemplate(baseTemplate);
                     }
                 }}
             >
@@ -465,13 +438,12 @@ const CreateChildTemplateDialog: React.FC<{
                         if (!childTemplate) return;
 
                         const hasDescriptionChange = values.description !== (childTemplate.description || '');
-                        const hasCategoryChange =
-                            JSON.stringify(values.categories.map((c) => c._id).sort()) !== JSON.stringify(childTemplate.categories.sort());
+                        const hasCategoryChange = JSON.stringify(values.category?._id) !== JSON.stringify(childTemplate.category);
 
                         if (hasDescriptionChange || hasCategoryChange) {
                             setHasChanges(true);
                         }
-                    }, [values.description, values.categories]);
+                    }, [values.description, values.category]);
 
                     return (
                         <Form>
@@ -626,13 +598,12 @@ const CreateChildTemplateDialog: React.FC<{
                                                 <Autocomplete
                                                     id="category"
                                                     options={Array.from(categories.values())}
-                                                    multiple //convert to only single selection
                                                     disableCloseOnSelect
                                                     onChange={(event, newVal) => {
                                                         event.preventDefault();
-                                                        setFieldValue('categories', newVal);
+                                                        setFieldValue('category', newVal);
                                                     }}
-                                                    value={values.categories}
+                                                    value={values.category}
                                                     getOptionLabel={(option) => option.displayName}
                                                     isOptionEqualToValue={(option, value) => option._id === value._id}
                                                     renderInput={(params) => (
@@ -642,8 +613,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                             name="category"
                                                             variant="outlined"
                                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
-                                                            error={touched.categories && Boolean(errors.categories)}
-                                                            helperText={touched.categories && errors.categories}
+                                                            error={touched.category && Boolean(errors.category)}
+                                                            helperText={touched.category && errors.category}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (

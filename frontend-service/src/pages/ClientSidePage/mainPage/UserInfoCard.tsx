@@ -6,7 +6,7 @@ import { CustomIcon } from '../../../common/CustomIcon';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
-import { IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityDates } from '../../Entity/components/EntityDates';
@@ -17,7 +17,7 @@ import { Link } from 'wouter';
 
 interface IUserInfoCardProps {
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IMongoChildEntityTemplatePopulated;
+    usersInfoChildTemplate: IMongoChildTemplatePopulated;
     overridePropertiesToShow?: string[];
     displayTilte?: boolean;
 }
@@ -32,7 +32,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-    const usersInfoTemplate = usersInfoChildTemplate.fatherTemplateId;
+    const usersInfoTemplate = usersInfoChildTemplate.parentTemplate;
     const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
     const { height, width } = workspace!.metadata!.iconSize!;
 
@@ -102,7 +102,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item height="40%">
                             <EntityProperties
-                                entityTemplate={usersInfoChildTemplate!.fatherTemplateId}
+                                entityTemplate={usersInfoChildTemplate!.parentTemplate}
                                 properties={currentUserFromClientSide.properties}
                                 overridePropertiesToShow={overridePropertiesToShow}
                                 style={{

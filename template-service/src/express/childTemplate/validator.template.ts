@@ -2,36 +2,35 @@ import {
     addPropertyToRequest,
     DefaultController,
     EntityTemplateType,
-    IMongoEntityChildTemplate,
+    getChildPropertiesFiltered,
+    IMongoChildTemplate,
     IMongoEntityTemplatePopulated,
     TemplateItem,
 } from '@microservices/shared';
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import getFullChildTemplateProperties from '../../utils/entityChildTemplate';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 import EntityTemplateManager from '../entityTemplate/manager';
-import EntityChildTemplateManager from './manager';
+import ChildTemplateManager from './manager';
 
-class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTemplate, EntityChildTemplateManager> {
+class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, ChildTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {
-        super(new EntityChildTemplateManager(workspaceId));
+        super(new ChildTemplateManager(workspaceId));
         this.entityTemplateManager = new EntityTemplateManager(workspaceId);
     }
 
     getAllRelationshipReferencesEntityTemplates = async (templateId: string) => {
-        const childTemplates = await this.manager.getChildTemplates({ limit: 0, skip: 0 });
+        const childTemplates = await this.manager.searchChildTemplates({ limit: 0, skip: 0 });
         const childTemplatesMap = new Map(childTemplates.map((template) => [template._id, template]));
         const baseChildTemplate = childTemplatesMap.get(templateId)!;
 
         const entityParentTemplates = await this.entityTemplateManager.getTemplates({ limit: 0, skip: 0 });
         const parentTemplatesMap = new Map(entityParentTemplates.map((template) => [template._id, template]));
-        const baseParentTemplate = parentTemplatesMap.get(baseChildTemplate.fatherTemplateId._id)!;
 
-        const entityProperties = getFullChildTemplateProperties(baseChildTemplate, baseParentTemplate.properties.properties);
+        const entityProperties = getChildPropertiesFiltered(baseChildTemplate.properties.properties);
         const entityPropertiesQueue = [entityProperties];
         const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
             [templateId, { type: EntityTemplateType.Child, metaData: baseChildTemplate }],
@@ -104,4 +103,4 @@ class EntityChildTemplateValidator extends DefaultController<IMongoEntityChildTe
     };
 }
 
-export default EntityChildTemplateValidator;
+export default ChildTemplateValidator;

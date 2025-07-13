@@ -2,7 +2,7 @@ import {
     ForbiddenError,
     IAction,
     IBrokenRule,
-    IEntityChildTemplatePopulated,
+    IChildTemplatePopulated,
     IExportEntitiesBody,
     IMongoEntityTemplatePopulated,
     IRelationship,
@@ -79,16 +79,16 @@ class InstancesValidator extends DefaultController {
         }
     }
 
-    async getAllowedEntityChildTemplatesForInstances(
+    async getAllowedChildTemplatesForInstances(
         userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId'],
-    ): Promise<IEntityChildTemplatePopulated[]> {
+    ): Promise<IChildTemplatePopulated[]> {
         if (!userPermissions.admin && !userPermissions.instances) return [];
         const allowedCategories = Object.keys(userPermissions.instances?.categories ?? {});
         return this.entityTemplateService.searchChildTemplates(userPermissions.admin ? {} : { categoryIds: allowedCategories });
     }
 
     async validateHasPermissionsToEntitiesInChildTemplates(user: Express.User, templateIds: string[]) {
-        const allowedChildTemplates = await this.getAllowedEntityChildTemplatesForInstances(await this.authorizer.getWorkspacePermissions(user.id));
+        const allowedChildTemplates = await this.getAllowedChildTemplatesForInstances(await this.authorizer.getWorkspacePermissions(user.id));
         const allowedChildTemplateIds = allowedChildTemplates.map((childTemplate) => childTemplate._id);
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedChildTemplateIds.includes(templateId));
@@ -145,8 +145,8 @@ class InstancesValidator extends DefaultController {
                         scope === PermissionScope.write ||
                         templatePermissions?.scope === permissionScope ||
                         (childTemplateId
-                            ? templatePermissions?.entityChildTemplates[childTemplateId]?.scope === permissionScope ||
-                              templatePermissions?.entityChildTemplates[childTemplateId]?.scope === PermissionScope.write
+                            ? templatePermissions?.childTemplates[childTemplateId]?.scope === permissionScope ||
+                              templatePermissions?.childTemplates[childTemplateId]?.scope === PermissionScope.write
                             : templatePermissions?.scope === PermissionScope.write))
                 );
             })

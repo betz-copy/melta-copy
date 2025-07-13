@@ -46,7 +46,7 @@ const mockMongooseFindOneWithChainingResolveValue = (resolveValue: any) =>
         orFail: jest.fn().mockReturnThis(),
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
-    }) as unknown as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
+    }) as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
 
 const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
     ({
@@ -54,14 +54,14 @@ const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
-    }) as unknown as Query<(IRelationshipTemplate & Document)[], IRelationshipTemplate & Document>;
+    }) as Query<(IRelationshipTemplate & Document)[], IRelationshipTemplate & Document>;
 
 // const mockMongooseFindWithChainingRejectValue = (rejectValue: any) =>
 //     ({
 //         orFail: jest.fn().mockReturnThis(),
 //         lean: jest.fn().mockReturnThis(),
 //         exec: jest.fn().mockRejectedValue(rejectValue),
-//     } as unknown as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>);
+//     } as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>);
 
 describe('manager logic', () => {
     let app: Express;

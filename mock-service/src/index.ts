@@ -9,7 +9,7 @@ import categories from './mocks/categories';
 import entityTemplates from './mocks/entityTemplates';
 import simbaCategories from './mocks/simba/categories';
 import { carEntityTemplate, driverEntityTemplate, crashEntityTemplate } from './mocks/simba/entityTemplates';
-import { driverEntityChildTemplate, carEntityChildTemplate, crashEntityChildTemplate } from './mocks/simba/entityChildTemplates';
+import { driverChildTemplate, carChildTemplate, crashChildTemplate } from './mocks/simba/childTemplates';
 import getProcessTemplateToCreate from './mocks/processTemplates';
 import relationshipTemplates from './mocks/relationshipTemplates';
 import getUsersToCreate from './mocks/users';
@@ -26,7 +26,7 @@ import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive, updateWorkspaceMetadata } from './workspaces';
 import { createCategoryOrder } from './templates/config';
 import { createCharts } from './templateCharts';
-import { createEntityChildTemplate } from './templates/entityChildTemplates';
+import { createChildTemplate } from './templates/childTemplates';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -171,19 +171,11 @@ const main = async () => {
 
     console.log('Creating simba entity child templates');
 
-    const createdSimbaDriverEntityChildTemplate = await createEntityChildTemplate(
-        simbaWorkspace._id,
-        driverEntityChildTemplate,
-        createdSimbaDriverTemplate,
-    );
-    await createEntityChildTemplate(simbaWorkspace._id, carEntityChildTemplate, createdSimbaCarTemplate);
-    const createdSimbaCrashEntityChildTemplate = await createEntityChildTemplate(
-        simbaWorkspace._id,
-        crashEntityChildTemplate,
-        createdSimbaCrashTemplate,
-    );
+    const createdSimbaDriverChildTemplate = await createChildTemplate(simbaWorkspace._id, driverChildTemplate, createdSimbaDriverTemplate);
+    await createChildTemplate(simbaWorkspace._id, carChildTemplate, createdSimbaCarTemplate);
+    const createdSimbaCrashChildTemplate = await createChildTemplate(simbaWorkspace._id, crashChildTemplate, createdSimbaCrashTemplate);
 
-    console.log('createdSimbaCrashEntityChildTemplate', createdSimbaCrashEntityChildTemplate);
+    console.log('createdSimbaCrashChildTemplate', createdSimbaCrashChildTemplate);
 
     console.log('Creating simba relationship templates');
 
@@ -194,7 +186,7 @@ const main = async () => {
 
     const simbaWorkspaceMetadata = {
         clientSide: {
-            usersInfoChildTemplateId: createdSimbaDriverEntityChildTemplate._id,
+            usersInfoChildTemplateId: createdSimbaDriverChildTemplate._id,
             numOfPropsToShow: 9,
             clientSideWorkspaceName: 'simba' as const,
         },

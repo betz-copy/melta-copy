@@ -1,4 +1,5 @@
 import { IMongoCategory } from '../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
@@ -59,7 +60,7 @@ export const mapCategories = (categories: IMongoCategory[], order: string[]): Ma
     return map;
 };
 
-export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplatePopulated): IMongoEntityTemplatePopulated => {
+export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>(entityTemplate: T): T => {
     return {
         ...entityTemplate,
         properties: {
@@ -87,4 +88,8 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
             )
             .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
     ];
+};
+
+export const isChildTemplate = (template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): template is IMongoChildTemplatePopulated => {
+    return 'parentTemplate' in template && Boolean(template.parentTemplate);
 };
