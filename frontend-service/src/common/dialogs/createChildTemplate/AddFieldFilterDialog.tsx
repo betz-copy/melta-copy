@@ -89,6 +89,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
     const [matchValidationError, setMatchValidationError] = useState<string | null>(null);
 
+    const isError = !!currentFieldError;
+
     const handleClose = () => {
         setMatchValidationError(null);
         onClose();
@@ -158,13 +160,13 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
 
-        const stringDate = newValue ? format(newValue, dateFormat) : null;
+        const dateString = newValue ? format(newValue, dateFormat) : null;
 
         checkMatchValidations(newValue);
 
         setLocalFilterField({
             ...localFilterField,
-            ...(isStartDate ? { dateFrom: stringDate } : { dateTo: stringDate }),
+            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
         } as IAGGridDateFilter);
     };
 
@@ -201,7 +203,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     enumOptions={propEnum}
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
-                    error={!!currentFieldError}
+                    error={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
@@ -228,7 +230,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     isBooleanSelect
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
-                    error={!!currentFieldError}
+                    error={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
@@ -242,7 +244,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     enumOptions={items.enum}
                     readOnly={readOnly}
-                    isError={!!currentFieldError}
+                    isError={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
@@ -258,7 +260,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
                     isUsersArray
-                    isError={!!currentFieldError}
+                    isError={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
@@ -273,7 +275,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 handleFilterTypeChange={handleFilterTypeChange}
                 type={type}
                 readOnly={readOnly}
-                error={!!currentFieldError}
+                error={isError}
                 helperText={currentFieldError}
                 {...defaultFilterProps}
             />
@@ -360,7 +362,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                             variant="contained"
                             color="primary"
                             onClick={handleSubmit}
-                            disabled={!isValueValid() || !!currentFieldError || !!matchValidationError}
+                            disabled={!isValueValid() || isError || !!matchValidationError}
                         >
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
