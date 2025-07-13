@@ -1,29 +1,30 @@
-import { Grid, Card, CardContent, Divider, Button, CircularProgress } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import i18next from 'i18next';
+import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { Form, Formik } from 'formik';
+import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IEntity } from '../../../../interfaces/entities';
 import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IEntity } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
+import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { useClientSideUserStore } from '../../../../stores/clientSideUser';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { ExportFormats } from '../ExportFormats';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
 import { DraftWarningDialog } from '../draftWarningDialog';
-import { useWorkspaceStore } from '../../../../stores/workspace';
+import { ExportFormats } from '../ExportFormats';
+import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
-import EditProps from './EditProps';
-import { useClientSideUserStore } from '../../../../stores/clientSideUser';
 
 const { signaturePrefix } = environment;
 
-export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
+export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
@@ -36,7 +37,7 @@ export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTem
 
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
     const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
@@ -63,7 +64,7 @@ const convertIEntityToEntityWizardValues = (
 
 export const getInitialValuesWithDefaults = (
     initialCurrValues: EntityWizardValues,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): EntityWizardValues => {
     const { attachmentsProperties, properties } = initialCurrValues;
 
@@ -81,7 +82,7 @@ export const getInitialValuesWithDefaults = (
 
 const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
     handleClose: () => void;
     externalErrors: IExternalErrors;
@@ -89,7 +90,6 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
-    childTemplateId?: string;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -99,7 +99,6 @@ const CreateOrEditEntityDetails: React.FC<{
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
-    childTemplateId,
     showActionButtons = true,
 }) => {
     const { payload, actionType } = mutationProps;
@@ -152,7 +151,6 @@ const CreateOrEditEntityDetails: React.FC<{
         finalMutationProps,
         setExternalErrors,
         setCreateOrUpdateWithRuleBreachDialogState,
-        childTemplateId,
         clientSideUserEntity,
     );
 

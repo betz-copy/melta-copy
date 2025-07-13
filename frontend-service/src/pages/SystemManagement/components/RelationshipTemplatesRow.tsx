@@ -37,6 +37,7 @@ import { checkUserTemplatePermission } from '../../../utils/permissions/instance
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../../utils/permissions/templatePermissions';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -76,16 +77,17 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
 
     const { isProperty } = relationshipTemplate;
 
+    // TODO: permissions
     const checkRelationshipTemplateHasRelationships = async () => {
         const isSourceEntityHasWritePermission = checkUserTemplatePermission(
             currentUser.currentWorkspacePermissions,
-            relationshipTemplate.sourceEntity.category,
+            relationshipTemplate.sourceEntity.category._id,
             relationshipTemplate.sourceEntity._id,
             PermissionScope.write,
         );
         const isDestEntityHasWritePermission = checkUserTemplatePermission(
             currentUser.currentWorkspacePermissions,
-            relationshipTemplate.destinationEntity.category,
+            relationshipTemplate.destinationEntity.category._id,
             relationshipTemplate.destinationEntity._id,
             PermissionScope.write,
         );
@@ -197,8 +199,10 @@ const RelationshipTemplatesRow: React.FC = () => {
     const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] =
+        useState<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>(allowedEntityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] =
+        useState<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>(allowedEntityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -296,11 +300,13 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const getRelationshipGroupedByEntitiesTemplate = (
         relationships: IMongoRelationshipTemplatePopulated[],
-    ): { entityTemplate: IMongoEntityTemplatePopulated; relationships: IMongoRelationshipTemplatePopulated[] }[] => {
+    ): { entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated; relationships: IMongoRelationshipTemplatePopulated[] }[] => {
         const entitiesToGroupBy = isSrcRelationChecked ? sourceEntityTemplatesToShow : destinationEntityTemplatesToShow;
 
-        const relationsGroupedByEntities: { entityTemplate: IMongoEntityTemplatePopulated; relationships: IMongoRelationshipTemplatePopulated[] }[] =
-            [];
+        const relationsGroupedByEntities: {
+            entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+            relationships: IMongoRelationshipTemplatePopulated[];
+        }[] = [];
         entitiesToGroupBy.forEach((entityTemplate) => {
             const relatedRelations = relationships.filter((relation) => {
                 if (isSrcRelationChecked) return relation.sourceEntity._id === entityTemplate._id;
@@ -394,7 +400,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
             <Grid container gap="30px" marginTop="30px">
                 <InfiniteScroll<{
-                    entityTemplate: IMongoEntityTemplatePopulated;
+                    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
                     queryKey={['searchRelationshipTemplates', searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow]}

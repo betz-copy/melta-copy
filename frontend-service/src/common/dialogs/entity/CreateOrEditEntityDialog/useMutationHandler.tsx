@@ -1,21 +1,21 @@
+import { Button, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { useMutation, useQueryClient } from 'react-query';
-import { useLocation } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { Button, Grid } from '@mui/material';
+import { useLocation } from 'wouter';
 import { EntityWizardValues } from '..';
-import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
-import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
-import { updateEntityRequestForMultiple, createEntityRequest } from '../../../../services/entitiesService';
+import { environment } from '../../../../globals';
+import { IChildTemplateMapPopulated, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
-import { environment } from '../../../../globals';
+import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
-import { IEntityChildTemplateMapPopulated, IMongoChildEntityTemplatePopulated } from '../../../../interfaces/entityChildTemplates';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
 
 const { errorCodes } = environment;
 
@@ -24,19 +24,22 @@ type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
-    childTemplateId?: string,
     clientSideUserEntity?: IEntity,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
-    let childTemplate: IMongoChildEntityTemplatePopulated | undefined = undefined;
+    let childTemplate: IMongoChildTemplatePopulated | undefined = undefined;
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
+    const handleMutationError = (
+        err: AxiosError,
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        newEntityData?: EntityWizardValues | undefined,
+    ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
         const errorMetadata = err.response?.data?.metadata;
 
@@ -87,7 +90,7 @@ const useMutationHandler = (
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules, childTemplateId),
+            updateEntityRequestForMultiple(payload!.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);
@@ -126,12 +129,12 @@ const useMutationHandler = (
     if (Object.keys(clientSideUserEntity || {}).length > 0) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
-        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.fatherTemplateId._id === entityTemplate._id);
+        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            createEntityClientSideRequest(newEntityData, ignoredRules, childTemplate, clientSideUserEntity),
+            createEntityClientSideRequest(newEntityData, childTemplate!, ignoredRules, clientSideUserEntity),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);

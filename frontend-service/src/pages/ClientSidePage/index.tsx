@@ -14,7 +14,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IEntityChildTemplateMapPopulated } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
 import { mapTemplates } from '../../utils/templates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import ErrorPage from '../ErrorPage';
@@ -60,7 +60,7 @@ const ClientSidePage: React.FC = () => {
             onSuccess: ({ categories, entityTemplates, relationshipTemplates, childTemplates }) => {
                 queryClient.setQueryData<ICategoryMap>('getClientSideCategories', mapTemplates(categories));
                 queryClient.setQueryData<IEntityTemplateMap>('getClientSideEntityTemplates', mapTemplates(entityTemplates));
-                queryClient.setQueryData<IEntityChildTemplateMapPopulated>('getClientSideChildEntityTemplates', mapTemplates(childTemplates));
+                queryClient.setQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates', mapTemplates(childTemplates));
                 queryClient.setQueryData<IRelationshipTemplateMap>('getClientSideRelationshipTemplates', mapTemplates(relationshipTemplates));
 
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));

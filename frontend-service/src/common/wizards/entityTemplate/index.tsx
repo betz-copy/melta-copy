@@ -7,10 +7,12 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { useUserStore } from '../../../stores/user';
@@ -25,8 +27,6 @@ import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
-import { IEntityChildTemplateMap, IMongoChildEntityTemplate, IMongoChildEntityTemplatePopulated } from '../../../interfaces/entityChildTemplates';
-import { getAllEntityChildTemplates } from '../../../services/templates/entityChildTemplatesService';
 
 const { errorCodes } = environment;
 
@@ -130,20 +130,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
 
                     try {
-                        const childTemplates: IMongoChildEntityTemplatePopulated[] = await getAllEntityChildTemplates();
-                        queryClient.setQueryData<IEntityChildTemplateMap>(
-                            'getChildEntityTemplates',
-                            mapTemplates(
-                                childTemplates.map((childTemplate) => {
-                                    return {
-                                        ...childTemplate,
-                                        categories: childTemplate.categories.map((category) => category._id),
-                                        fatherTemplateId: childTemplate.fatherTemplateId._id,
-                                    } as IMongoChildEntityTemplate;
-                                }),
-                                'name',
-                            ),
-                        );
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
+                        queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }

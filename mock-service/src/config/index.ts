@@ -25,8 +25,8 @@ const config = {
             createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
             getRelationshipTemplateRoute: env.get('GET_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
         },
-        entityChildTemplates: {
-            createEntityChildTemplateRoute: env.get('CREATE_ENTITY_CHILD_TEMPLATE_ROUTE').default('/api/templates/child').asString(),
+        childTemplates: {
+            createChildTemplateRoute: env.get('CREATE_CHILD_TEMPLATE_ROUTE').default('/api/templates/child').asString(),
         },
         config: {
             createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/categoryOrder').asString(),

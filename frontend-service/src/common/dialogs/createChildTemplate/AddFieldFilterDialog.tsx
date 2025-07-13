@@ -3,7 +3,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, I
 import { format } from 'date-fns';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { ChipType, IFieldChip, IFieldFilter } from '../../../interfaces/entityChildTemplates';
+import { ChipType, IFieldChip, IFieldFilter } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
@@ -12,6 +12,7 @@ import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSel
 import { MultipleUserFilterInput } from '../../inputs/FilterInputs/MultipleUserFilterInput';
 import { SelectFilterInput } from '../../inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
+
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { isValidAGGridFilter } from '../../FilterComponent';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';

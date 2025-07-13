@@ -11,7 +11,7 @@ export const useSearchParams = <T extends Record<string, string>>(defaultValue?:
         let navigationLocation = location === '/' ? '' : location;
 
         if (Object.keys(params).length !== 0) {
-            navigationLocation += `?${new URLSearchParams(params as unknown as T).toString()}`;
+            navigationLocation += `?${new URLSearchParams(params as T).toString()}`;
         }
 
         navigate(navigationLocation, { replace: isDefault });

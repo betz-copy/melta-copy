@@ -15,6 +15,7 @@ import { EntityWizardValues } from '..';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { Draft } from '../draftWarningDialog/index';
+import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 const EditProps: React.FC<{
     values: FormikState<EntityWizardValues>['values'];
@@ -26,7 +27,7 @@ const EditProps: React.FC<{
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     initialValuePropsToFilter: Record<string, any>;
     isMultipleSelection: boolean;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     wasDirty: boolean;
     setWasDirty: Dispatch<React.SetStateAction<boolean>>;
     externalErrors: IExternalErrors;

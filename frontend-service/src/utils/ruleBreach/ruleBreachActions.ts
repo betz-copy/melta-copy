@@ -275,8 +275,7 @@ export const getRelationshipForRelationshipInfo = (
         const numberPart = relationship.slice(1, -4);
         const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
 
-        const actionMetadata: ICreateRelationshipMetadataPopulated = actions[actionIndex]
-            .actionMetadata as unknown as ICreateRelationshipMetadataPopulated;
+        const actionMetadata: ICreateRelationshipMetadataPopulated = actions[actionIndex].actionMetadata as ICreateRelationshipMetadataPopulated;
 
         relationshipTemplateId = actionMetadata.relationshipTemplateId;
 

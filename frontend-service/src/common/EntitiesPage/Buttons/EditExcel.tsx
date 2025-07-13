@@ -9,8 +9,7 @@ const EditExcelButton: React.FC<{
     initialValues?: EntityWizardValues;
     popoverText?: string;
     onSuccessCreate: () => void;
-    childTemplateId?: string;
-}> = ({ children, disabled, initialValues, popoverText, onSuccessCreate, childTemplateId }) => {
+}> = ({ children, disabled, initialValues, popoverText, onSuccessCreate }) => {
     const [editExcelState, setEditExcelState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -44,7 +43,6 @@ const EditExcelButton: React.FC<{
                 }}
                 initialValues={{ template: initialValues?.template }}
                 initialStep={1}
-                childTemplateId={childTemplateId}
             />
         </>
     );

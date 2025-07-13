@@ -77,7 +77,7 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import BulkActionManager from '../bulkActions/manager';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
-import EntityChildTemplateManagerService from '../../externalServices/templates/entityChildTemplateManager';
+import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
@@ -86,7 +86,7 @@ const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
-    private entityChildTemplateManagerService: EntityChildTemplateManagerService;
+    private childTemplateManagerService: ChildTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
@@ -100,7 +100,7 @@ class EntityManager extends DefaultManagerNeo4j {
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
         this.relationshipManager = new RelationshipManager(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
-        this.entityChildTemplateManagerService = new EntityChildTemplateManagerService(workspaceId);
+        this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
     }
 
     private getRelevantRulesOfEntities = (
@@ -650,7 +650,7 @@ class EntityManager extends DefaultManagerNeo4j {
     ) {
         let template = entityTemplate;
         if (childTemplateId) {
-            const childTemplate = await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId);
+            const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
 
@@ -1598,7 +1598,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         let template = entityTemplate;
         if (childTemplateId) {
-            const childTemplate = await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId);
+            const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
 

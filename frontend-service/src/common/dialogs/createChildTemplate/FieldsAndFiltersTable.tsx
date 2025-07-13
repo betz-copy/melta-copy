@@ -3,7 +3,6 @@ import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/materi
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { environment } from '../../../globals';
-import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -11,6 +10,7 @@ import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
+import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
 
 const { dateOrDateTimeRegex } = environment;
 

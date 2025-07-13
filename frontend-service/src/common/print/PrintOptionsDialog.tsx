@@ -18,6 +18,7 @@ import {
 } from '../../pages/Entity/components/print';
 import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 type IOption = {
     show: boolean;
@@ -254,13 +255,24 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                     <Grid paddingTop="25px">
                         {Object.entries(options).map(([key, value]) => {
+                            const isDisabled =
+                                key === 'previewPropertiesOnly' && 'propertiesPreview' in template && template.propertiesPreview.length === 0;
+
+                            const label = (
+                                <FormControlLabel
+                                    control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
+                                    label={i18next.t(value.label)}
+                                    disabled={isDisabled}
+                                />
+                            );
                             return (
                                 value && (
                                     <Grid key={key}>
-                                        <FormControlLabel
-                                            control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
-                                            label={i18next.t(value.label)}
-                                        />
+                                        {isDisabled ? (
+                                            <MeltaTooltip title={i18next.t('entityPage.print.noPreviewProperties')}>{label}</MeltaTooltip>
+                                        ) : (
+                                            label
+                                        )}
                                     </Grid>
                                 )
                             );

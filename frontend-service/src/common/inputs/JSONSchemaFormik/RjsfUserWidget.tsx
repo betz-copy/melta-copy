@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
-import UserAutocomplete from '../UserAutocomplete';
+import { WidgetProps } from '@rjsf/utils';
+import React, { useState } from 'react';
 import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../../interfaces/users';
+import UserAutocomplete from '../UserAutocomplete';
 
 const RjsfUserWidget = ({
     disabled,
@@ -23,7 +23,7 @@ const RjsfUserWidget = ({
         if (handleOnChange) handleOnChange(null, options.globalValues);
     }
 
-    function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
+    const handleUserChange = (_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) => {
         if (!chosenUser) {
             setCurrentUser(undefined);
             return;
@@ -36,7 +36,7 @@ const RjsfUserWidget = ({
         if (handleOnChange) handleOnChange(formattedUser, options.globalValues);
 
         setCurrentUser(formattedUser);
-    }
+    };
 
     return (
         <Grid>
