@@ -10,14 +10,14 @@ import { DashboardItemType, TableForm, ViewMode } from '../../../../interfaces/d
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
 import { ChangeTemplate } from '../../Dialogs';
-import { IEntityChildTemplateMap } from '../../../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue, setValues } = formikProps;
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const entityTemplatesIds = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
 
@@ -29,7 +29,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
     const handleChangeTemplate = (newValue: string[] | string | null) => {
         const childTemplate = childEntityTemplates.get(newValue as string);
 
-        setFieldValue('templateId', childTemplate?.fatherTemplateId || newValue || null);
+        setFieldValue('templateId', childTemplate?.parentTemplate._id || newValue || null);
         setFieldValue('childTemplateId', childTemplate?._id || null);
 
         if (typeof newValue === 'string')

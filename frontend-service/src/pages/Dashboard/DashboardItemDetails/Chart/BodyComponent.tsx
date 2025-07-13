@@ -8,28 +8,21 @@ import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
-import { ICategoryMap } from '../../../../interfaces/categories';
-import { IEntityChildTemplateMap } from '../../../../interfaces/entityChildTemplates';
-import { transformChild } from '../../../Category';
 import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
 import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 export const getRelevantEntityTemplate = (
-    entityTemplates,
+    entityTemplates: IEntityTemplateMap,
     templateId: string,
     childTemplateId?: string,
-): IMongoEntityTemplatePopulated & {
-    fatherTemplateId?: string;
-} => {
+): IChildTemplatePopulated | IMongoEntityTemplatePopulated => {
     const queryClient = useQueryClient();
-    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const childEntityTemplate = childTemplateId ? childEntityTemplates.get(childTemplateId) : undefined;
     const fatherEntityTemplate = entityTemplates.get(templateId)!;
-    return childEntityTemplate
-        ? transformChild(childEntityTemplate, fatherEntityTemplate, categories.get(childEntityTemplate.categories[0])!)
-        : fatherEntityTemplate;
+    return childEntityTemplate || fatherEntityTemplate;
 };
 
 const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {

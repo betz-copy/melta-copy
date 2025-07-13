@@ -51,8 +51,7 @@ const TemplatesSelectCheckbox = <T extends IMongoEntityTemplatePopulated | IMong
                 groups: categories,
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
-                getGroupOfOption: (entityTemplate, _categories) =>
-                    isChildTemplate(entityTemplate) ? entityTemplate.category : entityTemplate.category,
+                getGroupOfOption: (entityTemplate, _categories) => entityTemplate?.category,
             }}
             overrideSx={overrideSx}
         />

@@ -351,7 +351,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                 },
                 onSuccess: () => {
-                    setUpdatedTemplateIds?.([template.fatherTemplateId || template._id]);
+                    setUpdatedTemplateIds?.([]);
                     toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
                 },
                 onSettled: () => {
@@ -569,7 +569,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             {
                 onSuccess: () => {
                     toast.success(i18next.t('wizard.entity.editedSuccessfully'));
-                    setUpdatedTemplateIds?.([template.fatherTemplateId || template._id]);
+                    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+                    setUpdatedTemplateIds?.([parentTemplateId]);
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {

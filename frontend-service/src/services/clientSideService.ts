@@ -12,6 +12,7 @@ import { locationConverterToString } from '../utils/map/convert';
 import { mapValues } from 'lodash';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
 import { IGetMyNotificationsRequestQuery } from './notificationService';
+import { isChildTemplate } from '../utils/templates';
 
 const { clientSideRoutes, getAllClientSideTemplates: getAllClientSideTemplatesRoute } = environment.api;
 
@@ -125,7 +126,8 @@ const createEntityClientSideRequest = async (
             }),
         ),
     );
-    formData.append('templateId', entity.template.fatherTemplateId || entity.template._id);
+    const templateId = isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id 
+    formData.append('templateId', templateId);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));

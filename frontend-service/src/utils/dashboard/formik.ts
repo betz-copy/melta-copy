@@ -8,7 +8,7 @@ import { IChartType, IColumnOrLineMetaData, IPermission } from '../../interfaces
 import { ChartForm, DashboardItemType, TableForm, TableItemToBackend } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IFrame } from '../../interfaces/iFrames';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 export const tableDetailsSchema = Yup.object().shape({
     name: Yup.string().required(i18next.t('validation.required')),
@@ -39,7 +39,7 @@ export const dashboardInitialValues = {
 };
 
 export const getTemplateProperties = (
-    entityTemplates: IEntityTemplateMap | IEntityChildTemplateMap,
+    entityTemplates: IEntityTemplateMap | IChildTemplateMap,
     templateId: string | null,
     isChildTemplate: boolean,
 ) => {

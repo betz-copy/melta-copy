@@ -110,7 +110,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         {
             onSuccess: (data) => {
                 setStepsData(data);
-                setUpdatedTemplateIds?.([template.fatherTemplateId || template._id]);
+                setUpdatedTemplateIds?.([parentTemplateId]);
             },
             onError: (error: AxiosError) => {
                 if (error.response?.status === 413) {

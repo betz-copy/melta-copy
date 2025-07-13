@@ -1,11 +1,4 @@
-import {
-    ForbiddenError,
-    IChartPermission,
-    IEntityChildTemplatePopulated,
-    IMongoChart,
-    IMongoEntityChildTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-} from '@microservices/shared';
+import { ForbiddenError, IChartPermission, IChildTemplatePopulated, IMongoChart, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { Request } from 'express';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -31,16 +24,15 @@ class ChartsValidator extends DefaultController {
         isChildTemplate?: boolean,
     ): Promise<{
         categoryId: string;
-        template: IEntityChildTemplatePopulated | IMongoEntityTemplatePopulated;
+        template: IChildTemplatePopulated | IMongoEntityTemplatePopulated;
     }> {
+        console.log({ templateId });
+
         const template = isChildTemplate
             ? await this.entityTemplateService.getChildTemplateById(templateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
 
-        const categoryId = isChildTemplate
-            ? (template as IMongoEntityChildTemplatePopulated).categories[0]._id
-            : (template as IMongoEntityTemplatePopulated).category._id;
-
+        const categoryId = template.category._id;
         return { categoryId, template };
     }
 
@@ -59,14 +51,13 @@ class ChartsValidator extends DefaultController {
         ]);
 
         const categoryPermissions = userPermissions.instances?.categories?.[categoryId];
+        // SHIREL
         if (
             !userPermissions.admin?.scope &&
             !categoryPermissions?.scope &&
             (isChildTemplate
-                ? !categoryPermissions?.entityTemplates?.[(template as IEntityChildTemplatePopulated).fatherTemplateId._id]?.scope &&
-                  !categoryPermissions?.entityTemplates?.[(template as IEntityChildTemplatePopulated).fatherTemplateId._id]?.entityChildTemplates?.[
-                      templateId
-                  ]?.scope
+                ? !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated).parentTemplate._id]?.scope &&
+                  !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated)._id]?.scope
                 : !categoryPermissions?.entityTemplates?.[templateId]?.scope)
         ) {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });

@@ -32,7 +32,7 @@ import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/charts
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
 import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
-import { IEntityChildTemplateMap } from '../../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -42,7 +42,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const entityTemplateOptions = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
@@ -72,11 +72,11 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                 setChangeTemplateWarning({
                                     isOpen: true,
                                     newTemplate: newValue,
-                                    fatherTemplateId: childEntityTemplates.get(newValue as string)?.fatherTemplateId,
+                                    fatherTemplateId: childEntityTemplates.get(newValue as string)?.parentTemplate._id,
                                 });
                             else {
                                 const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
-                                const templateId = childTemplate?.fatherTemplateId || newValue || '';
+                                const templateId = childTemplate?.parentTemplate._id || newValue || '';
                                 setFieldValue('templateId', templateId);
                                 if (!!childTemplate) setFieldValue('childTemplateId', newValue!);
                             }

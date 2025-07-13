@@ -20,9 +20,7 @@ import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 import { AddNewChartButton } from './AddNewChartButton';
 import ChartItem from './chartsTemplatePage/chartItem';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
-import { transformChild } from '../Category';
-import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -32,14 +30,11 @@ const ChartsPage: React.FC = () => {
     const [currentLocation, navigate] = useLocation();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
-    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const childEntityTemplate = childEntityTemplates.get(templateId as string);
-    const fatherEntityTemplate = entityTemplates.get((childEntityTemplate ? childEntityTemplate.fatherTemplateId : templateId) as string)!;
-    const template = childEntityTemplate
-        ? transformChild(childEntityTemplate, fatherEntityTemplate, categories.get(childEntityTemplate.categories[0])!)
-        : fatherEntityTemplate;
+    const fatherEntityTemplate = entityTemplates.get((childEntityTemplate ? childEntityTemplate.parentTemplate._id : templateId) as string)!;
+    const template = childEntityTemplate || fatherEntityTemplate;
 
     const [textSearch, setTextSearch] = useState<string>();
     const [layout, setLayout] = useState<LayoutItem[]>([]);

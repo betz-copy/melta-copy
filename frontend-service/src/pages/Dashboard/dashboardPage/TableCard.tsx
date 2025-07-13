@@ -18,6 +18,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
+import { isChildTemplate } from '../../../utils/templates';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -81,7 +82,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                             metaData.filter && JSON.parse(metaData.filter),
                         ),
                         displayColumns: metaData.columns,
-                        isChildTemplate: !!template.fatherTemplateId
+                        isChildTemplate:  isChildTemplate(template)
                     },
                 },
             }),

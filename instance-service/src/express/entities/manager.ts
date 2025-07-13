@@ -2129,11 +2129,9 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getChartByTemplate(templateId: string, { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string }) {
-        const childEntityTemplate = childTemplateId
-            ? await this.entityChildTemplateManagerService.getEntityChildTemplateById(childTemplateId)
-            : undefined;
+        const childEntityTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
-        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(childEntityTemplate?.fatherTemplateId._id || templateId);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(childEntityTemplate?.parentTemplate._id || templateId);
 
         const entityTemplatesMap = new Map([[entityTemplate._id, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);

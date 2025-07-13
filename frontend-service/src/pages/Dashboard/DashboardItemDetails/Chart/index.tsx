@@ -24,7 +24,7 @@ import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../
 import ChartSideBar from '../../../Charts/ChartPage/ChartSideBar';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
 import BodyComponent from './BodyComponent';
-import { IEntityChildTemplateMap } from '../../../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const { dashboardPath, chartPath } = environment.dashboard;
 
@@ -40,9 +40,9 @@ const Chart: React.FC = () => {
     const { isDashboardPage = false, dashboardId = '' } = window.history.state ?? {};
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const childTemplate = childEntityTemplates.get(templateId ?? '');
-    const currTemplateId = childTemplate ? childTemplate.fatherTemplateId : templateId;
+    const currTemplateId = childTemplate ? childTemplate.parentTemplate._id : templateId;
 
     const { data: chart, isLoading: isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
         enabled: !!chartId,
