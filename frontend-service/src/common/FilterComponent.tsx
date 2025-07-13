@@ -21,6 +21,23 @@ export const initializedFilterField: Record<string, IAGGridFilter> = {
     array: { filterType: 'set', values: [] },
 };
 
+export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean => {
+    if (!filter) return false;
+
+    switch (filter.filterType) {
+        case 'text':
+            return filter.filter !== undefined && filter.filter !== '';
+        case 'number':
+            return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
+        case 'date':
+            return filter.dateFrom !== null && (filter.type !== 'inRange' || filter.dateTo !== null);
+        case 'set':
+            return Array.isArray(filter.values) && filter.values.length > 0;
+        default:
+            return false;
+    }
+};
+
 export const handleRemoveFilter = (filters: IFilterTemplate[], index: number, onChange: (newFiltersArray: IFilterTemplate[]) => void) => {
     const updatedFilters = filters.filter((_, i) => i !== index);
     onChange(updatedFilters);
