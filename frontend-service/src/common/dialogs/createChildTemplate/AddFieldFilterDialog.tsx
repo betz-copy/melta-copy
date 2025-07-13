@@ -33,7 +33,7 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         case 'text':
         case 'number':
         case 'date':
-            return operatorMap[filterField.type] || null;
+            return operatorMap[filterField.type];
         case 'set':
             return filterField.values && filterField.values.length > 0 ? '$in' : null;
         default:
@@ -46,11 +46,11 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
     switch (filterField?.filterType) {
         case 'text':
         case 'number':
-            return filterField.filter || null;
+            return filterField.filter;
         case 'date':
-            return filterField.dateFrom || null;
+            return filterField.dateFrom;
         case 'set':
-            return filterField.values || null;
+            return filterField.values;
         default:
             console.warn('Unsupported filter type:', filterField);
             return null;
@@ -124,14 +124,14 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         const filtersChip = fieldChips.filter((chip) => chip.chipType === ChipType.Filter && chip.fieldName === currentFieldName);
 
-        if (filtersChip.length > 0) {
+        if (filtersChip.length > 0 && dialogType === ChipType.Default) {
             for (const { filterField } of filtersChip) {
                 if (!checkMatchValidation(filterField, fieldName, value.filter)) return false;
             }
         }
 
         const defaultChip = fieldChips.find((chip) => chip.chipType === ChipType.Default && chip.fieldName === currentFieldName);
-        if (defaultChip && !checkMatchValidation(value, fieldName, defaultChip.defaultValue)) return false;
+        if (defaultChip && dialogType === ChipType.Filter && !checkMatchValidation(value, fieldName, defaultChip.defaultValue)) return false;
 
         setMatchValidationError(null);
         return true;
