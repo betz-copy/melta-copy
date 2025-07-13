@@ -5,7 +5,7 @@ import { IAGGridFilter, IFilterTemplate } from '../../common/wizards/entityTempl
 import { filterTemplateToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { ISearchFilter } from '../../interfaces/entities';
 
-export function isValidAGGridFilter(filter: IAGGridFilter | undefined): boolean {
+export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean => {
     if (!filter) return false;
 
     switch (filter.filterType) {
@@ -20,7 +20,7 @@ export function isValidAGGridFilter(filter: IAGGridFilter | undefined): boolean 
         default:
             return false;
     }
-}
+};
 
 type FilterProcessingInput = {
     filter?: IFilterTemplate[];

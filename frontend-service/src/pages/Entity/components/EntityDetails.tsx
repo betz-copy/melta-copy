@@ -1,20 +1,20 @@
-import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import {
-    ContentCopy as DuplicateIcon,
+    Archive,
     Delete as DeleteIcon,
-    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    ContentCopy as DuplicateIcon,
     MoreVertOutlined,
     Unarchive,
-    Archive,
 } from '@mui/icons-material';
+import MapIcon from '@mui/icons-material/Map';
+import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import MapIcon from '@mui/icons-material/Map';
+import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -29,17 +29,17 @@ import { deleteEntityRequest, updateEntityStatusRequest } from '../../../service
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { isChildTemplate } from '../../../utils/templates';
+import LocationPreview from '../../Map/LocationPreview';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import LocationPreview from '../../Map/LocationPreview';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded; childTemplateId?: string }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
-    childTemplateId,
 }) => {
     const { entity } = expandedEntity;
     const [_, navigate] = useLocation();
@@ -138,7 +138,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
-                childTemplateId,
+                childTemplateId: isChildTemplate(entityTemplate) ? entityTemplate._id : undefined,
             } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {
@@ -168,7 +168,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     });
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
-                childTemplateId={childTemplateId}
             />
         );
     }
@@ -234,7 +233,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             if (canWriteInstance && !isEntityDisabled) {
                                                 navigate(
                                                     `/entity/${entity.properties._id}/duplicate${
-                                                        childTemplateId ? `?childTemplateId=${childTemplateId}` : ''
+                                                        isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
                                                     }`,
                                                     {
                                                         state: { entityTemplate, expandedEntity, currentEntityTemplate },

@@ -1,9 +1,9 @@
 /* eslint-disable import/prefer-default-export */
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { load } from 'cheerio';
-import { IPatch, patchDocument, PatchType, TextRun, ImageRun } from 'docx';
+import { ImageRun, IPatch, patchDocument, PatchType, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import mammoth from 'mammoth';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import config from '../../../config';
 
 const {
@@ -142,10 +142,10 @@ const getHebrewDate = (dateStr: string) =>
  * @param text contains or not html tags
  * @returns true if contains html tags. Otherwise, false.
  */
-function isHTML(text: string): boolean {
+const isHTML = (text: string): boolean => {
     const $ = load(text);
     return $('body').children().length > 0;
-}
+};
 
 /**
  * Extracts text from html tag.
