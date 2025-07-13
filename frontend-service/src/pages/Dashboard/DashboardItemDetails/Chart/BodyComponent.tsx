@@ -5,7 +5,7 @@ import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { ChartForm } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 import { ICategoryMap } from '../../../../interfaces/categories';
@@ -14,7 +14,13 @@ import { transformChild } from '../../../Category';
 import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
 import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
-export const getRelevantEntityTemplate = (entityTemplates, templateId: string, childTemplateId?: string) => {
+export const getRelevantEntityTemplate = (
+    entityTemplates,
+    templateId: string,
+    childTemplateId?: string,
+): IMongoEntityTemplatePopulated & {
+    fatherTemplateId?: string;
+} => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const childEntityTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;

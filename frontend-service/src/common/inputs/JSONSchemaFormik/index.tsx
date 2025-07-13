@@ -90,9 +90,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filters',
         'defaultValue',
         'isFilterByCurrentUser',
-    ].forEach((keyword) => {
-        ajv.addKeyword({ keyword });
-    });
+    ].forEach((keyword) => ajv.addKeyword({ keyword }));
+
 
     ajv.addKeyword({
         keyword: 'identifier',
@@ -113,22 +112,22 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajvErrors = validateFunction.errors ?? [];
     const formikErrors = ajvErrorsToFormikErrors(schema, ajvErrors);
 
-    const filterErrors: FormikErrors<any> = {};
+    const childTemplateFilterErrors: FormikErrors<any> = {};
 
     Object.entries(schema.properties || {}).forEach(([field, propertySchema]) => {
-        const rawFilter = propertySchema?.filters;
-        if (!rawFilter) return;
+        const propertyFilter = propertySchema?.filters;
+        if (!propertyFilter) return;
 
-        const parsedFilter = typeof rawFilter === 'string' ? JSON.parse(rawFilter) : rawFilter;
+        const parsedFilter = typeof propertyFilter === 'string' ? JSON.parse(propertyFilter) : propertyFilter;
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
         const value = data[field];
         if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
-            filterErrors[field] = i18next.t('validation.fieldFilterCondition');
+            childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
         }
     });
 
-    return { ...formikErrors, ...filterErrors };
+    return { ...formikErrors, ...childTemplateFilterErrors };
 };
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {

@@ -31,7 +31,6 @@ const AddEntityButton: React.FC<{
     popoverText,
     disabledToolTip = false,
     onSuccessCreate,
-    setUpdatedEntities,
     setUpdatedTemplateIds,
     childTemplateId,
 }) => {

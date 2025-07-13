@@ -15,20 +15,19 @@ class ChartManager extends DefaultManagerMongo<IMongoChart> {
     }
 
     async getChartsByTemplateId(templateId: string, textSearch?: string, isChildTemplate?: boolean) {
-        const query: FilterQuery<IMongoChart> = {
-            ...(isChildTemplate
-                ? { childTemplateId: templateId }
-                : {
-                      templateId,
-                      $or: [{ childTemplateId: { $exists: false } }, { childTemplateId: null }],
-                  }),
-            ...(textSearch && {
-                $or: [
-                    { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },
-                    { description: { $regex: escapeRegExp(textSearch), $options: 'i' } },
-                ],
-            }),
-        };
+        const query: FilterQuery<IMongoChart> = {};
+
+        if (isChildTemplate) {
+            query.childTemplateId = templateId;
+        } else {
+            query.templateId = templateId;
+            query.$or = [{ childTemplateId: { $exists: false } }, { childTemplateId: null }];
+        }
+
+        if (textSearch) {
+            const regex = { $regex: escapeRegExp(textSearch), $options: 'i' };
+            query.$or = [{ name: regex }, { description: regex }];
+        }
 
         return this.model.find(query).lean().exec();
     }

@@ -20,7 +20,6 @@ import useMutationHandler from './useMutationHandler';
 import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import EditProps from './EditProps';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
-import { markTouched } from '../../../../utils/charts/markTouchedRecursive';
 
 const { signaturePrefix } = environment;
 

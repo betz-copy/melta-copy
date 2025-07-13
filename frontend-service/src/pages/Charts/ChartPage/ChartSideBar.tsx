@@ -76,7 +76,8 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                 });
                             else {
                                 const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
-                                setFieldValue('templateId', childTemplate?.fatherTemplateId || newValue || '');
+                                const templateId = childTemplate?.fatherTemplateId || newValue || '';
+                                setFieldValue('templateId', templateId);
                                 if (!!childTemplate) setFieldValue('childTemplateId', newValue!);
                             }
                         }}
