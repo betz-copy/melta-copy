@@ -14,6 +14,8 @@ import { SelectFilterInput } from '../../inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 
 import { matchValueAgainstFilter } from '../../../utils/filters';
+import { isValidAGGridFilter } from '../../FilterComponent';
+import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 
 const getFilterOperator = (filterField: IFieldChip['filterField']) => {
     const operatorMap: Record<string, string> = {
@@ -33,7 +35,7 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         case 'text':
         case 'number':
         case 'date':
-            return operatorMap[filterField.type] || null;
+            return operatorMap[filterField.type];
         case 'set':
             return filterField.values && filterField.values.length > 0 ? '$in' : null;
         default:
@@ -46,11 +48,11 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
     switch (filterField?.filterType) {
         case 'text':
         case 'number':
-            return filterField.filter || null;
+            return filterField.filter;
         case 'date':
-            return filterField.dateFrom || null;
+            return filterField.dateFrom;
         case 'set':
-            return filterField.values || null;
+            return filterField.values;
         default:
             console.warn('Unsupported filter type:', filterField);
             return null;
@@ -85,7 +87,10 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
     const [inputValue, setInputValue] = useState<string>('');
     const [localFilterField, setLocalFilterField] = useState<IFieldFilter['filterField']>(fieldFilter.filterField || undefined);
+    const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
     const [matchValidationError, setMatchValidationError] = useState<string | null>(null);
+
+    const isError = !!currentFieldError;
 
     const handleClose = () => {
         setMatchValidationError(null);
@@ -124,14 +129,14 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         const filtersChip = fieldChips.filter((chip) => chip.chipType === ChipType.Filter && chip.fieldName === currentFieldName);
 
-        if (filtersChip.length > 0) {
+        if (filtersChip.length > 0 && dialogType === ChipType.Default) {
             for (const { filterField } of filtersChip) {
                 if (!checkMatchValidation(filterField, fieldName, value.filter)) return false;
             }
         }
 
         const defaultChip = fieldChips.find((chip) => chip.chipType === ChipType.Default && chip.fieldName === currentFieldName);
-        if (defaultChip && !checkMatchValidation(value, fieldName, defaultChip.defaultValue)) return false;
+        if (defaultChip && dialogType === ChipType.Filter && !checkMatchValidation(value, fieldName, defaultChip.defaultValue)) return false;
 
         setMatchValidationError(null);
         return true;
@@ -144,18 +149,20 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     }, [open, fieldFilter]);
 
     const handleFilterFieldChange = (value: IFieldFilter['filterField']) => {
+        setCurrentFieldError(undefined);
         checkMatchValidations(value);
         setLocalFilterField(value);
     };
 
     const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
-        if (!newValue && localFilterField?.filterType === 'date') {
-            const isRemovingStart = isStartDate && !localFilterField.dateTo;
-            const isRemovingEnd = !isStartDate && !localFilterField.dateFrom;
-            if (isRemovingStart || isRemovingEnd) return;
-        }
+        setCurrentFieldError(undefined);
 
-        const dateString = newValue ? format(newValue, 'yyyy-MM-dd') : undefined;
+        const fieldSchema = entityTemplate.properties.properties[currentFieldName];
+
+        const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
+
+        const dateString = newValue ? format(newValue, dateFormat) : null;
+
         checkMatchValidations(newValue);
 
         setLocalFilterField({
@@ -165,6 +172,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     };
 
     const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
+        setCurrentFieldError(undefined);
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
         checkMatchValidations(values);
         const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
@@ -172,6 +180,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+        setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };
 
@@ -179,8 +188,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         const property = entityTemplate.properties.properties[currentFieldName];
         if (!property) return null;
         const { format, enum: propEnum, type, items } = property;
-
-        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
         const defaultFilterProps =
             dialogType === ChipType.Default
@@ -197,6 +204,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     enumOptions={propEnum}
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    error={isError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -222,6 +231,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     isBooleanSelect
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
+                    error={isError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -234,6 +245,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     enumOptions={items.enum}
                     readOnly={readOnly}
+                    isError={isError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -248,6 +261,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
                     isUsersArray
+                    isError={isError}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -261,6 +276,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 handleFilterTypeChange={handleFilterTypeChange}
                 type={type}
                 readOnly={readOnly}
+                error={isError}
+                helperText={currentFieldError}
                 {...defaultFilterProps}
             />
         );
@@ -271,13 +288,27 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         setMatchValidationError(null);
 
         if (dialogType === ChipType.Default) {
+            const fieldSchema = entityTemplate.properties.properties[currentFieldName];
             let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
 
             if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') defaultValue = localFilterField.filter;
             else if (localFilterField.filterType === 'set') defaultValue = localFilterField.values;
             else if (localFilterField.filterType === 'date') defaultValue = localFilterField.dateFrom;
 
-            onSubmit(currentFieldName, defaultValue);
+            const templateSchema = {
+                ...entityTemplate.properties,
+                required: [],
+                properties: {
+                    [currentFieldName]: fieldSchema,
+                },
+            };
+
+            const formData = { [currentFieldName]: defaultValue };
+
+            const ajvErrors = ajvValidate(templateSchema, formData);
+
+            if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
+            else onSubmit(currentFieldName, defaultValue);
         } else {
             updateFieldFilter(localFilterField, currentFieldName);
             onSubmit(currentFieldName, localFilterField);
@@ -286,20 +317,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
     const isValueValid = () => {
         if (localFilterField === undefined) return false;
-
-        if (dialogType === ChipType.Filter || dialogType === ChipType.Default) {
-            switch (localFilterField.filterType) {
-                case 'text':
-                case 'number':
-                    return !!localFilterField.filter || typeof localFilterField.filter === 'boolean';
-                case 'set':
-                    return Array.isArray(localFilterField.values) && localFilterField.values.length > 0;
-                case 'date':
-                    return !!localFilterField.dateFrom;
-                default:
-                    return true;
-            }
-        }
+        if (dialogType !== 'editByUser') return isValidAGGridFilter(localFilterField);
         return true;
     };
 
@@ -341,7 +359,12 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} display="flex" justifyContent="center">
-                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={!isValueValid() || !!matchValidationError}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleSubmit}
+                            disabled={!isValueValid() || isError || !!matchValidationError}
+                        >
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>

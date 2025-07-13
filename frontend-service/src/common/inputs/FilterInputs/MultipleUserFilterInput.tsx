@@ -21,9 +21,9 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
     setInputValue,
     handleCheckboxChange,
     readOnly,
+    isUsersArray = false,
     isError,
     helperText,
-    isUsersArray = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 

@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { Close as CloseIcon } from '@mui/icons-material';
 import {
     Autocomplete,
     Button,
@@ -9,6 +10,7 @@ import {
     FormControl,
     FormControlLabel,
     Grid,
+    IconButton,
     InputAdornment,
     Radio,
     RadioGroup,
@@ -25,20 +27,20 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import {
     ChipType,
-    IChildTemplateProperty,
     IChildTemplate,
     IChildTemplateMap,
+    IChildTemplateProperty,
     IFieldChip,
     IMongoChildTemplate,
-    IFieldFilter,
+    IMongoChildTemplatePopulated,
     ITemplateFieldsFilters,
     ViewType,
-    IMongoChildTemplatePopulated,
 } from '../../../interfaces/childTemplates';
+import { ISearchFilter } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { translateFieldFilter } from '../../../pages/Graph/GraphFilterToBackend';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { ErrorToast } from '../../ErrorToast';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
@@ -82,7 +84,7 @@ const CreateChildTemplateDialog: React.FC<{
                 const isEditableByUser = property?.isEditableByUser;
 
                 initialFields[key] = {
-                    selected: isSelected,
+                    selected: isSelected || isRequired,
                     fieldValue: value,
                     ...(defaultValue && { defaultValue }),
                     ...(isEditableByUser && { isEditableByUser }),
@@ -94,132 +96,38 @@ const CreateChildTemplateDialog: React.FC<{
     }, [entityTemplate, childTemplate, categories]);
 
     useEffect(() => {
-        if (childTemplate) {
-            const chips: IFieldChip[] = [];
-            Object.entries(childTemplate.properties.properties).forEach(([fieldName, prop]) => {
-                if (prop.filters) {
-                    try {
-                        const parsedFilters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-                        if (parsedFilters.$or) {
-                            parsedFilters.$or.forEach((filter: IFieldFilter) => {
-                                const fieldValue = filter[fieldName];
-                                let filterType = '';
-                                let value = '';
+        if (!childTemplate) return;
 
-                                if (fieldValue.$rgx) {
-                                    filterType = 'contains';
-                                    value = fieldValue.$rgx.replace(/\.\*/g, '');
-                                } else if (fieldValue.$eq !== undefined) {
-                                    filterType = 'equals';
-                                    value = fieldValue.$eq;
-                                } else if (fieldValue.$ne !== undefined) {
-                                    filterType = 'notEqual';
-                                    value = fieldValue.$ne;
-                                } else if (fieldValue.$lt !== undefined) {
-                                    filterType = 'lessThan';
-                                    value = fieldValue.$lt;
-                                } else if (fieldValue.$lte !== undefined) {
-                                    filterType = 'lessThanOrEqual';
-                                    value = fieldValue.$lte;
-                                } else if (fieldValue.$gt !== undefined) {
-                                    filterType = 'greaterThan';
-                                    value = fieldValue.$gt;
-                                } else if (fieldValue.$gte !== undefined) {
-                                    filterType = 'greaterThanOrEqual';
-                                    value = fieldValue.$gte;
-                                } else if (fieldValue.$in) {
-                                    filterType = 'in';
-                                    value = fieldValue.$in.join(', ');
-                                } else if (fieldValue.$eq === null) {
-                                    filterType = 'blank';
-                                    value = '';
-                                } else if (fieldValue.$ne === null) {
-                                    filterType = 'notBlank';
-                                    value = '';
-                                } else if (fieldValue.$startsWith) {
-                                    filterType = 'startsWith';
-                                    value = fieldValue.$startsWith;
-                                } else if (fieldValue.$endsWith) {
-                                    filterType = 'endsWith';
-                                    value = fieldValue.$endsWith;
-                                } else if (fieldValue.$notContains) {
-                                    filterType = 'notContains';
-                                    value = fieldValue.$notContains;
-                                }
+        const chips: IFieldChip[] = [];
 
-                                const fieldTemplate = entityTemplate.properties.properties[fieldName];
-                                const filterTypeObj: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter = (() => {
-                                    if (fieldValue.$in) {
-                                        return {
-                                            filterType: 'set',
-                                            values: fieldValue.$in,
-                                        };
-                                    }
+        Object.entries(childTemplate.properties).forEach(([propertyName, { filters, defaultValue }]) => {
+            const fieldTemplate = entityTemplate.properties.properties[propertyName];
 
-                                    if (fieldTemplate.type === 'number') {
-                                        return {
-                                            filterType: 'number',
-                                            type: filterType as IAGGidNumberFilter['type'],
-                                            filter: typeof value === 'string' ? parseFloat(value) : value,
-                                        };
-                                    }
+            if (filters) {
+                const parsedFilters: ISearchFilter = typeof filters === 'string' ? JSON.parse(filters) : filters;
+                if (parsedFilters.$or && Array.isArray(parsedFilters.$or)) {
+                    parsedFilters.$or.forEach((filter) => {
+                        const fieldValue = filter[propertyName];
+                        const translatedFilter = translateFieldFilter(fieldValue, fieldTemplate);
 
-                                    if (fieldTemplate.format === 'date' || fieldTemplate.format === 'date-time') {
-                                        return {
-                                            filterType: 'date',
-                                            type: filterType as IAGGridDateFilter['type'],
-                                            dateFrom: value,
-                                            dateTo: null,
-                                        };
-                                    }
-
-                                    return {
-                                        filterType: 'text',
-                                        type: filterType as IAGGridTextFilter['type'],
-                                        filter: String(value),
-                                    };
-                                })();
-
-                                chips.push({
-                                    fieldName,
-                                    chipType: ChipType.Filter,
-                                    defaultValue: `${i18next.t(`filters.${filterType}`)}: ${value}`,
-                                    filterField: filterTypeObj,
-                                });
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error parsing filters:', e);
-                    }
-                }
-
-                if (prop.defaultValue !== undefined) {
-                    const defaultValue = prop.defaultValue;
-                    let displayValue = defaultValue;
-
-                    const fieldTemplate = entityTemplate.properties.properties[fieldName];
-                    if (fieldTemplate.format === 'date-time' || fieldTemplate.format === 'date') {
-                        try {
-                            const date = new Date(defaultValue);
-                            if (!isNaN(date.getTime())) {
-                                displayValue = date.toLocaleDateString();
-                            }
-                        } catch (e) {
-                            console.error('Error formatting date:', e);
-                            displayValue = defaultValue;
-                        }
-                    }
-
-                    chips.push({
-                        fieldName,
-                        chipType: ChipType.Default,
-                        defaultValue: displayValue,
+                        chips.push({
+                            fieldName: propertyName,
+                            chipType: ChipType.Filter,
+                            filterField: translatedFilter,
+                        });
                     });
                 }
-            });
+            }
 
-            setFieldChips(chips);
-        }
+            if (defaultValue !== undefined)
+                chips.push({
+                    fieldName: propertyName,
+                    chipType: ChipType.Default,
+                    defaultValue: defaultValue,
+                });
+        });
+
+        setFieldChips(chips);
     }, [childTemplate]);
 
     const userFields = useMemo(() => {
@@ -376,7 +284,7 @@ const CreateChildTemplateDialog: React.FC<{
         : [];
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik
                 initialValues={{
                     name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
@@ -451,6 +359,20 @@ const CreateChildTemplateDialog: React.FC<{
                                 {`${i18next.t(`createChildTemplateDialog.${childTemplate ? 'updateTemplate' : 'template'}Title`)}- ${
                                     childTemplate ? childTemplate.displayName : entityTemplate.displayName
                                 }`}
+                                <IconButton
+                                    aria-label="close"
+                                    onClick={async () => {
+                                        handleClose();
+                                    }}
+                                    sx={{
+                                        position: 'absolute',
+                                        right: 12,
+                                        top: 12,
+                                        color: (theme) => theme.palette.grey[500],
+                                    }}
+                                >
+                                    <CloseIcon />
+                                </IconButton>
                             </DialogTitle>
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
