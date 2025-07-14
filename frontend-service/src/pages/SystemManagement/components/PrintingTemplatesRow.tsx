@@ -1,27 +1,33 @@
 import React, { useState } from 'react';
-import { Grid, useTheme, Typography, Dialog } from '@mui/material';
-import { useQueryClient } from 'react-query';
+import { Grid, Typography, Dialog } from '@mui/material';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useUserStore } from '../../../stores/user';
 import i18next from 'i18next';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { CreateButton } from './CreateButton';
-import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { environment } from '../../../globals';
+import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
+import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
+import axios from '../../../axios';
+import { PrintingTemplateCard } from './PrintingTemplateCard';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { toast } from 'react-toastify';
-import { IMongoPrintTemplate } from '../../../interfaces/printingTemplates';
-import CreateOrEditPrintTemplate from './PrintingTemplateCard';
+
+const fetchPrintingTemplates = async () => {
+    const { data } = await axios.post('/templates/printing-templates/search', {});
+    return data;
+};
+
+const deletePrintingTemplate = async (templateId: string) => {
+    const { data } = await axios.delete(`/templates/printing-templates/${templateId}`);
+    return data;
+};
 
 const PrintingTemplatesRow: React.FC = () => {
     const { infiniteScrollPageCount } = environment.processInstances;
-
-    const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
-
     const [searchText, setSearchText] = useState('');
-    const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const theme = useTheme();
-
-    const printingTemplates = queryClient.getQueryData<IMongoPrintTemplate[]>('getPrintingTemplates')!;
+    const queryClient = useQueryClient();
 
     const [deletePrintingTemplateDialogState, setDeletePrintingTemplateDialogState] = useState<{
         isDialogOpen: boolean;
@@ -33,11 +39,26 @@ const PrintingTemplatesRow: React.FC = () => {
 
     const [printingTemplateWizardDialogState, setPrintingTemplateWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        printingTemplate: IMongoPrintTemplate | null;
+        printingTemplate: IMongoPrintingTemplate | null;
     }>({
         isWizardOpen: false,
         printingTemplate: null,
     });
+
+    const { data: printingTemplates = [] } = useQuery<IMongoPrintingTemplate[]>('getPrintingTemplates', fetchPrintingTemplates);
+
+    const deleteMutation = useMutation(deletePrintingTemplate, {
+        onSuccess: () => {
+            queryClient.invalidateQueries('getPrintingTemplates');
+            toast.success(i18next.t('wizard.printingTemplate.deletedSuccessfully'));
+            setDeletePrintingTemplateDialogState({ isDialogOpen: false, printingTemplateId: null });
+        },
+        onError: () => {
+            toast.error(i18next.t('wizard.printingTemplate.failedToDelete'));
+        },
+    });
+
+    const filteredTemplates = printingTemplates.filter((printingTemplate) => searchText === '' || printingTemplate.name.includes(searchText));
 
     return (
         <Grid item container marginBottom="30px" gap="30px">
@@ -52,37 +73,23 @@ const PrintingTemplatesRow: React.FC = () => {
                     />
                 </Grid>
             </Grid>
-            <InfiniteScroll<IMongoPrintTemplate>
-                queryKey={['searchPrintingTemplates', searchText]}
-                queryFunction={({ pageParam }) =>
-                    Array.from(printingTemplates.values())
-                        .filter((printingTemplate) => searchText === '' || printingTemplate.name.includes(searchText))
-                        .slice(pageParam, pageParam + infiniteScrollPageCount)
-                }
-                onQueryError={(error) => {
-                    console.error('failed to search printing templates error:', error);
-                    toast.error(i18next.t('failedToLoadResults'));
-                }}
-                getItemId={(printingTemplate) => printingTemplate._id}
-                getNextPageParam={(lastPage, allPages) => {
-                    const nextPage = allPages.length * infiniteScrollPageCount;
-                    return lastPage.length ? nextPage : undefined;
-                }}
-                endText={i18next.t('noSearchLeft')}
-                emptyText={i18next.t('failedToGetTemplates')}
-                useContainer={false}
-            >
-                {(printingTemplate) => (
-                    <Grid
-                        item
-                        key={printingTemplate._id}
-                        onClick={() => setPrintingTemplateWizardDialogState({ isWizardOpen: true, printingTemplate })}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <Typography>{printingTemplate.name}</Typography>
+            <Grid container spacing={2}>
+                {filteredTemplates.length === 0 ? (
+                    <Grid item xs={12}>
+                        <Typography>{i18next.t('failedToGetTemplates')}</Typography>
                     </Grid>
+                ) : (
+                    filteredTemplates.map((printingTemplate) => (
+                        <Grid item key={printingTemplate._id}>
+                            <PrintingTemplateCard
+                                printingTemplate={printingTemplate}
+                                setPrintingTemplateWizardDialogState={setPrintingTemplateWizardDialogState}
+                                setDeletePrintingTemplateDialogState={setDeletePrintingTemplateDialogState}
+                            />
+                        </Grid>
+                    ))
                 )}
-            </InfiniteScroll>
+            </Grid>
             <Dialog
                 open={printingTemplateWizardDialogState.isWizardOpen}
                 onClose={() => setPrintingTemplateWizardDialogState({ isWizardOpen: false, printingTemplate: null })}
@@ -99,13 +106,24 @@ const PrintingTemplatesRow: React.FC = () => {
                                 addEntityCheckbox: false,
                                 appendSignatureField: false,
                                 _id: '',
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
                             }
                         }
-                        setDeletePrintingTemplateDialogState={setDeletePrintingTemplateDialogState}
-                        setPrintingTemplateWizardDialogState={setPrintingTemplateWizardDialogState}
+                        onClose={() => setPrintingTemplateWizardDialogState({ isWizardOpen: false, printingTemplate: null })}
                     />
                 )}
             </Dialog>
+            <AreYouSureDialog
+                open={deletePrintingTemplateDialogState.isDialogOpen}
+                handleClose={() => setDeletePrintingTemplateDialogState({ isDialogOpen: false, printingTemplateId: null })}
+                onYes={() => {
+                    if (deletePrintingTemplateDialogState.printingTemplateId) {
+                        deleteMutation.mutate(deletePrintingTemplateDialogState.printingTemplateId);
+                    }
+                }}
+                isLoading={deleteMutation.isLoading}
+            />
         </Grid>
     );
 };

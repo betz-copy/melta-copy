@@ -4,7 +4,7 @@ export interface IPrintSection {
     selectedColumns: string[];
 }
 
-export interface IPrintTemplate {
+export interface IPrintingTemplate {
     name: string;
     sections: IPrintSection[];
     compactView: boolean;
@@ -12,6 +12,8 @@ export interface IPrintTemplate {
     appendSignatureField: boolean;
 }
 
-export interface IMongoPrintTemplate extends IPrintTemplate {
+export interface IMongoPrintingTemplate extends IPrintingTemplate {
     _id: string;
+    createdAt: Date;
+    updatedAt: Date;
 }

@@ -9,6 +9,7 @@ export * from './interfaces/entityTemplate';
 export * from './interfaces/notification';
 export * from './interfaces/relationship';
 export * from './interfaces/relationshipTemplate';
+export * from './interfaces/printingTemplate';
 export * from './interfaces/user';
 export * from './interfaces/workspace';
 export * from './interfaces/activityLog';

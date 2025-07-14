@@ -137,6 +137,15 @@ class TemplatesValidator extends DefaultController {
                 metadata: `user does not have write permission on entity ${entityTemplate}`,
             });
     }
+
+    // Printing Templates
+    async validateUserCanCreatePrintingTemplate(req: Request) {
+        return this.validateUserCanCreateRuleTemplate(req);
+    }
+
+    async validateUserCanUpdateOrDeletePrintingTemplate(req: Request) {
+        return this.validateUserCanUpdateOrDeleteRuleTemplate(req);
+    }
 }
 
 export default TemplatesValidator;

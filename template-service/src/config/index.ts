@@ -13,6 +13,7 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         relationshipTemplatesCollectionName: env.get('MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME').required().asString(),
+        printingTemplatesCollectionName: env.get('MONGO_PRINTING_TEMPLATES_COLLECTION_NAME').required().asString(),
         ruleCollectionName: env.get('MONGO_RULES_COLLECTION_NAME').required().asString(),
         entityTemplatesCollectionName: env.get('MONGO_ENTITY_TEMPLATES_COLLECTION_NAME').required().asString(),
         categoriesCollectionName: env.get('MONGO_CATEGORIES_COLLECTION_NAME').required().asString(),

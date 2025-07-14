@@ -192,4 +192,29 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
         res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user!.id));
     }
+
+    // Printing Templates
+    async createPrintingTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createPrintingTemplate(req.body));
+    }
+
+    async getAllPrintingTemplates(_req: Request, res: Response) {
+        res.json(await this.manager.getAllPrintingTemplates());
+    }
+
+    async getPrintingTemplateById(req: Request, res: Response) {
+        res.json(await this.manager.getPrintingTemplateById(req.params.id));
+    }
+
+    async updatePrintingTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updatePrintingTemplate(req.params.id, req.body));
+    }
+
+    async deletePrintingTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deletePrintingTemplate(req.params.id));
+    }
+
+    async searchPrintingTemplates(req: Request, res: Response) {
+        res.json(await this.manager.searchPrintingTemplates(req.body));
+    }
 }

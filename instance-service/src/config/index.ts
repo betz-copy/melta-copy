@@ -82,6 +82,12 @@ const config = {
                 .default('/api/templates/relationships/search')
                 .asString(),
         },
+        printingTemplates: {
+            getPrintingTemplateByIdRoute: env
+                .get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_GET_PRINTING_TEMPLATE_BY_ID_ROUTE')
+                .default('/api/templates/printingTemplates')
+                .asString(),
+        },
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',

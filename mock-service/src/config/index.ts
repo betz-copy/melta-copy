@@ -24,6 +24,9 @@ const config = {
             createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
             createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
         },
+        printingTemplates: {
+            createPrintingTemplateRoute: env.get('CREATE_PRINTING_TEMPLATE_ROUTE').default('/api/templates/printingTemplates').asString(),
+        },
         config: {
             createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/categoryOrder').asString(),
         },

@@ -11,6 +11,7 @@ export const environment = {
         entityTemplates: '/templates/entities',
         templatesConfig: '/templates/config',
         relationshipTemplates: '/templates/relationships',
+        printingTemplates: '/templates/printingTemplates',
         rules: '/templates/rules',
         entities: '/instances/entities',
         relationships: '/instances/relationships',
