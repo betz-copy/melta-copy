@@ -7,13 +7,13 @@ import {
 import { IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
 
-export const isChildTemplate = (
+const isChildTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,
 ): template is IMongoChildTemplateWithConstraintsPopulated => {
     return 'parentTemplate' in template && Boolean(template.parentTemplate);
 };
 
-const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated): ISearchFilter => {
+const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated | IChildTemplate): ISearchFilter => {
     return Object.entries(childTemplate.properties.properties ?? {}).reduce<{ $and: IFilterOfTemplate<Record<string, any>>[] }>(
         (acc, [key, prop]) => {
             if (!prop.filters) return acc;
@@ -123,4 +123,4 @@ const childTemplateKeys: (keyof IChildTemplate)[] = [
     'filterByCurrentUserField',
 ];
 
-export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys };
+export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys, isChildTemplate };

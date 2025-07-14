@@ -15,7 +15,7 @@ interface DateFilterInputProps {
     ) => void;
     handleDateChange: (newValue: Date | null, isStartDate: boolean) => void;
     entityFilter: boolean;
-    readOnly: boolean;
+    readOnly?: boolean;
     hideFilterType?: boolean;
     forceEqualsType?: boolean;
 }
@@ -86,6 +86,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                         isStartDate
                         directionIsRow={false}
                         readOnly={readOnly}
+                        disableKeyboardInput
                     />
                 )}
             </Grid>

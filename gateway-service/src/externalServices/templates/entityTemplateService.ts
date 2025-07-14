@@ -236,8 +236,13 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateChildTemplate(id: string, childTemplate: IChildTemplate): Promise<IChildTemplatePopulated | null> {
-        const { data } = await this.api.put<IChildTemplatePopulated | null>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+    async createChildTemplate(childTemplate: IChildTemplate) {
+        const { data } = await this.api.post<IChildTemplatePopulated>(`${baseChildTemplatesRoute}`, childTemplate);
+        return data;
+    }
+
+    async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
+        const { data } = await this.api.put<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
         return data;
     }
 }

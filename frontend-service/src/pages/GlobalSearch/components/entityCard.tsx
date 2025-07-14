@@ -4,10 +4,11 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
-import { useLocation } from 'wouter';
 import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import OpenPreview from '../../../common/FilePreview/OpenPreview';
@@ -15,24 +16,23 @@ import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
+import { HighlightText } from '../../../utils/HighlightText';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { getFirstXPropsKeys } from '../../../utils/templates';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { HighlightText } from '../../../utils/HighlightText';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { getFirstXPropsKeys } from '../../../utils/templates';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -537,9 +537,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     }}
                     entityTemplate={entityTemplate}
                     initialCurrValues={editDialog.wizardValues}
-                    handleClose={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    }}
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

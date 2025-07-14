@@ -2,14 +2,52 @@ import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { environment } from '../../../globals';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { initializedFilterField } from '../../FilterComponent';
-import { ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import AddFieldFilterDialog from './AddFieldFilterDialog';
+import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
+
+const { dateOrDateTimeRegex } = environment;
+
+const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined): string => {
+    if (value === null || value === undefined) return '';
+    if (Array.isArray(value))
+        return value
+            .map((item) => {
+                if (typeof item === 'string') return item;
+                if (typeof item === 'object') {
+                    return (item as IUser).fullName;
+                }
+                return String(item);
+            })
+            .join(', ');
+    if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
+    if (typeof value === 'string') {
+        const isDateTime = dateOrDateTimeRegex.test(value);
+        return isDateTime ? new Date(value).toLocaleDateString('he-IL') : value;
+    }
+    return String(value);
+};
+
+const renderChips = (chips: IFieldChip[], fieldSchema: IEntitySingleProperty, onDelete: (chip: IFieldChip) => void): React.ReactNode[] => {
+    return chips.map((chip, index) => {
+        const label =
+            chip.chipType === ChipType.Filter
+                ? getFilterFieldReadonly(chip.filterField!, fieldSchema.type)
+                : getFormattedDefaultValue(chip.defaultValue);
+
+        return (
+            <Grid item key={`${chip.fieldName}-${chip.chipType}-${index}`}>
+                <ColoredEnumChip label={label} onDelete={() => onDelete(chip)} color="default" />
+            </Grid>
+        );
+    });
+};
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -20,52 +58,6 @@ interface IFieldsAndFiltersTableProps {
     setFieldChips: React.Dispatch<React.SetStateAction<IFieldChip[]>>;
     onCheckboxChange: (fieldName: string, checked: boolean) => void;
 }
-
-const getDisplayValue = (schema: any, fieldValue: any): string => {
-    const dateFormats = ['date', 'date-time'];
-    const isDateField = dateFormats.includes(schema.format || '');
-    const isUsersArray = schema.items?.format === 'user';
-
-    if (isDateField && fieldValue) {
-        try {
-            return new Date(fieldValue).toLocaleDateString('en-uk');
-        } catch (e) {
-            return String(fieldValue);
-        }
-    }
-    if (Array.isArray(fieldValue)) return isUsersArray ? fieldValue.map(({ fullName }) => fullName).join(', ') : fieldValue.join(', ');
-    if (typeof fieldValue === 'boolean') return fieldValue ? 'true' : 'false';
-    return String(fieldValue);
-};
-
-const renderChips = (chips: IFieldChip[], onDelete: (chip: IFieldChip) => void): React.ReactNode[] => {
-    return chips.map((chip, index) => {
-        let label = '';
-        const type = chip.chipType;
-
-        if (type === ChipType.Filter) {
-            const ft = chip.filterField!;
-            if ('filter' in ft) label = String(ft.filter);
-            else if ('values' in ft && Array.isArray(ft.values)) {
-                label = ft.values.map((item) => (typeof item === 'object' ? (item as IUser).fullName : String(item))).join(', ');
-            } else if ('dateFrom' in ft) {
-                const from = ft.dateFrom ? new Date(ft.dateFrom).toLocaleDateString() : '';
-                const to = ft.dateTo ? ` - ${new Date(ft.dateTo).toLocaleDateString()}` : '';
-                label = from + to;
-            }
-            const filterTypeLabel = 'type' in ft ? ft.type : '';
-            label = `${i18next.t(`filters.${filterTypeLabel}`)}: ${label}`;
-        } else {
-            label = String(chip.defaultValue);
-        }
-
-        return (
-            <Grid item key={`${chip.fieldName}-${type}-${index}`}>
-                <ColoredEnumChip label={label} onDelete={() => onDelete(chip)} color="default" />
-            </Grid>
-        );
-    });
-};
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     entityTemplate,
@@ -105,37 +97,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     };
 
     const handleFilterSubmit = (fieldName: string, fieldValue: any) => {
-        const value = 'filter' in fieldValue ? fieldValue.filter : 'values' in fieldValue ? fieldValue.values : fieldValue.dateFrom;
         const newChip: IFieldChip = {
             fieldName,
             chipType: ChipType.Filter,
             filterField: structuredClone(fieldValue),
-            defaultValue: value,
         };
         setFieldChips((prev) => [...prev, newChip]);
     };
 
-    const handleDefaultSubmit = (fieldName: string, fieldValue: any) => {
-        const fieldSchema = entityTemplate.properties.properties[fieldName];
-        const fakeTemplateSchema = {
-            ...entityTemplate.properties,
-            required: [],
-            properties: { [fieldName]: fieldSchema },
-        };
-        const formData = { [fieldName]: fieldValue };
-        const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
-
-        if (ajvErrors && ajvErrors[fieldName]) {
-            setTemplateFieldsFilters((prev) => ({
-                ...prev,
-                [fieldName]: {
-                    ...prev[fieldName],
-                    error: ajvErrors[fieldName],
-                },
-            }));
-            return;
-        }
-
+    const handleDefaultSubmit = (fieldName: string, fieldValue: string | number | boolean | Date | string[] | undefined) => {
         setTemplateFieldsFilters((prev) => ({
             ...prev,
             [fieldName]: {
@@ -144,10 +114,9 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
             },
         }));
 
-        const displayValue = getDisplayValue(fieldSchema, fieldValue);
         setFieldChips((prev) => [
             ...prev.filter((chip) => !(chip.fieldName === fieldName && chip.chipType === ChipType.Default)),
-            { fieldName, chipType: ChipType.Default, defaultValue: displayValue },
+            { fieldName, chipType: ChipType.Default, defaultValue: fieldValue },
         ]);
         setAddFilterToField(null);
     };
@@ -212,15 +181,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(filterChips, (chip) =>
+                                        {renderChips(filterChips, entityTemplate.properties.properties[fieldName], (chip) =>
                                             setFieldChips((prev) =>
                                                 prev.filter(
-                                                    (c) =>
-                                                        !(
-                                                            c.fieldName === chip.fieldName &&
-                                                            c.chipType === chip.chipType &&
-                                                            c.defaultValue === chip.defaultValue
-                                                        ),
+                                                    (c) => !(c.fieldName === chip.fieldName && c.chipType === 'filter' && c.filterField === chip.filterField),
                                                 ),
                                             ),
                                         )}
@@ -249,7 +213,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(defaultChips, (chip) => {
+                                        {renderChips(defaultChips, entityTemplate.properties.properties[fieldName], (chip) => {
                                             setFieldChips((prev) =>
                                                 prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === chip.chipType)),
                                             );

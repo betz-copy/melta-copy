@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import { IMongoCategory } from './category';
+import { IUniqueConstraintOfTemplate } from './entity';
 import {
     IEntitySingleProperty,
     IFullMongoEntityTemplate,
@@ -9,7 +10,6 @@ import {
     IProperties,
     ISearchBody,
 } from './entityTemplate';
-import { IUniqueConstraintOfTemplate } from './entity';
 
 export enum ViewType {
     categoryPage = 'categoryPage',

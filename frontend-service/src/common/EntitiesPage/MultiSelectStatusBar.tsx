@@ -6,33 +6,34 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IDeleteEntityBody, IMultipleSelect } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
+import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
+import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { ErrorToast } from '../ErrorToast';
-import { TableButton } from '../TableButton';
-import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
-import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntitiesTables';
-import { StepType, Wizard } from '../wizards';
-import { EntityWizardValues } from '../dialogs/entity';
-import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';
-import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
-import { EntityPropertiesInternal } from '../EntityProperties';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { ajvValidate } from '../inputs/JSONSchemaFormik';
 import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsPropertiesSchema';
-import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
-import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
-import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { isChildTemplate } from '../../utils/templates';
+import { EntityWizardValues } from '../dialogs/entity';
+import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
+import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';
+import { EntityPropertiesInternal } from '../EntityProperties';
+import { ErrorToast } from '../ErrorToast';
+import { ajvValidate } from '../inputs/JSONSchemaFormik';
+import { TableButton } from '../TableButton';
+import { StepType, Wizard } from '../wizards';
+import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntitiesTables';
+import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplatePopulated & { parentTemplateId?: string };
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -58,7 +59,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
 
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
-    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
     const currentUser = useUserStore((state) => state.user);
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
@@ -106,7 +106,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             entitiesToUpdate: IMultipleSelect<boolean>;
             propertiesToRemove: string[];
             ignoredRules?: Record<string, IBrokenRule[]>;
-        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, propertiesToRemove, ignoredRules, childTemplateId),
+        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, propertiesToRemove, ignoredRules),
         {
             onSuccess: (data) => {
                 setStepsData(data);
@@ -163,7 +163,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             ...getSelectedEntities(),
             deleteAllRelationships,
             templateId: parentTemplateId,
-            childTemplateId,
         };
 
         deleteMutation(deleteBody);

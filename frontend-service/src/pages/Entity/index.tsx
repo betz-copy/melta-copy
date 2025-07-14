@@ -16,24 +16,24 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -475,7 +475,7 @@ const Entity: React.FC = () => {
             <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} childTemplateId={childTemplateId} />
+                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
                 {categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>

@@ -277,12 +277,12 @@ class MailManager {
                     case ActionTypes.DeleteRelationship:
                         return this.getCreateOrDeleteRelActionInfo(
                             action.actionType,
-                            action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                            action.actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
                         );
                     case ActionTypes.UpdateEntity:
-                        return this.getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
+                        return this.getUpdateEntityActionInfo(action.actionMetadata as IUpdateEntityMetadataPopulated);
                     case ActionTypes.UpdateStatus:
-                        return this.getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
+                        return this.getUpdateEntityStatusActionInfo(action.actionMetadata as IUpdateEntityStatusMetadataPopulated);
                     default:
                         return null;
                 }

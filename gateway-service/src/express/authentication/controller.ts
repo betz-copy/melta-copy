@@ -35,7 +35,7 @@ class AuthenticationController {
     }
 
     static async createTokenAndRedirect(req: Request, res: Response) {
-        const { RelayState, id } = req.user as unknown as ShragaUser;
+        const { RelayState, id } = req.user as ShragaUser;
 
         let token: string;
 
