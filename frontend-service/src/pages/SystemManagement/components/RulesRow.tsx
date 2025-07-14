@@ -178,7 +178,6 @@ const RulesRow: React.FC = () => {
     const { mutateAsync: updateDisabledMutateAsync } = useMutation((rule: IMongoRule) => updateDisabledRuleRequest(rule._id, !rule.disabled), {
         onSuccess: (data) => {
             queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
-            queryClient.invalidateQueries(['searchRulesTemplates', searchText]);
             if (data.disabled) toast.success(i18next.t('wizard.rule.disabledSuccessfully'));
             else toast.success(i18next.t('wizard.rule.activatedSuccessfully'));
         },
@@ -193,7 +192,6 @@ const RulesRow: React.FC = () => {
                 ruleMap!.delete(id);
                 return ruleMap!;
             });
-            queryClient.invalidateQueries(['searchRulesTemplates', searchText]);
             setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
             toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
         },
@@ -217,7 +215,7 @@ const RulesRow: React.FC = () => {
             </Grid>
             <Grid item container direction="row" gap="30px" marginTop="30px">
                 <InfiniteScroll<IMongoRule>
-                    queryKey={['searchRulesTemplates', searchText]}
+                    queryKey={['searchRulesTemplates', searchText, allowedRulesAndEntities]}
                     queryFunction={({ pageParam }) =>
                         allowedRulesAndEntities.allowedRules
                             .filter(({ name }) => searchText === '' || name.includes(searchText))

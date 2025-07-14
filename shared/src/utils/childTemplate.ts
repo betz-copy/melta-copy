@@ -108,4 +108,19 @@ const dePopulateChildProperties = (
     }, {});
 };
 
-export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, isChildTemplate };
+const childTemplateKeys: (keyof IChildTemplate)[] = [
+    'name',
+    'displayName',
+    'description',
+    'parentTemplateId',
+    'category',
+    'properties',
+    'disabled',
+    'actions',
+    'viewType',
+    'isFilterByCurrentUser',
+    'isFilterByUserUnit',
+    'filterByCurrentUserField',
+];
+
+export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys, isChildTemplate };
