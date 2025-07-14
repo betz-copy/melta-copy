@@ -281,7 +281,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
-        const childTemplatesPopulated = await this.entityTemplateService.getAllChildTemplates();
+        const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
         try {
@@ -1688,6 +1688,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.entityTemplateService.searchEntityTemplates(userId, updatedSearchBody);
+    }
+
+    // child entity templates
+    async getAllowedChildEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
+        if (!userPermissions.admin && !userPermissions.instances) return [];
+
+        return this.entityTemplateService.searchChildTemplates(
+            userPermissions.admin ? {} : { categoryIds: Object.keys(userPermissions.instances?.categories ?? {}) },
+        );
     }
 
     // rules
