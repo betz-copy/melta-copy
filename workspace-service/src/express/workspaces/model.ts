@@ -8,6 +8,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         shouldNavigateToEntityPage: { type: Boolean },
         isDrawerOpen: { type: Boolean },
         flowCube: { type: Boolean },
+        isDashboardHomePage: { type: Boolean },
         agGrid: {
             rowCount: { type: Number },
             defaultExpandedRowCount: { type: Number },

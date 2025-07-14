@@ -14,6 +14,7 @@ import templatesRouter from './templates/router';
 import usersRouter from './users/router';
 import workspaceRouter from './workspaces/router';
 import ChartsRouter from './templateCharts/router';
+import dashboardItemsRouter from './dashboardItems/router';
 
 const apiRouter = Router();
 
@@ -73,6 +74,8 @@ apiRouter.use('/gantts', GanttsRouter);
 apiRouter.use('/iframes', iFramesRouter);
 
 apiRouter.use('/charts', ChartsRouter);
+
+apiRouter.use('/dashboard', dashboardItemsRouter);
 
 apiRouter.use('/workspaces', workspaceRouter);
 

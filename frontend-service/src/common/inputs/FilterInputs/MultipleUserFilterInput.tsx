@@ -9,6 +9,8 @@ interface MultipleUserFilterInputProps {
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
     handleCheckboxChange: (option: string, checked: boolean) => void;
     readOnly: boolean;
+    isError?: boolean;
+    helperText?: string;
 }
 
 const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
@@ -17,6 +19,8 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
     setInputValue,
     handleCheckboxChange,
     readOnly,
+    isError,
+    helperText,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -31,7 +35,8 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
 
                 setInputValue('');
             }}
-            isError={false}
+            isError={Boolean(isError)}
+            helperText={helperText}
             displayValue={inputValue}
             onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
             currentUsers={filterField?.values as string[]}

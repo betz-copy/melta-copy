@@ -1,5 +1,5 @@
-import React, { CSSProperties } from 'react';
 import { IconButton, SxProps, Theme } from '@mui/material';
+import React, { CSSProperties } from 'react';
 import { MeltaTooltip } from './MeltaTooltip';
 
 const IconButtonWithPopover: React.FC<{

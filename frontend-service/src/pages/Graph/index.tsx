@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
 import { environment } from '../../globals';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
-import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -404,7 +404,20 @@ const Graph: React.FC = () => {
                         <GraphFilterBatch
                             templateOptions={templateOptions}
                             filterRecord={filterRecord}
-                            setFilterRecord={setFilterRecord}
+                            setFilterRecord={(value: IGraphFilterBody, filterKey: number) =>
+                                setFilterRecord((prev) => ({
+                                    ...prev,
+                                    [filterKey]: {
+                                        ...value,
+                                    },
+                                }))
+                            }
+                            onRemoveFilter={(filterKey: number) => {
+                                setFilterRecord((prev) => {
+                                    const { [filterKey]: deletedFilter, ...restFilters } = prev;
+                                    return restFilters;
+                                });
+                            }}
                             filters={filters}
                             setFilters={setFilters}
                             graphEntityTemplateIds={graphEntityTemplateIds}

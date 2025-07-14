@@ -38,7 +38,7 @@
         "menashmq": "^0.1.6",
         "node-schedule": "^2.1.1",
         "p-limit": "^3.1.0",
-        "p-map": "^7.0.3",
+        "p-map": "^4.0.0",
         "passport": "^0.7.0",
         "passport-http": "^0.3.0",
         "passport-jwt": "^4.0.1",

@@ -1,5 +1,5 @@
 import { History } from '@mui/icons-material';
-import { Button } from '@mui/material';
+import { Button, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
@@ -12,6 +12,7 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
     expandedEntity,
     entityTemplate,
 }) => {
+    const theme = useTheme();
     const [openPopper, setOpenPopper] = React.useState(false);
     const entityId = expandedEntity?.entity.properties._id || '';
     useEffect(() => {
@@ -31,7 +32,16 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
                 </Button>
             </MeltaTooltip>
 
-            <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
+            <PopperSidebar
+                open={openPopper}
+                setOpen={setOpenPopper}
+                title={
+                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
+                        {i18next.t('entityPage.activityLog.header')}
+                    </Typography>
+                }
+                side="left"
+            >
                 <ActivitiesContent expandedEntity={expandedEntity} entityTemplate={entityTemplate} />
             </PopperSidebar>
         </>

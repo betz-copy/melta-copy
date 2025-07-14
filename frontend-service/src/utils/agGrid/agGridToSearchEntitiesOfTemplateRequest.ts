@@ -1,5 +1,5 @@
 import { environment } from '../../globals';
-import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
@@ -219,17 +219,31 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
     return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
 };
 
+export const getFilterModal = (
+    filterModel?: ISearchEntitiesOfTemplateBody['filter'],
+    defaultModal?: ISearchEntitiesOfTemplateBody['filter'],
+): ISearchFilter | undefined => {
+    if (!filterModel && !defaultModal) return undefined;
+    if (!filterModel) return defaultModal;
+    if (!defaultModal) return filterModel;
+
+    return {
+        $and: [filterModel, defaultModal],
+    };
+};
+
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
     defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
+
     return {
         skip: startRow,
         limit: endRow - startRow,
         textSearch: quickFilter,
-        filter: defaultFilter ?? filterModelToFilterOfTemplate(filterModel, entityTemplate),
+        filter: getFilterModal(filterModelToFilterOfTemplate(filterModel, entityTemplate), defaultFilter),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,

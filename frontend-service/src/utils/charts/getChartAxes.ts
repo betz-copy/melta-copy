@@ -2,15 +2,15 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import {
     IAggregationType,
+    IAxis,
     IAxisField,
-    IColumnOrLineMetaData,
-    IBasicChart,
+    IChart,
     IChartType,
     IChartTypeMetaData,
-    INUmberMetaData,
+    IColumnOrLineMetaData,
+    INumberMetaData,
     IPermission,
     IPieMetaData,
-    IAxis,
 } from '../../interfaces/charts';
 
 export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, includeTitle: boolean = false) => {
@@ -32,7 +32,7 @@ export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, inc
             break;
         }
         case IChartType.Number: {
-            const { accumulator } = metaData as INUmberMetaData;
+            const { accumulator } = metaData as INumberMetaData;
             xAxis = accumulator;
             break;
         }
@@ -59,7 +59,7 @@ export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData =>
         } as IPieMetaData,
         [IChartType.Number]: {
             accumulator: { type: 'countAll' },
-        } as INUmberMetaData,
+        } as INumberMetaData,
     };
 
     const metaData = chartMetadataMap[type];
@@ -69,7 +69,7 @@ export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData =>
     return metaData;
 };
 
-export const initialValues: IBasicChart = {
+export const initialValues: IChart = {
     name: '',
     description: '',
     type: IChartType.Line,
@@ -78,6 +78,8 @@ export const initialValues: IBasicChart = {
         yAxis: { field: '', title: '' },
     } as IColumnOrLineMetaData,
     permission: IPermission.Private,
+    createdBy: '',
+    templateId: '',
 };
 
 const aggregationSchema = Yup.object({
@@ -139,4 +141,5 @@ export const chartValidationSchema = Yup.object({
         .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
         .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
+    templateId: Yup.string().required(i18next.t('validation.required')),
 });
