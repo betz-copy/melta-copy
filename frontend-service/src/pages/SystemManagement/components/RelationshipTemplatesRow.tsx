@@ -249,7 +249,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                 return relationshipTemplateMap!;
             });
             setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
-            queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
@@ -283,7 +282,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                     entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
                 );
-                queryClient.invalidateQueries();
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
@@ -403,7 +401,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
-                    queryKey={['searchRelationshipTemplates', searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow]}
+                    queryKey={['searchRelationshipTemplates', searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow, allowedRelationships]}
                     queryFunction={({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
                             filterRelationships({

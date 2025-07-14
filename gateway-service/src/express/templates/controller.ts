@@ -210,4 +210,9 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
         res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user!.id));
     }
+
+    // child templates
+    async updateChildTemplateById(req: Request, res: Response) {
+        res.json(await this.manager.updateChildTemplateById(req.params.id, req.body));
+    }
 }
