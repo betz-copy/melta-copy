@@ -184,12 +184,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                         {renderChips(filterChips, entityTemplate.properties.properties[fieldName], (chip) =>
                                             setFieldChips((prev) =>
                                                 prev.filter(
-                                                    (c) =>
-                                                        !(
-                                                            c.fieldName === chip.fieldName &&
-                                                            c.chipType === chip.chipType &&
-                                                            c.defaultValue === chip.defaultValue
-                                                        ),
+                                                    (c) => !(c.fieldName === chip.fieldName && c.chipType === 'filter' && c.filterField === chip.filterField),
                                                 ),
                                             ),
                                         )}

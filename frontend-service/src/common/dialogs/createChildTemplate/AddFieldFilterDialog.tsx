@@ -109,19 +109,17 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 },
             };
 
-            const isValid = matchValueAgainstFilter(data, filter);
-
-            if (!isValid) {
-                console.warn('Field value does not match filter criteria:', filter);
-                setMatchValidationError(
-                    i18next.t('validation.matchFilter', {
-                        dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType}`),
-                    }),
-                );
-                return false;
-            }
+            return matchValueAgainstFilter(data, filter);
         }
         return true;
+    };
+
+    const onFailedMatch = () => {
+        setMatchValidationError(
+            i18next.t('validation.matchFilter', {
+                dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType}`),
+            }),
+        );
     };
 
     const checkMatchValidations = (value: any): boolean => {
@@ -129,14 +127,29 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         const filtersChip = fieldChips.filter((chip) => chip.chipType === ChipType.Filter && chip.fieldName === currentFieldName);
 
-        if (filtersChip.length > 0 && dialogType === ChipType.Default) {
-            for (const { filterField } of filtersChip) {
-                if (!checkMatchValidation(filterField, fieldName, value.filter)) return false;
+        if (dialogType === ChipType.Default && filtersChip.length > 0) {
+            const anyValid = filtersChip.some(({ filterField }) => checkMatchValidation(filterField, fieldName, value.filter));
+
+            if (!anyValid) {
+                onFailedMatch();
+                return false;
             }
         }
 
-        const defaultChip = fieldChips.find((chip) => chip.chipType === ChipType.Default && chip.fieldName === currentFieldName);
-        if (defaultChip && dialogType === ChipType.Filter && !checkMatchValidation(value, fieldName, defaultChip.defaultValue)) return false;
+        if (dialogType === ChipType.Filter) {
+            const defaultChip = fieldChips.find((chip) => chip.chipType === ChipType.Default && chip.fieldName === currentFieldName);
+
+            if (defaultChip) {
+                const anyValid = [{ filterField: value }, ...filtersChip].some(({ filterField }) => {
+                    return checkMatchValidation(filterField, fieldName, defaultChip.defaultValue);
+                });
+
+                if (!anyValid) {
+                    onFailedMatch();
+                    return false;
+                }
+            }
+        }
 
         setMatchValidationError(null);
         return true;
