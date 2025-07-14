@@ -72,6 +72,7 @@ const CreateChildTemplateDialog: React.FC<{
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(childTemplate?.viewType || ViewType.categoryPage);
     const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
+    const [matchValidationError, setMatchValidationError] = useState<Map<string, string>>(new Map());
 
     useEffect(() => {
         if (entityTemplate) {
@@ -297,6 +298,8 @@ const CreateChildTemplateDialog: React.FC<{
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, category }) => {
+                    if (matchValidationError.size > 0) return;
+
                     const fullName = `${entityTemplate.name}_${name}`;
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
@@ -621,6 +624,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                     setFieldChips={setFieldChips}
                                                     fieldChips={fieldChips}
                                                     onCheckboxChange={handleCheckboxChange}
+                                                    matchValidationError={matchValidationError}
+                                                    setMatchValidationError={setMatchValidationError}
                                                 />
                                             </Grid>
                                         </Grid>
@@ -629,7 +634,7 @@ const CreateChildTemplateDialog: React.FC<{
                             </DialogContent>
                             <DialogActions>
                                 <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
-                                <Button type="submit" variant="contained" disabled={childTemplate && !hasChanges}>
+                                <Button type="submit" variant="contained" disabled={(childTemplate && !hasChanges) || matchValidationError.size > 0}>
                                     {i18next.t(`createChildTemplateDialog.buttons.${childTemplate ? 'update' : 'create'}`)}
                                 </Button>
                             </DialogActions>
