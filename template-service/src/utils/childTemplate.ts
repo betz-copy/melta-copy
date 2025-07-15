@@ -16,6 +16,7 @@ const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedF
                         defaultValue: child.properties.properties[key].defaultValue,
                         filters: child.properties.properties[key].filters,
                         isFilterByCurrentUser: child.filterByCurrentUserField === key,
+                        isFilterByUserUnit: child.filterByUnitUserField === key,
                     },
                 ]),
         ),

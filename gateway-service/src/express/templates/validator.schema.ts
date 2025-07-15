@@ -28,6 +28,7 @@ const ChildTemplateSchema = {
     isFilterByCurrentUser: Joi.boolean().default(false),
     isFilterByUserUnit: Joi.boolean().default(false),
     filterByCurrentUserField: Joi.string(),
+    filterByUnitUserField: Joi.string(),
 };
 
 // POST /api/templates/categories
