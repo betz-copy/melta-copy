@@ -1706,6 +1706,11 @@ export default {
             addAction: 'הוספה',
             byUser: 'משתמש',
         },
+        selectUserUnitDialog: {
+            title: 'בחירת יחידה',
+            content: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודת יחידה שממנה ילקח המידע',
+            label: 'יחידה',
+        },
         failedToCreateChildTemplate: 'נכשל ליצור תבנית ישות בן',
         failedToUpdateChildTemplate: 'נכשל לעדכן תבנית ישות בן',
         permissionsPage: {

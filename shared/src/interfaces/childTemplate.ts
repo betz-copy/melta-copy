@@ -34,7 +34,8 @@ export interface IChildTemplate {
     viewType: ViewType;
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
-    filterByCurrentUserField?: string;
+    filterByCurrentUserField?: string | null;
+    filterByUnitUserField?: string | null;
 }
 
 export interface IMongoChildTemplate extends IChildTemplate, Document<string> {

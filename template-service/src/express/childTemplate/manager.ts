@@ -87,8 +87,18 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
 
     async updateChildTemplate(id: string, childTemplate: IChildTemplate): Promise<IChildTemplatePopulated | null> {
         // TODO: try to .populate with .findByIdAndUpdate
+
+        const childTemplateToUpdate = { ...childTemplate };
+
+        if (!childTemplate.isFilterByCurrentUser) {
+            childTemplateToUpdate.filterByCurrentUserField = null;
+        }
+        if (!childTemplate.isFilterByUserUnit) {
+            childTemplateToUpdate.filterByUnitUserField = null;
+        }
+
         const updatedDoc = await this.model
-            .findByIdAndUpdate(id, childTemplate, { new: true })
+            .findByIdAndUpdate(id, childTemplateToUpdate, { new: true })
             .orFail(new NotFoundError('Entity Child Template not found'));
 
         return this.getChildTemplateById(updatedDoc._id);

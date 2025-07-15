@@ -23,4 +23,9 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
             then: Yup.string().required(i18next.t('validation.required')),
             otherwise: Yup.string().notRequired(),
         }),
+        filterByUnitUserField: Yup.string().when('isFilterByUserUnit', {
+            is: true,
+            then: Yup.string().required(i18next.t('validation.required')),
+            otherwise: Yup.string().notRequired(),
+        }),
     });

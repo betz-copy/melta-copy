@@ -109,6 +109,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
     ajv.addKeyword({ keyword: 'filters' });
     ajv.addKeyword({ keyword: 'isFilterByCurrentUser' });
+    ajv.addKeyword({ keyword: 'isFilterByUserUnit' });
 
     const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
