@@ -68,12 +68,9 @@ const Category: React.FC = () => {
 
     authorizedChildTemplates.forEach((child) => {
         if (!addedTemplateIds.has(child._id)) {
-            const parent = entityTemplates.get(child.parentTemplate._id);
-            if (parent) {
-                allAuthorizedTemplatesMap.set(child._id, child);
-                defaultOrderedTemplateIds.push(child._id);
-                addedTemplateIds.add(child._id);
-            }
+            allAuthorizedTemplatesMap.set(child._id, child);
+            defaultOrderedTemplateIds.push(child._id);
+            addedTemplateIds.add(child._id);
         }
     });
 

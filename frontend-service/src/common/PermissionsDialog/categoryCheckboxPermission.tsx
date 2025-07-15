@@ -28,10 +28,18 @@ const CategoryCheckboxPermission: React.FC<{
     const categoryPermissions = categoriesPermission?.[categoryId] ?? {};
     const templatesPermissions = categoryPermissions?.entityTemplates ?? {};
 
-    const changePermissions = (checked: boolean, entityId: string, permissionScope: PermissionScope, childTemplateId?: string) =>
+    const changePermissions = (checked: boolean, templateIds: string[], permissionScope: PermissionScope) =>
         formikProps.setFieldValue(
             `${permissionsPath}.instances.categories`,
-            getChangedTemplatePermission(categoriesPermission, checked, permissionScope, categoryId, entityId, entityTemplates, childTemplateId),
+            getChangedTemplatePermission(
+                categoriesPermission,
+                checked,
+                permissionScope,
+                categoryId,
+                templateIds,
+                entityTemplates,
+                entityTemplates.flatMap(({ childTemplates }) => childTemplates),
+            ),
         );
 
     return (
@@ -79,8 +87,9 @@ const CategoryCheckboxPermission: React.FC<{
             </Grid>
             <Grid xs={12}>
                 <Collapse in={openEntitiesList}>
-                    {entityTemplates.map((entityTemplateDialog) => {
-                        return (
+                    {entityTemplates
+                        .sort((a, _) => Number(a.isParentTemplateInDifferentCategory))
+                        .map((entityTemplateDialog) => (
                             <EntityTemplateCheckboxPermission
                                 entityTemplate={entityTemplateDialog}
                                 changePermissions={changePermissions}
@@ -90,8 +99,7 @@ const CategoryCheckboxPermission: React.FC<{
                                 categoryPermissions={categoryPermissions}
                                 key={entityTemplateDialog.id}
                             />
-                        );
-                    })}
+                        ))}
                 </Collapse>
             </Grid>
         </Grid>

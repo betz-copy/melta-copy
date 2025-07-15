@@ -53,8 +53,8 @@ class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanCreateEntityInstance(req: Request) {
-        const { templateId, childTemplateId } = req.body;
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
+        const { templateId } = req.body;
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined);
     }
 
     async getAllowedEntityTemplatesForInstances(
@@ -67,11 +67,17 @@ class InstancesValidator extends DefaultController {
     }
 
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
-        const allowedEntityTemplates = await this.getAllowedEntityTemplatesForInstances(
-            await this.authorizer.getWorkspacePermissions(user.id),
-            user.id,
-        );
-        const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+        const permissions = await this.authorizer.getWorkspacePermissions(user.id);
+
+        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+            this.getAllowedEntityTemplatesForInstances(permissions, user.id),
+            this.getAllowedChildTemplatesForInstances(permissions),
+        ]);
+
+        const allowedEntityTemplateIds = [
+            ...allowedEntityTemplates.map(({ _id }) => _id),
+            ...allowedChildEntityTemplates.map(({ parentTemplate }) => parentTemplate._id),
+        ];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {
@@ -130,26 +136,23 @@ class InstancesValidator extends DefaultController {
         templateId: string,
         permissionScope: PermissionScope,
         givenCategoryId?: string,
-        childTemplateId?: string,
     ) {
         const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
+        const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
+        const childTemplate = childTemplates.find(({ parentTemplate: { _id } }) => _id === templateId);
+
         if (
             !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(([category, { scope, entityTemplates }]) => {
-                const templatePermissions = entityTemplates?.[templateId];
-                return (
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
+                ([category, { scope, entityTemplates }]) =>
                     category === categoryId &&
                     (scope === permissionScope ||
                         scope === PermissionScope.write ||
-                        templatePermissions?.scope === permissionScope ||
-                        (childTemplateId
-                            ? templatePermissions?.childTemplates[childTemplateId]?.scope === permissionScope ||
-                              templatePermissions?.childTemplates[childTemplateId]?.scope === PermissionScope.write
-                            : templatePermissions?.scope === PermissionScope.write))
-                );
-            })
+                        entityTemplates?.[childTemplate?._id ?? templateId]?.scope === permissionScope ||
+                        entityTemplates?.[childTemplate?._id ?? templateId]?.scope === PermissionScope.write),
+            )
         ) {
             throw new ForbiddenError(
                 `user not authorized, does not have ${permissionScope} permission on template ${templateId} in category ${categoryId}`,
@@ -160,16 +163,15 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanWriteEntityInstance(req: Request) {
         const { id } = req.params;
-        const { childTemplateId } = req.body;
         const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined);
     }
 
     async validateUserCanWriteBulkEntityInstances(req: Request) {
-        const { templateId, childTemplateId } = req.body;
+        const { templateId } = req.body;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], userId: string) {

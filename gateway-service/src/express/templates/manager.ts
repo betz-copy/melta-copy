@@ -281,7 +281,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
-        const childTemplatesPopulated = await this.entityTemplateService.getAllChildTemplates();
+        const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
         try {
@@ -488,7 +488,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async updateEntityTemplateScope(
-        entityTemplate: IMongoEntityTemplatePopulated,
+        entityTemplate: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
         permissionsOfUserId: ISubCompactPermissions,
         userId: string,
     ) {
@@ -507,7 +507,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 scope: categoryScope,
                 entityTemplates: {
                     ...instances?.categories?.[categoryId]?.entityTemplates,
-                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {}, childTemplates: {} },
+                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
                 },
             },
         };
@@ -625,8 +625,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async createChildTemplate(
         childTemplate: IChildTemplate,
-        _permissionsOfUserId: ISubCompactPermissions,
-        _userId: string,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
     ): Promise<IChildTemplateWithConstraintsPopulated> {
         const {
             category,
@@ -642,16 +642,20 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const requiredNotInProperties = requiredConstraints.find((requiredKey) => !Object.keys(properties).includes(requiredKey));
         if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
 
-        const { parentTemplate, ...createdChild } = await this.entityTemplateService.createChildTemplate(childTemplate);
+        const createdChildTemplate = await this.entityTemplateService.createChildTemplate(childTemplate);
 
-        // await this.updateEntityTemplateScope(childTemplate, permissionsOfUserId, userId); // TODO:fix updateEntityTemplateScope to support child template after changing the permissions
+        if (!permissionsOfUserId?.admin) await this.updateEntityTemplateScope(createdChildTemplate, permissionsOfUserId, userId);
 
         const { uniqueConstraints: currUnique, requiredConstraints: currRequired } =
             await this.instancesService.getConstraintsOfTemplate(parentTemplateId);
 
-        const parentWithConstraints = this.populateTemplateConstraints(parentTemplate, currRequired, currUnique);
+        const parentWithConstraints = this.populateTemplateConstraints(createdChildTemplate.parentTemplate, currRequired, currUnique);
 
-        return this.populateTemplateConstraints({ ...createdChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
+        return this.populateTemplateConstraints(
+            { ...createdChildTemplate, parentTemplate: parentWithConstraints },
+            requiredConstraints,
+            uniqueConstraints,
+        );
     }
 
     entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relationships: IMongoRelationshipTemplate[]) {
@@ -1688,6 +1692,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.entityTemplateService.searchEntityTemplates(userId, updatedSearchBody);
+    }
+
+    // child entity templates
+    async getAllowedChildEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
+        if (!userPermissions.admin && !userPermissions.instances) return [];
+
+        return this.entityTemplateService.searchChildTemplates(
+            userPermissions.admin ? {} : { categoryIds: Object.keys(userPermissions.instances?.categories ?? {}) },
+        );
     }
 
     // rules
