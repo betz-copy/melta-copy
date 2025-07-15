@@ -117,6 +117,8 @@ const CreateChildTemplateDialog: React.FC<{
 
             if (filters) {
                 const parsedFilters: ISearchFilter = typeof filters === 'string' ? JSON.parse(filters) : filters;
+                console.log({ parsedFilters });
+
                 if (parsedFilters.$or && Array.isArray(parsedFilters.$or)) {
                     parsedFilters.$or.forEach((filter) => {
                         const fieldValue = filter[propertyName];
