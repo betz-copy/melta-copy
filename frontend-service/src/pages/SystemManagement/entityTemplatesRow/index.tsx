@@ -391,6 +391,7 @@ const EntityTemplatesRow: React.FC = () => {
                                     loadedEntityTemplateId={loadedEntityTemplateId}
                                     setAddActionsDialogState={setAddActionsToEntityTemplateDialogState}
                                     setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                    searchText={searchText}
                                 />
                             </Grid>
                         )}

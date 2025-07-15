@@ -57,6 +57,7 @@ interface CategoryEntitiesBoxProps {
         unknown
     >;
     loadedEntityTemplateId: string;
+    searchText: string;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
@@ -67,6 +68,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setAddChildTemplateDialogState,
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
+    searchText,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -96,8 +98,12 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const allChildTemplates = Array.from(childTemplates.values());
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
-        return allChildTemplates.filter((child) => child.category._id === currentCategoryId);
-    }, [childTemplates, entityTemplatesWithCategory.category._id]);
+        return allChildTemplates.filter((child) => {
+            const matchesCategory = child.category._id === currentCategoryId;
+            const matchesSearch = searchText === '' || (child.displayName ?? '').toLowerCase().includes(searchText.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+    }, [childTemplates, entityTemplatesWithCategory.category._id, searchText]);
 
     const disabledParentTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return new Map();
@@ -113,14 +119,12 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         return result;
     }, [childTemplates, entityTemplates, entityTemplatesWithCategory, categoryChildTemplates]);
 
-    // Get child templates that should appear in this category
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
-            // If this is the parent template's category, always show the child
             if (child.parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
                 return true;
             }
-            // If this is one of the child's selected categories, show it enabled
+            
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
