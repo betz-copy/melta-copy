@@ -1,24 +1,24 @@
 // Most code is copied from
 // https://mui.com/x/react-tree-view/rich-tree-view/ordering/
 
+import { Hive as HiveIcon, Menu } from '@mui/icons-material';
 import { Box, Divider, Typography, useTheme } from '@mui/material';
 import {
-    TreeItem2Props,
-    useTreeItem2,
-    TreeItem2Root,
     TreeItem2Content,
-    TreeItem2IconContainer,
-    TreeItem2Icon,
     TreeItem2DragAndDropOverlay,
     TreeItem2GroupTransition,
+    TreeItem2Icon,
+    TreeItem2IconContainer,
+    TreeItem2Props,
     TreeItem2Provider,
+    TreeItem2Root,
     TreeViewCancellableEventHandler,
+    useTreeItem2,
 } from '@mui/x-tree-view-pro';
 import React, { useMemo } from 'react';
-import { Menu, Hive as HiveIcon } from '@mui/icons-material';
+import { CustomIcon } from '../CustomIcon';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { CustomIcon } from '../CustomIcon';
 
 const LabelWithToolTip = ({ children, className }) => (
     <Box
@@ -71,7 +71,7 @@ const draggableHandle = (
     </TreeItem2IconContainer>
 );
 
-const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props & { showIcon?: boolean }, ref: React.Ref<HTMLLIElement>) {
+const TreeItem = React.forwardRef<HTMLLIElement, TreeItem2Props & { showIcon?: boolean }>((props, ref) => {
     const { id, itemId, label, disabled, children, showIcon, ...other } = props;
     const {
         getRootProps,

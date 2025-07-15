@@ -1,14 +1,16 @@
+import { FilterModel } from '@ag-grid-community/core';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
     AddCircle,
-    AppRegistration as DefaultEntityTemplateIcon,
-    CloseFullscreenRounded,
-    Download,
-    Expand,
-    TableRowsOutlined,
     BarChart,
-    LibraryAddCheckOutlined as SelectMultipleIcon,
-    Upload,
+    CloseFullscreenRounded,
+    AppRegistration as DefaultEntityTemplateIcon,
+    Download,
     EditNote,
+    Expand,
+    LibraryAddCheckOutlined as SelectMultipleIcon,
+    TableRowsOutlined,
+    Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -17,34 +19,34 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef,
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { FilterModel } from '@ag-grid-community/core';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
+import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { exportEntitiesRequest } from '../../services/entitiesService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
+import { isChildTemplate } from '../../utils/templates';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
-import { DraftCard } from './DraftCard';
-import { ResetFilterButton } from './ResetFilterButton';
-import { LoadExcelButton } from './Buttons/LoadExcel';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { LoadExcelButton } from './Buttons/LoadExcel';
+import { DraftCard } from './DraftCard';
+import { ResetFilterButton } from './ResetFilterButton';
 
 const {
     loadExcel: { excelExtension },
@@ -55,15 +57,14 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated & { childTemplateId?: string };
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
         defaultFilter?: FilterModel;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
-        childTemplateId?: string;
     }
->(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds, childTemplateId }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
@@ -128,6 +129,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
+                        isChildTemplate: isChildTemplate(template),
                     },
                 },
             });
@@ -144,9 +146,10 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = currentClientSideUser
-        ? true
-        : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category, template._id, PermissionScope.write);
+    // TODO: what about categories?
+    const userHasWritePermissions =
+        Object.keys(currentClientSideUser).length ||
+        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -307,7 +310,6 @@ const TemplateTable = forwardRef<
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                             onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                             popoverText={editExcelTooltip}
-                            childTemplateId={childTemplateId}
                         >
                             <EditNote
                                 fontSize="small"
@@ -324,7 +326,6 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={loadExcelTooltip}
-                        childTemplateId={childTemplateId}
                     >
                         <Upload
                             fontSize="small"
@@ -356,7 +357,6 @@ const TemplateTable = forwardRef<
                             });
                         }}
                         setUpdatedEntities={setUpdatedEntities}
-                        childTemplateId={childTemplateId}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
@@ -406,7 +406,6 @@ const TemplateTable = forwardRef<
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
                     template={template}
-                    childTemplateId={childTemplateId}
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
@@ -484,7 +483,6 @@ const TemplateTable = forwardRef<
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                    childTemplateId={childTemplateId}
                 />
             </Dialog>
         </Grid>

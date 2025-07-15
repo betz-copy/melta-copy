@@ -15,17 +15,11 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-import {
-    CategoryWithTemplates,
-    didPermissionsChange,
-    entityChildTemplatePermissionDialog,
-    entityTemplatePermissionDialog,
-    userHasNoPermissions,
-} from '../../utils/permissions/permissionOfUserDialog';
+import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -46,34 +40,7 @@ const RoleDialog: React.FC<{
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityChildTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
-    const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
-
-    Array.from(entityTemplates.values()).forEach((template) => {
-        const category: CategoryWithTemplates = {
-            entityTemplates: dialogPermissionData.get(template.category._id)?.entityTemplates || [],
-            ...template.category,
-        };
-
-        const displayEntityChildTemplates: entityChildTemplatePermissionDialog[] = Array.from(entityChildTemplates.values())
-            .filter((child) => child.fatherTemplateId === template._id)
-            .map((child) => ({
-                id: child._id,
-                name: child.displayName,
-                isFilterByCurrentUser: child.isFilterByCurrentUser,
-                isFilterByUserUnit: child.isFilterByUserUnit,
-                viewType: child.viewType,
-                fatherTemplateId: child.fatherTemplateId,
-            }));
-
-        const displayEntity: entityTemplatePermissionDialog = {
-            id: template._id,
-            name: template.displayName,
-            entityChildTemplates: displayEntityChildTemplates || [],
-        };
-        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
-        dialogPermissionData.set(template.category._id, category);
-    });
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const { data: workspaceRoles, refetch: refetchWorkspaceRoles } = useQuery(
         ['getAllWorkspaceRolesRequest', workspace],
@@ -203,7 +170,10 @@ const RoleDialog: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={dialogPermissionData}
+                                dialogPermissionData={createDialogCategories(
+                                    Array.from(entityTemplates.values()),
+                                    Array.from(childTemplates.values()),
+                                )}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                             />

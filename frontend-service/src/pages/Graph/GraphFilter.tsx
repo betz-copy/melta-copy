@@ -8,6 +8,7 @@ import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
+import { initializedFilterField } from '../../common/FilterComponent';
 import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
 import { MultipleUserFilterInput } from '../../common/inputs/FilterInputs/MultipleUserFilterInput';
@@ -17,10 +18,9 @@ import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilter
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
 import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
-import { IUser } from '../../interfaces/users';
-import { initializedFilterField } from '../../common/FilterCompetent';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -64,14 +64,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     const options = templateOptions.filter((option) => graphEntityTemplateIds.includes(option._id));
     const properties = selectedTemplate?.properties.properties;
+    const notIncludedFormats = ['fileId', 'signature', 'location', 'comment'];
     const filterProperties = properties
         ? Object.keys(properties).filter(
-              (prop) =>
-                  properties[prop].format !== 'fileId' &&
-                  properties[prop].items?.format !== 'fileId' &&
-                  properties[prop].format !== 'signature' &&
-                  properties[prop].format !== 'location' &&
-                  properties[prop].format !== 'comment',
+              (prop) => !notIncludedFormats.includes(properties[prop].format ?? '') && properties[prop].items?.format !== 'fileId',
           )
         : [];
 

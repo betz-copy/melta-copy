@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
-import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../common/FilterCompetent';
+import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../common/FilterComponent';
 import { StyledFilterInput } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';

@@ -1,4 +1,4 @@
-import { EntityTemplateType, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
+import { EntityTemplateType, getChildPropertiesFiltered, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
@@ -65,8 +65,8 @@ export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<s
             const { metaData, type } = entityTemplate;
 
             const { name } = metaData;
-            const properties = type === EntityTemplateType.Child ? metaData.properties : metaData.properties.properties;
-
+            const properties =
+                type === EntityTemplateType.Child ? getChildPropertiesFiltered(metaData.properties.properties) : metaData.properties.properties;
             return generateInterface(properties, name, entitiesTemplatesByIds);
         })
         .join('\n\n');

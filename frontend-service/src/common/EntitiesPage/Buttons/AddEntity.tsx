@@ -2,14 +2,14 @@ import { Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
-import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
-import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
-import { useDraftIdStore } from '../../../stores/drafts';
-import { TableButton } from '../../TableButton';
-import { useDarkModeStore } from '../../../stores/darkMode';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { useDraftIdStore } from '../../../stores/drafts';
+import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
+import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
+import { TableButton } from '../../TableButton';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -20,19 +20,7 @@ const AddEntityButton: React.FC<{
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
-    childTemplateId?: string;
-}> = ({
-    style,
-    children,
-    disabled,
-    initialStep,
-    initialValues,
-    popoverText,
-    disabledToolTip = false,
-    onSuccessCreate,
-    setUpdatedEntities,
-    childTemplateId,
-}) => {
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedEntities }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -51,6 +39,8 @@ const AddEntityButton: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
     const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
+
+    const template = addEntityWizardState.initialValues?.template;
 
     const handleSuccess = (entity: IEntity) => {
         onSuccessCreate?.(entity);
@@ -89,10 +79,7 @@ const AddEntityButton: React.FC<{
                 {children}
             </TableButton>
 
-            <Dialog
-                open={addEntityWizardState.isOpen}
-                maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
-            >
+            <Dialog open={addEntityWizardState.isOpen} maxWidth={template?.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         actionType: ActionTypes.CreateEntity,
@@ -107,7 +94,7 @@ const AddEntityButton: React.FC<{
 
                         onSuccess: handleSuccess,
                     }}
-                    entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
+                    entityTemplate={template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues ?? addEntityWizardState.initialValues}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));

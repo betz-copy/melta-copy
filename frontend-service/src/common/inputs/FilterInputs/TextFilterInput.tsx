@@ -15,8 +15,6 @@ interface TextFilterProps {
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
-    errors?: any;
-    touched?: any;
     hideFilterType?: boolean;
     forceEqualsType?: boolean;
     error?: boolean;
@@ -30,8 +28,6 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
-    errors,
-    touched,
     error,
     helperText,
     hideFilterType = false,

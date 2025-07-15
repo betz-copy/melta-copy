@@ -17,18 +17,22 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
-const EntitiesPage: React.FC<{
-    templates: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
-    setTemplates?: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[]>>;
-    templatesToShowCheckbox: (IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[];
-    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated & { fatherTemplateId?: string })[]>>;
+type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+    templates: T[];
+    setTemplates?: React.Dispatch<React.SetStateAction<T[]>>;
+    templatesToShowCheckbox: T[];
+    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<T[]>>;
     isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
     pageType: string;
     pageTitle: string;
-}> = ({
+};
+
+const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
     templates,
     setTemplates,
     categories,
@@ -38,7 +42,7 @@ const EntitiesPage: React.FC<{
     templatesToShowCheckbox,
     setTemplatesToShowCheckbox,
     isTemplatesCheckboxDraggableDisabled,
-}) => {
+}: EntitiesPageProps<T>) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
 
@@ -92,6 +96,7 @@ const EntitiesPage: React.FC<{
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
                         displayColumns: templateTableRef.getDisplayColumns(),
+                        isChildTemplate: isChildTemplate(template),
                     };
                 },
             );
@@ -185,8 +190,10 @@ const EntitiesPage: React.FC<{
                 {viewMode === 'cards-view' && (
                     <CardsView
                         ref={cardsViewRef}
-                        templateIds={templatesToShowCheckbox.map(({ fatherTemplateId, _id }) => fatherTemplateId || _id)}
-                        templates ={templatesToShowCheckbox}
+                        templateIds={templatesToShowCheckbox.map((template) =>
+                            isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        )}
+                        templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                     />
                 )}

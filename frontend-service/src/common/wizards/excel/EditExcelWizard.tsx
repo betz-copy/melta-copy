@@ -1,32 +1,32 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useState } from 'react';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import fileDownload from 'js-file-download';
-import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import fileDownload from 'js-file-download';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { StepType, Wizard, WizardBaseType } from '..';
-import OpenPreview from '../../FilePreview/OpenPreview';
-import { editManyEntitiesByExcelRequest, getChangedEntitiesFromExcelRequest, exportEntitiesRequest } from '../../../services/entitiesService';
-import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { environment } from '../../../globals';
-import { UploadExcel } from './excelSteps/UploadExcel';
-import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
-import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
+import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../interfaces/excel';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { editManyEntitiesByExcelRequest, exportEntitiesRequest, getChangedEntitiesFromExcelRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { isChildTemplate } from '../../../utils/templates';
+import OpenPreview from '../../FilePreview/OpenPreview';
+import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
+import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
+import { UploadExcel } from './excelSteps/UploadExcel';
 
 const { excelExtension } = environment.loadExcel;
 
-const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTemplateId?: string }> = ({
+const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
-    childTemplateId,
     initialValues = {},
     initialStep = 1,
     isEditMode = false,
@@ -57,7 +57,11 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
 
     const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
         async (file: Record<string, File>) => {
-            return getChangedEntitiesFromExcelRequest(template!._id, file);
+            const isChild = isChildTemplate(template!);
+            const parentTemplateId = isChild ? template!.parentTemplate._id : template!._id;
+            const childTemplateId = isChild ? template!._id : undefined;
+
+            return getChangedEntitiesFromExcelRequest(parentTemplateId, file, childTemplateId);
         },
         {
             async onSuccess(data) {
@@ -83,7 +87,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editManyEntitiesByExcelRequest(template!, entities, childTemplateId);
+            return editManyEntitiesByExcelRequest(template!, entities);
         },
         {
             async onSuccess(data) {
@@ -99,12 +103,12 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editManyEntitiesByExcelRequest(template!, entities, childTemplateId);
+            return editManyEntitiesByExcelRequest(template!, entities);
         },
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
+                toast.success(i18next.t('wizard.entity.loadEntities.editedSuccessfully'));
                 return data;
             },
             onError() {
@@ -121,7 +125,12 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTe
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
+                    [template!._id]: {
+                        headersOnly,
+                        insertEntities,
+                        displayColumns: template?.propertiesOrder,
+                        isChildTemplate: isChildTemplate(template!),
+                    },
                 },
             });
         },

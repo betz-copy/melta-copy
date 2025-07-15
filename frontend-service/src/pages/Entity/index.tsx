@@ -16,24 +16,24 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -347,7 +347,7 @@ export interface IConnectionTemplateOfExpandedEntity {
 const Entity: React.FC = () => {
     const theme = useTheme();
 
-    const { entityId, templateId } = useParams();
+    const { entityId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
@@ -358,7 +358,7 @@ const Entity: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IEntityChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(
@@ -384,29 +384,14 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const getCurrentEntityTemplate = (templateId?: string): IMongoEntityTemplatePopulated => {
-        if (templateId) {
-            const childTemplate = childTemplates.get(templateId);
-            if (childTemplate) {
-                const fatherEntity = entityTemplates.get(childTemplate.fatherTemplateId)!;
-                return {
-                    ...fatherEntity,
-                    _id: childTemplate._id,
-                    displayName: childTemplate.displayName,
-                    properties: { ...fatherEntity.properties, properties: childTemplate.properties as Record<string, IEntitySingleProperty> },
-                    propertiesOrder: fatherEntity.propertiesOrder.filter((key) => key in childTemplate.properties),
-                };
-            }
-        }
-        return entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
-    };
-
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = getCurrentEntityTemplate(childTemplateId ?? expandedEntity?.entity.templateId);
+    const currentEntityTemplate = childTemplateId
+        ? childTemplates.get(childTemplateId)!
+        : entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        currentEntityTemplate.category,
+        currentEntityTemplate.category._id,
         currentEntityTemplate._id,
         PermissionScope.write,
     );
@@ -490,7 +475,7 @@ const Entity: React.FC = () => {
             <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} childTemplateId={childTemplateId} />
+                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
                 {categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>

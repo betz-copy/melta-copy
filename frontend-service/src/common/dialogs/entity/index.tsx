@@ -1,3 +1,4 @@
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
@@ -25,7 +26,7 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
 };
 
 export interface EntityWizardValues {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     properties: Record<string, any> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
 }

@@ -1,15 +1,65 @@
-import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
-import React, { useState } from 'react';
 import { AddRounded } from '@mui/icons-material';
+import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import AddFieldFilterDialog from './AddFieldFilterDialog';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { ColoredEnumChip } from '../../ColoredEnumChip';
-import { IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/entityChildTemplates';
+import React, { useState } from 'react';
+import { environment } from '../../../globals';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
-import { ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { ColoredEnumChip } from '../../ColoredEnumChip';
+import { initializedFilterField } from '../../FilterComponent';
+import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
+import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
+import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
+
+const { dateOrDateTimeRegex } = environment;
+
+const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined): string => {
+    if (value === null || value === undefined) return '';
+    if (Array.isArray(value))
+        return value
+            .map((item) => {
+                if (typeof item === 'string') return item;
+                if (typeof item === 'object') {
+                    return (item as IUser).fullName;
+                }
+                return String(item);
+            })
+            .join(', ');
+    if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
+    if (typeof value === 'string') {
+        const isDateTime = dateOrDateTimeRegex.test(value);
+        return isDateTime ? new Date(value).toLocaleDateString('he-IL') : value;
+    }
+    return String(value);
+};
+
+const renderChips = (
+    chips: IFieldChip[],
+    fieldSchema: IEntitySingleProperty,
+    onDelete: (chip: IFieldChip) => void,
+    matchErrorMap?: Map<string, string>,
+): React.ReactNode[] => {
+    return chips.map((chip, index) => {
+        const label =
+            chip.chipType === ChipType.Filter
+                ? getFilterFieldReadonly(chip.filterField!, fieldSchema.type)
+                : getFormattedDefaultValue(chip.defaultValue);
+
+        const matchError = matchErrorMap?.get(chip.fieldName);
+
+        return (
+            <Grid item key={`${chip.fieldName}-${chip.chipType}-${index}`} justifyItems="center">
+                <ColoredEnumChip label={label} onDelete={() => onDelete(chip)} color="default" />
+                {matchError && (
+                    <Typography variant="body2" color="error" align="left" style={{ marginTop: '8px' }}>
+                        {matchError}
+                    </Typography>
+                )}
+            </Grid>
+        );
+    });
+};
 
 interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -19,6 +69,8 @@ interface IFieldsAndFiltersTableProps {
     fieldChips: IFieldChip[];
     setFieldChips: React.Dispatch<React.SetStateAction<IFieldChip[]>>;
     onCheckboxChange: (fieldName: string, checked: boolean) => void;
+    matchValidationError: Map<string, string>;
+    setMatchValidationError: React.Dispatch<React.SetStateAction<Map<string, string>>>;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
@@ -29,66 +81,108 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     fieldChips,
     setFieldChips,
     onCheckboxChange,
+    matchValidationError,
+    setMatchValidationError,
 }) => {
     const [addFilterToField, setAddFilterToField] = useState<string | null>(null);
-    const [dialogType, setDialogType] = useState<'filter' | 'default' | 'editByUser' | null>(null);
+    const [dialogType, setDialogType] = useState<ChipType | null>(null);
 
-    const addFilterToFieldHandler = (
-        filterField: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter,
-        currentFieldName: string,
-    ) => {
-        const newFieldFilter = {
-            ...templateFieldsFilters[currentFieldName],
-        };
-        newFieldFilter.filterField = filterField;
-        setTemplateFieldsFilters((prev) => ({
-            ...prev,
-            [currentFieldName]: newFieldFilter,
-        }));
+    const isDisallowedFormat = (fieldName: string) => {
+        const prop = entityTemplate.properties.properties[fieldName];
+        const disabledFormats = ['fileId', 'signature', 'location', 'comment', 'user', 'kartoffelUserField'];
+        const disabledArrayFormats = ['fileId', 'user'];
+        return disabledFormats.includes(prop.format ?? '') || !!(prop.items && disabledArrayFormats.includes(prop.items.format ?? ''));
     };
 
-    const handleSelectProperty = (newProperty: string | null, type: 'filter' | 'default' | 'editByUser') => {
-        setAddFilterToField(newProperty);
+    const handleSelectProperty = (fieldName: string, type: ChipType) => {
+        setAddFilterToField(fieldName);
         setDialogType(type);
 
-        if (!newProperty) return;
-        if (!entityTemplate) return;
-
-        const { format, type: fieldType } = entityTemplate.properties.properties[newProperty];
-
-        const initializedFilterField: Record<string, IFieldFilter['filterField']> = {
-            'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            date: { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
-            number: { filterType: 'number', type: 'equals' },
-            string: { filterType: 'text', type: 'contains' },
-            boolean: { filterType: 'text', type: 'equals' },
-            array: { filterType: 'set', values: [] },
-        };
-
+        const { format, type: fieldType } = entityTemplate.properties.properties[fieldName];
         const selectedFilter = (format && initializedFilterField[format]) || (fieldType && initializedFilterField[fieldType]);
 
         if (selectedFilter) {
             setTemplateFieldsFilters((prev) => ({
                 ...prev,
-                [newProperty]: {
-                    ...prev[newProperty],
+                [fieldName]: {
+                    ...prev[fieldName],
                     filterField: selectedFilter,
                 },
             }));
         }
     };
 
-    const isDisallowedFormat = (fieldName: string): boolean => {
-        const prop = entityTemplate.properties.properties[fieldName];
-        return (
-            prop.format === 'fileId' ||
-            prop.format === 'signature' ||
-            prop.format === 'location' ||
-            prop.format === 'comment' ||
-            prop.format === 'user' ||
-            prop.format === 'kartoffelUserField' ||
-            prop.items?.format === 'fileId' ||
-            prop.items?.format === 'user'
+    const handleFilterSubmit = (fieldName: string, fieldValue: any) => {
+        const newChip: IFieldChip = {
+            fieldName,
+            chipType: ChipType.Filter,
+            filterField: structuredClone(fieldValue),
+        };
+        setFieldChips((prev) => [...prev, newChip]);
+    };
+
+    const handleDefaultSubmit = (fieldName: string, fieldValue: string | number | boolean | Date | string[] | undefined) => {
+        setTemplateFieldsFilters((prev) => ({
+            ...prev,
+            [fieldName]: {
+                ...prev[fieldName],
+                defaultValue: fieldValue,
+            },
+        }));
+
+        setFieldChips((prev) => [
+            ...prev.filter((chip) => !(chip.fieldName === fieldName && chip.chipType === ChipType.Default)),
+            { fieldName, chipType: ChipType.Default, defaultValue: fieldValue },
+        ]);
+        setAddFilterToField(null);
+    };
+
+    const onSubmit = (fieldName: string, fieldValue: any) => {
+        switch (dialogType) {
+            case ChipType.Filter:
+                handleFilterSubmit(fieldName, fieldValue);
+                break;
+            case ChipType.Default:
+                handleDefaultSubmit(fieldName, fieldValue);
+                break;
+            default:
+                console.error('Unknown dialog type:', dialogType);
+                return;
+        }
+        setAddFilterToField(null);
+    };
+
+    const isSubmitDisabled = (fieldFilter: IFieldFilter, isRequired: boolean, fieldName: string) =>
+        (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName);
+
+    const onDeleteFilterChip = (chip: IFieldChip) => {
+        const newFilters = fieldChips.filter(
+            (c) => c.chipType === 'filter' && !(c.fieldName === chip.fieldName && c.filterField === chip.filterField),
+        );
+        const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === chip.fieldName);
+
+        if (defaultChip) {
+            const anyValid =
+                newFilters.length > 0
+                    ? newFilters.some(({ filterField }) => checkMatchValidation(filterField, chip.fieldName, defaultChip.defaultValue))
+                    : true;
+
+            setMatchValidationError((prev) => {
+                const newMap = new Map(prev);
+                if (!anyValid)
+                    newMap.set(
+                        chip.fieldName,
+                        i18next.t('validation.matchFilter', {
+                dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
+                        }),
+                    );
+                else newMap.delete(chip.fieldName);
+                return newMap;
+            });
+        }
+
+        setFieldChips((prev) =>
+            prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === 'filter' && c.filterField === chip.filterField)),
         );
     };
 
@@ -98,324 +192,160 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 <Grid item xs={12}>
                     <Divider />
                 </Grid>
-                <Grid container>
-                    {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
-                        const isRequired: boolean = entityTemplate.properties.required.includes(fieldName);
-                        const isKartoffelUserField: boolean = entityTemplate.properties.properties[fieldName]?.format === 'kartoffelUserField';
-                        const isSerialNumberField: boolean = !!entityTemplate.properties.properties[fieldName]?.serialCurrent;
-                        const isRelationshipRefField: boolean = entityTemplate.properties.properties[fieldName]?.format === 'relationshipReference';
+            </Grid>
+            <Grid container>
+                {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
+                    const isRequired = entityTemplate.properties.required.includes(fieldName);
+                    const property = entityTemplate.properties.properties[fieldName];
+                    const isKartoffelUserField = property?.format === 'kartoffelUserField';
+                    const isSerialNumberField = !!property?.serialCurrent;
+                    const isRelationshipRefField = property?.format === 'relationshipReference';
 
-                        return (
-                            <React.Fragment key={fieldName}>
-                                <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 1.5, ml: 1 }}>
-                                    <Grid item xs={3}>
-                                        <FormControlLabel
-                                            control={
-                                                <MeltaCheckbox
-                                                    checked={isRequired ? true : fieldFilter.selected}
-                                                    disabled={isRequired}
-                                                    onChange={(e) => {
-                                                        if (isRequired) return;
-                                                        onCheckboxChange(fieldName, e.target.checked);
-                                                    }}
-                                                />
-                                            }
-                                            label={
-                                                <>
-                                                    {fieldFilter.fieldValue.title || fieldName}
-                                                    {isRequired && <span style={{ marginRight: '3px' }}>*</span>}
-                                                </>
-                                            }
-                                            componentsProps={{
-                                                typography: { sx: { fontWeight: 400, fontSize: '14px' } },
-                                            }}
-                                        />
-                                    </Grid>
+                    const filterChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Filter);
+                    const defaultChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Default);
 
-                                    <Grid item xs={3}>
-                                        <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                            {fieldChips
-                                                .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'filter')
-                                                .map((chip, index) => {
-                                                    const isArrayType = entityTemplate.properties.properties[fieldName]?.type === 'array';
-                                                    const filterTypeLabel =
-                                                        'type' in chip.filterType! ? chip.filterType.type : isArrayType ? 'contains' : '';
+                    return (
+                        <React.Fragment key={fieldName}>
+                            <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 1.5, ml: 1 }}>
+                                <Grid item xs={3}>
+                                    <FormControlLabel
+                                        control={
+                                            <MeltaCheckbox
+                                                checked={isRequired ? true : fieldFilter.selected}
+                                                disabled={isRequired}
+                                                onChange={(e) => onCheckboxChange(fieldName, e.target.checked)}
+                                            />
+                                        }
+                                        label={
+                                            <>
+                                                {fieldFilter.fieldValue.title || fieldName}
+                                                {isRequired && <span>*</span>}
+                                            </>
+                                        }
+                                        componentsProps={{ typography: { sx: { fontWeight: 400, fontSize: '14px' } } }}
+                                    />
+                                </Grid>
 
-                                                    let filterValue = '';
+                                <Grid item xs={3}>
+                                    <Grid container spacing={0.5} alignItems="center" justifyContent="center">
+                                        {renderChips(filterChips, entityTemplate.properties.properties[fieldName], onDeleteFilterChip)}
 
-                                                    if ('filter' in chip.filterType! && chip.filterType.filter !== undefined) {
-                                                        filterValue = String(chip.filterType.filter);
-                                                    } else if ('values' in chip.filterType! && Array.isArray(chip.filterType.values)) {
-                                                        filterValue = chip.filterType.values
-                                                            .map((item) => {
-                                                                if (typeof item === 'string') return item;
-                                                                if (typeof item === 'object') {
-                                                                    return (item as IUser).fullName;
-                                                                }
-                                                                return String(item);
-                                                            })
-                                                            .join(', ');
-                                                    } else if ('dateFrom' in chip.filterType!) {
-                                                        if (chip.filterType.dateFrom) {
-                                                            filterValue = new Date(chip.filterType.dateFrom).toLocaleDateString();
-                                                        }
-                                                        if (chip.filterType.dateTo) {
-                                                            filterValue += ` - ${new Date(chip.filterType.dateTo).toLocaleDateString()}`;
-                                                        }
+                                        <Grid item>
+                                            {property?.format === 'user' ? (
+                                                <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
+                                                    {i18next.t('createChildTemplateDialog.byUser')}
+                                                </Typography>
+                                            ) : (
+                                                <Button
+                                                    color="primary"
+                                                    onClick={() =>
+                                                        !isSubmitDisabled(fieldFilter, isRequired, fieldName) &&
+                                                        handleSelectProperty(fieldName, ChipType.Filter)
                                                     }
+                                                    size="small"
+                                                    sx={{ minWidth: '32px', p: '4px' }}
+                                                    disabled={isSubmitDisabled(fieldFilter, isRequired, fieldName)}
+                                                >
+                                                    <AddRounded />
+                                                </Button>
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
 
-                                                    return (
-                                                        <Grid item key={`${fieldName}-filter-${index}`}>
-                                                            <ColoredEnumChip
-                                                                label={
-                                                                    filterValue
-                                                                        ? `${i18next.t(`filters.${filterTypeLabel}`)}: ${filterValue}`
-                                                                        : i18next.t(`filters.${filterTypeLabel}`)
-                                                                }
-                                                                onDelete={() => {
-                                                                    setFieldChips((prev) =>
-                                                                        prev.filter(
-                                                                            (c) =>
-                                                                                !(
-                                                                                    c.fieldName === chip.fieldName &&
-                                                                                    c.chipType === 'filter' &&
-                                                                                    c.value === chip.value
-                                                                                ),
-                                                                        ),
-                                                                    );
-                                                                }}
-                                                                color="default"
-                                                            />
-                                                        </Grid>
-                                                    );
-                                                })}
-
+                                <Grid item xs={3}>
+                                    <Grid container spacing={0.5} alignItems="center" justifyContent="center">
+                                        {renderChips(
+                                            defaultChips,
+                                            entityTemplate.properties.properties[fieldName],
+                                            (chip) => {
+                                                setFieldChips((prev) =>
+                                                    prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === chip.chipType)),
+                                                );
+                                                setTemplateFieldsFilters((prev) => ({
+                                                    ...prev,
+                                                    [chip.fieldName]: {
+                                                        ...prev[chip.fieldName],
+                                                        defaultValue: undefined,
+                                                    },
+                                                }));
+                                            },
+                                            matchValidationError,
+                                        )}
+                                        {!defaultChips.length && (
                                             <Grid item>
-                                                {entityTemplate.properties.properties[fieldName]?.format === 'user' ? (
+                                                {property?.format === 'user' ? (
                                                     <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
                                                         {i18next.t('createChildTemplateDialog.byUser')}
                                                     </Typography>
                                                 ) : (
                                                     <Button
                                                         color="primary"
-                                                        onClick={() => {
-                                                            if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
-                                                            handleSelectProperty(fieldName, 'filter');
-                                                        }}
+                                                        onClick={() => handleSelectProperty(fieldName, ChipType.Default)}
                                                         size="small"
                                                         sx={{ minWidth: '32px', p: '4px' }}
-                                                        disabled={(!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)}
+                                                        disabled={
+                                                            isSerialNumberField ||
+                                                            (!fieldFilter.selected && !isRequired) ||
+                                                            isDisallowedFormat(fieldName) ||
+                                                            isKartoffelUserField ||
+                                                            isRelationshipRefField
+                                                        }
                                                     >
                                                         <AddRounded />
                                                     </Button>
                                                 )}
                                             </Grid>
-                                        </Grid>
+                                        )}
                                     </Grid>
-
-                                    <Grid item xs={3}>
-                                        <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                            {fieldChips
-                                                .filter((chip) => chip.fieldName === fieldName && chip.chipType === 'default')
-                                                .map((chip) => {
-                                                    const filterValue =
-                                                        chip.value === null || chip.value === undefined
-                                                            ? ''
-                                                            : Array.isArray(chip.value)
-                                                            ? chip.value
-                                                                  .map((item) => {
-                                                                      if (typeof item === 'string') return item;
-                                                                      if (typeof item === 'object') {
-                                                                          return (item as IUser).fullName;
-                                                                      }
-                                                                      return String(item);
-                                                                  })
-                                                                  .join(', ')
-                                                            : String(chip.value);
-
-                                                    return (
-                                                        <Grid item key={`${fieldName}-default`}>
-                                                            <ColoredEnumChip
-                                                                label={`${filterValue}`}
-                                                                onDelete={() => {
-                                                                    setFieldChips((prev) =>
-                                                                        prev.filter(
-                                                                            (c) => !(c.fieldName === chip.fieldName && c.chipType === 'default'),
-                                                                        ),
-                                                                    );
-                                                                    setTemplateFieldsFilters((prev) => ({
-                                                                        ...prev,
-                                                                        [chip.fieldName]: {
-                                                                            ...prev[chip.fieldName],
-                                                                            defaultValue: undefined,
-                                                                        },
-                                                                    }));
-                                                                }}
-                                                                color="default"
-                                                            />
-                                                        </Grid>
-                                                    );
-                                                })}
-
-                                            {!fieldChips.some((chip) => chip.fieldName === fieldName && chip.chipType === 'default') && (
-                                                <Grid item>
-                                                    {entityTemplate.properties.properties[fieldName]?.format === 'user' ? (
-                                                        <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                            {i18next.t('createChildTemplateDialog.byUser')}
-                                                        </Typography>
-                                                    ) : (
-                                                        <Button
-                                                            color="primary"
-                                                            onClick={() => {
-                                                                if ((!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName)) return;
-                                                                handleSelectProperty(fieldName, 'default');
-                                                            }}
-                                                            size="small"
-                                                            sx={{ minWidth: '32px', p: '4px' }}
-                                                            disabled={
-                                                                isSerialNumberField ||
-                                                                (!fieldFilter.selected && !isRequired) ||
-                                                                isDisallowedFormat(fieldName) ||
-                                                                isKartoffelUserField ||
-                                                                isRelationshipRefField
-                                                            }
-                                                        >
-                                                            <AddRounded />
-                                                        </Button>
-                                                    )}
-                                                </Grid>
-                                            )}
-                                        </Grid>
-                                    </Grid>
-
-                                    {viewType === 'userPage' && (
-                                        <Grid item xs={3} sx={{ textAlign: 'center' }}>
-                                            <MeltaCheckbox
-                                                checked={templateFieldsFilters[fieldName]?.isEditableByUser || false}
-                                                disabled={!fieldFilter.selected}
-                                                onChange={(e) => {
-                                                    const newFieldFilters = { ...templateFieldsFilters };
-                                                    newFieldFilters[fieldName] = {
-                                                        ...newFieldFilters[fieldName],
-                                                        isEditableByUser: e.target.checked,
-                                                    };
-                                                    setTemplateFieldsFilters(newFieldFilters);
-                                                }}
-                                            />
-                                        </Grid>
-                                    )}
                                 </Grid>
 
-                                <Grid item xs={12}>
-                                    <Divider />
-                                </Grid>
-                            </React.Fragment>
-                        );
-                    })}
-                </Grid>
+                                {viewType === 'userPage' && (
+                                    <Grid item xs={3} sx={{ textAlign: 'center' }}>
+                                        <MeltaCheckbox
+                                            checked={templateFieldsFilters[fieldName]?.isEditableByUser || false}
+                                            disabled={!fieldFilter.selected}
+                                            onChange={(e) => {
+                                                const newFieldFilters = { ...templateFieldsFilters };
+                                                newFieldFilters[fieldName] = {
+                                                    ...newFieldFilters[fieldName],
+                                                    isEditableByUser: e.target.checked,
+                                                };
+                                                setTemplateFieldsFilters(newFieldFilters);
+                                            }}
+                                        />
+                                    </Grid>
+                                )}
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+                        </React.Fragment>
+                    );
+                })}
             </Grid>
 
-            {addFilterToField && (
+            {addFilterToField && dialogType && (
                 <AddFieldFilterDialog
                     open={!!addFilterToField}
-                    onClose={() => {
-                        setAddFilterToField(null);
+                    onClose={() => setAddFilterToField(null)}
+                    onSubmit={onSubmit}
+                    updateFieldFilter={(filterField, currentFieldName) => {
+                        setTemplateFieldsFilters((prev) => ({
+                            ...prev,
+                            [currentFieldName]: { ...prev[currentFieldName], filterField },
+                        }));
                     }}
-                    onSubmit={(fieldName, fieldValue) => {
-                        if (dialogType === 'filter') {
-                            if (!fieldValue || typeof fieldValue !== 'object') return;
-
-                            setFieldChips((prev) => {
-                                const newChip = {
-                                    fieldName,
-                                    chipType: 'filter' as const,
-                                    filterType: structuredClone(fieldValue),
-                                    value:
-                                        'filter' in fieldValue
-                                            ? fieldValue.filter
-                                            : 'values' in fieldValue
-                                            ? fieldValue.values
-                                            : 'dateFrom' in fieldValue
-                                            ? fieldValue.dateFrom
-                                            : '',
-                                };
-
-                                return [...prev, newChip];
-                            });
-                        } else if (dialogType === 'default') {
-                            if (fieldValue === undefined || fieldValue === null || fieldValue === '') return;
-
-                            const fieldSchema = entityTemplate.properties.properties[fieldName];
-                            const fakeTemplateSchema = {
-                                ...entityTemplate.properties,
-                                required: [],
-                                properties: {
-                                    [fieldName]: fieldSchema,
-                                },
-                            };
-
-                            const formData = { [fieldName]: fieldValue };
-
-                            const ajvErrors = ajvValidate(fakeTemplateSchema, formData);
-
-                            if (ajvErrors && ajvErrors[fieldName]) {
-                                setTemplateFieldsFilters((prev) => ({
-                                    ...prev,
-                                    [fieldName]: {
-                                        ...prev[fieldName],
-                                        error: ajvErrors[fieldName],
-                                    },
-                                }));
-                                return;
-                            }
-
-                            setTemplateFieldsFilters((prev) => ({
-                                ...prev,
-                                [fieldName]: {
-                                    ...prev[fieldName],
-                                    defaultValue: fieldValue,
-                                },
-                            }));
-
-                            const propertySchema = entityTemplate.properties.properties[fieldName];
-                            const isDateField = propertySchema.format === 'date' || propertySchema.format === 'date-time';
-                            const isUsersArray = propertySchema.type === 'array' && propertySchema.items?.format === 'user';
-
-                            let displayValue = fieldValue;
-                            if (isDateField && fieldValue) {
-                                try {
-                                    displayValue = new Date(fieldValue).toLocaleDateString('en-uk');
-                                } catch (e) {
-                                    console.error('Error formatting date:', e);
-                                    displayValue = fieldValue;
-                                }
-                            } else if (Array.isArray(fieldValue)) {
-                                if (isUsersArray) displayValue = fieldValue.map(({ fullName }) => fullName).join(', ');
-                                else displayValue = fieldValue.join(', ');
-                            } else if (typeof fieldValue === 'boolean') {
-                                displayValue = fieldValue ? 'true' : 'false';
-                            }
-
-                            setFieldChips((prev) => [
-                                ...prev.filter((chip) => !(chip.fieldName === fieldName && chip.chipType === 'default')),
-                                {
-                                    fieldName,
-                                    chipType: 'default' as const,
-                                    value: displayValue,
-                                },
-                            ]);
-                        }
-
-                        setAddFilterToField(null);
-                    }}
-                    updateFieldFilter={addFilterToFieldHandler}
                     entityTemplate={entityTemplate}
                     currentFieldName={addFilterToField}
                     fieldFilter={templateFieldsFilters[addFilterToField]}
-                    dialogType={dialogType!}
+                    dialogType={dialogType}
+                    fieldChips={fieldChips}
+                    setMatchValidationErrorMap={setMatchValidationError}
                 />
             )}
         </>
     );
 };
+
 export default FieldsAndFiltersTable;

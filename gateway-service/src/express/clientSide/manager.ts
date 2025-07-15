@@ -43,12 +43,10 @@ class ClientSideManager extends DefaultManagerProxy<null> {
 
         const usersInfoChildTemplate = childTemplates.find((template) => template._id === usersInfoChildTemplateId);
 
-        if (!usersInfoChildTemplate) {
-            throw new NotFoundError('Users info child template not found');
-        }
+        if (!usersInfoChildTemplate) throw new NotFoundError('Users info child template not found');
 
-        const categories = [...new Set(childTemplates.map((childTemplate) => childTemplate.categories).flat())];
-        const entityTemplates = [...new Set(childTemplates.map((childTemplate) => childTemplate.fatherTemplateId))].map((entityTemplate) => ({
+        const categories = [...new Set(childTemplates.map((childTemplate) => childTemplate.category))];
+        const entityTemplates = [...new Set(childTemplates.map((childTemplate) => childTemplate.parentTemplate))].map((entityTemplate) => ({
             ...entityTemplate,
             category: categories.find((category) => category._id === entityTemplate.category) || entityTemplate.category,
         })) as IMongoEntityTemplatePopulated[];
@@ -56,8 +54,8 @@ class ClientSideManager extends DefaultManagerProxy<null> {
         const populatedEntityTemplates = await this.templatesManager.getAndPopulateAllTemplatesConstraints(entityTemplates);
 
         const [bySource, byDestination] = await Promise.all([
-            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [usersInfoChildTemplate.fatherTemplateId._id] }),
-            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: [usersInfoChildTemplate.fatherTemplateId._id] }),
+            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [usersInfoChildTemplate.parentTemplate._id] }),
+            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: [usersInfoChildTemplate.parentTemplate._id] }),
         ]);
         const relationshipTemplates = [...bySource, ...byDestination];
 

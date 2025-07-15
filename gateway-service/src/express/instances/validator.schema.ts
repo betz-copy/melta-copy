@@ -1,8 +1,8 @@
-import Joi from 'joi';
 import { fileSchema, MongoIdSchema } from '@microservices/shared';
+import Joi from 'joi';
+import config from '../../config';
 import { excelTemplateSchema, ExtendedJoi } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
-import config from '../../config';
 
 const {
     instanceService: { searchEntitiesMaxLimit },
@@ -63,6 +63,7 @@ export const updateEntityStatusSchema = Joi.object({
 const baseDeleteSchema = Joi.object({
     selectAll: Joi.boolean().required(),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     deleteAllRelationships: Joi.boolean(),
 });
 
@@ -106,6 +107,7 @@ export const exportEntitiesSchema = Joi.object({
             displayColumns: Joi.array().items(Joi.string()),
             headersOnly: Joi.boolean(),
             insertEntities: Joi.array().items(Joi.object().pattern(Joi.string(), Joi.any())),
+            isChildTemplate: Joi.boolean(),
         }),
     },
     query: {},
@@ -244,7 +246,7 @@ export const loadEntitiesSchema = Joi.object({
                 .default([]),
         ),
         templateId: Joi.string().required(),
-        childTemplateId: Joi.string(),
+        childTemplateId: Joi.string().optional(),
     },
     query: {},
     params: {},
@@ -255,6 +257,7 @@ export const getChangedEntitiesFromExcelSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {},
@@ -265,6 +268,7 @@ export const editReadExcelSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {},

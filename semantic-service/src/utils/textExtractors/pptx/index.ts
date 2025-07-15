@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import JSZip from 'jszip';
-import { extractTextByTags, findDiagramFiles, normalizeDiagramPath, readXmlFromZip, RelsObject, XMLObject } from './helperFunctions';
 import config from '../../../config';
+import { extractTextByTags, findDiagramFiles, normalizeDiagramPath, readXmlFromZip, RelsObject, XMLObject } from './helperFunctions';
 
 const { slidesSplitter, slidesPathRegex, extractingTextTags, extractingDiagramTags } = config.minio.pptx;
 
@@ -10,7 +10,7 @@ const { slidesSplitter, slidesPathRegex, extractingTextTags, extractingDiagramTa
  * @param presentationZip - The JSZip instance for the PPTX file (presentation).
  * @param slidePath - The path to the slide XML (used to derive .rels path).
  */
-async function readDiagramReferences(presentationZip: JSZip, slidePath: string): Promise<string> {
+const readDiagramReferences = async (presentationZip: JSZip, slidePath: string): Promise<string> => {
     let diagramText = '';
     const relsPath = `${slidePath.replace('slides/', 'slides/_rels/')}.rels`;
     if (!presentationZip.files[relsPath]) return diagramText;
@@ -31,7 +31,7 @@ async function readDiagramReferences(presentationZip: JSZip, slidePath: string):
     );
 
     return diagramText;
-}
+};
 
 /**
  * Reads a single slide from the ZIP, extracts all text, and appends diagram text if available.
@@ -39,7 +39,7 @@ async function readDiagramReferences(presentationZip: JSZip, slidePath: string):
  * @param slidePath - The path to the slide XML (e.g., 'ppt/slides/slide1.xml').
  * @param index - The slide index (for labeling).
  */
-async function readSlide(presentationZip: JSZip, slidePath: string): Promise<string> {
+const readSlide = async (presentationZip: JSZip, slidePath: string): Promise<string> => {
     const slideObj = await readXmlFromZip<XMLObject>(presentationZip, slidePath);
     let slideText = '';
 
@@ -48,7 +48,7 @@ async function readSlide(presentationZip: JSZip, slidePath: string): Promise<str
     slideText += await readDiagramReferences(presentationZip, slidePath);
 
     return slideText;
-}
+};
 
 /**
  * Extracts all text (including SmartArt/diagram text) from a PPTX file.

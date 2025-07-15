@@ -17,7 +17,7 @@ import { handleWorkspace } from '../../utils/permissions';
 import { mapCategories, mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
-import { IEntityChildTemplateMap } from '../../interfaces/entityChildTemplates';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IMongoCategoryOrderConfig } from '../../interfaces/config';
 
 interface IMeltaRoutesProps {
@@ -57,7 +57,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder ? categoryOrder.order : []));
             queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', categoryOrder);
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
-            queryClient.setQueryData<IEntityChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));

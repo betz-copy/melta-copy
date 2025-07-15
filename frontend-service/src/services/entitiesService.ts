@@ -2,8 +2,12 @@
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
+import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import urlToFile from '../common/fileConversions';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { environment } from '../globals';
 import { IAxisField } from '../interfaces/charts';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import {
     ICountSearchResult,
     IDeleteEntityBody,
@@ -12,22 +16,20 @@ import {
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
+    IMultipleSelect,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
-    IMultipleSelect,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
 } from '../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import urlToFile from '../common/fileConversions';
-import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
-import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { isChildTemplate } from '../utils/templates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -38,8 +40,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated,
-    childTemplateId?: string,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -48,10 +49,10 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    if (isChildTemplate(template)) {
+        formData.append('childTemplateId', template._id);
     }
 
     if (insertBrokenEntities) {
@@ -89,7 +90,11 @@ export const loadEntitiesRequest = async (
     return data;
 };
 
-export const getChangedEntitiesFromExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
+export const getChangedEntitiesFromExcelRequest = async (
+    templateId: string,
+    file: Record<string, File>,
+    childTemplateId?: string,
+): Promise<IEditReadExcel> => {
     const formData = new FormData();
 
     Object.entries(file).forEach(([key, value]) => {
@@ -97,23 +102,26 @@ export const getChangedEntitiesFromExcelRequest = async (templateId: string, fil
     });
     formData.append('templateId', templateId);
 
+    if (childTemplateId) {
+        formData.append('childTemplateId', childTemplateId);
+    }
+
     const { data } = await axios.post(`${entities}/getChangedEntitiesFromExcel`, formData);
 
     return data;
 };
 
 export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     entitiesToUpdate: IEntityWithIgnoredRules[],
-    childTemplateId?: string,
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 
-    formData.append('templateId', template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate?._id : template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    if (isChildTemplate(template)) {
+        formData.append('childTemplateId', template._id);
     }
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
@@ -168,20 +176,8 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules'], childTemplateId?: string) => {
+export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-
-    // TODO: NOT USED - ask Amit
-    // const propertiesWithDefaults = childTemplate
-    //     ? Object.entries(entity.template.properties.properties).reduce((acc, [key, prop]) => {
-    //           if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
-    //               acc[key] = childTemplate.properties[key].defaultValue;
-    //           } else {
-    //               acc[key] = entity.properties[key];
-    //           }
-    //           return acc;
-    //       }, {} as Record<string, any>)
-    //     : entity.properties;
 
     formData.append(
         'properties',
@@ -209,10 +205,11 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             }),
         ),
     );
-    formData.append('templateId', entity.template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    formData.append('templateId', isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id);
+
+    if (isChildTemplate(entity.template)) {
+        formData.append('childTemplateId', entity.template._id);
     }
 
     if (ignoredRules) {
@@ -231,19 +228,19 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
 const getBodyForUpdateRequest = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'] | Record<string, IBrokenRule[]>,
-    childTemplateId?: string,
 ) => {
     const isUUID = (str: string) => uuidFormat.test(str);
+    const { template, attachmentsProperties } = newEntityData;
     const formData = new FormData();
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
 
     const properties = Object.entries(newEntityData.properties);
-    const templateProperties = newEntityData.template.properties.properties;
+    const templateProperties = template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
 
-    Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
+    Object.entries(attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
                 if (file instanceof File && templateProperties[key].items) {
@@ -282,8 +279,8 @@ const getBodyForUpdateRequest = async (
         newEntityData.properties[key] = [];
     });
     unchangedFiles.forEach(([key, value]) => {
-        if (!newEntityData.template.properties.properties[key].items) {
-            newEntityData.properties[key] = value.name;
+        if (!template.properties.properties[key].items) {
+            properties[key] = value.name;
         } else {
             if (!newEntityData.properties[key]) {
                 newEntityData.properties[key] = [];
@@ -299,7 +296,7 @@ const getBodyForUpdateRequest = async (
         JSON.stringify(
             // eslint-disable-next-line consistent-return
             mapValues(newEntityData.properties, (property, key) => {
-                switch (newEntityData.template.properties.properties[key]?.format) {
+                switch (template.properties.properties[key]?.format) {
                     case 'relationshipReference':
                         return property?.properties._id;
                     case 'location': {
@@ -324,10 +321,10 @@ const getBodyForUpdateRequest = async (
         ),
     );
 
-    formData.append('templateId', newEntityData.template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    if (isChildTemplate(template)) {
+        formData.append('childTemplateId', template._id);
     }
 
     if (ignoredRules) {
@@ -341,9 +338,8 @@ export const updateEntityRequestForMultiple = async (
     entityId: string,
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
-    childTemplateId?: string,
 ) => {
-    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules, childTemplateId);
+    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -357,14 +353,13 @@ export const updateMultipleEntitiesRequest = async (
     newEntityData: EntityWizardValues,
     propertiesToRemove: string[],
     ignoredRules?: Record<string, IBrokenRule[]>,
-    childTemplateId?: string,
 ) => {
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
     formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
     formData.append('propertiesToRemove', JSON.stringify(propertiesToRemove || []));
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    if (isChildTemplate(newEntityData.template)) {
+        formData.append('childTemplateId', newEntityData.template._id);
     }
 
     const { data } = await axios.put<IUpdateMultipleEntitiesResponse>(`${entities}/bulk`, formData, {
@@ -374,20 +369,17 @@ export const updateMultipleEntitiesRequest = async (
     return data;
 };
 
-export const duplicateEntityRequest = async (
-    entityId: string,
-    newEntityData: EntityWizardValues,
-    ignoredRules?: IRuleBreach['brokenRules'],
-    childTemplateId?: string,
-) => {
+export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
 
-    Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
+    const { template, properties, attachmentsProperties } = newEntityData;
+
+    Object.entries(attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
-                if (file instanceof File && newEntityData.template.properties.properties[key].items) {
+                if (file instanceof File && template.properties.properties[key].items) {
                     filesToUpload.push([`${key}.${index}`, file]);
                 } else if (file instanceof File) {
                     filesToUpload.push([`${key}`, file]);
@@ -408,17 +400,17 @@ export const duplicateEntityRequest = async (
         formData.append(key, value as Blob);
     });
     unchangedFiles.forEach(([key, _value]) => {
-        newEntityData.properties[key] = [];
+        properties[key] = [];
     });
     unchangedFiles.forEach(([key, value]) => {
-        if (!newEntityData.template.properties.properties[key].items) {
-            newEntityData.properties[key] = value.name;
+        if (!template.properties.properties[key].items) {
+            properties[key] = value.name;
         } else {
-            if (!newEntityData.properties[key]) {
-                newEntityData.properties[key] = [];
+            if (!properties[key]) {
+                properties[key] = [];
             }
             if (value) {
-                newEntityData.properties[key].push(value.name);
+                properties[key].push(value.name);
             }
         }
     });
@@ -426,8 +418,8 @@ export const duplicateEntityRequest = async (
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) => {
-                switch (newEntityData.template.properties.properties[key]?.format) {
+            mapValues(properties, (property, key) => {
+                switch (template.properties.properties[key]?.format) {
                     case 'relationshipReference':
                         return property?.properties._id;
                     case 'location': {
@@ -450,10 +442,10 @@ export const duplicateEntityRequest = async (
         ),
     );
 
-    formData.append('templateId', newEntityData.template._id);
+    formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (childTemplateId) {
-        formData.append('childTemplateId', childTemplateId);
+    if (isChildTemplate(template)) {
+        formData.append('childTemplateId', template._id);
     }
 
     if (ignoredRules) {
@@ -505,12 +497,7 @@ export const exportEntityToDocumentRequest = async (documentTemplateId: string, 
     return data;
 };
 
-export const getChartOfTemplate = async (
-    xAxis: IAxisField,
-    yAxis: IAxisField | undefined,
-    templateId: string,
-    filter?: ISearchFilter<Record<string, any>>,
-) => {
+export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string, filter?: ISearchFilter) => {
     const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
 
     return data;

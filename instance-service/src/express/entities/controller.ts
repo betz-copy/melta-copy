@@ -68,7 +68,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async deleteEntitiesByTemplateId(req: Request, res: Response) {
-        res.json(await this.manager.deleteByTemplateId(req.query.templateId as unknown as string));
+        res.json(await this.manager.deleteByTemplateId(req.query.templateId as string));
     }
 
     async updateStatusById(req: Request, res: Response) {

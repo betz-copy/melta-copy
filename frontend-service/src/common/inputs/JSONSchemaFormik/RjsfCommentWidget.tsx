@@ -15,13 +15,13 @@ export const commentColors = {
 
 const RjsfCommentWidget = ({ options, schema }: WidgetProps) => {
     const { comment, color } = schema;
-    const { hide, defaultValue } = options;
+    const { hide } = options;
 
     return (
         <Grid>
             {!hide && (
                 <Typography color={(color as string) ?? '#4752B6'} fontSize="14px">
-                    {renderHTML(comment as string) ?? defaultValue}
+                    {renderHTML(comment as string)}
                 </Typography>
             )}
         </Grid>

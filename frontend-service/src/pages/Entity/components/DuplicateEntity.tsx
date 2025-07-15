@@ -24,6 +24,7 @@ import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPrope
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
 import { useSearchParams } from '../../../utils/hooks/useSearchParams';
+import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 
 const { errorCodes } = environment;
 
@@ -58,7 +59,7 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
         ({ newEntityDate, ignoredRules }: { newEntityDate: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules, childTemplateId),
+            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
@@ -129,7 +130,10 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     return (
         <Formik
-            initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
+            initialValues={getInitialValuesWithDefaults(
+                { properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate },
+                entityTemplate,
+            )}
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
@@ -207,7 +211,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     fieldTemplateTitle={value.title}
                                                                                     setFieldValue={setFieldValue}
                                                                                     required={requiredFilesNames.includes(key)}
-                                                                                    value={values.attachmentsProperties[key]}
+                                                                                    value={values.attachmentsProperties[key] as File | undefined}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
                                                                                     setExternalErrors={setExternalErrors}
@@ -219,7 +223,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     fieldTemplateTitle={value.title}
                                                                                     setFieldValue={setFieldValue}
                                                                                     required={requiredFilesNames.includes(key)}
-                                                                                    value={values.attachmentsProperties[key]}
+                                                                                    value={values.attachmentsProperties[key] as File[] | undefined}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
                                                                                     setExternalErrors={setExternalErrors}
@@ -258,7 +262,9 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
                                                                     childTemplateId
-                                                                        ? navigate(`/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`)
+                                                                        ? navigate(
+                                                                              `/entity/${entity.properties._id}?childTemplateId=${childTemplateId}`,
+                                                                          )
                                                                         : navigate(`/entity/${entity.properties._id}`);
                                                                     setExternalErrors({ files: false, unique: {}, action: '' });
                                                                 }}

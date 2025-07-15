@@ -106,6 +106,12 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
+    entityTemplatesRow: {
+        areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',
+        areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
+        succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
+        failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+    },
     clientSidePage: {
         simba: {
             contactInfoCard: {
@@ -238,6 +244,7 @@ export default {
             printOptions: 'הגדרות הדפסה',
             accompanyingFiles: 'קבצים נלווים',
             relationships: 'קשרים',
+            noPreviewProperties: 'אין מאפייני תצוגה מקדימה',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
@@ -802,6 +809,7 @@ export default {
                 failedUploadEntities: 'יצירת יישויות נכשלה',
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
+                editedSuccessfully: 'ישויות נערכו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
                 tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
@@ -981,7 +989,9 @@ export default {
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
+        notMatchingToFilter: 'לא תואם לסינון',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
+        matchFilter: 'הערך לא תואם את הגדרות ה{{dialogType}}',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },
     propertyTypes: {
@@ -1350,6 +1360,7 @@ export default {
             existing: 'קיים',
             chooseChart: 'בחירת תרשים',
             chartsPage: 'עמוד תרשימי',
+            total: 'סה"כ',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: 'תרשים זה מוצג בעמוד הבית. במידה והרשאת הצפייה שלו תשתנה ל"פרטי" - יוסר הרשים מעמוד הבית.',
@@ -1702,20 +1713,29 @@ export default {
             addAction: 'הוספה',
             byUser: 'משתמש',
         },
-        failedToCreateEntityChildTemplate: 'נכשל ליצור תבנית ישות בן',
-        failedToUpdateEntityChildTemplate: 'נכשל לעדכן תבנית ישות בן',
+        selectUserUnitDialog: {
+            title: 'בחירת יחידה',
+            content: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודת יחידה שממנה ילקח המידע',
+            label: 'יחידה',
+        },
+        failedToCreateChildTemplate: 'נכשל ליצור תבנית ישות בן',
+        failedToUpdateChildTemplate: 'נכשל לעדכן תבנית ישות בן',
         permissionsPage: {
             unit: 'יחידה',
             user: 'משתמש',
             userPage: 'עמוד לקוח',
         },
-        succeededToCreateEntityChildTemplate: 'תבנית בן נוצרה בהצלחה',
-        succeededToUpdateEntityChildTemplate: 'תבנית בן עודכנה בהצלחה',
+        succeededToCreateChildTemplate: 'תבנית בן נוצרה בהצלחה',
+        succeededToUpdateChildTemplate: 'תבנית בן עודכנה בהצלחה',
         childTemplates: 'תבניות בן',
         buttons: {
             create: 'צור תבנית בן',
             update: 'עדכן תבנית בן',
             cancel: 'ביטול',
+        },
+        dialogType: {
+            filter: 'סינון',
+            default: 'ברירת מחדל',
         },
     },
 };

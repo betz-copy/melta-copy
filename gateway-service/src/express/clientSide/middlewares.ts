@@ -26,7 +26,7 @@ class ClientSideValidator extends DefaultController {
 
         const usersInfoChildTemplate = await this.entityTemplateService.getChildTemplateById(user.usersInfoChildTemplateId);
 
-        const usersInfoTemplateId = usersInfoChildTemplate.fatherTemplateId._id;
+        const usersInfoTemplateId = usersInfoChildTemplate.parentTemplate._id;
 
         if (!usersInfoTemplateId) throw new Error("Can't find users template by child ");
 

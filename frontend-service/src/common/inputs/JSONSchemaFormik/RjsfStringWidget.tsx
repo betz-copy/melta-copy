@@ -1,12 +1,12 @@
 /* eslint-disable react/jsx-no-duplicate-props */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
-import React from 'react';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { IconButton, InputAdornment, TextField } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
+import React from 'react';
+import { containsHTMLTags, convertToPlainText } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
 import './form.css';
 
@@ -38,9 +38,13 @@ const RjsfTextWidget = ({
     const { defaultValue } = options;
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
         const parsedValue = (type || schema.type) === 'number' && newValue !== '' ? Number(newValue) : newValue;
-        onChange(newValue === '' ? defaultValue : parsedValue);
+        onChange(newValue === '' ? options.emptyValue : parsedValue);
     };
-    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
+    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => {
+        const isEmpty = newValue === '';
+        if (isEmpty) onChange(defaultValue);
+        onBlur(id, isEmpty ? defaultValue : newValue);
+    };
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
     const { rootSchema } = registry;
@@ -53,7 +57,7 @@ const RjsfTextWidget = ({
     if (options.hardCodedValue) finalValue = options.hardCodedValue;
     else if (isTextArea) finalValue = convertToPlainText(value);
     else if (schema.type === 'number' && value) finalValue = getFixedNumber(Number(value));
-    else finalValue = value ?? defaultValue;
+    else finalValue = value ?? '';
 
     const handleIncrement = () => {
         const newValue = Number(value || 0) + 1;
@@ -73,7 +77,7 @@ const RjsfTextWidget = ({
             variant={variant}
             fullWidth
             id={id}
-            placeholder={placeholder}
+            placeholder={placeholder && placeholder?.length > 0 ? placeholder : String(defaultValue ?? '')}
             label={!hideLabel && (displayLabel ? label || schema.title : false)}
             autoFocus={autofocus}
             required={required}

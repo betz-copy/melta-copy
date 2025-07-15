@@ -8,27 +8,27 @@ const searchFilterSchema = Joi.object({
 });
 
 const childTemplatePropertySchema = Joi.object({
-    title: Joi.string().required(),
-    type: Joi.string().required(),
-    format: Joi.string(),
     defaultValue: Joi.any(),
     filters: searchFilterSchema,
     isEditableByUser: Joi.boolean(),
 });
 
-const EntityChildTemplateSchema = {
+const ChildTemplateSchema = {
     name: Joi.string().required(),
     displayName: Joi.string().required(),
     description: Joi.string(),
-    fatherTemplateId: MongoIdSchema.required(),
-    categories: Joi.array().items(MongoIdSchema).required(),
-    properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    parentTemplateId: MongoIdSchema.required(),
+    category: MongoIdSchema.required(),
+    properties: Joi.object({
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
     viewType: Joi.string().valid('categoryPage', 'userPage').required(),
     isFilterByCurrentUser: Joi.boolean().default(false),
     isFilterByUserUnit: Joi.boolean().default(false),
     filterByCurrentUserField: Joi.string(),
+    filterByUnitUserField: Joi.string(),
 };
 
 // POST /api/templates/categories
@@ -309,7 +309,7 @@ export const searchRulesRequestSchema = Joi.object({
 });
 
 // POST /api/templates/child/search
-export const searchEntityChildTemplatesSchema = Joi.object({
+export const searchChildTemplatesSchema = Joi.object({
     body: {
         search: Joi.string(),
         ids: Joi.array().items(MongoIdSchema),
@@ -329,17 +329,17 @@ export const getAllChildTemplatesSchema = Joi.object({
 });
 
 // POST /api/templates/child
-export const createEntityChildTemplateSchema = Joi.object({
+export const createChildTemplateSchema = Joi.object({
     body: {
-        ...EntityChildTemplateSchema,
+        ...ChildTemplateSchema,
     },
     query: {},
     params: {},
 });
 
-export const updateEntityChildTemplateSchema = Joi.object({
+export const updateChildTemplateSchema = Joi.object({
     body: {
-        ...EntityChildTemplateSchema,
+        ...ChildTemplateSchema,
     },
     query: {},
     params: {
@@ -347,7 +347,7 @@ export const updateEntityChildTemplateSchema = Joi.object({
     },
 });
 
-export const deleteEntityChildTemplateSchema = Joi.object({
+export const deleteChildTemplateSchema = Joi.object({
     body: {},
     query: {},
     params: {

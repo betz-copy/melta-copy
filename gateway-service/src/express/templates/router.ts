@@ -8,7 +8,7 @@ import TemplatesValidator from './middlewares';
 import {
     convertToRelationshipFieldRequestSchema,
     createCategorySchema,
-    createEntityChildTemplateSchema,
+    createChildTemplateSchema,
     createEntityTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
@@ -18,7 +18,7 @@ import {
     deleteRuleByIdRequestSchema,
     getAllChildTemplatesSchema,
     getCategoriesSchema,
-    searchEntityChildTemplatesSchema,
+    searchChildTemplatesSchema,
     getAllConfigsSchema,
     getConfigByTypeSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
@@ -32,8 +32,8 @@ import {
     updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
-    updateEntityChildTemplateSchema,
-    deleteEntityChildTemplateSchema,
+    updateChildTemplateSchema,
+    deleteChildTemplateSchema,
     updateEntityTemplateActionSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -267,14 +267,15 @@ templatesRouter.post(
 templatesRouter.post(
     '/child',
     busboyMiddleware,
-    ValidateRequest(createEntityChildTemplateSchema),
+    ValidateRequest(createChildTemplateSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
-    TemplatesServiceProxy,
+    templatesControllerMiddleware.createChildTemplate,
 );
 
 templatesRouter.post(
     '/child/search',
-    ValidateRequest(searchEntityChildTemplatesSchema),
+    ValidateRequest(searchChildTemplatesSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     TemplatesServiceProxy,
 );
@@ -288,14 +289,14 @@ templatesRouter.get(
 
 templatesRouter.put(
     '/child/:id',
-    ValidateRequest(updateEntityChildTemplateSchema),
+    ValidateRequest(updateChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
-    TemplatesServiceProxy,
+    templatesControllerMiddleware.updateChildTemplate,
 );
 
 templatesRouter.delete(
     '/child/:id',
-    ValidateRequest(deleteEntityChildTemplateSchema),
+    ValidateRequest(deleteChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     TemplatesServiceProxy,
 );

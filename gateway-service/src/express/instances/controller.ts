@@ -33,7 +33,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
-        const { templateId, childTemplateId, insertBrokenEntities } = req.body;
+        const { templateId, insertBrokenEntities, childTemplateId } = req.body;
         res.json(
             await this.manager.loadEntities(
                 templateId,
@@ -46,11 +46,14 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
-        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.files?.[0] || req.file!));
+        const { templateId, childTemplateId } = req.body;
+
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, childTemplateId));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {
         const { entities, childTemplateId } = req.body;
+
         res.json(await this.manager.editManyEntitiesByExcel(entities, req.user!.id, childTemplateId));
     }
 

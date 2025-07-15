@@ -18,13 +18,13 @@ import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { isChildTemplate } from '../../../utils/templates';
 
 const { excelExtension } = environment.loadExcel;
 
-const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { childTemplateId?: string }> = ({
+const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
-    childTemplateId,
     initialValues = {},
     initialStep = 1,
     isEditMode = false,
@@ -51,7 +51,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { chil
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (files: Record<string, File>) => {
-            return loadEntitiesRequest(template!, childTemplateId, files);
+            return loadEntitiesRequest(template!, files);
         },
         {
             async onSuccess(data) {
@@ -67,7 +67,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { chil
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async (insertBrokenEntities: IEntityWithIgnoredRules[]) => {
-            return loadEntitiesRequest(template!, childTemplateId, undefined, insertBrokenEntities);
+            return loadEntitiesRequest(template!, undefined, insertBrokenEntities);
         },
         {
             async onSuccess(data) {
@@ -90,7 +90,12 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues> & { chil
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
+                    [template!._id]: {
+                        headersOnly,
+                        insertEntities,
+                        displayColumns: template?.propertiesOrder,
+                        isChildTemplate: isChildTemplate(template!),
+                    },
                 },
             });
         },

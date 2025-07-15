@@ -65,6 +65,8 @@ import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -89,7 +91,7 @@ export interface IButtonProps<Data> {
 }
 
 export const getDatasource = <Data extends any = EntityData>(
-    template: IMongoEntityTemplatePopulated & { fatherTemplateId?: string },
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -98,6 +100,8 @@ export const getDatasource = <Data extends any = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
+    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
             if (rowData) {
@@ -113,7 +117,7 @@ export const getDatasource = <Data extends any = EntityData>(
             const { result: data, err } = await trycatch(() =>
                 pageType === 'client-side'
                     ? searchEntitiesOfTemplateClientSideRequest(
-                          template._id,
+                          parentTemplateId,
                           clientSideUserEntityId!,
                           agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
@@ -123,7 +127,7 @@ export const getDatasource = <Data extends any = EntityData>(
                           ),
                       )
                     : searchEntitiesOfTemplateRequest(
-                          template.fatherTemplateId || template._id,
+                          parentTemplateId,
                           agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,
@@ -155,7 +159,7 @@ export type IConnection = {
 
 export const getRowModelProps = <Data extends any = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
     // tableCount: number,// comment out  waiting for Itay
@@ -196,8 +200,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
-    childTemplateId?: string;
+    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -258,7 +261,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     <Data extends any>(
         {
             template,
-            childTemplateId,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -300,6 +302,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
 
+        const childTemplateId = isChildTemplate(template) ? template._id : undefined;
+
         const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
         if (!pageRowCount) pageRowCount = rowCount;
@@ -340,9 +344,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             (id: string) =>
                 deleteEntityRequest({
                     selectAll: false,
-                    templateId: template?._id as string,
+                    templateId: isChildTemplate(template) ? template.parentTemplate._id : template?._id,
                     idsToInclude: [id],
                     deleteAllRelationships: false,
+                    childTemplateId,
                 } as IDeleteEntityBody<false>),
             {
                 onError: (error: AxiosError) => {
@@ -456,7 +461,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
                 const { disabled, ...rest } = params.api.getFilterModel();
-                const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
+                const filterModel = params.column.isVisible() ? rest : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
 
@@ -677,7 +682,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     quickFilterText,
                     datasourceOnFail,
                     hasInstances,
-                    defaultFilter,
+                    defaultFilter as ISearchFilter | undefined,
                     saveStorageProps.pageType,
                     clientSideUserEntity?.properties?._id,
                 ),
@@ -691,7 +696,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText, setUpdatedTemplateIds, childTemplateId },
+                    statusPanelParams: {
+                        template,
+                        quickFilterText,
+                        setUpdatedTemplateIds,
+                    },
                 });
 
             return panels;
