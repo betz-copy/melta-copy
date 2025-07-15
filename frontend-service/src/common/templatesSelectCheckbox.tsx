@@ -5,7 +5,6 @@ import { SelectCheckbox } from './SelectCheckBox';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { isChildTemplate } from '../utils/templates';
 
 type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     title: string;

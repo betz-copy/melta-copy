@@ -148,7 +148,7 @@ const TemplateTable = forwardRef<
 
     // TODO: what about categories?
     const userHasWritePermissions =
-        Object.keys(currentClientSideUser).length ||
+        Object.keys(currentClientSideUser).length > 0 ||
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
     useEffect(() => {
@@ -448,7 +448,6 @@ const TemplateTable = forwardRef<
                     menuRowButtonProps={userHasWritePermissions}
                     refetch={() => entitiesTableRef.current?.refreshServerSide()}
                     setUpdatedTemplateIds={setUpdatedTemplateIds}
-                    // setUpdatedEntities={setUpdatedEntities}
                 />
             </Box>
 

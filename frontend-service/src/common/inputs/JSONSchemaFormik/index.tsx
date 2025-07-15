@@ -90,8 +90,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filters',
         'defaultValue',
         'isFilterByCurrentUser',
+        'isFilterByUserUnit'
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
-
 
     ajv.addKeyword({
         keyword: 'identifier',
@@ -100,10 +100,6 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         validate: (v) => v !== undefined,
         errors: false,
     });
-
-    ajv.addKeyword({ keyword: 'filters' });
-    ajv.addKeyword({ keyword: 'isFilterByCurrentUser' });
-    ajv.addKeyword({ keyword: 'isFilterByUserUnit' });
 
     const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
@@ -130,6 +126,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
         }
     });
+    console.log({ childTemplateFilterErrors });
 
     return { ...formikErrors, ...childTemplateFilterErrors };
 };

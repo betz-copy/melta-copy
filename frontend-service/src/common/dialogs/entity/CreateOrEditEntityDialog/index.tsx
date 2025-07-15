@@ -101,8 +101,6 @@ const CreateOrEditEntityDetails: React.FC<{
     setCreateOrUpdateWithRuleBreachDialogState,
     showActionButtons = true,
 }) => {
-    console.log({ entityTemplate });
-
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);

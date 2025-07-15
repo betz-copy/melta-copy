@@ -42,7 +42,6 @@ const AddEntityButton: React.FC<{
     const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
 
     const template = addEntityWizardState.initialValues?.template;
-    console.log({ addEntityWizardState });
 
     const handleSuccess = (entity: IEntity) => {
         onSuccessCreate?.(entity);
@@ -105,30 +104,6 @@ const AddEntityButton: React.FC<{
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-
-                    //  mutationProps={{
-                    //                     ...(editDialog.isEditMode
-                    //                         ? {
-                    //                               actionType: ActionTypes.UpdateEntity,
-                    //                               payload: editDialog.entity!,
-                    //                           }
-                    //                         : { actionType: ActionTypes.CreateEntity, payload: undefined }),
-                    //                     onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
-                    //                     onSuccess: (entity: IEntity) => {
-                    //                         setUpdatedTemplateIds?.([entity.templateId]);
-                    //                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    //                         setExternalErrors(initializedExternalErrors);
-                    //                     },
-                    //                 }}
-                    //                 entityTemplate={template}
-                    //                 initialCurrValues={editDialog.wizardValues}
-                    //                 handleClose={() => {
-                    //                     setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    //                 }}
-                    //                 externalErrors={externalErrors}
-                    //                 setExternalErrors={setExternalErrors}
-                    //                 createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
-                    //                 setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
         </>

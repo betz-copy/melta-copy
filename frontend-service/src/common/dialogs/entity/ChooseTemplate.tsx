@@ -61,8 +61,6 @@ const ChooseTemplate: React.FC<{
             id="template"
             options={activeEntityTemplatesFiltered}
             onChange={(_e, value) => {
-                console.log({ value });
-
                 setFieldValue('template', value || emptyEntityTemplate);
                 setFieldValue('properties', {});
             }}

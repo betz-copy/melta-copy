@@ -74,7 +74,7 @@ const Category: React.FC = () => {
         }
     });
 
-    const [categoryTemplatesId, setCategoryTemplatesId] = useLocalStorage<string[]>(`tableOrder-${categoryId}`, defaultOrderedTemplateIds);    console.log({ categoryTemplatesId });
+    const [categoryTemplatesId, setCategoryTemplatesId] = useLocalStorage<string[]>(`tableOrder-${categoryId}`, defaultOrderedTemplateIds);
     const categoryTemplates = categoryTemplatesId.map((id) => getParentOrChildTemplate(id)).filter((template) => !!template);
 
     const [templateIdsToShowCheckbox, setTemplateIdsToShowCheckbox] = useLocalStorage<string[]>(
