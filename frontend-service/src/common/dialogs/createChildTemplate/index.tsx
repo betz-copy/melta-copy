@@ -575,7 +575,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     />
                                                     {unitUserField.selectedUnitUserField && (
                                                         <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t('createChildTemplateDialog.selectUserDialog.byUser')} : ${
+                                                            {`${i18next.t('createChildTemplateDialog.selectUserUnitDialog.label')} : ${
                                                                 entityTemplate.properties.properties[unitUserField.selectedUnitUserField].title
                                                             }`}
                                                         </Typography>
