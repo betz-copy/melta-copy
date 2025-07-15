@@ -167,7 +167,8 @@ const CreateChildTemplateDialog: React.FC<{
         mutationFn: (template) => {
             if (Array.isArray(template)) {
                 const [templateData, id] = template;
-                return updateChildTemplate(id, templateData);
+                if (isUpdate) return updateChildTemplate(id, templateData);
+                return createChildTemplate(templateData);
             }
             return createChildTemplate(template);
         },
@@ -320,6 +321,8 @@ const CreateChildTemplateDialog: React.FC<{
               .map((t) => t.displayName)
         : [];
 
+    const isUpdate = !!childTemplate?.displayName;
+
     return (
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik
@@ -338,7 +341,7 @@ const CreateChildTemplateDialog: React.FC<{
                     if (matchValidationError.size > 0) return;
 
                     const fullName = `${entityTemplate.name}_${name}`;
-                    const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
+                    const displayNameToUse = isUpdate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
                     const properties: IChildTemplate['properties'] = { properties: {} };
@@ -397,7 +400,7 @@ const CreateChildTemplateDialog: React.FC<{
                     return (
                         <Form>
                             <DialogTitle>
-                                {`${i18next.t(`createChildTemplateDialog.${childTemplate ? 'updateTemplate' : 'template'}Title`)}- ${
+                                {`${i18next.t(`createChildTemplateDialog.${isUpdate ? 'updateTemplate' : 'template'}Title`)}- ${
                                     childTemplate ? childTemplate.displayName : entityTemplate.displayName
                                 }`}
                                 <IconButton
@@ -430,7 +433,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 InputProps={{
                                                     startAdornment: <InputAdornment position="start">{entityTemplate.name}_</InputAdornment>,
                                                 }}
-                                                disabled={!!childTemplate}
+                                                disabled={isUpdate}
                                             />
                                         </Grid>
                                         <Grid item xs={6}>
@@ -445,7 +448,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 InputProps={{
                                                     startAdornment: <InputAdornment position="start">{entityTemplate.displayName}-</InputAdornment>,
                                                 }}
-                                                disabled={!!childTemplate}
+                                                disabled={isUpdate}
                                             />
                                         </Grid>
                                         <Grid item xs={12}>
@@ -699,8 +702,8 @@ const CreateChildTemplateDialog: React.FC<{
                             </DialogContent>
                             <DialogActions>
                                 <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
-                                <Button type="submit" variant="contained" disabled={(childTemplate && !hasChanges) || matchValidationError.size > 0}>
-                                    {i18next.t(`createChildTemplateDialog.buttons.${childTemplate ? 'update' : 'create'}`)}
+                                <Button type="submit" variant="contained" disabled={(isUpdate && !hasChanges) || matchValidationError.size > 0}>
+                                    {i18next.t(`createChildTemplateDialog.buttons.${isUpdate ? 'update' : 'create'}`)}
                                 </Button>
                             </DialogActions>
                         </Form>

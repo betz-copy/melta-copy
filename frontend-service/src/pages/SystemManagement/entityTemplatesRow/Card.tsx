@@ -26,6 +26,7 @@ import { getFileName } from '../../../utils/getFileName';
 import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
+import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 
 const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];
@@ -228,7 +229,21 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 }}
                                 onDuplicateClick={
                                     childTemplates?.get(entityTemplate._id)
-                                        ? undefined
+                                        ? () => {
+                                              const childTemplate = childTemplates?.get(entityTemplate._id)!;
+                                              setAddChildTemplateDialogState({
+                                                  isWizardOpen: true,
+                                                  entityTemplate: childTemplate.parentTemplate,
+                                                  childTemplate: {
+                                                      ...childTemplate,
+                                                      category: emptyEntityTemplate.category,
+                                                      displayName: emptyEntityTemplate.displayName,
+                                                      name: emptyEntityTemplate.name,
+                                                      description: '',
+                                                  },
+                                              });
+                                              setIsHoverOnCard(false);
+                                          }
                                         : () => {
                                               setEntityTemplateWizardDialogState({
                                                   isWizardOpen: true,
