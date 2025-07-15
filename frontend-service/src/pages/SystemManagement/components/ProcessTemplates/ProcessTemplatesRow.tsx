@@ -103,6 +103,7 @@ const ProcessTemplatesRow: React.FC = () => {
                         processTemplate={processTemplate}
                         setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
                         setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
+                        setDuplicateProcessTemplateDialogState={setProcessTemplateWizardDialogState}
                     />
                 )}
             </InfiniteScroll>
@@ -110,7 +111,7 @@ const ProcessTemplatesRow: React.FC = () => {
                 open={processTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}
                 initialValues={processTemplateObjectToProcessTemplateForm(processTemplateWizardDialogState.processTemplate)}
-                isEditMode={Boolean(processTemplateWizardDialogState.processTemplate)}
+                isEditMode={Boolean(processTemplateWizardDialogState.processTemplate?._id)}
             />
             <AreYouSureDialog
                 open={deleteProcessTemplateDialogState.isDialogOpen}

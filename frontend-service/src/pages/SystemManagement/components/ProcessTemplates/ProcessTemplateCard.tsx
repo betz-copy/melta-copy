@@ -3,13 +3,14 @@ import { Divider, Grid, Typography, useTheme } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { ViewingCard } from '../Card';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
+import { defaultProcessTemplate, IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { CardMenu } from '../CardMenu';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { ProcessProperties } from './ProcessProperties';
 import { ProcessStep } from './ProcessStep';
 import { useWorkspaceStore } from '../../../../stores/workspace';
+import { defaultStepTemplate } from '../../../../interfaces/processes/stepTemplate';
 
 interface ProcessTemplateCardProps {
     processTemplate: IMongoProcessTemplatePopulated;
@@ -25,12 +26,19 @@ interface ProcessTemplateCardProps {
             processTemplateId: string | null;
         }>,
     ) => void;
+    setDuplicateProcessTemplateDialogState: (
+        value: React.SetStateAction<{
+            isWizardOpen: boolean;
+            processTemplate: IMongoProcessTemplatePopulated | null;
+        }>,
+    ) => void;
 }
 
 export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
     processTemplate,
     setProcessTemplateWizardDialogState,
     setDeleteProcessTemplateDialogState,
+    setDuplicateProcessTemplateDialogState,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
@@ -78,6 +86,24 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                     }}
                                     onDeleteClick={() => {
                                         setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id });
+                                    }}
+                                    onDuplicateClick={() => {
+                                        setDuplicateProcessTemplateDialogState({
+                                            isWizardOpen: true,
+                                            processTemplate: {
+                                                ...defaultProcessTemplate,
+                                                details: processTemplate.details,
+                                                steps: processTemplate.steps.map((step) => ({
+                                                    ...defaultStepTemplate,
+                                                    displayName: step.displayName,
+                                                    name: step.name,
+                                                    properties: step.properties,
+                                                    propertiesOrder: step.propertiesOrder,
+                                                    reviewers: step.reviewers,
+                                                    disableAddingReviewers: step.disableAddingReviewers,
+                                                })),
+                                            },
+                                        });
                                     }}
                                 />
                             )}
