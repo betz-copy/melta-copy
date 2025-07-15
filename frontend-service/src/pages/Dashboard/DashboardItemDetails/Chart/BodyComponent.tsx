@@ -8,8 +8,6 @@ import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
-import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
-import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 export const getRelevantEntityTemplate = (
@@ -31,8 +29,6 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
-    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!values.childTemplateId);
-    const allFilters = getFilterModal(memoizedFilter, childTemplateFilter);
 
     if (!values.templateId) return null;
 
@@ -47,7 +43,7 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
                     template={template}
                     defaultExpanded={false}
                     title={i18next.t('charts.viewData')}
-                    defaultFilter={allFilters}
+                    defaultFilter={memoizedFilter}
                     infiniteModeWithoutExpand
                     disableFilter
                     overrideSx={{

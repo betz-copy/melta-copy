@@ -33,7 +33,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
         setFieldValue('childTemplateId', childTemplate?._id || null);
 
         if (typeof newValue === 'string')
-            setFieldValue('columns', getTemplateProperties(childTemplate ? childEntityTemplates : entityTemplates, newValue, !!childTemplate));
+            setFieldValue('columns', getTemplateProperties(childTemplate ? childEntityTemplates : entityTemplates, newValue));
     };
 
     return (

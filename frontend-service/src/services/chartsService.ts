@@ -32,13 +32,13 @@ export const getChartById = async (chartId: string) => {
     return data;
 };
 
-export const getChartByTemplateId = async (templateId: string, textSearch?: string, isChildTemplate?: boolean) => {
-    const { data } = await axios.post<ChartsAndGenerator[]>(`${charts}/by-template/${templateId}`, { textSearch, isChildTemplate });
+export const getChartByTemplateId = async (templateId: string, textSearch?: string, childTemplateId?: string) => {
+    const { data } = await axios.post<ChartsAndGenerator[]>(`${charts}/by-template/${templateId}`, { textSearch, childTemplateId });
     return data;
 };
 
-export const getChartsByUserId = async (templateId: string, textSearch?: string, isChildTemplate?:boolean) => {
-    const { data } = await axios.post<IMongoChart[]>(`${charts}/by-user/${templateId}`, { textSearch, isChildTemplate });
+export const getChartsByUserId = async (templateId: string, textSearch?: string, childTemplateId?: string) => {
+    const { data } = await axios.post<IMongoChart[]>(`${charts}/by-user/${templateId}`, { textSearch, childTemplateId });
     return data;
 };
 

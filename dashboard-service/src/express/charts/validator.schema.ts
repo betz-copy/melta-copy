@@ -69,7 +69,7 @@ export const getChartByIdRequestSchema = Joi.object({
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
-        isChildTemplate: Joi.bool(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {

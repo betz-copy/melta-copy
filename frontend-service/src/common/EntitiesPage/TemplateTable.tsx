@@ -292,7 +292,6 @@ const TemplateTable = forwardRef<
                         text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
                         disableButton={!userHasWritePermissions}
                     />
-                    {/* SHIREL */}
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('pages.charts'),

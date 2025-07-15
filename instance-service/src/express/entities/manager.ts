@@ -2129,15 +2129,15 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getChartByTemplate(templateId: string, { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string }) {
-        const childEntityTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
+        const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
-        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(childEntityTemplate?.parentTemplate._id || templateId);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
         const entityTemplatesMap = new Map([[entityTemplate._id, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const filters = childTemplateId ? combineFilters(getFilterFromChildTemplate(childEntityTemplate!), filter) : filter;
+            const filters = childTemplateId ? combineFilters(getFilterFromChildTemplate(childTemplate!), filter) : filter;
 
             const templatesFilter = { [entityTemplate._id]: { filter: filters, showRelationships: false } };
 

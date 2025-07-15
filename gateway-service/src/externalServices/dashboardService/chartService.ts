@@ -11,8 +11,8 @@ class ChartService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: `${url}${baseRoute}${charts.baseRoute}`, timeout: requestTimeout });
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string, isChildTemplate?: boolean): Promise<IMongoChart[]> {
-        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch, isChildTemplate });
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string): Promise<IMongoChart[]> {
+        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch, childTemplateId });
         return data;
     }
 

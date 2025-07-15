@@ -21,15 +21,13 @@ class ChartsValidator extends DefaultController {
 
     private async getCategoryIdFromTemplateId(
         templateId: string,
-        isChildTemplate?: boolean,
+        childTemplateId?: string,
     ): Promise<{
         categoryId: string;
         template: IChildTemplatePopulated | IMongoEntityTemplatePopulated;
     }> {
-        console.log({ templateId });
-
-        const template = isChildTemplate
-            ? await this.entityTemplateService.getChildTemplateById(templateId)
+        const template = childTemplateId
+            ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
 
         const categoryId = template.category._id;
@@ -44,18 +42,17 @@ class ChartsValidator extends DefaultController {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on chart ${_id}` });
     }
 
-    private async validateUserHasPermissionToTemplate(req: Request, templateId: string, isChildTemplate?: boolean) {
+    private async validateUserHasPermissionToTemplate(req: Request, templateId: string, childTemplateId?: string) {
         const [{ categoryId, template }, userPermissions] = await Promise.all([
-            this.getCategoryIdFromTemplateId(templateId, isChildTemplate),
+            this.getCategoryIdFromTemplateId(templateId, childTemplateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         const categoryPermissions = userPermissions.instances?.categories?.[categoryId];
-        // SHIREL
         if (
             !userPermissions.admin?.scope &&
             !categoryPermissions?.scope &&
-            (isChildTemplate
+            (childTemplateId
                 ? !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated).parentTemplate._id]?.scope &&
                   !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated)._id]?.scope
                 : !categoryPermissions?.entityTemplates?.[templateId]?.scope)
@@ -80,9 +77,9 @@ class ChartsValidator extends DefaultController {
 
     async validateUserCanGetChartsByTemplate(req: Request) {
         const { templateId } = req.params;
-        const { isChildTemplate } = req.body;
+        const { childTemplateId } = req.body;
 
-        return this.validateUserHasPermissionToTemplate(req, templateId, isChildTemplate);
+        return this.validateUserHasPermissionToTemplate(req, templateId, childTemplateId);
     }
 
     async validateUserCanGetChartById(req: Request) {

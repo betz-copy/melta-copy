@@ -21,6 +21,7 @@ import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/
 import { AddNewChartButton } from './AddNewChartButton';
 import ChartItem from './chartsTemplatePage/chartItem';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -35,6 +36,7 @@ const ChartsPage: React.FC = () => {
     const childEntityTemplate = childEntityTemplates.get(templateId as string);
     const fatherEntityTemplate = entityTemplates.get((childEntityTemplate ? childEntityTemplate.parentTemplate._id : templateId) as string)!;
     const template = childEntityTemplate || fatherEntityTemplate;
+    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
 
     const [textSearch, setTextSearch] = useState<string>();
     const [layout, setLayout] = useState<LayoutItem[]>([]);
@@ -57,7 +59,7 @@ const ChartsPage: React.FC = () => {
 
     const { data, isFetching } = useQuery({
         queryKey: ['getCharts', templateId, textSearch, !!childEntityTemplate],
-        queryFn: () => getChartByTemplateId(templateId as string, textSearch, !!childEntityTemplate),
+        queryFn: () => getChartByTemplateId(parentTemplateId, textSearch, childEntityTemplate?._id),
         initialData: [],
     });
 

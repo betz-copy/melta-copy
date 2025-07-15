@@ -503,7 +503,7 @@ export const getChartOfTemplate = async (
     templateId: string,
     filter?: ISearchFilter,
     childTemplateId?: string,
-) => {
+) => {    
     const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, {
         chartsData: [{ xAxis, yAxis, filter }],
         childTemplateId,

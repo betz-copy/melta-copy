@@ -50,7 +50,12 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         );
 
         const generatedChildCharts = flatten(
-            await Promise.all(map(chartsByChildTemplateId, (charts, childTemplateId) => chartManager.generateCharts(charts, childTemplateId, true))),
+            await Promise.all(
+                map(chartsByChildTemplateId, (charts, childTemplateId) => {
+                    const templateId = charts[0]?.templateId;
+                    return chartManager.generateCharts(charts, templateId, childTemplateId);
+                }),
+            ),
         );
 
         const allGeneratedCharts = [...generatedCharts, ...generatedChildCharts];

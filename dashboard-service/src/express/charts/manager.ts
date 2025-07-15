@@ -14,11 +14,11 @@ class ChartManager extends DefaultManagerMongo<IMongoChart> {
         return this.model.findById(chartId).orFail(new NotFoundError('Chart not found')).lean().exec();
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string, isChildTemplate?: boolean) {
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string) {
         const query: FilterQuery<IMongoChart> = {};
 
-        if (isChildTemplate) {
-            query.childTemplateId = templateId;
+        if (childTemplateId) {
+            query.childTemplateId = childTemplateId;
         } else {
             query.templateId = templateId;
             query.$or = [{ childTemplateId: { $exists: false } }, { childTemplateId: null }];

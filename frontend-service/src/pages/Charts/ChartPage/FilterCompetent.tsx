@@ -36,7 +36,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
     const properties = entityTemplate?.properties.properties;
     const notIncludedFormats = ['fileId', 'signature', 'location', 'comment'];
     const filterProperties = Object.entries(properties ?? {})
-        .filter(([_, value]: [any, any]) => !notIncludedFormats.includes(value.format ?? '') && value.items?.format !== 'fileId')
+        .filter(([_, value]) => !notIncludedFormats.includes(value.format ?? '') && value.items?.format !== 'fileId')
         .map(([key]) => key);
 
     const handleFilterChange = (newFiltersArray: IFilterTemplate[]) => setFieldValue('filter', newFiltersArray);

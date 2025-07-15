@@ -41,10 +41,9 @@ export const dashboardInitialValues = {
 export const getTemplateProperties = (
     entityTemplates: IEntityTemplateMap | IChildTemplateMap,
     templateId: string | null,
-    isChildTemplate: boolean,
 ) => {
     const entityTemplate = entityTemplates.get(templateId!);
-    const entityTemplateFields = entityTemplate && Object.keys(isChildTemplate ? entityTemplate.properties : entityTemplate.properties.properties);
+    const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
     return entityTemplateFields || [];
 };
 

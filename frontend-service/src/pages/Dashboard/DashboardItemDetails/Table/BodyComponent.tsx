@@ -1,5 +1,5 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../../common/wizards';
@@ -11,6 +11,8 @@ import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/Te
 import { getRelevantEntityTemplate } from '../Chart/BodyComponent';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { isChildTemplate } from '../../../../utils/templates';
+import { useUserStore } from '../../../../stores/user';
 
 const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const theme = useTheme();
@@ -19,14 +21,20 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entitiesTableRef = React.useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = metadata.agGrid;
 
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
-    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!values.childTemplateId);
+    const childTemplateDefaultFilters = useMemo(() => {
+        return getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId);
+    }, [values.templateId, values.childTemplateId, currentUserKartoffelId]);
+
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
-    const allFilters = getFilterModal(memoizedFilter, childTemplateFilter);
+    const allFilters = getFilterModal(memoizedFilter, childTemplateDefaultFilters);
 
     return (
         <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">
@@ -44,7 +52,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
 
                     <EntitiesTableOfTemplate
                         ref={entitiesTableRef}
-                        template={entityTemplates.get(values.templateId)!}
+                        template={template}
                         getRowId={(currentEntity) => currentEntity.properties._id}
                         getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                         rowHeight={defaultRowHeight}
