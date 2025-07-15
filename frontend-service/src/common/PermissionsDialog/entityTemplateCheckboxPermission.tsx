@@ -21,15 +21,12 @@ const EntityTemplateCheckboxPermission: React.FC<{
 }> = ({ entityTemplate, changePermissions, disabled, permissionType, viewMode, categoryPermissions }) => {
     const theme = useTheme();
     const [openChildTemplateList, setOpenChildTemplateList] = useState(false);
-    const { childTemplates } = entityTemplate;
-
-    const hasChildTemplates = childTemplates && childTemplates.length > 0;
 
     return (
         <Grid container xs={12} key={entityTemplate.id}>
             <Grid item xs={1.2} />
             <Grid item xs={4.8} display="flex" alignItems="center">
-                {hasChildTemplates && (
+                {entityTemplate.childTemplates && entityTemplate.childTemplates.length > 0 && (
                     <IconButton
                         aria-label="arrowLeftRounded"
                         onClick={() => {
@@ -96,7 +93,7 @@ const EntityTemplateCheckboxPermission: React.FC<{
             )}
             <Grid item xs={12}>
                 <Collapse in={openChildTemplateList}>
-                    {childTemplates?.map((childTemplate) => {
+                    {entityTemplate.childTemplates?.map((childTemplate) => {
                         return (
                             <Grid container xs={12} key={childTemplate.id}>
                                 <Grid xs={1.3} />

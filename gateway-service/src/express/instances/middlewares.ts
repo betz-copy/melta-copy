@@ -140,19 +140,19 @@ class InstancesValidator extends DefaultController {
         const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
+        const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
+        const childTemplate = childTemplates.find(({ parentTemplate: { _id } }) => _id === templateId);
+
         if (
             !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(([category, { scope, entityTemplates }]) => {
-                const templatePermissions = entityTemplates?.[templateId];
-                return (
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
+                ([category, { scope, entityTemplates }]) =>
                     category === categoryId &&
                     (scope === permissionScope ||
                         scope === PermissionScope.write ||
-                        templatePermissions?.scope === permissionScope ||
-                        entityTemplates?.[templateId]?.scope === permissionScope ||
-                        entityTemplates?.[templateId]?.scope === PermissionScope.write)
-                );
-            })
+                        entityTemplates?.[childTemplate?._id ?? templateId]?.scope === permissionScope ||
+                        entityTemplates?.[childTemplate?._id ?? templateId]?.scope === PermissionScope.write),
+            )
         ) {
             throw new ForbiddenError(
                 `user not authorized, does not have ${permissionScope} permission on template ${templateId} in category ${categoryId}`,

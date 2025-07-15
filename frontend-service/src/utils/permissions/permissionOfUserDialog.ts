@@ -45,6 +45,12 @@ export const createDialogCategories = (
 ): Map<string, CategoryWithTemplates> => {
     const dialogPermissionData: ReturnType<typeof createDialogCategories> = new Map();
 
+    for (const child of childTemplates) {
+        if (!entityTemplates.find(({ _id, category }) => _id === child.parentTemplate._id && category._id === child.category._id)) {
+            entityTemplates.push({ ...child.parentTemplate, category: child.category });
+        }
+    }
+
     for (const entityTemplate of entityTemplates) {
         const category: CategoryWithTemplates = {
             entityTemplates: dialogPermissionData.get(entityTemplate.category._id)?.entityTemplates || [],
@@ -81,7 +87,7 @@ export const createDialogCategories = (
             }
         }
 
-        category?.entityTemplates.push(displayEntity);
+        category.entityTemplates.push(displayEntity);
         dialogPermissionData.set(entityTemplate.category._id, category);
     }
 

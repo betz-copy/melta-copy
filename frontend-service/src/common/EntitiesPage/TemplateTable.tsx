@@ -148,7 +148,7 @@ const TemplateTable = forwardRef<
 
     // TODO: what about categories?
     const userHasWritePermissions =
-        !!currentClientSideUser ||
+        Object.keys(currentClientSideUser).length ||
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
     useEffect(() => {

@@ -136,7 +136,7 @@ export const CardMenu: React.FC<{
                     </MeltaTooltip>
                 )}
 
-                {onAddChildTemplateClick && currentUser.isRoot && (
+                {onAddChildTemplateClick && (
                     <MeltaTooltip
                         placement="left"
                         title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
