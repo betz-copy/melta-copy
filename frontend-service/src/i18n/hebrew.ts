@@ -1360,6 +1360,7 @@ export default {
             existing: 'קיים',
             chooseChart: 'בחירת תרשים',
             chartsPage: 'עמוד תרשימי',
+            total: 'סה"כ',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: 'תרשים זה מוצג בעמוד הבית. במידה והרשאת הצפייה שלו תשתנה ל"פרטי" - יוסר הרשים מעמוד הבית.',

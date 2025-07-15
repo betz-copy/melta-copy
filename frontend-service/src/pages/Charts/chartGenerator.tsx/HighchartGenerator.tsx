@@ -7,6 +7,7 @@ import { environment } from '../../../globals';
 import { GeneratedChart, HighchartType, IAxis, IChart, IChartType } from '../../../interfaces/charts';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
+import i18next from 'i18next';
 
 const { pieChartColors } = environment.charts;
 
@@ -73,7 +74,28 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     }, []);
 
     const chartOptions: Highcharts.Options = {
-        chart: { type, backgroundColor },
+        chart: {
+            type,
+            backgroundColor,
+            events: {
+                render() {
+                    const chart = this as Highcharts.Chart & { customTotalLabel?: Highcharts.SVGElement };
+                    const total = seriesData.reduce((sum, d) => sum + (d.y ?? 0), 0);
+                    if (chart.customTotalLabel) chart.customTotalLabel.destroy();
+
+                    if (type === IChartType.Pie)
+                        chart.customTotalLabel = chart.renderer
+                            .text(`${i18next.t('dashboard.charts.total')} : ${total}`, 10, chart.chartHeight)
+                            .css({
+                                color: labelsColor,
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                fontFamily: 'Rubik',
+                            })
+                            .add();
+                },
+            },
+        },
         title: {
             text: name,
             style: titleStyle,
@@ -107,18 +129,21 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
             labelFormatter() {
                 const point = this as Highcharts.Point;
                 const pointName = point.name ?? '-';
+                const y = point.y ?? 0;
+
                 const percentage = point.percentage != null ? `${point.percentage.toFixed(1)}%` : '-';
-                return `${pointName}: ${percentage}`;
+                return `${pointName}: ${y} ${percentage}`;
             },
         },
         credits: {
             enabled: false,
         },
         tooltip: {
-            pointFormat: type === IChartType.Pie ? '{series.name}: <b>{point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
+            pointFormat: type === IChartType.Pie ? ' <b>{point.y}   {point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
         },
         plotOptions: {
             pie: {
+                innerSize: '50%',
                 allowPointSelect: true,
                 cursor: 'pointer',
                 dataLabels: {
