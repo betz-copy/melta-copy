@@ -42,7 +42,7 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
-    filters?: any;
+    filters?: string;
     defaultValue?: any;
     isFilterByCurrentUser?: boolean;
     isFilterByUserUnit?: boolean;

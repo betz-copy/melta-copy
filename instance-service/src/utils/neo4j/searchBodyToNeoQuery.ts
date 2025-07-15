@@ -290,7 +290,6 @@ const filterOfTemplateToNeoQuery = (
                 parameters: { [filterKey]: filterOfFieldQuery.parameters },
             };
         });
-
     return {
         cypherQuery: fieldsNeoQueries.map((fieldNeoQuery) => `(${fieldNeoQuery.cypherQuery})`).join(' AND '),
         parameters: fieldsNeoQueries
@@ -371,7 +370,7 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
     return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
-const buildFulltextSearchQuery = (
+const buildFullTextSearchQuery = (
     searchBody: ISearchBatchBody,
     filterQuery: { cypherQuery: string; parameters: any },
     indexHandling: string,
@@ -462,7 +461,7 @@ const buildFulltextSearchQuery = (
 };
 
 // TODO clean code
-const fulltextSearchToNeoQuery = (
+const fullTextSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     prefixIndexName: string,
@@ -482,7 +481,7 @@ const fulltextSearchToNeoQuery = (
         latestIndex,
     };
 
-    return buildFulltextSearchQuery(
+    return buildFullTextSearchQuery(
         searchBody,
         filterQuery,
         indexHandling,
@@ -494,7 +493,7 @@ const fulltextSearchToNeoQuery = (
     );
 };
 
-const fulltextBatchSearchToNeoQuery = (
+const fullTextBatchSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     entityIdsToInclude?: string[],
@@ -514,7 +513,7 @@ const fulltextBatchSearchToNeoQuery = (
         indexNames: globalSearchIndexes,
     };
 
-    return buildFulltextSearchQuery(
+    return buildFullTextSearchQuery(
         searchBody,
         filterQuery,
         indexHandling,
@@ -535,7 +534,7 @@ const searchToNeoQuery = (
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
     if (globalSearchIndexes.length === 0)
-        return fulltextSearchToNeoQuery(
+        return fullTextSearchToNeoQuery(
             searchBody,
             entityTemplatesMap,
             config.neo4j.templateSearchIndexPrefix,
@@ -545,7 +544,7 @@ const searchToNeoQuery = (
             calculateOverallCount,
         );
     if (globalSearchIndexes.length === 1)
-        return fulltextSearchToNeoQuery(
+        return fullTextSearchToNeoQuery(
             searchBody,
             entityTemplatesMap,
             config.neo4j.globalSearchIndexPrefix,
@@ -554,7 +553,7 @@ const searchToNeoQuery = (
             userEntityId,
             calculateOverallCount,
         );
-    return fulltextBatchSearchToNeoQuery(
+    return fullTextBatchSearchToNeoQuery(
         searchBody,
         entityTemplatesMap,
         entityIdsToInclude,

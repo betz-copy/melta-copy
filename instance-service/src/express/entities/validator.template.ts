@@ -143,12 +143,12 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    async getChildFilters(childTemplateId: string): Promise<ISearchFilter> {
+    async getChildFilters(childTemplateId: string): Promise<ISearchFilter | undefined> {
         const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
         return getFilterFromChildTemplate(childTemplate);
     }
 
-    validatePropertiesMatchFilters(properties: Record<string, any>, filter: ISearchFilter) {
+    validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
         const notValidKey = matchValueAgainstFilter(properties, filter);
         if (notValidKey)
             throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {

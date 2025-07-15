@@ -1,4 +1,4 @@
-import { ForbiddenError, IChartPermission, IMongoChart } from '@microservices/shared';
+import { ForbiddenError, IChartPermission, IChildTemplatePopulated, IMongoChart, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { Request } from 'express';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -19,9 +19,19 @@ class ChartsValidator extends DefaultController {
         this.entityTemplateService = new EntityTemplateService(workspaceId);
     }
 
-    private async getCategoryIdFromTemplateId(templateId: string) {
-        const { category } = await this.entityTemplateService.getEntityTemplateById(templateId);
-        return category._id;
+    private async getCategoryIdFromTemplateId(
+        templateId: string,
+        childTemplateId?: string,
+    ): Promise<{
+        categoryId: string;
+        template: IChildTemplatePopulated | IMongoEntityTemplatePopulated;
+    }> {
+        const template = childTemplateId
+            ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        const categoryId = template.category._id;
+        return { categoryId, template };
     }
 
     private async validateUserIsCreatorOfChart(req: Request, chart: IMongoChart) {
@@ -32,16 +42,23 @@ class ChartsValidator extends DefaultController {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on chart ${_id}` });
     }
 
-    private async validateUserHasPermissionToTemplate(req: Request, templateId: string) {
-        const [categoryId, userPermissions] = await Promise.all([
-            this.getCategoryIdFromTemplateId(templateId),
+    private async validateUserHasPermissionToTemplate(req: Request, templateId: string, childTemplateId?: string) {
+        const [{ categoryId, template }, userPermissions] = await Promise.all([
+            this.getCategoryIdFromTemplateId(templateId, childTemplateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         const categoryPermissions = userPermissions.instances?.categories?.[categoryId];
-
-        if (!userPermissions.admin?.scope && !categoryPermissions?.scope && !categoryPermissions?.entityTemplates?.[templateId]?.scope)
+        if (
+            !userPermissions.admin?.scope &&
+            !categoryPermissions?.scope &&
+            (childTemplateId
+                ? !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated).parentTemplate._id]?.scope &&
+                  !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated)._id]?.scope
+                : !categoryPermissions?.entityTemplates?.[templateId]?.scope)
+        ) {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
+        }
     }
 
     private async validateUserHasPermissionToChart(req: Request, newChart: boolean = false) {
@@ -60,8 +77,9 @@ class ChartsValidator extends DefaultController {
 
     async validateUserCanGetChartsByTemplate(req: Request) {
         const { templateId } = req.params;
+        const { childTemplateId } = req.body;
 
-        return this.validateUserHasPermissionToTemplate(req, templateId);
+        return this.validateUserHasPermissionToTemplate(req, templateId, childTemplateId);
     }
 
     async validateUserCanGetChartById(req: Request) {

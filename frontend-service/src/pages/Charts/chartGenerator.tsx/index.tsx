@@ -9,10 +9,12 @@ import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { useDebouncedFilter } from '../../../utils/dashboard/useDebouncedFilter';
 import { HighchartGenerator } from './HighchartGenerator';
 import { NumberChartGenerator } from './NumberChartGenerator';
+import { IChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { isChildTemplate } from '../../../utils/templates';
 
 interface IChartGeneratorProps {
     formikValues: ChartForm;
-    template: IMongoEntityTemplatePopulated;
+    template: IChildTemplatePopulated | IMongoEntityTemplatePopulated;
 }
 
 const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues }) => {
@@ -35,9 +37,10 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
 
     const memoizedFilter = useDebouncedFilter(formikValues, queryClient, 500);
 
+    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
     const { data, isLoading, refetch } = useQuery(
-        ['chart', template._id, xAxisField, yAxisField, memoizedFilter],
-        () => getChartOfTemplate(xAxisField, yAxisField, template._id, memoizedFilter),
+        ['chart', parentTemplateId, , xAxisField, yAxisField, memoizedFilter],
+        () => getChartOfTemplate(xAxisField, yAxisField, parentTemplateId, memoizedFilter, isChildTemplate(template) ? template._id : undefined),
         {
             enabled: false,
         },

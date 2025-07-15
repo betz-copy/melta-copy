@@ -51,6 +51,7 @@ export { default as DefaultManagerMongo } from './utils/mongo/manager';
 
 export * from './utils/childTemplate';
 export * from './utils/filters';
+export * from './utils/map';
 export * from './utils/joi';
 export { default as ValidateRequest } from './utils/joi';
 export * from './utils/map';

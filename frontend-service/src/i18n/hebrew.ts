@@ -945,6 +945,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        fieldFilterCondition: 'הערך אינו עומד בתנאי הסינון',
         url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
         atLeastOneCategory: 'חובה לפחות קטגוריה אחת',

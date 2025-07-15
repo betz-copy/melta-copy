@@ -97,17 +97,17 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         return chartPermissionChecks.filter((chart): chart is IMongoChart => chart !== null);
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string) {
-        return this.service.getChartsByTemplateId(templateId, textSearch);
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string) {
+        return this.service.getChartsByTemplateId(templateId, textSearch, childTemplateId);
     }
 
-    async generateCharts(allowedCharts: IMongoChart[], templateId: string) {
+    async generateCharts(allowedCharts: IMongoChart[], templateId: string, childTemplateId?: string) {
         const chartsData: IChartBody[] = allowedCharts.map(({ _id, type, metaData, filter }) => ({
             _id,
             ...getMetaDataAxes(type, metaData, filter),
         }));
 
-        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData);
+        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData, childTemplateId);
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
@@ -127,19 +127,20 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         templateId: string,
         userId: string,
         permissionsOfUserId: ISubCompactPermissions,
-        textSearch?: string,
+        { textSearch, childTemplateId }: { textSearch?: string; childTemplateId?: string },
     ): Promise<ChartsAndGenerator[]> {
-        const charts = await this.getChartsByTemplateId(templateId, textSearch);
+        const charts = await this.getChartsByTemplateId(templateId, textSearch, childTemplateId);
 
         const allowedCharts = await this.getChartsWithPermissions(charts, userId, permissionsOfUserId);
 
-        const GeneratedAndDataCharts = await this.generateCharts(allowedCharts, templateId);
+        const generatedAndDataCharts = await this.generateCharts(allowedCharts, templateId, childTemplateId);
 
-        return GeneratedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        return generatedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
-    async searchChartByUserId(templateId: string, userId: string, textSearch?: string) {
-        const charts = await this.getChartsByTemplateId(templateId, textSearch);
+    async searchChartByUserId(templateId: string, userId: string, body: { textSearch?: string; childTemplateId?: string }) {
+        const { textSearch, childTemplateId } = body;
+        const charts = await this.getChartsByTemplateId(templateId, textSearch, childTemplateId);
 
         return charts.filter((chart) => chart.createdBy === userId && chart.permission === IChartPermission.Protected);
     }

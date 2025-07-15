@@ -20,7 +20,8 @@ const AddEntityButton: React.FC<{
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedEntities }) => {
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedTemplateIds, setUpdatedEntities }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -44,14 +45,14 @@ const AddEntityButton: React.FC<{
 
     const handleSuccess = (entity: IEntity) => {
         onSuccessCreate?.(entity);
+        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
+        setExternalErrors({ files: false, unique: {}, action: '' });
+        setUpdatedTemplateIds?.([entity.templateId]);
         setUpdatedEntities?.(
             Object.values(entity.properties).filter(
                 (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
             ),
         );
-
-        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-        setExternalErrors({ files: false, unique: {}, action: '' });
     };
 
     return (
