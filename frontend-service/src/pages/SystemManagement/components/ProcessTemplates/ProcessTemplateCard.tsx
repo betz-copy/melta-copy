@@ -3,14 +3,14 @@ import { Divider, Grid, Typography, useTheme } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { ViewingCard } from '../Card';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
+import { defaultProcessTemplate, IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { CardMenu } from '../CardMenu';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { ProcessProperties } from './ProcessProperties';
 import { ProcessStep } from './ProcessStep';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { defaultStepTemplate } from '../../../../interfaces/processes/stepTemplate';
 
 interface ProcessTemplateCardProps {
     processTemplate: IMongoProcessTemplatePopulated;
@@ -33,39 +33,6 @@ interface ProcessTemplateCardProps {
         }>,
     ) => void;
 }
-
-export const defaultProcessTemplate: IMongoProcessTemplatePopulated = {
-    _id: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    details: {
-        properties: {
-            properties: {},
-            required: [],
-            type: 'object',
-        },
-        propertiesOrder: [],
-    },
-    displayName: '',
-    name: '',
-    steps: [],
-};
-
-export const deafaultStepTemplate: IMongoStepTemplatePopulated = {
-    _id: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    displayName: '',
-    iconFileId: '',
-    name: '',
-    properties: {
-        properties: {},
-        required: [],
-        type: 'object',
-    },
-    propertiesOrder: [],
-    reviewers: [],
-};
 
 export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
     processTemplate,
@@ -126,17 +93,15 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                             processTemplate: {
                                                 ...defaultProcessTemplate,
                                                 details: processTemplate.details,
-                                                steps: processTemplate.steps.map((step) => {
-                                                    return {
-                                                        ...deafaultStepTemplate,
-                                                        displayName: step.displayName,
-                                                        name: step.name,
-                                                        properties: step.properties,
-                                                        propertiesOrder: step.propertiesOrder,
-                                                        reviewers: step.reviewers,
-                                                        disableAddingReviewers: step.disableAddingReviewers,
-                                                    };
-                                                }),
+                                                steps: processTemplate.steps.map((step) => ({
+                                                    ...defaultStepTemplate,
+                                                    displayName: step.displayName,
+                                                    name: step.name,
+                                                    properties: step.properties,
+                                                    propertiesOrder: step.propertiesOrder,
+                                                    reviewers: step.reviewers,
+                                                    disableAddingReviewers: step.disableAddingReviewers,
+                                                })),
                                             },
                                         });
                                     }}
