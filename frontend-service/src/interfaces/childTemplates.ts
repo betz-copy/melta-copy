@@ -52,6 +52,7 @@ export interface IChildTemplate {
     isFilterByCurrentUser: boolean;
     isFilterByUserUnit: boolean;
     filterByCurrentUserField?: string;
+    filterByUnitUserField?: string;
     actions?: string;
 }
 

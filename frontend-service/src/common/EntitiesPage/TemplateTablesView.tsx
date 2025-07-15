@@ -23,6 +23,7 @@ export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
     currentUserKartoffelId?: string,
+    currentUserUnit?: string,
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
@@ -31,6 +32,10 @@ export const getDefaultFilterFromTemplate = (
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         if (prop.isFilterByCurrentUser && currentUserKartoffelId) {
             filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
+        }
+
+        if (prop.isFilterByUserUnit && currentUserUnit) {
+            filterClauses.push({ [key]: { $eq: currentUserUnit } });
         }
 
         if (prop.filters) {
@@ -94,7 +99,7 @@ const TemplateTablesViewResults = forwardRef<
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId);
+            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId, currentUser?.unit);
         });
         return filters;
     }, [templates, currentUserKartoffelId]);

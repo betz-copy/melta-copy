@@ -59,6 +59,23 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
     }
 };
 
+export const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: any) => {
+    const data = { [fieldName]: value };
+
+    const operator = getFilterOperator(filterField);
+
+    if (operator) {
+        const filter = {
+            [fieldName]: {
+                [operator]: getFilterValue(filterField),
+            },
+        };
+
+        return matchValueAgainstFilter(data, filter);
+    }
+    return true;
+};
+
 interface IAddFieldFilterDialogProps {
     open: boolean;
     onClose: () => void;
@@ -69,6 +86,7 @@ interface IAddFieldFilterDialogProps {
     currentFieldName: string;
     dialogType: ChipType;
     fieldChips: IFieldChip[];
+    setMatchValidationErrorMap: React.Dispatch<React.SetStateAction<Map<string, string>>>;
 }
 
 const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
@@ -81,6 +99,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     currentFieldName,
     dialogType,
     fieldChips,
+    setMatchValidationErrorMap,
 }) => {
     const readOnly = false;
     const entityFilter = false;
@@ -97,31 +116,12 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         onClose();
     };
 
-    const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: any) => {
-        const data = { [fieldName]: value };
-
-        const operator = getFilterOperator(filterField);
-
-        if (operator) {
-            const filter = {
-                [fieldName]: {
-                    [operator]: getFilterValue(filterField),
-                },
-            };
-
-            const isValid = matchValueAgainstFilter(data, filter);
-
-            if (!isValid) {
-                console.warn('Field value does not match filter criteria:', filter);
-                setMatchValidationError(
-                    i18next.t('validation.matchFilter', {
-                        dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType}`),
-                    }),
-                );
-                return false;
-            }
-        }
-        return true;
+    const onFailedMatch = () => {
+        setMatchValidationError(
+            i18next.t('validation.matchFilter', {
+                dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
+            }),
+        );
     };
 
     const checkMatchValidations = (value: any): boolean => {
@@ -129,14 +129,29 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         const filtersChip = fieldChips.filter((chip) => chip.chipType === ChipType.Filter && chip.fieldName === currentFieldName);
 
-        if (filtersChip.length > 0 && dialogType === ChipType.Default) {
-            for (const { filterField } of filtersChip) {
-                if (!checkMatchValidation(filterField, fieldName, value.filter)) return false;
+        if (dialogType === ChipType.Default && filtersChip.length > 0) {
+            const anyValid = filtersChip.some(({ filterField }) => checkMatchValidation(filterField, fieldName, value.filter));
+
+            if (!anyValid) {
+                onFailedMatch();
+                return false;
             }
         }
 
-        const defaultChip = fieldChips.find((chip) => chip.chipType === ChipType.Default && chip.fieldName === currentFieldName);
-        if (defaultChip && dialogType === ChipType.Filter && !checkMatchValidation(value, fieldName, defaultChip.defaultValue)) return false;
+        if (dialogType === ChipType.Filter) {
+            const defaultChip = fieldChips.find((chip) => chip.chipType === ChipType.Default && chip.fieldName === currentFieldName);
+
+            if (defaultChip) {
+                const anyValid = [{ filterField: value }, ...filtersChip].some(({ filterField }) =>
+                    checkMatchValidation(filterField, fieldName, defaultChip.defaultValue),
+                );
+
+                if (!anyValid) {
+                    onFailedMatch();
+                    return false;
+                }
+            }
+        }
 
         setMatchValidationError(null);
         return true;
@@ -286,6 +301,11 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     const handleSubmit = () => {
         if (!localFilterField) return;
         setMatchValidationError(null);
+        setMatchValidationErrorMap((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(currentFieldName);
+            return newMap;
+        });
 
         if (dialogType === ChipType.Default) {
             const fieldSchema = entityTemplate.properties.properties[currentFieldName];

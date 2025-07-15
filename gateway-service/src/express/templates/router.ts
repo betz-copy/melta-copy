@@ -268,6 +268,7 @@ templatesRouter.post(
     '/child',
     busboyMiddleware,
     ValidateRequest(createChildTemplateSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
     templatesControllerMiddleware.createChildTemplate,
 );

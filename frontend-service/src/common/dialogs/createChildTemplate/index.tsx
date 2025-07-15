@@ -63,8 +63,19 @@ const CreateChildTemplateDialog: React.FC<{
     const allTemplates = queryClient.getQueryData<Map<string, IMongoEntityTemplatePopulated>>('getEntityTemplates');
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
-    const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
-    const [selectedUserField, setSelectedUserField] = useState<string | null>(childTemplate?.filterByCurrentUserField || null);
+    const [userField, setUserField] = useState<{ selectUserFieldDialogOpen: boolean; selectedUserField: string | undefined }>({
+        selectUserFieldDialogOpen: false,
+        selectedUserField: childTemplate?.filterByCurrentUserField || undefined,
+    });
+
+    const [unitUserField, setUnitUserField] = useState<{
+        selectUnitUserFieldDialogOpen: boolean;
+        selectedUnitUserField: string | undefined;
+    }>({
+        selectedUnitUserField: childTemplate?.filterByUnitUserField || undefined,
+        selectUnitUserFieldDialogOpen: false,
+    });
+
     const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
     const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState(childTemplate?.isFilterByCurrentUser || false);
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState(childTemplate?.isFilterByUserUnit || false);
@@ -72,6 +83,7 @@ const CreateChildTemplateDialog: React.FC<{
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(childTemplate?.viewType || ViewType.categoryPage);
     const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
+    const [matchValidationError, setMatchValidationError] = useState<Map<string, string>>(new Map());
 
     useEffect(() => {
         if (entityTemplate) {
@@ -134,6 +146,14 @@ const CreateChildTemplateDialog: React.FC<{
         return entityTemplate
             ? Object.entries(entityTemplate.properties.properties)
                   .filter(([_, prop]) => prop.format === 'user')
+                  .map(([key]) => key)
+            : [];
+    }, [entityTemplate]);
+
+    const unitFields = useMemo(() => {
+        return entityTemplate
+            ? Object.entries(entityTemplate.properties.properties)
+                  .filter(([_, prop]) => prop.format === 'unitField')
                   .map(([key]) => key)
             : [];
     }, [entityTemplate]);
@@ -244,9 +264,24 @@ const CreateChildTemplateDialog: React.FC<{
         const hasViewTypeChange = childTemplate.viewType !== childTemplateViewType;
         const hasUserFilterChange = childTemplate.isFilterByCurrentUser !== childTemplateFilterByCurrentUser;
         const hasUnitFilterChange = childTemplate.isFilterByUserUnit !== childTemplateFilterByUserUnit;
+        const hasUserFieldFilterChange =
+            !childTemplate.filterByCurrentUserField && !userField.selectedUserField
+                ? false
+                : childTemplate.filterByCurrentUserField !== userField.selectedUserField;
+        const hasUnitUserFieldFilterChange =
+            !childTemplate.filterByUnitUserField && !unitUserField.selectedUnitUserField
+                ? false
+                : childTemplate.filterByUnitUserField !== unitUserField.selectedUnitUserField;
 
         setHasChanges(
-            hasFieldChanges || hasCategoryChanges || hasFilterOrDefaultChanges || hasViewTypeChange || hasUserFilterChange || hasUnitFilterChange,
+            hasFieldChanges ||
+                hasCategoryChanges ||
+                hasFilterOrDefaultChanges ||
+                hasViewTypeChange ||
+                hasUserFilterChange ||
+                hasUnitFilterChange ||
+                hasUserFieldFilterChange ||
+                hasUnitUserFieldFilterChange,
         );
     }, [
         childTemplate,
@@ -256,6 +291,8 @@ const CreateChildTemplateDialog: React.FC<{
         childTemplateViewType,
         childTemplateFilterByCurrentUser,
         childTemplateFilterByUserUnit,
+        userField.selectedUserField,
+        unitUserField.selectedUnitUserField,
     ]);
 
     const handleCheckboxChange = (fieldName: string, checked: boolean) => {
@@ -294,9 +331,12 @@ const CreateChildTemplateDialog: React.FC<{
                     isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
                     isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
                     filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
+                    filterByUnitUserField: childTemplate?.filterByUnitUserField || undefined,
                 }}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, category }) => {
+                    if (matchValidationError.size > 0) return;
+
                     const fullName = `${entityTemplate.name}_${name}`;
                     const displayNameToUse = childTemplate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
@@ -330,7 +370,8 @@ const CreateChildTemplateDialog: React.FC<{
                         viewType: childTemplateViewType,
                         isFilterByCurrentUser: childTemplateFilterByCurrentUser,
                         isFilterByUserUnit: childTemplateFilterByUserUnit,
-                        filterByCurrentUserField: selectedUserField || undefined,
+                        filterByCurrentUserField: userField.selectedUserField || undefined,
+                        filterByUnitUserField: unitUserField.selectedUnitUserField || undefined,
                     };
 
                     localStorage.removeItem(`${columnWidths}category-${childTemplate?._id ?? entityTemplate._id}`);
@@ -476,8 +517,16 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 checked={childTemplateFilterByCurrentUser}
                                                                 onChange={(e) => {
                                                                     setChildTemplateFilterByCurrentUser(e.target.checked);
-                                                                    if (e.target.checked) setSelectUserFieldDialogOpen(true);
-                                                                    else setSelectedUserField(null);
+                                                                    if (e.target.checked)
+                                                                        setUserField({
+                                                                            selectUserFieldDialogOpen: true,
+                                                                            selectedUserField: undefined,
+                                                                        });
+                                                                    else
+                                                                        setUserField({
+                                                                            selectUserFieldDialogOpen: false,
+                                                                            selectedUserField: undefined,
+                                                                        });
                                                                 }}
                                                             />
                                                         }
@@ -486,11 +535,11 @@ const CreateChildTemplateDialog: React.FC<{
                                                             typography: { sx: { fontSize: '14px' } },
                                                         }}
                                                     />
-                                                    {selectedUserField && (
+                                                    {userField.selectedUserField && (
                                                         <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t(
-                                                                'createChildTemplateDialog.selectUserDialog.byUser',
-                                                            )} : ${selectedUserField}`}
+                                                            {`${i18next.t('createChildTemplateDialog.selectUserDialog.byUser')} : ${
+                                                                entityTemplate.properties.properties[userField.selectedUserField].title
+                                                            }`}
                                                         </Typography>
                                                     )}
                                                 </Grid>
@@ -501,7 +550,19 @@ const CreateChildTemplateDialog: React.FC<{
                                                         control={
                                                             <MeltaCheckbox
                                                                 checked={childTemplateFilterByUserUnit}
-                                                                onChange={(e) => setChildTemplateFilterByUserUnit(e.target.checked)}
+                                                                onChange={(e) => {
+                                                                    setChildTemplateFilterByUserUnit(e.target.checked);
+                                                                    if (e.target.checked)
+                                                                        setUnitUserField({
+                                                                            selectUnitUserFieldDialogOpen: true,
+                                                                            selectedUnitUserField: undefined,
+                                                                        });
+                                                                    else
+                                                                        setUnitUserField({
+                                                                            selectedUnitUserField: undefined,
+                                                                            selectUnitUserFieldDialogOpen: false,
+                                                                        });
+                                                                }}
                                                             />
                                                         }
                                                         label={i18next.t('createChildTemplateDialog.userType.specialUser')}
@@ -509,6 +570,13 @@ const CreateChildTemplateDialog: React.FC<{
                                                             typography: { sx: { fontSize: '14px' } },
                                                         }}
                                                     />
+                                                    {unitUserField.selectedUnitUserField && (
+                                                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
+                                                            {`${i18next.t('createChildTemplateDialog.selectUserDialog.byUser')} : ${
+                                                                entityTemplate.properties.properties[unitUserField.selectedUnitUserField].title
+                                                            }`}
+                                                        </Typography>
+                                                    )}
                                                 </Grid>
                                             )}
                                         </Grid>
@@ -621,6 +689,8 @@ const CreateChildTemplateDialog: React.FC<{
                                                     setFieldChips={setFieldChips}
                                                     fieldChips={fieldChips}
                                                     onCheckboxChange={handleCheckboxChange}
+                                                    matchValidationError={matchValidationError}
+                                                    setMatchValidationError={setMatchValidationError}
                                                 />
                                             </Grid>
                                         </Grid>
@@ -629,7 +699,7 @@ const CreateChildTemplateDialog: React.FC<{
                             </DialogContent>
                             <DialogActions>
                                 <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
-                                <Button type="submit" variant="contained" disabled={childTemplate && !hasChanges}>
+                                <Button type="submit" variant="contained" disabled={(childTemplate && !hasChanges) || matchValidationError.size > 0}>
                                     {i18next.t(`createChildTemplateDialog.buttons.${childTemplate ? 'update' : 'create'}`)}
                                 </Button>
                             </DialogActions>
@@ -638,18 +708,45 @@ const CreateChildTemplateDialog: React.FC<{
                 }}
             </Formik>
             <SelectUserFieldDialog
-                open={selectUserFieldDialogOpen}
+                open={userField.selectUserFieldDialogOpen}
                 userFields={userFields}
-                selectedField={selectedUserField}
+                selectedField={userField.selectedUserField || null}
                 onClose={() => {
-                    setSelectedUserField(null);
-                    setSelectUserFieldDialogOpen(false);
+                    setUserField({
+                        selectedUserField: undefined,
+                        selectUserFieldDialogOpen: false,
+                    });
                     setChildTemplateFilterByCurrentUser(false);
                 }}
                 onSubmit={(field) => {
-                    setSelectedUserField(field);
-                    setSelectUserFieldDialogOpen(false);
+                    setUserField({
+                        selectedUserField: field,
+                        selectUserFieldDialogOpen: false,
+                    });
                 }}
+                entityTemplate={entityTemplate}
+            />
+            <SelectUserFieldDialog
+                open={unitUserField.selectUnitUserFieldDialogOpen}
+                userFields={unitFields}
+                selectedField={unitUserField.selectedUnitUserField || null}
+                onClose={() => {
+                    setUnitUserField({
+                        selectedUnitUserField: undefined,
+                        selectUnitUserFieldDialogOpen: false,
+                    });
+                    setChildTemplateFilterByUserUnit(false);
+                }}
+                onSubmit={(field) => {
+                    setUnitUserField({
+                        selectedUnitUserField: field,
+                        selectUnitUserFieldDialogOpen: false,
+                    });
+                }}
+                entityTemplate={entityTemplate}
+                title={i18next.t('createChildTemplateDialog.selectUserUnitDialog.title')}
+                content={i18next.t('createChildTemplateDialog.selectUserUnitDialog.content')}
+                label={i18next.t('createChildTemplateDialog.selectUserUnitDialog.label')}
             />
         </Dialog>
     );

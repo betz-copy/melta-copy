@@ -41,6 +41,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserUnit = currentUser?.unit;
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -83,7 +84,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             }
 
                             for (const template of childTemplates) {
-                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId);
+                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId, currentUserUnit);
 
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,

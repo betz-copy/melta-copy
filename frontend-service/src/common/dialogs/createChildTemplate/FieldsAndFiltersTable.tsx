@@ -9,7 +9,7 @@ import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
-import AddFieldFilterDialog from './AddFieldFilterDialog';
+import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
 import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
 
 const { dateOrDateTimeRegex } = environment;
@@ -34,16 +34,28 @@ const getFormattedDefaultValue = (value: string | number | boolean | Date | stri
     return String(value);
 };
 
-const renderChips = (chips: IFieldChip[], fieldSchema: IEntitySingleProperty, onDelete: (chip: IFieldChip) => void): React.ReactNode[] => {
+const renderChips = (
+    chips: IFieldChip[],
+    fieldSchema: IEntitySingleProperty,
+    onDelete: (chip: IFieldChip) => void,
+    matchErrorMap?: Map<string, string>,
+): React.ReactNode[] => {
     return chips.map((chip, index) => {
         const label =
             chip.chipType === ChipType.Filter
                 ? getFilterFieldReadonly(chip.filterField!, fieldSchema.type)
                 : getFormattedDefaultValue(chip.defaultValue);
 
+        const matchError = matchErrorMap?.get(chip.fieldName);
+
         return (
-            <Grid item key={`${chip.fieldName}-${chip.chipType}-${index}`}>
+            <Grid item key={`${chip.fieldName}-${chip.chipType}-${index}`} justifyItems="center">
                 <ColoredEnumChip label={label} onDelete={() => onDelete(chip)} color="default" />
+                {matchError && (
+                    <Typography variant="body2" color="error" align="left" style={{ marginTop: '8px' }}>
+                        {matchError}
+                    </Typography>
+                )}
             </Grid>
         );
     });
@@ -57,6 +69,8 @@ interface IFieldsAndFiltersTableProps {
     fieldChips: IFieldChip[];
     setFieldChips: React.Dispatch<React.SetStateAction<IFieldChip[]>>;
     onCheckboxChange: (fieldName: string, checked: boolean) => void;
+    matchValidationError: Map<string, string>;
+    setMatchValidationError: React.Dispatch<React.SetStateAction<Map<string, string>>>;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
@@ -67,6 +81,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     fieldChips,
     setFieldChips,
     onCheckboxChange,
+    matchValidationError,
+    setMatchValidationError,
 }) => {
     const [addFilterToField, setAddFilterToField] = useState<string | null>(null);
     const [dialogType, setDialogType] = useState<ChipType | null>(null);
@@ -139,6 +155,37 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     const isSubmitDisabled = (fieldFilter: IFieldFilter, isRequired: boolean, fieldName: string) =>
         (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName);
 
+    const onDeleteFilterChip = (chip: IFieldChip) => {
+        const newFilters = fieldChips.filter(
+            (c) => c.chipType === 'filter' && !(c.fieldName === chip.fieldName && c.filterField === chip.filterField),
+        );
+        const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === chip.fieldName);
+
+        if (defaultChip) {
+            const anyValid =
+                newFilters.length > 0
+                    ? newFilters.some(({ filterField }) => checkMatchValidation(filterField, chip.fieldName, defaultChip.defaultValue))
+                    : true;
+
+            setMatchValidationError((prev) => {
+                const newMap = new Map(prev);
+                if (!anyValid)
+                    newMap.set(
+                        chip.fieldName,
+                        i18next.t('validation.matchFilter', {
+                dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
+                        }),
+                    );
+                else newMap.delete(chip.fieldName);
+                return newMap;
+            });
+        }
+
+        setFieldChips((prev) =>
+            prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === 'filter' && c.filterField === chip.filterField)),
+        );
+    };
+
     return (
         <>
             <Grid container>
@@ -181,18 +228,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(filterChips, entityTemplate.properties.properties[fieldName], (chip) =>
-                                            setFieldChips((prev) =>
-                                                prev.filter(
-                                                    (c) =>
-                                                        !(
-                                                            c.fieldName === chip.fieldName &&
-                                                            c.chipType === chip.chipType &&
-                                                            c.defaultValue === chip.defaultValue
-                                                        ),
-                                                ),
-                                            ),
-                                        )}
+                                        {renderChips(filterChips, entityTemplate.properties.properties[fieldName], onDeleteFilterChip)}
+
                                         <Grid item>
                                             {property?.format === 'user' ? (
                                                 <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
@@ -218,18 +255,23 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(defaultChips, entityTemplate.properties.properties[fieldName], (chip) => {
-                                            setFieldChips((prev) =>
-                                                prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === chip.chipType)),
-                                            );
-                                            setTemplateFieldsFilters((prev) => ({
-                                                ...prev,
-                                                [chip.fieldName]: {
-                                                    ...prev[chip.fieldName],
-                                                    defaultValue: undefined,
-                                                },
-                                            }));
-                                        })}
+                                        {renderChips(
+                                            defaultChips,
+                                            entityTemplate.properties.properties[fieldName],
+                                            (chip) => {
+                                                setFieldChips((prev) =>
+                                                    prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === chip.chipType)),
+                                                );
+                                                setTemplateFieldsFilters((prev) => ({
+                                                    ...prev,
+                                                    [chip.fieldName]: {
+                                                        ...prev[chip.fieldName],
+                                                        defaultValue: undefined,
+                                                    },
+                                                }));
+                                            },
+                                            matchValidationError,
+                                        )}
                                         {!defaultChips.length && (
                                             <Grid item>
                                                 {property?.format === 'user' ? (
@@ -299,6 +341,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     fieldFilter={templateFieldsFilters[addFilterToField]}
                     dialogType={dialogType}
                     fieldChips={fieldChips}
+                    setMatchValidationErrorMap={setMatchValidationError}
                 />
             )}
         </>

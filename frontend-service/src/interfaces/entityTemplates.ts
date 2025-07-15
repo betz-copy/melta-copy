@@ -45,6 +45,7 @@ export interface IEntitySingleProperty {
     filters?: string;
     defaultValue?: any;
     isFilterByCurrentUser?: boolean;
+    isFilterByUserUnit?: boolean;
 }
 
 export interface IProperties {
