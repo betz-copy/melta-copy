@@ -29,7 +29,7 @@ import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
 import { HighlightText } from '../../../utils/HighlightText';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { getFirstXPropsKeys } from '../../../utils/templates';
+import { getFirstXPropsKeys, isChildTemplate } from '../../../utils/templates';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { NoFile } from './NoFile';
@@ -215,7 +215,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {
                                 icon: '/icons/read-more-icon.svg',
                                 action: () => {
-                                    navigate(`/entity/${entity.properties._id}/${entityTemplate._id}`);
+                                    navigate(
+                                        `/entity/${entity.properties._id}${
+                                            isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
+                                        }`,
+                                    );
                                 },
                                 popoverText: i18next.t('wizard.entity.readMore'),
                             },
