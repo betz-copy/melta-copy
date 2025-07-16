@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
             );
 
         return (
-            <Grid height="90vh" justifyContent="center" justifyItems="center" alignContent="center">
+            <Grid container height="90vh" justifyContent="center" justifyItems="center" alignContent="center">
                 <NoItemsCard />
             </Grid>
         );
