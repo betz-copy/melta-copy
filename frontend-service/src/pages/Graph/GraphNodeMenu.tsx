@@ -3,13 +3,15 @@ import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { isChildTemplate } from '../../utils/templates';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;
@@ -22,6 +24,9 @@ const GraphNodeMenu: React.FC<{
 }> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, filterRecord, onSuccessExpandGraph }) => {
     const [_, navigate] = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
+
+    const queryClient = useQueryClient();
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
@@ -72,7 +77,11 @@ const GraphNodeMenu: React.FC<{
             <MenuItem
                 onClick={() => {
                     onCloseMenu();
-                    navigate(`/entity/${node.id}`);
+
+                    const childEntityTemplate = [...childEntityTemplates.values()].find(
+                        ({ parentTemplate }) => parentTemplate._id === node.templateId,
+                    );
+                    navigate(`/entity/${node.id}${childEntityTemplate ? `?childTemplateId=${childEntityTemplate._id}` : ''}`);
                 }}
             >
                 {i18next.t('graph.navigateToEntityPage')}
