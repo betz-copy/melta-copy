@@ -75,7 +75,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -275,7 +275,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <EntityProtectedRoute
                                     permissions={currentUser.currentWorkspacePermissions}
                                     entityTemplates={entityTemplates}
-                                    childEntityTemplates={childEntityTemplates}
+                                    childTemplates={childTemplates}
                                 >
                                     <Entity />
                                 </EntityProtectedRoute>
@@ -285,7 +285,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <EntityProtectedRoute
                                     permissions={currentUser.currentWorkspacePermissions}
                                     entityTemplates={entityTemplates}
-                                    childEntityTemplates={childEntityTemplates}
+                                    childTemplates={childTemplates}
                                 >
                                     <Graph />
                                 </EntityProtectedRoute>
@@ -295,7 +295,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <EntityProtectedRoute
                                     permissions={currentUser.currentWorkspacePermissions}
                                     entityTemplates={entityTemplates}
-                                    childEntityTemplates={childEntityTemplates}
+                                    childTemplates={childTemplates}
                                 >
                                     <Duplicate />
                                 </EntityProtectedRoute>

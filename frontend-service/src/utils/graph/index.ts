@@ -119,15 +119,14 @@ export const relationshipToLink = (sourceEntity, destinationEntity, relationship
 export const expandedEntityToGraphData = async (
     expandedEntity: IEntityExpanded,
     entityTemplates: IEntityTemplateMap,
-    childEntityTemplates: IChildTemplateMap,
+    childTemplates: IChildTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
 ): Promise<GraphData> => {
     const nodes: NodeObject[] = [
         await entityToNode(
             expandedEntity.entity,
             entityTemplates.get(expandedEntity.entity.templateId)! ||
-                [...childEntityTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === expandedEntity!.entity.templateId)!
-                    .parentTemplate,
+                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === expandedEntity!.entity.templateId)!.parentTemplate,
         ),
     ];
 

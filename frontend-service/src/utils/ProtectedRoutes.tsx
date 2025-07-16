@@ -4,12 +4,12 @@ import React, { isValidElement } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { PermissionScope } from '../interfaces/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 import { DashboardItemType } from '../interfaces/dashboard';
 import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IChildTemplateMap } from '../interfaces/childTemplates';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
     if (!isAllowed) {
@@ -33,15 +33,15 @@ export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissi
 export const EntityProtectedRoute: React.FC<{
     permissions: ISubCompactPermissions;
     entityTemplates: IEntityTemplateMap;
-    childEntityTemplates: IChildTemplateMap;
-}> = ({ children, permissions, entityTemplates, childEntityTemplates }) => {
+    childTemplates: IChildTemplateMap;
+}> = ({ children, permissions, entityTemplates, childTemplates }) => {
     const params = useParams<{ entityId: string }>();
     const { entityId } = params;
 
     const [_, navigate] = useLocation();
 
-    const childTemplates = [...childEntityTemplates.values()];
-    const templates = [...entityTemplates.values(), ...childTemplates];
+    const childTemplatesArray = [...childTemplates.values()];
+    const templates = [...entityTemplates.values(), ...childTemplatesArray];
     const templateIds = templates.map(({ _id }) => _id);
 
     const expanded = entityId ? { [entityId]: 1 } : {};
@@ -61,7 +61,7 @@ export const EntityProtectedRoute: React.FC<{
 
     const currentEntityTemplate =
         entityTemplates.get(expandedEntity!.entity.templateId) ||
-        childTemplates.find(({ parentTemplate }) => parentTemplate._id === expandedEntity!.entity.templateId);
+        childTemplatesArray.find(({ parentTemplate }) => parentTemplate._id === expandedEntity!.entity.templateId);
 
     return protectedRoute(
         children,
@@ -80,12 +80,12 @@ export const DashboardProtectedRoute: React.FC<{
 
     if (dashboardType === DashboardItemType.Chart) {
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-        const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
         const entityTemplate = entityTemplates?.get(templateId);
-        const childEntityTemplate = childEntityTemplates?.get(templateId);
+        const childTemplate = childTemplates?.get(templateId);
 
-        const template = entityTemplate || childEntityTemplate || null;
+        const template = entityTemplate || childTemplate || null;
 
         const category = template?.category;
         const categoryId = category?._id;

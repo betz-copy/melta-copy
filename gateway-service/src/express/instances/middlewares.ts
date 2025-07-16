@@ -229,12 +229,12 @@ class InstancesValidator extends DefaultController {
 
         const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
-        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+        const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
             templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id),
             this.getAllowedChildTemplatesForInstances(permissionsOfUserId),
         ]);
 
-        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
 
         const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allowedEntityTemplateIds.includes(templateId));
 
