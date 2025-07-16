@@ -181,7 +181,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
             ref={cardRef}
             sx={{
                 margin: '0.6rem',
-                width: open ? 0.987 : '547px',
+                width: open ? 0.987 : '520px',
                 borderRadius: '15px',
                 overflow: 'hidden',
                 paddingBottom: '10px',
