@@ -620,7 +620,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 return getSortModel();
             },
             scrollIntoView() {
-                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+                if (!tableRef.current) return;
+                const ro = new ResizeObserver((_el, observer) => {
+                    tableRef.current!.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    observer.disconnect();
+                });
+        
+                ro.observe(tableRef.current);
+                return () => ro.disconnect();
             },
             showSideBar() {
                 const gridApi = gridRef.current?.api;
