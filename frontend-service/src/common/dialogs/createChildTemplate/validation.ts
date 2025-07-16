@@ -13,8 +13,8 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
             .test('unique-displayName', i18next.t('validation.existingDisplayName'), (val) => !existingDisplayNames.includes(val || '')),
         description: Yup.string().required(i18next.t('validation.required')),
         category: Yup.object({
-            _id: Yup.string().required(),
-            displayName: Yup.string().required(),
+            _id: Yup.string().required(i18next.t('validation.required')),
+            displayName: Yup.string().required(i18next.t('validation.required')),
         }).required(i18next.t('validation.required')),
         isFilterByCurrentUser: Yup.boolean(),
         isFilterByUserUnit: Yup.boolean(),

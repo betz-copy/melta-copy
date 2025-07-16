@@ -47,6 +47,7 @@ import { MeltaCheckbox } from '../../MeltaCheckbox';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import SelectUserFieldDialog from './SelectUserFieldDialog';
 import { createChildTemplateSchema } from './validation';
+import { emptyChildTemplate } from '../entity';
 
 const { columnWidths } = environment.agGrid.localStorage;
 
@@ -324,25 +325,20 @@ const CreateChildTemplateDialog: React.FC<{
 
     const isUpdate = !!childTemplate?.displayName;
 
+    const replaceNamePrefix = (childTemplate: IMongoChildTemplatePopulated) => ({
+        ...childTemplate,
+        name: childTemplate.name.replace(`${entityTemplate.name}_`, ''),
+        displayName: childTemplate.displayName.replace(`${entityTemplate.displayName}-`, ''),
+    });
+
     return (
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik
-                initialValues={{
-                    name: childTemplate ? childTemplate.name.replace(`${entityTemplate.name}_`, '') : '',
-                    displayName: childTemplate ? childTemplate.displayName.replace(`${entityTemplate.displayName}-`, '') : '',
-                    description: childTemplate?.description || '',
-                    category: selectedCategory,
-                    isFilterByCurrentUser: childTemplate?.isFilterByCurrentUser || false,
-                    isFilterByUserUnit: childTemplate?.isFilterByUserUnit || false,
-                    filterByCurrentUserField: childTemplate?.filterByCurrentUserField || undefined,
-                    filterByUnitUserField: childTemplate?.filterByUnitUserField || undefined,
-                }}
+                initialValues={replaceNamePrefix(childTemplate ?? emptyChildTemplate)}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, category }) => {
                     if (matchValidationError.size > 0) return;
 
-                    const fullName = `${entityTemplate.name}_${name}`;
-                    const displayNameToUse = isUpdate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`;
                     const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
 
                     const properties: IChildTemplate['properties'] = { properties: {} };
@@ -364,8 +360,8 @@ const CreateChildTemplateDialog: React.FC<{
                     });
 
                     const baseTemplate: IChildTemplate = {
-                        name: fullName,
-                        displayName: displayNameToUse,
+                        name: `${entityTemplate.name}_${name}`,
+                        displayName: isUpdate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`,
                         description,
                         parentTemplateId: entityTemplate._id,
                         category: category!._id,
@@ -521,16 +517,10 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 checked={childTemplateFilterByCurrentUser}
                                                                 onChange={(e) => {
                                                                     setChildTemplateFilterByCurrentUser(e.target.checked);
-                                                                    if (e.target.checked)
-                                                                        setUserField({
-                                                                            selectUserFieldDialogOpen: true,
-                                                                            selectedUserField: undefined,
-                                                                        });
-                                                                    else
-                                                                        setUserField({
-                                                                            selectUserFieldDialogOpen: false,
-                                                                            selectedUserField: undefined,
-                                                                        });
+                                                                    setUserField({
+                                                                        selectUserFieldDialogOpen: !!e.target.checked,
+                                                                        selectedUserField: undefined,
+                                                                    });
                                                                 }}
                                                             />
                                                         }
@@ -556,16 +546,10 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 checked={childTemplateFilterByUserUnit}
                                                                 onChange={(e) => {
                                                                     setChildTemplateFilterByUserUnit(e.target.checked);
-                                                                    if (e.target.checked)
-                                                                        setUnitUserField({
-                                                                            selectUnitUserFieldDialogOpen: true,
-                                                                            selectedUnitUserField: undefined,
-                                                                        });
-                                                                    else
-                                                                        setUnitUserField({
-                                                                            selectedUnitUserField: undefined,
-                                                                            selectUnitUserFieldDialogOpen: false,
-                                                                        });
+                                                                    setUnitUserField({
+                                                                        selectUnitUserFieldDialogOpen: !!e.target.checked,
+                                                                        selectedUnitUserField: undefined,
+                                                                    });
                                                                 }}
                                                             />
                                                         }
@@ -608,7 +592,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                             variant="outlined"
                                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
                                                             error={touched.category && Boolean(errors.category)}
-                                                            helperText={touched.category && errors.category}
+                                                            helperText={touched.category && errors.category?.displayName}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (

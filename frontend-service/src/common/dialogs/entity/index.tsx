@@ -1,4 +1,4 @@
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IMongoChildTemplatePopulated, ViewType } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
@@ -23,6 +23,25 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
     propertiesPreview: [],
     uniqueConstraints: [],
     disabled: false,
+};
+
+export const emptyChildTemplate: IMongoChildTemplatePopulated = {
+    ...emptyEntityTemplate,
+    description: '',
+    isFilterByCurrentUser: false,
+    isFilterByUserUnit: false,
+    filterByCurrentUserField: undefined,
+    filterByUnitUserField: undefined,
+    parentTemplate: emptyEntityTemplate,
+    viewType: ViewType.categoryPage,
+    createdAt: new Date().toString(),
+    updatedAt: new Date().toString(),
+    properties: {
+        properties: {},
+        required: [],
+        type: 'object',
+        hide: [],
+    },
 };
 
 export interface EntityWizardValues {
