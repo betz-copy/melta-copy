@@ -35,7 +35,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
                 variant="h4"
                 style={{
                     fontSize: headlineTitleFontSize,
-                    justifySelf: 'center',
+                    textAlign: 'center',
                 }}
             />
 
