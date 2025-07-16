@@ -10,6 +10,7 @@ import { Redirect, Route, Switch, useLocation, useRoute } from 'wouter';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
 import { environment } from '../../globals';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { DashboardItemType } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { MainBox } from '../../Main.styled';
@@ -74,6 +75,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -270,19 +272,31 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/entity/:entityId">
-                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                <EntityProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    entityTemplates={entityTemplates}
+                                    childEntityTemplates={childEntityTemplates}
+                                >
                                     <Entity />
                                 </EntityProtectedRoute>
                             </Route>
 
                             <Route path="/entity/:entityId/graph">
-                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                <EntityProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    entityTemplates={entityTemplates}
+                                    childEntityTemplates={childEntityTemplates}
+                                >
                                     <Graph />
                                 </EntityProtectedRoute>
                             </Route>
 
                             <Route path="/entity/:entityId/duplicate">
-                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                <EntityProtectedRoute
+                                    permissions={currentUser.currentWorkspacePermissions}
+                                    entityTemplates={entityTemplates}
+                                    childEntityTemplates={childEntityTemplates}
+                                >
                                     <Duplicate />
                                 </EntityProtectedRoute>
                             </Route>

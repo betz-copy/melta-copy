@@ -229,10 +229,14 @@ class InstancesValidator extends DefaultController {
 
         const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
-        const allAllowedEntityTemplates = (await templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id)).map(
-            (entityTemplate) => entityTemplate._id,
-        );
-        const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allAllowedEntityTemplates.includes(templateId));
+        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+            templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id),
+            this.getAllowedChildTemplatesForInstances(permissionsOfUserId),
+        ]);
+
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
+
+        const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allowedEntityTemplateIds.includes(templateId));
 
         if (!isAllowedAllTemplates)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
