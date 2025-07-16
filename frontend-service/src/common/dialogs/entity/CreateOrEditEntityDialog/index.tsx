@@ -69,7 +69,11 @@ export const getInitialValuesWithDefaults = (
     const { attachmentsProperties, properties } = initialCurrValues;
 
     const mergedProperties = {
-        ...Object.fromEntries(Object.entries(entityTemplate.properties.properties).map(([key, prop]) => [key, properties[key] ?? prop.defaultValue])),
+        ...Object.fromEntries(
+            Object.entries(entityTemplate.properties.properties)
+                .map(([key, prop]) => [key, properties[key] ?? prop.defaultValue])
+                .filter(([_key, value]) => !!value),
+        ),
         disabled: properties.disabled ?? false,
     };
 
