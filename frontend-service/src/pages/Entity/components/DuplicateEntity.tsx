@@ -63,7 +63,7 @@ const DuplicateEntity: React.FC<{}> = () => {
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
-                navigate(`/entity/${data?.properties._id}`);
+                navigate(`/entity/${data?.properties._id}${childTemplateId ? `?childTemplateId=${childTemplateId}` : ''}`);
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
             onError: (err: AxiosError) => {
