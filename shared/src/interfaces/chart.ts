@@ -58,6 +58,7 @@ export interface IChart {
     permission: IChartPermission;
     filter?: string;
     templateId: string;
+    childTemplateId?: string;
     createdBy: string;
 }
 

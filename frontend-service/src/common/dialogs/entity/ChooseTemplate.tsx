@@ -11,6 +11,7 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { getInitialValuesWithDefaults } from './CreateOrEditEntityDialog';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -62,7 +63,13 @@ const ChooseTemplate: React.FC<{
             options={activeEntityTemplatesFiltered}
             onChange={(_e, value) => {
                 setFieldValue('template', value || emptyEntityTemplate);
-                setFieldValue('properties', {});
+                setFieldValue(
+                    'properties',
+                    getInitialValuesWithDefaults(
+                        { attachmentsProperties: {}, properties: { disabled: false }, template: value || emptyEntityTemplate },
+                        value || emptyEntityTemplate,
+                    ).properties,
+                );
             }}
             value={values.template._id ? values.template : null}
             disabled={disabled}

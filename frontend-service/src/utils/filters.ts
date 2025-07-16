@@ -19,6 +19,7 @@ const evaluateOperator = (operator: string, actual: any, expected: any): boolean
             return Array.isArray(expected) && expected.includes(actual);
         case '$rgx':
             try {
+                if (typeof actual !== 'string') return false;
                 return new RegExp(expected).test(actual);
             } catch {
                 return false;

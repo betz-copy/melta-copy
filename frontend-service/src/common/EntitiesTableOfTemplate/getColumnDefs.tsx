@@ -91,7 +91,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     entityTemplates,
     pageType,
     columnsToShow,
-}: IGetColumnDefsOptions<Data>): ColDef[] => {
+}: IGetColumnDefsOptions<Data>): ColDef[] => {    
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);

@@ -5,7 +5,6 @@ import { SelectCheckbox } from './SelectCheckBox';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { isChildTemplate } from '../utils/templates';
 
 type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     title: string;
@@ -51,8 +50,7 @@ const TemplatesSelectCheckbox = <T extends IMongoEntityTemplatePopulated | IMong
                 groups: categories,
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
-                getGroupOfOption: (entityTemplate, _categories) =>
-                    isChildTemplate(entityTemplate) ? entityTemplate.category : entityTemplate.category,
+                getGroupOfOption: (entityTemplate, _categories) => entityTemplate?.category,
             }}
             overrideSx={overrideSx}
         />

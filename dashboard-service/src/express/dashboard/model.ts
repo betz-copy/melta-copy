@@ -5,6 +5,7 @@ import config from '../../config';
 const TableMetaDataSchema = new mongoose.Schema(
     {
         templateId: { type: String, required: true },
+        childTemplateId: { type: String },
         name: { type: String, required: true },
         description: { type: String },
         columns: { type: [String], required: true },

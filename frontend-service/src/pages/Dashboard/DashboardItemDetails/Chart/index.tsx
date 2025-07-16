@@ -24,6 +24,7 @@ import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../
 import ChartSideBar from '../../../Charts/ChartPage/ChartSideBar';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
 import BodyComponent from './BodyComponent';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const { dashboardPath, chartPath } = environment.dashboard;
 
@@ -39,6 +40,9 @@ const Chart: React.FC = () => {
     const { isDashboardPage = false, dashboardId = '' } = window.history.state ?? {};
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplate = childEntityTemplates.get(templateId ?? '');
+    const currTemplateId = childTemplate ? childTemplate.parentTemplate._id : templateId;
 
     const { data: chart, isLoading: isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
         enabled: !!chartId,
@@ -53,7 +57,7 @@ const Chart: React.FC = () => {
             };
 
             if (viewMode === ViewMode.Edit && chartId) {
-                return editChart(chartId, baseChart);
+                return editChart(chartId, baseChart, chart?.childTemplateId);
             }
 
             // Add existing chart to dashboard
@@ -71,7 +75,9 @@ const Chart: React.FC = () => {
                 setViewMode(ViewMode.ReadOnly);
             } else {
                 const newChartId = chartData._id || data._id;
-                const newTemplateId = chartData._id ? chartData.templateId : (data as IMongoChart).templateId;
+                const newTemplateId = chartData._id
+                    ? chartData.childTemplateId || chartData.templateId
+                    : (data as IMongoChart).childTemplateId || (data as IMongoChart).templateId;
 
                 navigate(`/charts/${newTemplateId}/${newChartId}/chart`, {
                     state: { isDashboardPage },
@@ -111,7 +117,11 @@ const Chart: React.FC = () => {
         const path = isDashboardPage ? dashboardPath : `${chartPath}/${templateId}`;
 
         const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${
-            isDashboardPage ? '' : entityTemplates.get(templateId!)?.displayName
+            isDashboardPage
+                ? ''
+                : childTemplate
+                ? childEntityTemplates.get(childTemplate._id)?.displayName
+                : entityTemplates.get(currTemplateId!)?.displayName
         } `;
 
         return { path, title };
@@ -125,11 +135,13 @@ const Chart: React.FC = () => {
                 ...baseValues,
                 filter: undefined,
                 permission: IPermission.Protected,
+                childTemplateId: childTemplate?._id,
             };
 
         return {
             ...baseValues,
-            ...(chart ? {} : { templateId }),
+            ...(chart ? {} : { templateId: currTemplateId }),
+            childTemplateId: childTemplate?._id,
             filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template?._id!, queryClient) : undefined,
         };
     };

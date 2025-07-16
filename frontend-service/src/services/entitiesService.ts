@@ -35,7 +35,7 @@ const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
-    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
+    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob'});
     return data;
 };
 
@@ -497,8 +497,17 @@ export const exportEntityToDocumentRequest = async (documentTemplateId: string, 
     return data;
 };
 
-export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string, filter?: ISearchFilter) => {
-    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
+export const getChartOfTemplate = async (
+    xAxis: IAxisField,
+    yAxis: IAxisField | undefined,
+    templateId: string,
+    filter?: ISearchFilter,
+    childTemplateId?: string,
+) => {    
+    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, {
+        chartsData: [{ xAxis, yAxis, filter }],
+        childTemplateId,
+    });
 
     return data;
 };

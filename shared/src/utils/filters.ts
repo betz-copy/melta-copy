@@ -34,7 +34,9 @@ const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     }
 };
 
-const matchValueAgainstFilter = (data: Record<string, any>, filter: ISearchFilter | IFilterGroup): string | undefined => {
+const matchValueAgainstFilter = (data: Record<string, any>, filter?: ISearchFilter | IFilterGroup): string | undefined => {
+    if (!filter) return undefined;
+
     if ('$and' in filter && Array.isArray(filter.$and)) {
         for (const subFilter of filter.$and) {
             const result = matchValueAgainstFilter(data, subFilter);

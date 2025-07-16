@@ -148,7 +148,7 @@ const TemplateTable = forwardRef<
 
     // TODO: what about categories?
     const userHasWritePermissions =
-        Object.keys(currentClientSideUser).length ||
+        Object.keys(currentClientSideUser).length > 0 ||
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
     useEffect(() => {
@@ -292,7 +292,6 @@ const TemplateTable = forwardRef<
                         text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
                         disableButton={!userHasWritePermissions}
                     />
-
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('pages.charts'),
@@ -357,6 +356,7 @@ const TemplateTable = forwardRef<
                             });
                         }}
                         setUpdatedEntities={setUpdatedEntities}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
@@ -469,7 +469,8 @@ const TemplateTable = forwardRef<
                                         (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
                                     ),
                                 );
-                            } else entitiesTableRef.current?.refreshServerSide();
+                            }
+                            setUpdatedTemplateIds?.([entity.templateId]);
                             setEditDialog((prev) => ({ ...prev, isOpen: false }));
                             setExternalErrors(initializedExternalErrors);
                         },

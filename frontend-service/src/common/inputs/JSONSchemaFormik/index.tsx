@@ -12,6 +12,7 @@ import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IKartoffelUser } from '../../../interfaces/users';
+import { matchValueAgainstFilter } from '../../../utils/filters';
 import './form.css';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
@@ -47,8 +48,10 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
     return Object.fromEntries(formikErrorsEntries);
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
+export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
+    addFormats(ajv);
+
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
@@ -56,60 +59,47 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
-            const userObj = JSON.parse(user);
-            return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+            try {
+                const userObj = JSON.parse(user);
+                return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+            } catch {
+                return false;
+            }
         },
     });
-    ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     ajv.addFormat('comment', /.*/);
-    addFormats(ajv);
+
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
-    ajv.addKeyword({
-        keyword: 'dateNotification',
-    });
-    ajv.addKeyword({ keyword: 'isDailyAlert' });
-    ajv.addKeyword({ keyword: 'isEditableByUser' });
-    ajv.addKeyword({ keyword: 'defaultValue' });
-    ajv.addKeyword({ keyword: 'isDatePastAlert' });
-    ajv.addKeyword({ keyword: 'calculateTime' });
-    ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
-    ajv.addKeyword({
-        keyword: 'serialStarter',
-    });
-    ajv.addKeyword({
-        keyword: 'relationshipReference',
-        type: 'string',
-    });
-    ajv.addKeyword({
-        keyword: 'expandedUserField',
-        type: 'string',
-    });
-    ajv.addKeyword({
-        keyword: 'serialCurrent',
-    });
-    ajv.addKeyword({
-        keyword: 'comment',
-    });
-    ajv.addKeyword({
-        keyword: 'hideFromDetailsPage',
-    });
-    ajv.addKeyword({
-        keyword: 'color',
-    });
+
+    [
+        'dateNotification',
+        'isDailyAlert',
+        'isEditableByUser',
+        'isDatePastAlert',
+        'calculateTime',
+        'archive',
+        'serialStarter',
+        'relationshipReference',
+        'expandedUserField',
+        'serialCurrent',
+        'comment',
+        'hideFromDetailsPage',
+        'color',
+        'filters',
+        'defaultValue',
+        'isFilterByCurrentUser',
+        'isFilterByUserUnit',
+    ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({
         keyword: 'identifier',
         type: 'string',
         schema: false,
-        validate: (dataToValidate) => dataToValidate !== undefined,
+        validate: (v) => v !== undefined,
         errors: false,
     });
-
-    ajv.addKeyword({ keyword: 'filters' });
-    ajv.addKeyword({ keyword: 'isFilterByCurrentUser' });
-    ajv.addKeyword({ keyword: 'isFilterByUserUnit' });
 
     const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
@@ -118,11 +108,26 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
-
     validateFunction(data);
     const ajvErrors = validateFunction.errors ?? [];
+    const formikErrors = ajvErrorsToFormikErrors(schema, ajvErrors);
 
-    return ajvErrorsToFormikErrors(schema, ajvErrors);
+    const childTemplateFilterErrors: FormikErrors<any> = {};
+
+    Object.entries(schema.properties || {}).forEach(([field, propertySchema]) => {
+        const propertyFilter = propertySchema?.filters;
+        if (!propertyFilter) return;
+
+        const parsedFilter = typeof propertyFilter === 'string' ? JSON.parse(propertyFilter) : propertyFilter;
+        if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
+
+        const value = data[field];
+        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+            childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
+        }
+    });
+
+    return { ...formikErrors, ...childTemplateFilterErrors };
 };
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {

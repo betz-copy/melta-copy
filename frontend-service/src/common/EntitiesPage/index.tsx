@@ -17,7 +17,7 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
 
 type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
@@ -62,6 +62,8 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
 
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
             updatedEntities.forEach((entity) => {
@@ -75,9 +77,15 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     useEffect(() => {
         if (Array.isArray(updatedTemplateIds) && viewMode !== 'cards-view') {
             updatedTemplateIds.forEach((templateId) => {
-                const reference = templateTablesViewRef.current!.templateTablesRefs?.[templateId];
+                const childTemplateIds = Array.from(entityChildTemplates.values())
+                    .filter((child) => child?.parentTemplate._id === templateId)
+                    .map((child) => child?._id);
 
-                if (reference) reference.refreshServerSide();
+                [...childTemplateIds, templateId].map((tempId) => {
+                    const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
+
+                    if (reference) reference.refreshServerSide();
+                });
             });
         }
     }, [updatedTemplateIds, viewMode]);

@@ -31,6 +31,8 @@ import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions
 import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -40,13 +42,21 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const entityTemplateOptions = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
-    const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
+    const [changeTemplateWarning, setChangeTemplateWarning] = useState<{
+        isOpen: boolean;
+        newTemplate: string | string[] | null;
+        fatherTemplateId?: string;
+    }>({
         isOpen: false,
         newTemplate: null,
+        fatherTemplateId: undefined,
     });
+    const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
@@ -54,14 +64,24 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                 <Grid item>
                     <FormikAutoComplete
                         formik={props}
-                        formikField="templateId"
-                        options={Array.from(entityTemplates.keys())}
+                        formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
+                        options={entityTemplateOptions}
                         label={i18next.t('entity')}
                         onChange={(newValue) => {
-                            if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
-                            else setFieldValue('templateId', newValue || '');
+                            if (values.templateId)
+                                setChangeTemplateWarning({
+                                    isOpen: true,
+                                    newTemplate: newValue,
+                                    fatherTemplateId: childEntityTemplates.get(newValue as string)?.parentTemplate._id,
+                                });
+                            else {
+                                const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
+                                const templateId = childTemplate?.parentTemplate._id || newValue || '';
+                                setFieldValue('templateId', templateId);
+                                if (!!childTemplate) setFieldValue('childTemplateId', newValue!);
+                            }
                         }}
-                        getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
+                        getOptionLabel={(id) => childEntityTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
                         multiple={false}
                         readonly={viewMode === ViewMode.ReadOnly}
                         style={{ width: 295 }}
@@ -157,11 +177,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                 </Grid>
 
                                 <Grid item marginTop={2}>
-                                    <ChartTypesEdit
-                                        formik={props}
-                                        entityTemplate={entityTemplates.get(values.templateId)!}
-                                        disabled={viewMode === ViewMode.ReadOnly}
-                                    />
+                                    <ChartTypesEdit formik={props} entityTemplate={template} disabled={viewMode === ViewMode.ReadOnly} />
                                 </Grid>
 
                                 <Grid item container direction="column" spacing={2}>
@@ -238,10 +254,11 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                 isDialogOpen={changeTemplateWarning.isOpen}
                 onYes={() => {
                     setValues({ ...dashboardInitialValues.chart, filter: undefined });
-                    setFieldValue('templateId', changeTemplateWarning.newTemplate || '');
-                    setChangeTemplateWarning({ isOpen: false, newTemplate: null });
+                    setFieldValue('templateId', changeTemplateWarning.fatherTemplateId || changeTemplateWarning.newTemplate || '');
+                    setFieldValue('childTemplateId', changeTemplateWarning.fatherTemplateId ? changeTemplateWarning.newTemplate : '');
+                    setChangeTemplateWarning({ isOpen: false, newTemplate: null, fatherTemplateId: undefined });
                 }}
-                handleClose={() => setChangeTemplateWarning({ isOpen: false, newTemplate: null })}
+                handleClose={() => setChangeTemplateWarning({ isOpen: false, newTemplate: null, fatherTemplateId: undefined })}
                 type={DashboardItemType.Chart}
             />
         </Grid>

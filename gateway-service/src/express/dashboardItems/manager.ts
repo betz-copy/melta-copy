@@ -40,13 +40,27 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
 
     private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager) {
         const chartMetaList = map(chartItems, 'metaData');
-        const chartsByTemplateId = groupBy(chartMetaList, 'templateId');
+        const [childChartsItems, parentChartItems] = partition(chartMetaList, (item) => !!item.childTemplateId);
+
+        const chartsByTemplateId = groupBy(parentChartItems, 'templateId');
+        const chartsByChildTemplateId = groupBy(childChartsItems, 'childTemplateId');
 
         const generatedCharts = flatten(
             await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId))),
         );
 
-        const generatedChartsMap = keyBy(generatedCharts, '_id');
+        const generatedChildCharts = flatten(
+            await Promise.all(
+                map(chartsByChildTemplateId, (charts, childTemplateId) => {
+                    const templateId = charts[0]?.templateId;
+                    return chartManager.generateCharts(charts, templateId, childTemplateId);
+                }),
+            ),
+        );
+
+        const allGeneratedCharts = [...generatedCharts, ...generatedChildCharts];
+
+        const generatedChartsMap = keyBy(allGeneratedCharts, '_id');
 
         return chartItems.map((chartItem) => ({
             ...chartItem,

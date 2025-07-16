@@ -112,11 +112,12 @@ const CreateChildTemplateDialog: React.FC<{
 
         const chips: IFieldChip[] = [];
 
-        Object.entries(childTemplate.properties).forEach(([propertyName, { filters, defaultValue }]) => {
+        Object.entries(childTemplate.properties.properties).forEach(([propertyName, { filters, defaultValue }]) => {
             const fieldTemplate = entityTemplate.properties.properties[propertyName];
 
             if (filters) {
                 const parsedFilters: ISearchFilter = typeof filters === 'string' ? JSON.parse(filters) : filters;
+
                 if (parsedFilters.$or && Array.isArray(parsedFilters.$or)) {
                     parsedFilters.$or.forEach((filter) => {
                         const fieldValue = filter[propertyName];
@@ -575,7 +576,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     />
                                                     {unitUserField.selectedUnitUserField && (
                                                         <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t('createChildTemplateDialog.selectUserDialog.byUser')} : ${
+                                                            {`${i18next.t('createChildTemplateDialog.selectUserUnitDialog.label')} : ${
                                                                 entityTemplate.properties.properties[unitUserField.selectedUnitUserField].title
                                                             }`}
                                                         </Typography>
