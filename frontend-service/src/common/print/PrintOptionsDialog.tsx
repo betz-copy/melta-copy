@@ -1,23 +1,18 @@
-import React from 'react';
-import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
-import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
+import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import { SelectCheckbox } from '../SelectCheckBox';
-import { MeltaCheckbox } from '../MeltaCheckbox';
-import { IFile } from '../../interfaces/preview';
-import { getFile } from '../../utils/getFileType';
+import React from 'react';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import {
-    IConnectionExpanded,
-    IConnectionTemplateExpanded,
-    IEntityExpandedWithRelatedRelationships,
-    ISelectRelationshipTemplates,
-} from '../../pages/Entity/components/print';
-import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
+import { IEntityExpandedWithRelatedRelationships } from '../../pages/Entity/components/print';
+import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
+import { getFile } from '../../utils/getFileType';
+import { MeltaCheckbox } from '../MeltaCheckbox';
+import { SelectCheckbox } from '../SelectCheckBox';
 
 type IOption = {
     show: boolean;
@@ -55,19 +50,16 @@ const PrintOptionsDialog: React.FC<{
     handleClose: () => void;
     template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
     instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstancePopulated;
+    connections: IConnectionTemplateOfExpandedEntity[];
+    setConnections: React.Dispatch<IConnectionTemplateOfExpandedEntity[]>;
+    selectedConnections: IConnectionTemplateOfExpandedEntity[];
+    setSelectedConnections: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     filesLoadingStatus: {};
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
-    entityConnections?: {
-        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-        expandedRelationshipTemplates: IConnectionTemplateExpanded[];
-        expandedRelationships: IConnectionExpanded[];
-        selectedConnections: ISelectRelationshipTemplates[];
-        setSelectedConnections: React.Dispatch<React.SetStateAction<ISelectRelationshipTemplates[]>>;
-    };
     options: {
         date?: IOption;
         disabled?: IOption;
@@ -81,7 +73,10 @@ const PrintOptionsDialog: React.FC<{
     handleClose,
     template,
     instance,
-    entityConnections,
+    connections,
+    setConnections,
+    selectedConnections,
+    setSelectedConnections,
     files,
     setFiles,
     selectedFiles,
@@ -154,69 +149,6 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    const allRelevantConnections: ISelectRelationshipTemplates[] = [];
-
-    if (entityConnections) {
-        const { connectionsTemplates, expandedRelationshipTemplates, expandedRelationships } = entityConnections;
-        const entityExpanded = instance as IEntityExpanded;
-
-        const relevantParents = connectionsTemplates.filter(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
-            const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
-
-            const relevantConnections = entityExpanded.connections.filter(
-                (connection) =>
-                    connection.relationship.templateId === _id && connection[entityType].properties._id === entityExpanded.entity.properties._id,
-            );
-
-            return relevantConnections.length > 0;
-        });
-
-        const relevantChildren = expandedRelationshipTemplates.filter(
-            ({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource, parentRelationship }) => {
-                const relevantParentRelationship = relevantParents.find(
-                    (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship!.relationshipTemplate._id,
-                );
-
-                if (!relevantParentRelationship) return false;
-                const parentInstance = (instance as IEntityExpanded).connections.find(
-                    (connection) => relevantParentRelationship.relationshipTemplate._id === connection.relationship.templateId,
-                );
-                const entityId = relevantParentRelationship.isExpandedEntityRelationshipSource
-                    ? parentInstance?.destinationEntity.properties._id
-                    : parentInstance?.sourceEntity.properties._id;
-
-                const entityType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
-                const relevantConnections = expandedRelationships.filter(
-                    (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entityId,
-                );
-
-                return relevantConnections.length > 0;
-            },
-        );
-
-        const relationshipMap = new Map<string, ISelectRelationshipTemplates>();
-
-        relevantParents.forEach((relevantParent) => {
-            const parentId = relevantParent.relationshipTemplate._id;
-
-            if (!relationshipMap.has(parentId)) {
-                relationshipMap.set(parentId, {
-                    ...relevantParent,
-                    children: [],
-                });
-            }
-        });
-
-        relevantChildren.forEach((relevantChild) => {
-            const parentId = relevantChild.parentRelationship!.relationshipTemplate._id;
-
-            const parentNode = relationshipMap.get(parentId);
-            if (parentNode) parentNode.children?.push(relevantChild);
-        });
-
-        allRelevantConnections.push(...relationshipMap.values());
-    }
-
     return (
         <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
             <DialogTitle paddingLeft="4px">
@@ -232,14 +164,17 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {entityConnections && allRelevantConnections.length > 0 && (
+                        {connections.length > 0 && (
                             <RelationshipSelect
-                                options={allRelevantConnections}
-                                selectedOptions={entityConnections.selectedConnections}
-                                setSelectedOptions={entityConnections.setSelectedConnections}
+                                expandedEntity={instance as IEntityExpanded}
+                                connections={connections}
+                                setConnections={setConnections}
+                                selectedConnections={selectedConnections}
+                                setSelectedConnections={setSelectedConnections}
                                 title={i18next.t('entityPage.print.chooseRelationship')}
                             />
                         )}
+
                         {files.length !== 0 && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseFiles')}

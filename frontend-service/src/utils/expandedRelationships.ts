@@ -1,75 +1,86 @@
 import { IEntityExpanded } from '../interfaces/entities';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IConnectionTemplateOfExpandedEntity } from '../pages/Entity';
-import { IConnectionExpanded, IConnectionTemplateExpanded } from '../pages/Entity/components/print';
+import { getFullRelationshipTemplates } from './templates';
 
-export const handleExpandedRelationships = (
+//TODO: delete or use - not used
+// export const getDepthRelationships = (data: IEntityExpanded, expandedEntity: IEntityExpanded, allRelationshipTemplates: IRelationshipTemplateMap) => {
+//     const relationshipInstances = data?.connections.filter(
+//         (connection) =>
+//             !expandedEntity.connections.some(
+//                 (currentConnection) => currentConnection.relationship.properties._id === connection.relationship.properties._id,
+//             ),
+//     ); // new relationships from expend level
+
+//     const relationshipTemplatesIds = relationshipInstances.reduce((set, conn) => {
+//         set.add(conn.relationship.templateId);
+//         return set;
+//     }, new Set<string>());
+
+//     const relationshipTemplates = Array.from(relationshipTemplatesIds).map(
+//         (childRelationshipTemplateId) => allRelationshipTemplates.get(childRelationshipTemplateId)!,
+//     );
+
+//     return { relationshipTemplates, relationshipInstances };
+// };
+
+export const sortTemplatesChildrenToParents = (
+    expansionDepth: number,
+    options: IConnectionTemplateOfExpandedEntity[],
     data: IEntityExpanded,
-    expandedEntity: IEntityExpanded,
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[],
     relationshipTemplates: IRelationshipTemplateMap,
     entityTemplates: IEntityTemplateMap,
 ) => {
-    const extendedRelationships = data?.connections.filter(
-        (connection) =>
-            !expandedEntity.connections.some(
-                (currentConnection) => currentConnection.relationship.properties._id === connection.relationship.properties._id,
-            ),
-    );
+    console.log({ expansionDepth, options });
 
-    const relatedEntities = expandedEntity.connections.map((connection) => {
-        const relationshipTemplate = connectionsTemplates.find(
-            (connectionsTemplate) => connectionsTemplate.relationshipTemplate._id === connection.relationship.templateId,
-        );
+    return options.map((parent) => {
+        const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
+            ? parent.relationshipTemplate.destinationEntity
+            : parent.relationshipTemplate.sourceEntity;
+
+        const children = getFullRelationshipTemplates(
+            relationshipTemplates,
+            entityTemplates,
+            currentEntityTemplate,
+            parent.relationshipTemplate,
+            data,
+            true,
+        ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
+
         return {
-            relationshipId: connection.relationship.properties._id,
-            relationshipTemplate: connection.relationship,
-            entityId: relationshipTemplate?.isExpandedEntityRelationshipSource
-                ? connection.destinationEntity.properties._id
-                : connection.sourceEntity.properties._id,
+            ...parent,
+            children,
         };
     });
-
-    const extendedRelationshipsTemplates: IConnectionTemplateExpanded[] = [];
-    const currentExtendedRelationships: IConnectionExpanded[] = [];
-
-    extendedRelationships.forEach((extendedRelationship) => {
-        const connectedRelationship = relatedEntities.find(
-            (relatedEntity) =>
-                relatedEntity.entityId === extendedRelationship.destinationEntity.properties._id ||
-                relatedEntity.entityId === extendedRelationship.sourceEntity.properties._id,
-        );
-        if (!connectedRelationship) return;
-
-        const parentRelationshipInstance = expandedEntity.connections.find(
-            (connection) => connection.relationship.properties._id === connectedRelationship?.relationshipId,
-        )!;
-
-        const fullParentRelationshipTemplate = connectionsTemplates.find(
-            (connectionsTemplate) => connectedRelationship?.relationshipTemplate.templateId === connectionsTemplate.relationshipTemplate._id,
-        )!;
-
-        const parentTemplate = relationshipTemplates.get(extendedRelationship.relationship.templateId)!;
-        const { sourceEntityId, destinationEntityId, ...parentTemplateProperties } = parentTemplate;
-        const parentTemplatePopulated: IMongoRelationshipTemplatePopulated = {
-            ...parentTemplateProperties,
-            sourceEntity: entityTemplates.get(sourceEntityId)!,
-            destinationEntity: entityTemplates.get(destinationEntityId)!,
-        };
-
-        const relationshipTemplate: IConnectionTemplateOfExpandedEntity = {
-            relationshipTemplate: parentTemplatePopulated,
-            isExpandedEntityRelationshipSource: connectedRelationship.entityId === extendedRelationship.destinationEntity.properties._id,
-        };
-        if (
-            !extendedRelationshipsTemplates.some(
-                (extendedRelationshipsTemplate) =>
-                    relationshipTemplate.relationshipTemplate._id === extendedRelationshipsTemplate.relationshipTemplate._id,
-            )
-        )
-            extendedRelationshipsTemplates.push({ ...relationshipTemplate, parentRelationship: fullParentRelationshipTemplate });
-        currentExtendedRelationships.push({ ...extendedRelationship, parentRelationship: parentRelationshipInstance });
-    });
-    return { extendedRelationshipsTemplates, currentExtendedRelationships };
 };
+
+// export const sortTemplatesChildrenToParents = (
+//     depth: number,
+//     parents: IConnectionTemplateOfExpandedEntity[],
+//     data: IEntityExpanded,
+//     relationshipTemplates: IRelationshipTemplateMap,
+//     entityTemplates: IEntityTemplateMap,
+// ): IConnectionTemplateOfExpandedEntity[] => {
+//     return parents.map((parent) => {
+//         const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
+//             ? parent.relationshipTemplate.destinationEntity
+//             : parent.relationshipTemplate.sourceEntity;
+
+//         const children = getFullRelationshipTemplates(
+//             relationshipTemplates,
+//             entityTemplates,
+//             currentEntityTemplate,
+//             parent.relationshipTemplate,
+//             data,
+//             true,
+//         ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
+
+//         const nestedChildren = depth < 4 ? sortTemplatesChildrenToParents(depth + 1, children, data, relationshipTemplates, entityTemplates) : [];
+
+//         return {
+//             ...parent,
+//             children: nestedChildren,
+//         };
+//     });
+// };

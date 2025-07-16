@@ -19,19 +19,18 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { populateRelationshipTemplate } from '../../utils/templates';
+import { getFullRelationshipTemplates } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -95,7 +94,7 @@ const ConnectionsTable: React.FC<{
     hasPermissionToTemplate: boolean;
 }> = ({
     expandedEntity,
-    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },
+    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, instances },
     templateIds,
     isEditButtonsDisabled,
     disabledButtonText,
@@ -129,6 +128,7 @@ const ConnectionsTable: React.FC<{
         { [expandedEntity.entity.properties._id]: 1 },
         { templateIds },
     ];
+
     const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
@@ -190,16 +190,14 @@ const ConnectionsTable: React.FC<{
                                 popoverText: i18next.t('entitiesTableOfTemplate.columns'),
                                 iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
                             }}
-                            disableButton={!hasInstances}
+                            disableButton={instances.length === 0}
                             icon={<TableRowsOutlined fontSize="small" />}
                             text={i18next.t('entitiesTableOfTemplate.columns')}
                         />
 
                         <TableButton
                             iconButtonWithPopoverProps={{
-                                popoverText: isExpand
-                                    ? i18next.t('entitiesTableOfTemplate.expandLess')
-                                    : i18next.t('entitiesTableOfTemplate.expandMore'),
+                                popoverText: i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}`),
                                 iconButtonProps: {
                                     onClick: () => {
                                         setIsExpand(!isExpand);
@@ -208,7 +206,7 @@ const ConnectionsTable: React.FC<{
                             }}
                             icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
                             text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
-                            disableButton={!hasInstances}
+                            disableButton={instances.length === 0}
                         />
 
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
@@ -252,7 +250,7 @@ const ConnectionsTable: React.FC<{
                 }}
             >
                 <EntitiesTableOfTemplate
-                    hasInstances={hasInstances}
+                    hasInstances={instances.length > 0}
                     ref={entitiesTableRef}
                     template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
                     showNavigateToRowButton
@@ -339,7 +337,9 @@ const ConnectionsTable: React.FC<{
 export interface IConnectionTemplateOfExpandedEntity {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    hasInstances?: boolean;
+    instances: IConnection[];
+    parentRelationship?: IMongoRelationshipTemplatePopulated;
+    children: IConnectionTemplateOfExpandedEntity[];
 }
 
 const Entity: React.FC = () => {
@@ -354,10 +354,6 @@ const Entity: React.FC = () => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
-
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
-    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
-    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const templateIds = Array.from(entityTemplates.keys());
 
@@ -384,39 +380,14 @@ const Entity: React.FC = () => {
         currentEntityTemplate._id,
         PermissionScope.write,
     );
-    const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
-        populateRelationshipTemplate(currRelationshipTemplate, allowedEntityTemplates),
+
+    const connectionsTemplates = getFullRelationshipTemplates(
+        relationshipTemplates,
+        entityTemplates,
+        currentEntityTemplate,
+        undefined,
+        expandedEntity,
     );
-    const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
-
-    populatedRelationshipTemplates.forEach((relationshipTemplate) => {
-        const hasInstances = !!expandedEntity?.connections.some(
-            (connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id,
-        );
-
-        if (
-            !(
-                relationshipTemplate.isProperty &&
-                currentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
-                    relationshipTemplate._id
-            )
-        ) {
-            if (relationshipTemplate.sourceEntity._id === currentEntityTemplate._id) {
-                connectionsTemplates.push({
-                    relationshipTemplate,
-                    isExpandedEntityRelationshipSource: true,
-                    hasInstances,
-                });
-            }
-            if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
-                connectionsTemplates.push({
-                    relationshipTemplate,
-                    isExpandedEntityRelationshipSource: false,
-                    hasInstances,
-                });
-            }
-        }
-    });
 
     const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
         return {
@@ -428,7 +399,7 @@ const Entity: React.FC = () => {
                         : relationshipTemplate.sourceEntity;
                     return otherEntityTemplate.category._id === category._id;
                 })
-                .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
+                .sort((a, b) => b.instances.length - a.instances.length),
             relationshipCount:
                 // calculate the amount of the related connections of each entity
                 expandedEntity?.connections.filter((connection) => {
@@ -484,11 +455,7 @@ const Entity: React.FC = () => {
                         <Grid item>
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList
-                                        variant="scrollable"
-                                        scrollButtons="auto"
-                                        onChange={(_event, newValue) => setSelectedTabId(newValue)}
-                                    >
+                                    <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>
                                         {categoriesWithConnectionsTemplates.map(
                                             ({ category: { _id, displayName, iconFileId }, relationshipCount }) => (
                                                 <Tab
