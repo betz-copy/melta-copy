@@ -54,6 +54,7 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     const search = urlSearchParams.get('search')!;
 
     const [searchInput, setSearchInput] = useState(search);
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
     const [updatedTemplateIds, setUpdatedTemplateIds] = useState<string[]>([]);
 
@@ -75,18 +76,22 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     }, [updatedEntities, viewMode]);
 
     useEffect(() => {
-        if (Array.isArray(updatedTemplateIds) && viewMode !== 'cards-view') {
-            updatedTemplateIds.forEach((templateId) => {
-                const childTemplateIds = Array.from(entityChildTemplates.values())
-                    .filter((child) => child?.parentTemplate._id === templateId)
-                    .map((child) => child?._id);
+        if (Array.isArray(updatedTemplateIds)) {
+            if (viewMode === 'cards-view') {
+                queryClient.invalidateQueries(['searchEntities', updatedTemplateIds, searchInput, urlSemanticSearch]);
+            } else {
+                updatedTemplateIds.forEach((templateId) => {
+                    const childTemplateIds = Array.from(entityChildTemplates.values())
+                        .filter((child) => child?.parentTemplate._id === templateId)
+                        .map((child) => child?._id);
 
-                [...childTemplateIds, templateId].map((tempId) => {
-                    const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
+                    [...childTemplateIds, templateId].map((tempId) => {
+                        const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
 
-                    if (reference) reference.refreshServerSide();
+                        if (reference) reference.refreshServerSide();
+                    });
                 });
-            });
+            }
         }
     }, [updatedTemplateIds, viewMode]);
 
@@ -180,6 +185,7 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
                         ref!.scrollIntoView();
                     }}
                     setUpdatedEntities={setUpdatedEntities}
+                    setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
 

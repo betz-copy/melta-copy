@@ -21,7 +21,18 @@ const AddEntityButton: React.FC<{
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedTemplateIds, setUpdatedEntities }) => {
+}> = ({
+    style,
+    children,
+    disabled,
+    initialStep,
+    initialValues,
+    popoverText,
+    disabledToolTip = false,
+    onSuccessCreate,
+    setUpdatedTemplateIds,
+    setUpdatedEntities,
+}) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
