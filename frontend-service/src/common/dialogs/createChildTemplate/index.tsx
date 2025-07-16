@@ -112,12 +112,11 @@ const CreateChildTemplateDialog: React.FC<{
 
         const chips: IFieldChip[] = [];
 
-        Object.entries(childTemplate.properties).forEach(([propertyName, { filters, defaultValue }]) => {
+        Object.entries(childTemplate.properties.properties).forEach(([propertyName, { filters, defaultValue }]) => {
             const fieldTemplate = entityTemplate.properties.properties[propertyName];
 
             if (filters) {
                 const parsedFilters: ISearchFilter = typeof filters === 'string' ? JSON.parse(filters) : filters;
-                console.log({ parsedFilters });
 
                 if (parsedFilters.$or && Array.isArray(parsedFilters.$or)) {
                     parsedFilters.$or.forEach((filter) => {
