@@ -44,7 +44,7 @@ const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefin
 };
 
 const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
-    const multiEnumIn = filterObj.$and
+    const multiEnumIn = filterObj.$or
         .map((condition: any) => condition.multiEnum?.$in)
         .filter((val: any): val is string[] => Array.isArray(val))
         .flat();

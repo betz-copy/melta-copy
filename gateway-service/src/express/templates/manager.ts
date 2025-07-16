@@ -1288,9 +1288,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async updateChildTemplate(
         id: string,
-        _userId: string,
+        userId: string,
         updatedTemplateData: IChildTemplate,
-        _permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
     ): Promise<IChildTemplateWithConstraintsPopulated> {
         const {
             parentTemplateId,
@@ -1309,10 +1309,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const requiredNotInProperties = requiredConstraints.find((requiredKey) => !Object.keys(properties).includes(requiredKey));
         if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
 
-        const { parentTemplate, ...updatedChild } = await this.entityTemplateService.updateChildTemplate(id, updatedTemplateData);
+        const updatedChildTemplate = await this.entityTemplateService.updateChildTemplate(id, updatedTemplateData);
+        const { parentTemplate, ...updatedChild } = updatedChildTemplate;
 
-        // if (updatedChild.category._id !== currTemplate.category._id)
-        // await this.updateEntityTemplateScope(childTemplate, permissionsOfUserId, userId); // TODO:fix updateEntityTemplateScope to support child template after changing the permissions
+        if (updatedChild.category._id !== currTemplate.category._id)
+            await this.updateEntityTemplateScope(updatedChildTemplate, permissionsOfUserId, userId);
 
         const { uniqueConstraints: currUnique, requiredConstraints: currRequired } =
             await this.instancesService.getConstraintsOfTemplate(parentTemplateId);

@@ -44,7 +44,7 @@ const getRjsfDateOrDateTimeWidget =
         ...textFieldProps
     }: WidgetProps) => {
         const { defaultValue } = options;
-        const [currDate, setCurrDate] = useState<Date | null>(defaultValue as Date);
+        const [currDate, setCurrDate] = useState<Date | null>((defaultValue as Date | undefined) ?? null);
 
         const { rootSchema } = registry;
         const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
@@ -81,7 +81,6 @@ const getRjsfDateOrDateTimeWidget =
 
             const currentDate = new Date();
             setCurrDate(currentDate);
-
             onFormChangeFunction(currentDate);
         };
 

@@ -178,6 +178,7 @@ type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoC
     onAddEntity: (id: string) => void;
     refreshServerSide: (templateId: string) => void;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
@@ -191,6 +192,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
     onAddEntity,
     refreshServerSide,
     setUpdatedEntities,
+    setUpdatedTemplateIds,
 }: EntitiesPageHeadlineProps<T>) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -345,6 +347,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                             }}
                             onSuccessCreate={onSuccessCreate}
                             setUpdatedEntities={setUpdatedEntities}
+                            setUpdatedTemplateIds={setUpdatedTemplateIds}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
