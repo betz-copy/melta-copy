@@ -351,7 +351,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                 },
                 onSuccess: () => {
-                    setUpdatedTemplateIds?.([template._id]);
+                    setUpdatedTemplateIds?.([isChildTemplate(template) ? template.parentTemplate._id : template?._id]);
                     toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
                 },
                 onSettled: () => {
