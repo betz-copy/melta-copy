@@ -54,6 +54,7 @@ export const updateEntityStatusSchema = Joi.object({
     body: Joi.object({
         disabled: Joi.boolean().required(),
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: { id: Joi.string().required() },

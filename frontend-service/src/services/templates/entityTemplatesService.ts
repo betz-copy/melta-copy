@@ -11,6 +11,7 @@ import {
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     IEntitySingleProperty,
     IEntityTemplate,
@@ -726,7 +727,10 @@ const updateEntityTemplateRequest = async (
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
 
-    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
+    const { data } = await axios.put<{ template: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
+        `${entityTemplates}/${entityTemplateId}`,
+        formData,
+    );
     return data;
 };
 

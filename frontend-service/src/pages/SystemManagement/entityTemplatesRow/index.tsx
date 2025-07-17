@@ -120,6 +120,8 @@ const EntityTemplatesRow: React.FC = () => {
         entityTemplate: null,
     });
 
+    const searchEntityTemplatesQueryKey = useMemo(() => ['searchEntityTemplates', searchText, categoriesToShow], [searchText, categoriesToShow]);
+
     const getEntityTemplatesToShowGroupedByCategories = (
         entityTemplatesToShow: IMongoEntityTemplatePopulated[],
     ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
@@ -144,7 +146,7 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
                 else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
             },
@@ -165,7 +167,7 @@ const EntityTemplatesRow: React.FC = () => {
                 });
 
                 setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
-                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
                 try {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
@@ -231,9 +233,14 @@ const EntityTemplatesRow: React.FC = () => {
         },
 
         {
-            onSuccess(data) {
+            onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    return childTemplateMap!;
+                });
+
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
                 setLoadedEntityTemplateId('');
@@ -271,7 +278,7 @@ const EntityTemplatesRow: React.FC = () => {
                         return category;
                     }),
                 );
-                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
@@ -352,7 +359,7 @@ const EntityTemplatesRow: React.FC = () => {
                         category: IMongoCategory;
                         entityTemplates: IMongoEntityTemplatePopulated[];
                     }>
-                        queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
+                        queryKey={searchEntityTemplatesQueryKey}
                         queryFunction={({ pageParam }) => {
                             return getEntityTemplatesToShowGroupedByCategories(
                                 Array.from(entityTemplates.values())
@@ -404,6 +411,7 @@ const EntityTemplatesRow: React.FC = () => {
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
+                searchEntityTemplatesQueryKey={searchEntityTemplatesQueryKey}
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}

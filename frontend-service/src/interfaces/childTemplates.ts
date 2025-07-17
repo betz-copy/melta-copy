@@ -1,6 +1,6 @@
-import { IAGGridSetFilter, IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter } from '../utils/agGrid/interfaces';
-import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoCategory } from './categories';
+import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;

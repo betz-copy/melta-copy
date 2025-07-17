@@ -228,8 +228,8 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     return data;
 };
 
-export const updateEntityStatusRequest = async (entityId: string, disabled: boolean, ignoredRules?: string) => {
-    const { data } = await axios.patch<IEntity>(`${entities}/${entityId}/status`, { disabled, ignoredRules });
+export const updateEntityStatusRequest = async (entityId: string, disabled: boolean, ignoredRules?: string, childTemplateId?: string) => {
+    const { data } = await axios.patch<IEntity>(`${entities}/${entityId}/status`, { disabled, ignoredRules, childTemplateId });
     return data;
 };
 

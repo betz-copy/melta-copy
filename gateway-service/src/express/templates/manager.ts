@@ -1106,7 +1106,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
-    ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
+    ): Promise<{ template: IMongoEntityTemplateWithConstraintsPopulated; childTemplates?: IChildTemplateWithConstraintsPopulated[] }> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, showRelationships: false, sort: [] });
@@ -1226,49 +1226,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             documentTemplatesIds,
         });
 
-        await Promise.all([
-            ...childTemplates.map((childTemplate) => {
-                let hasChildChanged = false;
-                const { properties: childProperties, parentTemplate, category, ...restOfChildTemplate } = childTemplate;
-
-                if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
-                    hasChildChanged = true;
-
-                    removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
-                }
-
-                if (newRequiredProperties.length > 0 || hasChildChanged) {
-                    const newProps = {};
-                    newRequiredProperties.forEach((prop) => {
-                        newProps[prop] = {};
-                    });
-
-                    const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = pick(
-                        {
-                            parentTemplateId: parentTemplate._id,
-                            category: category._id,
-                            properties: {
-                                properties: cloneDeep({
-                                    ...dePopulateChildProperties(childProperties.properties),
-                                    ...newProps,
-                                }),
-                            },
-                            ...restOfChildTemplate,
-                        },
-                        childTemplateKeys,
-                    );
-
-                    return this.entityTemplateService.updateChildTemplate(childTemplate._id, {
-                        ...newChildTemplate,
-                        filterByCurrentUserField: filterByCurrentUserField || undefined,
-                        filterByUnitUserField: filterByUnitUserField || undefined,
-                    });
-                }
-
-                return null;
-            }),
-        ]);
-
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
         if (newExpandedUserFields.length) {
@@ -1292,7 +1249,66 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (updatedTemplate.category._id !== currTemplate.category._id)
             await this.updateEntityTemplateScope(updatedTemplate, permissionsOfUserId, userId);
 
-        return this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
+        const updatedChildTemplates = await Promise.all([
+            ...childTemplates
+                .map((childTemplate) => {
+                    let hasChildChanged = false;
+                    const { properties: childProperties, parentTemplate, category, ...restOfChildTemplate } = childTemplate;
+
+                    if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
+                        hasChildChanged = true;
+
+                        removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
+                    }
+
+                    if (newRequiredProperties.length > 0 || hasChildChanged) {
+                        const newProps = {};
+                        newRequiredProperties.forEach((prop) => {
+                            newProps[prop] = {};
+                        });
+
+                        const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = pick(
+                            {
+                                parentTemplateId: parentTemplate._id,
+                                category: category._id,
+                                properties: {
+                                    properties: cloneDeep({
+                                        ...dePopulateChildProperties(childProperties.properties),
+                                        ...newProps,
+                                    }),
+                                },
+                                ...restOfChildTemplate,
+                            },
+                            childTemplateKeys,
+                        );
+
+                        return this.entityTemplateService.updateChildTemplate(childTemplate._id, {
+                            ...newChildTemplate,
+                            filterByCurrentUserField: filterByCurrentUserField || undefined,
+                            filterByUnitUserField: filterByUnitUserField || undefined,
+                        });
+                    }
+
+                    return null;
+                })
+                .filter((childTemplate) => childTemplate !== null),
+        ]);
+
+        const template = this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
+
+        return {
+            template,
+            childTemplates: updatedChildTemplates.map((updatedChildTemplate) =>
+                this.populateTemplateConstraints(
+                    {
+                        ...updatedChildTemplate,
+                        parentTemplate: { ...template, category: template.category._id },
+                    },
+                    requiredConstraints,
+                    uniqueConstraints,
+                ),
+            ),
+        };
     }
 
     async updateChildTemplate(

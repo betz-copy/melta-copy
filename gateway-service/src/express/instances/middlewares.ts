@@ -55,8 +55,8 @@ class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanCreateEntityInstance(req: Request) {
-        const { templateId } = req.body;
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined);
+        const { templateId, childTemplateId } = req.body;
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
     async getAllowedEntityTemplatesForInstances(
@@ -166,15 +166,16 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanWriteEntityInstance(req: Request) {
         const { id } = req.params;
+        const { childTemplateId } = req.body;
         const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
     async validateUserCanWriteBulkEntityInstances(req: Request) {
-        const { templateId } = req.body;
+        const { templateId, childTemplateId } = req.body;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], userId: string) {

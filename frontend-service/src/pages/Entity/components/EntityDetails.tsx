@@ -87,6 +87,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
 
+    const childTemplateId = isChildTemplate(entityTemplate) ? entityTemplate._id : undefined;
+
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
     const canWriteInstance = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
@@ -101,7 +103,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const { isLoading: isUpdateStatusLoading, mutateAsync: updateEntityStatus } = useMutation(
         ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+            updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
         {
             onSuccess: (data) => {
                 queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
@@ -138,7 +140,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
-                childTemplateId: isChildTemplate(entityTemplate) ? entityTemplate._id : undefined,
+                childTemplateId: childTemplateId,
             } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {
