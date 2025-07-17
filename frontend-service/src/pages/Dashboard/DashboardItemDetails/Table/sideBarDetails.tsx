@@ -43,7 +43,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
                     formik={formikProps}
                     formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
                     options={entityTemplatesIds}
-                    label={i18next.t('entity')}
+                    label={i18next.t('entityTemplate')}
                     onChange={(newValue) => {
                         if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
                         else handleChangeTemplate(newValue);

@@ -386,15 +386,16 @@ const Entity: React.FC = () => {
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
     const currentEntityTemplate = childTemplateId
-        ? childTemplates.get(childTemplateId)!
-        : entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
+        ? childTemplates.get(childTemplateId)
+        : entityTemplates.get(expandedEntity?.entity.templateId ?? '');
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        currentEntityTemplate.category._id,
-        currentEntityTemplate._id,
+        currentEntityTemplate?.category?._id ?? '',
+        currentEntityTemplate?._id ?? '',
         PermissionScope.write,
     );
+
     const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, allowedEntityTemplates),
     );
@@ -408,18 +409,18 @@ const Entity: React.FC = () => {
         if (
             !(
                 relationshipTemplate.isProperty &&
-                currentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
+                currentEntityTemplate?.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
                     relationshipTemplate._id
             )
         ) {
-            if (relationshipTemplate.sourceEntity._id === currentEntityTemplate._id) {
+            if (relationshipTemplate.sourceEntity._id === currentEntityTemplate?._id) {
                 connectionsTemplates.push({
                     relationshipTemplate,
                     isExpandedEntityRelationshipSource: true,
                     hasInstances,
                 });
             }
-            if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
+            if (relationshipTemplate.destinationEntity._id === currentEntityTemplate?._id) {
                 connectionsTemplates.push({
                     relationshipTemplate,
                     isExpandedEntityRelationshipSource: false,
@@ -447,7 +448,7 @@ const Entity: React.FC = () => {
 
                     if (
                         connectionRelationshipTemplate.isProperty &&
-                        currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
+                        currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
                             ?.relationshipTemplateId === connectionRelationshipTemplate._id
                     )
                         return false;
@@ -468,7 +469,10 @@ const Entity: React.FC = () => {
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
 
-    if (!expandedEntity) return <CircularProgress />;
+    // Early return if data is not ready - must be after all hooks
+    if (!expandedEntity || !currentEntityTemplate || !currentEntityTemplate.category) {
+        return <CircularProgress />;
+    }
 
     return (
         <>
@@ -550,7 +554,7 @@ const Entity: React.FC = () => {
                                                 {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
                                                     const relatedTemplate =
-                                                        relationship.destinationEntity._id !== currentEntityTemplate._id
+                                                        relationship.destinationEntity._id !== currentEntityTemplate?._id
                                                             ? relationship.destinationEntity
                                                             : relationship.sourceEntity;
 

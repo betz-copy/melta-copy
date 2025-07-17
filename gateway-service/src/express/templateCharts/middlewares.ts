@@ -47,12 +47,12 @@ class ChartsValidator extends DefaultController {
             this.getCategoryIdFromTemplateId(templateId, childTemplateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
-
-        const categoryPermissions = userPermissions.instances?.categories?.[categoryId];
         if (
             !userPermissions.admin?.scope &&
-            !categoryPermissions?.scope &&
-            !categoryPermissions?.entityTemplates?.[childTemplateId ?? templateId]?.scope
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
+                ([category, { scope, entityTemplates }]) =>
+                    category === categoryId && (scope || entityTemplates?.[childTemplateId ?? templateId]?.scope),
+            )
         ) {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
         }

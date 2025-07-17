@@ -116,10 +116,11 @@ const EditEntityDetails: React.FC<{
 
     return (
         <Formik
-            initialValues={getInitialValuesWithDefaults(
-                { properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate },
-                entityTemplate,
-            )}
+            initialValues={getInitialValuesWithDefaults({
+                properties: fieldProperties,
+                attachmentsProperties: fileProperties,
+                template: entityTemplate,
+            })}
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });

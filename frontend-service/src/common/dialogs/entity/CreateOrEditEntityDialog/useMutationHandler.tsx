@@ -16,6 +16,7 @@ import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata'
 import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
+import { isChildTemplate } from '../../../../utils/templates';
 
 const { errorCodes } = environment;
 
@@ -97,7 +98,8 @@ const useMutationHandler = (
 
                 if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
                     if (shouldNavigateToEntityPage === true) {
-                        navigate(`/entity/${data.properties._id}`);
+                        const childTemplateIdParam = isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : '';
+                        navigate(`/entity/${data.properties._id}${childTemplateIdParam}`);
                     }
                 }
             },
@@ -116,7 +118,8 @@ const useMutationHandler = (
 
                 if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
                     if (shouldNavigateToEntityPage && data) {
-                        navigate(`/entity/${data.properties._id}`);
+                        const childTemplateIdParam = isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : '';
+                        navigate(`/entity/${data.properties._id}${childTemplateIdParam}`);
                     }
                 }
             },
@@ -184,7 +187,16 @@ const useMutationHandler = (
                                 <Grid display="flex" alignItems="center">
                                     <span>{i18next.t(`wizard.entity.${isUpdate ? 'edited' : 'created'}Successfully`)}</span>
                                     {data?.properties?._id && (
-                                        <Button variant="text" onClick={() => navigate(`/entity/${data.properties._id}`)} sx={{ marginRight: '5px' }}>
+                                        <Button
+                                            variant="text"
+                                            onClick={() => {
+                                                const childTemplateIdParam = isChildTemplate(entityTemplate)
+                                                    ? `?childTemplateId=${entityTemplate._id}`
+                                                    : '';
+                                                navigate(`/entity/${data.properties._id}${childTemplateIdParam}`);
+                                            }}
+                                            sx={{ marginRight: '5px' }}
+                                        >
                                             {i18next.t('entityPage.linkToEntityPage')}
                                         </Button>
                                     )}

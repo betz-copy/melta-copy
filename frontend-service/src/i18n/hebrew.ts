@@ -1616,6 +1616,8 @@ export default {
             overlay: 'שכבות מיפוי',
         },
         coordinateSystem: 'קואורדינטות',
+        searchResults: 'תוצאות חיפוש מקטלוג',
+        newRequest: 'בקשה חדשה',
     },
     filters: {
         equals: 'שווה',
@@ -1664,6 +1666,10 @@ export default {
             usersInfoChildTemplateId: 'ID תבנית משתמשים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
             clientSideWorkspaceName: 'שם סביבת צד לקוח',
+        },
+        mapPage: {
+            sourceTemplateId: 'ID תבנית מקור',
+            destTemplateId: 'ID תבנית יעד',
         },
     },
     createChildTemplateDialog: {
