@@ -93,7 +93,7 @@ export const updateUserPermissionForEntityTemplate = (
 
     const updatedEntityTemplates = {
         ...instances?.categories?.[categoryId]?.entityTemplates,
-        [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {}, childTemplates: {} },
+        [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {} },
     };
 
     const updatedCategories = {
