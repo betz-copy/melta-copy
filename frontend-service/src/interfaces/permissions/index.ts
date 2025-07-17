@@ -10,6 +10,7 @@ export enum PermissionType {
     processes = 'processes',
     templates = 'templates',
     instances = 'instances',
+    childTemplates = 'childTemplates',
 }
 
 export type IDefaultPermissionDetails = { scope?: PermissionScope };

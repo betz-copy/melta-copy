@@ -17,18 +17,22 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
-const EntitiesPage: React.FC<{
-    templates: IMongoEntityTemplatePopulated[];
-    setTemplates?: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    templatesToShowCheckbox: IMongoEntityTemplatePopulated[];
-    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+    templates: T[];
+    setTemplates?: React.Dispatch<React.SetStateAction<T[]>>;
+    templatesToShowCheckbox: T[];
+    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<T[]>>;
     isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
     pageType: string;
     pageTitle: string;
-}> = ({
+};
+
+const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
     templates,
     setTemplates,
     categories,
@@ -38,7 +42,7 @@ const EntitiesPage: React.FC<{
     templatesToShowCheckbox,
     setTemplatesToShowCheckbox,
     isTemplatesCheckboxDraggableDisabled,
-}) => {
+}: EntitiesPageProps<T>) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
 
@@ -50,6 +54,7 @@ const EntitiesPage: React.FC<{
     const search = urlSearchParams.get('search')!;
 
     const [searchInput, setSearchInput] = useState(search);
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
     const [updatedTemplateIds, setUpdatedTemplateIds] = useState<string[]>([]);
 
@@ -57,6 +62,8 @@ const EntitiesPage: React.FC<{
 
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
+
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
@@ -69,12 +76,22 @@ const EntitiesPage: React.FC<{
     }, [updatedEntities, viewMode]);
 
     useEffect(() => {
-        if (Array.isArray(updatedTemplateIds) && viewMode !== 'cards-view') {
-            updatedTemplateIds.forEach((templateId) => {
-                const reference = templateTablesViewRef.current!.templateTablesRefs?.[templateId];
+        if (Array.isArray(updatedTemplateIds)) {
+            if (viewMode === 'cards-view') {
+                queryClient.invalidateQueries(['searchEntities', updatedTemplateIds, searchInput, urlSemanticSearch]);
+            } else {
+                updatedTemplateIds.forEach((templateId) => {
+                    const childTemplateIds = Array.from(entityChildTemplates.values())
+                        .filter((child) => child?.parentTemplate._id === templateId)
+                        .map((child) => child?._id);
 
-                if (reference) reference.refreshServerSide();
-            });
+                    [...childTemplateIds, templateId].map((tempId) => {
+                        const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
+
+                        if (reference) reference.refreshServerSide();
+                    });
+                });
+            }
         }
     }, [updatedTemplateIds, viewMode]);
 
@@ -92,6 +109,7 @@ const EntitiesPage: React.FC<{
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
                         displayColumns: templateTableRef.getDisplayColumns(),
+                        isChildTemplate: isChildTemplate(template),
                     };
                 },
             );
@@ -167,6 +185,7 @@ const EntitiesPage: React.FC<{
                         ref!.scrollIntoView();
                     }}
                     setUpdatedEntities={setUpdatedEntities}
+                    setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
 
@@ -185,7 +204,10 @@ const EntitiesPage: React.FC<{
                 {viewMode === 'cards-view' && (
                     <CardsView
                         ref={cardsViewRef}
-                        templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}
+                        templateIds={templatesToShowCheckbox.map((template) =>
+                            isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        )}
+                        templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                     />
                 )}

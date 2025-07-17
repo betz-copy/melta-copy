@@ -20,6 +20,7 @@ interface DatePickerWrapperProps {
     directionIsRow?: boolean;
     readOnly?: boolean;
     borderRadius?: string;
+    disableKeyboardInput?: boolean;
 }
 
 const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
@@ -34,14 +35,12 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     directionIsRow,
     readOnly = false,
     borderRadius,
+    disableKeyboardInput = false,
 }) => (
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
         adapterLocale={heLocale}
         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
-        InputProps={{
-            style: {},
-        }}
     >
         <DatePicker
             inputFormat="dd/MM/yyyy"
@@ -59,11 +58,14 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
                         width: '100%',
                         ...sx,
                     }}
+                    inputProps={{
+                        ...params.inputProps,
+                        readOnly: disableKeyboardInput,
+                    }}
                 />
             )}
             InputProps={{
                 style: {
-                    // eslint-disable-next-line no-nested-ternary
                     borderRadius: borderRadius || !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
                 },
             }}

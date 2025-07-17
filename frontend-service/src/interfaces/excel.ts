@@ -1,3 +1,4 @@
+import { IMongoChildTemplatePopulated } from './childTemplates';
 import { IEntity, IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint } from './entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
 import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
@@ -5,7 +6,7 @@ import { IBrokenRule, IBrokenRulePopulated } from './ruleBreaches/ruleBreach';
 
 export interface EntitiesWizardValues {
     files?: File[];
-    template?: IMongoEntityTemplatePopulated;
+    template?: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
 }
 
 export type IValidationError = {

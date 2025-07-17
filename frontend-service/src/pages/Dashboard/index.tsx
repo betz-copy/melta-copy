@@ -48,12 +48,14 @@ const Dashboard: React.FC = () => {
         dashboardId: string | null;
         templateId: string | null;
         type: DashboardItemType | null;
+        childTemplateId?: string | null;
     }>({
         isDialogOpen: false,
         relatedId: null,
         dashboardId: null,
         templateId: null,
         type: null,
+        childTemplateId: null,
     });
 
     const { data: dashboardItems, isFetching } = useQuery({
@@ -96,16 +98,17 @@ const Dashboard: React.FC = () => {
             isDialogOpen: true,
             type,
             templateId: type === DashboardItemType.Chart ? metaData.templateId! : null,
+            childTemplateId: type === DashboardItemType.Chart ? metaData.childTemplateId : undefined,
             dashboardId,
         });
     };
 
     const onEditYes = () => {
-        const { type, relatedId, templateId, dashboardId } = editDashboardItemDialogState;
+        const { type, relatedId, templateId, dashboardId, childTemplateId } = editDashboardItemDialogState;
 
         switch (type) {
             case DashboardItemType.Chart:
-                navigate(`${chartPath}/${templateId}/${relatedId}/chart`, {
+                navigate(`${chartPath}/${childTemplateId || templateId}/${relatedId}/chart`, {
                     state: { isDashboardPage: true, dashboardId },
                 });
                 break;
@@ -130,7 +133,7 @@ const Dashboard: React.FC = () => {
             );
 
         return (
-            <Grid height="90vh" justifyContent="center" justifyItems="center" alignContent="center">
+            <Grid container height="90vh" justifyContent="center" justifyItems="center" alignContent="center">
                 <NoItemsCard />
             </Grid>
         );
@@ -191,7 +194,14 @@ const Dashboard: React.FC = () => {
             <ConfirmEditCommonItem
                 isDialogOpen={editDashboardItemDialogState.isDialogOpen}
                 handleClose={() =>
-                    setEditDashboardItemDialogState({ isDialogOpen: false, relatedId: null, templateId: null, type: null, dashboardId: null })
+                    setEditDashboardItemDialogState({
+                        isDialogOpen: false,
+                        relatedId: null,
+                        templateId: null,
+                        type: null,
+                        dashboardId: null,
+                        childTemplateId: null,
+                    })
                 }
                 onEditYes={onEditYes}
                 type={editDashboardItemDialogState.type}

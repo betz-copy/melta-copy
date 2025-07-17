@@ -21,7 +21,6 @@ import { getFieldData } from './fieldBlock/propertiesTypes';
 import { ItemTypes } from './fieldBlock/interfaces';
 
 const { mapSearchPropertiesLimit } = environment.map;
-
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
@@ -45,7 +44,6 @@ export const propertiesBaseSchema = Yup.object({
     }),
     groupName: Yup.string().when('uniqueCheckbox', { is: true, then: (schema) => schema.required(i18next.t('validation.mustSelectUniqueGroup')) }),
 });
-
 export const attachmentPropertiesBaseSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     title: Yup.string().required(i18next.t('validation.required')),
@@ -262,7 +260,6 @@ export const FieldBlockWrapper = ({
     }).length;
 
     if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
-
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
@@ -773,5 +770,4 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         </DndProvider>
     );
 };
-
 export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };

@@ -8,6 +8,7 @@ import TemplatesValidator from './middlewares';
 import {
     convertToRelationshipFieldRequestSchema,
     createCategorySchema,
+    createChildTemplateSchema,
     createEntityTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
@@ -15,8 +16,10 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
-    getAllConfigsSchema,
+    getAllChildTemplatesSchema,
     getCategoriesSchema,
+    searchChildTemplatesSchema,
+    getAllConfigsSchema,
     getConfigByTypeSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
@@ -29,6 +32,9 @@ import {
     updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
+    updateChildTemplateSchema,
+    deleteChildTemplateSchema,
+    updateEntityTemplateActionSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -129,7 +135,12 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
-templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
+templatesRouter.patch(
+    '/entities/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    AuthorizerControllerMiddleware.userIsRootAdmin,
+    templatesControllerMiddleware.updateEntityTemplateAction,
+);
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',
@@ -250,6 +261,44 @@ templatesRouter.post(
     ValidateRequest(searchRulesRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchRulesTemplates,
+);
+
+// child templates
+templatesRouter.post(
+    '/child',
+    busboyMiddleware,
+    ValidateRequest(createChildTemplateSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
+    templatesControllerMiddleware.createChildTemplate,
+);
+
+templatesRouter.post(
+    '/child/search',
+    ValidateRequest(searchChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.get(
+    '/child',
+    ValidateRequest(getAllChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.put(
+    '/child/:id',
+    ValidateRequest(updateChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateChildTemplate,
+);
+
+templatesRouter.delete(
+    '/child/:id',
+    ValidateRequest(deleteChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    TemplatesServiceProxy,
 );
 
 export default templatesRouter;

@@ -7,7 +7,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
-import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
+import { IGetMyNotificationsRequestQuery } from '../../../services/notificationService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { InfiniteScroll } from '../../InfiniteScroll';
@@ -25,6 +25,9 @@ interface NotificationsScreenProps {
     sideBarWidth: CSSProperties['width'];
     notificationCountDetails: INotificationGroupCountDetails;
     updateNotificationCountDetails: () => void;
+    side: 'left' | 'right';
+    manyNotificationSeenRequest: (types: NotificationType[]) => Promise<INotificationPopulated[]>;
+    getMyNotificationsRequest: (query: IGetMyNotificationsRequestQuery) => Promise<INotificationPopulated[]>;
 }
 
 interface IGroups {
@@ -49,6 +52,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     sideBarWidth,
     notificationCountDetails,
     updateNotificationCountDetails,
+    side = 'right',
+    manyNotificationSeenRequest,
+    getMyNotificationsRequest,
 }) => {
     const groupNames = Object.keys(groups) as (keyof typeof groups)[];
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
@@ -113,7 +119,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     {i18next.t('notifications.title')}
                 </Typography>
             }
-            side="right"
+            side={side}
             sideMargin={sideBarWidth}
             isCheckBoxClicked={isCheckBoxClicked}
         >

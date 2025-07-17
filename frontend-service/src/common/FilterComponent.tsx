@@ -10,6 +10,7 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
+import { IUser } from '../interfaces/users';
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -18,6 +19,23 @@ export const initializedFilterField: Record<string, IAGGridFilter> = {
     string: { filterType: 'text', type: 'contains' },
     boolean: { filterType: 'text', type: 'equals' },
     array: { filterType: 'set', values: [] },
+};
+
+export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean => {
+    if (!filter) return false;
+
+    switch (filter.filterType) {
+        case 'text':
+            return filter.filter !== undefined && filter.filter !== '';
+        case 'number':
+            return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
+        case 'date':
+            return filter.dateFrom !== null && (filter.type !== 'inRange' || filter.dateTo !== null);
+        case 'set':
+            return Array.isArray(filter.values) && filter.values.length > 0;
+        default:
+            return false;
+    }
 };
 
 export const handleRemoveFilter = (filters: IFilterTemplate[], index: number, onChange: (newFiltersArray: IFilterTemplate[]) => void) => {
@@ -129,7 +147,7 @@ const handleTypedFilterTypeChange = (
 
 const handleCheckboxChange = (
     filters: IFilterTemplate[],
-    option: string,
+    option: string | IUser,
     checked: boolean,
     filterField: IAGGridSetFilter,
     index: number,
@@ -137,7 +155,7 @@ const handleCheckboxChange = (
 ) => {
     const currentValues = filterField.values || [];
 
-    let updatedValues: (string | null)[];
+    let updatedValues: (string | IUser | null)[];
     if (checked) updatedValues = currentValues.includes(option) ? currentValues : [...currentValues, option];
     else updatedValues = currentValues.filter((item) => item !== option);
 
@@ -247,7 +265,7 @@ export const renderFilterInput = (
                 filterField={field?.filterType === 'set' ? field : undefined}
                 inputValue={userInput.value}
                 setInputValue={userInput.set}
-                handleCheckboxChange={(option: string, checked: boolean) =>
+                handleCheckboxChange={(option: string | IUser, checked: boolean) =>
                     handleCheckboxChange(filters, option, checked, filter.filterField as IAGGridSetFilter, index, onChange)
                 }
                 readOnly={Boolean(readonly)}

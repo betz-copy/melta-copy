@@ -14,6 +14,7 @@ import templatesRouter from './templates/router';
 import usersRouter from './users/router';
 import workspaceRouter from './workspaces/router';
 import ChartsRouter from './templateCharts/router';
+import ClientSideRouter from './clientSide/router';
 import dashboardItemsRouter from './dashboardItems/router';
 
 const apiRouter = Router();
@@ -28,6 +29,7 @@ apiRouter.use('/config', (_req, res) =>
         meltaUpdates: config.frontendConfig.meltaUpdates,
         meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
+        units: config.frontendConfig.units,
     }),
 );
 
@@ -78,5 +80,7 @@ apiRouter.use('/charts', ChartsRouter);
 apiRouter.use('/dashboard', dashboardItemsRouter);
 
 apiRouter.use('/workspaces', workspaceRouter);
+
+apiRouter.use('/client-side', ClientSideRouter);
 
 export default apiRouter;

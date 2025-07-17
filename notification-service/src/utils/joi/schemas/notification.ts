@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 import { NotificationType } from '@microservices/shared';
-import { mongoIdSchema } from '.';
+import { mongoIdSchema, clientSideIdSchema } from '.';
 import { validateNotificationMetadataSchema } from './notificationMetadata';
 
 export const notificationSchema = joi.object({
@@ -17,7 +17,7 @@ export const basicNotificationSearchSchema = joi.object({
         .array()
         .items(joi.string().valid(...Object.values(NotificationType)))
         .min(1),
-    viewerId: mongoIdSchema,
+    viewerId: joi.alternatives().try(mongoIdSchema, clientSideIdSchema).required(),
     startDate: joi.date(),
     endDate: joi.date().greater(joi.ref('startDate')),
 });

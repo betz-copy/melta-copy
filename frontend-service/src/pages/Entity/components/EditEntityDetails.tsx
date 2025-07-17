@@ -1,24 +1,25 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
-import pickBy from 'lodash.pickby';
-import i18next from 'i18next';
 import { Form, Formik } from 'formik';
+import { StatusCodes } from 'http-status-codes';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { StatusCodes } from 'http-status-codes';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
-import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
-import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { environment } from '../../../globals';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
+import { environment } from '../../../globals';
+import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 
@@ -115,7 +116,11 @@ const EditEntityDetails: React.FC<{
 
     return (
         <Formik
-            initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
+            initialValues={getInitialValuesWithDefaults({
+                properties: fieldProperties,
+                attachmentsProperties: fileProperties,
+                template: entityTemplate,
+            })}
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
@@ -194,7 +199,7 @@ const EditEntityDetails: React.FC<{
                                                                                 fieldTemplateTitle={value.title}
                                                                                 setFieldValue={setFieldValue}
                                                                                 required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key]}
+                                                                                value={values.attachmentsProperties[key] as File | undefined}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
                                                                                 setExternalErrors={setExternalErrors}
@@ -205,7 +210,7 @@ const EditEntityDetails: React.FC<{
                                                                                 fieldTemplateTitle={value.title}
                                                                                 setFieldValue={setFieldValue}
                                                                                 required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key]}
+                                                                                value={values.attachmentsProperties[key] as File[] | undefined}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
                                                                                 setExternalErrors={setExternalErrors}

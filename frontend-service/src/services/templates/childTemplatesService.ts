@@ -1,0 +1,27 @@
+import axios from '../../axios';
+import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { environment } from '../../globals';
+
+const { childTemplates } = environment.api;
+
+const createChildTemplate = async (newChildTemplate: IChildTemplate) => {
+    const { data } = await axios.post<IMongoChildTemplate>(childTemplates, newChildTemplate);
+    return data;
+};
+
+const updateChildTemplate = async (id: string, childTemplate: IChildTemplate) => {
+    const { data } = await axios.put<IMongoChildTemplate>(`${childTemplates}/${id}`, childTemplate);
+    return data;
+};
+
+const getAllChildTemplates = async () => {
+    const { data } = await axios.get<IMongoChildTemplatePopulated[]>(childTemplates);
+    return data;
+};
+
+const deleteChildTemplate = async (id: string) => {
+    const { data } = await axios.delete<IMongoChildTemplate>(`${childTemplates}/${id}`);
+    return data;
+};
+
+export { createChildTemplate, updateChildTemplate, getAllChildTemplates, deleteChildTemplate };

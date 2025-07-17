@@ -5,6 +5,7 @@ const TableMetaDataSchema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     columns: Joi.array().items(Joi.string().required()).min(1).required(),
     filter: searchFilterSchema.custom((value) => {
         // todo: upgrade mongo version up to 5 and then delete that convert

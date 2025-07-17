@@ -2,7 +2,7 @@ import { Download } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -16,6 +16,10 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
+import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
+import { isChildTemplate } from '../../../utils/templates';
+import { useUserStore } from '../../../stores/user';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -32,7 +36,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
                 variant="h4"
                 style={{
                     fontSize: headlineTitleFontSize,
-                    justifySelf: 'center',
+                    textAlign: 'center',
                 }}
             />
 
@@ -51,13 +55,21 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const template = entityTemplates.get(metaData.templateId)!;
+    const template = getRelevantEntityTemplate(entityTemplates, metaData.templateId, metaData.childTemplateId);
 
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
 
+    const { externalMetadata } = useUserStore((state) => state.user);
+    const currentUserKartoffelId = externalMetadata?.kartoffelId;
+
     const [isFiltered, setIsFiltered] = useState(false);
-    const memorizedFilter = React.useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+    const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+    const childTemplateFilter = useMemo(
+        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, currentUserKartoffelId),
+        [metaData.templateId, metaData.childTemplateId, currentUserKartoffelId],
+    );
+    const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
@@ -77,6 +89,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                             metaData.filter && JSON.parse(metaData.filter),
                         ),
                         displayColumns: metaData.columns,
+                        isChildTemplate: isChildTemplate(template),
                     },
                 },
             }),
@@ -141,7 +154,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                         }}
                         showNavigateToRowButton={false}
                         editable={false}
-                        defaultFilter={memorizedFilter}
+                        defaultFilter={allFilters}
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
                         onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}

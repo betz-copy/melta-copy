@@ -523,16 +523,47 @@ const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     enum: ['אא', 'בב', 'גג', 'דד'],
                 },
+                location: {
+                    title: 'מיקום',
+                    type: 'string',
+                    format: 'location',
+                },
                 regex: {
                     title: 'תבנית',
                     type: 'string',
                     pattern: '^0[2-9]\\d-\\d{4}-\\d{3}$',
                     patternCustomErrorMessage: 'יש להזין בפורמט מס טלפון בלבד (050-1234-123)',
                 },
-                location: {
+                signature: {
+                    title: 'חתימה',
                     type: 'string',
-                    title: 'מיקום',
-                    format: 'location',
+                    format: 'signature',
+                    archive: false,
+                },
+                comment: {
+                    title: 'הערה-comment',
+                    type: 'string',
+                    format: 'comment',
+                    archive: false,
+                    color: '#4752B6',
+                    comment: '<p>שלומות!!!</p>',
+                },
+                user: {
+                    title: 'משתמש',
+                    type: 'string',
+                    format: 'user',
+                    archive: false,
+                },
+                users: {
+                    title: 'משתמשים',
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'user',
+                    },
+                    minItems: 1,
+                    archive: false,
+                    uniqueItems: true,
                 },
                 file: {
                     title: 'קובץ יחיד',
@@ -551,11 +582,133 @@ const entityTemplates: IEntityTemplateMock[] = [
             },
             hide: [],
         },
-        propertiesOrder: ['text', 'number', 'boolean', 'date', 'dateTime', 'mail', 'multiEnum', 'enum', 'location', 'regex', 'file', 'files'],
+        propertiesOrder: [
+            'text',
+            'number',
+            'boolean',
+            'date',
+            'dateTime',
+            'mail',
+            'multiEnum',
+            'enum',
+            'location',
+            'regex',
+            'signature',
+            'comment',
+            'user',
+            'users',
+            'file',
+            'files',
+        ],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         disabled: false,
         documentTemplatesIds: [],
+        mapSearchProperties: [],
+    },
+    {
+        name: 'katalog',
+        displayName: 'קטלוג',
+        category: {
+            name: 'azarim',
+        },
+        properties: {
+            type: 'object',
+            properties: {
+                makat: {
+                    type: 'string',
+                    title: 'מקט',
+                },
+                zira: {
+                    type: 'string',
+                    title: 'זירה',
+                },
+                pageName: {
+                    type: 'string',
+                    title: 'שם גיליון',
+                },
+                helpCategory: {
+                    type: 'string',
+                    title: 'קטגורית עזר',
+                },
+                famaly: {
+                    type: 'string',
+                    title: 'משפחה',
+                    enum: ['קו אפור', 'קו אדום', 'קו סגול'],
+                },
+                scale: {
+                    type: 'string',
+                    title: 'סקלה',
+                    enum: ['1:20,000', '1:10,000', '1:5,000', '1:50,000'],
+                },
+                polygon: {
+                    type: 'string',
+                    title: 'פוליגון',
+                    format: 'location',
+                },
+                availableCount: {
+                    type: 'number',
+                    title: 'מספר זמין',
+                },
+            },
+            hide: [],
+        },
+        propertiesOrder: ['makat', 'zira', 'pageName', 'helpCategory', 'famaly', 'scale', 'polygon', 'availableCount'],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesPreview: ['makat', 'zira', 'pageName', 'helpCategory', 'famaly', 'scale', 'polygon', 'availableCount'],
+        disabled: false,
+    },
+    {
+        name: 'requests',
+        displayName: 'בקשות',
+        category: {
+            name: 'azarim',
+        },
+        properties: {
+            type: 'object',
+            properties: {
+                orderNumber: {
+                    type: 'string',
+                    title: 'מספר הזמנה',
+                },
+                forUnit: {
+                    type: 'string',
+                    title: 'ליחידה',
+                },
+                orderedBy: {
+                    type: 'string',
+                    title: 'הוזמן על ידי',
+                },
+                family: {
+                    type: 'string',
+                    title: 'משפחה',
+                    enum: ['קו אפור', 'קו אדום', 'קו סגול'],
+                },
+                scale: {
+                    type: 'string',
+                    title: 'סקלה',
+                    enum: ['1:20,000', '1:10,000', '1:5,000', '1:50,000'],
+                },
+                pageName: {
+                    type: 'string',
+                    title: 'שם גיליון',
+                },
+                amount: {
+                    type: 'number',
+                    title: 'כמות',
+                },
+                orderStatus: {
+                    type: 'string',
+                    title: 'סטטוס בקשה',
+                    enum: ['הועבר לטיפול', 'חדש', 'מוכן למסירה', 'לוקט', 'נמסר - טופל'],
+                },
+            },
+            hide: [],
+        },
+        propertiesOrder: ['orderNumber', 'forUnit', 'orderedBy', 'family', 'scale', 'pageName', 'amount', 'orderStatus'],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesPreview: ['orderNumber', 'forUnit', 'orderedBy', 'family', 'scale', 'pageName', 'amount', 'orderStatus'],
+        disabled: false,
     },
 ];
 

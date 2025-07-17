@@ -12,7 +12,7 @@ import {
     getEntitiesByIdsRequestSchema,
     getEntityByIdRequestSchema,
     getExpandedGraphByIdRequestSchema,
-    getIfValuefieldIsUsedRequestSchema,
+    getIfValueFieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
@@ -26,6 +26,7 @@ import {
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
     convertToRelationshipFieldRequestSchema,
+    countEntitiesOfTemplatesByUserEntityIdRequestSchema,
     getSelectedEntitiesRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
@@ -57,6 +58,11 @@ entityRouter.post(
 );
 entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
 entityRouter.post(
+    '/count/user-entity-id',
+    ValidateRequest(countEntitiesOfTemplatesByUserEntityIdRequestSchema),
+    entityController.countEntitiesOfTemplatesByUserEntityId,
+);
+entityRouter.post(
     '/search/templates',
     ValidateRequest(searchEntitiesByTemplatesSchema),
     entityValidatorController.validateSearchByTemplatesBody,
@@ -72,7 +78,7 @@ entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation),
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
 entityRouter.put('/convert-fields-to-plural/:id', ValidateRequest(convertFieldsToPluralRequestSchema), entityController.convertFieldsToPlural);
-entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
+entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValueFieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
 

@@ -22,6 +22,7 @@ import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { AddEntityButton } from './Buttons/AddEntity';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -152,16 +153,17 @@ export const GlobalSearchBar: React.FC<{
         />
     );
 };
-const EntitiesPageHeadline: React.FC<{
+
+type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
     entityTemplateSelectCheckboxProps: {
         categories?: IMongoCategory[];
-        templates: IMongoEntityTemplatePopulated[];
-        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
-        templatesToShow: IMongoEntityTemplatePopulated[];
-        setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
+        templates: T[];
+        setTemplates?: Dispatch<SetStateAction<T[]>>;
+        templatesToShow: T[];
+        setTemplatesToShow: Dispatch<SetStateAction<T[]>>;
         isDraggableDisabled?: boolean;
     };
     excelExportProps?: {
@@ -176,7 +178,10 @@ const EntitiesPageHeadline: React.FC<{
     onAddEntity: (id: string) => void;
     refreshServerSide: (templateId: string) => void;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
-}> = ({
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+};
+
+const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
     searchInput,
     setSearchInput,
     onSearch,
@@ -187,7 +192,8 @@ const EntitiesPageHeadline: React.FC<{
     onAddEntity,
     refreshServerSide,
     setUpdatedEntities,
-}) => {
+    setUpdatedTemplateIds,
+}: EntitiesPageHeadlineProps<T>) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -341,6 +347,7 @@ const EntitiesPageHeadline: React.FC<{
                             }}
                             onSuccessCreate={onSuccessCreate}
                             setUpdatedEntities={setUpdatedEntities}
+                            setUpdatedTemplateIds={setUpdatedTemplateIds}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

@@ -11,7 +11,7 @@ const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, cate
             jobTitle: 'גיבור',
             hierarchy: 'מגניב/ביותר',
             preferences: {
-                darkMode: true,
+                darkMode: false,
             },
             externalMetadata: {
                 kartoffelId,

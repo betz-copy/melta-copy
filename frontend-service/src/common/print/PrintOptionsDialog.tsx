@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -18,6 +18,7 @@ import {
 } from '../../pages/Entity/components/print';
 import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 type IOption = {
     show: boolean;
@@ -91,7 +92,7 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     options,
 }) => {
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const getPropertiesFiles = React.useCallback((): IFile[] => {
         if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
@@ -125,7 +126,7 @@ const PrintOptionsDialog: React.FC<{
         return [];
     }, [instance, template]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const currFiles = getPropertiesFiles()
             .filter((file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported')
             .concat(
@@ -137,7 +138,7 @@ const PrintOptionsDialog: React.FC<{
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setFilesLoadingStatus(
             selectedFiles.reduce((acc, file) => {
                 return { ...acc, [file.id]: true };
@@ -146,7 +147,7 @@ const PrintOptionsDialog: React.FC<{
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFiles]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (Object.keys(filesLoadingStatus).length === 0) {
             setIsLoading(false);
             return;
@@ -254,13 +255,24 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                     <Grid paddingTop="25px">
                         {Object.entries(options).map(([key, value]) => {
+                            const isDisabled =
+                                key === 'previewPropertiesOnly' && 'propertiesPreview' in template && template.propertiesPreview.length === 0;
+
+                            const label = (
+                                <FormControlLabel
+                                    control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
+                                    label={i18next.t(value.label)}
+                                    disabled={isDisabled}
+                                />
+                            );
                             return (
                                 value && (
                                     <Grid key={key}>
-                                        <FormControlLabel
-                                            control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
-                                            label={i18next.t(value.label)}
-                                        />
+                                        {isDisabled ? (
+                                            <MeltaTooltip title={i18next.t('entityPage.print.noPreviewProperties')}>{label}</MeltaTooltip>
+                                        ) : (
+                                            label
+                                        )}
                                     </Grid>
                                 )
                             );

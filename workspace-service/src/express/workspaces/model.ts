@@ -32,6 +32,16 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         searchLimits: {
             bulk: { type: Number },
         },
+        unitFieldSplitDepth: { type: Number },
+        clientSide: {
+            usersInfoChildTemplateId: { type: String },
+            numOfPropsToShow: { type: Number },
+            clientSideWorkspaceName: { type: String },
+        },
+        mapPage: {
+            sourceTemplateId: { type: String },
+            destTemplateId: { type: String },
+        },
     },
     { _id: false },
 );

@@ -16,17 +16,31 @@ import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 
-import {
-    CategoryWithTemplates,
-    didPermissionsChange,
-    entityTemplatePermissionDialog,
-    userHasNoPermissions,
-} from '../../utils/permissions/permissionOfUserDialog';
+import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
+
+export const defaultEmptyUser = {
+    _id: '',
+    fullName: '',
+    jobTitle: '',
+    hierarchy: '',
+    mail: '',
+    profile: '',
+    preferences: {
+        darkMode: false,
+    },
+    externalMetadata: {
+        kartoffelId: '',
+        digitalIdentitySource: '',
+    },
+    permissions: {},
+    displayName: '',
+} as IUser;
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -39,42 +53,11 @@ const MyPermissions: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const defaultEmptyUser = {
-        _id: '',
-        fullName: '',
-        jobTitle: '',
-        hierarchy: '',
-        mail: '',
-        profile: '',
-        preferences: {
-            darkMode: false,
-        },
-        externalMetadata: {
-            kartoffelId: '',
-            digitalIdentitySource: '',
-        },
-        permissions: {},
-        displayName: '',
-    } as IUser;
-
     const queryClient = useQueryClient();
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
-
-    Array.from(entityTemplates.values()).forEach((entity) => {
-        const category: CategoryWithTemplates = {
-            entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
-            ...entity.category,
-        };
-        const displayEntity: entityTemplatePermissionDialog = {
-            id: entity._id,
-            name: entity.displayName,
-        };
-        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
-        dialogPermissionData.set(entity.category._id, category);
-    });
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
@@ -267,7 +250,7 @@ const MyPermissions: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={dialogPermissionData}
+                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()])}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                                 disableCheckboxes={!!formikRole}

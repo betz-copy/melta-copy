@@ -3,6 +3,7 @@ import uniqBy from 'lodash.uniqby';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 
 import { environment } from '../../globals';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -118,9 +119,16 @@ export const relationshipToLink = (sourceEntity, destinationEntity, relationship
 export const expandedEntityToGraphData = async (
     expandedEntity: IEntityExpanded,
     entityTemplates: IEntityTemplateMap,
+    childTemplates: IChildTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
 ): Promise<GraphData> => {
-    const nodes: NodeObject[] = [await entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!)];
+    const nodes: NodeObject[] = [
+        await entityToNode(
+            expandedEntity.entity,
+            entityTemplates.get(expandedEntity.entity.templateId)! ||
+                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === expandedEntity!.entity.templateId)!.parentTemplate,
+        ),
+    ];
 
     const links = await Promise.all(
         expandedEntity.connections.map(async ({ sourceEntity, destinationEntity, relationship }) => {

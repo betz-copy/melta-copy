@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { InputAdornment, styled, TextField, TextFieldProps } from '@mui/material';
 import i18next from 'i18next';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
@@ -38,34 +38,38 @@ const getRjsfDateOrDateTimeWidget =
         formContext,
         registry,
         color,
+        options,
         hideError,
         hideLabel,
         ...textFieldProps
     }: WidgetProps) => {
-        const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
-        const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
-
-        const [currDate, setCurrDate] = React.useState<Date | null>(null);
-
-        useEffect(() => {
-            if (value) setCurrDate(value);
-        }, [value]);
+        const { defaultValue } = options;
+        const [currDate, setCurrDate] = useState<Date | null>((defaultValue as Date | undefined) ?? null);
 
         const { rootSchema } = registry;
         const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
 
         const MuiDatePicker = dateOrDateTime === 'date' ? MobileDatePicker : MobileDateTimePicker;
+
+        useEffect(() => {
+            if (value) setCurrDate(value);
+            else if (defaultValue) setCurrDate(new Date(defaultValue as string));
+        }, [value]);
+
+        const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => {
+            const isEmpty = !newValue;
+            if (isEmpty) onChange(defaultValue);
+            onBlur(id, isEmpty ? defaultValue : newValue);
+        };
+        const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
+
         const onChangeDateWidget = (date: Date | null) => {
-            if (!date) {
-                return onChange(undefined);
-            }
+            if (!date) return onChange(undefined);
             const dateString = format(date, 'yyyy-MM-dd');
             return onChange(dateString);
         };
         const onChangeDateTimeWidget = (date: Date | null) => {
-            if (!date) {
-                return onChange(undefined);
-            }
+            if (!date) return onChange(undefined);
             const dateString = date.toISOString();
             return onChange(dateString);
         };
@@ -77,7 +81,6 @@ const getRjsfDateOrDateTimeWidget =
 
             const currentDate = new Date();
             setCurrDate(currentDate);
-
             onFormChangeFunction(currentDate);
         };
 
@@ -121,6 +124,7 @@ const getRjsfDateOrDateTimeWidget =
                                     </InputAdornment>
                                 ),
                             }}
+                            placeholder={defaultValue?.toString()}
                         />
                     )}
                     readOnly={readonly}

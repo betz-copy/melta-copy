@@ -1,18 +1,19 @@
+import {
+    ActionErrors,
+    ActionTypes,
+    BadRequestError,
+    IBrokenRuleEntity,
+    IBrokenRulesError,
+    IEntity,
+    IChildTemplatePopulated,
+    IFailedEntity,
+    IMongoEntityTemplatePopulated,
+    IWorkspace,
+    ServiceError,
+    UploadedFile,
+} from '@microservices/shared';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import {
-    UploadedFile,
-    IMongoEntityTemplatePopulated,
-    IFailedEntity,
-    IWorkspace,
-    BadRequestError,
-    ServiceError,
-    IBrokenRuleEntity,
-    ActionErrors,
-    IEntity,
-    IBrokenRulesError,
-    ActionTypes,
-} from '@microservices/shared';
 import config from '../../config';
 import { getValidationErrorEntities, readExcelFile } from './getFunctions';
 
@@ -20,7 +21,7 @@ const { errorCodes, loadExcel } = config;
 
 export const getAllEntitiesFromExcel = async (
     files: UploadedFile[],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
 ) => {
@@ -29,14 +30,13 @@ export const getAllEntitiesFromExcel = async (
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
-    return fileEntities;
+    return readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
     Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
 
-export const getSerialStarters = (template: IMongoEntityTemplatePopulated): Record<string, number> => {
+export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IChildTemplatePopulated): Record<string, number> => {
     return Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
         .reduce((acc, [key, value]) => {
@@ -88,7 +88,9 @@ export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[]
                     break;
             }
         }
-        if (data.type === errorCodes.templateValidationError) getValidationErrorEntities(error as AxiosError, failedEntities);
+
+        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
+            getValidationErrorEntities(error as AxiosError, failedEntities);
     } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,

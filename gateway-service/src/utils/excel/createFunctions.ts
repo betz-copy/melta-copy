@@ -1,10 +1,18 @@
 /* eslint-disable no-param-reassign */
+import {
+    CoordinateSystem,
+    EntityTemplateType,
+    getChildPropertiesFiltered,
+    IEntity,
+    IEntitySingleProperty,
+    locationConverterToString,
+    TemplateItem,
+} from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity, CoordinateSystem, locationConverterToString } from '@microservices/shared';
 import config from '../../config/index';
-import excelConfig from './excelConfig';
 import hexToARGB from './colors';
+import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
 
 interface IExcelStyle {
@@ -117,14 +125,13 @@ export const indexToExcelColumn = (index: number): string => {
 //     }
 // };
 
-const createWorksheet = async (
-    workbook: Excel.Workbook,
-    template: IMongoEntityTemplatePopulated,
-    displayColumns?: string[],
-    headersOnly?: boolean,
-) => {
+const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateItem, displayColumns?: string[], headersOnly?: boolean) => {
+    const { type: templateType, metaData: template } = templateItem;
+
     const worksheet = workbook.addWorksheet(template.displayName);
-    const { properties } = template.properties;
+
+    const properties =
+        templateType === EntityTemplateType.Parent ? template.properties.properties : getChildPropertiesFiltered(template.properties.properties);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -212,20 +219,30 @@ const readOnlyCell = (cell: Cell) => {
 const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
-    template: IMongoEntityTemplatePopulated,
+    templateItem: TemplateItem,
     workspace: { path: string; id: string },
     displayColumns?: string[],
     headersOnly?: boolean,
     skip: number = 0,
 ) => {
+    const { type, metaData: template } = templateItem;
+    const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
     });
-    const { properties } = template.properties;
-    const { createdAt, updatedAt, disabled } = template;
+    const properties =
+        type === EntityTemplateType.Parent ? template.properties.properties : getChildPropertiesFiltered(template.properties.properties);
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+    const { disabled } = template;
+    let additionalProps = {};
+    if (type === EntityTemplateType.Parent) {
+        const { createdAt, updatedAt } = template;
+        additionalProps = { createdAt, updatedAt };
+    }
+
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, ...additionalProps })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
@@ -285,8 +302,11 @@ const styleAWorksheet = (
                     if (!headersOnly) {
                         // Check if value is simple list
                         if (value.type === 'string' && value.enum) {
-                            if (template?.enumPropertiesColors?.[key]?.[row?.[key]])
-                                cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
+                            if (parentTemplate.enumPropertiesColors?.[key]?.[row?.[key]])
+                                cell.font = {
+                                    ...excelStyle.cell.font,
+                                    color: { argb: hexToARGB(parentTemplate.enumPropertiesColors[key][row[key]]) },
+                                };
                         }
                         // Check if value is multiple list
                         if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');

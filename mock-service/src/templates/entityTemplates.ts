@@ -1,4 +1,4 @@
-import { IEntityTemplate, IMongoEntityTemplate, IMongoCategory } from '@microservices/shared';
+import { IEntityTemplate, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 
@@ -13,11 +13,15 @@ export interface IEntityTemplateMock extends Omit<IEntityTemplate, 'category' | 
 
 export const createEntityTemplates = async (workspaceId: string, entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
-    const results: IMongoEntityTemplate[] = [];
+    const results: IMongoEntityTemplateWithConstraintsPopulated[] = [];
 
     for (const entityTemplate of entityTemplatesToCreate) {
         const categoryId = categories.find((category) => category.name === entityTemplate.category.name)?._id;
-        const response = await axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, { ...entityTemplate, category: categoryId });
+        // eslint-disable-next-line no-await-in-loop
+        const response = await axiosInstance.post<IMongoEntityTemplateWithConstraintsPopulated>(url + createEntityTemplateRoute, {
+            ...entityTemplate,
+            category: categoryId,
+        });
 
         results.push(response.data);
     }

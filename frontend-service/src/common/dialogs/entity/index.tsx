@@ -1,3 +1,4 @@
+import { IMongoChildTemplatePopulated, ViewType } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
@@ -24,8 +25,27 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
     disabled: false,
 };
 
+export const emptyChildTemplate: IMongoChildTemplatePopulated = {
+    ...emptyEntityTemplate,
+    description: '',
+    isFilterByCurrentUser: false,
+    isFilterByUserUnit: false,
+    filterByCurrentUserField: undefined,
+    filterByUnitUserField: undefined,
+    parentTemplate: emptyEntityTemplate,
+    viewType: ViewType.categoryPage,
+    createdAt: new Date().toString(),
+    updatedAt: new Date().toString(),
+    properties: {
+        properties: {},
+        required: [],
+        type: 'object',
+        hide: [],
+    },
+};
+
 export interface EntityWizardValues {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     properties: Record<string, any> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
 }

@@ -6,11 +6,12 @@ import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
 import LocationPreview from './LocationPreview';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const OpenMap: React.FC<{
     field: string;
     entityProperties: IEntity['properties'];
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     showText?: boolean;
     searchValue?: string;
     disableOpenMap?: boolean;

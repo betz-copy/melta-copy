@@ -6,9 +6,10 @@ import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IEntity } from '../../../../interfaces/entities';
+import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 const useDraftEntityDialogHook = (
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     setInitialValuePropsToFilter: Dispatch<SetStateAction<object>>,
     signaturePrefix: string,
     entityToUpdate: IEntity | undefined,

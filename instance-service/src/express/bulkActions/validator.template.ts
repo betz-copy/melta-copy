@@ -27,6 +27,7 @@ ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
 ajv.addFormat('comment', /.*/);
 ajv.addFormat('kartoffelUserField', /.*/);
+ajv.addFormat('unitField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {

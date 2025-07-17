@@ -1,3 +1,22 @@
+import {
+    ActionErrors,
+    addPropertyToRequest,
+    CoordinateSystem,
+    FilterLogicalOperator,
+    getFilterFromChildTemplate,
+    IEntitySingleProperty,
+    IFilterGroup,
+    IFilterOfField,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    IUniqueConstraintOfTemplate,
+    matchValueAgainstFilter,
+    ValidationError,
+} from '@microservices/shared';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
@@ -5,31 +24,16 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import {
-    IEntitySingleProperty,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    IFilterOfField,
-    ISearchBatchBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
-    IUniqueConstraintOfTemplate,
-    ActionErrors,
-    addPropertyToRequest,
-    CoordinateSystem,
-    ValidationError,
-    IFilterGroup,
-    FilterLogicalOperator,
-} from '@microservices/shared';
-import { IGetExpandedEntityBody } from './interface';
+import FilterValidation from '../../error';
 import config from '../../config';
+import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
+import { IGetExpandedEntityBody } from './interface';
 
 const { neo4j, ajvCustomFormats } = config;
 
@@ -46,6 +50,7 @@ ajv.addFormat('user', {
     },
 });
 ajv.addFormat('kartoffelUserField', /.*/);
+ajv.addFormat('unitField', /.*/);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
 ajv.addFormat('location', {
@@ -92,11 +97,14 @@ export class EntityValidator extends DefaultController {
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
+    private childTemplateManagerService: ChildTemplateManagerService;
+
     constructor(workspaceId: string) {
         super(undefined);
 
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
+        this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
@@ -135,13 +143,41 @@ export class EntityValidator extends DefaultController {
         }
     }
 
+    async getChildFilters(childTemplateId: string): Promise<ISearchFilter | undefined> {
+        const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
+        return getFilterFromChildTemplate(childTemplate);
+    }
+
+    validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
+        const notValidKey = matchValueAgainstFilter(properties, filter);
+        if (notValidKey)
+            throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
+                properties,
+                errors: [
+                    {
+                        type: ActionErrors.validation,
+                        metadata: {
+                            message: `FilterValidationError: Property ${notValidKey} do not match the filter`,
+                            path: `/${notValidKey}`,
+                            schemaPath: `/${notValidKey}`,
+                            params: {},
+                        },
+                    },
+                ],
+            });
+    }
+
     async validateEntityRequest(req: Request) {
-        const { templateId, properties } = req.body;
+        const { templateId, properties, childTemplateId } = req.body;
 
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
 
         this.validateEntity(entityTemplate, properties);
 
+        if (childTemplateId) {
+            const filter = await this.getChildFilters(childTemplateId);
+            this.validatePropertiesMatchFilters(req.body.properties, filter);
+        }
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
@@ -437,7 +473,7 @@ export class EntityValidator extends DefaultController {
         const templateIds = Object.keys(searchBody);
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length) {
-            throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+            throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 

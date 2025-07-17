@@ -1,5 +1,6 @@
 import {
     ControlPoint as AddIcon,
+    Add,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
@@ -10,7 +11,7 @@ import {
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
-import React, { MouseEventHandler, useMemo } from 'react';
+import React, { MouseEventHandler, useMemo, useState } from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -31,6 +32,7 @@ export const CardMenu: React.FC<{
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
+    onAddChildTemplateClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
     onOptionsIconClick?: () => Promise<void>;
     optionsIconStyle?: React.CSSProperties;
@@ -42,11 +44,12 @@ export const CardMenu: React.FC<{
     onDisableClick,
     onDuplicateClick,
     onAddActionsClick,
+    onAddChildTemplateClick,
     onConvertToRelationShipFieldClick,
     onOptionsIconClick,
     optionsIconStyle,
 }) => {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { iconSize } = workspace.metadata;
@@ -128,6 +131,26 @@ export const CardMenu: React.FC<{
                                 text={i18next.t('actions.addActions')}
                                 disabled={disabledProps?.isDisabled}
                                 icon={<AddIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                )}
+
+                {onAddChildTemplateClick && (
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onAddChildTemplateClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.addChildTemplate')}
+                                disabled={disabledProps?.isDisabled}
+                                icon={<Add color="action" />}
                             />
                         </Grid>
                     </MeltaTooltip>

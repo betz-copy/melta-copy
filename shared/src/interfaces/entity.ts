@@ -157,6 +157,7 @@ export interface ISearchEntitiesOfTemplateBody {
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
     entityIdsToInclude?: string[];
     entityIdsToExclude?: string[];
+    userEntityId?: string;
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -179,6 +180,7 @@ export interface ISearchBatchBody {
     };
     sort: ISearchSort;
     shouldSemanticSearch?: boolean;
+    userEntityId?: string;
 }
 
 export interface UploadedFile {
@@ -244,6 +246,7 @@ export interface IExportEntitiesBody {
             displayColumns?: string[];
             headersOnly?: boolean;
             insertEntities?: Record<string, any>[];
+            isChildTemplate?: boolean;
         };
     };
 }
@@ -261,6 +264,7 @@ export interface IGraphFilterBodyBatch {
 export interface IDeleteEntityBodyBase {
     selectAll: boolean;
     templateId: string;
+    childTemplateId?: string;
     deleteAllRelationships?: boolean;
 }
 

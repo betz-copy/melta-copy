@@ -14,7 +14,7 @@ const NoItemsCard: React.FC = () => {
     const hasAdminPermissions = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
 
     return (
-        <Box position="relative" width="fit-content">
+        <Box position="relative">
             {!hasAdminPermissions && (
                 <Box
                     component="img"
