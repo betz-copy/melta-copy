@@ -36,7 +36,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
                 variant="h4"
                 style={{
                     fontSize: headlineTitleFontSize,
-                    justifySelf: 'center',
+                    textAlign: 'center',
                 }}
             />
 
@@ -64,7 +64,6 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const currentUserKartoffelId = externalMetadata?.kartoffelId;
 
     const [isFiltered, setIsFiltered] = useState(false);
-
     const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
     const childTemplateFilter = useMemo(
         () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, currentUserKartoffelId),

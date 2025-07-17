@@ -42,8 +42,10 @@ class InstancesValidator extends DefaultController {
     }
 
     // entities
-    private async getCategoryIdFromTemplateId(templateId: string) {
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+    private async getCategoryIdFromTemplateId(templateId: string, isChildTemplate?: boolean) {
+        const template = isChildTemplate
+            ? await this.entityTemplateService.getChildTemplateById(templateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
         return template.category._id;
     }
 
@@ -136,8 +138,9 @@ class InstancesValidator extends DefaultController {
         templateId: string,
         permissionScope: PermissionScope,
         givenCategoryId?: string,
+        childTemplateId?: string,
     ) {
-        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
+        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(childTemplateId || templateId, !!childTemplateId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
@@ -217,7 +220,7 @@ class InstancesValidator extends DefaultController {
     async validateUserCanGetChart(req: Request) {
         const { templateId } = req.params;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, req.body.childTemplateId);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, undefined, req.body.childTemplateId);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {
@@ -229,10 +232,14 @@ class InstancesValidator extends DefaultController {
 
         const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
-        const allAllowedEntityTemplates = (await templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id)).map(
-            (entityTemplate) => entityTemplate._id,
-        );
-        const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allAllowedEntityTemplates.includes(templateId));
+        const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
+            templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id),
+            this.getAllowedChildTemplatesForInstances(permissionsOfUserId),
+        ]);
+
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
+
+        const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allowedEntityTemplateIds.includes(templateId));
 
         if (!isAllowedAllTemplates)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });

@@ -18,14 +18,15 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
         }).required(i18next.t('validation.required')),
         isFilterByCurrentUser: Yup.boolean(),
         isFilterByUserUnit: Yup.boolean(),
-        filterByCurrentUserField: Yup.string().when('isFilterByCurrentUser', {
+        filterByCurrentUserField: Yup.mixed()
+            .when('isFilterByCurrentUser', {
+                is: true,
+                then: Yup.string().required(i18next.t('validation.required')),
+                otherwise: Yup.string().nullable().notRequired(),
+            }),
+        filterByUnitUserField: Yup.mixed().when('isFilterByUserUnit', {
             is: true,
             then: Yup.string().required(i18next.t('validation.required')),
-            otherwise: Yup.string().notRequired(),
-        }),
-        filterByUnitUserField: Yup.string().when('isFilterByUserUnit', {
-            is: true,
-            then: Yup.string().required(i18next.t('validation.required')),
-            otherwise: Yup.string().notRequired(),
+            otherwise: Yup.string().nullable().notRequired(),
         }),
     });

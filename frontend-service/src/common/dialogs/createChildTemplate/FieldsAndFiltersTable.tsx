@@ -173,7 +173,9 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     newMap.set(
                         chip.fieldName,
                         i18next.t('validation.matchFilter', {
-                dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
+                            dialogType: i18next.t(
+                                `createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`,
+                            ),
                         }),
                     );
                 else newMap.delete(chip.fieldName);

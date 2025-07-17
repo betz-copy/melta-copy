@@ -250,10 +250,7 @@ const MyPermissions: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={createDialogCategories(
-                                    Array.from(entityTemplates.values()),
-                                    Array.from(childTemplates.values()),
-                                )}
+                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()])}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                                 disableCheckboxes={!!formikRole}

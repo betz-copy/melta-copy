@@ -33,7 +33,6 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
         () => getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId),
         [values.templateId, values.childTemplateId, currentUserKartoffelId],
     );
-
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
     const allFilters = useMemo(() => getFilterModal(memoizedFilter, childTemplateDefaultFilters), [memoizedFilter, childTemplateDefaultFilters]);
 

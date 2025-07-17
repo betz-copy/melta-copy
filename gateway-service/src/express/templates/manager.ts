@@ -54,7 +54,7 @@ import {
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import _, { groupBy, pick } from 'lodash';
+import _, { cloneDeep, groupBy, pick } from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import _omit from 'lodash/omit';
@@ -1243,17 +1243,26 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                         newProps[prop] = {};
                     });
 
-                    const newChildTemplate = pick(
+                    const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = pick(
                         {
                             parentTemplateId: parentTemplate._id,
                             category: category._id,
-                            properties: { properties: { ...dePopulateChildProperties(childProperties.properties), ...newProps } },
+                            properties: {
+                                properties: cloneDeep({
+                                    ...dePopulateChildProperties(childProperties.properties),
+                                    ...newProps,
+                                }),
+                            },
                             ...restOfChildTemplate,
                         },
                         childTemplateKeys,
                     );
 
-                    return this.entityTemplateService.updateChildTemplate(childTemplate._id, newChildTemplate);
+                    return this.entityTemplateService.updateChildTemplate(childTemplate._id, {
+                        ...newChildTemplate,
+                        filterByCurrentUserField: filterByCurrentUserField || undefined,
+                        filterByUnitUserField: filterByUnitUserField || undefined,
+                    });
                 }
 
                 return null;
