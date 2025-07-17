@@ -40,7 +40,7 @@ const metadataSchema = Joi.object({
         sourceTemplateId: Joi.string().allow(''),
         destTemplateId: Joi.string().allow(''),
     }).optional(),
-});
+}).optional();
 
 // Joi schema for Workspace
 const workspaceSchema = Joi.object({

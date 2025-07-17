@@ -316,7 +316,7 @@ const config = {
         clientSideWorkspaceName: env.get('CLIENT_SIDE_WORKSPACE_NAME').default('simba').asString(),
     },
     mapPage: {
-        sourceTemplateId: env.get(' MAPPAGE_SOURCE_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        sourceTemplateId: env.get('MAPPAGE_SOURCE_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         destTemplateId: env.get('MAPPAGE_DEST_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
     },
 };

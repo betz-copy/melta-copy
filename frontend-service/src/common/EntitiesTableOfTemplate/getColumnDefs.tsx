@@ -520,7 +520,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                             : childEntityTemplateMap
                                             ? Array.from(childEntityTemplateMap.values()).filter(
                                                   (child) => child.parentTemplate._id === addRelationshipReferenceButtonProps,
-                                              ).length === 0
+                                              ).length
                                             : true
                                     }
                                     initialValues={{
