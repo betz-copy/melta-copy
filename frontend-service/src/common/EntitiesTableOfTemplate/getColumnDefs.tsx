@@ -518,7 +518,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                         destTemplate
                                             ? !isUserHasWritePermissions(currentClientSideUser, currentUser, destTemplate) || destTemplate?.disabled
                                             : childEntityTemplateMap
-                                            ? Array.from(childEntityTemplateMap.values()).filter(
+                                            ? !Array.from(childEntityTemplateMap.values()).filter(
                                                   (child) => child.parentTemplate._id === addRelationshipReferenceButtonProps,
                                               ).length
                                             : true
