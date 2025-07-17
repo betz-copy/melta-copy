@@ -52,5 +52,8 @@
     "typescript.disableAutomaticTypeAcquisition": true,
 
     // don't index build artefacts
-    "files.watcherExclude": { "**/dist/**": true, "**/coverage/**": true }
+    "files.watcherExclude": {
+        "**/dist/**": true,
+        "**/coverage/**": true
+    }
 }
