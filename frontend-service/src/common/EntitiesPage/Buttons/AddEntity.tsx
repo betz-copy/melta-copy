@@ -15,12 +15,14 @@ const AddEntityButton: React.FC<{
     style?: CSSProperties;
     disabled?: boolean;
     initialStep?: number;
-    initialValues: EntityWizardValues;
+    initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    mode?: 'all' | 'children';
+    parentId?: string;
 }> = ({
     style,
     children,
@@ -32,6 +34,8 @@ const AddEntityButton: React.FC<{
     onSuccessCreate,
     setUpdatedTemplateIds,
     setUpdatedEntities,
+    mode = 'all',
+    parentId,
 }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
@@ -54,6 +58,8 @@ const AddEntityButton: React.FC<{
 
     const template = addEntityWizardState.initialValues?.template;
 
+    console.log({ template, addEntityWizardState });
+
     const handleSuccess = (entity: IEntity) => {
         onSuccessCreate?.(entity);
         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
@@ -65,6 +71,12 @@ const AddEntityButton: React.FC<{
             ),
         );
     };
+
+    console.log({
+        curr: addEntityWizardState.initialCurrValues,
+        val: addEntityWizardState.initialValues,
+        cond: addEntityWizardState.initialCurrValues ?? addEntityWizardState.initialValues,
+    });
 
     return (
         <>
@@ -107,7 +119,7 @@ const AddEntityButton: React.FC<{
                         onSuccess: handleSuccess,
                     }}
                     entityTemplate={template || emptyEntityTemplate}
-                    initialCurrValues={addEntityWizardState.initialCurrValues ?? addEntityWizardState.initialValues}
+                    initialCurrValues={addEntityWizardState.initialCurrValues} //todo:?? addEntityWizardState.initialValues
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}
@@ -119,7 +131,8 @@ const AddEntityButton: React.FC<{
                         addEntityWizardState.initialValues?.properties &&
                             Object.keys(addEntityWizardState.initialValues.properties).some((key) => key !== 'disabled'),
                     )}
-                    childTemplateId={childTemplateId}
+                    mode={mode}
+                    parentId={parentId}
                 />
             </Dialog>
         </>

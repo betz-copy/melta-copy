@@ -31,6 +31,7 @@ const MapPage = () => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates']);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
@@ -60,12 +61,7 @@ const MapPage = () => {
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { sourceTemplateId, destTemplateId } = metadata.mapPage;
 
-    const sourceTemplate = entityTemplateMap!.get(sourceTemplateId);
-    const destTemplate = entityTemplateMap!.get(destTemplateId);
-    const relatedRelationshipReferenceProperties = Object.entries(destTemplate?.properties.properties ?? {})
-        .filter(([_, property]) => property.relationshipReference?.relatedTemplateId === sourceTemplateId)
-        .map(([key]) => key);
-
+    const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
     const sourceSearchResults = searchedMarkers.filter(({ node }) => node.templateId === sourceTemplate?._id).map(({ node }) => node);
 
     const {
@@ -435,10 +431,7 @@ const MapPage = () => {
                             defaultExpanded
                             title={i18next.t('location.searchResults')}
                             infiniteModeWithoutExpand
-                            relatedTemplateProperties={{
-                                relatedTemplate: destTemplate,
-                                relatedRelationshipReferenceProperties,
-                            }}
+                            relatedTemplateProperties={destTemplateId}
                             overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}
                         />
                     </Grid>

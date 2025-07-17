@@ -40,7 +40,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
-    addRelationshipReferenceButtonProps?: { relatedTemplate?: IMongoEntityTemplatePopulated; relatedRelationshipReferenceProperties?: string[] };
+    addRelationshipReferenceButtonProps?: string;
     menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
@@ -64,6 +64,8 @@ export interface IGetColumnDefsOptions<Data extends any> {
     entityTemplates: IEntityTemplateMap;
     pageType?: string;
     columnsToShow?: string[];
+    entityTemplateMap?: IEntityTemplateMap;
+    childEntityTemplateMap?: IEntityTemplateMap;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -91,7 +93,9 @@ export const getColumnDefs = <Data extends any = EntityData>({
     entityTemplates,
     pageType,
     columnsToShow,
-}: IGetColumnDefsOptions<Data>): ColDef[] => {    
+    entityTemplateMap,
+    childEntityTemplateMap,
+}: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
@@ -342,7 +346,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         return orderA - orderB;
     });
 
-    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps || addRelationshipReferenceButtonProps?.relatedTemplate) {
+    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps || addRelationshipReferenceButtonProps) {
         columnDefs.push({
             field: `actions-${template._id}`,
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
@@ -362,6 +366,16 @@ export const getColumnDefs = <Data extends any = EntityData>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+
+                const destTemplate = addRelationshipReferenceButtonProps
+                    ? childEntityTemplateMap?.get(addRelationshipReferenceButtonProps) ?? entityTemplateMap?.get(addRelationshipReferenceButtonProps)
+                    : undefined;
+
+                const relatedRelationshipReferenceProperties = Object.entries(destTemplate?.properties.properties ?? {})
+                    .filter(([_, property]) => property.relationshipReference?.relatedTemplateId === template._id)
+                    .map(([key]) => key);
+
+                console.log({ destTemplate, relatedRelationshipReferenceProperties });
 
                 return (
                     <Grid container flexWrap="nowrap">
@@ -451,7 +465,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </Link>
                             </Grid>
                         )}
-
                         {menuRowButtonProps && !template?.disabled && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <CardMenu
@@ -481,30 +494,29 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {addRelationshipReferenceButtonProps?.relatedTemplate && (
+                        {addRelationshipReferenceButtonProps && (
                             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                                 <AddEntityButton
                                     initialStep={1}
-                                    disabled={template.disabled}
+                                    disabled={template.disabled} //todo: check write permission to katalog template
                                     initialValues={{
-                                        template: addRelationshipReferenceButtonProps.relatedTemplate,
+                                        template: destTemplate,
                                         properties: {
                                             disabled: false,
-                                            ...(addRelationshipReferenceButtonProps.relatedRelationshipReferenceProperties?.reduce(
-                                                (acc, property) => {
-                                                    acc[property] = {
-                                                        templateId: template._id,
-                                                        properties: entity,
-                                                    };
-                                                    return acc;
-                                                },
-                                                {} as Record<string, any>,
-                                            ) ?? {}),
+                                            ...(relatedRelationshipReferenceProperties?.reduce((acc, property) => {
+                                                acc[property] = {
+                                                    templateId: template._id,
+                                                    properties: entity,
+                                                };
+                                                return acc;
+                                            }, {} as Record<string, any>) ?? {}),
                                         },
                                         attachmentsProperties: {},
                                     }}
                                     style={{ borderRadius: '7px', width: '135px' }}
                                     popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
+                                    mode="children"
+                                    parentId={addRelationshipReferenceButtonProps}
                                 >
                                     <AddIcon fontSize="small" />
                                     <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 10px' }}>

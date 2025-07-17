@@ -24,7 +24,7 @@ export const EntitiesTable: React.FC<{
     infiniteModeWithoutExpand?: boolean;
     disableFilter?: boolean;
     ignoreType?: boolean;
-    relatedTemplateProperties?: { relatedTemplate?: IMongoEntityTemplatePopulated; relatedRelationshipReferenceProperties?: string[] };
+    relatedTemplateProperties?: string;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -127,10 +127,7 @@ export const EntitiesTable: React.FC<{
                     infiniteModeWithoutExpand={infiniteModeWithoutExpand}
                     defaultFilter={defaultFilter}
                     disableFilter={disableFilter}
-                    addRelationshipReferenceButtonProps={{
-                        relatedTemplate: relatedTemplateProperties?.relatedTemplate,
-                        relatedRelationshipReferenceProperties: relatedTemplateProperties?.relatedRelationshipReferenceProperties,
-                    }}
+                    addRelationshipReferenceButtonProps={relatedTemplateProperties}
                 />
             </AccordionDetails>
         </Accordion>

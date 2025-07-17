@@ -66,6 +66,8 @@ export const getInitialValuesWithDefaults = (
     initialCurrValues: EntityWizardValues,
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): EntityWizardValues => {
+    console.log({ initialCurrValues, entityTemplate });
+
     const { attachmentsProperties, properties } = initialCurrValues;
 
     const mergedProperties = {
@@ -95,7 +97,8 @@ const CreateOrEditEntityDetails: React.FC<{
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
     enableSaveButton?: boolean;
-    childTemplateId?: string;
+    mode?: 'all' | 'children';
+    parentId?: string;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -107,6 +110,8 @@ const CreateOrEditEntityDetails: React.FC<{
     setCreateOrUpdateWithRuleBreachDialogState,
     showActionButtons = true,
     enableSaveButton = false,
+    mode = 'all',
+    parentId
 }) => {
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
@@ -188,7 +193,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
@@ -231,6 +236,8 @@ const CreateOrEditEntityDetails: React.FC<{
                                             showCloseButton={showActionButtons}
                                             setIsDraftDialogOpen={setIsDraftDialogOpen}
                                             handleClose={handleClose}
+                                            mode={mode}
+                                            parentId={parentId}
                                         />
 
                                         <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
@@ -244,14 +251,14 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length && isEditMode ? (
+                                            {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
                                                 <ExportFormats
                                                     properties={{
                                                         createdAt: payload?.properties.createdAt || new Date(),
                                                         updatedAt: payload?.properties.updatedAt || new Date(),
                                                         ...values.properties,
                                                     }}
-                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds}
                                                     templateId={values.template._id}
                                                 />
                                             ) : (
@@ -278,7 +285,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 ? ''
                                                                 : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
                                                         }
-                                                        disabled={!(enableSaveButton && (dirty || !isLoading))}
+                                                        disabled={!dirty || isLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}
                                                     </Button>

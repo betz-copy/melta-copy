@@ -6,8 +6,8 @@ import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
 import { emptyEntityTemplate, EntityWizardValues } from '.';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
@@ -26,9 +26,12 @@ const ChooseTemplate: React.FC<{
     touched: FormikTouched<EntityWizardValues>;
     errors: FormikErrors<EntityWizardValues>;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
-}> = ({ values, touched, errors, setFieldValue }) => {
-    const param = useParams<{ categoryId: string }>();
-    const { categoryId } = param;
+    id?: string;
+    mode?: 'all' | 'children';
+}> = ({ values, touched, errors, setFieldValue, mode, id }) => {
+    console.log({choose:values.properties});
+    
+    const { categoryId } = useParams<{ categoryId?: string }>();
     const queryClient = useQueryClient();
 
     const currentUser = useUserStore((state) => state.user);
@@ -39,23 +42,28 @@ const ChooseTemplate: React.FC<{
     const isAuthorized = (templateId: string, categoryId: string) =>
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, categoryId, templateId, PermissionScope.write);
 
-    const filterEntityTemplates = Array.from(entityTemplates.values()).filter((template) =>
-        categoryId
-            ? template.category._id === categoryId && isAuthorized(template._id, categoryId)
-            : isAuthorized(template._id, template.category._id),
-    );
+    let entityTemplatesFiltered: IMongoEntityTemplatePopulated[] | IChildTemplatePopulated[] = [];
 
-    const filterChildEntityTemplate = Array.from(childTemplates.values()).filter((child) => {
-        const hasValidCategory = categoryId ? child.category._id === categoryId : isAuthorized(child._id, child.category._id);
+    if (mode === 'children' && id) {
+        entityTemplatesFiltered = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === id);
+    } else {
+        const filterEntityTemplates = Array.from(entityTemplates.values()).filter((template) =>
+            categoryId
+                ? template.category._id === categoryId && isAuthorized(template._id, categoryId)
+                : isAuthorized(template._id, template.category._id),
+        );
 
-        return hasValidCategory;
-    });
+        const filterChildEntityTemplates = Array.from(childTemplates.values()).filter((child) =>
+            categoryId ? child.category._id === categoryId : isAuthorized(child._id, child.category._id),
+        );
 
-    const entityTemplatesFilteredByCategory = [...filterEntityTemplates, ...filterChildEntityTemplate];
+        entityTemplatesFiltered = [...filterEntityTemplates, ...filterChildEntityTemplates];
+    }
 
-    const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);
+    const activeEntityTemplatesFiltered = entityTemplatesFiltered.filter((entity) => !entity.disabled);
 
-    const [disabled] = useState(!!values.template._id);
+    const [disabled] = useState(!!values.template?._id);
+    console.log({ props: values.properties });
 
     return (
         <Autocomplete
@@ -71,7 +79,7 @@ const ChooseTemplate: React.FC<{
                     ).properties,
                 );
             }}
-            value={values.template._id ? values.template : null}
+            value={values.template?._id ? values.template : null}
             disabled={disabled}
             getOptionLabel={(option) => option.displayName}
             renderInput={(params) => (

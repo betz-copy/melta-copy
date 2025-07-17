@@ -65,7 +65,7 @@ import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
 
 const { errorCodes } = environment;
@@ -207,7 +207,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
     editRowButtonProps?: IButtonPopoverProps<Data>;
     menuRowButtonProps?: boolean;
-    addRelationshipReferenceButtonProps?: { relatedTemplate?: IMongoEntityTemplatePopulated; relatedRelationshipReferenceProperties?: string[] };
+    addRelationshipReferenceButtonProps?: string;
     hasPermissionToTemplate?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
@@ -294,6 +294,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     ) => {
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
@@ -419,6 +420,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             entityTemplates,
             pageType: saveStorageProps.pageType,
             columnsToShow,
+            entityTemplateMap: entityTemplates,
+            childEntityTemplateMap: childTemplates,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
