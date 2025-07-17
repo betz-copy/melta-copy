@@ -9,7 +9,7 @@ import { BlueTitle } from '../../../BlueTitle';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { ChooseTemplate } from '../ChooseTemplate';
+import { ChooseTemplate, IChooseTemplateMode } from '../ChooseTemplate';
 import { getEntityTemplateFilesFieldsInfo } from '.';
 import { EntityWizardValues } from '..';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -44,8 +44,9 @@ const EditProps: React.FC<{
     createOrUpdateDraftDebounced?: DebouncedFunc<(newValues: EntityWizardValues, newDraftId: string) => void>;
     setIsDraftDialogOpen?: Dispatch<SetStateAction<boolean>>;
     showTitle?: boolean;
-    mode?: 'all' | 'children';
+    chooseMode?: IChooseTemplateMode;
     parentId?: string;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
 }> = ({
     setFieldValue,
     values,
@@ -70,8 +71,9 @@ const EditProps: React.FC<{
     setIsDraftDialogOpen,
     handleClose,
     showTitle = true,
-    mode = 'all',
-    parentId = '',
+    chooseMode = IChooseTemplateMode.TemplatesAndChildren,
+    parentId,
+    getInitialProperties,
 }) => {
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
@@ -263,8 +265,9 @@ const EditProps: React.FC<{
                                 values={values}
                                 errors={errors}
                                 touched={touched}
-                                mode={mode}
-                                id={parentId}
+                                chooseMode={chooseMode}
+                                parentId={parentId}
+                                getInitialProperties={getInitialProperties}
                             />
                         </Grid>
                     )}

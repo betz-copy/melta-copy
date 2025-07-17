@@ -45,14 +45,11 @@ export interface IUpdateMultipleEntitiesResponse {
 }
 
 export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
-    const initialValues: EntityWizardValues = getInitialValuesWithDefaults(
-        {
-            template,
-            attachmentsProperties: {},
-            properties: { disabled: false },
-        },
+    const initialValues: EntityWizardValues = getInitialValuesWithDefaults({
         template,
-    );
+        attachmentsProperties: {},
+        properties: { disabled: false },
+    });
 
     const queryClient = useQueryClient();
     const darkMode = useDarkModeStore((state) => state.darkMode);

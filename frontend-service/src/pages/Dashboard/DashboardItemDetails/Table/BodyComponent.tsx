@@ -29,12 +29,13 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
 
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
-    const childTemplateDefaultFilters = useMemo(() => {
-        return getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId);
-    }, [values.templateId, values.childTemplateId, currentUserKartoffelId]);
+    const childTemplateDefaultFilters = useMemo(
+        () => getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId),
+        [values.templateId, values.childTemplateId, currentUserKartoffelId],
+    );
 
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
-    const allFilters = getFilterModal(memoizedFilter, childTemplateDefaultFilters);
+    const allFilters = useMemo(() => getFilterModal(memoizedFilter, childTemplateDefaultFilters), [memoizedFilter, childTemplateDefaultFilters]);
 
     return (
         <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">

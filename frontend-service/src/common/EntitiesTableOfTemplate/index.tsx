@@ -67,6 +67,7 @@ import { searchEntitiesOfTemplateClientSideRequest } from '../../services/client
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
+import { useUserStore } from '../../stores/user';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -295,6 +296,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
         const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
@@ -304,6 +306,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
+        const currentUser = useUserStore((state) => state.user);
         const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
         if (!pageRowCount) pageRowCount = rowCount;
@@ -422,6 +425,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             columnsToShow,
             entityTemplateMap: entityTemplates,
             childEntityTemplateMap: childTemplates,
+            currentUser,
+            currentClientSideUser: clientSideUserEntity,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 

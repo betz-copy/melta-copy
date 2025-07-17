@@ -31,8 +31,12 @@ import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
+import { emptyEntityTemplate } from '../dialogs/entity';
+import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
+import { UserState } from '../../stores/user';
+import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
@@ -65,7 +69,9 @@ export interface IGetColumnDefsOptions<Data extends any> {
     pageType?: string;
     columnsToShow?: string[];
     entityTemplateMap?: IEntityTemplateMap;
-    childEntityTemplateMap?: IEntityTemplateMap;
+    childEntityTemplateMap?: IChildTemplateMap;
+    currentUser: UserState['user'];
+    currentClientSideUser: IEntity;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -95,6 +101,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
     columnsToShow,
     entityTemplateMap,
     childEntityTemplateMap,
+    currentUser,
+    currentClientSideUser,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -371,11 +379,19 @@ export const getColumnDefs = <Data extends any = EntityData>({
                     ? childEntityTemplateMap?.get(addRelationshipReferenceButtonProps) ?? entityTemplateMap?.get(addRelationshipReferenceButtonProps)
                     : undefined;
 
-                const relatedRelationshipReferenceProperties = Object.entries(destTemplate?.properties.properties ?? {})
-                    .filter(([_, property]) => property.relationshipReference?.relatedTemplateId === template._id)
-                    .map(([key]) => key);
+                const getInitialProperties = (relatedTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): Record<string, any> => {
+                    const relatedProperties = relatedTemplate.properties.properties ?? {};
 
-                console.log({ destTemplate, relatedRelationshipReferenceProperties });
+                    return Object.entries(relatedProperties).reduce((acc, [key, prop]) => {
+                        if (prop.relationshipReference?.relatedTemplateId === template._id) {
+                            acc[key] = {
+                                templateId: template._id,
+                                properties: entity,
+                            };
+                        }
+                        return acc;
+                    }, {} as Record<string, any>);
+                };
 
                 return (
                     <Grid container flexWrap="nowrap">
@@ -498,25 +514,28 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                                 <AddEntityButton
                                     initialStep={1}
-                                    disabled={template.disabled} //todo: check write permission to katalog template
+                                    disabled={
+                                        destTemplate
+                                            ? !isUserHasWritePermissions(currentClientSideUser, currentUser, destTemplate) || destTemplate?.disabled
+                                            : childEntityTemplateMap
+                                            ? Array.from(childEntityTemplateMap.values()).filter(
+                                                  (child) => child.parentTemplate._id === addRelationshipReferenceButtonProps,
+                                              ).length === 0
+                                            : true
+                                    }
                                     initialValues={{
-                                        template: destTemplate,
+                                        template: destTemplate || emptyEntityTemplate,
                                         properties: {
                                             disabled: false,
-                                            ...(relatedRelationshipReferenceProperties?.reduce((acc, property) => {
-                                                acc[property] = {
-                                                    templateId: template._id,
-                                                    properties: entity,
-                                                };
-                                                return acc;
-                                            }, {} as Record<string, any>) ?? {}),
+                                            ...(getInitialProperties(destTemplate || emptyEntityTemplate) ?? {}),
                                         },
                                         attachmentsProperties: {},
                                     }}
                                     style={{ borderRadius: '7px', width: '135px' }}
                                     popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
-                                    mode="children"
+                                    chooseMode={IChooseTemplateMode.OnlyChildren}
                                     parentId={addRelationshipReferenceButtonProps}
+                                    getInitialProperties={getInitialProperties}
                                 >
                                     <AddIcon fontSize="small" />
                                     <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 10px' }}>
