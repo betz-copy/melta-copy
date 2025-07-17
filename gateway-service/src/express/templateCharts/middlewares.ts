@@ -62,9 +62,9 @@ class ChartsValidator extends DefaultController {
     }
 
     private async validateUserHasPermissionToChart(req: Request, newChart: boolean = false) {
-        const { templateId } = req.body;
+        const { templateId, childTemplateId } = req.body;
 
-        this.validateUserHasPermissionToTemplate(req, templateId);
+        await this.validateUserHasPermissionToTemplate(req, templateId, childTemplateId);
 
         if (!newChart) {
             const { chartId } = req.params;
@@ -86,8 +86,10 @@ class ChartsValidator extends DefaultController {
         const { chartId } = req.params;
         const chart = await this.chartManager.getChartById(chartId);
 
-        await this.validateUserHasPermissionToTemplate(req, chart.templateId);
-        await this.validateUserIsCreatorOfChart(req, chart);
+        await Promise.all([
+            this.validateUserHasPermissionToTemplate(req, chart.templateId, chart.childTemplateId),
+            this.validateUserIsCreatorOfChart(req, chart),
+        ]);
     }
 
     async validateUserCanDeleteRerencedDahboardItem(req: Request) {
@@ -120,8 +122,10 @@ class ChartsValidator extends DefaultController {
 
         const chart = await this.chartManager.getChartById(chartId);
 
-        await this.validateUserHasPermissionToTemplate(req, chart.templateId);
-        await this.validateUserIsCreatorOfChart(req, chart);
+        await Promise.all([
+            this.validateUserHasPermissionToTemplate(req, chart.templateId, chart.childTemplateId),
+            this.validateUserIsCreatorOfChart(req, chart),
+        ]);
     }
 
     async validateUserCanCreateChartWithRelatedTemplate(req: Request) {

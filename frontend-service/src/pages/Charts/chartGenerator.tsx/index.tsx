@@ -39,7 +39,7 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
 
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
     const { data, isLoading, refetch } = useQuery(
-        ['chart', parentTemplateId, , xAxisField, yAxisField, memoizedFilter],
+        ['chart', parentTemplateId, xAxisField, yAxisField, memoizedFilter],
         () => getChartOfTemplate(xAxisField, yAxisField, parentTemplateId, memoizedFilter, isChildTemplate(template) ? template._id : undefined),
         {
             enabled: false,
