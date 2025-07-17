@@ -100,7 +100,7 @@ const changeSpecificTemplate = (
         const newScope = getNewScope(acc?.[categoryId]?.entityTemplates?.[templateId]?.scope, scope, checked);
 
         if (!newScope) {
-            delete acc[categoryId].entityTemplates[templateId]?.scope;
+            delete acc[categoryId].entityTemplates[templateId];
         } else {
             acc[categoryId] = {
                 ...acc[categoryId],
