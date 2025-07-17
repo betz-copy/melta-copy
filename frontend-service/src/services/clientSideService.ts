@@ -120,13 +120,21 @@ const createEntityClientSideRequest = async (
                     }
                     case 'signature':
                         return undefined;
+                    case 'date': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString().split('T')[0];
+                    }
+                    case 'date-time': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString();
+                    }
                     default:
                         return property;
                 }
             }),
         ),
     );
-    const templateId = isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id 
+    const templateId = isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id;
     formData.append('templateId', templateId);
 
     if (ignoredRules) {

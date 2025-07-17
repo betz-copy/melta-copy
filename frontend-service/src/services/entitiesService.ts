@@ -35,7 +35,7 @@ const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
-    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob'});
+    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
     return data;
 };
 
@@ -199,6 +199,14 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     }
                     case 'signature':
                         return undefined;
+                    case 'date': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString().split('T')[0];
+                    }
+                    case 'date-time': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString();
+                    }
                     default:
                         return property;
                 }
@@ -313,6 +321,14 @@ const getBodyForUpdateRequest = async (
                     case 'signature': {
                         if (!isUUID(property)) return undefined;
                         break;
+                    }
+                    case 'date': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString().split('T')[0];
+                    }
+                    case 'date-time': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString();
                     }
                     default:
                         return property;
@@ -435,6 +451,14 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
                     }
                     case 'signature':
                         return undefined;
+                    case 'date': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString().split('T')[0];
+                    }
+                    case 'date-time': {
+                        if (!property) return undefined;
+                        return new Date(property).toISOString();
+                    }
                     default:
                         return property;
                 }
@@ -503,7 +527,7 @@ export const getChartOfTemplate = async (
     templateId: string,
     filter?: ISearchFilter,
     childTemplateId?: string,
-) => {    
+) => {
     const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, {
         chartsData: [{ xAxis, yAxis, filter }],
         childTemplateId,

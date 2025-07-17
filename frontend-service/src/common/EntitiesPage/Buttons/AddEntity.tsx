@@ -10,6 +10,9 @@ import { useDraftIdStore } from '../../../stores/drafts';
 import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -21,6 +24,9 @@ const AddEntityButton: React.FC<{
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    chooseMode?: IChooseTemplateMode;
+    parentId?: string;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
 }> = ({
     style,
     children,
@@ -32,6 +38,9 @@ const AddEntityButton: React.FC<{
     onSuccessCreate,
     setUpdatedTemplateIds,
     setUpdatedEntities,
+    chooseMode = IChooseTemplateMode.TemplatesAndChildren,
+    parentId,
+    getInitialProperties,
 }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
@@ -107,14 +116,15 @@ const AddEntityButton: React.FC<{
                         onSuccess: handleSuccess,
                     }}
                     entityTemplate={template || emptyEntityTemplate}
-                    initialCurrValues={addEntityWizardState.initialCurrValues}
-                    handleClose={() => {
-                        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                    }}
+                    initialCurrValues={addEntityWizardState.initialCurrValues ?? addEntityWizardState.initialValues}
+                    handleClose={() => setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }))}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    chooseMode={chooseMode}
+                    parentId={parentId}
+                    getInitialProperties={getInitialProperties}
                 />
             </Dialog>
         </>

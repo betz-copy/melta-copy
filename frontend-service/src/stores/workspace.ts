@@ -41,6 +41,10 @@ export const defaultMetadata = {
         numOfPropsToShow: 9,
         clientSideWorkspaceName: 'simba',
     },
+    mapPage: {
+        sourceTemplateId: '',
+        destTemplateId: '',
+    },
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

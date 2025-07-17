@@ -66,7 +66,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                         formik={props}
                         formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
                         options={entityTemplateOptions}
-                        label={i18next.t('entity')}
+                        label={i18next.t('entityTemplate')}
                         onChange={(newValue) => {
                             if (values.templateId)
                                 setChangeTemplateWarning({

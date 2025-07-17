@@ -29,7 +29,7 @@ import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
-import { useUserStore } from '../../stores/user';
+import { UserState, useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
@@ -47,12 +47,21 @@ import { EditExcelButton } from './Buttons/EditExcel';
 import { LoadExcelButton } from './Buttons/LoadExcel';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { IKartoffelUser } from '../../interfaces/users';
 
 const {
     loadExcel: { excelExtension },
 } = environment;
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
+
+export const isUserHasWritePermissions = (
+    currentClientSideUser: IKartoffelUser | IEntity,
+    currentUser: UserState['user'],
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+) =>
+    Object.keys(currentClientSideUser).length > 0 ||
+    checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
@@ -147,9 +156,7 @@ const TemplateTable = forwardRef<
     const entityTemplateColor = getEntityTemplateColor(template);
 
     // TODO: what about categories?
-    const userHasWritePermissions =
-        Object.keys(currentClientSideUser).length > 0 ||
-        checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
+    const userHasWritePermissions = isUserHasWritePermissions(currentClientSideUser, currentUser, template);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());

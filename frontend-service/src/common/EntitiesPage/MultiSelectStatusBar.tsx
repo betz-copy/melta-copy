@@ -19,7 +19,7 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsPropertiesSchema';
+import { filterFieldsFromPropertiesSchema, pickOnlyGivenFields } from '../../utils/pickFieldsPropertiesSchema';
 import { isChildTemplate } from '../../utils/templates';
 import { EntityWizardValues } from '../dialogs/entity';
 import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
@@ -45,14 +45,11 @@ export interface IUpdateMultipleEntitiesResponse {
 }
 
 export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
-    const initialValues: EntityWizardValues = getInitialValuesWithDefaults(
-        {
-            template,
-            attachmentsProperties: {},
-            properties: { disabled: false },
-        },
+    const initialValues: EntityWizardValues = getInitialValuesWithDefaults({
         template,
-    );
+        attachmentsProperties: {},
+        properties: { disabled: false },
+    });
 
     const queryClient = useQueryClient();
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -220,7 +217,8 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             },
             validate: (values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
-                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+                const filteredProperties = pickOnlyGivenFields(nonAttachmentsSchema, selectedFields);
+                const propertiesErrors = ajvValidate({ ...nonAttachmentsSchema, properties: filteredProperties }, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};

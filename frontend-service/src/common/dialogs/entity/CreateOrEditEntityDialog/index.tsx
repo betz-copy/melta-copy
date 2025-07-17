@@ -21,6 +21,7 @@ import { ExportFormats } from '../ExportFormats';
 import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
+import { IChooseTemplateMode } from '../ChooseTemplate';
 
 const { signaturePrefix } = environment;
 
@@ -62,15 +63,12 @@ const convertIEntityToEntityWizardValues = (
     };
 };
 
-export const getInitialValuesWithDefaults = (
-    initialCurrValues: EntityWizardValues,
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-): EntityWizardValues => {
-    const { attachmentsProperties, properties } = initialCurrValues;
+export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValues): EntityWizardValues => {
+    const { attachmentsProperties, properties, template } = initialCurrValues;
 
     const mergedProperties = {
         ...Object.fromEntries(
-            Object.entries(entityTemplate.properties.properties)
+            Object.entries(template.properties.properties)
                 .map(([key, prop]) => [key, properties[key] ?? prop.defaultValue])
                 .filter(([_key, value]) => !!value),
         ),
@@ -80,7 +78,7 @@ export const getInitialValuesWithDefaults = (
     return {
         properties: mergedProperties,
         attachmentsProperties: attachmentsProperties,
-        template: entityTemplate,
+        template,
     };
 };
 
@@ -94,6 +92,9 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
+    chooseMode?: IChooseTemplateMode;
+    parentId?: string;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -104,6 +105,9 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
     showActionButtons = true,
+    chooseMode = IChooseTemplateMode.TemplatesAndChildren,
+    parentId,
+    getInitialProperties,
 }) => {
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
@@ -116,23 +120,18 @@ const CreateOrEditEntityDetails: React.FC<{
     const { shouldNavigateToEntityPage } = workspace.metadata;
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
+
     const initialValues = useMemo(() => {
-        if (isEditMode)
-            return getInitialValuesWithDefaults(
-                convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys),
-                entityTemplate,
-            );
-        if (initialCurrValues) return getInitialValuesWithDefaults(initialCurrValues, entityTemplate);
+        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys));
 
         return getInitialValuesWithDefaults(
-            {
+            initialCurrValues ?? {
                 properties: {
                     disabled: false,
                 },
                 attachmentsProperties: {},
                 template: entityTemplate,
             },
-            entityTemplate,
         );
     }, [payload, entityTemplate, initialTemplateFileKeys]);
 
@@ -185,7 +184,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
@@ -197,7 +196,7 @@ const CreateOrEditEntityDetails: React.FC<{
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
                 useEffect(() => {
-                    if (initialCurrValues) setValues(initialCurrValues);
+                    if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues));
                 }, [initialCurrValues]);
 
                 return (
@@ -228,6 +227,9 @@ const CreateOrEditEntityDetails: React.FC<{
                                             showCloseButton={showActionButtons}
                                             setIsDraftDialogOpen={setIsDraftDialogOpen}
                                             handleClose={handleClose}
+                                            chooseMode={chooseMode}
+                                            parentId={parentId}
+                                            getInitialProperties={getInitialProperties}
                                         />
 
                                         <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
@@ -241,14 +243,14 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length && isEditMode ? (
+                                            {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
                                                 <ExportFormats
                                                     properties={{
                                                         createdAt: payload?.properties.createdAt || new Date(),
                                                         updatedAt: payload?.properties.updatedAt || new Date(),
                                                         ...values.properties,
                                                     }}
-                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds}
                                                     templateId={values.template._id}
                                                 />
                                             ) : (
