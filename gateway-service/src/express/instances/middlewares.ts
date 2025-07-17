@@ -144,7 +144,7 @@ class InstancesValidator extends DefaultController {
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
-        const childTemplate = childTemplates.find(({ parentTemplate: { _id } }) => _id === templateId);
+        const childTemplate = childTemplates.find(({ _id }) => _id === childTemplateId);
 
         if (
             !userPermissions.admin?.scope &&
