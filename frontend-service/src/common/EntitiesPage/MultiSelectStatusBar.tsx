@@ -19,7 +19,7 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { filterFieldsFromPropertiesSchema } from '../../utils/pickFieldsPropertiesSchema';
+import { filterFieldsFromPropertiesSchema, pickOnlyGivenFields } from '../../utils/pickFieldsPropertiesSchema';
 import { isChildTemplate } from '../../utils/templates';
 import { EntityWizardValues } from '../dialogs/entity';
 import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
@@ -219,21 +219,9 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 );
             },
             validate: (values) => {
-                console.log({ values });
-
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
-
-                console.log({ nonAttachmentsSchema });
-
-                const proper = Object.fromEntries(
-                    Object.entries(nonAttachmentsSchema.properties).filter(([key, _value]) => !selectedFields || !!selectedFields?.[key]),
-                );
-
-                console.log({ proper });
-
-                const propertiesErrors = ajvValidate({ ...nonAttachmentsSchema, properties: proper }, values.properties);
-
-                console.log({ propertiesErrors });
+                const filteredProperties = pickOnlyGivenFields(nonAttachmentsSchema, selectedFields);
+                const propertiesErrors = ajvValidate({ ...nonAttachmentsSchema, properties: filteredProperties }, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};

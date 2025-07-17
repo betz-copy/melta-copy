@@ -68,7 +68,7 @@ const EditProps: React.FC<{
     setIsDraftDialogOpen,
     handleClose,
     showTitle = true,
-}) => {    
+}) => {
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
     const schema = filterFieldsFromPropertiesSchema(values.template.properties, multipleSelectionProps?.selectedFields);
@@ -133,6 +133,8 @@ const EditProps: React.FC<{
         if (!checked) {
             setFieldTouched(`properties.${field}`, false);
             setFieldValue(`properties.${field}`, undefined);
+        } else if(schema.properties[field].defaultValue) {
+            setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
         }
 
         const relatedUserFields = {};

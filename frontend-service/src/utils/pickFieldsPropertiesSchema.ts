@@ -37,3 +37,10 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
         ...filteredProperties,
     };
 };
+
+export const pickOnlyGivenFields = (
+    schema: IMongoEntityTemplatePopulated['properties'],
+    fieldsToPick: Record<string, boolean> | undefined = undefined,
+) => {
+    return Object.fromEntries(Object.entries(schema.properties).filter(([key, _value]) => !fieldsToPick || !!fieldsToPick?.[key]));
+};
