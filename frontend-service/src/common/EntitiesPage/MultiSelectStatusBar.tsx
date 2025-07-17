@@ -219,8 +219,21 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 );
             },
             validate: (values) => {
+                console.log({ values });
+
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
-                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+
+                console.log({ nonAttachmentsSchema });
+
+                const proper = Object.fromEntries(
+                    Object.entries(nonAttachmentsSchema.properties).filter(([key, _value]) => !selectedFields || !!selectedFields?.[key]),
+                );
+
+                console.log({ proper });
+
+                const propertiesErrors = ajvValidate({ ...nonAttachmentsSchema, properties: proper }, values.properties);
+
+                console.log({ propertiesErrors });
 
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
