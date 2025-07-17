@@ -11,7 +11,6 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { isChildTemplate } from '../../utils/templates';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;

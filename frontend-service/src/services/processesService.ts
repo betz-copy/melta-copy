@@ -145,7 +145,10 @@ export const updateProcessRequest = async (processId: string, updatedData: Proce
 
     const filteredDetails = mapValues(updatedData.details, (detail, key) => {
         const format = template.details.properties.properties[key]?.format;
-        return format === 'signature' && !isUUID(detail) ? undefined : detail;
+        if (format === 'signature' && !isUUID(detail)) return undefined;
+        if (format === 'date' && detail) return new Date(detail).toISOString().split('T')[0];
+        if (format === 'date-time' && detail) return new Date(detail).toISOString();
+        return detail;
     });
     formData.append(
         'details',
@@ -186,7 +189,10 @@ export const updateStepRequest = async (
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
     const filteredProperties = mapValues(values.properties, (property, key) => {
         const format = template[key]?.format;
-        return format === 'signature' && !isUUID(property) ? undefined : property;
+        if (format === 'signature' && !isUUID(property)) return undefined;
+        if (format === 'date' && property) return new Date(property).toISOString().split('T')[0];
+        if (format === 'date-time' && property) return new Date(property).toISOString();
+        return property;
     });
     formData.append(
         'properties',
