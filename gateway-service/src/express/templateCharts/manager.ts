@@ -7,6 +7,7 @@ import {
     IChartBody,
     IChartPermission,
     IChartType,
+    IChildTemplatePopulated,
     IColumnOrLineMetaData,
     IMongoChart,
     IMongoEntityTemplatePopulated,
@@ -44,8 +45,8 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
     hasPermissionToRelatedTemplate(
         field: IAxisField,
-        allowedEntityTemplates: IMongoEntityTemplatePopulated[],
-        chartEntityTemplate?: IMongoEntityTemplatePopulated,
+        allowedEntityTemplates: (IChildTemplatePopulated | IMongoEntityTemplatePopulated)[],
+        chartEntityTemplate?: IChildTemplatePopulated | IMongoEntityTemplatePopulated,
     ) {
         if (typeof field === 'string') {
             const propertyTemplate = chartEntityTemplate?.properties.properties[field];
@@ -60,7 +61,10 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
     async validateAllowedRelatedTemplate(userId: string, permissionsOfUserId: ISubCompactPermissions, { type, metaData, templateId }: IChart) {
         const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
+        const allowedChildTemplates = await this.templateManager.getAllowedChildEntitiesTemplates(permissionsOfUserId);
+
         const chartEntityTemplate = allowedEntityTemplates.find((template) => template._id === templateId);
+        const chartChildTemplate = allowedChildTemplates.find((template) => template.parentTemplate._id === templateId);
 
         switch (type) {
             case IChartType.Column:
@@ -69,12 +73,20 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
                     xAxis: { field },
                 } = metaData as IColumnOrLineMetaData;
 
-                return this.hasPermissionToRelatedTemplate(field, allowedEntityTemplates, chartEntityTemplate);
+                return this.hasPermissionToRelatedTemplate(
+                    field,
+                    allowedChildTemplates || allowedEntityTemplates,
+                    chartChildTemplate || chartEntityTemplate,
+                );
             }
             case IChartType.Pie: {
                 const { dividedByField } = metaData as IPieMetaData;
 
-                return this.hasPermissionToRelatedTemplate(dividedByField, allowedEntityTemplates, chartEntityTemplate);
+                return this.hasPermissionToRelatedTemplate(
+                    dividedByField,
+                    allowedChildTemplates || allowedEntityTemplates,
+                    chartChildTemplate || chartEntityTemplate,
+                );
             }
 
             default:

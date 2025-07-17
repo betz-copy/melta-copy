@@ -24,7 +24,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         switch (dashboardItem.type) {
             case DashboardItemType.Chart:
                 return (
-                    allowedTemplateIds.has(dashboardItem.metaData.templateId) &&
+                    allowedTemplateIds.has(dashboardItem.metaData.childTemplateId || dashboardItem.metaData.templateId) &&
                     chartManager.validateAllowedRelatedTemplate(userId, permissionsOfUserId, dashboardItem.metaData)
                 );
             case DashboardItemType.Iframe:
@@ -32,7 +32,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
                     ? true
                     : dashboardItem.metaData.categoryIds.every((categoryId: string) => allowedCategoryIds.has(categoryId));
             case DashboardItemType.Table:
-                return allowedTemplateIds.has(dashboardItem.metaData.templateId);
+                return allowedTemplateIds.has(dashboardItem.metaData.childTemplateId || dashboardItem.metaData.templateId);
             default:
                 return false;
         }
@@ -76,8 +76,10 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         const chartManager = new ChartManager(this.workspaceId);
         const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
         const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
+        const allowedChildTemplates = await this.templateManager.getAllowedChildEntitiesTemplates(permissionsOfUserId);
+        const allAllowedEntityTemplates = [...allowedEntityTemplates, ...allowedChildTemplates];
 
-        const allowedTemplateIds = new Set(map(allowedEntityTemplates, '_id'));
+        const allowedTemplateIds = new Set(map(allAllowedEntityTemplates, '_id'));
         const allowedCategoryIds = new Set(allowedCategories);
 
         const dashboardItems = await this.service.searchDashboardItems(textSearch);
