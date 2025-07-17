@@ -88,7 +88,7 @@ const dePopulateChildProperties = (
     return Object.entries(childProperties).reduce((acc, [key, value]) => {
         acc[key] = {
             defaultValue: value.defaultValue,
-            filters: value.filters,
+            filters: value.filters ? JSON.parse(value.filters) : undefined,
             isEditableByUser: value.isEditableByUser,
         };
         return acc;
@@ -108,6 +108,7 @@ const childTemplateKeys: (keyof IChildTemplate)[] = [
     'isFilterByCurrentUser',
     'isFilterByUserUnit',
     'filterByCurrentUserField',
+    'filterByUnitUserField',
 ];
 
 export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys, isChildTemplate };
