@@ -124,7 +124,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
             if (child.parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
                 return true;
             }
-            
+
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
@@ -228,6 +228,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             entityHasWritePermission={entityHasWritePermission}
                                                             isDisabledView={false}
                                                             isChildTemplate={false}
+                                                            categoryColor={entityTemplatesWithCategory.category.color}
                                                         />
                                                     )}
                                                 </Grid>
@@ -264,6 +265,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
                                                     isChildTemplate={true}
                                                     title={childTemplate.displayName}
+                                                    categoryColor={entityTemplatesWithCategory.category.color}
                                                 />
                                             </Grid>
                                         ))}
@@ -289,6 +291,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             entityHasWritePermission={false}
                                             isDisabledView={true}
                                             isChildTemplate={false}
+                                            categoryColor={entityTemplatesWithCategory.category.color}
                                         />
                                     </Grid>
                                     {childTemplatesForParent.map((childTemplate) => (
@@ -323,6 +326,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 isDisabledView={childTemplate.category._id !== entityTemplatesWithCategory.category._id}
                                                 isChildTemplate={true}
                                                 title={childTemplate.displayName}
+                                                categoryColor={entityTemplatesWithCategory.category.color}
                                             />
                                         </Grid>
                                     ))}
