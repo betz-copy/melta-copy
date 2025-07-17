@@ -4,7 +4,6 @@ import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
-
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
 ): IMongoEntityTemplatePopulated['properties'] => {
     const getProperty = (key: string) => schema.properties[key];

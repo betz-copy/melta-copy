@@ -43,6 +43,10 @@ export interface IMetadata {
         numOfPropsToShow: number;
         clientSideWorkspaceName: 'simba' | 'azarim';
     };
+    mapPage: {
+        sourceTemplateId: string;
+        destTemplateId: string;
+    };
 }
 
 export interface IWorkspace {

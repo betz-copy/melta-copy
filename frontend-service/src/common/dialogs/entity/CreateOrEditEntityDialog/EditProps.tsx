@@ -9,7 +9,7 @@ import { BlueTitle } from '../../../BlueTitle';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { ChooseTemplate } from '../ChooseTemplate';
+import { ChooseTemplate, IChooseTemplateMode } from '../ChooseTemplate';
 import { getEntityTemplateFilesFieldsInfo } from '.';
 import { EntityWizardValues } from '..';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -44,6 +44,9 @@ const EditProps: React.FC<{
     createOrUpdateDraftDebounced?: DebouncedFunc<(newValues: EntityWizardValues, newDraftId: string) => void>;
     setIsDraftDialogOpen?: Dispatch<SetStateAction<boolean>>;
     showTitle?: boolean;
+    chooseMode?: IChooseTemplateMode;
+    parentId?: string;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
 }> = ({
     setFieldValue,
     values,
@@ -68,10 +71,13 @@ const EditProps: React.FC<{
     setIsDraftDialogOpen,
     handleClose,
     showTitle = true,
+    chooseMode = IChooseTemplateMode.TemplatesAndChildren,
+    parentId,
+    getInitialProperties,
 }) => {
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-    const schema = filterFieldsFromPropertiesSchema(values.template.properties, multipleSelectionProps?.selectedFields);
+    const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
 
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
@@ -95,7 +101,7 @@ const EditProps: React.FC<{
         // textarea/long-text causes the field to first be undefined, setting dirty to true,
         // so we check for dirty manually while ignoring these fields
         // (if the value changes it won't be undefined and it will consider it dirty)
-        const isSignatureField = (key: string) => values.template.properties.properties[key]?.format === 'signature';
+        const isSignatureField = (key: string) => values.template?.properties.properties[key]?.format === 'signature';
         const valuePropsToFilter = { ...values.properties };
         Object.keys(valuePropsToFilter).forEach((key) =>
             valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {},
@@ -256,7 +262,15 @@ const EditProps: React.FC<{
                     </Grid>
                     {!entityTemplate._id && (
                         <Grid item marginTop="20px">
-                            <ChooseTemplate setFieldValue={setFieldValue} values={values} errors={errors} touched={touched} />
+                            <ChooseTemplate
+                                setFieldValue={setFieldValue}
+                                values={values}
+                                errors={errors}
+                                touched={touched}
+                                chooseMode={chooseMode}
+                                parentId={parentId}
+                                getInitialProperties={getInitialProperties}
+                            />
                         </Grid>
                     )}
                 </Box>

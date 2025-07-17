@@ -606,6 +606,110 @@ const entityTemplates: IEntityTemplateMock[] = [
         documentTemplatesIds: [],
         mapSearchProperties: [],
     },
+    {
+        name: 'katalog',
+        displayName: 'קטלוג',
+        category: {
+            name: 'azarim',
+        },
+        properties: {
+            type: 'object',
+            properties: {
+                makat: {
+                    type: 'string',
+                    title: 'מקט',
+                },
+                zira: {
+                    type: 'string',
+                    title: 'זירה',
+                },
+                pageName: {
+                    type: 'string',
+                    title: 'שם גיליון',
+                },
+                helpCategory: {
+                    type: 'string',
+                    title: 'קטגורית עזר',
+                },
+                famaly: {
+                    type: 'string',
+                    title: 'משפחה',
+                    enum: ['קו אפור', 'קו אדום', 'קו סגול'],
+                },
+                scale: {
+                    type: 'string',
+                    title: 'סקלה',
+                    enum: ['1:20,000', '1:10,000', '1:5,000', '1:50,000'],
+                },
+                polygon: {
+                    type: 'string',
+                    title: 'פוליגון',
+                    format: 'location',
+                },
+                availableCount: {
+                    type: 'number',
+                    title: 'מספר זמין',
+                },
+            },
+            hide: [],
+        },
+        propertiesOrder: ['makat', 'zira', 'pageName', 'helpCategory', 'famaly', 'scale', 'polygon', 'availableCount'],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesPreview: ['makat', 'zira', 'pageName', 'helpCategory', 'famaly', 'scale', 'polygon', 'availableCount'],
+        disabled: false,
+    },
+    {
+        name: 'requests',
+        displayName: 'בקשות',
+        category: {
+            name: 'azarim',
+        },
+        properties: {
+            type: 'object',
+            properties: {
+                orderNumber: {
+                    type: 'string',
+                    title: 'מספר הזמנה',
+                },
+                forUnit: {
+                    type: 'string',
+                    title: 'ליחידה',
+                },
+                orderedBy: {
+                    type: 'string',
+                    title: 'הוזמן על ידי',
+                },
+                family: {
+                    type: 'string',
+                    title: 'משפחה',
+                    enum: ['קו אפור', 'קו אדום', 'קו סגול'],
+                },
+                scale: {
+                    type: 'string',
+                    title: 'סקלה',
+                    enum: ['1:20,000', '1:10,000', '1:5,000', '1:50,000'],
+                },
+                pageName: {
+                    type: 'string',
+                    title: 'שם גיליון',
+                },
+                amount: {
+                    type: 'number',
+                    title: 'כמות',
+                },
+                orderStatus: {
+                    type: 'string',
+                    title: 'סטטוס בקשה',
+                    enum: ['הועבר לטיפול', 'חדש', 'מוכן למסירה', 'לוקט', 'נמסר - טופל'],
+                },
+            },
+            hide: [],
+        },
+        propertiesOrder: ['orderNumber', 'forUnit', 'orderedBy', 'family', 'scale', 'pageName', 'amount', 'orderStatus'],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesPreview: ['orderNumber', 'forUnit', 'orderedBy', 'family', 'scale', 'pageName', 'amount', 'orderStatus'],
+        disabled: false,
+    },
 ];
 
 export default entityTemplates;
