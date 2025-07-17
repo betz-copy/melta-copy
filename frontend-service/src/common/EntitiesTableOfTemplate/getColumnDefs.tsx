@@ -1,5 +1,6 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import { Grid } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
@@ -26,11 +27,16 @@ import {
     userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
+import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
+import { emptyEntityTemplate } from '../dialogs/entity';
+import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
+import { UserState } from '../../stores/user';
+import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
@@ -38,6 +44,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
+    addRelationshipReferenceButtonProps?: string;
     menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
@@ -61,6 +68,10 @@ export interface IGetColumnDefsOptions<Data extends any> {
     entityTemplates: IEntityTemplateMap;
     pageType?: string;
     columnsToShow?: string[];
+    entityTemplateMap?: IEntityTemplateMap;
+    childEntityTemplateMap?: IChildTemplateMap;
+    currentUser: UserState['user'];
+    currentClientSideUser: IEntity;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -70,6 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     onNavigateToRow,
     hideNonPreview = false,
     deleteRowButtonProps,
+    addRelationshipReferenceButtonProps,
     editRowButtonProps,
     menuRowButtonProps,
     hasPermissionToTemplate = true,
@@ -87,7 +99,11 @@ export const getColumnDefs = <Data extends any = EntityData>({
     entityTemplates,
     pageType,
     columnsToShow,
-}: IGetColumnDefsOptions<Data>): ColDef[] => {    
+    entityTemplateMap,
+    childEntityTemplateMap,
+    currentUser,
+    currentClientSideUser,
+}: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
@@ -338,7 +354,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         return orderA - orderB;
     });
 
-    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps) {
+    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps || addRelationshipReferenceButtonProps) {
         columnDefs.push({
             field: `actions-${template._id}`,
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
@@ -358,6 +374,24 @@ export const getColumnDefs = <Data extends any = EntityData>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+
+                const destTemplate = addRelationshipReferenceButtonProps
+                    ? childEntityTemplateMap?.get(addRelationshipReferenceButtonProps) ?? entityTemplateMap?.get(addRelationshipReferenceButtonProps)
+                    : undefined;
+
+                const getInitialProperties = (relatedTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): Record<string, any> => {
+                    const relatedProperties = relatedTemplate.properties.properties ?? {};
+
+                    return Object.entries(relatedProperties).reduce((acc, [key, prop]) => {
+                        if (prop.relationshipReference?.relatedTemplateId === template._id) {
+                            acc[key] = {
+                                templateId: template._id,
+                                properties: entity,
+                            };
+                        }
+                        return acc;
+                    }, {} as Record<string, any>);
+                };
 
                 return (
                     <Grid container flexWrap="nowrap">
@@ -447,7 +481,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </Link>
                             </Grid>
                         )}
-
                         {menuRowButtonProps && !template?.disabled && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <CardMenu
@@ -474,6 +507,41 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
                                 />
+                            </Grid>
+                        )}
+
+                        {addRelationshipReferenceButtonProps && (
+                            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                                <AddEntityButton
+                                    initialStep={1}
+                                    disabled={
+                                        destTemplate
+                                            ? !isUserHasWritePermissions(currentClientSideUser, currentUser, destTemplate) || destTemplate?.disabled
+                                            : childEntityTemplateMap
+                                            ? !Array.from(childEntityTemplateMap.values()).filter(
+                                                  (child) => child.parentTemplate._id === addRelationshipReferenceButtonProps,
+                                              ).length
+                                            : true
+                                    }
+                                    initialValues={{
+                                        template: destTemplate || emptyEntityTemplate,
+                                        properties: {
+                                            disabled: false,
+                                            ...(getInitialProperties(destTemplate || emptyEntityTemplate) ?? {}),
+                                        },
+                                        attachmentsProperties: {},
+                                    }}
+                                    style={{ borderRadius: '7px', width: '135px' }}
+                                    popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
+                                    chooseMode={IChooseTemplateMode.OnlyChildren}
+                                    parentId={addRelationshipReferenceButtonProps}
+                                    getInitialProperties={getInitialProperties}
+                                >
+                                    <AddIcon fontSize="small" />
+                                    <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 10px' }}>
+                                        {i18next.t('location.newRequest')}
+                                    </Typography>
+                                </AddEntityButton>
                             </Grid>
                         )}
                     </Grid>

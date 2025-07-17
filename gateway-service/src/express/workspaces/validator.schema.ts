@@ -36,6 +36,10 @@ const metadataSchema = Joi.object({
         numOfPropsToShow: Joi.number(),
         clientSideWorkspaceName: Joi.string().valid('simba', 'azarim'),
     }).optional(),
+    mapPage: Joi.object({
+        sourceTemplateId: Joi.string().allow(''),
+        destTemplateId: Joi.string().allow(''),
+    }).optional(),
 }).optional();
 
 const workspaceSchema = Joi.object({

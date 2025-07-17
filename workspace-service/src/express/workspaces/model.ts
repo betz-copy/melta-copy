@@ -38,6 +38,10 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             numOfPropsToShow: { type: Number },
             clientSideWorkspaceName: { type: String },
         },
+        mapPage: {
+            sourceTemplateId: { type: String },
+            destTemplateId: { type: String },
+        },
     },
     { _id: false },
 );
