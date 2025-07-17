@@ -123,9 +123,11 @@ const Graph: React.FC = () => {
         });
     };
 
-    const expandedParams = {
-        [entityId]: 1,
-        ...JSON.parse(searchParams.get('expandedEntities')!),
+    const expandedParams: { [key: string]: { minLevel?: number; maxLevel: number } } = {
+        [entityId]: { maxLevel: 1 },
+        ...Object.fromEntries(
+            Object.entries(JSON.parse(searchParams.get('expandedEntities')!)).map(([key, val]) => [key, { maxLevel: val as number }]),
+        ),
     };
 
     const { refetch: getExpandedEntityById, error } = useQuery<IEntityExpanded>(

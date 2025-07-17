@@ -29,7 +29,7 @@ const GraphNodeMenu: React.FC<{
             'getExpandedEntity',
             node.id,
             {
-                [node.id]: node.numberOfConnectionsExpanded + 1,
+                [node.id]: { maxLevel: node.numberOfConnectionsExpanded + 1 },
             },
             {
                 disabled: false,
@@ -41,7 +41,7 @@ const GraphNodeMenu: React.FC<{
             getExpandedEntityByIdRequest(
                 node.id,
                 {
-                    [node.id]: node.numberOfConnectionsExpanded + 1,
+                    [node.id]: { maxLevel: node.numberOfConnectionsExpanded + 1 },
                 },
                 {
                     disabled: false,

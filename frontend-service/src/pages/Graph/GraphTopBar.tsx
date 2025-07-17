@@ -31,7 +31,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const templateIds = Array.from(entityTemplates.keys());
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
+    const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
         getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
     );

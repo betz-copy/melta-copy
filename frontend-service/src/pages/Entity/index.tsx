@@ -94,7 +94,7 @@ const ConnectionsTable: React.FC<{
     hasPermissionToTemplate: boolean;
 }> = ({
     expandedEntity,
-    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, instances },
+    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },
     templateIds,
     isEditButtonsDisabled,
     disabledButtonText,
@@ -190,7 +190,7 @@ const ConnectionsTable: React.FC<{
                                 popoverText: i18next.t('entitiesTableOfTemplate.columns'),
                                 iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
                             }}
-                            disableButton={instances.length === 0}
+                            disableButton={!hasInstances}
                             icon={<TableRowsOutlined fontSize="small" />}
                             text={i18next.t('entitiesTableOfTemplate.columns')}
                         />
@@ -206,7 +206,7 @@ const ConnectionsTable: React.FC<{
                             }}
                             icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
                             text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
-                            disableButton={instances.length === 0}
+                            disableButton={!hasInstances}
                         />
 
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
@@ -250,7 +250,7 @@ const ConnectionsTable: React.FC<{
                 }}
             >
                 <EntitiesTableOfTemplate
-                    hasInstances={instances.length > 0}
+                    hasInstances={hasInstances}
                     ref={entitiesTableRef}
                     template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
                     showNavigateToRowButton
@@ -337,7 +337,7 @@ const ConnectionsTable: React.FC<{
 export interface IConnectionTemplateOfExpandedEntity {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    instances: IConnection[];
+    hasInstances: boolean;
     parentRelationship?: IMongoRelationshipTemplatePopulated;
     children: IConnectionTemplateOfExpandedEntity[];
 }
@@ -357,7 +357,7 @@ const Entity: React.FC = () => {
 
     const templateIds = Array.from(entityTemplates.keys());
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
+    const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
         getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
     );
@@ -399,7 +399,7 @@ const Entity: React.FC = () => {
                         : relationshipTemplate.sourceEntity;
                     return otherEntityTemplate.category._id === category._id;
                 })
-                .sort((a, b) => b.instances.length - a.instances.length),
+                .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
             relationshipCount:
                 // calculate the amount of the related connections of each entity
                 expandedEntity?.connections.filter((connection) => {

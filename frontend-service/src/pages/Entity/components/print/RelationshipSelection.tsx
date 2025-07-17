@@ -62,7 +62,7 @@ const RelationshipSelection: React.FC<{
         () =>
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: expansionDepth + 1 },
+                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1, minLevel: expansionDepth + 1 } },
                 { disabled: false, templateIds: allowedEntityTemplatesIds },
             ),
         {

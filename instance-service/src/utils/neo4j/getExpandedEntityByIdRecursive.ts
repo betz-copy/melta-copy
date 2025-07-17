@@ -9,8 +9,8 @@ import { normalizeReturnedRelAndEntities } from './lib';
 export const expandEntityToNeoQuery = async (
     filters: IGetExpandedEntityBody['filters'],
     entityId: string,
-    templateIds: string[],
-    expandedParams: { [key: string]: number },
+    templateIds: IGetExpandedEntityBody['templateIds'],
+    expandedParams: IGetExpandedEntityBody['expandedParams'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     mainId: string,
 ) => {
@@ -23,18 +23,16 @@ export const expandEntityToNeoQuery = async (
     }, {});
     const fullFilters = { ...mappedRecords, ...filters };
     const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
-    let filterCypherQuery: string;
-    if (Object.keys(filters).length !== 0) {
-        filterCypherQuery = `WHERE apoc.meta.cypher.type(node) = "RELATIONSHIP" OR ${filterQuery.cypherQuery} OR node._id ='${mainId}' `;
-    } else {
-        filterCypherQuery = '';
-    }
+    const filterCypherQuery = Object.keys(filters).length
+        ? `WHERE apoc.meta.cypher.type(node) = "RELATIONSHIP" OR ${filterQuery.cypherQuery} OR node._id ='${mainId}' `
+        : '';
+
     return {
         cypherQuery: `MATCH (p {_id:'${entityId}'})
                         CALL apoc.path.expandConfig(p, {
                        labelFilter: '${templateIds.join('|')}',
-                       minLevel: 0,
-                       maxLevel: ${expandedParams[entityId] || 1}
+                       minLevel: ${expandedParams.minLevel[entityId] || 0},
+                       maxLevel: ${expandedParams.maxLevel[entityId] || 1}
                     })
                     YIELD path
                     with apoc.path.elements(path) as elementsOfPath
@@ -47,11 +45,11 @@ export const expandEntityToNeoQuery = async (
 
 export const getExpandedFilteredGraphRecursively = async (
     neo4jClient: Neo4jClient,
-    disabled: boolean | null,
+    disabled: IGetExpandedEntityBody['disabled'],
     initialExpandedEntity: IEntityExpanded,
     searchBody: IGetExpandedEntityBody['filters'],
-    templateIds: string[],
-    expandedParams: { [key: string]: number },
+    templateIds: IGetExpandedEntityBody['templateIds'],
+    expandedParams: IGetExpandedEntityBody['expandedParams'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
 ): Promise<IEntityExpanded> => {
     const initialExpandedEntityId = initialExpandedEntity.entity.properties._id;
@@ -65,7 +63,7 @@ export const getExpandedFilteredGraphRecursively = async (
             const otherEntity = initialExpandedEntityId === sourceEntity.properties._id ? destinationEntity : sourceEntity;
             return otherEntity.properties._id;
         })
-        .filter((otherEntityId) => expandedParams[otherEntityId] && !expanded.has(otherEntityId));
+        .filter((otherEntityId) => expandedParams[otherEntityId].maxLevel && !expanded.has(otherEntityId));
 
     for (const entityIdToExpand of entityIdsToExpand) {
         const searchCypherQuery = await expandEntityToNeoQuery(
@@ -89,7 +87,7 @@ export const getExpandedFilteredGraphRecursively = async (
             currFilteredExpandedEntity.connections.forEach(({ sourceEntity, destinationEntity }) => {
                 const otherEntity = entityIdToExpand === sourceEntity.properties._id ? destinationEntity : sourceEntity;
                 const otherEntityId = otherEntity.properties._id;
-                if (expandedParams[otherEntityId] && !expanded.has(otherEntityId)) entityIdsToExpand.push(otherEntityId);
+                if (expandedParams[otherEntityId].maxLevel && !expanded.has(otherEntityId)) entityIdsToExpand.push(otherEntityId);
             });
         }
     }

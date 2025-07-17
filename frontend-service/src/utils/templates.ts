@@ -46,18 +46,17 @@ export const getFullRelationshipTemplates = (
             return !isSelfProperty && isConnected;
         })
         .map((relationshipTemplate) => {
-            const instances = expandedEntity?.connections.filter((connection) => connection.relationship.templateId === relationshipTemplate._id)!;
+            const hasInstances = expandedEntity?.connections.some((connection) => connection.relationship.templateId === relationshipTemplate._id)!;
 
             return {
                 relationshipTemplate: populateRelationshipTemplate(relationshipTemplate, entityTemplates),
-                instances, // TODO: maybe change
+                hasInstances,
                 isExpandedEntityRelationshipSource: relationshipTemplate.sourceEntityId === parentEntityTemplate._id,
                 children: [],
                 parentRelationship: parentRelationshipTemplate,
             };
-
         })
-        .filter((relTemplate) => (filterOnlyThoseWithInstances ? relTemplate.instances.length > 0 : true));
+        .filter((relTemplate) => (filterOnlyThoseWithInstances ? relTemplate.hasInstances : true));
 };
 
 export const getOppositeEntityTemplate = (entityTemplateId: string, relationshipTemplate: IMongoRelationshipTemplatePopulated) => {

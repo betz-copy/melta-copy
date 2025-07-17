@@ -41,7 +41,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermission
 
     const templateIds = Array.from(entityTemplates.keys());
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
+    const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity, isLoading } = useQuery(
         ['getExpandedEntity', entityId, expanded, { templateIds }],
         () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),

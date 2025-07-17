@@ -28,10 +28,6 @@ export interface IEntityExpandedWithRelatedRelationships {
     connections: ConnectionWithExtendedRelationship[];
 }
 
-export interface IConnectionExpanded extends IConnection {
-    parentRelationship: IConnection;
-}
-
 export interface IConnectionTemplateExpanded extends IConnectionTemplateOfExpandedEntity {
     parentRelationship?: IConnectionTemplateOfExpandedEntity;
 }
@@ -76,7 +72,7 @@ const Print: React.FC<{
         () =>
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: 2 },
+                { [expandedEntity.entity.properties._id]: { maxLevel: 2, minLevel: 2 } },
                 { disabled: false, templateIds: allowedEntityTemplatesIds },
             ),
         {
