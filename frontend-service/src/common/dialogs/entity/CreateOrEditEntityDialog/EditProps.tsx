@@ -68,7 +68,7 @@ const EditProps: React.FC<{
     setIsDraftDialogOpen,
     handleClose,
     showTitle = true,
-}) => {    
+}) => {
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
     const schema = filterFieldsFromPropertiesSchema(values.template.properties, multipleSelectionProps?.selectedFields);
