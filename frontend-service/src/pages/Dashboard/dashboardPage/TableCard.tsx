@@ -2,7 +2,7 @@ import { Download } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -19,6 +19,7 @@ import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/ag
 import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
 import { isChildTemplate } from '../../../utils/templates';
+import { useUserStore } from '../../../stores/user';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -59,10 +60,16 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
 
+    const { externalMetadata } = useUserStore((state) => state.user);
+    const currentUserKartoffelId = externalMetadata?.kartoffelId;
+
     const [isFiltered, setIsFiltered] = useState(false);
-    const memorizedFilter = React.useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
-    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!metaData.childTemplateId);
-    const allFilters = getFilterModal(memorizedFilter, childTemplateFilter);
+    const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+    const childTemplateFilter = useMemo(
+        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, currentUserKartoffelId),
+        [metaData.templateId, metaData.childTemplateId, currentUserKartoffelId],
+    );
+    const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;

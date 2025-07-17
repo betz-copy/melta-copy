@@ -43,7 +43,7 @@ class ChartsValidator extends DefaultController {
     }
 
     private async validateUserHasPermissionToTemplate(req: Request, templateId: string, childTemplateId?: string) {
-        const [{ categoryId, template }, userPermissions] = await Promise.all([
+        const [{ categoryId }, userPermissions] = await Promise.all([
             this.getCategoryIdFromTemplateId(templateId, childTemplateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
@@ -52,10 +52,7 @@ class ChartsValidator extends DefaultController {
         if (
             !userPermissions.admin?.scope &&
             !categoryPermissions?.scope &&
-            (childTemplateId
-                ? !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated).parentTemplate._id]?.scope &&
-                  !categoryPermissions?.entityTemplates?.[(template as IChildTemplatePopulated)._id]?.scope
-                : !categoryPermissions?.entityTemplates?.[templateId]?.scope)
+            !categoryPermissions?.entityTemplates?.[childTemplateId ?? templateId]?.scope
         ) {
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
         }
