@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
@@ -11,6 +11,7 @@ import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
+import { useUserStore } from '../../../../stores/user';
 
 export const getRelevantEntityTemplate = (
     entityTemplates: IEntityTemplateMap,
@@ -30,9 +31,15 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+
+    const childTemplateDefaultFilters = useMemo(
+        () => getDefaultFilterFromTemplate(template, !!values.childTemplateId, currentUserKartoffelId),
+        [values.templateId, values.childTemplateId, currentUserKartoffelId],
+    );
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
-    const childTemplateFilter = getDefaultFilterFromTemplate(template, !!values.childTemplateId);
-    const allFilters = getFilterModal(memoizedFilter, childTemplateFilter);
+    const allFilters = useMemo(() => getFilterModal(memoizedFilter, childTemplateDefaultFilters), [memoizedFilter, childTemplateDefaultFilters]);
 
     if (!values.templateId) return null;
 
