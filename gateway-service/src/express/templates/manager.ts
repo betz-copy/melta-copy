@@ -468,20 +468,22 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ): Promise<T[]> {
         const constraints = allConstraints || (await this.instancesService.getAllConstraints());
         const entityTemplatesWithConstraints = entityTemplates.map((entityTemplate) => {
-            const constraintsOfTemplate = constraints.find(({ templateId }) => templateId === entityTemplate._id);
+            const constraintsOfTemplate = constraints.find(({ templateId }) =>
+                isChildTemplate(entityTemplate) ? templateId === entityTemplate.parentTemplate._id : templateId === entityTemplate._id,
+            );
+
+            const requiredConstraints = constraintsOfTemplate?.requiredConstraints ?? [];
+            const uniqueConstraints = constraintsOfTemplate?.uniqueConstraints ?? [];
 
             if (isChildTemplate(entityTemplate)) {
                 entityTemplate.parentTemplate = this.populateTemplateConstraints(
                     entityTemplate.parentTemplate,
-                    constraintsOfTemplate?.requiredConstraints ?? [],
-                    constraintsOfTemplate?.uniqueConstraints ?? [],
+                    requiredConstraints,
+                    uniqueConstraints,
                 );
             }
-            return this.populateTemplateConstraints(
-                entityTemplate,
-                constraintsOfTemplate?.requiredConstraints ?? [],
-                constraintsOfTemplate?.uniqueConstraints ?? [],
-            );
+
+            return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
         });
 
         return entityTemplatesWithConstraints as T[];
