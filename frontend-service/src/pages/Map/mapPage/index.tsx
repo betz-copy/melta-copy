@@ -62,7 +62,9 @@ const MapPage = () => {
     const { sourceTemplateId, destTemplateId } = metadata.mapPage;
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
-    const sourceSearchResults = searchedMarkers.filter(({ node }) => node.templateId === sourceTemplate?._id).map(({ node }) => node);
+    const sourceSearchResults = [...searchedMarkers, ...searchedPolygons]
+        .filter(({ node }) => node.templateId === sourceTemplate?._id)
+        .map(({ node }) => node);
 
     const {
         bounds: searchedEntityBounds,

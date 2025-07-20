@@ -1,5 +1,9 @@
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
+import { IKartoffelUser } from '../interfaces/users';
+import { UserState } from '../stores/user';
 
 const parseFilterObject = (filters: any): any | null => {
     if (typeof filters === 'string') {
@@ -54,3 +58,13 @@ export const getChildPropertiesFiltered = (childTemplate: IMongoChildTemplatePop
 
     return properties;
 };
+
+export const getChildrenWithWritePermission = (
+    childEntityTemplateMap: IChildTemplateMap,
+    parentId: string,
+    currentUser: UserState['user'],
+    currentClientSideUser: IEntity | IKartoffelUser,
+) =>
+    Array.from(childEntityTemplateMap.values()).filter(
+        (child) => child.parentTemplate._id === parentId && isUserHasWritePermissions(currentClientSideUser, currentUser, child),
+    );
