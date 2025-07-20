@@ -1,13 +1,5 @@
 /* eslint-disable no-param-reassign */
-import {
-    CoordinateSystem,
-    EntityTemplateType,
-    getChildPropertiesFiltered,
-    IEntity,
-    IEntitySingleProperty,
-    locationConverterToString,
-    TemplateItem,
-} from '@microservices/shared';
+import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
@@ -126,18 +118,15 @@ export const indexToExcelColumn = (index: number): string => {
 // };
 
 const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateItem, displayColumns?: string[], headersOnly?: boolean) => {
-    const { type: templateType, metaData: template } = templateItem;
+    const { metaData: template } = templateItem;
 
     const worksheet = workbook.addWorksheet(template.displayName);
-
-    const properties =
-        templateType === EntityTemplateType.Parent ? template.properties.properties : getChildPropertiesFiltered(template.properties.properties);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let columnIndex = 0; // TODO: make data validation work in office excel
 
-    Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
+    Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
         const shouldAddColumn = headersOnly ? isIncludedColumn(propertyTemplate) : displayColumns?.includes(propertyKey);
 
         if (shouldAddColumn) {
@@ -157,7 +146,7 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
 
-        const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+        const type = TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
         cell.note = type;
         cell.fill = {
             type: 'pattern',
@@ -232,8 +221,6 @@ const styleAWorksheet = (
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
     });
-    const properties =
-        type === EntityTemplateType.Parent ? template.properties.properties : getChildPropertiesFiltered(template.properties.properties);
 
     const { disabled } = template;
     let additionalProps = {};
@@ -242,7 +229,7 @@ const styleAWorksheet = (
         additionalProps = { createdAt, updatedAt };
     }
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, ...additionalProps })
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, ...additionalProps })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
