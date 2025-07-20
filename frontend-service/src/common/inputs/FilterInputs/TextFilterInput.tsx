@@ -58,7 +58,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                 </Grid>
             )}
 
-            <Grid item xs={hideFilterType ? 12 : 5.5}>
+            <Grid item xs={hideFilterType ? 12 : entityFilter ? 7 : 12}>
                 <StyledFilterInput
                     size="small"
                     fullWidth
