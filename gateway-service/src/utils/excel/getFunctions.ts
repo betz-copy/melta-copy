@@ -1,36 +1,38 @@
-import Excel, { CellModel } from 'exceljs';
-import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
 import {
-    IEntitySingleProperty,
-    IFailedEntity,
     ActionErrors,
-    IMongoEntityTemplatePopulated,
-    IEntity,
-    BadRequestError,
-    ServiceError,
-    IValidationErrorData,
-    IBrokenRule,
-    IAction,
     ActionTypes,
-    ICreateEntityMetadata,
-    IActionPopulated,
-    IBrokenRuleEntity,
-    logger,
-    IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
-    IBrokenRulePopulated,
-    ICreateEntityMetadataPopulated,
-    IUpdateEntityMetadataPopulated,
-    UploadedFile,
+    BadRequestError,
     CoordinateSystem,
     extractUtmLocation,
     getCoordinateSystem,
+    IAction,
+    IActionPopulated,
+    IBrokenRule,
+    IBrokenRuleEntity,
+    IBrokenRulePopulated,
+    ICreateEntityMetadata,
+    ICreateEntityMetadataPopulated,
+    IEntity,
+    IChildTemplatePopulated,
+    IEntitySingleProperty,
+    IEntityWithDirectRelationships,
+    IEntityWithIgnoredRules,
+    IFailedEntity,
+    IMongoEntityTemplatePopulated,
+    isChildTemplate,
     isValidUTM,
     isValidWGS84,
+    IUpdateEntityMetadataPopulated,
+    IValidationErrorData,
     locationConverterToString,
+    logger,
+    ServiceError,
     stringToCoordinates,
+    UploadedFile,
 } from '@microservices/shared';
+import { AxiosError } from 'axios';
+import Excel, { CellModel } from 'exceljs';
+import { StatusCodes } from 'http-status-codes';
 import excelConfig from './excelConfig';
 
 import config from '../../config';
@@ -84,16 +86,15 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
-    const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
-    const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-    const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    const isSignature = propertyTemplate.format === 'signature';
-    const isUser = propertyTemplate.format === 'user';
-    const isUsers = propertyTemplate.items?.format === 'user';
-    const isComment = propertyTemplate.format === 'comment';
-    const isKartoffelUserField = propertyTemplate.format === 'kartoffelUserField';
+    const formats = ['relationshipReference', 'fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
+    const itemsFormats = ['fileId', 'user'];
 
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField;
+    const unValidFormats =
+        formats.includes(propertyTemplate.format ?? '') ||
+        (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
+    const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
+
+    return !unValidFormats && !isSerialNumber;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
@@ -134,7 +135,7 @@ const getUpdatedEntity = (
     entities: IEntityWithDirectRelationships[],
     entity: IEntity,
     identifier: keyof IEntity['properties'],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
 ): IEntity | undefined => {
     const existingEntity = entities.find((e) => e.entity.properties[identifier] === entity.properties[identifier]);
 
@@ -156,7 +157,7 @@ const getUpdatedEntity = (
 
 const readExcelFile = async (
     files: UploadedFile[],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],
@@ -216,7 +217,11 @@ const readExcelFile = async (
                     const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier ?? '', template);
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
-                    entities.push({ templateId: template._id, properties: rowData, ignoredRules: [] });
+                    entities.push({
+                        templateId: isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        properties: rowData,
+                        ignoredRules: [],
+                    });
                 }
             });
 
@@ -348,4 +353,4 @@ const convertIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[
     );
 };
 
-export { readExcelFile, getValidationErrorEntities, convertIdOfBrokenRules };
+export { convertIdOfBrokenRules, getValidationErrorEntities, readExcelFile };

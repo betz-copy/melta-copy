@@ -1,0 +1,85 @@
+---
+description: Axios instance, typing & error-handling conventions
+globs: 
+alwaysApply: false
+---
+---
+
+description: Axios instance, typing & error‑handling conventions
+type: agentRequested
+--------------------
+
+# Axios Guidelines
+
+1. **Singleton instance** — create exactly one axios instance in `src/api/axios.ts`:
+
+```ts
+import axios from "axios";
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
+  timeout: 20_000, // 20 s hard limit on any request
+});
+```
+
+2. **Response interceptors** — unwrap `response.data` and centralise error handling:
+
+```ts
+api.interceptors.response.use(
+  (res) => res.data,
+  (err) => {
+    // Forward an object we control
+    const message =
+      err.response?.data?.message ?? err.message ?? "Network error";
+    // 👉 optional toast
+    toast.error(message);
+    return Promise.reject(new Error(message)); // normalise the shape
+  }
+);
+```
+
+3. **Type guards** — inside `try/catch` blocks use `axios.isAxiosError(e)` (or `isAxiosError` import) to tell network errors from coding mistakes:
+
+```ts
+try {
+  await api.get<User[]>("/users");
+} catch (e) {
+  if (axios.isAxiosError(e)) {
+    // handle HTTP / network error
+  } else {
+    // handle unexpected error (e.g. undefined var)
+  }
+}
+```
+
+4. **Typed endpoints** — request/response bodies must be expressed with generic parameters:
+
+```ts
+interface CreateUserDto { name: string; email: string }
+interface User { id: string; name: string; email: string }
+
+await api.post<User, CreateUserDto>("/users", data);
+```
+
+5. **Cancellation & cleanup** — when a component unmounts or parameters change, cancel in‑flight requests with `AbortController`:
+
+```ts
+const controller = new AbortController();
+useEffect(() => {
+  api
+    .get<User[]>("/users", { signal: controller.signal })
+    .then(setUsers)
+    .catch((e) => {
+      if (e.name !== "CanceledError") throw e;
+    });
+
+  return () => controller.abort();
+}, [query]);
+```
+
+6. **Retries & backoff** — wrap idempotent calls in a helper using exponential back‑off rather than blindly retrying every request.
+
+7. **No magic strings** — define endpoint paths in `src/api/endpoints.ts` to avoid typos and facilitate refactoring.
+
+8. **Never reconfigure the instance** at call‑site; everything beyond per‑request `headers` or `params` belongs to the central instance.

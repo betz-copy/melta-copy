@@ -1,10 +1,15 @@
-import { IMongoEntityTemplate, IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared';
+import {
+    IMongoEntityTemplate,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplate,
+    IRelationshipTemplate,
+} from '@microservices/shared';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 
 const {
     url,
-    relationships: { createRelationshipTemplateRoute },
+    relationships: { createRelationshipTemplateRoute, getRelationshipTemplateRoute },
 } = config.templateService;
 
 export interface IMockRelationshipTemplate extends Omit<IRelationshipTemplate, 'sourceEntityId' | 'destinationEntityId'> {
@@ -15,7 +20,7 @@ export interface IMockRelationshipTemplate extends Omit<IRelationshipTemplate, '
 export const createRelationshipTemplates = async (
     workspaceId: string,
     relationshipTemplates: IMockRelationshipTemplate[],
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: (IMongoEntityTemplate | IMongoEntityTemplateWithConstraintsPopulated)[],
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
@@ -30,4 +35,12 @@ export const createRelationshipTemplates = async (
     const results = await Promise.all(promises);
 
     return results.map((result) => result.data);
+};
+
+export const getRelationshipTemplateById = async (workspaceId: string, relationshipTemplateId: string) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
+    const { data } = await axiosInstance.get<IMongoRelationshipTemplate>(`${url}${getRelationshipTemplateRoute}/${relationshipTemplateId}`);
+
+    return data;
 };

@@ -94,6 +94,7 @@ export enum ActionTypes {
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
     UpdateMultipleEntities = 'update-multiple-entities',
+    CreateClientSideEntity = 'create-client-side-entity',
 }
 
 export interface IAction {
@@ -110,4 +111,5 @@ export enum ActionErrors {
     validation = 'VALIDATION',
     unique = 'UNIQUE',
     required = 'REQUIRED',
+    filterValidation = 'FILTER_VALIDATION',
 }

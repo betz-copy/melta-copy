@@ -1,7 +1,7 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
@@ -45,21 +45,21 @@ const Print: React.FC<{
     const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
     const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const [openModal, setOpenModal] = React.useState(false);
+    const [openModal, setOpenModal] = useState(false);
 
     const componentRef = React.useRef(null);
 
-    const [files, setFiles] = React.useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = React.useState(files);
-    const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
+    const [files, setFiles] = useState<IFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState(files);
+    const [filesLoadingStatus, setFilesLoadingStatus] = useState({});
 
     const [selectedConnections, setSelectedConnections] = React.useState<IConnectionTemplateOfExpandedEntity[]>([]);
     const [connections, setConnections] = React.useState(connectionsTemplates);
 
-    const [showDate, setShowDate] = React.useState(true);
-    const [showDisabled, setShowDisabled] = React.useState(true);
-    const [showEntityDates, setShowEntityDates] = React.useState(true);
-    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
+    const [showDate, setShowDate] = useState(true);
+    const [showDisabled, setShowDisabled] = useState(true);
+    const [showEntityDates, setShowEntityDates] = useState(true);
+    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState(false);
 
     const handleClose = () => {
         setSelectedConnections([]);

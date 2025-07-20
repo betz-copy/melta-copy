@@ -1,8 +1,7 @@
-import _cloneDeep from 'lodash.clonedeep';
+import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoCategory } from '../../interfaces/categories';
-import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
+import { childTemplatePermissionDialog, entityTemplatePermissionDialog } from './permissionOfUserDialog';
 
 export const checkUserCategoryPermission = (
     permissions: ISubCompactPermissions,
@@ -18,7 +17,7 @@ export const checkUserCategoryPermission = (
 
 export const checkUserTemplatePermission = (
     permissions: ISubCompactPermissions,
-    { _id: categoryId }: IMongoCategory,
+    categoryId: string,
     templateId: string,
     scope: PermissionScope,
 ): boolean => {
@@ -30,7 +29,6 @@ export const checkUserTemplatePermission = (
         permissions?.instances?.categories[categoryId]?.entityTemplates?.[templateId]?.scope === PermissionScope.write
     );
 };
-
 export const getUserPermissionScopeOfCategory = (categoriesPermissions: ICompact<IInstancesPermission>['categories'], categoryId: string) => {
     return categoriesPermissions[categoryId]?.scope ?? undefined;
 };
@@ -81,7 +79,6 @@ export const getChangedCategoryPermissions = (
             if (categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope === PermissionScope.write)
                 newTemplatePermission[key] = {
                     scope: PermissionScope.write,
-                    fields: {},
                 };
         });
     }
@@ -97,33 +94,35 @@ const changeSpecificTemplate = (
     checked: boolean,
     scope: PermissionScope,
     categoryId: string,
-    templateId: string,
+    templateIds: string[],
 ) => {
-    const categoriesPermissions = { ...permissions };
-    const newScope = getNewScope(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.scope, scope, checked);
+    return templateIds.reduce((acc, templateId) => {
+        const newScope = getNewScope(acc?.[categoryId]?.entityTemplates?.[templateId]?.scope, scope, checked);
 
-    if (!newScope && Object.keys(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.fields ?? {}).length === 0) {
-        delete categoriesPermissions[categoryId].entityTemplates[templateId];
-    } else {
-        categoriesPermissions[categoryId] = {
-            ...categoriesPermissions[categoryId],
-            entityTemplates: {
-                ...categoriesPermissions[categoryId]?.entityTemplates,
-                [templateId]: {
-                    scope: newScope,
-                    fields: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.fields ?? {},
+        if (!newScope) {
+            delete acc[categoryId].entityTemplates[templateId];
+        } else {
+            acc[categoryId] = {
+                ...acc[categoryId],
+                entityTemplates: {
+                    ...acc[categoryId]?.entityTemplates,
+                    [templateId]: {
+                        scope: newScope,
+                        fields: {},
+                    },
                 },
-            },
-        };
-    }
+            };
+        }
 
-    return categoriesPermissions;
+        return acc;
+    }, permissions);
 };
 
 const handleCheckCategoryByTemplates = (
     permissions: ICompact<IInstancesPermission>['categories'],
     categoryId: string,
     entityTemplates: entityTemplatePermissionDialog[],
+    childEntityTemplates: childTemplatePermissionDialog[],
 ) => {
     const categoriesPermissions = { ...permissions };
     let countRead = 0;
@@ -137,11 +136,13 @@ const handleCheckCategoryByTemplates = (
         else if (templateScope === PermissionScope.write) countWrite++;
     });
 
-    if (countRead + countWrite === entityTemplates.length)
+    const templatesCount = entityTemplates.length + childEntityTemplates.length;
+
+    if (countRead + countWrite === templatesCount)
         categoriesPermissions[categoryId] = getChangedCategoryPermissions(
             categoriesPermissions,
             true,
-            countWrite === entityTemplates.length ? PermissionScope.write : PermissionScope.read,
+            countWrite === templatesCount ? PermissionScope.write : PermissionScope.read,
             categoryId,
         );
 
@@ -153,33 +154,39 @@ const handleUncheckCategoryByTemplates = (
     checked: boolean,
     scope: PermissionScope,
     categoryId: string,
-    templateId: string,
+    templateIds: string[],
     entityTemplates: entityTemplatePermissionDialog[],
+    childEntityTemplates: childTemplatePermissionDialog[],
 ) => {
-    const categoriesPermissions = { ...permissions };
-    const categoryScope = categoriesPermissions[categoryId]?.scope && getNewScope(categoriesPermissions[categoryId]?.scope, scope, checked);
+    return handleCheckCategoryByTemplates(
+        templateIds.reduce((acc, templateId) => {
+            const categoryScope = acc[categoryId]?.scope && getNewScope(acc[categoryId]?.scope, scope, checked);
 
-    if (categoriesPermissions[categoryId]?.scope) {
-        entityTemplates.forEach((entityTemplate) => {
-            if (entityTemplate.id !== templateId) {
-                categoriesPermissions[categoryId].entityTemplates[entityTemplate.id] = {
-                    scope:
-                        categoriesPermissions[categoryId]?.scope === PermissionScope.write
-                            ? PermissionScope.write
-                            : categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
-                    fields: {},
-                };
+            if (acc[categoryId]?.scope) {
+                entityTemplates.forEach((entityTemplate) => {
+                    if (entityTemplate.id !== templateId) {
+                        acc[categoryId].entityTemplates[entityTemplate.id] = {
+                            scope:
+                                acc[categoryId]?.scope === PermissionScope.write
+                                    ? PermissionScope.write
+                                    : acc?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
+                            fields: {},
+                        };
+                    }
+                });
             }
-        });
-    }
 
-    if (categoryScope) {
-        categoriesPermissions[categoryId].scope = categoryScope;
-    } else {
-        delete categoriesPermissions[categoryId].scope;
-    }
-
-    return handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates);
+            if (categoryScope) {
+                acc[categoryId].scope = categoryScope;
+            } else {
+                delete acc[categoryId].scope;
+            }
+            return acc;
+        }, permissions),
+        categoryId,
+        entityTemplates,
+        childEntityTemplates,
+    );
 };
 
 export const getChangedTemplatePermission = (
@@ -187,15 +194,24 @@ export const getChangedTemplatePermission = (
     checked: boolean,
     scope: PermissionScope,
     categoryId: string,
-    templateId: string,
+    templateIds: string[],
     entityTemplates: entityTemplatePermissionDialog[],
+    childEntityTemplates: childTemplatePermissionDialog[],
 ) => {
-    let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId);
+    let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateIds);
 
     if (checked) {
-        categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates);
+        categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates, childEntityTemplates);
     } else {
-        categoriesPermissions = handleUncheckCategoryByTemplates(categoriesPermissions, checked, scope, categoryId, templateId, entityTemplates);
+        categoriesPermissions = handleUncheckCategoryByTemplates(
+            categoriesPermissions,
+            checked,
+            scope,
+            categoryId,
+            templateIds,
+            entityTemplates,
+            childEntityTemplates,
+        );
     }
 
     if (!categoriesPermissions?.[categoryId]?.scope && Object.keys(categoriesPermissions?.[categoryId]?.entityTemplates ?? {}).length === 0) {

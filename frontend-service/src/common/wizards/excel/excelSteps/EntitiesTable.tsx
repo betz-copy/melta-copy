@@ -24,6 +24,7 @@ export const EntitiesTable: React.FC<{
     infiniteModeWithoutExpand?: boolean;
     disableFilter?: boolean;
     ignoreType?: boolean;
+    relatedTemplateProperties?: string;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -38,6 +39,7 @@ export const EntitiesTable: React.FC<{
     infiniteModeWithoutExpand,
     disableFilter,
     ignoreType = true,
+    relatedTemplateProperties,
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -125,6 +127,7 @@ export const EntitiesTable: React.FC<{
                     infiniteModeWithoutExpand={infiniteModeWithoutExpand}
                     defaultFilter={defaultFilter}
                     disableFilter={disableFilter}
+                    addRelationshipReferenceButtonProps={relatedTemplateProperties}
                 />
             </AccordionDetails>
         </Accordion>

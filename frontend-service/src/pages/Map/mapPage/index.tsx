@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Cartesian3, Color } from 'cesium';
 import { Viewer, Entity, EllipseGraphics, PolylineGraphics, CesiumMovementEvent, PointGraphics } from 'resium';
 import * as Cesium from 'cesium';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Circle, LinearScale } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
@@ -22,6 +22,8 @@ import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import { BaseLayers } from '../BaseLayers';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
+import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { maxRadius } = environment.map;
 
@@ -29,6 +31,7 @@ const MapPage = () => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates']);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
@@ -54,6 +57,12 @@ const MapPage = () => {
     const [cameraFocus, setCameraFocus] = useState<'search' | 'circle'>();
 
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
+
+    const { metadata } = useWorkspaceStore((state) => state.workspace);
+    const { sourceTemplateId, destTemplateId } = metadata.mapPage;
+
+    const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
+    const sourceSearchResults = searchedMarkers.filter(({ node }) => node.templateId === sourceTemplate?._id).map(({ node }) => node);
 
     const {
         bounds: searchedEntityBounds,
@@ -204,7 +213,7 @@ const MapPage = () => {
                 const entityTemplate = entityTemplateMap!.get(node.templateId)!;
 
                 matchingFields.forEach((matchingField) => {
-                    const { type, value } = stringToCoordinates(node.properties[matchingField]);
+                    const { type, value } = stringToCoordinates(node.properties[matchingField].location);
                     const name = entityTemplate.properties.properties[matchingField].title;
 
                     if (type === 'polygon') {
@@ -237,7 +246,7 @@ const MapPage = () => {
                     filteredTemplatesIds.map(async (templateId) =>
                         mutateAsync({
                             textSearch: '',
-                            templates: { [templateId]: { filter: {} } },
+                            templates: { [templateId]: {} },
                             circle: { coordinate: [latitude, longitude], radius: circleData.radius! },
                         }),
                     ),
@@ -267,145 +276,167 @@ const MapPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-            <Viewer
-                full
-                ref={viewerRef}
-                onClick={handleViewerClick}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-                onMouseMove={handleMouseMove}
-                baseLayerPicker={false}
-                animation={false}
-                timeline={false}
-                geocoder={false}
-                homeButton={false}
-                sceneModePicker={false}
-                vrButton={false}
-                fullscreenButton={false}
-                navigationHelpButton={false}
-            >
-                {circleData.center && (circleData.radius || circleData.mouseRadius) && (
-                    <Entity
-                        name={i18next.t('location.circle')}
-                        description={`${locationToWGS84String(circleData.center)}, ${circleData.radius}`}
-                        position={circleData.center}
+            <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
+                <Grid height="100%" item alignSelf="flex-start">
+                    <Viewer
+                        full
+                        ref={viewerRef}
+                        onClick={handleViewerClick}
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
+                        onMouseMove={handleMouseMove}
+                        baseLayerPicker={false}
+                        animation={false}
+                        timeline={false}
+                        geocoder={false}
+                        homeButton={false}
+                        sceneModePicker={false}
+                        vrButton={false}
+                        fullscreenButton={false}
+                        navigationHelpButton={false}
                     >
-                        <EllipseGraphics
-                            semiMajorAxis={circleData.radius ?? circleData.mouseRadius!}
-                            semiMinorAxis={circleData.radius ?? circleData.mouseRadius!}
-                            fill={false}
-                            outline
-                            outlineColor={Color.fromAlpha(Color.RED, 0.7)}
-                            outlineWidth={15}
-                        />
-                        {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
-                    </Entity>
-                )}
-
-                {lineData.length > 1 && (
-                    <Entity name={i18next.t('location.line')} description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}>
-                        <PolylineGraphics positions={lineData} material={Color.fromCssColorString('#11695a')} width={3} />
-                        {lineData.map((position) => (
-                            <Entity key={`${position.x}, ${position.y}`} position={position}>
-                                <PointGraphics
-                                    color={Color.BLACK}
-                                    outlineColor={Color.fromCssColorString('#11695a')}
-                                    pixelSize={10}
-                                    outlineWidth={2}
+                        {circleData.center && (circleData.radius || circleData.mouseRadius) && (
+                            <Entity
+                                name={i18next.t('location.circle')}
+                                description={`${locationToWGS84String(circleData.center)}, ${circleData.radius}`}
+                                position={circleData.center}
+                            >
+                                <EllipseGraphics
+                                    semiMajorAxis={circleData.radius ?? circleData.mouseRadius!}
+                                    semiMinorAxis={circleData.radius ?? circleData.mouseRadius!}
+                                    fill={false}
+                                    outline
+                                    outlineColor={Color.fromAlpha(Color.RED, 0.7)}
+                                    outlineWidth={15}
                                 />
+                                {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                             </Entity>
+                        )}
+
+                        {lineData.length > 1 && (
+                            <Entity
+                                name={i18next.t('location.line')}
+                                description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}
+                            >
+                                <PolylineGraphics positions={lineData} material={Color.fromCssColorString('#11695a')} width={3} />
+                                {lineData.map((position) => (
+                                    <Entity key={`${position.x}, ${position.y}`} position={position}>
+                                        <PointGraphics
+                                            color={Color.BLACK}
+                                            outlineColor={Color.fromCssColorString('#11695a')}
+                                            pixelSize={10}
+                                            outlineWidth={2}
+                                        />
+                                    </Entity>
+                                ))}
+                            </Entity>
+                        )}
+
+                        {searchedEntityPolygons.map(({ key, position: polygon }) => (
+                            <MeltaPolygon
+                                key={key}
+                                name={searchedPropertyDefinitions[key].title}
+                                polygon={polygon}
+                                onClick={() => {
+                                    setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
+                                }}
+                            />
                         ))}
-                    </Entity>
+
+                        {searchedEntityMarkers.map(({ key, position }) => (
+                            <MeltaCoordinate
+                                key={key}
+                                name={searchedPropertyDefinitions[key].title}
+                                position={convertWGS94ToECEF(position) as Cartesian3}
+                                onClick={() => {
+                                    setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
+                                }}
+                            />
+                        ))}
+
+                        {searchedPolygons.map(({ key, name, position: polygon, node }) => (
+                            <MeltaPolygon
+                                key={key}
+                                name={name}
+                                polygon={polygon}
+                                onClick={() => {
+                                    setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
+                                }}
+                            />
+                        ))}
+
+                        {searchedMarkers.map(({ key, name, position, node }) => (
+                            <MeltaCoordinate
+                                key={key}
+                                name={name}
+                                position={convertWGS94ToECEF(position) as Cartesian3}
+                                onClick={() => {
+                                    setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
+                                }}
+                            />
+                        ))}
+
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
+                            <MapFilters
+                                selectedTemplates={selectedTemplates}
+                                setSelectedTemplates={setSelectedTemplates}
+                                moveToEntityLocations={(entity: IEntity) => {
+                                    setSearchedEntity(entity);
+                                    setCameraFocus('search');
+                                }}
+                                entityTemplateMap={entityTemplateMap!}
+                                onClear={onClear}
+                                darkMode={darkMode}
+                                clearAutocompleteSearch={clearAutocompleteSearch}
+                            />
+
+                            <ToggleButtonGroup
+                                value={drawingMode}
+                                exclusive
+                                onChange={handleDrawType}
+                                size="small"
+                                style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
+                            >
+                                <MeltaTooltip title={i18next.t('location.circle')}>
+                                    <ToggleButton value="circle">
+                                        <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    </ToggleButton>
+                                </MeltaTooltip>
+                                <MeltaTooltip title={i18next.t('location.line')}>
+                                    <ToggleButton value="line">
+                                        <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    </ToggleButton>
+                                </MeltaTooltip>
+                            </ToggleButtonGroup>
+
+                            {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                        </div>
+                        {selectedEntity && (
+                            <MapPageEntityDialog
+                                open={!!selectedEntity}
+                                entityWithMatchingField={selectedEntity}
+                                onClose={() => setSelectedEntity(null)}
+                                key={selectedEntity.matchingField}
+                            />
+                        )}
+                    </Viewer>
+                </Grid>
+
+                {sourceSearchResults.length > 0 && (
+                    <Grid item width="98%">
+                        <EntitiesTable
+                            rowData={sourceSearchResults}
+                            rowModelType="clientSide"
+                            template={sourceTemplate!}
+                            defaultExpanded
+                            title={i18next.t('location.searchResults')}
+                            infiniteModeWithoutExpand
+                            relatedTemplateProperties={destTemplateId}
+                            overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}
+                        />
+                    </Grid>
                 )}
-
-                {searchedEntityPolygons.map(({ key, position: polygon }) => (
-                    <MeltaPolygon
-                        key={key}
-                        name={searchedPropertyDefinitions[key].title}
-                        polygon={polygon}
-                        onClick={() => {
-                            setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
-                        }}
-                    />
-                ))}
-
-                {searchedEntityMarkers.map(({ key, position }) => (
-                    <MeltaCoordinate
-                        key={key}
-                        name={searchedPropertyDefinitions[key].title}
-                        position={convertWGS94ToECEF(position) as Cartesian3}
-                        onClick={() => {
-                            setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
-                        }}
-                    />
-                ))}
-
-                {searchedPolygons.map(({ key, name, position: polygon, node }) => (
-                    <MeltaPolygon
-                        key={key}
-                        name={name}
-                        polygon={polygon}
-                        onClick={() => {
-                            setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
-                        }}
-                    />
-                ))}
-
-                {searchedMarkers.map(({ key, name, position, node }) => (
-                    <MeltaCoordinate
-                        key={key}
-                        name={name}
-                        position={convertWGS94ToECEF(position) as Cartesian3}
-                        onClick={() => {
-                            setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
-                        }}
-                    />
-                ))}
-
-                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
-                    <MapFilters
-                        selectedTemplates={selectedTemplates}
-                        setSelectedTemplates={setSelectedTemplates}
-                        moveToEntityLocations={(entity: IEntity) => {
-                            setSearchedEntity(entity);
-                            setCameraFocus('search');
-                        }}
-                        entityTemplateMap={entityTemplateMap!}
-                        onClear={onClear}
-                        darkMode={darkMode}
-                        clearAutocompleteSearch={clearAutocompleteSearch}
-                    />
-
-                    <ToggleButtonGroup
-                        value={drawingMode}
-                        exclusive
-                        onChange={handleDrawType}
-                        size="small"
-                        style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
-                    >
-                        <MeltaTooltip title={i18next.t('location.circle')}>
-                            <ToggleButton value="circle">
-                                <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                            </ToggleButton>
-                        </MeltaTooltip>
-                        <MeltaTooltip title={i18next.t('location.line')}>
-                            <ToggleButton value="line">
-                                <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                            </ToggleButton>
-                        </MeltaTooltip>
-                    </ToggleButtonGroup>
-
-                    {config && <BaseLayers viewerRef={viewerRef} config={config} />}
-                </div>
-                {selectedEntity && (
-                    <MapPageEntityDialog
-                        open={!!selectedEntity}
-                        entityWithMatchingField={selectedEntity}
-                        onClose={() => setSelectedEntity(null)}
-                        key={selectedEntity.matchingField}
-                    />
-                )}
-            </Viewer>
+            </Grid>
         </div>
     );
 };

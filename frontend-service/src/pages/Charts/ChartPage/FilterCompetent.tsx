@@ -6,12 +6,13 @@ import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
-import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../common/FilterCompetent';
+import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../common/FilterComponent';
 import { StyledFilterInput } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 
 const FilterCompetent = <T extends TableForm | ChartForm>({
     formik: { values, errors, touched, setFieldValue },
@@ -29,7 +30,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = entityTemplates.get(values.templateId!);
+    const entityTemplate = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
     const [inputValue, setInputValue] = useState<string>('');
 
     const properties = entityTemplate?.properties.properties;

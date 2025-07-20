@@ -42,6 +42,16 @@ export interface IMetadata {
     searchLimits: {
         bulk: number;
     };
+    unitFieldSplitDepth: number;
+    clientSide: {
+        usersInfoChildTemplateId: string;
+        numOfPropsToShow: number;
+        clientSideWorkspaceName: 'simba' | 'azarim';
+    };
+    mapPage: {
+        sourceTemplateId: string;
+        destTemplateId: string;
+    };
 }
 export interface IWorkspace {
     _id: string;

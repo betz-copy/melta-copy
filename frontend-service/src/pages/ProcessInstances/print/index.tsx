@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { IconButton, ThemeProvider } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
@@ -24,7 +24,7 @@ const Print: React.FC<{
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isProcessCard?: boolean;
 }> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isProcessCard }) => {
-    const [openModal, setOpenModal] = React.useState(false);
+    const [openModal, setOpenModal] = useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
 
@@ -35,11 +35,11 @@ const Print: React.FC<{
         bodyClass: 'print-body',
     });
 
-    const [files, setFiles] = React.useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = React.useState(files);
+    const [files, setFiles] = useState<IFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState(files);
 
-    const [showSummary, setShowSummary] = React.useState(true);
-    const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
+    const [showSummary, setShowSummary] = useState(true);
+    const [filesLoadingStatus, setFilesLoadingStatus] = useState({});
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes

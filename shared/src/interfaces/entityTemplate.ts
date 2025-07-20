@@ -23,7 +23,8 @@ export interface IEntitySingleProperty {
         | 'user'
         | 'signature'
         | 'comment'
-        | 'kartoffelUserField';
+        | 'kartoffelUserField'
+        | 'unitField';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -52,6 +53,8 @@ export interface IEntitySingleProperty {
     comment?: string;
     color?: string;
     hideFromDetailsPage?: boolean;
+    filters?: any;
+    defaultValue?: any;
 }
 export interface IProperties {
     type: 'object';
@@ -85,6 +88,12 @@ export interface IEntityTemplate {
 
 export interface IMongoEntityTemplate extends IEntityTemplate {
     _id: string;
+}
+
+export interface IFullMongoEntityTemplate extends IEntityTemplate {
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IMongoEntityTemplate, 'category'> {

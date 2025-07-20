@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { IMongoEntityTemplate, IMongoChart } from '@microservices/shared';
+import { IMongoChart, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import config from './config';
 import { chartsCreator } from './mocks/templateCharts';
 import createAxiosInstance from './utils/axios';
@@ -10,7 +10,7 @@ const {
     charts: { baseRoute: createChartsBaseRoute },
 } = config.dashboardService;
 
-export const createCharts = async (workspaceId: string, entityTemplates: IMongoEntityTemplate[], userId: string) => {
+export const createCharts = async (workspaceId: string, entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[], userId: string) => {
     const axios = createAxiosInstance(workspaceId);
 
     const templateMap = Object.fromEntries(entityTemplates.map(({ name, _id }) => [name, _id]));

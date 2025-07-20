@@ -8,7 +8,8 @@ export const ViewingCard: React.FC<{
     onHover?: (isHover: boolean) => void;
     width?: number;
     cursor?: boolean;
-}> = ({ title, expendedCard, onHover, width, cursor }) => {
+    isDisabled?: boolean;
+}> = ({ title, expendedCard, onHover, width, cursor, isDisabled = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const [open, setOpen] = useState<boolean>(false);
 
@@ -32,7 +33,9 @@ export const ViewingCard: React.FC<{
                 <CardContent
                     style={{ padding: '10px' }}
                     onClick={() => {
-                        setOpen(!!expendedCard);
+                        if (!isDisabled && expendedCard) {
+                            setOpen(true);
+                        }
                     }}
                 >
                     {!open && title}

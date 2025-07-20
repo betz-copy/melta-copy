@@ -9,6 +9,7 @@ import SearchAutoComplete from './SearchAutoComplete';
 import { IEntity } from '../../../interfaces/entities';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { IMongoCategory } from '../../../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 
 export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; darkMode: boolean }) => (
     <IconButtonWithPopover
@@ -29,7 +30,7 @@ export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; d
 
 type Props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
     moveToEntityLocations: (entity: IEntity) => void;
     entityTemplateMap: IEntityTemplateMap;
     onClear: () => void;

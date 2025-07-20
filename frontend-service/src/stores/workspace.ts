@@ -35,6 +35,16 @@ export const defaultMetadata = {
     searchLimits: {
         bulk: 5,
     },
+    unitFieldSplitDepth: 2,
+    clientSide: {
+        usersInfoChildTemplateId: '',
+        numOfPropsToShow: 9,
+        clientSideWorkspaceName: 'simba',
+    },
+    mapPage: {
+        sourceTemplateId: '',
+        destTemplateId: '',
+    },
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

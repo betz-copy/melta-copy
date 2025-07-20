@@ -87,7 +87,7 @@ export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any
     [field in keyof T]?: IFilterOfField;
 };
 
-type IFilterGroup = IFilterOfTemplate | ISearchFilter;
+export type IFilterGroup = IFilterOfTemplate | ISearchFilter;
 
 export enum FilterLogicalOperator {
     AND = '$and',
@@ -197,6 +197,7 @@ export interface IExportEntitiesBody {
             displayColumns?: string[];
             headersOnly?: boolean;
             insertEntities?: Record<string, any>[];
+            isChildTemplate?: boolean;
         };
     };
 }
@@ -214,6 +215,7 @@ export interface IGraphFilterBodyBatch {
 export interface IDeleteEntityBodyBase {
     templateId: string;
     deleteAllRelationships?: boolean;
+    childTemplateId?: string;
 }
 
 export type IMultipleSelect<T extends boolean = boolean> = {

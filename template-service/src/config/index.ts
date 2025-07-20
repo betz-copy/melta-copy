@@ -15,6 +15,7 @@ const config = {
         relationshipTemplatesCollectionName: env.get('MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME').required().asString(),
         ruleCollectionName: env.get('MONGO_RULES_COLLECTION_NAME').required().asString(),
         entityTemplatesCollectionName: env.get('MONGO_ENTITY_TEMPLATES_COLLECTION_NAME').required().asString(),
+        childTemplatesCollectionName: env.get('MONGO_CHILD_TEMPLATES_COLLECTION_NAME').required().asString(),
         categoriesCollectionName: env.get('MONGO_CATEGORIES_COLLECTION_NAME').required().asString(),
         configsCollectionName: env.get('MONGO_CONFIGS_COLLECTION_NAME').required().asString(),
         connectionOptions: {

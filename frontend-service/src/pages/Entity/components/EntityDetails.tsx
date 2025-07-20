@@ -1,20 +1,20 @@
-import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import {
-    ContentCopy as DuplicateIcon,
+    Archive,
     Delete as DeleteIcon,
-    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    ContentCopy as DuplicateIcon,
     MoreVertOutlined,
     Unarchive,
-    Archive,
 } from '@mui/icons-material';
+import MapIcon from '@mui/icons-material/Map';
+import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import MapIcon from '@mui/icons-material/Map';
+import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -29,12 +29,13 @@ import { deleteEntityRequest, updateEntityStatusRequest } from '../../../service
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { isChildTemplate } from '../../../utils/templates';
+import LocationPreview from '../../Map/LocationPreview';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import LocationPreview from '../../Map/LocationPreview';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -46,7 +47,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
     const queryClient = useQueryClient();
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
 
     const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
@@ -86,10 +87,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
 
+    const childTemplateId = isChildTemplate(entityTemplate) ? entityTemplate._id : undefined;
+
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
     const canWriteInstance = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         entityTemplate._id,
         PermissionScope.write,
     );
@@ -100,7 +103,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const { isLoading: isUpdateStatusLoading, mutateAsync: updateEntityStatus } = useMutation(
         ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+            updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
         {
             onSuccess: (data) => {
                 queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
@@ -137,6 +140,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
+                childTemplateId: childTemplateId,
             } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {
@@ -229,9 +233,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(`/entity/${entity.properties._id}/duplicate`, {
-                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                });
+                                                navigate(
+                                                    `/entity/${entity.properties._id}/duplicate${
+                                                        isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
+                                                    }`,
+                                                    {
+                                                        state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                    },
+                                                );
                                             }
                                             handleClose();
                                         }}

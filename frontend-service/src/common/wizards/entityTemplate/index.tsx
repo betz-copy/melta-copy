@@ -6,11 +6,13 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { ICategoryMap } from '../../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { useUserStore } from '../../../stores/user';
@@ -84,9 +86,12 @@ export interface EntityTemplateWizardValues
     documentTemplatesIds?: File[];
 }
 
-const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
+const EntityTemplateWizard: React.FC<
+    WizardBaseType<EntityTemplateWizardValues> & { searchEntityTemplatesQueryKey: (string | IMongoCategory[])[] }
+> = ({
     open,
     handleClose,
+    searchEntityTemplatesQueryKey,
     initialStep = 0,
     initialValues = {
         name: '',
@@ -115,17 +120,36 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
-        (entityTemplate: EntityTemplateWizardValues) =>
-            isEditMode
-                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate, queryClient)
-                : createEntityTemplateRequest(entityTemplate, queryClient),
+        async (entityTemplate: EntityTemplateWizardValues) => {
+            if (isEditMode) {
+                return await updateEntityTemplateRequest(
+                    (initialValues as EntityTemplateWizardValues & { _id: string })._id,
+                    entityTemplate,
+                    queryClient,
+                );
+            }
+            const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
+            return { template: createdTemplate, childTemplates: [] };
+        },
         {
-            onSuccess: async (data) => {
+            onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.invalidateQueries(['searchEntityTemplates']);
+                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    return childTemplateMap!;
+                });
+
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
+
+                    try {
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
+                        queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+                    } catch (error) {
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                    }
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
                     try {

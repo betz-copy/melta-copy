@@ -42,18 +42,23 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    filters?: string;
+    defaultValue?: any;
+    isFilterByCurrentUser?: boolean;
+    isFilterByUserUnit?: boolean;
+}
+
+export interface IProperties {
+    type: 'object';
+    properties: Record<string, IEntitySingleProperty>;
+    hide: string[];
 }
 
 export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
-    properties: {
-        type: 'object';
-        properties: Record<string, IEntitySingleProperty>;
-        required: string[];
-        hide: string[];
-    };
+    properties: IProperties & { required: string[] };
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];

@@ -1,8 +1,5 @@
 {
-    "eslint.validate": [
-        "javascript",
-        "typescript"
-    ],
+    "eslint.validate": ["javascript", "typescript"],
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
@@ -36,23 +33,27 @@
         "statusBarItem.remoteBackground": "#007fff",
         "statusBarItem.remoteForeground": "#e7e7e7"
     },
-    "peacock.color": "#007fff",
-    "cSpell.words": [
-        "ECEF",
-        "epsg",
-        "hemi",
-        "Highchart",
-        "Highcharts",
-        "kartoffel",
-        "melta",
-        "wouter"
-    ],
+    "cSpell.words": ["ECEF", "epsg", "hemi", "Highchart", "Highcharts", "kartoffel", "melta", "menash", "Rjsf", "Shraga", "wouter"],
     "files.exclude": {
-        "**/node_modules": true,
-        "**/dist": true
+        "**/node_modules": true
+        // "**/dist": true
     },
     "search.exclude": {
         "**/node_modules": true,
         "**/dist": true
+    },
+    // -- tsserver uses ≤1 GB heap
+    "typescript.tsserver.maxTsServerMemory": 1024,
+
+    // merge syntax + semantic server ➜ ~30 % less RAM
+    "typescript.tsserver.useSyntaxServer": "never",
+
+    // stop downloading @types for every JS file
+    "typescript.disableAutomaticTypeAcquisition": true,
+
+    // don't index build artefacts
+    "files.watcherExclude": {
+        "**/dist/**": true,
+        "**/coverage/**": true
     }
 }

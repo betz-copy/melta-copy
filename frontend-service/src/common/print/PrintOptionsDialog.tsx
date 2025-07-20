@@ -1,7 +1,7 @@
 import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IFile } from '../../interfaces/preview';
@@ -12,6 +12,7 @@ import { IEntityExpandedWithRelatedRelationships } from '../../pages/Entity/comp
 import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import { MeltaCheckbox } from '../MeltaCheckbox';
+import { MeltaTooltip } from '../MeltaTooltip';
 import { SelectCheckbox } from '../SelectCheckBox';
 
 type IOption = {
@@ -86,7 +87,7 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     options,
 }) => {
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const getPropertiesFiles = React.useCallback((): IFile[] => {
         if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
@@ -120,7 +121,7 @@ const PrintOptionsDialog: React.FC<{
         return [];
     }, [instance, template]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const currFiles = getPropertiesFiles()
             .filter((file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported')
             .concat(
@@ -132,7 +133,7 @@ const PrintOptionsDialog: React.FC<{
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setFilesLoadingStatus(
             selectedFiles.reduce((acc, file) => {
                 return { ...acc, [file.id]: true };
@@ -141,7 +142,7 @@ const PrintOptionsDialog: React.FC<{
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFiles]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (Object.keys(filesLoadingStatus).length === 0) {
             setIsLoading(false);
             return;
@@ -189,13 +190,24 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                     <Grid paddingTop="25px">
                         {Object.entries(options).map(([key, value]) => {
+                            const isDisabled =
+                                key === 'previewPropertiesOnly' && 'propertiesPreview' in template && template.propertiesPreview.length === 0;
+
+                            const label = (
+                                <FormControlLabel
+                                    control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
+                                    label={i18next.t(value.label)}
+                                    disabled={isDisabled}
+                                />
+                            );
                             return (
                                 value && (
                                     <Grid key={key}>
-                                        <FormControlLabel
-                                            control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
-                                            label={i18next.t(value.label)}
-                                        />
+                                        {isDisabled ? (
+                                            <MeltaTooltip title={i18next.t('entityPage.print.noPreviewProperties')}>{label}</MeltaTooltip>
+                                        ) : (
+                                            label
+                                        )}
                                     </Grid>
                                 )
                             );

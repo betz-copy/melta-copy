@@ -48,7 +48,6 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                 }}
             >
                 {enumOptions?.map((option, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <MenuItem key={index} value={option}>
                         <Checkbox checked={filterField?.values.includes(option)} onChange={(e) => handleCheckboxChange(option, e.target.checked)} />
                         <ListItemText primary={option} />

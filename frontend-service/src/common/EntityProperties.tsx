@@ -2,7 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
@@ -75,11 +75,12 @@ export const formatToString = (
             );
         }
         if (format === 'user') {
+            const userObject = typeof value === 'string' ? JSON.parse(value) : value;
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={JSON.parse(value).fullName}>
+                    <MeltaTooltip title={userObject.fullName}>
                         <Grid item>
-                            <Chip avatar={<UserAvatar user={JSON.parse(value)} size={25} bgColor="1E2775" />} label={JSON.parse(value).fullName} />
+                            <Chip avatar={<UserAvatar user={userObject} size={25} bgColor="1E2775" />} label={userObject.fullName} />
                         </Grid>
                     </MeltaTooltip>
                 </Grid>
@@ -207,7 +208,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     textWrap,
     preview,
 }) => {
-    const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
+    const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -409,11 +410,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
+        const formats = ['fileId', 'signature'];
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) =>
-                getCurrProperty(propertyKey).format !== 'fileId' &&
-                getCurrProperty(propertyKey).items?.format !== 'fileId' &&
-                getCurrProperty(propertyKey).format !== 'signature',
+            (propertyKey) => formats.includes(getCurrProperty(propertyKey).format ?? '') && getCurrProperty(propertyKey).items?.format !== 'fileId',
         );
     } else
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>

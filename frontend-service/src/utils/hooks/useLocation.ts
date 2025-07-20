@@ -6,12 +6,13 @@ import { parsePolygon, stringToCoordinates } from '../map';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const { squareLength } = environment.map;
 
 type entityWithLocationsProps = {
     entityProperties?: IEntity['properties'];
-    entityTemplate?: IMongoEntityTemplatePopulated;
+    entityTemplate?: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
 };
 
 export const createSquareAroundPoint = (center: Cartesian3, sideLength: number): Cartesian3[] => {

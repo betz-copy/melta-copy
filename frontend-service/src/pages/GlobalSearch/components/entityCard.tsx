@@ -4,10 +4,11 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
-import { useLocation } from 'wouter';
 import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import OpenPreview from '../../../common/FilePreview/OpenPreview';
@@ -15,23 +16,23 @@ import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
+import { HighlightText } from '../../../utils/HighlightText';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { getFirstXPropsKeys, isChildTemplate } from '../../../utils/templates';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { HighlightText } from '../../../utils/HighlightText';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -86,7 +87,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const userHasWritePermissions = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         entityTemplate._id,
         PermissionScope.write,
     );
@@ -157,17 +158,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity; wizardValues?: EntityWizardValues }>({ isOpen: false });
     const [_, navigate] = useLocation();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
-    const first5PropsKeys: string[] = [
-        ...entityTemplate.propertiesPreview,
-        ...entityTemplate.propertiesOrder
-            .filter(
-                (property) =>
-                    !entityTemplate.propertiesPreview.includes(property) &&
-                    entityTemplate.properties.properties[property].format !== 'fileId' &&
-                    entityTemplate.properties.properties[property].items?.format !== 'fileId',
-            )
-            .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
-    ];
+    const first5PropsKeys: string[] = getFirstXPropsKeys(5, entityTemplate);
 
     useMemo(() => {
         const fileIndex = files.findIndex(
@@ -190,7 +181,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
             ref={cardRef}
             sx={{
                 margin: '0.6rem',
-                width: open ? 0.987 : '547px',
+                width: open ? 0.987 : '520px',
                 borderRadius: '15px',
                 overflow: 'hidden',
                 paddingBottom: '10px',
@@ -224,7 +215,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {
                                 icon: '/icons/read-more-icon.svg',
                                 action: () => {
-                                    navigate(`/entity/${entity.properties._id}`);
+                                    navigate(
+                                        `/entity/${entity.properties._id}${
+                                            isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
+                                        }`,
+                                    );
                                 },
                                 popoverText: i18next.t('wizard.entity.readMore'),
                             },
@@ -546,9 +541,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     }}
                     entityTemplate={entityTemplate}
                     initialCurrValues={editDialog.wizardValues}
-                    handleClose={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    }}
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

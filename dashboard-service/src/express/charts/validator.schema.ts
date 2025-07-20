@@ -31,6 +31,7 @@ const chartSchema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     type: Joi.string()
         .valid(...Object.values(IChartType))
         .required(),
@@ -68,6 +69,7 @@ export const getChartByIdRequestSchema = Joi.object({
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {

@@ -41,19 +41,18 @@ const ManagePermissions: React.FC<{
         );
     };
 
-    const isPropertyChecked = (property: managementTypes) =>
-        currentPermissions?.[property]?.scope === PermissionScope.write || currentPermissions?.admin?.scope === PermissionScope.write;
+    const isAdmin = currentPermissions?.admin?.scope === PermissionScope.write;
+    const isPropertyChecked = (property: managementTypes) => currentPermissions?.[property]?.scope === PermissionScope.write || isAdmin;
 
     return (
         <>
             {(!(
                 mode === 'view' &&
-                currentPermissions?.permissions?.scope !== PermissionScope.write &&
-                currentPermissions?.templates?.scope !== PermissionScope.write &&
-                currentPermissions?.processes?.scope !== PermissionScope.write &&
-                currentPermissions?.rules?.scope !== PermissionScope.write
+                Object.entries(currentPermissions)
+                    .filter(([key]) => !['admin', 'instances'].includes(key))
+                    .some(([_, perm]) => perm?.scope === PermissionScope.write)
             ) ||
-                currentPermissions?.admin?.scope === PermissionScope.write) && (
+                isAdmin) && (
                 <Box>
                     <ManagementPermissionsCard
                         viewMode={mode === 'view'}
@@ -64,7 +63,7 @@ const ManagePermissions: React.FC<{
                                 : (checked, property, permissionsManagement) =>
                                       handleManagementPermissionCheck(`${permissionsPath}.${property}`, checked, permissionsManagement)
                         }
-                        disabled={disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write}
+                        disabled={disableCheckboxes || formikProps.isSubmitting || isAdmin}
                     />
                 </Box>
             )}
@@ -77,7 +76,7 @@ const ManagePermissions: React.FC<{
                     categoriesCheckboxProps={Array.from(dialogPermissionData.values(), (currCategory) => ({
                         categoryId: currCategory._id,
                         categoryDisplayName: currCategory.displayName,
-                        disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                        disabled: disableCheckboxes || formikProps.isSubmitting || isAdmin,
                         scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                         entityTemplates: currCategory.entityTemplates,
                         permissionType: {
@@ -134,7 +133,7 @@ const ManagePermissions: React.FC<{
                                                   Object.values(categoriesPermissions).every(
                                                       (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
                                                   )) ||
-                                              currentPermissions?.admin?.scope === PermissionScope.write,
+                                              isAdmin,
                                           onChange: (_e, checked) => {
                                               formikProps.setFieldValue(
                                                   `${permissionsPath}.instances.categories`,
@@ -158,7 +157,7 @@ const ManagePermissions: React.FC<{
                                           checked:
                                               (Object.keys(categoriesPermissions).length === categories.size &&
                                                   Object.values(categoriesPermissions).every((categoryPermission) => categoryPermission?.scope)) ||
-                                              currentPermissions?.admin?.scope === PermissionScope.write,
+                                              isAdmin,
                                           onChange: (_e, checked) => {
                                               Array.from(categories).forEach(([categoryId]) => {
                                                   const newPermission = getChangedCategoryPermissions(

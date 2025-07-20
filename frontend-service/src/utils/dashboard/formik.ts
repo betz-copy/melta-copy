@@ -8,6 +8,7 @@ import { IChartType, IColumnOrLineMetaData, IPermission } from '../../interfaces
 import { ChartForm, DashboardItemType, TableForm, TableItemToBackend } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IFrame } from '../../interfaces/iFrames';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 export const tableDetailsSchema = Yup.object().shape({
     name: Yup.string().required(i18next.t('validation.required')),
@@ -37,19 +38,26 @@ export const dashboardInitialValues = {
     } as ChartForm,
 };
 
-export const getTemplateProperties = (entityTemplates: IEntityTemplateMap, templateId: string | null) => {
+export const getTemplateProperties = (
+    entityTemplates: IEntityTemplateMap | IChildTemplateMap,
+    templateId: string | null,
+) => {
     const entityTemplate = entityTemplates.get(templateId!);
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
     return entityTemplateFields || [];
 };
 
-export const tableMetaDataToBackend = (tableData: TableForm, queryClient: QueryClient): TableItemToBackend => ({
-    type: DashboardItemType.Table,
-    metaData: {
-        ...tableData,
-        filter: tableData.filter ? filterTemplateToSearchFilter(tableData.filter, tableData.templateId, queryClient) : undefined,
-    },
-});
+export const tableMetaDataToBackend = (tableData: TableForm, queryClient: QueryClient): TableItemToBackend => {
+    const { childTemplateId, ...restTableData } = tableData;
+    return {
+        type: DashboardItemType.Table,
+        metaData: {
+            ...restTableData,
+            childTemplateId: childTemplateId || undefined,
+            filter: tableData.filter ? filterTemplateToSearchFilter(tableData.filter, tableData.templateId, queryClient) : undefined,
+        },
+    };
+};
 
 export const filterDocumentToFilterBackend = (templateId: string, filter: IFilterTemplate[] | undefined, queryClient: QueryClient) =>
     filter ? filterTemplateToSearchFilter(filter, templateId, queryClient) : undefined;

@@ -1,30 +1,31 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { memo, useEffect, useState } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
+import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
-import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
+import i18next from 'i18next';
+import { cloneDeep } from 'lodash';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
-import validator from '@rjsf/validator-ajv8';
-import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
-import { cloneDeep } from 'lodash';
+import React, { memo, useEffect, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { RjsfDateWidget, RjsfDateTimeWidget } from './RjsfDatesWidgets';
-import RjsfSelectWidget from './RjsfSelectWidget';
-import RjsfTextWidget from './RjsfStringWidget';
-import RjsfTextAreaWidget from './RjsfTextAreaWidget';
+import { IKartoffelUser } from '../../../interfaces/users';
+import { matchValueAgainstFilter } from '../../../utils/filters';
 import './form.css';
-import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
-import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-import RjsfUserWidget from './RjsfUserWidget';
-import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
-import RjsfSignatureWidgets from './RjsfSignatureWidgets';
-import { IKartoffelUser } from '../../../interfaces/users';
 import RjsfCommentWidget from './RjsfCommentWidget';
+import { RjsfDateTimeWidget, RjsfDateWidget } from './RjsfDatesWidgets';
+import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
+import RjsfSelectWidget from './RjsfSelectWidget';
+import RjsfSignatureWidgets from './RjsfSignatureWidgets';
+import RjsfTextWidget from './RjsfStringWidget';
+import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
+import RjsfTextAreaWidget from './RjsfTextAreaWidget';
+import RjsfUserArrayWidget from './RjsfUserArrayWidget';
+import RjsfUserWidget from './RjsfUserWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -47,74 +48,86 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
     return Object.fromEntries(formikErrorsEntries);
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
+export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
+    addFormats(ajv);
+
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
+    ajv.addFormat('unitField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
-            const userObj = JSON.parse(user);
-            return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+            try {
+                const userObj = JSON.parse(user);
+                return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+            } catch {
+                return false;
+            }
         },
     });
-    ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     ajv.addFormat('comment', /.*/);
-    addFormats(ajv);
+
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
-    ajv.addKeyword({
-        keyword: 'dateNotification',
-    });
-    ajv.addKeyword({ keyword: 'isDailyAlert' });
-    ajv.addKeyword({ keyword: 'isDatePastAlert' });
-    ajv.addKeyword({ keyword: 'calculateTime' });
-    ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
-    ajv.addKeyword({
-        keyword: 'serialStarter',
-    });
-    ajv.addKeyword({
-        keyword: 'relationshipReference',
-        type: 'string',
-    });
-    ajv.addKeyword({
-        keyword: 'expandedUserField',
-        type: 'string',
-    });
-    ajv.addKeyword({
-        keyword: 'serialCurrent',
-    });
-    ajv.addKeyword({
-        keyword: 'comment',
-    });
-    ajv.addKeyword({
-        keyword: 'hideFromDetailsPage',
-    });
-    ajv.addKeyword({
-        keyword: 'color',
-    });
+
+    [
+        'dateNotification',
+        'isDailyAlert',
+        'isEditableByUser',
+        'isDatePastAlert',
+        'calculateTime',
+        'archive',
+        'serialStarter',
+        'relationshipReference',
+        'expandedUserField',
+        'serialCurrent',
+        'comment',
+        'hideFromDetailsPage',
+        'color',
+        'filters',
+        'defaultValue',
+        'isFilterByCurrentUser',
+        'isFilterByUserUnit',
+    ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({
         keyword: 'identifier',
         type: 'string',
         schema: false,
-        validate: (dataToValidate) => dataToValidate !== undefined,
+        validate: (v) => v !== undefined,
         errors: false,
     });
 
+    const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
+        properties: pickBy(schema.properties, (value) => !formats.includes(value.format ?? '')),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
-
     validateFunction(data);
     const ajvErrors = validateFunction.errors ?? [];
+    const formikErrors = ajvErrorsToFormikErrors(schema, ajvErrors);
 
-    return ajvErrorsToFormikErrors(schema, ajvErrors);
+    const childTemplateFilterErrors: FormikErrors<any> = {};
+
+    Object.entries(schema.properties || {}).forEach(([field, propertySchema]) => {
+        const propertyFilter = propertySchema?.filters;
+        if (!propertyFilter) return;
+
+        const parsedFilter = typeof propertyFilter === 'string' ? JSON.parse(propertyFilter) : propertyFilter;
+        if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
+
+        const value = data[field];
+        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+            childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
+        }
+    });
+
+    return { ...formikErrors, ...childTemplateFilterErrors };
 };
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
@@ -169,7 +182,11 @@ const getComponent = (
         return getWrappedComponent;
     }
 
-    return Component;
+    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
+        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
+    };
+
+    return getWrappedComponent;
 };
 
 interface JSONSchemaFormFormikProps {
@@ -249,6 +266,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
+                const defaultValue = values.template?.properties?.properties?.[propertyKey].defaultValue ?? undefined;
                 if (propertySchema.archive) return {};
                 if (propertySchema.format === 'comment')
                     return {
@@ -267,6 +285,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:options': {
                             disabled: true,
+                            defaultValue,
                         },
                     };
                 if (propertySchema.serialCurrent !== undefined)
@@ -277,10 +296,12 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                             hardCodedValue: isEditMode ? undefined : i18next.t('wizard.entity.serialNumberAutoGenerated'),
                         },
                     };
+
                 if (propertySchema.items?.enum || propertySchema?.enum) {
                     return {
                         'ui:widget': 'SelectWidget',
                         'ui:options': {
+                            defaultValue,
                             enumOptions: (propertySchema.items?.enum || propertySchema?.enum)!.map((option) => ({
                                 label: option,
                                 value: option,
@@ -289,9 +310,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         },
                     };
                 }
+
                 if (propertySchema.type === 'array' && propertySchema.items?.format === 'user') {
                     return {
                         'ui:widget': 'UserArrayWidget',
+                        'ui:options': {
+                            defaultValue,
+                        },
                     };
                 }
                 if (propertySchema.format === 'user') {
@@ -334,7 +359,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TextAreaWidget',
                         'ui:classNames': 'fullWidth',
-                        'ui:options': { toPrint },
+                        'ui:options': { toPrint, defaultValue },
                     };
                 if (propertySchema.format === 'relationshipReference')
                     return {
@@ -344,7 +369,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'LocationWidget',
                     };
-                return {};
+                return {
+                    'ui:options': { defaultValue },
+                };
             })}
             onChange={({ formData }) => {
                 Object.entries(formData).forEach(([key, value]) => {

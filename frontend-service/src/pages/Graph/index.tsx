@@ -31,8 +31,8 @@ import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphTopBar } from './GraphTopBar';
 import { NodeTooltip } from './NodeTooltip';
 import TemplatesSelectGrid from './templatesSelectGrid';
-// eslint-disable-next-line import/no-unresolved
 import { ILinkObject, INodeObject } from '../../customTypes';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 interface genericMenuState {
     node: NodeObject;
@@ -72,8 +72,13 @@ const Graph: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
-    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>(Array.from(entityTemplates.values()));
+    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>([
+        ...entityTemplates.values(),
+        ...childTemplates.values(),
+    ]);
+
     const [load, setLoad] = useState<boolean>(false);
     const reload = () => setLoad(!load);
     const [is3DGraph, setIs3DGraph] = useLocalStorage(graphSettings.is3DViewLocalStorageKey, false);
@@ -81,7 +86,7 @@ const Graph: React.FC = () => {
     const [currentBatchIndex, setCurrentBatchIndex] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const templateOptions = Array.from(entityTemplates.values());
+    const templateOptions = [...entityTemplates.values(), ...childTemplates.values()];
     const updateGraphSize = () => {
         const mainBox = ref.current?.parentElement;
 
@@ -177,6 +182,7 @@ const Graph: React.FC = () => {
                 entity: expandedEntity!.entity,
             },
             entityTemplates,
+            childTemplates,
             relationshipTemplates,
         );
 
@@ -214,8 +220,14 @@ const Graph: React.FC = () => {
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
+
         return ReactDOMServer.renderToString(
-            <NodeTooltip node={node} entityTemplate={entityTemplate} darkMode={darkMode} entityTemplates={entityTemplates} />,
+            <NodeTooltip
+                node={node}
+                entityTemplate={entityTemplate ?? [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId)}
+                darkMode={darkMode}
+                entityTemplates={entityTemplate ? entityTemplates : childTemplates}
+            />,
         );
     };
 
@@ -288,7 +300,8 @@ const Graph: React.FC = () => {
                     nodeThreeObject={(node) =>
                         create3DNodeDetails(
                             node as INodeObject,
-                            entityTemplates.get((node as INodeObject).templateId)!,
+                            entityTemplates.get((node as INodeObject).templateId)! ||
+                                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId),
                             entityId === (node as INodeObject).data._id,
                             darkMode,
                         )
@@ -317,7 +330,9 @@ const Graph: React.FC = () => {
                 ref={forceRef as React.MutableRefObject<ForceGraphMethods>}
                 nodeCanvasObjectMode={() => 'after'}
                 nodeCanvasObject={(node, ctx) => {
-                    const entityTemplate = entityTemplates.get((node as INodeObject).templateId)!;
+                    const entityTemplate =
+                        entityTemplates.get((node as INodeObject).templateId)! ||
+                        [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === (node as INodeObject).templateId);
 
                     updateNodeLabelIcons(node as INodeObject, entityId === (node as INodeObject).data._id);
                     drawNode(ctx, node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, entityTemplate);
@@ -352,7 +367,7 @@ const Graph: React.FC = () => {
                 setFilteredEntityTemplates={setFilteredEntityTemplates}
                 onReset={() => {
                     setSearchParams({});
-                    setFilteredEntityTemplates(Array.from(entityTemplates.values()));
+                    setFilteredEntityTemplates([...entityTemplates.values(), ...childTemplates.values()]);
                     reload();
                     setFilters([]);
                     resetGraph(undefined, true);
@@ -378,7 +393,7 @@ const Graph: React.FC = () => {
             >
                 <Box style={{ flex: '0 0 auto' }}>
                     <TemplatesSelectGrid
-                        templates={Array.from(entityTemplates.values())}
+                        templates={[...entityTemplates.values(), ...childTemplates.values()]}
                         selectedTemplates={filteredEntityTemplates}
                         setSelectedTemplates={
                             setFilteredEntityTemplates as React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>

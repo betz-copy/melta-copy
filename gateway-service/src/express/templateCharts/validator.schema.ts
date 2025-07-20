@@ -1,5 +1,18 @@
 import Joi from 'joi';
-import { searchFilterSchema, MongoIdSchema, IAggregationType, IChartType, IChartPermission } from '@microservices/shared';
+import {
+    MongoIdSchema,
+    IAggregationType,
+    IChartType,
+    IChartPermission,
+    filterOfFieldSchema as filterOfFieldSchemaShared,
+} from '@microservices/shared';
+
+const filterOfFieldSchema = filterOfFieldSchemaShared.min(1).id('filterOfField');
+const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
+const searchFilterSchema = Joi.object({
+    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
+    $or: Joi.array().items(filterOfTemplateSchema).min(1),
+}).min(1);
 
 const aggregationSchema = Joi.object({
     type: Joi.string()
@@ -31,6 +44,7 @@ const chartSchema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     type: Joi.string()
         .valid(...Object.values(IChartType))
         .required(),
@@ -64,6 +78,7 @@ export const getChartByIdRequestSchema = Joi.object({
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {

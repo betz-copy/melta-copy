@@ -24,6 +24,9 @@ export const ChartSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        childTemplateId: {
+            type: String,
+        },
         permission: {
             type: String,
             enum: Object.values(IChartPermission),

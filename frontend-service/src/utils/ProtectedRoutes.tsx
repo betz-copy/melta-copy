@@ -4,11 +4,12 @@ import React, { isValidElement } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { PermissionScope } from '../interfaces/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 import { DashboardItemType } from '../interfaces/dashboard';
 import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
+import { IChildTemplateMap } from '../interfaces/childTemplates';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
     if (!isAllowed) {
@@ -29,17 +30,19 @@ export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissi
     return protectedRoute(children, permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]));
 };
 
-export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermissions; entityTemplates: IEntityTemplateMap }> = ({
-    children,
-    permissions,
-    entityTemplates,
-}) => {
+export const EntityProtectedRoute: React.FC<{
+    permissions: ISubCompactPermissions;
+    entityTemplates: IEntityTemplateMap;
+    childTemplates: IChildTemplateMap;
+}> = ({ children, permissions, entityTemplates, childTemplates }) => {
     const params = useParams<{ entityId: string }>();
     const { entityId } = params;
 
     const [_, navigate] = useLocation();
 
-    const templateIds = Array.from(entityTemplates.keys());
+    const childTemplatesArray = [...childTemplates.values()];
+    const templates = [...entityTemplates.values(), ...childTemplatesArray];
+    const templateIds = templates.map(({ _id }) => _id);
 
     const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity, isLoading } = useQuery(
@@ -56,7 +59,9 @@ export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermission
 
     if (isLoading) return <CircularProgress />;
 
-    const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
+    const currentEntityTemplate =
+        entityTemplates.get(expandedEntity!.entity.templateId) ||
+        childTemplatesArray.find(({ parentTemplate }) => parentTemplate._id === expandedEntity!.entity.templateId);
 
     return protectedRoute(
         children,
@@ -75,7 +80,12 @@ export const DashboardProtectedRoute: React.FC<{
 
     if (dashboardType === DashboardItemType.Chart) {
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-        const template = templateId ? (entityTemplates?.get(templateId) as IMongoEntityTemplatePopulated) : null;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+
+        const entityTemplate = entityTemplates?.get(templateId);
+        const childTemplate = childTemplates?.get(templateId);
+
+        const template = entityTemplate || childTemplate || null;
 
         const category = template?.category;
         const categoryId = category?._id;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider, Fab } from '@mui/material';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import CloseIcon from '@mui/icons-material/Close';
@@ -45,7 +45,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
 
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
-    const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
+    const [activeProcessDetailsStep, setActiveProcessDetailsStep] = useState(0);
 
     const { template } = detailsFormikData.values;
 

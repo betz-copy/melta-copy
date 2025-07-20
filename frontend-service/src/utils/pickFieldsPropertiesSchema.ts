@@ -4,23 +4,20 @@ import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
-
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
 ): IMongoEntityTemplatePopulated['properties'] => {
     const getProperty = (key: string) => schema.properties[key];
-
+    const formats = ['fileId', 'entityReference'];
     return {
         ...schema,
         properties: pickBy(
             schema?.properties,
-
-            (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId' && !value.archive,
+            (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive,
         ),
         required:
             schema?.required?.filter(
                 (requiredKey) =>
-                    getProperty(requiredKey)?.format !== 'fileId' &&
-                    getProperty(requiredKey)?.format !== 'entityReference' &&
+                    !formats.includes(getProperty(requiredKey).format ?? '') &&
                     getProperty(requiredKey)?.items?.format !== 'fileId' &&
                     getProperty(requiredKey)?.serialCurrent === undefined &&
                     (!fieldsToFilter || !!fieldsToFilter?.[requiredKey]),
@@ -38,4 +35,11 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
     return {
         ...filteredProperties,
     };
+};
+
+export const pickOnlyGivenFields = (
+    schema: IMongoEntityTemplatePopulated['properties'],
+    fieldsToPick: Record<string, boolean> | undefined = undefined,
+) => {
+    return Object.fromEntries(Object.entries(schema.properties).filter(([key, _value]) => !fieldsToPick || !!fieldsToPick?.[key]));
 };

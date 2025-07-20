@@ -5,7 +5,7 @@ import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'wouter';
+import { useParams, useSearchParams } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
 import { CustomIcon } from '../../common/CustomIcon';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
@@ -16,6 +16,7 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -85,7 +86,7 @@ const ConnectionsTableTitle: React.FC<{
     );
 };
 
-const ConnectionsTable: React.FC<{
+export const ConnectionsTable: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
     templateIds: string[];
@@ -349,10 +350,14 @@ const Entity: React.FC = () => {
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
+    const [searchParams, _setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
+
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const templateIds = Array.from(entityTemplates.keys());
@@ -372,12 +377,14 @@ const Entity: React.FC = () => {
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
+    const currentEntityTemplate = childTemplateId
+        ? childTemplates.get(childTemplateId)
+        : entityTemplates.get(expandedEntity?.entity.templateId ?? '');
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        currentEntityTemplate.category,
-        currentEntityTemplate._id,
+        currentEntityTemplate?.category?._id ?? '',
+        currentEntityTemplate?._id ?? '',
         PermissionScope.write,
     );
 
@@ -407,7 +414,7 @@ const Entity: React.FC = () => {
 
                     if (
                         connectionRelationshipTemplate.isProperty &&
-                        currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
+                        currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
                             ?.relationshipTemplateId === connectionRelationshipTemplate._id
                     )
                         return false;
@@ -428,7 +435,10 @@ const Entity: React.FC = () => {
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
 
-    if (!expandedEntity) return <CircularProgress />;
+    // Early return if data is not ready - must be after all hooks
+    if (!expandedEntity || !currentEntityTemplate || !currentEntityTemplate.category) {
+        return <CircularProgress />;
+    }
 
     return (
         <>
@@ -510,7 +520,7 @@ const Entity: React.FC = () => {
                                                 {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
                                                     const relatedTemplate =
-                                                        relationship.destinationEntity._id !== currentEntityTemplate._id
+                                                        relationship.destinationEntity._id !== currentEntityTemplate?._id
                                                             ? relationship.destinationEntity
                                                             : relationship.sourceEntity;
 

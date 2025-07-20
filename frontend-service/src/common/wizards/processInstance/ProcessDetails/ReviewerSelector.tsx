@@ -1,6 +1,6 @@
 import { Chip, Grid } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { IUser } from '../../../../interfaces/users';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
 import { useDarkModeStore } from '../../../../stores/darkMode';
@@ -22,7 +22,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({
     isViewMode = false,
     disableAddingReviewers = false,
 }) => {
-    const [displayValue, setDisplayValue] = React.useState('');
+    const [displayValue, setDisplayValue] = useState('');
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const combinedReviewers = [...forcedReviewers, ...reviewers];

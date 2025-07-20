@@ -95,13 +95,16 @@ const RelationshipSelection: React.FC<{
 
     const findParent = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
         const childId = id.includes('-') ? id.split('-')[0] : id;
+
         for (const node of nodes) {
             if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
             if (node.children) {
                 const found = findParent(node.children, childId);
+
                 if (found) return found;
             }
         }
+
         return null;
     }, []);
 
