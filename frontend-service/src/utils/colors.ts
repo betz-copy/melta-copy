@@ -1,11 +1,11 @@
 import randomColor from 'randomcolor';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 
-export const getEntityTemplateColor = (entityTemplate: IEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
+export const getEntityTemplateColor = (entityTemplate: IEntityTemplatePopulated | IMongoChildTemplatePopulated, categoryColor?: string) => {
     return randomColor({
-        hue: entityTemplate.category.color,
+        hue: categoryColor ?? entityTemplate.category.color,
         seed: entityTemplate.name,
         luminosity: 'bright',
     });
