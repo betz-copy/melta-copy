@@ -1,4 +1,5 @@
 import { QueryClient } from 'react-query';
+import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
@@ -9,6 +10,11 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
     if (format === 'date' || format === 'date-time') return 'Date';
 
     if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId!)!.name;
+
+    if (format === 'location')
+        return `{ location: \`Polygon((\${string}))\`, coordinateSystem: ${Object.values(CoordinateSystem)
+            .map((coordinateSystem) => `'${coordinateSystem}'`)
+            .join(' | ')} }`;
 
     return 'string';
 };
