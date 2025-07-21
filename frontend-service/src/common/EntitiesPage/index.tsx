@@ -68,9 +68,11 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
             updatedEntities.forEach((entity) => {
-                const reference = templateTablesViewRef.current!.templateTablesRefs?.[entity.templateId];
+                if (templateTablesViewRef.current) {
+                    const reference = templateTablesViewRef.current!.templateTablesRefs?.[entity.templateId];
 
-                if (reference) reference.updateRowDataClientSide(entity);
+                    if (reference) reference.updateRowDataClientSide(entity);
+                }
             });
         }
     }, [updatedEntities, viewMode]);
@@ -86,9 +88,11 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
                         .map((child) => child?._id);
 
                     [...childTemplateIds, templateId].map((tempId) => {
-                        const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
+                        if (templateTablesViewRef.current) {
+                            const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
 
-                        if (reference) reference.refreshServerSide();
+                            if (reference) reference.refreshServerSide();
+                        }
                     });
                 });
             }
@@ -165,7 +169,7 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
 
                             queryClient.invalidateQueries(queryKey).finally(() => {
                                 if (isTableView && templateTablesViewRef.current?.templateTablesRefs?.[id]) {
-                                    templateTablesViewRef.current.templateTablesRefs[id].scrollIntoView();
+                                    templateTablesViewRef.current?.templateTablesRefs[id].scrollIntoView();
                                 }
                             });
                         } else {
