@@ -3,7 +3,7 @@ import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { TablePageType } from '../../EntitiesTableOfTemplate';
 import SearchInput from '../SearchInput';
 
 const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
@@ -43,7 +43,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
-                        pageType: 'relationship',
+                        pageType: TablePageType.relationship,
                     }}
                     paginationPageSizeSelector={false}
                 />
