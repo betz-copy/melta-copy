@@ -1,4 +1,4 @@
-import { EntityTemplateType, getChildPropertiesFiltered, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
+import { CoordinateSystem, EntityTemplateType, getChildPropertiesFiltered, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
@@ -9,6 +9,11 @@ const generateFromString = (
     if (format === 'date' || format === 'date-time') return 'Date';
 
     if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference!.relatedTemplateId)!.metaData.name;
+
+    if (format === 'location')
+        return `{ location: \`Polygon((\${string}))\`, coordinateSystem: ${Object.values(CoordinateSystem)
+            .map((coordinateSystem) => `'${coordinateSystem}'`)
+            .join(' | ')} }`;
 
     return 'string';
 };
