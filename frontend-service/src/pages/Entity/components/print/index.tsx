@@ -14,7 +14,7 @@ import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTem
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { lightTheme } from '../../../../theme';
-import { sortTemplatesChildrenToParents } from '../../../../utils/expandedRelationships';
+import { sortTemplatesChildrenToParents2 } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
@@ -37,13 +37,13 @@ const Print: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
-    const queryClient = useQueryClient();
-    const currentUser = useUserStore((state) => state.user);
+    // const queryClient = useQueryClient();
+    // const currentUser = useUserStore((state) => state.user);
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
-    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
-    const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    // const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    // const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    // const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
+    // const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const [openModal, setOpenModal] = useState(false);
 
@@ -66,29 +66,32 @@ const Print: React.FC<{
         setOpenModal(false);
     };
 
-    const templateIds = Object.keys(entityTemplates);
-    const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
-        () =>
-            getExpandedEntityByIdRequest(
-                expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: 2, minLevel: 2 } },
-                { disabled: false, templateIds: allowedEntityTemplatesIds },
-            ),
-        {
-            enabled: false,
-            onSuccess: (data) => {
-                const newConnections = sortTemplatesChildrenToParents(2, connectionsTemplates, data, allRelationshipTemplates, entityTemplates);
-                console.log({ connectionsTemplates, newConnections });
-                setConnections(newConnections);
-            },
-        },
-    );
+    // const templateIds = Object.keys(entityTemplates);
+    // const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
+    //     ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
+    //     () =>
+    //         getExpandedEntityByIdRequest(
+    //             expandedEntity.entity.properties._id,
+    //             { [expandedEntity.entity.properties._id]: { maxLevel: 2 } }, // Todo: fix minLevel
+    //             { disabled: false, templateIds: allowedEntityTemplatesIds },
+    //         ),
+    //     {
+    //         enabled: false,
+    //         onSuccess: (data) => {
+    //             console.log('hi index', { connectionsTemplates, data });
+
+    //             const newConnections = sortTemplatesChildrenToParents2(1, connectionsTemplates, data, allRelationshipTemplates, entityTemplates);
+    //             console.log({ newConnections });
+
+    //             setConnections(newConnections);
+    //         },
+    //     },
+    // );
 
     const handleOpen = async () => {
         setSelectedConnections([]);
         setOpenModal(true);
-        await getExpandedData();
+        // await getExpandedData();
     };
 
     const handlePrint = useReactToPrint({

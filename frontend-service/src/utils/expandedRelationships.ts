@@ -32,8 +32,6 @@ export const sortTemplatesChildrenToParents = (
     relationshipTemplates: IRelationshipTemplateMap,
     entityTemplates: IEntityTemplateMap,
 ) => {
-    console.log({ expansionDepth, options });
-
     return options.map((parent) => {
         const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
             ? parent.relationshipTemplate.destinationEntity
@@ -43,6 +41,7 @@ export const sortTemplatesChildrenToParents = (
             relationshipTemplates,
             entityTemplates,
             currentEntityTemplate,
+            expansionDepth,
             parent.relationshipTemplate,
             data,
             true,
@@ -55,32 +54,82 @@ export const sortTemplatesChildrenToParents = (
     });
 };
 
-// export const sortTemplatesChildrenToParents = (
-//     depth: number,
-//     parents: IConnectionTemplateOfExpandedEntity[],
-//     data: IEntityExpanded,
-//     relationshipTemplates: IRelationshipTemplateMap,
-//     entityTemplates: IEntityTemplateMap,
-// ): IConnectionTemplateOfExpandedEntity[] => {
-//     return parents.map((parent) => {
-//         const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
-//             ? parent.relationshipTemplate.destinationEntity
-//             : parent.relationshipTemplate.sourceEntity;
+export const getNodesAtDepth = (
+    nodes: IConnectionTemplateOfExpandedEntity[],
+    targetDepth: number,
+    currentDepth = 1,
+): IConnectionTemplateOfExpandedEntity[] => {
+    let result: IConnectionTemplateOfExpandedEntity[] = [];
 
-//         const children = getFullRelationshipTemplates(
-//             relationshipTemplates,
-//             entityTemplates,
-//             currentEntityTemplate,
-//             parent.relationshipTemplate,
-//             data,
-//             true,
-//         ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
+    for (const node of nodes) {
+        if (currentDepth === targetDepth) {
+            result.push(node);
+        }
 
-//         const nestedChildren = depth < 4 ? sortTemplatesChildrenToParents(depth + 1, children, data, relationshipTemplates, entityTemplates) : [];
+        if (node.children && node.children.length > 0) {
+            result = result.concat(getNodesAtDepth(node.children, targetDepth, currentDepth + 1));
+        }
+    }
 
-//         return {
-//             ...parent,
-//             children: nestedChildren,
-//         };
-//     });
-// };
+    return result;
+};
+
+export const sortTemplatesChildrenToParents2 = (
+    depth: number,
+    parents: IConnectionTemplateOfExpandedEntity[],
+    data: IEntityExpanded,
+    relationshipTemplates: IRelationshipTemplateMap,
+    entityTemplates: IEntityTemplateMap,
+): IConnectionTemplateOfExpandedEntity[] => {
+    return parents.map((parent) => {
+        const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
+            ? parent.relationshipTemplate.destinationEntity
+            : parent.relationshipTemplate.sourceEntity;
+
+        const children = getFullRelationshipTemplates(
+            relationshipTemplates,
+            entityTemplates,
+            currentEntityTemplate,
+            depth,
+            parent.relationshipTemplate,
+            data,
+            true,
+        ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
+
+        const nestedChildren =
+            depth < 5 && children.length > 0
+                ? sortTemplatesChildrenToParents2(depth + 1, children, data, relationshipTemplates, entityTemplates)
+                : [];
+
+        return {
+            ...parent,
+            children: nestedChildren,
+        };
+    });
+};
+
+export const updateChildrenToParent = (
+    depth: number,
+    parents: IConnectionTemplateOfExpandedEntity[],
+    updatedParent: IConnectionTemplateOfExpandedEntity,
+    relationshipTemplates: IRelationshipTemplateMap,
+    entityTemplates: IEntityTemplateMap,
+) => {
+    return parents.map((parent) => {
+        const isMatchingParent = updatedParent.relationshipTemplate._id === parent.relationshipTemplate._id;
+        console.log({ isMatchingParent });
+
+        const updatedChildren = isMatchingParent
+            ? updatedParent.children
+            : depth < 5 && parent.children?.length
+            ? updateChildrenToParent(depth + 1, parent.children, updatedParent, relationshipTemplates, entityTemplates)
+            : parent.children;
+
+        console.log({ updatedChildren });
+
+        return {
+            ...parent,
+            children: updatedChildren,
+        };
+    });
+};

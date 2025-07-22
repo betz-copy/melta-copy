@@ -29,6 +29,7 @@ export const getFullRelationshipTemplates = (
     relationshipTemplates: IRelationshipTemplateMap,
     entityTemplates: IEntityTemplateMap,
     parentEntityTemplate: IMongoEntityTemplatePopulated,
+    depth: number,
     parentRelationshipTemplate?: IMongoRelationshipTemplatePopulated,
     expandedEntity?: IEntityExpanded,
     filterOnlyThoseWithInstances = false,
@@ -54,6 +55,7 @@ export const getFullRelationshipTemplates = (
                 hasInstances,
                 isExpandedEntityRelationshipSource: relationshipTemplate.sourceEntityId === parentEntityTemplate._id,
                 children: [],
+                depth,
                 parentRelationship: parentRelationshipTemplate,
             };
         })

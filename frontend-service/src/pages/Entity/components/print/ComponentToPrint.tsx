@@ -61,7 +61,7 @@ const ComponentToPrint = React.forwardRef<
                 <>
                     <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
 
-                    {connectionsTemplatesToPrint.map(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
+                    {/* {connectionsTemplatesToPrint.map(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
                         const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
                         const relevantParents = expandedEntity.connections.filter(
                             (connection) =>
@@ -128,7 +128,7 @@ const ComponentToPrint = React.forwardRef<
                                 </div>
                             );
                         return <div key={relationshipTemplate._id}> </div>;
-                    })}
+                    })} */}
                 </>
             )}
             {options.showEntityFiles && (

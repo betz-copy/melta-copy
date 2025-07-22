@@ -112,11 +112,11 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
         disabled: Joi.boolean().default(null),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
-        expandedParamsSchema: Joi.object()
+        expandedParams: Joi.object()
             .pattern(
                 Joi.string(),
                 Joi.object({
-                    minLevel: Joi.number().integer().min(1).less(Joi.ref('maxLevel')).optional(),
+                    minLevel: Joi.number().integer().min(1).max(Joi.ref('maxLevel')).optional(),
                     maxLevel: Joi.number().integer().min(1).required(),
                 }),
             )

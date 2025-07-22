@@ -339,6 +339,7 @@ export interface IConnectionTemplateOfExpandedEntity {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
     hasInstances: boolean;
+    depth: number;
     parentRelationship?: IMongoRelationshipTemplatePopulated;
     children: IConnectionTemplateOfExpandedEntity[];
 }
@@ -391,7 +392,8 @@ const Entity: React.FC = () => {
     const connectionsTemplates = getFullRelationshipTemplates(
         relationshipTemplates,
         entityTemplates,
-        currentEntityTemplate,
+        currentEntityTemplate!,
+        1,
         undefined,
         expandedEntity,
     );
@@ -442,7 +444,11 @@ const Entity: React.FC = () => {
 
     return (
         <>
-            <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
+            <EntityTopBar
+                entityTemplate={currentEntityTemplate}
+                expandedEntity={expandedEntity}
+                connectionsTemplates={connectionsTemplates.filter((relTemplate) => relTemplate.hasInstances)}
+            />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />

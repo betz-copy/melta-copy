@@ -1,32 +1,34 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, FormControl, Select, useTheme } from '@mui/material';
-import { RichTreeViewPro, TreeItem2Props } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro } from '@mui/x-tree-view-pro';
 import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { CustomExpandMore } from '../../../../common/SelectCheckBox';
-import TreeItem from '../../../../common/Tree/TreeItem';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
-import { sortTemplatesChildrenToParents } from '../../../../utils/expandedRelationships';
+import {
+    getNodesAtDepth,
+    sortTemplatesChildrenToParents,
+    sortTemplatesChildrenToParents2,
+    updateChildrenToParent,
+} from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
+import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
 
 // item id is node id - parent id (if he has one)
 const getItemId = (item: IConnectionTemplateOfExpandedEntity) => {
-    console.log({ hi: `${item.relationshipTemplate._id}${item.parentRelationship ? `-${item.parentRelationship?._id}` : ''}`, item });
+    console.log({ id: `${item.depth}-${item.relationshipTemplate._id}${item.parentRelationship ? `-${item.parentRelationship?._id}` : ''}`, item });
 
-    return `${item.relationshipTemplate._id}${item.parentRelationship ? `-${item.parentRelationship?._id}` : ''}`;
+    return `${item.depth}-${item.relationshipTemplate._id}${item.parentRelationship ? `-${item.parentRelationship?._id}` : ''}`;
 };
-
 const getItemLabel = (item: IConnectionTemplateOfExpandedEntity) =>
     `${item.relationshipTemplate.displayName} (${item.relationshipTemplate.sourceEntity.displayName} > ${item.relationshipTemplate.destinationEntity.displayName})`;
-
-const getDepthFromId = (id: string) => id.split('-').length;
 
 const RelationshipSelection: React.FC<{
     expandedEntity: IEntityExpanded;
@@ -44,9 +46,6 @@ const RelationshipSelection: React.FC<{
     const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
     const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
 
-    const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>([]);
-    const [expansionDepth, setExpansionDepth] = useState<number>(2);
-
     const flattenSelectedIds = useMemo(() => {
         return selectedConnections.flatMap((parent) => [
             parent.relationshipTemplate._id,
@@ -55,46 +54,58 @@ const RelationshipSelection: React.FC<{
     }, [selectedConnections]);
 
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(flattenSelectedIds);
+    const [expansionDepth, setExpansionDepth] = useState<number>(1);
 
     const templateIds = Object.keys(entityTemplates);
-    const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
-        () =>
+    const { refetch: getExpandedData } = useQuery<IEntityExpanded>({
+        queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, expansionDepth],
+        queryFn: () =>
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1, minLevel: expansionDepth + 1 } },
+                // { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1, minLevel: expansionDepth + 1 } }, // minLevel skip one of the
+                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1 } }, //TODO: add minLevel
                 { disabled: false, templateIds: allowedEntityTemplatesIds },
             ),
-        {
-            enabled: false,
-            onSuccess: (data) => {
-                console.log('before');
-                setExpansionDepth((prev) => prev + 1);
-                console.log('after');
+        enabled: false,
+        // onSuccess: (data) => {
 
-                return data;
-            },
-        },
-    );
+        //     setExpansionDepth((prev) => prev + 1);
+        //     const newConnections = sortTemplatesChildrenToParents2(1, connections, data, allRelationshipTemplates, entityTemplates);
 
-    const findNodeById = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
-        console.log({ nodes });
+        //     setConnections(newConnections);
+        //     return data;
+        // },
+    });
 
+    // const findNodeById = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
+    //     for (const node of nodes) {
+    //         const nodeId = id.split('-')[1];
+
+    //         if (nodeId === node.relationshipTemplate._id) {
+    //             if (!node.children || !id.includes('-')) return node;
+    //         }
+
+    //         if (node.children) {
+    //             const found = findNodeById(node.children, id);
+    //             if (found) return found;
+    //         }
+    //     }
+    //     return null;
+    // }, []);
+
+    const findNodeById = (nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | undefined => {
         for (const node of nodes) {
-            if (id.startsWith(node.relationshipTemplate._id)) {
-                if (!node.children || !id.includes('-')) return node;
-            }
-
+            if (getItemId(node) === id) return node;
             if (node.children) {
                 const found = findNodeById(node.children, id);
                 if (found) return found;
             }
         }
-        return null;
-    }, []);
+        return undefined;
+    };
 
     const findParent = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
-        const childId = id.includes('-') ? id.split('-')[0] : id;
+        const childId = id.split('-')[1];
 
         for (const node of nodes) {
             if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
@@ -116,13 +127,15 @@ const RelationshipSelection: React.FC<{
             ...itemIds.filter((itemId) => !selectedItemsIds.includes(itemId)),
             ...selectedItemsIds.filter((selectedItemId) => !itemIds.includes(selectedItemId)),
         ];
+        console.log({ itemIds });
 
         changedIds.forEach((id) => {
             const currentNode = findNodeById(connections, id);
 
             if (!currentNode) return;
+            console.log({ currentNode });
 
-            if ('parentRelationship' in currentNode) {
+            if (currentNode.parentRelationship !== undefined) {
                 // handle a child
                 const parentIndex = currentSelectedNodes.findIndex(
                     (selectedNode) => currentNode.parentRelationship?._id === selectedNode.relationshipTemplate._id,
@@ -180,71 +193,158 @@ const RelationshipSelection: React.FC<{
                     currentSelectedNodes.splice(parentIndex, 1);
                 } else {
                     // If the parent is not selected, add it
-                    currentSelectedNodes.push({ ...currentNode, children: [] });
+
+                    console.log({ currentSelectedNodes, currentNode });
+
+                    currentSelectedNodes.push(currentNode);
                 }
             }
         });
 
         currentSelectedNodes.map((parent) =>
-            parent.children?.map((child) => currentSelectedNodesIds.add(`${child.relationshipTemplate._id}-${child.parentRelationship?._id}`)),
+            parent.children?.map((child) =>
+                currentSelectedNodesIds.add(`${child.depth}-${child.relationshipTemplate._id}-${child.parentRelationship?._id}`),
+            ),
         );
-        currentSelectedNodes.map((parent) => currentSelectedNodesIds.add(parent.relationshipTemplate._id));
-
+        currentSelectedNodes.map((parent) =>
+            currentSelectedNodesIds.add(
+                `${parent.depth}-${parent.relationshipTemplate._id}${parent.parentRelationship ? `-${parent.parentRelationship?._id}` : ''}`,
+            ),
+        );
         console.log({ currentSelectedNodes });
+
         setSelectedConnections(currentSelectedNodes);
         return Array.from(currentSelectedNodesIds);
     };
 
-    const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={false} />, []);
+    // const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} />, []);
+
+    const fetchTreeItems = async (parentId?: string): Promise<IConnectionTemplateOfExpandedEntity[]> => {
+        const { data } = await getExpandedData();
+
+        if (!data) return [];
+
+        // https://github.com/mui/material-ui/issues/20832#issuecomment-1755943898
+        // maybe duplicate node ids are causing the page to hang
+        const sorted = sortTemplatesChildrenToParents2(1, connections, data, allRelationshipTemplates, entityTemplates);
+        console.warn({ sorted, expansionDepth });
+
+        setExpansionDepth((prev) => prev + 1);
+
+        // return expansionDepth === 1
+        //     ? sortTemplatesChildrenToParents(expansionDepth + 1, connections, data!, allRelationshipTemplates, entityTemplates)
+        //     : [];
+
+        // return sorted;
+        setConnections(sorted);
+
+        if (!parentId) return sorted;
+
+        const parent = findNodeById(sorted, parentId);
+        console.log({ parent, selectedConnections });
+        const selectedParent = findNodeById(selectedConnections, parentId);
+        if (selectedParent && parent!.children) {
+            // if parent is selected select all the children
+            // setSelectedConnections((prev) => updateChildrenToParent(1, prev, parent!, allRelationshipTemplates, entityTemplates));
+            // setSelectedItemsIds((prev) => [
+            //     ...prev,
+            //     ...parent!.children.map(
+            //         (child) =>
+            //             `${child.depth}-${child.relationshipTemplate._id}${child.parentRelationship ? `-${child.parentRelationship?._id}` : ''}`,
+            //     ),
+            // ]);
+            // console.log({
+            //     new: parent!.children.map(
+            //         (child) =>
+            //             `${child.depth}-${child.relationshipTemplate._id}${child.parentRelationship ? `-${child.parentRelationship?._id}` : ''}`,
+            //     ),
+            // });
+            setSelectedItemsIds(
+                handleSelectedItemsChange(
+                    parent!.children.map(
+                        (child) =>
+                            `${child.depth}-${child.relationshipTemplate._id}${child.parentRelationship ? `-${child.parentRelationship?._id}` : ''}`,
+                    ),
+                ),
+            );
+        }
+        return parent?.children ?? [];
+
+        // const newConnections = sortTemplatesChildrenToParents2(expansionDepth, connections, data!, allRelationshipTemplates, entityTemplates);
+        // const parentItem = connections.find((item) => getItemId(item) === parentId);
+
+        // if (parentItem) return parentItem.children || [];
+        // return newConnections;
+    };
+    console.log({ selectedItemsIds });
 
     return (
         <RichTreeViewPro
-            style={{ direction: 'rtl' }}
-            checkboxSelection
+            // items={connections}
+            items={[]}
+            dataSource={{
+                getChildrenCount: (item) => item?.children.length,
+                getTreeItems: fetchTreeItems,
+            }}
+            slots={{
+                expandIcon: ChevronLeft,
+                collapseIcon: ExpandLess,
+                // item: TreeItemWrapper,
+            }}
             multiSelect
-            items={connections}
+            checkboxSelection
             getItemId={getItemId}
             getItemLabel={getItemLabel}
             selectedItems={selectedItemsIds}
             onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
-            onExpandedItemsChange={async (_, itemIds) => {
-                const newlyExpandedId = itemIds.find((id) => !expandedItemsIds.includes(id));
-                const currentDepth = getDepthFromId(newlyExpandedId!);
-                console.log({ newlyExpandedId, currentDepth });
-
-                if (currentDepth > expansionDepth && expansionDepth < 4) {
-                    const { data } = await getExpandedData();
-                    if (data) {
-                        const newConnections = sortTemplatesChildrenToParents(
-                            expansionDepth,
-                            connections,
-                            data,
-                            allRelationshipTemplates,
-                            entityTemplates,
-                        );
-                        console.log({ newConnections });
-
-                        setConnections(newConnections);
-                    }
-                }
-
-                const ids = itemIds
-                    .map((itemId) => findNodeById(connections, itemId))
-                    .filter((item): item is IConnectionTemplateOfExpandedEntity => item !== null)
-                    .map((item) => getItemId(item));
-
-                setExpandedItemsIds(ids);
-            }}
-            expandedItems={expandedItemsIds}
-            expansionTrigger="iconContainer"
-            slots={{
-                expandIcon: ChevronLeft,
-                collapseIcon: ExpandLess,
-                item: TreeItemWrapper,
-            }}
-            experimentalFeatures={{ indentationAtItemLevel: true }}
         />
     );
+
+    // return (
+    //     <RichTreeViewPro
+    //         style={{ direction: 'rtl' }}
+    //         checkboxSelection
+    //         multiSelect
+    //         items={connections}
+    //         getItemId={getItemId}
+    //         getItemLabel={getItemLabel}
+    //         selectedItems={selectedItemsIds}
+    //         onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
+    //         onExpandedItemsChange={async (_, itemIds) => {
+    //             const newlyExpandedId = itemIds.find((id) => !expandedItemsIds.includes(id));
+    //             const currentDepth = getDepthFromId(newlyExpandedId!);
+
+    //             if (currentDepth > expansionDepth && expansionDepth < 4) {
+    //                 const { data } = await getExpandedData();
+    //                 if (data) {
+    //                     const newConnections = sortTemplatesChildrenToParents(
+    //                         expansionDepth,
+    //                         connections,
+    //                         data,
+    //                         allRelationshipTemplates,
+    //                         entityTemplates,
+    //                     );
+    //                     setConnections(newConnections);
+    //                 }
+    //             }
+
+    //             const ids = itemIds
+    //                 .map((itemId) => findNodeById(connections, itemId))
+    //                 .filter((item) => item !== null)
+    //                 .map((item) => getItemId(item));
+
+    //             setExpandedItemsIds(ids);
+    //         }}
+    //         expandedItems={expandedItemsIds}
+    //         expansionTrigger="iconContainer"
+    //         slots={{
+    //             expandIcon: ChevronLeft,
+    //             collapseIcon: ExpandLess,
+    //             item: TreeItemWrapper,
+    //         }}
+    //         experimentalFeatures={{ indentationAtItemLevel: true }}
+    //     />
+    // );
 };
 
 type RelationshipSelectProps = PropsWithChildren<{

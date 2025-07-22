@@ -31,8 +31,8 @@ export const expandEntityToNeoQuery = async (
         cypherQuery: `MATCH (p {_id:'${entityId}'})
                         CALL apoc.path.expandConfig(p, {
                        labelFilter: '${templateIds.join('|')}',
-                       minLevel: ${expandedParams.minLevel[entityId] || 0},
-                       maxLevel: ${expandedParams.maxLevel[entityId] || 1}
+                       minLevel: ${expandedParams[entityId].minLevel || 0},
+                       maxLevel: ${expandedParams[entityId].maxLevel || 1}
                     })
                     YIELD path
                     with apoc.path.elements(path) as elementsOfPath
@@ -63,7 +63,7 @@ export const getExpandedFilteredGraphRecursively = async (
             const otherEntity = initialExpandedEntityId === sourceEntity.properties._id ? destinationEntity : sourceEntity;
             return otherEntity.properties._id;
         })
-        .filter((otherEntityId) => expandedParams[otherEntityId].maxLevel && !expanded.has(otherEntityId));
+        .filter((otherEntityId) => expandedParams[otherEntityId]?.maxLevel && !expanded.has(otherEntityId));
 
     for (const entityIdToExpand of entityIdsToExpand) {
         const searchCypherQuery = await expandEntityToNeoQuery(
@@ -87,7 +87,7 @@ export const getExpandedFilteredGraphRecursively = async (
             currFilteredExpandedEntity.connections.forEach(({ sourceEntity, destinationEntity }) => {
                 const otherEntity = entityIdToExpand === sourceEntity.properties._id ? destinationEntity : sourceEntity;
                 const otherEntityId = otherEntity.properties._id;
-                if (expandedParams[otherEntityId].maxLevel && !expanded.has(otherEntityId)) entityIdsToExpand.push(otherEntityId);
+                if (expandedParams[otherEntityId]?.maxLevel && !expanded.has(otherEntityId)) entityIdsToExpand.push(otherEntityId);
             });
         }
     }
