@@ -105,13 +105,9 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
     }
 
     async updateChildrenDisplayNames(parentTemplateId: string, oldDisplayName: string, newDisplayName: string): Promise<void> {
-        const result = await this.model.updateMany({ parentTemplateId }, [
+        await this.model.updateMany({ parentTemplateId }, [
             { $set: { displayName: { $replaceOne: { input: '$displayName', find: oldDisplayName, replacement: newDisplayName } } } },
         ]);
-
-        if (result.modifiedCount === 0) {
-            throw new NotFoundError('No child templates found');
-        }
     }
 
     async deleteChildTemplate(id: string): Promise<IMongoChildTemplate | null> {
