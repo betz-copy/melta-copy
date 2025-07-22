@@ -329,6 +329,7 @@ const CreateChildTemplateDialog: React.FC<{
         ...childTemplate,
         name: childTemplate.name.replace(`${entityTemplate.name}_`, ''),
         displayName: childTemplate.displayName.replace(`${entityTemplate.displayName}-`, ''),
+        category: childTemplate._id ? childTemplate.category : entityTemplate.category,
     });
 
     return (
