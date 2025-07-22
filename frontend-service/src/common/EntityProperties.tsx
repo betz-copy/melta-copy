@@ -291,7 +291,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature'];
+                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature','comment'];
 
                 const textDirection =
                     format && !excludedFormats.includes(format)
