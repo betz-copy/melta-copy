@@ -33,6 +33,9 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
         'serviceType',
         'firstName',
         'lastName',
+        'birthDate',
+        'dischargeDay',
+        'enlistmentDay',
         'akaUnit',
         'rank',
         'mail',
@@ -42,7 +45,6 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
         'address',
         'fullClearance',
         'sex',
-        'birthDate',
         'directGroup',
         'hierarchy',
     ];
