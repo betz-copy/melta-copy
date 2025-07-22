@@ -13,22 +13,28 @@ import { getExpandedEntityByIdRequest } from '../../../../services/entitiesServi
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
 import {
-    getNodesAtDepth,
-    sortTemplatesChildrenToParents,
+    findAncestryTree,
+    mergeAncestryTree,
     sortTemplatesChildrenToParents2,
     updateChildrenToParent,
 } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
-import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
+
+const collectAllSelectedItemIds = (nodes: IConnectionTemplateOfExpandedEntity[], selectedIds: Set<string>) => {
+    for (const node of nodes) {
+        selectedIds.add(getItemId(node));
+        if (node.children && node.children.length > 0) {
+            collectAllSelectedItemIds(node.children, selectedIds);
+        }
+    }
+};
 
 // item id is node id - parent id (if he has one)
-const getItemId = (item: IConnectionTemplateOfExpandedEntity) => {
-    console.log({ id: `${item.depth}-${item.relationshipTemplate._id}${item.parentRelationship ? `-${item.parentRelationship?._id}` : ''}`, item });
-
-    return `${item.depth}-${item.relationshipTemplate._id}${item.parentRelationship ? `-${item.parentRelationship?._id}` : ''}`;
+const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: IConnectionTemplateOfExpandedEntity) => {
+    return `${depth}-${_id}${parentRelationship ? `-${parentRelationship?._id}` : ''}`;
 };
-const getItemLabel = (item: IConnectionTemplateOfExpandedEntity) =>
-    `${item.relationshipTemplate.displayName} (${item.relationshipTemplate.sourceEntity.displayName} > ${item.relationshipTemplate.destinationEntity.displayName})`;
+const getItemLabel = ({ relationshipTemplate: { displayName, sourceEntity, destinationEntity } }: IConnectionTemplateOfExpandedEntity) =>
+    `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`;
 
 const RelationshipSelection: React.FC<{
     expandedEntity: IEntityExpanded;
@@ -67,31 +73,7 @@ const RelationshipSelection: React.FC<{
                 { disabled: false, templateIds: allowedEntityTemplatesIds },
             ),
         enabled: false,
-        // onSuccess: (data) => {
-
-        //     setExpansionDepth((prev) => prev + 1);
-        //     const newConnections = sortTemplatesChildrenToParents2(1, connections, data, allRelationshipTemplates, entityTemplates);
-
-        //     setConnections(newConnections);
-        //     return data;
-        // },
     });
-
-    // const findNodeById = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
-    //     for (const node of nodes) {
-    //         const nodeId = id.split('-')[1];
-
-    //         if (nodeId === node.relationshipTemplate._id) {
-    //             if (!node.children || !id.includes('-')) return node;
-    //         }
-
-    //         if (node.children) {
-    //             const found = findNodeById(node.children, id);
-    //             if (found) return found;
-    //         }
-    //     }
-    //     return null;
-    // }, []);
 
     const findNodeById = (nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | undefined => {
         for (const node of nodes) {
@@ -105,13 +87,14 @@ const RelationshipSelection: React.FC<{
     };
 
     const findParent = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
-        const childId = id.split('-')[1];
-
+        const targetId = id.split('-')[1];
         for (const node of nodes) {
-            if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
-            if (node.children) {
-                const found = findParent(node.children, childId);
+            if (node.children?.some((child) => child.relationshipTemplate._id === targetId)) {
+                return node;
+            }
 
+            if (node.children && node.children.length > 0) {
+                const found = findParent(node.children, id);
                 if (found) return found;
             }
         }
@@ -127,60 +110,46 @@ const RelationshipSelection: React.FC<{
             ...itemIds.filter((itemId) => !selectedItemsIds.includes(itemId)),
             ...selectedItemsIds.filter((selectedItemId) => !itemIds.includes(selectedItemId)),
         ];
-        console.log({ itemIds });
 
         changedIds.forEach((id) => {
             const currentNode = findNodeById(connections, id);
 
             if (!currentNode) return;
-            console.log({ currentNode });
 
             if (currentNode.parentRelationship !== undefined) {
                 // handle a child
-                const parentIndex = currentSelectedNodes.findIndex(
-                    (selectedNode) => currentNode.parentRelationship?._id === selectedNode.relationshipTemplate._id,
-                );
 
-                if (parentIndex !== -1) {
+                const parent = findParent(selectedConnections, id);
+
+                if (!!parent) {
                     // if the parent is selected
-                    const parent = currentSelectedNodes[parentIndex];
 
                     const childIndex = parent.children?.findIndex(
                         (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
                     );
+
                     if (childIndex !== -1 && childIndex !== undefined) {
                         // If the child is already selected, remove it
-                        const updatedChildren = [...(parent.children ?? [])];
-                        updatedChildren.splice(childIndex, 1);
-                        currentSelectedNodes = currentSelectedNodes.map((node) => {
-                            if (node.relationshipTemplate._id === parent.relationshipTemplate._id) {
-                                return {
-                                    ...node,
-                                    children: parent.children,
-                                };
-                            }
-                            return node;
-                        });
+                        const updatedParent: IConnectionTemplateOfExpandedEntity = {
+                            ...parent,
+                            children: (parent.children ?? []).filter(
+                                (child) => child.relationshipTemplate._id !== currentNode.relationshipTemplate._id,
+                            ),
+                        };
+                        currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
                     } else {
                         // If the child is not selected, add it
-                        currentSelectedNodes = currentSelectedNodes.map((node) => {
-                            if (node.relationshipTemplate._id === parent.relationshipTemplate._id) {
-                                return {
-                                    ...node,
-                                    children: [...(node.children ?? []), currentNode],
-                                };
-                            }
-                            return node;
-                        });
+                        const updatedParent = {
+                            ...parent,
+                            children: [...parent.children, currentNode],
+                        };
+                        currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
                     }
                 } else {
                     // if the parent isn't selected
-                    const parent = findParent(connections, id);
-                    if (!parent) throw new Error('child has to have a parent');
-                    currentSelectedNodes.push({
-                        ...parent,
-                        children: [currentNode],
-                    });
+
+                    const ancestryTree = findAncestryTree(connections, id);
+                    if (ancestryTree) currentSelectedNodes = mergeAncestryTree(currentSelectedNodes, ancestryTree);
                 }
             } else {
                 // if it's a parent
@@ -193,27 +162,15 @@ const RelationshipSelection: React.FC<{
                     currentSelectedNodes.splice(parentIndex, 1);
                 } else {
                     // If the parent is not selected, add it
-
-                    console.log({ currentSelectedNodes, currentNode });
-
                     currentSelectedNodes.push(currentNode);
                 }
             }
         });
 
-        currentSelectedNodes.map((parent) =>
-            parent.children?.map((child) =>
-                currentSelectedNodesIds.add(`${child.depth}-${child.relationshipTemplate._id}-${child.parentRelationship?._id}`),
-            ),
-        );
-        currentSelectedNodes.map((parent) =>
-            currentSelectedNodesIds.add(
-                `${parent.depth}-${parent.relationshipTemplate._id}${parent.parentRelationship ? `-${parent.parentRelationship?._id}` : ''}`,
-            ),
-        );
-        console.log({ currentSelectedNodes });
+        collectAllSelectedItemIds(currentSelectedNodes, currentSelectedNodesIds);
 
         setSelectedConnections(currentSelectedNodes);
+
         return Array.from(currentSelectedNodesIds);
     };
 
@@ -224,63 +181,27 @@ const RelationshipSelection: React.FC<{
 
         if (!data) return [];
 
-        // https://github.com/mui/material-ui/issues/20832#issuecomment-1755943898
-        // maybe duplicate node ids are causing the page to hang
-        const sorted = sortTemplatesChildrenToParents2(1, connections, data, allRelationshipTemplates, entityTemplates);
-        console.warn({ sorted, expansionDepth });
+        const sorted = sortTemplatesChildrenToParents2(2, connections, data, allRelationshipTemplates, entityTemplates);
 
         setExpansionDepth((prev) => prev + 1);
 
-        // return expansionDepth === 1
-        //     ? sortTemplatesChildrenToParents(expansionDepth + 1, connections, data!, allRelationshipTemplates, entityTemplates)
-        //     : [];
-
-        // return sorted;
         setConnections(sorted);
 
         if (!parentId) return sorted;
 
         const parent = findNodeById(sorted, parentId);
-        console.log({ parent, selectedConnections });
         const selectedParent = findNodeById(selectedConnections, parentId);
         if (selectedParent && parent!.children) {
             // if parent is selected select all the children
-            // setSelectedConnections((prev) => updateChildrenToParent(1, prev, parent!, allRelationshipTemplates, entityTemplates));
-            // setSelectedItemsIds((prev) => [
-            //     ...prev,
-            //     ...parent!.children.map(
-            //         (child) =>
-            //             `${child.depth}-${child.relationshipTemplate._id}${child.parentRelationship ? `-${child.parentRelationship?._id}` : ''}`,
-            //     ),
-            // ]);
-            // console.log({
-            //     new: parent!.children.map(
-            //         (child) =>
-            //             `${child.depth}-${child.relationshipTemplate._id}${child.parentRelationship ? `-${child.parentRelationship?._id}` : ''}`,
-            //     ),
-            // });
-            setSelectedItemsIds(
-                handleSelectedItemsChange(
-                    parent!.children.map(
-                        (child) =>
-                            `${child.depth}-${child.relationshipTemplate._id}${child.parentRelationship ? `-${child.parentRelationship?._id}` : ''}`,
-                    ),
-                ),
-            );
+            const mergedIds = Array.from(new Set([...selectedItemsIds, ...parent!.children.map(getItemId)]));
+
+            setSelectedItemsIds(handleSelectedItemsChange(mergedIds));
         }
         return parent?.children ?? [];
-
-        // const newConnections = sortTemplatesChildrenToParents2(expansionDepth, connections, data!, allRelationshipTemplates, entityTemplates);
-        // const parentItem = connections.find((item) => getItemId(item) === parentId);
-
-        // if (parentItem) return parentItem.children || [];
-        // return newConnections;
     };
-    console.log({ selectedItemsIds });
 
     return (
         <RichTreeViewPro
-            // items={connections}
             items={[]}
             dataSource={{
                 getChildrenCount: (item) => item?.children.length,
@@ -299,52 +220,6 @@ const RelationshipSelection: React.FC<{
             onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
         />
     );
-
-    // return (
-    //     <RichTreeViewPro
-    //         style={{ direction: 'rtl' }}
-    //         checkboxSelection
-    //         multiSelect
-    //         items={connections}
-    //         getItemId={getItemId}
-    //         getItemLabel={getItemLabel}
-    //         selectedItems={selectedItemsIds}
-    //         onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
-    //         onExpandedItemsChange={async (_, itemIds) => {
-    //             const newlyExpandedId = itemIds.find((id) => !expandedItemsIds.includes(id));
-    //             const currentDepth = getDepthFromId(newlyExpandedId!);
-
-    //             if (currentDepth > expansionDepth && expansionDepth < 4) {
-    //                 const { data } = await getExpandedData();
-    //                 if (data) {
-    //                     const newConnections = sortTemplatesChildrenToParents(
-    //                         expansionDepth,
-    //                         connections,
-    //                         data,
-    //                         allRelationshipTemplates,
-    //                         entityTemplates,
-    //                     );
-    //                     setConnections(newConnections);
-    //                 }
-    //             }
-
-    //             const ids = itemIds
-    //                 .map((itemId) => findNodeById(connections, itemId))
-    //                 .filter((item) => item !== null)
-    //                 .map((item) => getItemId(item));
-
-    //             setExpandedItemsIds(ids);
-    //         }}
-    //         expandedItems={expandedItemsIds}
-    //         expansionTrigger="iconContainer"
-    //         slots={{
-    //             expandIcon: ChevronLeft,
-    //             collapseIcon: ExpandLess,
-    //             item: TreeItemWrapper,
-    //         }}
-    //         experimentalFeatures={{ indentationAtItemLevel: true }}
-    //     />
-    // );
 };
 
 type RelationshipSelectProps = PropsWithChildren<{

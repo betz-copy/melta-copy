@@ -4,76 +4,6 @@ import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IConnectionTemplateOfExpandedEntity } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
 
-//TODO: delete or use - not used
-// export const getDepthRelationships = (data: IEntityExpanded, expandedEntity: IEntityExpanded, allRelationshipTemplates: IRelationshipTemplateMap) => {
-//     const relationshipInstances = data?.connections.filter(
-//         (connection) =>
-//             !expandedEntity.connections.some(
-//                 (currentConnection) => currentConnection.relationship.properties._id === connection.relationship.properties._id,
-//             ),
-//     ); // new relationships from expend level
-
-//     const relationshipTemplatesIds = relationshipInstances.reduce((set, conn) => {
-//         set.add(conn.relationship.templateId);
-//         return set;
-//     }, new Set<string>());
-
-//     const relationshipTemplates = Array.from(relationshipTemplatesIds).map(
-//         (childRelationshipTemplateId) => allRelationshipTemplates.get(childRelationshipTemplateId)!,
-//     );
-
-//     return { relationshipTemplates, relationshipInstances };
-// };
-
-export const sortTemplatesChildrenToParents = (
-    expansionDepth: number,
-    options: IConnectionTemplateOfExpandedEntity[],
-    data: IEntityExpanded,
-    relationshipTemplates: IRelationshipTemplateMap,
-    entityTemplates: IEntityTemplateMap,
-) => {
-    return options.map((parent) => {
-        const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
-            ? parent.relationshipTemplate.destinationEntity
-            : parent.relationshipTemplate.sourceEntity;
-
-        const children = getFullRelationshipTemplates(
-            relationshipTemplates,
-            entityTemplates,
-            currentEntityTemplate,
-            expansionDepth,
-            parent.relationshipTemplate,
-            data,
-            true,
-        ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
-
-        return {
-            ...parent,
-            children,
-        };
-    });
-};
-
-export const getNodesAtDepth = (
-    nodes: IConnectionTemplateOfExpandedEntity[],
-    targetDepth: number,
-    currentDepth = 1,
-): IConnectionTemplateOfExpandedEntity[] => {
-    let result: IConnectionTemplateOfExpandedEntity[] = [];
-
-    for (const node of nodes) {
-        if (currentDepth === targetDepth) {
-            result.push(node);
-        }
-
-        if (node.children && node.children.length > 0) {
-            result = result.concat(getNodesAtDepth(node.children, targetDepth, currentDepth + 1));
-        }
-    }
-
-    return result;
-};
-
 export const sortTemplatesChildrenToParents2 = (
     depth: number,
     parents: IConnectionTemplateOfExpandedEntity[],
@@ -112,24 +42,92 @@ export const updateChildrenToParent = (
     depth: number,
     parents: IConnectionTemplateOfExpandedEntity[],
     updatedParent: IConnectionTemplateOfExpandedEntity,
-    relationshipTemplates: IRelationshipTemplateMap,
-    entityTemplates: IEntityTemplateMap,
 ) => {
     return parents.map((parent) => {
         const isMatchingParent = updatedParent.relationshipTemplate._id === parent.relationshipTemplate._id;
-        console.log({ isMatchingParent });
 
         const updatedChildren = isMatchingParent
             ? updatedParent.children
             : depth < 5 && parent.children?.length
-            ? updateChildrenToParent(depth + 1, parent.children, updatedParent, relationshipTemplates, entityTemplates)
+            ? updateChildrenToParent(depth + 1, parent.children, updatedParent)
             : parent.children;
-
-        console.log({ updatedChildren });
 
         return {
             ...parent,
             children: updatedChildren,
         };
     });
+};
+
+const mergeChildren = (
+    existingChildren: IConnectionTemplateOfExpandedEntity[],
+    newChildren: IConnectionTemplateOfExpandedEntity[],
+): IConnectionTemplateOfExpandedEntity[] => {
+    const merged: IConnectionTemplateOfExpandedEntity[] = [...existingChildren];
+
+    for (const newChild of newChildren) {
+        const matchIndex = existingChildren.findIndex((c) => c.relationshipTemplate._id === newChild.relationshipTemplate._id);
+
+        if (matchIndex === -1) {
+            merged.push(newChild);
+        } else {
+            merged[matchIndex] = {
+                ...existingChildren[matchIndex],
+                children: mergeChildren(existingChildren[matchIndex].children ?? [], newChild.children ?? []),
+            };
+        }
+    }
+
+    return merged;
+};
+
+export const mergeAncestryTree = (
+    nodes: IConnectionTemplateOfExpandedEntity[],
+    newNode: IConnectionTemplateOfExpandedEntity,
+): IConnectionTemplateOfExpandedEntity[] => {
+    const index = nodes.findIndex((node) => node.relationshipTemplate._id === newNode.relationshipTemplate._id);
+
+    if (index === -1) {
+        // If the node doesn't exist, add it
+        return [...nodes, newNode];
+    }
+
+    const existing = nodes[index];
+
+    const mergedChildren = mergeChildren(existing.children ?? [], newNode.children ?? []);
+
+    const updated = {
+        ...existing,
+        children: mergedChildren,
+    };
+
+    return [...nodes.slice(0, index), updated, ...nodes.slice(index + 1)];
+};
+
+export const findAncestryTree = (nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | undefined => {
+    const targetId = id.split('-')[1];
+
+    for (const node of nodes) {
+        if (node.children) {
+            for (const child of node.children) {
+                if (child.relationshipTemplate._id === targetId) {
+                    return {
+                        ...node,
+                        children: [child],
+                    };
+                }
+
+                const found = findAncestryTree([child], id);
+
+                if (found) {
+                    return {
+                        ...node,
+                        children: [found],
+                    };
+                }
+            }
+        }
+    }
+
+    return undefined;
 };

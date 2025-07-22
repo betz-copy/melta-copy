@@ -2,20 +2,14 @@ import { PrintOutlined } from '@mui/icons-material';
 import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
 import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
-import { useUserStore } from '../../../../stores/user';
 import { lightTheme } from '../../../../theme';
-import { sortTemplatesChildrenToParents2 } from '../../../../utils/expandedRelationships';
-import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 
@@ -37,14 +31,6 @@ const Print: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
-    // const queryClient = useQueryClient();
-    // const currentUser = useUserStore((state) => state.user);
-
-    // const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    // const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
-    // const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
-    // const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
-
     const [openModal, setOpenModal] = useState(false);
 
     const componentRef = React.useRef(null);
@@ -66,32 +52,9 @@ const Print: React.FC<{
         setOpenModal(false);
     };
 
-    // const templateIds = Object.keys(entityTemplates);
-    // const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-    //     ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
-    //     () =>
-    //         getExpandedEntityByIdRequest(
-    //             expandedEntity.entity.properties._id,
-    //             { [expandedEntity.entity.properties._id]: { maxLevel: 2 } }, // Todo: fix minLevel
-    //             { disabled: false, templateIds: allowedEntityTemplatesIds },
-    //         ),
-    //     {
-    //         enabled: false,
-    //         onSuccess: (data) => {
-    //             console.log('hi index', { connectionsTemplates, data });
-
-    //             const newConnections = sortTemplatesChildrenToParents2(1, connectionsTemplates, data, allRelationshipTemplates, entityTemplates);
-    //             console.log({ newConnections });
-
-    //             setConnections(newConnections);
-    //         },
-    //     },
-    // );
-
     const handleOpen = async () => {
         setSelectedConnections([]);
         setOpenModal(true);
-        // await getExpandedData();
     };
 
     const handlePrint = useReactToPrint({
