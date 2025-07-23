@@ -13,11 +13,9 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 };
 
 export const populateRelationshipTemplate = (
-    relationshipTemplate: IMongoRelationshipTemplate,
+    { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate }: IMongoRelationshipTemplate,
     entityTemplates: IEntityTemplateMap,
 ): IMongoRelationshipTemplatePopulated => {
-    const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
-
     return {
         sourceEntity: entityTemplates.get(sourceEntityId)!,
         destinationEntity: entityTemplates.get(destinationEntityId)!,
@@ -34,32 +32,33 @@ export const getFullRelationshipTemplates = (
     expandedEntity?: IEntityExpanded,
     filterOnlyThoseWithInstances = false,
 ): IConnectionTemplateOfExpandedEntity[] => {
-    return Array.from(relationshipTemplates.values())
-        .filter((relationshipTemplate) => {
-            const isSelfProperty =
-                relationshipTemplate.isProperty &&
-                parentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
-                    relationshipTemplate._id;
+    const result: IConnectionTemplateOfExpandedEntity[] = [];
 
-            const isConnected =
-                relationshipTemplate.sourceEntityId === parentEntityTemplate._id ||
-                relationshipTemplate.destinationEntityId === parentEntityTemplate._id;
+    for (const relationshipTemplate of relationshipTemplates.values()) {
+        const isSelfProperty =
+            relationshipTemplate.isProperty &&
+            parentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
+                relationshipTemplate._id;
 
-            return !isSelfProperty && isConnected;
-        })
-        .map((relationshipTemplate) => {
-            const hasInstances = expandedEntity?.connections.some((connection) => connection.relationship.templateId === relationshipTemplate._id)!;
+        const isConnected =
+            relationshipTemplate.sourceEntityId === parentEntityTemplate._id || relationshipTemplate.destinationEntityId === parentEntityTemplate._id;
 
-            return {
-                relationshipTemplate: populateRelationshipTemplate(relationshipTemplate, entityTemplates),
-                hasInstances,
-                isExpandedEntityRelationshipSource: relationshipTemplate.sourceEntityId === parentEntityTemplate._id,
-                children: [],
-                depth,
-                parentRelationship: parentRelationshipTemplate,
-            };
-        })
-        .filter((relTemplate) => (filterOnlyThoseWithInstances ? relTemplate.hasInstances : true));
+        if (isSelfProperty || !isConnected) continue;
+
+        const hasInstances = expandedEntity?.connections.some((connection) => connection.relationship.templateId === relationshipTemplate._id)!;
+
+        if (filterOnlyThoseWithInstances && !hasInstances) continue;
+
+        result.push({
+            relationshipTemplate: populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+            hasInstances,
+            isExpandedEntityRelationshipSource: relationshipTemplate.sourceEntityId === parentEntityTemplate._id,
+            children: [],
+            depth,
+            parentRelationship: parentRelationshipTemplate,
+        });
+    }
+    return result;
 };
 
 export const getOppositeEntityTemplate = (entityTemplateId: string, relationshipTemplate: IMongoRelationshipTemplatePopulated) => {

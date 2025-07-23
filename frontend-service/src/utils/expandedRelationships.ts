@@ -1,8 +1,11 @@
+import { environment } from '../globals';
 import { IEntityExpanded } from '../interfaces/entities';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IConnectionTemplateOfExpandedEntity } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
+
+const { maxPrintLevel } = environment;
 
 export const sortTemplatesChildrenToParents = (
     depth: number,
@@ -27,7 +30,9 @@ export const sortTemplatesChildrenToParents = (
         ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
 
         const nestedChildren =
-            depth < 5 && children.length > 0 ? sortTemplatesChildrenToParents(depth + 1, children, data, relationshipTemplates, entityTemplates) : [];
+            depth < maxPrintLevel && children.length > 0
+                ? sortTemplatesChildrenToParents(depth + 1, children, data, relationshipTemplates, entityTemplates)
+                : [];
 
         return {
             ...parent,
@@ -46,7 +51,7 @@ export const updateChildrenToParent = (
 
         const updatedChildren = isMatchingParent
             ? updatedParent.children
-            : depth < 5 && parent.children?.length
+            : depth < maxPrintLevel && parent.children?.length
             ? updateChildrenToParent(depth + 1, parent.children, updatedParent)
             : parent.children;
 
@@ -92,11 +97,9 @@ export const mergeAncestryTree = (
 
     const existing = nodes[index];
 
-    const mergedChildren = mergeChildren(existing.children ?? [], newNode.children ?? []);
-
     const updated = {
         ...existing,
-        children: mergedChildren,
+        children: mergeChildren(existing.children ?? [], newNode.children ?? []),
     };
 
     return [...nodes.slice(0, index), updated, ...nodes.slice(index + 1)];
@@ -106,23 +109,21 @@ export const findAncestryTree = (nodes: IConnectionTemplateOfExpandedEntity[], i
     const targetId = id.split('-')[1];
 
     for (const node of nodes) {
-        if (node.children) {
-            for (const child of node.children) {
-                if (child.relationshipTemplate._id === targetId) {
-                    return {
-                        ...node,
-                        children: [child],
-                    };
-                }
+        if (!node.children) continue;
 
-                const found = findAncestryTree([child], id);
+        for (const child of node.children) {
+            if (child.relationshipTemplate._id === targetId) {
+                return {
+                    ...node,
+                    children: [child],
+                };
+            }
 
-                if (found) {
-                    return {
-                        ...node,
-                        children: [found],
-                    };
-                }
+            if (findAncestryTree([child], id)) {
+                return {
+                    ...node,
+                    children: [findAncestryTree([child], id)!],
+                };
             }
         }
     }

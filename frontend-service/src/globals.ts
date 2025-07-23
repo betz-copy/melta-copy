@@ -319,6 +319,7 @@ export const environment = {
     avatarIconPath: '/icons/profileAvatar/',
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     dateOrDateTimeRegex: /^\d{4}-\d{2}-\d{2}([T\s]\d{2}:\d{2}(:\d{2})?)?$/,
+    maxPrintLevel: 5,
     fileExtensions: {
         defaultImage: 'png',
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],

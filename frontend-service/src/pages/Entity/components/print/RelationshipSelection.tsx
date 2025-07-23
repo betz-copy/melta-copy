@@ -119,7 +119,7 @@ const RelationshipSelection: React.FC<{
 
             if (!currentNode) return;
 
-            if (currentNode.parentRelationship !== undefined) {
+            if (currentNode.parentRelationship) {
                 // handle a child
 
                 const parent = findParent(selectedConnections, id);

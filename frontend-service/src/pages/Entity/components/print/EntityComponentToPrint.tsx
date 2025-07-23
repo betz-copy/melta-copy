@@ -93,10 +93,7 @@ const EntityComponentToPrint: React.FC<{
                 ) && (
                     <div>
                         <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
-                        {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, {
-                            showEntityDates: options.showEntityDates,
-                            showDisabled: options.showDisabled,
-                        })}
+                        {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, options)}
                     </div>
                 )}
         </Box>

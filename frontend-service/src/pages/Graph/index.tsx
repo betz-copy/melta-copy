@@ -128,7 +128,7 @@ const Graph: React.FC = () => {
         });
     };
 
-    const expandedParams: { [key: string]: { minLevel?: number; maxLevel: number } } = {
+    const expandedParams: Record<string, { minLevel?: number; maxLevel: number }> = {
         [entityId]: { maxLevel: 1 },
         ...Object.fromEntries(
             Object.entries(JSON.parse(searchParams.get('expandedEntities')!)).map(([key, val]) => [key, { maxLevel: val as number }]),

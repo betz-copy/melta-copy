@@ -23,32 +23,24 @@ export const renderConnectionTree = (
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const result: JSX.Element[] = [];
-
-    connectionsTemplates.map(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
+    return connectionsTemplates.flatMap(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
         const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
-
         const connectedEntities: IEntity[] = [];
-
         for (const connection of connectionsInstances) {
             if (connection.relationship.templateId === relationshipTemplate._id && connection[entityType].properties._id === entity.properties._id) {
                 const connectedEntity =
                     connection.sourceEntity.properties._id === entity.properties._id ? connection.destinationEntity : connection.sourceEntity;
-
                 if (options.showDisabled || !connectedEntity.properties.disabled) connectedEntities.push(connectedEntity);
             }
         }
-
-        if (!connectedEntities.length) return;
-
-        result.push(
+        if (!connectedEntities.length) return [];
+        return (
             <div key={relationshipTemplate._id}>
                 <RelationshipPrintTitle
                     relationshipTemplate={relationshipTemplate}
                     isExpandedEntityRelationshipSource={isExpandedEntityRelationshipSource}
                     sxOverride={{ marginTop: '2rem', marginBottom: '0.5rem' }}
                 />
-
                 {connectedEntities.map((connectedEntity) => (
                     <div key={connectedEntity.properties._id} style={{ marginBottom: '0.5rem' }}>
                         <EntityComponentToPrint
@@ -63,11 +55,9 @@ export const renderConnectionTree = (
                         />
                     </div>
                 ))}
-            </div>,
+            </div>
         );
     });
-
-    return result;
 };
 
 const ComponentToPrint = React.forwardRef<
@@ -102,7 +92,6 @@ const ComponentToPrint = React.forwardRef<
         },
         ref,
     ) => {
-
         return (
             <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
                 <Grid style={{ pageBreakInside: 'avoid' }}>
@@ -128,10 +117,7 @@ const ComponentToPrint = React.forwardRef<
                     <>
                         <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
 
-                        {renderConnectionTree(expandedEntity.entity, connectionsTemplates, connectionsInstances, {
-                            showEntityDates: options.showEntityDates,
-                            showDisabled: options.showDisabled,
-                        })}
+                        {renderConnectionTree(expandedEntity.entity, connectionsTemplates, connectionsInstances, options)}
                     </>
                 )}
                 {options.showEntityFiles && (

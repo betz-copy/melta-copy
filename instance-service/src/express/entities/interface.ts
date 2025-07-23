@@ -3,7 +3,7 @@ import { IEntity, ISearchFilter } from '@microservices/shared';
 export interface IGetExpandedEntityBody {
     disabled: boolean | null;
     templateIds: string[];
-    expandedParams: { [key: string]: { minLevel?: number; maxLevel: number } };
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
 }
 
