@@ -7,9 +7,7 @@ import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces
 import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
-import { IEntityExpandedWithRelatedRelationships } from '../../pages/Entity/components/print';
-import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
+import RelationshipSelect, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { MeltaTooltip } from '../MeltaTooltip';
@@ -50,11 +48,8 @@ const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
-    instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstancePopulated;
-    connections: IConnectionTemplateOfExpandedEntity[];
-    setConnections: React.Dispatch<IConnectionTemplateOfExpandedEntity[]>;
-    selectedConnections: IConnectionTemplateOfExpandedEntity[];
-    setSelectedConnections: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    instance: IEntityExpanded | IMongoProcessInstancePopulated;
+    entityConnections?: EntityConnectionsProps;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
@@ -74,10 +69,7 @@ const PrintOptionsDialog: React.FC<{
     handleClose,
     template,
     instance,
-    connections,
-    setConnections,
-    selectedConnections,
-    setSelectedConnections,
+    entityConnections,
     files,
     setFiles,
     selectedFiles,
@@ -165,13 +157,10 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {connections.length > 0 && (
+                        {entityConnections && entityConnections.connectionsTemplates.length > 0 && (
                             <RelationshipSelect
                                 expandedEntity={instance as IEntityExpanded}
-                                connections={connections}
-                                setConnections={setConnections}
-                                selectedConnections={selectedConnections}
-                                setSelectedConnections={setSelectedConnections}
+                                entityConnections={entityConnections}
                                 title={i18next.t('entityPage.print.chooseRelationship')}
                             />
                         )}

@@ -2,7 +2,7 @@
 // https://mui.com/x/react-tree-view/rich-tree-view/ordering/
 
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
-import { Box, Divider, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, Divider, Typography, useTheme } from '@mui/material';
 import {
     TreeItemContent,
     TreeItemDragAndDropOverlay,
@@ -127,13 +127,20 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
                         backgroundColor: status.selected ? 'transparent' : undefined,
                     }}
                 >
-                    {(status.expandable || itemDepth !== 0 || !draggable) && (
-                        <TreeItemIconContainer {...getIconContainerProps()}>
-                            <TreeItemIcon status={status} />
-                        </TreeItemIconContainer>
-                    )}
+                    {(status.expandable || itemDepth !== 0 || !draggable) &&
+                        (status.loading ? (
+                            <CircularProgress size={20} />
+                        ) : (
+                            <TreeItemIconContainer {...getIconContainerProps()}>
+                                <TreeItemIcon status={status} />
+                            </TreeItemIconContainer>
+                        ))}
                     {draggable && draggableHandle(handleDragStart, onDragOver, onDragEnd)}
-                    {checkBoxProps.visible && <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />}
+                    {checkBoxProps.visible && (
+                        <Box onClick={(e) => e.stopPropagation()}>
+                            <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />
+                        </Box>
+                    )}
                     {additionalRowIcon}
                     <LabelWithToolTip {...getLabelProps()} />
                     <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />

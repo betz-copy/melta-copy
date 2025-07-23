@@ -4,7 +4,7 @@ import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IConnectionTemplateOfExpandedEntity } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
 
-export const sortTemplatesChildrenToParents2 = (
+export const sortTemplatesChildrenToParents = (
     depth: number,
     parents: IConnectionTemplateOfExpandedEntity[],
     data: IEntityExpanded,
@@ -27,9 +27,7 @@ export const sortTemplatesChildrenToParents2 = (
         ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
 
         const nestedChildren =
-            depth < 5 && children.length > 0
-                ? sortTemplatesChildrenToParents2(depth + 1, children, data, relationshipTemplates, entityTemplates)
-                : [];
+            depth < 5 && children.length > 0 ? sortTemplatesChildrenToParents(depth + 1, children, data, relationshipTemplates, entityTemplates) : [];
 
         return {
             ...parent,

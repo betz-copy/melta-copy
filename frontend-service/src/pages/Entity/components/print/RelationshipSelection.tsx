@@ -1,23 +1,19 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, FormControl, Select, useTheme } from '@mui/material';
-import { RichTreeViewPro } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro, TreeItemProps } from '@mui/x-tree-view-pro';
 import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { CustomExpandMore } from '../../../../common/SelectCheckBox';
-import { IEntityExpanded } from '../../../../interfaces/entities';
+import TreeItem from '../../../../common/Tree/TreeItem';
+import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
-import {
-    findAncestryTree,
-    mergeAncestryTree,
-    sortTemplatesChildrenToParents2,
-    updateChildrenToParent,
-} from '../../../../utils/expandedRelationships';
+import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 
 const collectAllSelectedItemIds = (nodes: IConnectionTemplateOfExpandedEntity[], selectedIds: Set<string>) => {
@@ -30,19 +26,27 @@ const collectAllSelectedItemIds = (nodes: IConnectionTemplateOfExpandedEntity[],
 };
 
 // item id is node id - parent id (if he has one)
-const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: IConnectionTemplateOfExpandedEntity) => {
-    return `${depth}-${_id}${parentRelationship ? `-${parentRelationship?._id}` : ''}`;
-};
+const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: IConnectionTemplateOfExpandedEntity) =>
+    `${depth}-${_id}${parentRelationship ? `-${parentRelationship?._id}` : ''}`;
+
 const getItemLabel = ({ relationshipTemplate: { displayName, sourceEntity, destinationEntity } }: IConnectionTemplateOfExpandedEntity) =>
     `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`;
 
+export type EntityConnectionsProps = {
+    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    setConnectionsTemplates: Dispatch<SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    setConnectionsInstances: Dispatch<SetStateAction<IConnection[]>>;
+    selectedConnections: IConnectionTemplateOfExpandedEntity[];
+    setSelectedConnections: Dispatch<SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+};
+
 const RelationshipSelection: React.FC<{
     expandedEntity: IEntityExpanded;
-    connections: RelationshipSelectProps['connections'];
-    setConnections: RelationshipSelectProps['setConnections'];
-    selectedConnections: RelationshipSelectProps['selectedConnections'];
-    setSelectedConnections: RelationshipSelectProps['setSelectedConnections'];
-}> = ({ expandedEntity, connections, setConnections, selectedConnections, setSelectedConnections }) => {
+    entityConnections: EntityConnectionsProps;
+}> = ({
+    expandedEntity,
+    entityConnections: { connectionsTemplates, setConnectionsTemplates, setConnectionsInstances, selectedConnections, setSelectedConnections },
+}) => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
 
@@ -68,8 +72,7 @@ const RelationshipSelection: React.FC<{
         queryFn: () =>
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
-                // { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1, minLevel: expansionDepth + 1 } }, // minLevel skip one of the
-                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1 } }, //TODO: add minLevel
+                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1 } },
                 { disabled: false, templateIds: allowedEntityTemplatesIds },
             ),
         enabled: false,
@@ -112,7 +115,7 @@ const RelationshipSelection: React.FC<{
         ];
 
         changedIds.forEach((id) => {
-            const currentNode = findNodeById(connections, id);
+            const currentNode = findNodeById(connectionsTemplates, id);
 
             if (!currentNode) return;
 
@@ -148,7 +151,7 @@ const RelationshipSelection: React.FC<{
                 } else {
                     // if the parent isn't selected
 
-                    const ancestryTree = findAncestryTree(connections, id);
+                    const ancestryTree = findAncestryTree(connectionsTemplates, id);
                     if (ancestryTree) currentSelectedNodes = mergeAncestryTree(currentSelectedNodes, ancestryTree);
                 }
             } else {
@@ -174,18 +177,19 @@ const RelationshipSelection: React.FC<{
         return Array.from(currentSelectedNodesIds);
     };
 
-    // const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} />, []);
+    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} />, []);
 
     const fetchTreeItems = async (parentId?: string): Promise<IConnectionTemplateOfExpandedEntity[]> => {
         const { data } = await getExpandedData();
 
         if (!data) return [];
 
-        const sorted = sortTemplatesChildrenToParents2(2, connections, data, allRelationshipTemplates, entityTemplates);
+        const sorted = sortTemplatesChildrenToParents(2, connectionsTemplates, data, allRelationshipTemplates, entityTemplates);
 
         setExpansionDepth((prev) => prev + 1);
 
-        setConnections(sorted);
+        setConnectionsTemplates(sorted);
+        setConnectionsInstances(data.connections);
 
         if (!parentId) return sorted;
 
@@ -210,7 +214,7 @@ const RelationshipSelection: React.FC<{
             slots={{
                 expandIcon: ChevronLeft,
                 collapseIcon: ExpandLess,
-                // item: TreeItemWrapper,
+                item: TreeItemWrapper,
             }}
             multiSelect
             checkboxSelection
@@ -224,11 +228,8 @@ const RelationshipSelection: React.FC<{
 
 type RelationshipSelectProps = PropsWithChildren<{
     title: string;
-    connections: IConnectionTemplateOfExpandedEntity[];
-    setConnections: React.Dispatch<IConnectionTemplateOfExpandedEntity[]>;
     expandedEntity: IEntityExpanded;
-    selectedConnections: IConnectionTemplateOfExpandedEntity[];
-    setSelectedConnections: Dispatch<SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    entityConnections: EntityConnectionsProps;
     size?: 'small' | 'medium';
     overrideSx?: object;
     isSelectDisabled?: boolean;
@@ -236,11 +237,8 @@ type RelationshipSelectProps = PropsWithChildren<{
 
 const RelationshipSelect = ({
     title,
-    connections,
-    setConnections,
     expandedEntity,
-    selectedConnections,
-    setSelectedConnections,
+    entityConnections,
     size = 'medium',
     overrideSx,
     isSelectDisabled = false,
@@ -304,13 +302,7 @@ const RelationshipSelect = ({
                     padding: '0px, 8px',
                 }}
             >
-                <RelationshipSelection
-                    connections={connections}
-                    setConnections={setConnections}
-                    selectedConnections={selectedConnections}
-                    setSelectedConnections={setSelectedConnections}
-                    expandedEntity={expandedEntity}
-                />
+                <RelationshipSelection entityConnections={entityConnections} expandedEntity={expandedEntity} />
             </Select>
         </FormControl>
     );

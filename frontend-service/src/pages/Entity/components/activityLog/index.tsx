@@ -26,7 +26,7 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
                     variant="contained"
                     startIcon={<History />}
                     onClick={() => setOpenPopper((previousOpen) => !previousOpen)}
-                    sx={{ marginLeft: '1rem' }}
+                    sx={{ marginLeft: '1rem', color: 'white' }}
                 >
                     {i18next.t('entityPage.activityLog.header')}
                 </Button>

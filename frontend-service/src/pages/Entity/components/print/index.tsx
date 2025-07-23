@@ -6,31 +6,18 @@ import { useReactToPrint } from 'react-to-print';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
-import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
+import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
 import { lightTheme } from '../../../../theme';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 
-// TODO: delete all these types
-export interface ConnectionWithExtendedRelationship extends IConnection {
-    extendedRelationships?: IConnection[];
-}
-export interface IEntityExpandedWithRelatedRelationships {
-    entity: IEntity;
-    connections: ConnectionWithExtendedRelationship[];
-}
-
-export interface IConnectionTemplateExpanded extends IConnectionTemplateOfExpandedEntity {
-    parentRelationship?: IConnectionTemplateOfExpandedEntity;
-}
-
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-}> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
+    connections: IConnectionTemplateOfExpandedEntity[];
+}> = ({ entityTemplate, expandedEntity, connections }) => {
     const [openModal, setOpenModal] = useState(false);
 
     const componentRef = React.useRef(null);
@@ -40,7 +27,8 @@ const Print: React.FC<{
     const [filesLoadingStatus, setFilesLoadingStatus] = useState({});
 
     const [selectedConnections, setSelectedConnections] = React.useState<IConnectionTemplateOfExpandedEntity[]>([]);
-    const [connections, setConnections] = React.useState(connectionsTemplates);
+    const [connectionsTemplates, setConnectionsTemplates] = React.useState(connections);
+    const [connectionsInstances, setConnectionsInstances] = React.useState<IConnection[]>([]);
 
     const [showDate, setShowDate] = useState(true);
     const [showDisabled, setShowDisabled] = useState(true);
@@ -68,7 +56,7 @@ const Print: React.FC<{
     return (
         <>
             <MeltaTooltip title={i18next.t('entityPage.print.header')}>
-                <Button variant="contained" startIcon={<PrintOutlined />} onClick={handleOpen}>
+                <Button variant="contained" startIcon={<PrintOutlined />} onClick={handleOpen} sx={{ color: 'white' }}>
                     {i18next.t('actions.print')}
                 </Button>
             </MeltaTooltip>
@@ -80,7 +68,8 @@ const Print: React.FC<{
                         ref={componentRef}
                         entityTemplate={entityTemplate}
                         expandedEntity={expandedEntity}
-                        connectionsTemplatesToPrint={selectedConnections}
+                        connectionsTemplates={selectedConnections}
+                        connectionsInstances={connectionsInstances}
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}
@@ -93,10 +82,13 @@ const Print: React.FC<{
                     open={openModal}
                     instance={expandedEntity}
                     template={entityTemplate}
-                    connections={connections}
-                    setConnections={setConnections}
-                    selectedConnections={selectedConnections}
-                    setSelectedConnections={setSelectedConnections}
+                    entityConnections={{
+                        connectionsTemplates,
+                        setConnectionsTemplates,
+                        setConnectionsInstances,
+                        selectedConnections,
+                        setSelectedConnections,
+                    }}
                     handleClose={handleClose}
                     files={files}
                     setFiles={setFiles}

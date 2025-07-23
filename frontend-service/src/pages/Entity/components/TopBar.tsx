@@ -67,7 +67,7 @@ const EntityTopBar: React.FC<{
                 </Grid>
             </Box>
             <Box>
-                <Print entityTemplate={entityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
+                <Print entityTemplate={entityTemplate} expandedEntity={expandedEntity} connections={connectionsTemplates} />
                 <ActivityLog entityTemplate={entityTemplate} expandedEntity={expandedEntity} />
             </Box>
         </Box>
