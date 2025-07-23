@@ -3,7 +3,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
@@ -389,50 +389,51 @@ const Entity: React.FC = () => {
         PermissionScope.write,
     );
 
-    const connectionsTemplates = getFullRelationshipTemplates(
-        relationshipTemplates,
-        entityTemplates,
-        currentEntityTemplate!,
-        1,
-        undefined,
-        expandedEntity,
-    );
+    const connectionsTemplates = useMemo(() => {
+        if (!currentEntityTemplate) return;
 
-    const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
-        return {
-            category,
-            connectionsTemplates: connectionsTemplates
-                .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                    const otherEntityTemplate = isExpandedEntityRelationshipSource
-                        ? relationshipTemplate.destinationEntity
-                        : relationshipTemplate.sourceEntity;
-                    return otherEntityTemplate.category._id === category._id;
-                })
-                .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
-            relationshipCount:
-                // calculate the amount of the related connections of each entity
-                expandedEntity?.connections.filter((connection) => {
-                    const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
+        return getFullRelationshipTemplates(relationshipTemplates, entityTemplates, currentEntityTemplate, 1, undefined, expandedEntity);
+    }, [currentEntityTemplate, expandedEntity]);
 
-                    if (
-                        connectionRelationshipTemplate.isProperty &&
-                        currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
-                            ?.relationshipTemplateId === connectionRelationshipTemplate._id
-                    )
-                        return false;
+    const categoriesWithConnectionsTemplates = useMemo(() => {
+        if (!connectionsTemplates) return;
 
-                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+        return Array.from(categories.values(), (category) => {
+            return {
+                category,
+                connectionsTemplates: connectionsTemplates
+                    .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
+                        const otherEntityTemplate = isExpandedEntityRelationshipSource
+                            ? relationshipTemplate.destinationEntity
+                            : relationshipTemplate.sourceEntity;
+                        return otherEntityTemplate.category._id === category._id;
+                    })
+                    .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
+                relationshipCount:
+                    // calculate the amount of the related connections of each entity
+                    expandedEntity?.connections.filter((connection) => {
+                        const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
 
-                    return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
-                }).length,
-        };
-    })
-        .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
-        .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
+                        if (
+                            connectionRelationshipTemplate.isProperty &&
+                            currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
+                                ?.relationshipTemplateId === connectionRelationshipTemplate._id
+                        )
+                            return false;
+
+                        if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
+                            return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+
+                        return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
+                    }).length,
+            };
+        })
+            .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
+            .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
+    }, [connectionsTemplates, expandedEntity]);
 
     useEffect(() => {
-        if (categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
+        if (categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
             setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
@@ -447,13 +448,13 @@ const Entity: React.FC = () => {
             <EntityTopBar
                 entityTemplate={currentEntityTemplate}
                 expandedEntity={expandedEntity}
-                connectionsTemplates={connectionsTemplates.filter((relTemplate) => relTemplate.hasInstances)}
+                connectionsTemplates={(connectionsTemplates ?? []).filter((relTemplate) => relTemplate.hasInstances)}
             />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
-                {categoriesWithConnectionsTemplates.length > 0 && (
+                {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
                         <Grid item container xs={5} alignItems="center" gap="20px">
                             <Grid item alignContent="center">
