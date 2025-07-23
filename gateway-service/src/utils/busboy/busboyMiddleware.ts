@@ -1,9 +1,9 @@
 /* eslint-disable consistent-return */
-import { Request, Response, NextFunction } from 'express';
-import Busboy from 'busboy';
-import { PassThrough } from 'stream';
-import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from '@microservices/shared';
+import Busboy from 'busboy';
+import { NextFunction, Request, Response } from 'express';
+import ReadableStreamClone from 'readable-stream-clone';
+import { PassThrough } from 'stream';
 import config from '../../config';
 
 const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
