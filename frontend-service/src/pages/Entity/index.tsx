@@ -126,7 +126,7 @@ export const ConnectionsTable: React.FC<{
     const setQueryDataKey = [
         'getExpandedEntity',
         expandedEntity.entity.properties._id,
-        { [expandedEntity.entity.properties._id]: 1 },
+        { [expandedEntity.entity.properties._id]: { maxLevel: 1 } },
         { templateIds },
     ];
 
