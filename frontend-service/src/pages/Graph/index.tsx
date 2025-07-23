@@ -129,10 +129,16 @@ const Graph: React.FC = () => {
     };
 
     const expandedParams: Record<string, { minLevel?: number; maxLevel: number }> = {
-        [entityId]: { maxLevel: 1 },
         ...Object.fromEntries(
-            Object.entries(JSON.parse(searchParams.get('expandedEntities')!)).map(([key, val]) => [key, { maxLevel: val as number }]),
+            Object.entries(JSON.parse(searchParams.get('expandedEntities') || '{}')).map(([key, val]) => {
+                if (typeof val === 'number') {
+                    return [key, { maxLevel: val }];
+                }
+
+                return [key, val as { minLevel?: number; maxLevel: number }];
+            }),
         ),
+        [entityId]: { maxLevel: 1 },
     };
 
     const { refetch: getExpandedEntityById, error } = useQuery<IEntityExpanded>(
@@ -301,7 +307,7 @@ const Graph: React.FC = () => {
                         create3DNodeDetails(
                             node as INodeObject,
                             entityTemplates.get((node as INodeObject).templateId)! ||
-                                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId),
+                                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === (node as INodeObject).templateId),
                             entityId === (node as INodeObject).data._id,
                             darkMode,
                         )
