@@ -22,6 +22,7 @@ import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 import { IChooseTemplateMode } from '../ChooseTemplate';
+import { UserState, useUserStore } from '../../../../stores/user';
 
 const { signaturePrefix } = environment;
 
@@ -63,13 +64,16 @@ const convertIEntityToEntityWizardValues = (
     };
 };
 
-export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValues): EntityWizardValues => {
+export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValues, currentUser?: UserState['user']): EntityWizardValues => {
     const { attachmentsProperties, properties, template } = initialCurrValues;
 
     const mergedProperties = {
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
-                .map(([key, prop]) => [key, properties[key] ?? prop.defaultValue])
+                .map(([key, prop]) => {
+                    if (prop.format === 'user' && currentUser) properties[key] = JSON.stringify(currentUser);
+                    return [key, properties[key] ?? prop.defaultValue];
+                })
                 .filter(([_key, value]) => !!value),
         ),
         disabled: properties.disabled ?? false,
@@ -77,7 +81,7 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
 
     return {
         properties: mergedProperties,
-        attachmentsProperties: attachmentsProperties,
+        attachmentsProperties,
         template,
     };
 };
@@ -117,6 +121,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const isEditMode = actionType === ActionTypes.UpdateEntity;
 
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
     const { shouldNavigateToEntityPage } = workspace.metadata;
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
@@ -132,8 +137,10 @@ const CreateOrEditEntityDetails: React.FC<{
                 attachmentsProperties: {},
                 template: entityTemplate,
             },
+            // TODO don't add currentUser default value to each form user field
+            currentUser,
         );
-    }, [payload, entityTemplate, initialTemplateFileKeys]);
+    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
 
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 

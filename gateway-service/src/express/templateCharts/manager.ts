@@ -47,19 +47,29 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         field: IAxisField,
         allowedEntityTemplates: (IChildTemplatePopulated | IMongoEntityTemplatePopulated)[],
         chartEntityTemplate?: IChildTemplatePopulated | IMongoEntityTemplatePopulated,
+        isChildTemplate?: boolean,
     ) {
         if (typeof field === 'string') {
             const propertyTemplate = chartEntityTemplate?.properties.properties[field];
             if (propertyTemplate?.format === 'relationshipReference') {
                 const { relatedTemplateId } = propertyTemplate.relationshipReference!;
-                return allowedEntityTemplates?.some((allowedEntityTemplate) => allowedEntityTemplate._id === relatedTemplateId);
+
+                return allowedEntityTemplates.some((template) =>
+                    isChildTemplate
+                        ? (template as IChildTemplatePopulated).parentTemplate._id === relatedTemplateId
+                        : (template as IMongoEntityTemplatePopulated)._id === relatedTemplateId,
+                );
             }
         }
 
         return true;
     }
 
-    async validateAllowedRelatedTemplate(userId: string, permissionsOfUserId: ISubCompactPermissions, { type, metaData, templateId }: IChart) {
+    async validateAllowedRelatedTemplate(
+        userId: string,
+        permissionsOfUserId: ISubCompactPermissions,
+        { type, metaData, templateId, childTemplateId }: IChart,
+    ) {
         const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
         const allowedChildTemplates = await this.templateManager.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
@@ -75,8 +85,9 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
                 return this.hasPermissionToRelatedTemplate(
                     field,
-                    allowedChildTemplates || allowedEntityTemplates,
-                    chartChildTemplate || chartEntityTemplate,
+                    [...allowedChildTemplates, ...allowedEntityTemplates],
+                    childTemplateId ? chartChildTemplate : chartEntityTemplate,
+                    !!childTemplateId,
                 );
             }
             case IChartType.Pie: {
@@ -84,8 +95,9 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
                 return this.hasPermissionToRelatedTemplate(
                     dividedByField,
-                    allowedChildTemplates || allowedEntityTemplates,
-                    chartChildTemplate || chartEntityTemplate,
+                    [...allowedChildTemplates, ...allowedEntityTemplates],
+                    childTemplateId ? chartChildTemplate : chartEntityTemplate,
+                    !!childTemplateId,
                 );
             }
 

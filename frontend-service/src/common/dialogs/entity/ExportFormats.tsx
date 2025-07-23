@@ -13,6 +13,7 @@ import { IEntity } from '../../../interfaces/entities';
 import { locationConverterToString } from '../../../utils/map/convert';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/RjsfLocationWidget';
+import _ from 'lodash';
 
 export const ExportFormats: React.FC<{
     properties: EntityWizardValues['properties'];
@@ -26,7 +27,7 @@ export const ExportFormats: React.FC<{
 
     const formatFieldsForExport = (): EntityWizardValues['properties'] => {
         // the copy is created so it wouldn't change the original expandedEntity.
-        const propertyCopy = structuredClone(properties);
+        const propertyCopy = _.cloneDeep(properties);
 
         for (const [fieldKey, field] of Object.entries(entityTemplates.get(templateId)!.properties.properties)) {
             if (field?.format === 'relationshipReference' && field?.relationshipReference?.relatedTemplateField) {

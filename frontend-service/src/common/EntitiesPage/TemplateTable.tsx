@@ -39,7 +39,7 @@ import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, TablePageType } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
 import { AddEntityButton } from './Buttons/AddEntity';
@@ -68,7 +68,7 @@ const TemplateTable = forwardRef<
     {
         template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
         quickFilterText: string;
-        page: string;
+        page: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
         defaultFilter?: FilterModel;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
@@ -310,7 +310,7 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    {page !== 'client-side' && (
+                    {page !== TablePageType.clientSide && (
                         <EditExcelButton
                             disabled={isEditExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}

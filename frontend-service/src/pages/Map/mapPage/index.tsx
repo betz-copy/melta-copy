@@ -24,6 +24,7 @@ import { BackendConfigState } from '../../../services/backendConfigService';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 
 const { maxRadius } = environment.map;
 
@@ -62,7 +63,9 @@ const MapPage = () => {
     const { sourceTemplateId, destTemplateId } = metadata.mapPage;
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
-    const sourceSearchResults = searchedMarkers.filter(({ node }) => node.templateId === sourceTemplate?._id).map(({ node }) => node);
+    const sourceSearchResults = [...searchedMarkers, ...searchedPolygons]
+        .filter(({ node }) => node.templateId === sourceTemplate?._id)
+        .map(({ node }) => node);
 
     const {
         bounds: searchedEntityBounds,
@@ -433,6 +436,7 @@ const MapPage = () => {
                             infiniteModeWithoutExpand
                             relatedTemplateProperties={destTemplateId}
                             overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}
+                            pageType={TablePageType.map}
                         />
                     </Grid>
                 )}

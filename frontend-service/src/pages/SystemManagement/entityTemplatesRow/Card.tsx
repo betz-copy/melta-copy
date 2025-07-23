@@ -95,6 +95,7 @@ interface EntityTemplateCardProps {
     isDisabledView?: boolean;
     isChildTemplate?: boolean;
     title?: string;
+    categoryColor: string;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -108,6 +109,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     isDisabledView = false,
     isChildTemplate = false,
     title = entityTemplate.displayName,
+    categoryColor,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -173,7 +175,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 >
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
-                            <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
+                            <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(childTemplates?.get(entityTemplate._id) ?? entityTemplate, categoryColor)} style={{ height: '18px' }} />
                         </Grid>
 
                         <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>

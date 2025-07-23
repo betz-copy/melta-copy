@@ -1892,7 +1892,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             let queryAccordingToFieldType = constraint.property;
             const constraintProp = template.properties.properties[constraint.property];
-
+ 
             if (constraintProp.format === 'relationshipReference') {
                 queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
             } else if (constraintProp.format === 'user') {

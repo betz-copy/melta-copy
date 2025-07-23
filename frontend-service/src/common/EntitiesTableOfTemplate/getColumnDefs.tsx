@@ -37,6 +37,7 @@ import { emptyEntityTemplate } from '../dialogs/entity';
 import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
 import { UserState } from '../../stores/user';
 import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
+import { getChildrenWithWritePermission } from '../../utils/childTemplates';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
@@ -518,8 +519,11 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                         destTemplate
                                             ? !isUserHasWritePermissions(currentClientSideUser, currentUser, destTemplate) || destTemplate?.disabled
                                             : childEntityTemplateMap
-                                            ? !Array.from(childEntityTemplateMap.values()).filter(
-                                                  (child) => child.parentTemplate._id === addRelationshipReferenceButtonProps,
+                                            ? !getChildrenWithWritePermission(
+                                                  childEntityTemplateMap,
+                                                  addRelationshipReferenceButtonProps,
+                                                  currentUser,
+                                                  currentClientSideUser,
                                               ).length
                                             : true
                                     }

@@ -76,10 +76,7 @@ class InstancesValidator extends DefaultController {
             this.getAllowedChildTemplatesForInstances(permissions),
         ]);
 
-        const allowedEntityTemplateIds = [
-            ...allowedEntityTemplates.map(({ _id }) => _id),
-            ...allowedChildEntityTemplates.map(({ parentTemplate }) => parentTemplate._id),
-        ];
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {
@@ -93,16 +90,6 @@ class InstancesValidator extends DefaultController {
         if (!userPermissions.admin && !userPermissions.instances) return [];
         const allowedCategories = Object.keys(userPermissions.instances?.categories ?? {});
         return this.entityTemplateService.searchChildTemplates(userPermissions.admin ? {} : { categoryIds: allowedCategories });
-    }
-
-    async validateHasPermissionsToEntitiesInChildTemplates(user: Express.User, templateIds: string[]) {
-        const allowedChildTemplates = await this.getAllowedChildTemplatesForInstances(await this.authorizer.getWorkspacePermissions(user.id));
-        const allowedChildTemplateIds = allowedChildTemplates.map((childTemplate) => childTemplate._id);
-
-        const unauthorizedTemplates = templateIds.filter((templateId) => !allowedChildTemplateIds.includes(templateId));
-        if (unauthorizedTemplates.length > 0) {
-            throw new ForbiddenError('user not authorized', { metadata: `unauthorized child templates ${JSON.stringify(unauthorizedTemplates)}` });
-        }
     }
 
     async validateUserCanSearchEntitiesBatch(req: Request) {
@@ -121,16 +108,7 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanExportEntities(req: Request) {
         const { templates } = req.body as IExportEntitiesBody;
-
-        const childTemplates = Object.entries(templates)
-            .filter(([_, value]) => value.isChildTemplate)
-            .map(([key]) => key);
-        const parentTemplates = Object.entries(templates)
-            .filter(([_, value]) => !value.isChildTemplate)
-            .map(([key]) => key);
-
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, parentTemplates);
-        await this.validateHasPermissionsToEntitiesInChildTemplates(req.user!, childTemplates);
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
     private async validateUserPermissionForEntityInstance(

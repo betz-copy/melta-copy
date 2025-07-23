@@ -6,13 +6,13 @@ import { StepComponentProps } from '../../../../common/wizards';
 import { IFrameWizardValues } from '../../../../common/wizards/iFrame';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 
-const BodyComponent: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values: { name, url }, errors, touched }) => {
+const BodyComponent: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values: { name, url }, errors }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
 
     return (
         <Grid item container width="100%" height="100%" alignItems="center" justifyContent="center">
-            {name && url && touched.url && !errors.url && (
+            {name && url && !errors.url && (
                 <Card
                     sx={{
                         width: '90%',

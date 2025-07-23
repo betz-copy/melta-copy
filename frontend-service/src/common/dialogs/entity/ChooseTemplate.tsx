@@ -12,6 +12,8 @@ import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { getInitialValuesWithDefaults } from './CreateOrEditEntityDialog';
+import { useClientSideUserStore } from '../../../stores/clientSideUser';
+import { getChildrenWithWritePermission } from '../../../utils/childTemplates';
 
 export enum IChooseTemplateMode {
     TemplatesAndChildren = 'templatesAndChildren',
@@ -40,6 +42,7 @@ const ChooseTemplate: React.FC<{
     const queryClient = useQueryClient();
 
     const currentUser = useUserStore((state) => state.user);
+    const currentClientSideUser = useClientSideUserStore((state) => state.clientSideUser);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
@@ -53,7 +56,7 @@ const ChooseTemplate: React.FC<{
     let entityTemplatesFiltered: IMongoEntityTemplatePopulated[] | IChildTemplatePopulated[] = [];
 
     if (chooseMode === IChooseTemplateMode.OnlyChildren && parentId)
-        entityTemplatesFiltered = childTemplatesArray.filter((child) => child.parentTemplate._id === parentId);
+        entityTemplatesFiltered = getChildrenWithWritePermission(childTemplates, parentId, currentUser, currentClientSideUser);
     else {
         const filterEntityTemplates = entityTemplatesArray.filter((template) =>
             categoryId

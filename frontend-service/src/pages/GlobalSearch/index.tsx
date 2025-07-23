@@ -8,6 +8,7 @@ import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { TablePageType } from '../../common/EntitiesTableOfTemplate';
 
 const GlobalSearch: React.FC<{}> = () => {
     const currentUser = useUserStore((state) => state.user);
@@ -37,7 +38,7 @@ const GlobalSearch: React.FC<{}> = () => {
         />
     ) : (
         <EntitiesPage
-            pageType="globalSearch"
+            pageType={TablePageType.globalSearch}
             templates={allowedTemplates}
             categories={allowedCategories}
             excelExportAllTablesFileName={`${i18next.t('pages.globalSearch')}.xlsx`}

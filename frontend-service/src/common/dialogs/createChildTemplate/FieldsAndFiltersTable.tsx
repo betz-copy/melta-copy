@@ -11,6 +11,7 @@ import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilter
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
 import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
+import _ from 'lodash';
 
 const { dateOrDateTimeRegex } = environment;
 
@@ -116,7 +117,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         const newChip: IFieldChip = {
             fieldName,
             chipType: ChipType.Filter,
-            filterField: structuredClone(fieldValue),
+            filterField: _.cloneDeep(fieldValue),
         };
         setFieldChips((prev) => [...prev, newChip]);
     };
