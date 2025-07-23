@@ -89,7 +89,8 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
     const checkBoxProps = getCheckboxProps();
     const item = (publicAPI as any).getItem(itemId);
 
-    const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps }: ReturnType<typeof getRootProps> = getRootProps(other);
+    const rootProps = getRootProps(other) as ReturnType<typeof getRootProps>;
+    const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps } = rootProps;
     const itemDepth = otherRootProps.style?.['--TreeView-itemDepth'];
 
     const handleDragStart = (event: React.DragEvent) => {
@@ -114,7 +115,7 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
         // @ts-ignore
         <TreeItemProvider {...props} ref={ref} itemId={itemId}>
             <TreeItemRoot
-                {...otherRootProps}
+                {...rootProps}
                 sx={{
                     '& .MuiButtonBase-root': {
                         padding: '0px 8px',

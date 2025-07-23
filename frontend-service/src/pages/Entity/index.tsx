@@ -65,7 +65,7 @@ export const getButtonState = (
 
 const ConnectionsTableTitle: React.FC<{
     expandedEntity: IEntityExpanded;
-    connectionTemplate: IConnectionTemplateOfExpandedEntity;
+    connectionTemplate: Pick<IConnectionTemplateOfExpandedEntity, 'relationshipTemplate' | 'isExpandedEntityRelationshipSource'>;
 }> = ({ expandedEntity, connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource } }) => {
     return (
         <RelationshipTitle

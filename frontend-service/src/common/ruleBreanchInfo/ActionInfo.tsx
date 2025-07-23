@@ -204,7 +204,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const relationshipTemplate = allowedRelationships.find((relationship) => relationship._id === relationshipTemplateId)!;
-    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates);
+    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, entityTemplates);
 
     return (
         <Typography component="p" variant="body1">

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RichTreeViewPro, TreeItem2Props, TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro, TreeItemProps, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
 import { Box, Divider } from '@mui/material';
@@ -56,7 +56,7 @@ const Tree = <T extends {}>({
         [getItemId, preSelectedItemsIds, selectParentIfAllChildrenAreSelected, treeItems],
     );
 
-    const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
+    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
 
     useEffect(() => {
         setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds ?? []);
@@ -107,12 +107,8 @@ const Tree = <T extends {}>({
                 getItemId={getItemId}
                 getItemLabel={getItemLabel}
                 selectedItems={selectedItemsIds}
-                onSelectedItemsChange={(_event, itemIds) => {
-                    setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi));
-                }}
-                onExpandedItemsChange={(_event: React.SyntheticEvent, itemIds: string[]) => {
-                    setExpandedItemsIds(itemIds);
-                }}
+                onSelectedItemsChange={(_event, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi))}
+                onExpandedItemsChange={(_event: React.SyntheticEvent<Element, Event> | null, itemIds: string[]) => setExpandedItemsIds(itemIds)}
                 expandedItems={expandedItemsIds}
                 itemsReordering={isDraggable}
                 expansionTrigger="iconContainer"
@@ -121,7 +117,6 @@ const Tree = <T extends {}>({
                     collapseIcon: ExpandLess,
                     item: TreeItemWrapper,
                 }}
-                experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
                 onItemPositionChange={onDragEnd}
                 disableSelection={isSelectDisabled}
