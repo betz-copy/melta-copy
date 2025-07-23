@@ -12,6 +12,7 @@ import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { isChildTemplate } from '../../utils/templates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
+import { TablePageType } from '../EntitiesTableOfTemplate';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -53,7 +54,7 @@ const TemplateTablesViewResults = forwardRef<
         templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
         searchInput: string;
         pageSize?: number;
-        pageType: string;
+        pageType: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
@@ -162,7 +163,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 export interface TemplateTablesViewProps {
     templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
     searchInput: string;
-    pageType: string;
+    pageType: TablePageType;
     semanticSearch: boolean;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;

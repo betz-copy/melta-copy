@@ -115,7 +115,9 @@ export type IKartoffelUser = {
     lastName?: string;
     fullName?: string;
     akaUnit?: string;
+    birthDate?: Date;
     dischargeDay?: Date;
+    enlistmentDay?: Date;
     rank?: string;
     mail?: string;
     jobTitle?: string;
@@ -125,7 +127,6 @@ export type IKartoffelUser = {
     clearance?: string;
     fullClearance?: string;
     sex?: string;
-    birthDate?: Date;
     directGroup?: string;
     commanderOf?: string[];
     hierarchy?: string;

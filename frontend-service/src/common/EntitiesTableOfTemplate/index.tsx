@@ -91,6 +91,14 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
+export enum TablePageType {
+    category = 'category',
+    relationship = 'relationship',
+    globalSearch = 'globalSearch',
+    clientSide = 'client-side',
+    map = 'map',
+}
+
 export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
@@ -228,7 +236,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
         shouldSaveColumnOrder: boolean;
         shouldSavePagination: boolean;
         shouldSaveScrollPosition: boolean;
-        pageType?: string;
+        pageType?: TablePageType | `entity-${string}`;
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
@@ -671,7 +679,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     tableRef.current!.scrollIntoView({ behavior: 'smooth', block: 'end' });
                     observer.disconnect();
                 });
-        
                 ro.observe(tableRef.current);
                 return () => ro.disconnect();
             },
@@ -817,7 +824,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             suppressHeaderFilterButton: disableFilter,
                         }}
                         onGridReady={(params) => {
-                            if (saveStorageProps.pageType) {
+                            if (saveStorageProps.pageType === TablePageType.map) {
+                                gridRef.current?.api.autoSizeAllColumns();
+                            } else if (saveStorageProps.pageType) {
                                 const updatedVisibleColumns = updateVisibleColumns(params);
                                 const visibleKeys = Object.keys(updatedVisibleColumns).filter((key) => updatedVisibleColumns[key] === true);
                                 autoSizeAll(params, visibleKeys);

@@ -19,6 +19,7 @@ import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
+import { TablePageType } from '../EntitiesTableOfTemplate';
 
 type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     templates: T[];
@@ -28,7 +29,7 @@ type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemp
     isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
-    pageType: string;
+    pageType: TablePageType;
     pageTitle: string;
 };
 

@@ -26,6 +26,16 @@ const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
+function formatDateToDDMMYYYY(dateString: string): string {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
 interface FormatOptions {
     keyEnumColors?: Record<string, string>;
     isPrintingMode?: boolean;
@@ -40,10 +50,19 @@ export const formatToString = (
     options: FormatOptions = {},
     hideProps: string[] = [],
 ) => {
-    const { format, type: valueType, title } = property;
+    const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
     if (value === null || value === undefined) return '-';
+
+    if (
+        format === 'kartoffelUserField' &&
+        expandedUserField?.kartoffelField &&
+        ['birthDate', 'dischargeDay', 'enlistmentDay'].includes(expandedUserField.kartoffelField) &&
+        value
+    ) {
+        return formatDateToDDMMYYYY(value);
+    }
 
     if (valueType === 'number') {
         return value >= 0 ? value : `${(value * -1).toString()}-`;
@@ -272,7 +291,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature'];
+                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature','comment'];
 
                 const textDirection =
                     format && !excludedFormats.includes(format)
