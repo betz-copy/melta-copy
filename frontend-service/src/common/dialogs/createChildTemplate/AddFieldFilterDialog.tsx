@@ -205,6 +205,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
         setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
+        checkMatchValidations({ ...localFilterField, type: newTypeFilter } as any);
     };
 
     const renderFilterInput = () => {
