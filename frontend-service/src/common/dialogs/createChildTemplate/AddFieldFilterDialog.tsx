@@ -26,8 +26,9 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         lessThan: '$lt',
         lessThanOrEqual: '$lte',
         inRange: '$in',
+        between: '$between',
         not: '$not',
-        // contains: '$rgx', // contains always true in the validation
+        contains: '$rgx', // contains always true in the validation
         notContains: '$notContains',
     };
 
@@ -35,6 +36,10 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         case 'text':
         case 'number':
         case 'date':
+            if (filterField.type === 'inRange') {
+                return operatorMap['between'];
+            }
+
             return operatorMap[filterField.type];
         case 'set':
             return filterField.values && filterField.values.length > 0 ? '$in' : null;
@@ -50,7 +55,7 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
         case 'number':
             return filterField.filter;
         case 'date':
-            return filterField.dateFrom;
+            return filterField.dateTo ? [filterField.dateFrom, filterField.dateTo] : filterField.dateFrom;
         case 'set':
             return filterField.values;
         default:
@@ -130,7 +135,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         const filtersChip = fieldChips.filter((chip) => chip.chipType === ChipType.Filter && chip.fieldName === currentFieldName);
 
         if (dialogType === ChipType.Default && filtersChip.length > 0) {
-            const anyValid = filtersChip.some(({ filterField }) => checkMatchValidation(filterField, fieldName, value.filter));
+            const anyValid = filtersChip.some(({ filterField }) => checkMatchValidation(filterField, fieldName, getFilterValue(value)));
 
             if (!anyValid) {
                 onFailedMatch();
@@ -178,7 +183,10 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
         const dateString = newValue ? format(newValue, dateFormat) : null;
 
-        checkMatchValidations(newValue);
+        checkMatchValidations({
+            ...localFilterField,
+            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
+        } as IAGGridDateFilter);
 
         setLocalFilterField({
             ...localFilterField,
@@ -189,14 +197,15 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
         setCurrentFieldError(undefined);
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
-        checkMatchValidations(values);
         const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
+        checkMatchValidations({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
         setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
+        checkMatchValidations({ ...localFilterField, type: newTypeFilter } as any);
     };
 
     const renderFilterInput = () => {
