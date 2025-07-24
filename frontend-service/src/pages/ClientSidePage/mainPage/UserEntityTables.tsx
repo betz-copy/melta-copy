@@ -9,6 +9,7 @@ import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/Te
 import { CircularProgress, Typography } from '@mui/material';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
+import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 
 interface IUserEntityTablesProps {
     childTemplates: IMongoChildTemplatePopulated[];
@@ -141,7 +142,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                             }}
                                             template={childTemplatePopulated}
                                             quickFilterText={''}
-                                            page="client-side"
+                                            page={TablePageType.clientSide}
                                             setUpdatedEntities={() => {}}
                                             defaultFilter={defaultFilter}
                                         />

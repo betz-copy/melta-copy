@@ -7,6 +7,7 @@ import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interface
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { TablePageType } from '../../common/EntitiesTableOfTemplate';
 
 const Category: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
@@ -125,7 +126,7 @@ const Category: React.FC = () => {
             templatesToShowCheckbox={templatesToShowCheckbox}
             setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
             excelExportAllTablesFileName={`${category.displayName}.xlsx`}
-            pageType="category"
+            pageType={TablePageType.category}
             pageTitle={category.displayName}
         />
     );

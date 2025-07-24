@@ -75,6 +75,9 @@ export const lightTheme = createTheme({
     },
 });
 
+const darkThemeTextField = basicTheme.components?.MuiTextField;
+darkThemeTextField!.styleOverrides!.root!['& .MuiInputBase-root'].color = 'white';
+
 export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
@@ -95,5 +98,6 @@ export const darkTheme = createTheme({
                 },
             },
         },
+        MuiTextField: darkThemeTextField,
     },
 });

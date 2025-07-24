@@ -1,12 +1,12 @@
 /* eslint-disable consistent-return */
 // middleware/busboyMiddleware.ts
-import Busboy from 'busboy';
-import { Request, Response, NextFunction } from 'express';
-import { PassThrough } from 'stream';
 import { UploadedFile } from '@microservices/shared';
+import Busboy from 'busboy';
+import { NextFunction, Request, Response } from 'express';
+import { PassThrough } from 'stream';
 import config from '../../config';
 
-export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+const busboyMiddleware = (req: Request, _res: Response, next: NextFunction) => {
     if (!req.headers['content-type']?.startsWith('multipart/form-data')) return next();
 
     const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
@@ -18,6 +18,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
             highWaterMark: config.service.highWaterMark,
         });
         let size = 0;
+        const validFileName = Buffer.from(filename, 'binary').toString('utf8');
 
         file.on('data', (chunk) => {
             size += chunk.length;
@@ -29,7 +30,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
 
             files.push({
                 fieldname,
-                originalname: filename,
+                originalname: validFileName,
                 encoding,
                 mimetype: mimeType,
                 size,

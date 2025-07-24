@@ -179,6 +179,34 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
+    const templateProperties = entity.template.properties.properties;
+    const filesToUpload: any = [];
+    const fileUploadPromises: Promise<[string, File]>[] = [];
+
+    Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
+        if (Array.isArray(value)) {
+            value.forEach((file, index) => {
+                if (file instanceof File && entity.template.properties.properties[key].items) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else if (file instanceof File) {
+                    filesToUpload.push([`${key}`, file]);
+                }
+            });
+        } else {
+            filesToUpload.push([`${key}`, value]);
+        }
+    });
+
+    Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
+        if (templateProperties[key]?.format === 'signature' && value)
+            fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+    });
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
+
     formData.append(
         'properties',
         JSON.stringify(
@@ -244,7 +272,6 @@ const getBodyForUpdateRequest = async (
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
 
-    const properties = Object.entries(newEntityData.properties);
     const templateProperties = template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
 
@@ -268,7 +295,7 @@ const getBodyForUpdateRequest = async (
         }
     });
 
-    for (const [key, value] of properties) {
+    for (const [key, value] of Object.entries(newEntityData.properties)) {
         if (templateProperties[key]?.format === 'signature') {
             if (value && isUUID(value)) {
                 unchangedFiles.push([key, { name: value }]);
@@ -288,7 +315,7 @@ const getBodyForUpdateRequest = async (
     });
     unchangedFiles.forEach(([key, value]) => {
         if (!template.properties.properties[key].items) {
-            properties[key] = value.name;
+            newEntityData.properties[key] = value.name;
         } else {
             if (!newEntityData.properties[key]) {
                 newEntityData.properties[key] = [];
@@ -319,8 +346,7 @@ const getBodyForUpdateRequest = async (
                         return JSON.stringify(location);
                     }
                     case 'signature': {
-                        if (!isUUID(property)) return undefined;
-                        break;
+                        return isUUID(property) ? property : undefined;
                     }
                     case 'date': {
                         if (!property) return undefined;
