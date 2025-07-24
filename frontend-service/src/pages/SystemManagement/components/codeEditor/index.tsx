@@ -55,6 +55,7 @@ const CodeEditorDialog: React.FC<{
             type === EntityTemplateType.Parent ? entityTemplate.properties.properties : getChildPropertiesFiltered(entityTemplate),
             entityTemplate.name,
             queryClient,
+            type === EntityTemplateType.Child ? entityTemplate.parentTemplate : undefined,
         )}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
@@ -62,7 +63,11 @@ const CodeEditorDialog: React.FC<{
         '}',
     ].join('\n');
 
-    const defaultValue = [defaultCode, '', generateBasicFunctions(['onCreateEntity', 'onUpdateEntity'], entityTemplate.name!)].join('\n');
+    const defaultValue = [
+        defaultCode,
+        '',
+        generateBasicFunctions(['onCreateEntity', 'onUpdateEntity'], `${entityTemplate.name}${type === EntityTemplateType.Child ? 'Merged' : ''}`),
+    ].join('\n');
 
     const isEditorChanged = useMemo(
         () => (hasActions ? editorValue !== `${defaultCode}\n${entityTemplate.actions}\n` : editorValue !== defaultValue),

@@ -3,6 +3,7 @@ import { getChildPropertiesFiltered, IChildTemplatePopulated, IChildTemplatePopu
 const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IChildTemplatePopulated => {
     const { parentTemplateId: parentTemplate, ...child } = childTemplate;
     const { properties, ...parent } = parentTemplate;
+
     const childPropertyKeys = Object.keys(child.properties.properties);
 
     const childProperties = getChildPropertiesFiltered(
@@ -26,6 +27,7 @@ const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedF
         ...parent,
         ...child,
         parentTemplate,
+        actions: child.actions || undefined,
         properties: {
             ...properties,
             properties: childProperties,

@@ -45,6 +45,7 @@ import {
     IMultipleSelect,
     getFilterFromChildTemplate,
     combineFilters,
+    IChildTemplatePopulated,
 } from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
@@ -471,6 +472,7 @@ class EntityManager extends DefaultManagerNeo4j {
         crudAction: IEntityCrudAction,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
+        childTemplate?: IChildTemplatePopulated,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -505,6 +507,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     transaction,
                     entitiesTemplatesByIds,
                     this.workspaceId,
+                    childTemplate,
                 );
             },
             true,
@@ -597,12 +600,19 @@ class EntityManager extends DefaultManagerNeo4j {
         userId?: string,
         entity?: IEntity,
         duplicatedFromId?: string,
+        childTemplate?: IChildTemplatePopulated,
     ) => {
         const entitiesTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate._id, entityTemplate.actions);
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
-        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, entitiesTemplatesByIds, userId);
+        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(
+            mainAction,
+            crudAction,
+            entitiesTemplatesByIds,
+            userId,
+            childTemplate,
+        );
 
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate, entitiesTemplatesByIds);
 
@@ -651,13 +661,23 @@ class EntityManager extends DefaultManagerNeo4j {
         childTemplateId?: string,
     ) {
         let template = entityTemplate;
+        let childTemplate: IChildTemplatePopulated | undefined = undefined;
+
         if (childTemplateId) {
-            const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
+            childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
 
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onCreateEntity)) {
-            const actions = await this.buildActionsArray(IEntityCrudAction.onCreateEntity, properties, template, userId, undefined, duplicatedFromId);
+            const actions = await this.buildActionsArray(
+                IEntityCrudAction.onCreateEntity,
+                properties,
+                template,
+                userId,
+                undefined,
+                duplicatedFromId,
+                childTemplate,
+            );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
 
@@ -1889,7 +1909,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             let queryAccordingToFieldType = constraint.property;
             const constraintProp = template.properties.properties[constraint.property];
- 
+
             if (constraintProp.format === 'relationshipReference') {
                 queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
             } else if (constraintProp.format === 'user') {
