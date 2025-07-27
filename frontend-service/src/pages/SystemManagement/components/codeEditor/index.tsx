@@ -55,6 +55,7 @@ const CodeEditorDialog: React.FC<{
             type === EntityTemplateType.Parent ? entityTemplate.properties.properties : getChildPropertiesFiltered(entityTemplate),
             entityTemplate.name,
             queryClient,
+            type === EntityTemplateType.Child ? entityTemplate.parentTemplate : undefined,
         )}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
@@ -62,38 +63,37 @@ const CodeEditorDialog: React.FC<{
         '}',
     ].join('\n');
 
-    const defaultValue = [defaultCode, '', generateBasicFunctions(['onCreateEntity', 'onUpdateEntity'], entityTemplate.name!)].join('\n');
+    const defaultValue = [
+        defaultCode,
+        '',
+        generateBasicFunctions(['onCreateEntity', 'onUpdateEntity'], `${entityTemplate.name}${type === EntityTemplateType.Child ? 'Merged' : ''}`),
+    ].join('\n');
 
     const isEditorChanged = useMemo(
         () => (hasActions ? editorValue !== `${defaultCode}\n${entityTemplate.actions}\n` : editorValue !== defaultValue),
         [editorValue, hasActions, defaultCode, defaultValue, entityTemplate.actions],
     );
 
-    const { mutateAsync, isLoading } = useMutation(
-        () => {
-            return updateActionToEntity(entityTemplate._id, editorValue, type === EntityTemplateType.Child);
+    const { mutateAsync, isLoading } = useMutation(() => updateActionToEntity(entityTemplate._id, editorValue, type === EntityTemplateType.Child), {
+        onError: (err: AxiosError) => {
+            toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('systemManagement.entityAction.failedUpdateAction')} />);
         },
-        {
-            onError: (err: AxiosError) => {
-                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('systemManagement.entityAction.failedUpdateAction')} />);
-            },
-            onSuccess: (data) => {
-                const { actions } = data;
-                if (type === EntityTemplateType.Parent)
-                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                        entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
-                    );
-                else
-                    queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) =>
-                        childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
-                    );
+        onSuccess: (data) => {
+            const { actions } = data;
+            if (type === EntityTemplateType.Parent)
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                );
+            else
+                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) =>
+                    childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                );
 
-                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
-                toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));
-                handleClose();
-            },
+            queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+            toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));
+            handleClose();
         },
-    );
+    });
 
     const traverseAstAndValidate = (node: ts.Node): boolean => {
         let foundImports = false;
