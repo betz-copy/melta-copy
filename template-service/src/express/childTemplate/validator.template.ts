@@ -70,8 +70,9 @@ class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, Chil
             '  // updates entity in data base',
             '}',
         ].join('\n');
+        const index = action.indexOf(defaultCode);
 
-        return action.slice(defaultCode.length + 1);
+        return action.slice(index + defaultCode.length + 1);
     };
 
     validateActionCode = async (req: Request) => {
