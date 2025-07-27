@@ -12,7 +12,7 @@ export const filterFieldsFromPropertiesSchema = (
         ...schema,
         properties: pickBy(
             schema?.properties,
-            (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive,
+            (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive && (value.display === undefined || value.display)
         ),
         required:
             schema?.required?.filter(

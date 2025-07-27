@@ -20,6 +20,7 @@ export interface IChildTemplateProperty {
     defaultValue?: string | number | boolean | Date | string[];
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
+    display?: boolean;
 }
 
 export interface IChildTemplate {

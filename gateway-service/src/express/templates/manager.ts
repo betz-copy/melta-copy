@@ -1266,7 +1266,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (newRequiredProperties.length > 0 || hasChildChanged) {
                         const newProps = {};
                         newRequiredProperties.forEach((prop) => {
-                            newProps[prop] = {};
+                            newProps[prop] = {
+                                display: true,
+                            };
                         });
 
                         const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = pick(
