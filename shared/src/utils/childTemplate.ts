@@ -90,6 +90,7 @@ const dePopulateChildProperties = (
             defaultValue: value.defaultValue,
             filters: value.filters ? JSON.parse(value.filters) : undefined,
             isEditableByUser: value.isEditableByUser,
+            display: value.display,
         };
         return acc;
     }, {});
