@@ -64,14 +64,40 @@ export const generateInterface = (
     ].join('\n');
 };
 
-export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, TemplateItem>) =>
-    [...entitiesTemplatesByIds.values()]
-        .map((entityTemplate) => {
-            const { metaData, type } = entityTemplate;
+const generateMergedChildAndParentInterface = (parentInterfaceName: string, childInterfaceName: string) =>
+    [
+        `// all fields from ${parentInterfaceName} - parent , but overridden by fields from ${childInterfaceName} - child`,
+        `interface ${childInterfaceName}Merged extends Omit<${parentInterfaceName},keyof ${childInterfaceName}>, ${childInterfaceName} {}`,
+    ].join('\n');
 
-            const { name } = metaData;
-            const properties =
-                type === EntityTemplateType.Child ? getChildPropertiesFiltered(metaData.properties.properties) : metaData.properties.properties;
-            return generateInterface(properties, name, entitiesTemplatesByIds);
-        })
-        .join('\n\n');
+export const generateInterfaceWithRelationships = (templateId: string, entitiesTemplatesByIds: Map<string, TemplateItem>) => {
+    const currentTemplate = entitiesTemplatesByIds.get(templateId)!;
+    const isChildTemplate = currentTemplate.type === EntityTemplateType.Child;
+    const template = isChildTemplate ? currentTemplate.metaData.parentTemplate : currentTemplate.metaData;
+
+    const relatedTemplates = Array.from(entitiesTemplatesByIds.values()).filter(({ metaData }) => metaData._id !== templateId);
+
+    const interfaces = [
+        ...relatedTemplates.map(
+            ({
+                metaData: {
+                    properties: { properties },
+                    name,
+                },
+            }) => generateInterface(properties, name, entitiesTemplatesByIds),
+        ),
+        generateInterface(template.properties.properties, template.name, entitiesTemplatesByIds),
+        ...(isChildTemplate
+            ? [
+                  generateInterface(
+                      getChildPropertiesFiltered(currentTemplate.metaData.properties.properties),
+                      currentTemplate.metaData.name,
+                      entitiesTemplatesByIds,
+                  ),
+                  generateMergedChildAndParentInterface(template.name, currentTemplate.metaData.name),
+              ]
+            : []),
+    ];
+
+    return interfaces.join('\n\n');
+};
