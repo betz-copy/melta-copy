@@ -175,7 +175,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 >
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
-                            <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(childTemplates?.get(entityTemplate._id) ?? entityTemplate, categoryColor)} style={{ height: '18px' }} />
+                            <EntityTemplateColor
+                                entityTemplateColor={getEntityTemplateColor(childTemplates?.get(entityTemplate._id) ?? entityTemplate, categoryColor)}
+                                style={{ height: '18px' }}
+                            />
                         </Grid>
 
                         <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
@@ -324,7 +327,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         right: '8px',
                                         top: '50%',
                                         transform: 'translateY(-50%)',
-                                        marginRight: isHoverOnCard ? '32px' : '8px',
+                                        marginRight: isHoverOnCard && !isDisabledView ? '32px' : '8px',
                                     }}
                                 />
                             </MeltaTooltip>
