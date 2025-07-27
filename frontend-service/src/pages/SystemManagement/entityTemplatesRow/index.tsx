@@ -267,7 +267,8 @@ const EntityTemplatesRow: React.FC = () => {
             return updateCategoryTemplatesOrderRequest(templateId, newIndex, srcCategoryId, newCategoryId);
         },
         {
-            onSuccess(data) {
+            onSuccess(data, { templateId }) {
+                console.log(data);
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data.newCategory._id, data.newCategory));
                 setCategoriesToShow(
                     categoriesToShow.map((category) => {
@@ -279,6 +280,19 @@ const EntityTemplatesRow: React.FC = () => {
                     }),
                 );
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                    Array.from(childTemplateMap!).forEach(([key, child]) => {
+                        const parentId = child.parentTemplate.category.toString();
+                        if (parentId === data.oldCategory._id && parentId !== data.newCategory._id && child.parentTemplate._id === templateId) {
+                            childTemplateMap!.set(key, {
+                                ...child,
+                                parentTemplate: { ...child.parentTemplate, category: data.newCategory._id },
+                            });
+                        }
+                    });
+
+                    return childTemplateMap!;
+                });
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
