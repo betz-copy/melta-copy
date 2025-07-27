@@ -686,10 +686,10 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Grid>
                                 </Grid>
                             </DialogContent>
-                            <DialogActions>
-                                <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
+                            <DialogActions sx={{ margin: '10px' }}>
+                                {isUpdate && <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>}
                                 <Button type="submit" variant="contained" disabled={(isUpdate && !hasChanges) || matchValidationError.size > 0}>
-                                    {i18next.t(`createChildTemplateDialog.buttons.${isUpdate ? 'update' : 'create'}`)}
+                                    {i18next.t(`${isUpdate ? 'actions.edit' : 'actions.create'}`)}
                                 </Button>
                             </DialogActions>
                         </Form>
