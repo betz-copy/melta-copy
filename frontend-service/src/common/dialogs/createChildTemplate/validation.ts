@@ -11,7 +11,7 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
         displayName: Yup.string()
             .required(i18next.t('validation.required'))
             .test('unique-displayName', i18next.t('validation.existingDisplayName'), (val) => !existingDisplayNames.includes(val || '')),
-        description: Yup.string().required(i18next.t('validation.required')),
+        description: Yup.string(),
         category: Yup.object({
             _id: Yup.string().required(i18next.t('validation.required')),
             displayName: Yup.string().required(i18next.t('validation.required')),

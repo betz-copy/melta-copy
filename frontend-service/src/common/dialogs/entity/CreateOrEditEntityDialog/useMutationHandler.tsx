@@ -224,7 +224,7 @@ const useMutationHandler = (
                     },
                 },
                 {
-                    autoClose: false,
+                    autoClose: 5000,
                     style: { width: '335px' },
                 },
             );
