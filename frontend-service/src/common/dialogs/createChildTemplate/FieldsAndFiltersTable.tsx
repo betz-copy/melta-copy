@@ -211,7 +211,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     <FormControlLabel
                                         control={
                                             <MeltaCheckbox
-                                                checked={isRequired && fieldFilter.defaultValue === undefined ? true : fieldFilter.selected}
+                                                checked={fieldFilter.selected}
                                                 disabled={isRequired && fieldFilter.defaultValue === undefined}
                                                 onChange={(e) => onCheckboxChange(fieldName, e.target.checked)}
                                             />
@@ -256,6 +256,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             defaultChips,
                                             entityTemplate.properties.properties[fieldName],
                                             (chip) => {
+                                                if (isRequired) onCheckboxChange(fieldName, true);
                                                 setFieldChips((prev) =>
                                                     prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === chip.chipType)),
                                                 );
