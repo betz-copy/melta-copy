@@ -40,6 +40,16 @@ const basicTheme: ThemeOptions = {
                 },
             },
         },
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    color: '#4752B6',
+                    '&.Mui-checked': {
+                        color: '#4752B6',
+                    },
+                },
+            },
+        },
     },
 };
 
