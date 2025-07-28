@@ -416,6 +416,7 @@ export default {
         failedToSearchUsers: 'נכשל לחפש משתמשים',
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
+        connectedUser: 'משתמש מחובר',
     },
     roleAutocomplete: {
         label: 'תפקידן',

@@ -1,7 +1,7 @@
 import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { ExpandMore } from '@mui/icons-material';
@@ -58,6 +58,10 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
+
+    useEffect(() => {
+        setInputValue(value?.displayName ?? '');
+    }, [value]);
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
 

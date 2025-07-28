@@ -11,7 +11,7 @@ import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilter
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
 import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
-import _ from 'lodash';
+import { cloneDeep } from 'lodash';
 
 const { dateOrDateTimeRegex } = environment;
 
@@ -72,6 +72,7 @@ interface IFieldsAndFiltersTableProps {
     onCheckboxChange: (fieldName: string, checked: boolean) => void;
     matchValidationError: Map<string, string>;
     setMatchValidationError: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+    selectedUserField?: string;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
@@ -84,13 +85,14 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     onCheckboxChange,
     matchValidationError,
     setMatchValidationError,
+    selectedUserField,
 }) => {
     const [addFilterToField, setAddFilterToField] = useState<string | null>(null);
     const [dialogType, setDialogType] = useState<ChipType | null>(null);
 
     const isDisallowedFormat = (fieldName: string) => {
         const prop = entityTemplate.properties.properties[fieldName];
-        const disabledFormats = ['fileId', 'signature', 'location', 'comment', 'user', 'kartoffelUserField'];
+        const disabledFormats = ['fileId', 'signature', 'location', 'comment', 'kartoffelUserField'];
         const disabledArrayFormats = ['fileId', 'user'];
         return disabledFormats.includes(prop.format ?? '') || !!(prop.items && disabledArrayFormats.includes(prop.items.format ?? ''));
     };
@@ -117,7 +119,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         const newChip: IFieldChip = {
             fieldName,
             chipType: ChipType.Filter,
-            filterField: _.cloneDeep(fieldValue),
+            filterField: cloneDeep(fieldValue),
         };
         setFieldChips((prev) => [...prev, newChip]);
     };
@@ -200,6 +202,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                 {Object.entries(templateFieldsFilters).map(([fieldName, fieldFilter]) => {
                     const isRequired = entityTemplate.properties.required.includes(fieldName);
                     const property = entityTemplate.properties.properties[fieldName];
+
                     const isKartoffelUserField = property?.format === 'kartoffelUserField';
                     const isSerialNumberField = !!property?.serialCurrent;
                     const isRelationshipRefField = property?.format === 'relationshipReference';
@@ -234,7 +237,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                         {renderChips(filterChips, entityTemplate.properties.properties[fieldName], onDeleteFilterChip)}
 
                                         <Grid item>
-                                            {property?.format === 'user' ? (
+                                            {property?.format === 'user' && selectedUserField === fieldName ? (
                                                 <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
                                                     {i18next.t('createChildTemplateDialog.byUser')}
                                                 </Typography>
@@ -277,7 +280,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                         )}
                                         {!defaultChips.length && (
                                             <Grid item>
-                                                {property?.format === 'user' ? (
+                                                {property?.format === 'user' && selectedUserField === fieldName ? (
                                                     <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
                                                         {i18next.t('createChildTemplateDialog.byUser')}
                                                     </Typography>

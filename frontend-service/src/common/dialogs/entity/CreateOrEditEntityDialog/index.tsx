@@ -6,7 +6,7 @@ import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
 import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -65,13 +65,17 @@ const convertIEntityToEntityWizardValues = (
 };
 
 export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValues, currentUser?: UserState['user']): EntityWizardValues => {
+    console.log({ getInitialValuesWithDefaults });
+
     const { attachmentsProperties, properties, template } = initialCurrValues;
 
     const mergedProperties = {
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
                 .map(([key, prop]) => {
-                    if (prop.format === 'user' && currentUser) properties[key] = JSON.stringify(currentUser);
+                    if (prop.format === 'user' && currentUser)
+                        if (prop.defaultValue === ByCurrentDefaultValue.byCurrentUser) properties[key] = JSON.stringify(currentUser);
+
                     return [key, properties[key] ?? prop.defaultValue];
                 })
                 .filter(([_key, value]) => !!value),

@@ -313,6 +313,10 @@ export const environment = {
         },
         wgs84: { maxLongitude: 180, maxLatitude: 90 },
     },
+    defaultValue: {
+        currentUser: '$currentUser',
+        currentDate: '$currentDate',
+    },
     signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,

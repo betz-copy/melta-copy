@@ -16,6 +16,7 @@ import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { isValidAGGridFilter } from '../../FilterComponent';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
 
 const getFilterOperator = (filterField: IFieldChip['filterField']) => {
     const operatorMap: Record<string, string> = {
@@ -221,6 +222,19 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                   }
                 : {};
 
+        if (format === 'user' && dialogType === ChipType.Default)
+            return (
+                <UserFilterInput
+                    filterField={localFilterField?.filterType === 'text' ? localFilterField : undefined}
+                    handleFilterFieldChange={handleFilterFieldChange}
+                    handleFilterTypeChange={handleFilterTypeChange}
+                    type={type}
+                    error={isError}
+                    helperText={currentFieldError}
+                    {...defaultFilterProps}
+                />
+            );
+
         if (propEnum) {
             return (
                 <SelectFilterInput
@@ -336,8 +350,11 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
             const ajvErrors = ajvValidate(templateSchema, formData);
 
-            if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
-            else onSubmit(currentFieldName, defaultValue);
+            console.log({ ajvErrors });
+
+            // if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
+            // else 
+                onSubmit(currentFieldName, defaultValue);
         } else {
             updateFieldFilter(localFilterField, currentFieldName);
             onSubmit(currentFieldName, localFilterField);

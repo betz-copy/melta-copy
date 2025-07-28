@@ -58,6 +58,7 @@ const CreateChildTemplateDialog: React.FC<{
     childTemplate?: IMongoChildTemplatePopulated;
 }> = ({ open, handleClose, entityTemplate, childTemplate }) => {
     if (!entityTemplate) return null;
+    console.log({ childTemplate });
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -680,6 +681,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     onCheckboxChange={handleCheckboxChange}
                                                     matchValidationError={matchValidationError}
                                                     setMatchValidationError={setMatchValidationError}
+                                                    selectedUserField={userField.selectedUserField}
                                                 />
                                             </Grid>
                                         </Grid>
