@@ -163,7 +163,8 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     initialValue,
 }: React.PropsWithChildren<GroupProps<PropertiesType, Values>>) => {
     const ref = React.useRef(null);
-    const [isGroupOpen, setIsGroupOpen] = useState(false);
+    const isNewProperty = !initialValue;
+    const [isGroupOpen, setIsGroupOpen] = useState(isNewProperty);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const groupName = `properties[${index}].name`;
     const touchedName = touched?.[propertiesType]?.[index]?.name;
@@ -172,11 +173,10 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     const touchedTitle = touched?.[propertiesType]?.[index]?.displayName;
     const errorTitle = (errors?.[propertiesType]?.[index] as GroupProperty)?.displayName;
 
-    const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     const isGroupFieldBlockError = Boolean(touched?.[propertiesType]?.[index]) && Boolean(errors?.[propertiesType]?.[index]);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(isNewProperty);
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
@@ -243,6 +243,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                         border: isGroupFieldBlockError ? '1px solid red' : '',
                     }}
                     onChange={(_, expanded) => setIsExpanded(expanded)}
+                    defaultExpanded={isNewProperty}
                 >
                     <AccordionSummary
                         ref={!isExpanded ? ref : undefined}
