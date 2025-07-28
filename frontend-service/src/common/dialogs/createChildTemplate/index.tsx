@@ -419,7 +419,7 @@ const CreateChildTemplateDialog: React.FC<{
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
                                     <Grid container item spacing={2}>
-                                        <Grid item xs={6}>
+                                        <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateName')}
@@ -434,7 +434,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 disabled={isUpdate}
                                             />
                                         </Grid>
-                                        <Grid item xs={6}>
+                                        <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateDisplayName')}
@@ -449,7 +449,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 disabled={isUpdate}
                                             />
                                         </Grid>
-                                        <Grid item xs={12}>
+                                        <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateDetails')}
@@ -459,7 +459,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 error={touched.description && Boolean(errors.description)}
                                                 helperText={touched.description && errors.description}
                                                 multiline
-                                                rows={2}
+                                                rows={1}
                                             />
                                         </Grid>
                                     </Grid>
