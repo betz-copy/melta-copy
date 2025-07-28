@@ -99,7 +99,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
         return allChildTemplates.filter((child) => {
-            const matchesCategory = child.category._id === currentCategoryId;
+            const matchesCategory = child.category._id === currentCategoryId || child.parentTemplate.category.toString() === currentCategoryId;
             const matchesSearch = searchText === '' || (child.displayName ?? '').toLowerCase().includes(searchText.toLowerCase());
             return matchesCategory && matchesSearch;
         });
@@ -121,7 +121,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
-            if (child.parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
+            if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) {
                 return true;
             }
 
@@ -234,41 +234,46 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 </Grid>
                                             )}
                                         </Draggable>
-                                        {templateChildTemplates.map((childTemplate) => (
-                                            <Grid
-                                                key={childTemplate._id}
-                                                sx={{
-                                                    pl: 4,
-                                                    position: 'relative',
-                                                }}
-                                            >
-                                                <SubdirectoryArrowLeft
+                                        {templateChildTemplates.map((childTemplate) => {
+                                            const isDisabled = childTemplate.category._id !== entityTemplatesWithCategory.category._id;
+
+                                            return (
+                                                <Grid
+                                                    key={childTemplate._id}
                                                     sx={{
-                                                        position: 'absolute',
-                                                        left: '6px',
-                                                        top: '50%',
-                                                        transform: 'translateY(-50%)',
-                                                        color: theme.palette.primary.main,
+                                                        pl: 4,
+                                                        position: 'relative',
+                                                        opacity: isDisabled ? 0.6 : 1,
                                                     }}
-                                                />
-                                                <EntityTemplateCard
-                                                    entityTemplate={{
-                                                        ...entityTemplate,
-                                                        _id: childTemplate._id,
-                                                    }}
-                                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                                    setAddActionsDialogState={setAddActionsDialogState}
-                                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                                    setAddChildTemplateDialogState={setAddChildTemplateDialogState}
-                                                    entityHasWritePermission={entityHasWritePermission}
-                                                    isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
-                                                    isChildTemplate={true}
-                                                    title={childTemplate.displayName}
-                                                    categoryColor={entityTemplatesWithCategory.category.color}
-                                                />
-                                            </Grid>
-                                        ))}
+                                                >
+                                                    <SubdirectoryArrowLeft
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            left: '6px',
+                                                            top: '50%',
+                                                            transform: 'translateY(-50%)',
+                                                            color: theme.palette.primary.main,
+                                                        }}
+                                                    />
+                                                    <EntityTemplateCard
+                                                        entityTemplate={{
+                                                            ...entityTemplate,
+                                                            _id: childTemplate._id,
+                                                        }}
+                                                        setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                        setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                        setAddActionsDialogState={setAddActionsDialogState}
+                                                        updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                        setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                                        entityHasWritePermission={entityHasWritePermission}
+                                                        isDisabledView={isDisabled}
+                                                        isChildTemplate={true}
+                                                        title={childTemplate.displayName}
+                                                        categoryColor={entityTemplatesWithCategory.category.color}
+                                                    />
+                                                </Grid>
+                                            );
+                                        })}
                                     </React.Fragment>
                                 );
                             })}
