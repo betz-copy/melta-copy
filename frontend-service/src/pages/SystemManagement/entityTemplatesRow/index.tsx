@@ -268,7 +268,6 @@ const EntityTemplatesRow: React.FC = () => {
         },
         {
             onSuccess(data, { templateId }) {
-                console.log(data);
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data.newCategory._id, data.newCategory));
                 setCategoriesToShow(
                     categoriesToShow.map((category) => {
