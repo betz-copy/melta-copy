@@ -19,14 +19,11 @@ const getFormattedDefaultValue = (value: string | number | boolean | Date | stri
         return value
             .map((item) => {
                 if (typeof item === 'string') return item;
-                if (typeof item === 'object' && item !== null && 'fullName' in item) {
-                    return (item as IUser).fullName;
-                }
+                if (typeof item === 'object') return (item as IUser).fullName;
                 return String(item);
             })
             .join(', ');
     }
-
     if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
 
     if (typeof value === 'string') {
@@ -238,7 +235,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                     return (
                         <React.Fragment key={fieldName}>
-                            <Grid container alignItems="center" justifyContent="space-between" sx={{ height: "38px", ml: 1 }}>
+                            <Grid container alignItems="center" justifyContent="space-between" sx={{ height: '38px', ml: 1 }}>
                                 <Grid item xs={3}>
                                     <FormControlLabel
                                         control={
