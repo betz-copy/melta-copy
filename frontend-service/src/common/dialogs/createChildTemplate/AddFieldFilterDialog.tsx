@@ -228,9 +228,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     filterField={localFilterField?.filterType === 'text' ? localFilterField : undefined}
                     handleFilterFieldChange={handleFilterFieldChange}
                     handleFilterTypeChange={handleFilterTypeChange}
-                    type={type}
-                    error={isError}
-                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -349,8 +346,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             const formData = { [currentFieldName]: defaultValue };
 
             const ajvErrors = ajvValidate(templateSchema, formData);
-
-            console.log({ ajvErrors });
 
             if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
             else onSubmit(currentFieldName, defaultValue);

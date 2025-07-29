@@ -10,7 +10,6 @@ import i18next from 'i18next';
 
 interface UserFilterProps {
     filterField: IAGGridTextFilter | undefined;
-    type: string;
     handleFilterTypeChange: (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition?: boolean,
@@ -18,8 +17,6 @@ interface UserFilterProps {
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
     hideFilterType?: boolean;
     forceEqualsType?: boolean;
-    error?: boolean;
-    helperText?: string;
 }
 
 const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterTypeChange, handleFilterFieldChange, forceEqualsType = false }) => {
@@ -30,8 +27,6 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
 
         return byCurrentUserDefaultValue ? ByCurrentDefaultValue.byCurrentUser : JSON.parse(filterField.filter);
     });
-
-    useEffect(() => console.log({ currentUser }), [currentUser]);
 
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');

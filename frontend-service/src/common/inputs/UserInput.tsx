@@ -27,12 +27,12 @@ const UserInput: React.FC<UserInputProps> = ({
             currentUser.set(undefined);
             return;
         }
+
         const formattedUser: IKartoffelUserStringFields = {
             ...chosenUser,
             mobilePhone: chosenUser.mobilePhone?.join(','),
             phone: chosenUser.phone?.join(','),
         };
-        console.log({ formattedUser });
 
         if (handleOnChange) handleOnChange(formattedUser, values);
 
