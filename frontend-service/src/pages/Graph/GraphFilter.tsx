@@ -21,6 +21,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfa
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { ByCurrentDefaultValue } from '../../interfaces/childTemplates';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -126,7 +127,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         handleSetFilterRecord(value, condition);
     };
 
-    const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
+    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
         if (!newValue && filterField?.filterType === 'date') {
             const isRemovingStart = isStartDate && !filterField.dateTo;
             const isRemovingEnd = !isStartDate && !filterField.dateFrom;

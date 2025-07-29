@@ -14,32 +14,43 @@ import { cloneDeep } from 'lodash';
 
 const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined, fieldSchema: IEntitySingleProperty): string => {
     if (value === null || value === undefined) return '';
-    if (Array.isArray(value))
+
+    if (Array.isArray(value)) {
         return value
             .map((item) => {
                 if (typeof item === 'string') return item;
-                if (typeof item === 'object') {
+                if (typeof item === 'object' && item !== null && 'fullName' in item) {
                     return (item as IUser).fullName;
                 }
                 return String(item);
             })
             .join(', ');
-    if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
-    if (typeof value === 'string') {
-        if (fieldSchema.format === 'date-time' || fieldSchema.format === 'date') return new Date(value).toLocaleDateString('he-IL');
-        if (fieldSchema.format === 'user') {
-            if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('user.byConnectedUser');
-
-            try {
-                const userObj = JSON.parse(value);
-                return `${userObj.fullName} - ${userObj.hierarchy}` || value;
-            } catch {
-                return value;
-            }
-        }
-
-        return value;
     }
+
+    if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
+
+if (typeof value === 'string') {
+        switch (fieldSchema.format) {
+            case 'date-time':
+            case 'date':
+                return value === ByCurrentDefaultValue.byCurrentDate
+                    ? i18next.t('createChildTemplateDialog.currentDate')
+                    : new Date(value).toLocaleDateString('he-IL');
+
+            case 'user':
+                if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('createChildTemplateDialog.byUser');
+
+                const userObj = JSON.parse(value);
+                if (userObj.fullName && userObj.hierarchy) {
+                    return `${userObj.fullName} - ${userObj.hierarchy}`;
+                }
+
+                return value;
+            default:
+                return value;
+        }
+    }
+
     return String(value);
 };
 

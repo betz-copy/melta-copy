@@ -538,7 +538,6 @@ export default {
         areYouSure: 'בפעולה זו השינויים ימחקו',
         succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
         failedToUpdateRequest: 'נכשל בעידכון העדפות המשתמש',
-        byConnectedUser: 'לפי משתמש מחובר',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
@@ -1708,6 +1707,8 @@ export default {
             title: 'ערך ברירת מחדל',
         },
         byUser: 'לפי משתמש מחובר',
+        connectedUser:'משתמש מחובר',
+        currentDate:'תאריך נוכחי',
         byUnit: 'לפי יחידת המשתמש',
         connectToUserPage: 'שיוך לעמוד לקוח',
         selectUserDialog: {

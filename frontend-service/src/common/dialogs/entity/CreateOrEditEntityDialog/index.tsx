@@ -23,6 +23,7 @@ import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 import { IChooseTemplateMode } from '../ChooseTemplate';
 import { UserState, useUserStore } from '../../../../stores/user';
+import { format } from 'date-fns';
 
 const { signaturePrefix } = environment;
 
@@ -65,17 +66,20 @@ const convertIEntityToEntityWizardValues = (
 };
 
 export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValues, currentUser?: UserState['user']): EntityWizardValues => {
-    console.log({ getInitialValuesWithDefaults });
-
     const { attachmentsProperties, properties, template } = initialCurrValues;
 
     const mergedProperties = {
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
                 .map(([key, prop]) => {
-                    if (prop.format === 'user' && currentUser)
-                        if (prop.defaultValue === ByCurrentDefaultValue.byCurrentUser) properties[key] = JSON.stringify(currentUser);
+                    if (prop.format === 'user' && currentUser && prop.defaultValue === ByCurrentDefaultValue.byCurrentUser)
+                        properties[key] = JSON.stringify(currentUser);
 
+                    if ((prop.format === 'date' || prop.format === 'date-time') && prop.defaultValue === ByCurrentDefaultValue.byCurrentDate) {
+                        const currentDate = new Date();
+                        const isDateTime = prop.format === 'date-time';
+                        properties[key] = isDateTime ? currentDate.toISOString() : format(currentDate, 'yyyy-MM-dd');
+                    }
                     return [key, properties[key] ?? prop.defaultValue];
                 })
                 .filter(([_key, value]) => !!value),

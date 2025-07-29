@@ -58,7 +58,6 @@ const CreateChildTemplateDialog: React.FC<{
     childTemplate?: IMongoChildTemplatePopulated;
 }> = ({ open, handleClose, entityTemplate, childTemplate }) => {
     if (!entityTemplate) return null;
-    console.log({ childTemplate });
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
