@@ -327,7 +327,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         right: '8px',
                                         top: '50%',
                                         transform: 'translateY(-50%)',
-                                        marginRight: isHoverOnCard ? '32px' : '8px',
+                                        marginRight: isHoverOnCard && !isDisabledView ? '32px' : '8px',
                                     }}
                                 />
                             </MeltaTooltip>

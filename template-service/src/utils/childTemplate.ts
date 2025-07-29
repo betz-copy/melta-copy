@@ -1,4 +1,4 @@
-import { getChildPropertiesFiltered, IChildTemplatePopulated, IChildTemplatePopulatedFromDb } from '@microservices/shared';
+import { getChildPropertiesFiltered, IChildTemplatePopulated, IChildTemplatePopulatedFromDb, IFullMongoEntityTemplate } from '@microservices/shared';
 
 const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IChildTemplatePopulated => {
     const { parentTemplateId: parentTemplate, ...child } = childTemplate;
@@ -22,6 +22,19 @@ const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedF
                 ]),
         ),
     );
+
+    if (parent.fieldGroups) {
+        const childPropertiesKeys = Object.keys(childProperties);
+        const childFieldGroups: Exclude<IFullMongoEntityTemplate['fieldGroups'], undefined> = [];
+
+        for (let i = 0; i < parent.fieldGroups.length; i++) {
+            const property = parent.fieldGroups[i].fields.find((field) => childPropertiesKeys.includes(field));
+
+            if (property) childFieldGroups.push(parent.fieldGroups[i]);
+        }
+
+        parent.fieldGroups = childFieldGroups;
+    }
 
     return {
         ...parent,

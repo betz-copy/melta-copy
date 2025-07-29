@@ -238,7 +238,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                     return (
                         <React.Fragment key={fieldName}>
-                            <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 1.5, ml: 1 }}>
+                            <Grid container alignItems="center" justifyContent="space-between" sx={{ height: "38px", ml: 1 }}>
                                 <Grid item xs={3}>
                                     <FormControlLabel
                                         control={
