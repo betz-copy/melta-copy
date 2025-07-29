@@ -109,5 +109,6 @@ export const darkTheme = createTheme({
             },
         },
         MuiTextField: darkThemeTextField,
+        MuiRadio: {},
     },
 });
