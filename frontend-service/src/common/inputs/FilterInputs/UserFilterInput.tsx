@@ -49,7 +49,18 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                     }
                     currentUser={{ value: currentUser, set: setCurrentUser }}
                     handleOnChange={(user: IKartoffelUserStringFields | null, _values?: any) =>
-                        handleFilterFieldChange({ ...filterField, filter: JSON.stringify(user) } as IAGGridTextFilter)
+                        handleFilterFieldChange({
+                            ...filterField,
+                            filter: user
+                                ? JSON.stringify({
+                                      _id: user?._id || user?.id,
+                                      fullName: user?.fullName,
+                                      jobTitle: user?.jobTitle,
+                                      hierarchy: user?.hierarchy,
+                                      mail: user?.mail,
+                                  })
+                                : undefined,
+                        } as IAGGridTextFilter)
                     }
                     isError={false}
                     disabled={byCurrentUserDefaultValue}
@@ -71,7 +82,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                             sx={{ marginLeft: 0.5 }}
                         />
                     }
-                    label={i18next.t('userAutocomplete.connectedUser')}
+                    label={i18next.t('user.byConnectedUser')}
                     componentsProps={{
                         typography: { sx: { fontSize: '14px' } },
                     }}

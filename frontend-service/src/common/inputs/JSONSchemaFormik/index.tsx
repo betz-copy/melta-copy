@@ -26,6 +26,7 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
+import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -59,6 +60,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
+            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
+
             try {
                 const userObj = JSON.parse(user);
                 return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;

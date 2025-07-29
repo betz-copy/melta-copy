@@ -2,7 +2,6 @@ import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { environment } from '../../../globals';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -10,12 +9,10 @@ import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
-import { ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
+import { ByCurrentDefaultValue, ChipType, IFieldChip, IFieldFilter, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
 import { cloneDeep } from 'lodash';
 
-const { dateOrDateTimeRegex } = environment;
-
-const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined): string => {
+const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined, fieldSchema: IEntitySingleProperty): string => {
     if (value === null || value === undefined) return '';
     if (Array.isArray(value))
         return value
@@ -29,8 +26,19 @@ const getFormattedDefaultValue = (value: string | number | boolean | Date | stri
             .join(', ');
     if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
     if (typeof value === 'string') {
-        const isDateTime = dateOrDateTimeRegex.test(value);
-        return isDateTime ? new Date(value).toLocaleDateString('he-IL') : value;
+        if (fieldSchema.format === 'date-time' || fieldSchema.format === 'date') return new Date(value).toLocaleDateString('he-IL');
+        if (fieldSchema.format === 'user') {
+            if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('user.byConnectedUser');
+
+            try {
+                const userObj = JSON.parse(value);
+                return `${userObj.fullName} - ${userObj.hierarchy}` || value;
+            } catch {
+                return value;
+            }
+        }
+
+        return value;
     }
     return String(value);
 };
@@ -45,7 +53,7 @@ const renderChips = (
         const label =
             chip.chipType === ChipType.Filter
                 ? getFilterFieldReadonly(chip.filterField!, fieldSchema.type)
-                : getFormattedDefaultValue(chip.defaultValue);
+                : getFormattedDefaultValue(chip.defaultValue, fieldSchema);
 
         const matchError = matchErrorMap?.get(chip.fieldName);
 
@@ -155,8 +163,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         setAddFilterToField(null);
     };
 
-    const isSubmitDisabled = (fieldFilter: IFieldFilter, isRequired: boolean, fieldName: string) =>
-        (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName);
+    const isSubmitDisabled = (fieldFilter: IFieldFilter, isRequired: boolean, fieldName: string, fieldSchema: IEntitySingleProperty) => {
+        const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === fieldName);
+        const byCurrentUserDefaultValue = fieldSchema.format === 'user' && defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentUser;
+
+        return (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName) || byCurrentUserDefaultValue;
+    };
 
     const onDeleteFilterChip = (chip: IFieldChip) => {
         const newFilters = fieldChips.filter(
@@ -234,7 +246,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(filterChips, entityTemplate.properties.properties[fieldName], onDeleteFilterChip)}
+                                        {renderChips(filterChips, property, onDeleteFilterChip)}
 
                                         <Grid item>
                                             {property?.format === 'user' && selectedUserField === fieldName ? (
@@ -245,12 +257,12 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                 <Button
                                                     color="primary"
                                                     onClick={() =>
-                                                        !isSubmitDisabled(fieldFilter, isRequired, fieldName) &&
+                                                        !isSubmitDisabled(fieldFilter, isRequired, fieldName, property) &&
                                                         handleSelectProperty(fieldName, ChipType.Filter)
                                                     }
                                                     size="small"
                                                     sx={{ minWidth: '32px', p: '4px' }}
-                                                    disabled={isSubmitDisabled(fieldFilter, isRequired, fieldName)}
+                                                    disabled={isSubmitDisabled(fieldFilter, isRequired, fieldName, property)}
                                                 >
                                                     <AddRounded />
                                                 </Button>

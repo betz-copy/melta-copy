@@ -416,7 +416,6 @@ export default {
         failedToSearchUsers: 'נכשל לחפש משתמשים',
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
-        connectedUser: 'משתמש מחובר',
     },
     roleAutocomplete: {
         label: 'תפקידן',
@@ -539,6 +538,7 @@ export default {
         areYouSure: 'בפעולה זו השינויים ימחקו',
         succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
         failedToUpdateRequest: 'נכשל בעידכון העדפות המשתמש',
+        byConnectedUser: 'לפי משתמש מחובר',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',

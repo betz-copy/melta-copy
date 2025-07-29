@@ -1,7 +1,7 @@
 import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { ExpandMore } from '@mui/icons-material';
@@ -59,10 +59,6 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
-    useEffect(() => {
-        setInputValue(value?.displayName ?? '');
-    }, [value]);
-
     const currentDisplayValue = displayValue ?? internalDisplayValue;
 
     const {
@@ -77,9 +73,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
             return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {
-            onError: () => {
-                toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
-            },
+            onError: () => toast.error(i18next.t('userAutocomplete.failedToSearchUsers')),
             enabled: false,
             retry: false,
             initialData: [],

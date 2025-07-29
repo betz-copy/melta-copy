@@ -352,9 +352,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
             console.log({ ajvErrors });
 
-            // if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
-            // else 
-                onSubmit(currentFieldName, defaultValue);
+            if (ajvErrors && ajvErrors[currentFieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
+            else onSubmit(currentFieldName, defaultValue);
         } else {
             updateFieldFilter(localFilterField, currentFieldName);
             onSubmit(currentFieldName, localFilterField);
