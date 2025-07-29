@@ -49,3 +49,12 @@
     direction: ltr !important;
     text-align: right;
 }
+
+#json-schema h5 {
+    font-size: large;
+    font-weight: 600;
+}
+
+#json-schema hr {
+    display: none;
+}
