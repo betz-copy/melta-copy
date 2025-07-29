@@ -29,7 +29,7 @@ const getFormattedDefaultValue = (value: string | number | boolean | Date | stri
 
     if (typeof value === 'boolean') return i18next.t(`booleanOptions.${value ? 'yes' : 'no'}`);
 
-if (typeof value === 'string') {
+    if (typeof value === 'string') {
         switch (fieldSchema.format) {
             case 'date-time':
             case 'date':
@@ -177,8 +177,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     const isSubmitDisabled = (fieldFilter: IFieldFilter, isRequired: boolean, fieldName: string, fieldSchema: IEntitySingleProperty) => {
         const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === fieldName);
         const byCurrentUserDefaultValue = fieldSchema.format === 'user' && defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentUser;
+        const byCurrentDateDefaultValue =
+            (fieldSchema.format === 'date' || fieldSchema.format === 'date-time') &&
+            defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentDate;
 
-        return (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName) || byCurrentUserDefaultValue;
+        return (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName) || byCurrentUserDefaultValue || byCurrentDateDefaultValue;
     };
 
     const onDeleteFilterChip = (chip: IFieldChip) => {

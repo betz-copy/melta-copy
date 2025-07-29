@@ -29,7 +29,7 @@ import RjsfUserWidget from './RjsfUserWidget';
 import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { environment } from '../../../globals';
 
-const { dateRegex, dateTimeRegex } = environment;
+const { dateRegex } = environment;
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -62,7 +62,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addFormat('date-time', {
         type: 'string',
-        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || dateTimeRegex.test(value),
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !isNaN(Date.parse(value)),
     });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
