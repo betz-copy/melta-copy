@@ -15,15 +15,11 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-import {
-    CategoryWithTemplates,
-    didPermissionsChange,
-    entityTemplatePermissionDialog,
-    userHasNoPermissions,
-} from '../../utils/permissions/permissionOfUserDialog';
+import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -44,20 +40,7 @@ const RoleDialog: React.FC<{
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
-
-    Array.from(entityTemplates.values()).forEach((template) => {
-        const category: CategoryWithTemplates = {
-            entityTemplates: dialogPermissionData.get(template.category._id)?.entityTemplates || [],
-            ...template.category,
-        };
-        const displayEntity: entityTemplatePermissionDialog = {
-            id: template._id,
-            name: template.displayName,
-        };
-        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
-        dialogPermissionData.set(template.category._id, category);
-    });
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const { data: workspaceRoles, refetch: refetchWorkspaceRoles } = useQuery(
         ['getAllWorkspaceRolesRequest', workspace],
@@ -187,7 +170,7 @@ const RoleDialog: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={dialogPermissionData}
+                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()])}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                             />

@@ -1,4 +1,5 @@
 import { QueryClient } from 'react-query';
+import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
@@ -9,6 +10,11 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
     if (format === 'date' || format === 'date-time') return 'Date';
 
     if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId!)!.name;
+
+    if (format === 'location')
+        return `{ location: \`Polygon((\${string}))\`, coordinateSystem: ${Object.values(CoordinateSystem)
+            .map((coordinateSystem) => `'${coordinateSystem}'`)
+            .join(' | ')} }`;
 
     return 'string';
 };
@@ -21,7 +27,7 @@ const generateFromArray = ({ items }: IEntitySingleProperty) => {
     return `(${arrayOptions})[]`;
 };
 
-export const generateInterface = (entity: Record<string, IEntitySingleProperty>, interfaceName: string, queryClient: QueryClient) => {
+const generateInterface = (template: Record<string, IEntitySingleProperty>, interfaceName: string, queryClient: QueryClient) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
         'readonly createdAt': 'string',
@@ -29,7 +35,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
         'readonly disabled': 'string',
     };
 
-    Object.entries(entity).forEach(([propertyName, propertyValues]) => {
+    Object.entries(template).forEach(([propertyName, propertyValues]) => {
         const { type, serialCurrent } = propertyValues;
         const isComment = propertyValues.format === 'comment';
 
@@ -55,17 +61,17 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
     ].join('\n');
 };
 
-const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySingleProperty>, queryClient: QueryClient) => {
+const generateInterfacesForRelatedTemplates = (template: Record<string, IEntitySingleProperty>, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const interfaces: string[] = [];
     const relationshipReferenceIds = new Set<string>();
 
-    const queue = [entity];
+    const queue = [template];
 
     while (queue.length > 0) {
-        const currentEntity = queue.shift()!;
+        const currentTemplate = queue.shift()!;
 
-        Object.values(currentEntity).forEach((propertyValues) => {
+        Object.values(currentTemplate).forEach((propertyValues) => {
             if (propertyValues.format === 'relationshipReference') {
                 const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
 
@@ -83,13 +89,29 @@ const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySing
     return interfaces;
 };
 
+const generateMergedChildAndParentInterface = (parentInterfaceName: string, childInterfaceName: string) =>
+    [
+        `// all fields from ${parentInterfaceName} - parent , but overridden by fields from ${childInterfaceName} - child`,
+        `interface ${childInterfaceName}Merged extends Omit<${parentInterfaceName},keyof ${childInterfaceName}>, ${childInterfaceName} {}`,
+    ].join('\n');
+
 export const generateInterfaceWithRelationships = (
-    entity: Record<string, IEntitySingleProperty>,
+    template: Record<string, IEntitySingleProperty>,
     interfaceName: string,
     queryClient: QueryClient,
-) => {
-    const generatedInterfacesForRelatedEntities = generateInterfacesForRelatedEntities(entity, queryClient).reverse();
-    const generatedInterfaceForEntity = generateInterface(entity, interfaceName, queryClient);
+    parentTemplate?: IMongoEntityTemplatePopulated,
+): string => {
+    const baseTemplate = parentTemplate?.properties.properties ?? template;
+    const baseName = parentTemplate?.name ?? interfaceName;
+    const hasParent = !!parentTemplate;
 
-    return [...generatedInterfacesForRelatedEntities, generatedInterfaceForEntity].join('\n\n');
+    const interfaces = [
+        ...generateInterfacesForRelatedTemplates(baseTemplate, queryClient).reverse(),
+        generateInterface(baseTemplate, baseName, queryClient),
+        ...(hasParent
+            ? [generateInterface(template, interfaceName, queryClient), generateMergedChildAndParentInterface(parentTemplate!.name, interfaceName)]
+            : []),
+    ];
+
+    return interfaces.join('\n\n');
 };

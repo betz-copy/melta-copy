@@ -8,6 +8,7 @@ import TemplatesValidator from './middlewares';
 import {
     convertToRelationshipFieldRequestSchema,
     createCategorySchema,
+    createChildTemplateSchema,
     createEntityTemplateSchema,
     createPrintingTemplateSchema,
     createRelationshipTemplateSchema,
@@ -17,8 +18,10 @@ import {
     deletePrintingTemplateSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
-    getAllConfigsSchema,
+    getAllChildTemplatesSchema,
     getCategoriesSchema,
+    searchChildTemplatesSchema,
+    getAllConfigsSchema,
     getConfigByTypeSchema,
     getPrintingTemplateByIdSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
@@ -34,6 +37,9 @@ import {
     updatePrintingTemplateSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
+    updateChildTemplateSchema,
+    deleteChildTemplateSchema,
+    updateEntityTemplateActionSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -134,7 +140,12 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
-templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
+templatesRouter.patch(
+    '/entities/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    AuthorizerControllerMiddleware.userIsRootAdmin,
+    templatesControllerMiddleware.updateEntityTemplateAction,
+);
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',

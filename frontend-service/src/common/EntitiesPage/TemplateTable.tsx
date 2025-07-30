@@ -1,14 +1,16 @@
+import { FilterModel } from '@ag-grid-community/core';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
     AddCircle,
-    AppRegistration as DefaultEntityTemplateIcon,
-    CloseFullscreenRounded,
-    Download,
-    Expand,
-    TableRowsOutlined,
     BarChart,
-    LibraryAddCheckOutlined as SelectMultipleIcon,
-    Upload,
+    CloseFullscreenRounded,
+    AppRegistration as DefaultEntityTemplateIcon,
+    Download,
     EditNote,
+    Expand,
+    LibraryAddCheckOutlined as SelectMultipleIcon,
+    TableRowsOutlined,
+    Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -17,32 +19,35 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef,
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
+import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { exportEntitiesRequest } from '../../services/entitiesService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
-import { useUserStore } from '../../stores/user';
+import { UserState, useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
+import { isChildTemplate } from '../../utils/templates';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, TablePageType } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
-import { DraftCard } from './DraftCard';
-import { ResetFilterButton } from './ResetFilterButton';
-import { LoadExcelButton } from './Buttons/LoadExcel';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { LoadExcelButton } from './Buttons/LoadExcel';
+import { DraftCard } from './DraftCard';
+import { ResetFilterButton } from './ResetFilterButton';
+import { IKartoffelUser } from '../../interfaces/users';
 
 const {
     loadExcel: { excelExtension },
@@ -50,22 +55,33 @@ const {
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
+export const isUserHasWritePermissions = (
+    currentClientSideUser: IKartoffelUser | IEntity,
+    currentUser: UserState['user'],
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+) =>
+    Object.keys(currentClientSideUser).length > 0 ||
+    checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
+
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated;
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
         quickFilterText: string;
-        page: string;
+        page: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        defaultFilter?: FilterModel;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
->(({ template, quickFilterText, page, setUpdatedEntities, setUpdatedTemplateIds }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
     const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
+
+    const currentClientSideUser = useClientSideUserStore((state) => state.clientSideUser);
 
     const theme = useTheme();
     const drafts = useDraftsStore((state) => state.drafts);
@@ -122,6 +138,7 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
+                        isChildTemplate: isChildTemplate(template),
                     },
                 },
             });
@@ -138,12 +155,8 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserTemplatePermission(
-        currentUser.currentWorkspacePermissions,
-        template.category,
-        template._id,
-        PermissionScope.write,
-    );
+    // TODO: what about categories?
+    const userHasWritePermissions = isUserHasWritePermissions(currentClientSideUser, currentUser, template);
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -286,7 +299,6 @@ const TemplateTable = forwardRef<
                         text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
                         disableButton={!userHasWritePermissions}
                     />
-
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('pages.charts'),
@@ -298,21 +310,23 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <EditExcelButton
-                        disabled={isEditExcelDisabled}
-                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={editExcelTooltip}
-                    >
-                        <EditNote
-                            fontSize="small"
-                            sx={{
-                                opacity: isEditExcelDisabled ? 0.3 : 1,
-                                pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
-                            }}
-                        />
-                        {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
-                    </EditExcelButton>
+                    {page !== TablePageType.clientSide && (
+                        <EditExcelButton
+                            disabled={isEditExcelDisabled}
+                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                            onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                            popoverText={editExcelTooltip}
+                        >
+                            <EditNote
+                                fontSize="small"
+                                sx={{
+                                    opacity: isEditExcelDisabled ? 0.3 : 1,
+                                    pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                                }}
+                            />
+                            {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
+                        </EditExcelButton>
+                    )}
                     <LoadExcelButton
                         disabled={isLoadExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
@@ -349,6 +363,7 @@ const TemplateTable = forwardRef<
                             });
                         }}
                         setUpdatedEntities={setUpdatedEntities}
+                        setUpdatedTemplateIds={setUpdatedTemplateIds}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
@@ -406,6 +421,7 @@ const TemplateTable = forwardRef<
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     multipleSelect={multipleSelect}
+                    defaultFilter={defaultFilter}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
@@ -460,7 +476,8 @@ const TemplateTable = forwardRef<
                                         (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
                                     ),
                                 );
-                            } else entitiesTableRef.current?.refreshServerSide();
+                            }
+                            setUpdatedTemplateIds?.([entity.templateId]);
                             setEditDialog((prev) => ({ ...prev, isOpen: false }));
                             setExternalErrors(initializedExternalErrors);
                         },

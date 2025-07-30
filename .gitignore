@@ -8,3 +8,4 @@ npm_token_secret.txt
 # in services directories we upload to git only .env.dev, and not .env
 **/*/.env
 !./.env
+.cursorignore

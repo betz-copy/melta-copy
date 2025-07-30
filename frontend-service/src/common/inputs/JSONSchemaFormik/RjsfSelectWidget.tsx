@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
+import React from 'react';
 import MultipleSelect from '../MultipleSelect';
 import './form.css';
 
@@ -45,28 +45,31 @@ const RjsfSelectWidget = ({
     onFocus,
     rawErrors = [],
     color,
+    options,
     hideError,
     hideLabel,
     formContext,
     ...textFieldProps
 }: WidgetProps) => {
-    const { enumOptions: items } = getUiOptions(uiSchema) as {
-        enumOptions: Array<{
-            label: string;
-            value: string;
-            color?: string;
-        }>;
-    };
+    const { defaultValue } = options;
+    const { enumOptions: items = [] } =
+        (getUiOptions(uiSchema) as {
+            enumOptions?: Array<{
+                label: string;
+                value: string;
+                color?: string;
+            }>;
+        }) || {};
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
     if (multiple) {
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) && items) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
         } else {
             selectedValue = [];
         }
     } else {
-        selectedValue = items.find((opt) => opt.value === value) || null;
+        selectedValue = items ? items.find((opt) => opt.value === value) || null : null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -93,10 +96,10 @@ const RjsfSelectWidget = ({
                 event.preventDefault();
                 if (multiple) {
                     const mapped = (newVal as (typeof items)[number][]).map((opt) => processValue(schema, opt.value));
-                    onChange(mapped.length ? mapped : undefined);
+                    onChange(mapped.length ? mapped : defaultValue);
                 } else {
                     const val = (newVal as (typeof items)[number] | null)?.value;
-                    onChange(val ? processValue(schema, val) : undefined);
+                    onChange(val ? processValue(schema, val) : defaultValue);
                 }
             }}
             textFieldProps={textFieldProps}
@@ -105,10 +108,11 @@ const RjsfSelectWidget = ({
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
-            rawErrors={!hideError ? rawErrors: []}
+            rawErrors={!hideError ? rawErrors : []}
             label={!hideLabel ? label || schema.title : undefined}
             color={color}
             value={value}
+            placeholder={Array.isArray(defaultValue) ? defaultValue.join(', ') : (defaultValue as string | undefined)}
         />
     );
 };

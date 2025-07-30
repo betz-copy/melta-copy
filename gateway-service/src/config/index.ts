@@ -55,6 +55,8 @@ const config = {
         },
         meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
         meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
+        clientSideWorkspaceId: env.get('CLIENT_SIDE_WORKSPACE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        units: env.get('FRONTEND_CONFIG_UNITS').default('es,unit1,unit2,unit3,unit4,unit5,unit6,unit7,unit8,unit9,unit10').asArray(',').map(String),
     },
 
     authentication: {
@@ -68,6 +70,8 @@ const config = {
             accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
             unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
+            clientSideId: env.get('CLIENT_SIDE_ID').default('client-side').asString(),
+            clientSideEndURL: env.get('CLIENT_SIDE_END_URL').default('/simba/test.mlt').asString(), // TODO: yona - change to better unique url for client side end user
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB
@@ -81,6 +85,7 @@ const config = {
         entities: {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+            baseChildTemplatesRoute: env.get('TEMPLATE_SERVICE_CHILD_TEMPLATES_BASE_ROUTE').default('/api/templates/child').asString(),
             baseConfigRoute: env.get('TEMPLATE_SERVICE_CONFIG_BASE_ROUTE').default('/api/templates/config').asString(),
         },
         relationships: {
@@ -310,6 +315,15 @@ const config = {
             maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
         },
         wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
+    },
+    clientSide: {
+        usersInfoChildTemplateId: env.get('CLIENT_SIDE_USERS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        numOfPropsToShow: env.get('CLIENT_SIDE_NUM_OF_PROPS_TO_SHOW').default(9).asIntPositive(),
+        clientSideWorkspaceName: env.get('CLIENT_SIDE_WORKSPACE_NAME').default('simba').asString(),
+    },
+    mapPage: {
+        sourceTemplateId: env.get('MAPPAGE_SOURCE_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        destTemplateId: env.get('MAPPAGE_DEST_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
     },
 };
 

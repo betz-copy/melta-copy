@@ -25,6 +25,7 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    properties?: Record<string, IEntitySingleProperty>; // For groups inside of entity
     isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;
@@ -42,18 +43,25 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    filters?: string;
+    defaultValue?: any;
+    default?: any; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
+    isFilterByCurrentUser?: boolean;
+    isFilterByUserUnit?: boolean;
+    display?: boolean;
+}
+
+export interface IProperties {
+    type: 'object';
+    properties: Record<string, IEntitySingleProperty>;
+    hide: string[];
 }
 
 export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
-    properties: {
-        type: 'object';
-        properties: Record<string, IEntitySingleProperty>;
-        required: string[];
-        hide: string[];
-    };
+    properties: IProperties & { required: string[] };
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];

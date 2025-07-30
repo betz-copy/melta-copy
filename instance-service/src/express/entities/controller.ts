@@ -10,10 +10,9 @@ class EntityController extends DefaultController<EntityManager> {
 
     async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+        const { properties, ignoredRules, userId, duplicatedFromId, childTemplateId } = req.body;
 
-        res.json(
-            await this.manager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId),
-        );
+        res.json(await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplateId));
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -69,7 +68,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async deleteEntitiesByTemplateId(req: Request, res: Response) {
-        res.json(await this.manager.deleteByTemplateId(req.query.templateId as unknown as string));
+        res.json(await this.manager.deleteByTemplateId(req.query.templateId as string));
     }
 
     async updateStatusById(req: Request, res: Response) {
@@ -78,14 +77,17 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+        const { properties, ignoredRules, userId, childTemplateId, convertToRelationshipField } = req.body;
+
         res.json(
             await this.manager.updateEntityById(
                 req.params.id,
-                req.body.properties,
+                properties,
                 entityTemplate,
-                req.body.ignoredRules,
-                req.body.userId,
-                req.body.convertToRelationshipField,
+                ignoredRules,
+                userId,
+                childTemplateId,
+                convertToRelationshipField,
             ),
         );
     }
@@ -137,6 +139,10 @@ class EntityController extends DefaultController<EntityManager> {
 
     async getDependentRules(req: Request, res: Response) {
         res.json(this.manager.getDependentRules(req.body.rules, req.body.relationshipTemplateId));
+    }
+
+    async countEntitiesOfTemplatesByUserEntityId(req: Request, res: Response) {
+        res.json(await this.manager.countEntitiesOfTemplatesByUserEntityId(req.body.templateIds, req.body.userEntityId));
     }
 }
 

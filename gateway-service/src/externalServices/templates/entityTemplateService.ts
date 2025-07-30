@@ -1,16 +1,18 @@
 import {
+    ConfigTypes,
     ICategory,
-    IMongoCategory,
+    ICategoryOrderConfig,
+    IChildTemplate,
+    IChildTemplatePopulated,
     IEntityTemplate,
+    IMongoBaseConfig,
+    IMongoCategory,
+    IMongoCategoryOrderConfig,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-    ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
+    ISearchEntityTemplatesBody,
     ISubCompactPermissions,
-    IMongoCategoryOrderConfig,
-    IMongoBaseConfig,
-    ConfigTypes,
-    ICategoryOrderConfig,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
@@ -20,7 +22,7 @@ const {
     service: { workspaceIdHeaderName },
     templateService: {
         baseRoute,
-        entities: { baseEntitiesRoute, baseCategoriesRoute, baseConfigRoute },
+        entities: { baseEntitiesRoute, baseCategoriesRoute, baseChildTemplatesRoute, baseConfigRoute },
     },
 } = config;
 
@@ -130,6 +132,18 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
+    async updateEntityTemplateAction(templateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${templateId}/actions`, { actions });
+
+        return data;
+    }
+
+    async updateChildEntityTemplateAction(templateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${templateId}/actions`, { actions });
+
+        return data;
+    }
+
     async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.api.put<{
             updatedRelationShipTemplate: IMongoRelationshipTemplate;
@@ -153,7 +167,7 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    // config
+    // configs
     async getConfigs(permissionsOfUserId: ISubCompactPermissions) {
         const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
 
@@ -196,6 +210,39 @@ class EntityTemplateService extends TemplatesManagerService {
     async createOrderConfig(configData: ICategoryOrderConfig) {
         const { data } = await this.api.post<IMongoCategoryOrderConfig>(`${baseConfigRoute}/${ConfigTypes.CATEGORY_ORDER}`, configData);
 
+        return data;
+    }
+
+    // child templates
+    async getChildTemplateById(id: string) {
+        const { data } = await this.api.get<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        return data;
+    }
+
+    async getAllChildTemplates() {
+        const { data } = await this.api.get<IChildTemplatePopulated[]>(`${baseChildTemplatesRoute}`);
+        return data;
+    }
+
+    async searchChildTemplates(searchBody: {
+        search?: string;
+        ids?: string[];
+        categoryIds?: string[];
+        limit?: number;
+        skip?: number;
+        parentTemplatesIds?: string[];
+    }) {
+        const { data } = await this.api.post<IChildTemplatePopulated[]>(`${baseChildTemplatesRoute}/search`, searchBody);
+        return data;
+    }
+
+    async createChildTemplate(childTemplate: IChildTemplate) {
+        const { data } = await this.api.post<IChildTemplatePopulated>(`${baseChildTemplatesRoute}`, childTemplate);
+        return data;
+    }
+
+    async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
+        const { data } = await this.api.put<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
         return data;
     }
 }

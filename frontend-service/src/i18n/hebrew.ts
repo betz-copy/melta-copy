@@ -97,14 +97,71 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
-        create: 'יוצר',
+        create: 'יצירה',
         update: 'מעדכן',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
         expansion: 'הרחבה',
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
+        addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
+    },
+    entityTemplatesRow: {
+        areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',
+        areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
+        succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
+        failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+    },
+    clientSidePage: {
+        simba: {
+            contactInfoCard: {
+                title: 'פרטי קשר ומידע רלוונטי',
+                contacts: [
+                    {
+                        role: 'רמ"ד תחבורה במנהלת',
+                        name: 'אריה שיים',
+                        hichatLink: 'https://www.hichat.com/ariehshayim',
+                        mailLink: 'mailto:arieh.shayim@gmail.com',
+                    },
+                    {
+                        role: 'קצין בטיחות בתעבורה',
+                        name: 'רמי מגלשווילי',
+                        hichatLink: 'https://www.hichat.com/ramimgalchovil',
+                        mailLink: 'mailto:rami.galchovil@gmail.com',
+                    },
+                    {
+                        role: 'תקלות מערכת',
+                        name: 'עדי סאקופסקי',
+                        hichatLink: 'https://www.hichat.com/adysakofsky',
+                        mailLink: 'mailto:adi.sakofsky@gmail.com',
+                    },
+                ],
+            },
+            topbar: {
+                title: 'בוקר טוב',
+            },
+            userNotExistsPage: {
+                title: 'נראה כי אין ברשותך רישיון פעיל',
+                subTitle: 'לא מצאנו אותך ברשימת הנהגים שלנו',
+                texts: {
+                    whatWouldYouLikeToDo: 'מה ברצונך לעשות?',
+                    userHaveUnactiveLicense: {
+                        title: 'יש לי רישיון אבל הוא לא בתוקף',
+                        description:
+                            'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק. הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי',
+                    },
+                    userDontHaveLicense: {
+                        title: 'אני רוצה להוציא רישיון צבאי',
+                        description:
+                            'ורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכ',
+                    },
+                },
+                recieveLicenseRequest: 'להגשת בקשה לרישיון צבאי ע”י מפקד:',
+                neededLetter: 'מכתב נחיצות.pdf',
+                forMoreInfo: 'למידע נוסף ניתן לפנות ל:',
+            },
+        },
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -188,6 +245,7 @@ export default {
             printOptions: 'הגדרות הדפסה',
             accompanyingFiles: 'קבצים נלווים',
             relationships: 'קשרים',
+            noPreviewProperties: 'אין מאפייני תצוגה מקדימה',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
@@ -647,6 +705,9 @@ export default {
                 serviceType: 'סוג שירות',
                 firstName: 'שם פרטי',
                 lastName: 'שם משפחה',
+                birthDate: 'תאריך לידה',
+                dischargeDay: 'תאריך שחרור',
+                enlistmentDay: 'תאריך גיוס',
                 akaUnit: 'יחידת אכ"א',
                 rank: 'דרגה',
                 mail: 'מייל',
@@ -656,7 +717,6 @@ export default {
                 address: 'כתובת',
                 fullClearance: 'סיווג',
                 sex: 'מגדר',
-                birthDate: 'תאריך לידה',
                 directGroup: 'קבוצה ישירה',
                 hierarchy: 'היררכיה',
             },
@@ -778,6 +838,7 @@ export default {
                 failedUploadEntities: 'יצירת יישויות נכשלה',
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
+                editedSuccessfully: 'ישויות נערכו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
                 tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
@@ -913,8 +974,10 @@ export default {
     },
     validation: {
         required: 'חובה',
+        fieldFilterCondition: 'הערך אינו עומד בתנאי הסינון',
         url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
+        atLeastOneCategory: 'חובה לפחות קטגוריה אחת',
         preview: 'תצוגה מצומצמת',
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
         hide: 'הסתר',
@@ -956,7 +1019,9 @@ export default {
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
+        notMatchingToFilter: 'לא תואם לסינון',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
+        matchFilter: 'הערך לא תואם את הגדרות ה{{dialogType}}',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },
     propertyTypes: {
@@ -984,6 +1049,7 @@ export default {
         signature: 'חתימה',
         comment: 'הערה',
         kartoffelUserField: 'משתמש - שדה קרטופלי',
+        unitField: 'יחידה',
     },
     input: {
         imagePicker: {
@@ -1324,6 +1390,7 @@ export default {
             existing: 'קיים',
             chooseChart: 'בחירת תרשים',
             chartsPage: 'עמוד תרשימי',
+            total: 'סה"כ',
             changePermissionDialog: {
                 title: 'בחרת לשנות את הגדרות הפרטיות של התרשים',
                 body: 'תרשים זה מוצג בעמוד הבית. במידה והרשאת הצפייה שלו תשתנה ל"פרטי" - יוסר הרשים מעמוד הבית.',
@@ -1578,6 +1645,8 @@ export default {
             overlay: 'שכבות מיפוי',
         },
         coordinateSystem: 'קואורדינטות',
+        searchResults: 'תוצאות חיפוש מקטלוג',
+        newRequest: 'בקשה חדשה',
     },
     filters: {
         equals: 'שווה',
@@ -1620,6 +1689,85 @@ export default {
         searchLimits: {
             // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
+        },
+        unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
+        clientSide: {
+            usersInfoChildTemplateId: 'ID תבנית משתמשים',
+            numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
+            clientSideWorkspaceName: 'שם סביבת צד לקוח',
+        },
+        mapPage: {
+            sourceTemplateId: 'ID תבנית מקור',
+            destTemplateId: 'ID תבנית יעד',
+        },
+    },
+    createChildTemplateDialog: {
+        templateTitle: 'יצירת תבנית בן',
+        updateTemplateTitle: 'עריכת תבנית בן',
+        templateName: 'שם תבנית בן באנגלית',
+        templateDisplayName: 'שם תצוגת תבנית בן',
+        templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
+        status: {
+            categoryPage: 'מוצג בעמוד קטגוריה',
+            userPage: 'מוצג בעמוד לקוח',
+        },
+        userType: {
+            regularUser: 'סינון עפ״י משתמש מחובר',
+            specialUser: 'סינון עפ״י יחידת המשתמש',
+            relatedToLabel: 'שיוך לעמוד לקוח',
+        },
+        categoryType: {
+            relatedToLabel: 'שיוך לקטגוריה',
+        },
+        columns: {
+            title: 'עמודות להצגה',
+            nameCol: 'עמודה',
+            filterCol: 'סינון ערכים',
+            defaultCol: 'ערך ברירת מחדל בהוספה',
+            filterByUserCol: 'עריכה ע"י משתמש קצה',
+        },
+        fieldFilterDialog: {
+            title: 'סינון שדה',
+            addFilter: 'הוספה',
+        },
+        fieldDefaultDialog: {
+            title: 'ערך ברירת מחדל',
+        },
+        byUser: 'לפי משתמש מחובר',
+        connectedUser:'משתמש מחובר',
+        currentDate:'תאריך נוכחי',
+        byUnit: 'לפי יחידת המשתמש',
+        connectToUserPage: 'שיוך לעמוד לקוח',
+        selectUserDialog: {
+            title: 'בחירת שם משתמש',
+            description: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודה ממנה ילקח המידע',
+            selectUser: 'משתמש',
+            addAction: 'הוספה',
+            byUser: 'משתמש',
+        },
+        selectUserUnitDialog: {
+            title: 'בחירת יחידה',
+            content: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודת יחידה שממנה ילקח המידע',
+            label: 'יחידה',
+        },
+        failedToCreateChildTemplate: 'נכשל ליצור תבנית ישות בן',
+        failedToUpdateChildTemplate: 'נכשל לעדכן תבנית ישות בן',
+        permissionsPage: {
+            unit: 'יחידה',
+            user: 'משתמש',
+            userPage: 'עמוד לקוח',
+        },
+        succeededToCreateChildTemplate: 'תבנית בן נוצרה בהצלחה',
+        succeededToUpdateChildTemplate: 'תבנית בן עודכנה בהצלחה',
+        childTemplates: 'תבניות בן',
+        buttons: {
+            create: 'צור תבנית בן',
+            update: 'עדכן תבנית בן',
+            cancel: 'ביטול',
+        },
+        dialogType: {
+            filter: 'סינון',
+            default: 'ברירת מחדל',
         },
     },
 };

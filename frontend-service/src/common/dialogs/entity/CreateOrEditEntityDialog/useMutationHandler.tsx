@@ -1,40 +1,46 @@
+import { Button, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { useMutation } from 'react-query';
-import { useLocation } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { Button, Grid } from '@mui/material';
+import { useLocation } from 'wouter';
 import { EntityWizardValues } from '..';
-import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
-import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
-import { updateEntityRequestForMultiple, createEntityRequest } from '../../../../services/entitiesService';
+import { environment } from '../../../../globals';
+import { IChildTemplateMapPopulated, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
-import { environment } from '../../../../globals';
+import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
+import { createEntityClientSideRequest } from '../../../../services/clientSideService';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
+import { isChildTemplate } from '../../../../utils/templates';
 
 const { errorCodes } = environment;
 
-type MutateAsyncFn = (args: {
-  newEntityData: EntityWizardValues;
-  ignoredRules?: IRuleBreach['brokenRules'];
-}) => Promise<IEntity>;
+type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) => Promise<IEntity>;
 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
+    clientSideUserEntity?: IEntity,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
+    let childTemplate: IMongoChildTemplatePopulated | undefined = undefined;
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
+    const handleMutationError = (
+        err: AxiosError,
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        newEntityData?: EntityWizardValues | undefined,
+    ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
         const errorMetadata = err.response?.data?.metadata;
 
@@ -85,14 +91,15 @@ const useMutationHandler = (
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules),
+            updateEntityRequestForMultiple(payload!.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 onSuccess?.(data);
 
                 if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
                     if (shouldNavigateToEntityPage === true) {
-                        navigate(`/entity/${data.properties._id}`);
+                        const childTemplateIdParam = isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : '';
+                        navigate(`/entity/${data.properties._id}${childTemplateIdParam}`);
                     }
                 }
             },
@@ -111,9 +118,29 @@ const useMutationHandler = (
 
                 if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
                     if (shouldNavigateToEntityPage && data) {
-                        navigate(`/entity/${data.properties._id}`);
+                        const childTemplateIdParam = isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : '';
+                        navigate(`/entity/${data.properties._id}${childTemplateIdParam}`);
                     }
                 }
+            },
+            onError: (err: AxiosError, { newEntityData }) => {
+                handleMutationError(err, entityTemplate, newEntityData);
+            },
+        },
+    );
+
+    if (Object.keys(clientSideUserEntity || {}).length > 0) {
+        const queryClient = useQueryClient();
+
+        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+        childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
+    }
+    const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            createEntityClientSideRequest(newEntityData, childTemplate!, ignoredRules, clientSideUserEntity),
+        {
+            onSuccess: (data) => {
+                onSuccess?.(data);
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
@@ -129,6 +156,10 @@ const useMutationHandler = (
         case ActionTypes.UpdateEntity:
             isLoading = isUpdateLoading;
             mutateAsync = updateMutation;
+            break;
+        case ActionTypes.CreateClientSideEntity:
+            isLoading = isClientSideCreateLoading;
+            mutateAsync = clientSideCreateMutation;
             break;
         default:
             isLoading = false;
@@ -156,7 +187,16 @@ const useMutationHandler = (
                                 <Grid display="flex" alignItems="center">
                                     <span>{i18next.t(`wizard.entity.${isUpdate ? 'edited' : 'created'}Successfully`)}</span>
                                     {data?.properties?._id && (
-                                        <Button variant="text" onClick={() => navigate(`/entity/${data.properties._id}`)} sx={{ marginRight: '5px' }}>
+                                        <Button
+                                            variant="text"
+                                            onClick={() => {
+                                                const childTemplateIdParam = isChildTemplate(entityTemplate)
+                                                    ? `?childTemplateId=${entityTemplate._id}`
+                                                    : '';
+                                                navigate(`/entity/${data.properties._id}${childTemplateIdParam}`);
+                                            }}
+                                            sx={{ marginRight: '5px' }}
+                                        >
                                             {i18next.t('entityPage.linkToEntityPage')}
                                         </Button>
                                     )}
@@ -183,10 +223,7 @@ const useMutationHandler = (
                         },
                     },
                 },
-                {
-                    autoClose: false,
-                    style: { width: '335px' },
-                },
+                { style: { width: '335px' } },
             );
 
             mutationPromise.finally(resolve);

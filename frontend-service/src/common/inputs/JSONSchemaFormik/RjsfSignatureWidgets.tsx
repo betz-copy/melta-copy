@@ -82,7 +82,7 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
                             height: '100%',
                             style: {
                                 // eslint-disable-next-line no-nested-ternary
-                                backgroundColor: darkMode ? '#9398c2' : !isDisabled ? '#fff' : undefined,
+                                backgroundColor: darkMode ? '#666666' : !isDisabled ? '#fff' : undefined,
                                 border:
                                     !signatureCanvas.current || signatureCanvas.current.isEmpty()
                                         ? '1px solid rgb(154, 159, 202)'

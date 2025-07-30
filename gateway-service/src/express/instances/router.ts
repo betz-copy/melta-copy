@@ -22,6 +22,7 @@ import {
     loadEntitiesSchema,
     editManyEntitiesByExcelSchema,
     updateMultipleEntitiesSchema,
+    getChangedEntitiesFromExcelSchema,
 } from './validator.schema';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
@@ -79,32 +80,32 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/export',
-    InstancesValidatorMiddleware.validateUserCanExportEntities,
     ValidateRequest(exportEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanExportEntities,
     InstancesControllerMiddleware.exportEntities,
 );
 
 InstancesRouter.post(
     '/entities/loadEntities',
     busboyMiddleware,
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.loadEntities,
 );
 
 InstancesRouter.post(
     '/entities/getChangedEntitiesFromExcel',
     busboyMiddleware,
+    ValidateRequest(getChangedEntitiesFromExcelSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(loadEntitiesSchema),
     InstancesControllerMiddleware.getChangedEntitiesFromExcel,
 );
 
 InstancesRouter.put(
     '/entities/editManyEntitiesByExcel',
     busboyMiddleware,
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(editManyEntitiesByExcelSchema),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.editManyEntitiesByExcel,
 );
 

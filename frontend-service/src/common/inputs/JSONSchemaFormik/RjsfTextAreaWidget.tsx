@@ -75,7 +75,7 @@ export const useMuiRteTheme = (error?: boolean, globalTheme?: Theme, showLabel?:
 };
 
 const RjsfTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
-    const { toPrint } = options;
+    const { toPrint, defaultValue } = options;
 
     const [editorValue, setEditorValue] = useState(getInitialValue(value));
     const [showLabel, setShowLabel] = useState(false);
@@ -90,7 +90,7 @@ const RjsfTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
         setEditorValue(state);
         const newValue = state.getCurrentContent().getPlainText();
         const htmlContent = stateToHTML(state.getCurrentContent());
-        onChange(newValue === '' ? options.emptyValue : htmlContent);
+        onChange(newValue === '' ? defaultValue : htmlContent);
     };
 
     const handleFocus = () => {

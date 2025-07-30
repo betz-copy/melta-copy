@@ -1,7 +1,7 @@
 import { History } from '@mui/icons-material';
 import { Button, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
 import { IEntityExpanded } from '../../../../interfaces/entities';
@@ -13,7 +13,7 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
     entityTemplate,
 }) => {
     const theme = useTheme();
-    const [openPopper, setOpenPopper] = React.useState(false);
+    const [openPopper, setOpenPopper] = useState(false);
     const entityId = expandedEntity?.entity.properties._id || '';
     useEffect(() => {
         setOpenPopper(false);

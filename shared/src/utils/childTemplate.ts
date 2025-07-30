@@ -1,0 +1,115 @@
+import {
+    IChildTemplate,
+    IChildTemplatePopulated,
+    IChildTemplateProperty,
+    IMongoChildTemplateWithConstraintsPopulated,
+} from '../interfaces/childTemplate';
+import { IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+
+const isChildTemplate = (
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,
+): template is IMongoChildTemplateWithConstraintsPopulated => {
+    return 'parentTemplate' in template && Boolean(template.parentTemplate);
+};
+
+const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated | IChildTemplate): ISearchFilter | undefined => {
+    const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
+
+    for (const [_key, prop] of Object.entries(childTemplate.properties.properties)) {
+        if (prop.filters) {
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+            if (parsed) filterClauses.push(parsed);
+        }
+    }
+
+    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
+};
+
+const parseFilterObject = (filters: any): any | null => {
+    if (typeof filters === 'string') {
+        try {
+            return JSON.parse(filters);
+        } catch {
+            return null;
+        }
+    }
+    return typeof filters === 'object' && filters !== null ? filters : null;
+};
+
+const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
+    const enumEquals = filterObj.$or.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
+
+    return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
+};
+
+const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
+    const multiEnumIn = filterObj.$or
+        .map((condition: any) => condition.multiEnum?.$in)
+        .filter((val: any): val is string[] => Array.isArray(val))
+        .flat();
+
+    return multiEnumIn.length > 0 ? enumVals.filter((val) => multiEnumIn.includes(val)) : enumVals;
+};
+
+const getChildPropertiesFiltered = (
+    childProperties: Record<string, IEntitySingleProperty & IChildTemplateProperty>,
+): Record<string, IEntitySingleProperty> => {
+    const properties: Record<string, IEntitySingleProperty> = {};
+
+    for (const [key, value] of Object.entries(childProperties)) {
+        const filterObj = parseFilterObject(value.filters);
+
+        let newValue = { ...value };
+
+        if (value.enum && filterObj) {
+            newValue.enum = getFilteredEnum(value.enum, filterObj);
+        }
+
+        if (value.type === 'array' && value.items?.enum && filterObj) {
+            newValue = {
+                ...value,
+                items: {
+                    ...value.items,
+                    enum: getFilteredMultiEnum(value.items.enum, filterObj),
+                },
+            };
+        }
+
+        properties[key] = newValue;
+    }
+
+    return properties;
+};
+
+const dePopulateChildProperties = (
+    childProperties: IChildTemplatePopulated['properties']['properties'],
+): IChildTemplate['properties']['properties'] => {
+    return Object.entries(childProperties).reduce((acc, [key, value]) => {
+        acc[key] = {
+            defaultValue: value.defaultValue,
+            filters: value.filters ? JSON.parse(value.filters) : undefined,
+            isEditableByUser: value.isEditableByUser,
+            display: value.display,
+        };
+        return acc;
+    }, {});
+};
+
+const childTemplateKeys: (keyof IChildTemplate)[] = [
+    'name',
+    'displayName',
+    'description',
+    'parentTemplateId',
+    'category',
+    'properties',
+    'disabled',
+    'actions',
+    'viewType',
+    'isFilterByCurrentUser',
+    'isFilterByUserUnit',
+    'filterByCurrentUserField',
+    'filterByUnitUserField',
+];
+
+export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys, isChildTemplate };

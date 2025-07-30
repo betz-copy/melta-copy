@@ -18,6 +18,7 @@ export interface TableMetaData {
     description: string;
     columns: string[];
     filter?: string;
+    childTemplateId?: string;
 }
 
 export interface TableItem {

@@ -1,13 +1,13 @@
 import { IMongoChart, ISearchFilter, logger, MongoBaseFields, TableItem } from '@microservices/shared';
 import { omit } from 'lodash';
 
-export function processFilteredItems<T>(
+export const processFilteredItems = <T>(
     items: T[],
     removedProperties: string[],
     getFilter: (item: T) => string | undefined,
     setFilter: (item: T, filter: string | undefined) => void,
     getId: (item: T) => string,
-): { id: string; updatedItem: T }[] {
+): { id: string; updatedItem: T }[] => {
     const itemsWithFilters = items.filter((item) => getFilter(item));
 
     const processedItems = itemsWithFilters.map((item) => {
@@ -33,13 +33,13 @@ export function processFilteredItems<T>(
     });
 
     return processedItems.filter(Boolean) as { id: string; updatedItem: T }[];
-}
+};
 
-export async function updateItems<T extends object>(
+export const updateItems = async <T extends object>(
     items: { id: string; updatedItem: T }[],
     updateFunction: (id: string, item: T) => Promise<any>,
     prepareItem?: (item: T) => T,
-): Promise<void> {
+): Promise<void> => {
     await Promise.all(
         items.map(({ id, updatedItem }) => {
             const baseItem = omit(updatedItem, ['_id', 'createdAt', 'updatedAt']) as T;
@@ -47,9 +47,9 @@ export async function updateItems<T extends object>(
             return updateFunction(id, preparedItem);
         }),
     );
-}
+};
 
-export async function processAndUpdateItems<T extends object>(
+export const processAndUpdateItems = async <T extends object>(
     items: T[],
     removedProperties: string[],
     getFilter: (item: T) => string | undefined,
@@ -57,10 +57,10 @@ export async function processAndUpdateItems<T extends object>(
     getId: (item: T) => string,
     updateFunction: (id: string, item: T) => Promise<any>,
     prepareItem?: (item: T) => T,
-): Promise<void> {
+): Promise<void> => {
     const processedItems = processFilteredItems(items, removedProperties, getFilter, setFilter, getId);
     await updateItems(processedItems, updateFunction, prepareItem);
-}
+};
 
 const parseString = (str?: string) => {
     if (typeof str !== 'string') return undefined;

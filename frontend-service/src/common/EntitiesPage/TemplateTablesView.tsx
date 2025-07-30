@@ -1,30 +1,60 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
-import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { _debounce } from '@ag-grid-community/core';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { TemplateTable, TemplateTableRef } from './TemplateTable';
-import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
+import { useUserStore } from '../../stores/user';
+import { isChildTemplate } from '../../utils/templates';
+import { TemplateTable, TemplateTableRef } from './TemplateTable';
+import { TablePageType } from '../EntitiesTableOfTemplate';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
-type TemplateTablesViewResultsRef = {
+export type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
+};
+
+export const getDefaultFilterFromTemplate = (
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    isChildTemplate: boolean,
+    currentUserKartoffelId?: string,
+    currentUserUnit?: string,
+): ISearchFilter | undefined => {
+    if (!isChildTemplate) return undefined;
+
+    const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
+
+    for (const [key, prop] of Object.entries(template.properties.properties)) {
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId) {
+            filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
+        }
+
+        if (prop.isFilterByUserUnit && currentUserUnit) {
+            filterClauses.push({ [key]: { $eq: currentUserUnit } });
+        }
+
+        if (prop.filters) {
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+            if (parsed) filterClauses.push(parsed);
+        }
+    }
+
+    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
 };
 
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
-        templates: IMongoEntityTemplatePopulated[];
+        templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
         searchInput: string;
         pageSize?: number;
-        pageType: string;
+        pageType: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
         setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     }
@@ -64,26 +94,40 @@ const TemplateTablesViewResults = forwardRef<
         sessionStorage.setItem('visibleTemplatesCount', visibleTemplatesCount.toString());
     }, [visibleTemplatesCount]);
 
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+
+    const childTemplateDefaultFilters = useMemo(() => {
+        const filters: Record<string, any> = {};
+        templates.forEach((template) => {
+            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId, currentUser?.unit);
+        });
+        return filters;
+    }, [templates, currentUserKartoffelId]);
+
     return (
         <Grid container direction="column" spacing={1}>
-            {templates.slice(0, visibleTemplatesCount).map((template) => (
-                <Grid item key={template._id}>
-                    <TemplateTable
-                        ref={(el) => {
-                            if (el) {
-                                templateTablesRefs.current[template._id] = el;
-                            } else {
-                                delete templateTablesRefs.current[template._id];
-                            }
-                        }}
-                        template={template}
-                        quickFilterText={searchInput}
-                        page={pageType}
-                        setUpdatedEntities={setUpdatedEntities}
-                        setUpdatedTemplateIds={setUpdatedTemplateIds}
-                    />
-                </Grid>
-            ))}
+            {templates.slice(0, visibleTemplatesCount).map((template) => {
+                return (
+                    <Grid item key={template._id}>
+                        <TemplateTable
+                            ref={(el) => {
+                                if (el) {
+                                    templateTablesRefs.current[template._id] = el;
+                                } else {
+                                    delete templateTablesRefs.current[template._id];
+                                }
+                            }}
+                            template={template}
+                            quickFilterText={searchInput}
+                            page={pageType}
+                            setUpdatedEntities={setUpdatedEntities}
+                            setUpdatedTemplateIds={setUpdatedTemplateIds}
+                            defaultFilter={childTemplateDefaultFilters[template._id]}
+                        />
+                    </Grid>
+                );
+            })}
             {visibleTemplatesCount < templates.length && (
                 <Grid item container justifyContent="center" ref={loaderRef}>
                     <CircularProgress />
@@ -94,26 +138,32 @@ const TemplateTablesViewResults = forwardRef<
 });
 
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
-    templates: IMongoEntityTemplatePopulated[],
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[],
     searchInput: string,
     semanticSearch: boolean,
 ) => {
-    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
-        templates.map(({ _id }) => _id),
-        searchInput,
-        semanticSearch,
-    );
+    const countRequestTemplateIds = new Set<string>();
+    for (const template of templates) {
+        if (isChildTemplate(template)) {
+            countRequestTemplateIds.add(template.parentTemplate._id);
+        } else {
+            countRequestTemplateIds.add(template._id);
+        }
+    }
+
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds), searchInput, semanticSearch);
 
     return templates.flatMap((template) => {
-        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
+        const countTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === countTemplateId);
         return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });
 };
 
 export interface TemplateTablesViewProps {
-    templates: IMongoEntityTemplatePopulated[];
+    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
     searchInput: string;
-    pageType: string;
+    pageType: TablePageType;
     semanticSearch: boolean;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;

@@ -21,7 +21,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
 import { searchIFrames } from '../../services/iFramesService';
-import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
+import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
@@ -560,6 +560,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 sideBarWidth={`${drawerRef.current?.offsetWidth}px`}
                 notificationCountDetails={notificationCountDetails}
                 updateNotificationCountDetails={updateNotificationCountDetails}
+                side="right"
+                manyNotificationSeenRequest={manyNotificationSeenRequest}
+                getMyNotificationsRequest={getMyNotificationsRequest}
             />
         </Drawer>
     );

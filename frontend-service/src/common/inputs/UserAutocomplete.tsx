@@ -73,9 +73,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
             return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {
-            onError: () => {
-                toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
-            },
+            onError: () => toast.error(i18next.t('userAutocomplete.failedToSearchUsers')),
             enabled: false,
             retry: false,
             initialData: [],
@@ -83,7 +81,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
-    const isValueExist = value && value.fullName.length > 0;
+    const isValueExist = value && value.fullName != '';
 
     return (
         <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>

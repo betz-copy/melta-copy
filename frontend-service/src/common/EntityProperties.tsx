@@ -2,7 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
@@ -26,6 +26,16 @@ const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
+function formatDateToDDMMYYYY(dateString: string): string {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
 interface FormatOptions {
     keyEnumColors?: Record<string, string>;
     isPrintingMode?: boolean;
@@ -40,10 +50,19 @@ export const formatToString = (
     options: FormatOptions = {},
     hideProps: string[] = [],
 ) => {
-    const { format, type: valueType, title } = property;
+    const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
     if (value === null || value === undefined) return '-';
+
+    if (
+        format === 'kartoffelUserField' &&
+        expandedUserField?.kartoffelField &&
+        ['birthDate', 'dischargeDay', 'enlistmentDay'].includes(expandedUserField.kartoffelField) &&
+        value
+    ) {
+        return formatDateToDDMMYYYY(value);
+    }
 
     if (valueType === 'number') {
         return value >= 0 ? value : `${(value * -1).toString()}-`;
@@ -75,11 +94,12 @@ export const formatToString = (
             );
         }
         if (format === 'user') {
+            const userObject = typeof value === 'string' ? JSON.parse(value) : value;
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={JSON.parse(value).fullName}>
+                    <MeltaTooltip title={userObject.fullName}>
                         <Grid item>
-                            <Chip avatar={<UserAvatar user={JSON.parse(value)} size={25} bgColor="1E2775" />} label={JSON.parse(value).fullName} />
+                            <Chip avatar={<UserAvatar user={userObject} size={25} bgColor="1E2775" />} label={userObject.fullName} />
                         </Grid>
                     </MeltaTooltip>
                 </Grid>
@@ -207,7 +227,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     textWrap,
     preview,
 }) => {
-    const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
+    const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -271,7 +291,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature'];
+                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'];
 
                 const textDirection =
                     format && !excludedFormats.includes(format)
@@ -409,11 +429,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
+        const formats = ['fileId', 'signature'];
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) =>
-                getCurrProperty(propertyKey).format !== 'fileId' &&
-                getCurrProperty(propertyKey).items?.format !== 'fileId' &&
-                getCurrProperty(propertyKey).format !== 'signature',
+            (propertyKey) => formats.includes(getCurrProperty(propertyKey).format ?? '') && getCurrProperty(propertyKey).items?.format !== 'fileId',
         );
     } else
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>
@@ -458,7 +476,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             width: '100%',
                                         }}
                                     >
-                                        <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="20px">
+                                        <Typography fontWeight="bold" fontSize="16px" color="primary" paddingBottom={1} marginBottom="20px">
                                             {group.displayName}
                                         </Typography>
                                         <Grid container>

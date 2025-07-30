@@ -11,6 +11,7 @@ import {
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     IEntitySingleProperty,
     IEntityTemplate,
@@ -19,6 +20,7 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
+import { BackendConfigState } from '../backendConfigService';
 
 const { entityTemplates } = environment.api;
 
@@ -35,6 +37,7 @@ export const stringFormats = [
     'signature',
     'comment',
     'kartoffelUserField',
+    'unitField',
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
@@ -84,6 +87,7 @@ const entityTemplateObjectToEntityTemplateForm = (
         const value = properties.properties[key];
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
+        else if (value.format === 'unitField') type = 'unitField';
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.format && value.format === 'text-area') type = 'text-area';
@@ -294,6 +298,8 @@ export const extractGroups = (
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
         values;
     const serialsUniqueConstraints: string[][] = [];
@@ -382,6 +388,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'user'
                     | 'comment'
                     | 'kartoffelUserField'
+                    | 'unitField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -434,6 +441,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
                     enumPropertiesColors[name][option] = enumColor;
                 });
+            }
+            if (type === 'unitField') {
+                schema.properties[name].enum = [...(config?.units || [])];
             }
         },
     );
@@ -717,7 +727,10 @@ const updateEntityTemplateRequest = async (
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
 
-    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
+    const { data } = await axios.put<{ template: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
+        `${entityTemplates}/${entityTemplateId}`,
+        formData,
+    );
     return data;
 };
 
@@ -744,8 +757,8 @@ const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: Com
     return data;
 };
 
-const updateActionToEntity = async (entityTemplateId: string, actions: string) => {
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/actions`, { actions });
+const updateActionToEntity = async (templateId: string, actions: string, isChildTemplate?: boolean) => {
+    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${templateId}/actions`, { actions, isChildTemplate });
     return data;
 };
 

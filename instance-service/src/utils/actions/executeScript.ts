@@ -4,7 +4,7 @@ import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import { formatDate } from 'date-fns/format';
 import { isDate } from 'date-fns';
-import { IMongoEntityTemplate, IEntity, ValidationError, BadRequestError } from '@microservices/shared';
+import { IMongoEntityTemplate, IEntity, ValidationError, BadRequestError, IChildTemplatePopulated } from '@microservices/shared';
 import { IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import { EntityValidator } from '../../express/entities/validator.template';
 import config from '../../config';
@@ -29,6 +29,7 @@ const addDefaultFunctionsToActionCode = (
     entityTemplate: IMongoEntityTemplate,
     crudAction: IEntityCrudAction,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    childTemplate?: IChildTemplatePopulated,
 ) => {
     const defaultCode = `class CustomError extends Error {
            constructor(message: string) {
@@ -36,7 +37,7 @@ const addDefaultFunctionsToActionCode = (
                this.name = 'ACTIONS_CUSTOM_ERROR';
             }
         }
-        ${generateInterfaceWithRelationships(entitiesTemplatesByIds)}
+        ${generateInterfaceWithRelationships(entitiesTemplatesByIds, entityTemplate, childTemplate)}
         const actions: { entityId: string; properties: Record<string, any> }[] = [];
         function updateEntity(entityId: string, properties: Record<string, any>): void {
           actions.push({ entityId, properties });
@@ -64,7 +65,7 @@ const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
                 message: (error as Error).message,
             });
 
-        throw new ValidationError(`Error executing VM code  of actions: ${error}`);
+        throw new ValidationError(`Error executing VM code of actions: ${error}`);
     }
 };
 
@@ -128,9 +129,10 @@ export const executeActionCodeAndGetEntitiesToUpdate = (
     transaction: Transaction,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
     workspaceId: string,
+    childTemplate?: IChildTemplatePopulated,
 ): Promise<IExecutionOutput[]> => {
     const fixedEntity = getPopulatedRelationshipReferencesFields(entity);
-    const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds);
+    const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds, childTemplate);
 
     const executionOutput = executeActionCodeInVM(fixedEntity, jsCode);
 

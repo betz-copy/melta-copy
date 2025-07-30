@@ -7,7 +7,7 @@ import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFailedEntity } from '../../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { TablePageType } from '../../../EntitiesTableOfTemplate';
 import { TableButton } from '../../../TableButton';
 
 export const EntitiesTable: React.FC<{
@@ -24,6 +24,8 @@ export const EntitiesTable: React.FC<{
     infiniteModeWithoutExpand?: boolean;
     disableFilter?: boolean;
     ignoreType?: boolean;
+    relatedTemplateProperties?: string;
+    pageType?: TablePageType;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -38,6 +40,8 @@ export const EntitiesTable: React.FC<{
     infiniteModeWithoutExpand,
     disableFilter,
     ignoreType = true,
+    relatedTemplateProperties,
+    pageType,
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -118,6 +122,7 @@ export const EntitiesTable: React.FC<{
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
+                        pageType,
                     }}
                     ignoreType={ignoreType}
                     showNavigateToRowButton={false}
@@ -125,6 +130,7 @@ export const EntitiesTable: React.FC<{
                     infiniteModeWithoutExpand={infiniteModeWithoutExpand}
                     defaultFilter={defaultFilter}
                     disableFilter={disableFilter}
+                    addRelationshipReferenceButtonProps={relatedTemplateProperties}
                 />
             </AccordionDetails>
         </Accordion>

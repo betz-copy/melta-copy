@@ -33,6 +33,10 @@ export interface ShragaUser {
 
 export interface IConnectedUser {
     id: string;
+    kartoffelId?: string;
+    clientSideWorkspaceId?: string;
+    usersInfoChildTemplateId?: string;
+    clientSideWorkspaceName?: string;
 }
 
 const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, userId, password, done) => {

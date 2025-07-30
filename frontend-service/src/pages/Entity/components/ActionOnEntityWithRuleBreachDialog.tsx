@@ -84,7 +84,7 @@ type BaseActionProps = {
 };
 
 export interface IActionOnSingleEntityWithRuleBreachDialogProps extends BaseActionProps {
-    actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity | ActionTypes.UpdateEntity;
+    actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity | ActionTypes.UpdateEntity | ActionTypes.CreateClientSideEntity;
     brokenRules: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules: IRuleBreach['brokenRules'];
     actions?: IActionPopulated[];
@@ -174,7 +174,10 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
     } else if (actionType === ActionTypes.UpdateMultipleEntities) {
         actionMetadataPopulated =
             entities?.map((entity) =>
-                getUpdateEntityActionMetadata({ properties: entity.properties as IEntity['properties'], templateId: entityFormData.template._id }, entityFormData),
+                getUpdateEntityActionMetadata(
+                    { properties: entity.properties as IEntity['properties'], templateId: entityFormData.template._id },
+                    entityFormData,
+                ),
             ) || [];
 
         actionMetadataWithoutFiles = (actionMetadataPopulated || [])?.map((actionMetadata) => {

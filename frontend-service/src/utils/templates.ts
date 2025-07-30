@@ -1,4 +1,5 @@
 import { IMongoCategory } from '../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
@@ -59,7 +60,7 @@ export const mapCategories = (categories: IMongoCategory[], order: string[]): Ma
     return map;
 };
 
-export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplatePopulated): IMongoEntityTemplatePopulated => {
+export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>(entityTemplate: T): T => {
     return {
         ...entityTemplate,
         properties: {
@@ -74,3 +75,29 @@ export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplateP
         },
     };
 };
+
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated): string[] => {
+    return [
+        ...entityTemplate.propertiesPreview,
+        ...entityTemplate.propertiesOrder
+            .filter(
+                (property) =>
+                    !entityTemplate.propertiesPreview.includes(property) &&
+                    entityTemplate.properties.properties[property].format !== 'fileId' &&
+                    entityTemplate.properties.properties[property].items?.format !== 'fileId',
+            )
+            .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
+    ];
+};
+
+export const isChildTemplate = (
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated | undefined | null
+  ): template is IMongoChildTemplatePopulated => {
+    return (
+      typeof template === 'object' &&
+      template !== null &&
+      'parentTemplate' in template &&
+      Boolean(template.parentTemplate)
+    );
+  };
+  

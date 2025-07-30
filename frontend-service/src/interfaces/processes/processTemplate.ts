@@ -66,3 +66,20 @@ export interface ISearchProcessTemplatesBody extends IBaseSearchProperties {
 }
 
 export type IProcessTemplateMap = Map<string, IMongoProcessTemplatePopulated>;
+
+export const defaultProcessTemplate: IMongoProcessTemplatePopulated = {
+    _id: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    details: {
+        properties: {
+            properties: {},
+            required: [],
+            type: 'object',
+        },
+        propertiesOrder: [],
+    },
+    displayName: '',
+    name: '',
+    steps: [],
+};

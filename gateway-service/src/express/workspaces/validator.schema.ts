@@ -30,6 +30,16 @@ const metadataSchema = Joi.object({
     searchLimits: Joi.object({
         bulk: Joi.number(),
     }).optional(),
+    unitFieldSplitDepth: Joi.number(),
+    clientSide: Joi.object({
+        usersInfoChildTemplateId: Joi.string(),
+        numOfPropsToShow: Joi.number(),
+        clientSideWorkspaceName: Joi.string().valid('simba', 'azarim'),
+    }).optional(),
+    mapPage: Joi.object({
+        sourceTemplateId: Joi.string().allow(''),
+        destTemplateId: Joi.string().allow(''),
+    }).optional(),
 }).optional();
 
 const workspaceSchema = Joi.object({

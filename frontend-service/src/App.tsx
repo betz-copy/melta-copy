@@ -21,10 +21,12 @@ import { useDarkModeStore } from './stores/darkMode';
 import { useWorkspaceStore } from './stores/workspace';
 import { getWorkspacePermissions } from './utils/permissions';
 import { useMatomoInstance } from './matomo';
+import ClientSidePage from './pages/ClientSidePage';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
+    const [isClientSide, setIsClientSide] = useState(false);
 
     const [location, navigate] = useLocation();
 
@@ -80,9 +82,15 @@ const App: React.FC = () => {
             const user = AuthService.getUser();
 
             const isUserUnauthorized = user?.id === environment.unauthorizedId;
+            const isClientSide = user?.id === environment.clientSideId;
 
             if (!user || isUserUnauthorized) {
                 if (isUserUnauthorized) setIsErrorMyUser(true);
+                return;
+            }
+
+            if (isClientSide) {
+                setIsClientSide(true);
                 return;
             }
 
@@ -111,6 +119,8 @@ const App: React.FC = () => {
 
         initUser();
     }, [setUser, navigate, workspaceStore]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (isClientSide) return <ClientSidePage />;
 
     if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 

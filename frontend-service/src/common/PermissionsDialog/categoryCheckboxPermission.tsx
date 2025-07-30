@@ -9,6 +9,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import PermissionScopeBtn from './PermissionScopeBtn';
+import EntityTemplateCheckboxPermission from './entityTemplateCheckboxPermission';
 
 const CategoryCheckboxPermission: React.FC<{
     categoryDisplayName: string;
@@ -27,10 +28,18 @@ const CategoryCheckboxPermission: React.FC<{
     const categoryPermissions = categoriesPermission?.[categoryId] ?? {};
     const templatesPermissions = categoryPermissions?.entityTemplates ?? {};
 
-    const changePermissions = (checked: boolean, entityId: string, permissionScope: PermissionScope) =>
+    const changePermissions = (checked: boolean, templateIds: string[], permissionScope: PermissionScope) =>
         formikProps.setFieldValue(
             `${permissionsPath}.instances.categories`,
-            getChangedTemplatePermission(categoriesPermission, checked, permissionScope, categoryId, entityId, entityTemplates),
+            getChangedTemplatePermission(
+                categoriesPermission,
+                checked,
+                permissionScope,
+                categoryId,
+                templateIds,
+                entityTemplates,
+                entityTemplates.flatMap(({ childTemplates }) => childTemplates),
+            ),
         );
 
     return (
@@ -78,45 +87,19 @@ const CategoryCheckboxPermission: React.FC<{
             </Grid>
             <Grid xs={12}>
                 <Collapse in={openEntitiesList}>
-                    {entityTemplates.map((entityCheck) => {
-                        return (
-                            <Grid container xs={12} key={entityCheck.id}>
-                                <Grid xs={1.2} />
-                                <Grid xs={4.8} display="flex" alignItems="center">
-                                    <Typography fontSize={14.5}>{entityCheck.name}</Typography>
-                                </Grid>
-                                <Grid xs={0.5} />
-                                <Grid xs={2.5}>
-                                    <PermissionScopeBtn
-                                        viewMode={viewMode}
-                                        defaultChecked={
-                                            categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope !== undefined || permissionType.read.checked
-                                        }
-                                        onChange={(_event, checked) => changePermissions(checked, entityCheck.id, PermissionScope.read)}
-                                        disabled={
-                                            disabled ||
-                                            categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
-                                            permissionType.write.checked
-                                        }
-                                        checkboxSx={{ width: '17px', height: '17px' }}
-                                    />
-                                </Grid>
-                                <Grid xs={0.5} />
-                                <Grid xs={2.5}>
-                                    <PermissionScopeBtn
-                                        viewMode={viewMode}
-                                        defaultChecked={
-                                            categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
-                                            permissionType.write.checked
-                                        }
-                                        onChange={(_event, checked) => changePermissions(checked, entityCheck.id, PermissionScope.write)}
-                                        disabled={disabled}
-                                        checkboxSx={{ width: '17px', height: '17px' }}
-                                    />
-                                </Grid>
-                            </Grid>
-                        );
-                    })}
+                    {entityTemplates
+                        .sort((a, _) => Number(a.isParentTemplateInDifferentCategory))
+                        .map((entityTemplateDialog) => (
+                            <EntityTemplateCheckboxPermission
+                                entityTemplate={entityTemplateDialog}
+                                changePermissions={changePermissions}
+                                disabled={disabled}
+                                permissionType={permissionType}
+                                viewMode={viewMode}
+                                categoryPermissions={categoryPermissions}
+                                key={entityTemplateDialog.id}
+                            />
+                        ))}
                 </Collapse>
             </Grid>
         </Grid>

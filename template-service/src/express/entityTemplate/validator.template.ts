@@ -3,10 +3,12 @@ import * as ts from 'typescript-actions';
 import {
     addPropertyToRequest,
     DefaultController,
-    IEntityTemplatePopulated,
     IMongoEntityTemplate,
     IEntitySingleProperty,
     BadRequestError,
+    EntityTemplateType,
+    TemplateItem,
+    IMongoEntityTemplatePopulated,
 } from '@microservices/shared';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import EntityTemplateManager from './manager';
@@ -22,7 +24,9 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
         const baseTemplate = templatesMap.get(templateId)!;
         const entityPropertiesQueue = [baseTemplate.properties.properties];
-        const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
+        const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
+            [templateId, { type: EntityTemplateType.Parent, metaData: baseTemplate as IMongoEntityTemplatePopulated }],
+        ]);
 
         while (entityPropertiesQueue.length > 0) {
             const currentEntityProperties = entityPropertiesQueue.shift()!;
@@ -33,7 +37,10 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
 
                     if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
                         const relatedTemplate = templatesMap.get(relatedTemplateId)!;
-                        relationshipReferenceIdsMap.set(relatedTemplateId, relatedTemplate);
+                        relationshipReferenceIdsMap.set(relatedTemplateId, {
+                            type: EntityTemplateType.Parent,
+                            metaData: relatedTemplate as IMongoEntityTemplatePopulated,
+                        });
 
                         entityPropertiesQueue.push(relatedTemplate.properties.properties);
                     }
@@ -44,12 +51,12 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         return relationshipReferenceIdsMap;
     };
 
-    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IEntityTemplatePopulated>) => {
+    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, TemplateItem>, templateId: string) => {
         const defaultCode = [
             '/// To throw a custom error in your code, use the following syntax:',
             '// throw new CustomError("Your error message")',
             '',
-            `${generateInterfaceWithRelationships(entitiesTemplatesByIds)}`,
+            `${generateInterfaceWithRelationships(templateId, entitiesTemplatesByIds)}`,
             '',
             'function updateEntity(entityId: string, properties: Record<string, any>): void {',
             '  // updates entity in data base',
@@ -81,7 +88,7 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         // todo: ensure that the code doesn't use in global variables
         const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
 
-        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));
+        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId));
     };
 
     private validateProperties(properties: Record<string, IEntitySingleProperty>) {

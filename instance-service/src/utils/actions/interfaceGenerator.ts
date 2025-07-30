@@ -1,4 +1,4 @@
-import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared';
+import { CoordinateSystem, IChildTemplatePopulated, IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
@@ -9,6 +9,11 @@ const generateFromString = (
     if (format === 'date' || format === 'date-time') return 'Date';
 
     if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference!.relatedTemplateId)!.name;
+
+    if (format === 'location')
+        return `{ location: \`Polygon((\${string}))\`, coordinateSystem: ${Object.values(CoordinateSystem)
+            .map((coordinateSystem) => `'${coordinateSystem}'`)
+            .join(' | ')} }`;
 
     return 'string';
 };
@@ -59,7 +64,30 @@ export const generateInterface = (
     ].join('\n');
 };
 
-export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) =>
-    [...entitiesTemplatesByIds.values()]
-        .map(({ properties: { properties }, name }) => generateInterface(properties, name, entitiesTemplatesByIds))
-        .join('\n\n');
+const generateMergedChildAndParentInterface = (parentInterfaceName: string, childInterfaceName: string) =>
+    [
+        `// all fields from ${parentInterfaceName} - parent , but overridden by fields from ${childInterfaceName} - child`,
+        `interface ${childInterfaceName}Merged extends Omit<${parentInterfaceName},keyof ${childInterfaceName}>, ${childInterfaceName} {}`,
+    ].join('\n');
+
+export const generateInterfaceWithRelationships = (
+    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    entityTemplate: IMongoEntityTemplate,
+    childTemplate?: IChildTemplatePopulated,
+) => {
+    const hasChildTemplate = !!childTemplate;
+    const relatedTemplates = Array.from(entitiesTemplatesByIds.values()).filter(({ _id }) => _id !== entityTemplate._id);
+
+    const interfaces = [
+        ...relatedTemplates.map(({ properties: { properties }, name }) => generateInterface(properties, name, entitiesTemplatesByIds)),
+        generateInterface(entityTemplate.properties.properties, entityTemplate.name, entitiesTemplatesByIds),
+        ...(hasChildTemplate
+            ? [
+                  generateInterface(childTemplate!.properties.properties, childTemplate!.name, entitiesTemplatesByIds),
+                  generateMergedChildAndParentInterface(entityTemplate.name, childTemplate!.name),
+              ]
+            : []),
+    ];
+
+    return interfaces.join('\n\n');
+};

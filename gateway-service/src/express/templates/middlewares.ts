@@ -1,8 +1,8 @@
-import { Request } from 'express';
-import { ForbiddenError, PermissionScope } from '@microservices/shared';
+import { Request, Response, NextFunction } from 'express';
+import { ForbiddenError, PermissionScope, NotFoundError } from '@microservices/shared';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
-import { Authorizer } from '../../utils/authorizer';
+import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 
 class TemplatesValidator extends DefaultController {
@@ -145,6 +145,37 @@ class TemplatesValidator extends DefaultController {
 
     async validateUserCanUpdateOrDeletePrintingTemplate(req: Request) {
         return this.validateUserCanUpdateOrDeleteRuleTemplate(req);
+    }
+
+    // Child Templates
+    async validateUserCanUpdateOrDeleteChildTemplate(req: RequestWithPermissionsOfUserId, _res: Response, next: NextFunction): Promise<void> {
+        try {
+            const childTemplateId = req.params.id;
+            const childTemplates = await this.entityTemplateService.getAllChildTemplates();
+            const childTemplate = childTemplates.find((template) => template._id === childTemplateId);
+
+            if (!childTemplate) {
+                throw new NotFoundError('Child Template not found');
+            }
+
+            if (typeof childTemplate.category !== 'string' && typeof childTemplate.category !== 'object') {
+                throw new NotFoundError('Child Template category is invalid');
+            }
+
+            if (req.permissionsOfUserId?.admin?.scope === PermissionScope.write) {
+                return next();
+            }
+
+            const hasWritePermission = req.permissionsOfUserId?.instances?.categories[childTemplate.category._id]?.scope === PermissionScope.write;
+
+            if (!hasWritePermission) {
+                throw new ForbiddenError('User does not have permission to modify this child template');
+            }
+
+            return next();
+        } catch (error) {
+            return next(error);
+        }
     }
 }
 

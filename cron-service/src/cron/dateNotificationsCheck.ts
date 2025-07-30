@@ -7,6 +7,7 @@ import {
     PermissionScope,
     PermissionType,
     logger,
+    InstancesSubclassesPermissions,
 } from '@microservices/shared';
 import * as schedule from 'node-schedule';
 import InstanceService from '../services/instance';
@@ -88,11 +89,10 @@ const sendNotificationsForEntityTemplate = async (
     const userIdsWithPermission = await UsersManager.searchUserIds({
         workspaceIds,
         permissions: {
-            // TODO: Yona - Check if this change is OK?
             [PermissionType.instances]: {
                 categories: {
                     [entityTemplate.category._id]: {
-                        entityTemplates: {
+                        [InstancesSubclassesPermissions.entityTemplates]: {
                             [entityTemplate._id]: {
                                 fields: {
                                     '*': {

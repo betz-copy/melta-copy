@@ -18,6 +18,7 @@ import {
     IChartBody,
     IMultipleSelect,
     IEntityWithDirectRelationships,
+    IEntityExpanded,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -67,22 +68,31 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
+    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
             duplicatedFromId,
+            childTemplateId,
         });
 
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId?: string, convertToRelationshipField = false) {
+    async updateEntityInstance(
+        id: string,
+        entity: IEntity,
+        ignoredRules: IBrokenRule[],
+        userId?: string,
+        childTemplateId?: string,
+        convertToRelationshipField = false,
+    ) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
+            childTemplateId,
             convertToRelationshipField,
         });
 
@@ -149,11 +159,11 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(
-            `${baseEntitiesRoute}/chart/${templateId}`,
+    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[], childTemplateId?: string) => {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, {
             chartsData,
-        );
+            childTemplateId,
+        });
 
         return data;
     };
@@ -263,6 +273,28 @@ class InstancesService extends DefaultExternalServiceApi {
             { params: { dryRun } },
         );
 
+        return data;
+    }
+
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
+            templateIds,
+            userEntityId,
+        });
+        return data;
+    }
+
+    async getExpandedEntityByIdRequest(
+        entityId: string,
+        expandedParams: { [key: string]: number },
+        options?: { templateIds: string[] },
+        userId?: string,
+    ) {
+        const { data } = await this.api.post<IEntityExpanded>(`${baseEntitiesRoute}/expanded/${entityId}`, {
+            ...options,
+            expandedParams,
+            userId,
+        });
         return data;
     }
 }

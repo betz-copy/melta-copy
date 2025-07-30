@@ -1,4 +1,5 @@
 http.host: 0.0.0.0
-pipeline.workers: 2
+pipeline.workers: 1
+queue.type: memory
 xpack.monitoring.elasticsearch.hosts:
 - http://elastic:9200

@@ -20,6 +20,7 @@ export type IExternalErrors = {
 
 export type IMutationWithPayload =
     | { actionType: ActionTypes.CreateEntity; payload: undefined }
+    | { actionType: ActionTypes.CreateClientSideEntity; payload: undefined }
     | { actionType: ActionTypes.UpdateEntity; payload: IEntity };
 
 export type IMutationProps = IMutationWithPayload & {

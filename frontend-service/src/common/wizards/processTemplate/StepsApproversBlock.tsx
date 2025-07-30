@@ -1,5 +1,5 @@
 /* eslint-disable react/no-array-index-key */
-import React from 'react';
+import React, { useState } from 'react';
 import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Switch, Typography } from '@mui/material';
 import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
@@ -21,7 +21,7 @@ const StepsApproversBlock: React.FC<
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const [userInputValue, setUserInputValue] = React.useState('');
+    const [userInputValue, setUserInputValue] = useState('');
 
     return (
         <Grid>

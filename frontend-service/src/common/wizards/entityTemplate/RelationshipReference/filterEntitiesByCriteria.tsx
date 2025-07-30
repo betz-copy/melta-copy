@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useMemo } from 'react';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterCompetent';
+import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
 import { CommonFormInputProperties, IAGGridFilter, IFilterTemplate } from '../commonInterfaces';
 
 interface FilterEntitiesByCriteriaProps {

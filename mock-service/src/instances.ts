@@ -1,7 +1,12 @@
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import axios from 'axios';
-import { IRelationship, IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
+import {
+    IRelationship,
+    IMongoRelationshipTemplate,
+    IUniqueConstraintOfTemplate,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
 import createAxiosInstance from './utils/axios';
@@ -12,6 +17,7 @@ const limit = pLimit(config.requestLimit);
 const {
     url,
     createEntityRoute,
+    updateConstraintsOfTemplateRoute,
     maxNumberOfEntities,
     minNumberOfEntities,
     createRelationshipRoute,
@@ -23,9 +29,11 @@ const {
 export const createInstances = async (
     workspaceId: string,
     userId: string,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     chance: Chance.Chance,
     fileId: string,
+    maxEntitiesPerTemplate?: number,
+    relationshipReferenceTemplateId?: string,
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
@@ -36,16 +44,67 @@ export const createInstances = async (
         return selectedFunction();
     });
 
+    JSONSchemaFaker.format('signature', (_value) => 'This is a fake comment');
+    JSONSchemaFaker.format('comment', () => 'This is a fake comment');
+
+    JSONSchemaFaker.format('user', (_value) => {
+        return JSON.stringify({
+            _id: '5e5688d54203fc40043591ac',
+            fullName: 'אחמד אדידס',
+            jobTitle: 'טבח',
+            hierarchy: 'es_name/es',
+            mail: 't25458789sh@jello.com',
+        });
+    });
+
+    if (relationshipReferenceTemplateId) {
+        JSONSchemaFaker.format('relationshipReference', (_value) => relationshipReferenceTemplateId);
+    } else {
+        JSONSchemaFaker.format('relationshipReference', (_value) => {
+            return JSON.stringify({
+                _id: '5e5688d54203fc40043591ac',
+                fullName: 'אחמד אדידס',
+                jobTitle: 'טבח',
+                hierarchy: 'es_name/es',
+                mail: 't25458789sh@jello.com',
+            });
+        });
+    }
+
     const promises = entityTemplates
         .map((entityTemplate) => {
-            return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
-                limit(() =>
-                    axiosInstance.post(url + createEntityRoute, {
-                        properties: JSONSchemaFaker.generate(entityTemplate.properties),
+            return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxEntitiesPerTemplate || maxNumberOfEntities }) }, () =>
+                limit(() => {
+                    let entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+
+                    if (entityTemplate.name === 'driver') {
+                        while (
+                            typeof entityProperties !== 'object' ||
+                            entityProperties === null ||
+                            Array.isArray(entityProperties) ||
+                            !('full_name' in entityProperties)
+                        ) {
+                            entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+                        }
+                    }
+
+                    if (entityTemplate.name === 'car') {
+                        while (
+                            typeof entityProperties !== 'object' ||
+                            entityProperties === null ||
+                            Array.isArray(entityProperties) ||
+                            !('ID' in entityProperties)
+                        ) {
+                            entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+                        }
+                    }
+
+                    return axiosInstance.post(url + createEntityRoute, {
+                        properties: entityProperties,
                         templateId: entityTemplate._id,
                         userId,
-                    }),
-                ),
+                    });
+                }),
             );
         })
         .flat();
@@ -116,4 +175,16 @@ export const isInstanceServiceAlive = async () => {
     const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
+};
+
+export const updateConstraintsOfTemplate = async (
+    workspaceId: string,
+    templateId: string,
+    constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
+    const { data } = await axiosInstance.put(`${url}${updateConstraintsOfTemplateRoute}/${templateId}`, constraints);
+
+    return data;
 };

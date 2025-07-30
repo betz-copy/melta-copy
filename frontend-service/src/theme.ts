@@ -40,6 +40,16 @@ const basicTheme: ThemeOptions = {
                 },
             },
         },
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    color: '#4752B6',
+                    '&.Mui-checked': {
+                        color: '#4752B6',
+                    },
+                },
+            },
+        },
     },
 };
 
@@ -75,6 +85,9 @@ export const lightTheme = createTheme({
     },
 });
 
+const darkThemeTextField = basicTheme.components?.MuiTextField;
+darkThemeTextField!.styleOverrides!.root!['& .MuiInputBase-root'].color = 'white';
+
 export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
@@ -95,5 +108,7 @@ export const darkTheme = createTheme({
                 },
             },
         },
+        MuiTextField: darkThemeTextField,
+        MuiRadio: {},
     },
 });

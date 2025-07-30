@@ -119,6 +119,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         );
     }
 
+    async updateEntityTemplateAction(req: Request, res: Response) {
+        const { actions, isChildTemplate } = req.body;
+        res.json(await this.manager.updateEntityTemplateAction(req.params.templateId, actions, isChildTemplate));
+    }
+
     async updateEntityTemplateStatus(req: Request, res: Response) {
         res.json(await this.manager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
@@ -138,6 +143,19 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery, user.id));
+    }
+
+    // childTemplates
+    async createChildTemplate(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.createChildTemplate(req.body, permissionsOfUserId, user!.id));
+    }
+
+    async updateChildTemplate(req: Request, res: Response) {
+        const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.updateChildTemplate(req.params.id, req.user!.id, req.body, permissionsOfUserId));
     }
 
     // relationshipTemplates
@@ -216,5 +234,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async searchPrintingTemplates(req: Request, res: Response) {
         res.json(await this.manager.searchPrintingTemplates(req.body));
+    }
+
+    // child templates
+    async updateChildTemplateById(req: Request, res: Response) {
+        res.json(await this.manager.updateChildTemplateById(req.params.id, req.body));
     }
 }

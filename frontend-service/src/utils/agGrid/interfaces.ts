@@ -1,3 +1,5 @@
+import { IUser } from '../../interfaces/users';
+
 export interface IAGGridTextFilter {
     filterType: 'text';
     type: 'equals' | 'notEqual' | 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'blank' | 'notBlank';
@@ -20,7 +22,7 @@ export interface IAGGridDateFilter {
 
 export interface IAGGridSetFilter {
     filterType: 'set';
-    values: (string | null)[];
+    values: (string | IUser | null)[];
 }
 
 export interface IAGGridFilterModel {

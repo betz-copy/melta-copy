@@ -1,6 +1,7 @@
 import { Check, Remove } from '@mui/icons-material';
 import { Box, Checkbox, SxProps, useTheme } from '@mui/material';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useMemo } from 'react';
+import { useDarkModeStore } from '../stores/darkMode';
 
 interface MeltaCheckboxProps {
     checked?: boolean;
@@ -28,6 +29,9 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
     checkboxSx,
 }) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const checkBoxColor = useMemo(() => (darkMode ? theme.palette.primary.main : '#4752B6'), [darkMode]);
 
     const defaultCheckboxSx: SxProps = {
         borderRadius: '4px',
@@ -49,7 +53,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
                 <Box
                     sx={{
                         ...mergedCheckboxSx,
-                        background: theme.palette.primary.main,
+                        background: checkBoxColor,
                         opacity: disabled ? 0.5 : 1,
                         ...sxChecked,
                     }}
@@ -61,7 +65,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
                 <Box
                     sx={{
                         ...mergedCheckboxSx,
-                        background: theme.palette.primary.main,
+                        background: checkBoxColor,
                         opacity: disabled ? 0.5 : 1,
                         border: 'none',
                         ...sxIndeterminate,
@@ -74,7 +78,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
                 <Box
                     sx={{
                         ...mergedCheckboxSx,
-                        border: `1px solid ${disabled ? 'grey' : theme.palette.primary.main}`,
+                        border: `1px solid ${disabled ? 'grey' : checkBoxColor}`,
                         ...sxEmpty,
                     }}
                 />
@@ -82,7 +86,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             sx={{
                 ...sx,
                 borderRadius: '4px',
-                color: theme.palette.primary.main,
+                color: checkBoxColor,
             }}
         />
     );
