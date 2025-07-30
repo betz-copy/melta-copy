@@ -69,52 +69,54 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                         </>
                     )}
 
-                    {Array.from(categories.values(), (currentCategory) => {
-                        const isAllowed = allowedCategoriesIds.includes(currentCategory._id);
-                        const isSelected = selectedCategories.includes(currentCategory._id);
+                    <Grid maxHeight="70vh" overflow="auto" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {Array.from(categories.values(), (currentCategory) => {
+                            const isAllowed = allowedCategoriesIds.includes(currentCategory._id);
+                            const isSelected = selectedCategories.includes(currentCategory._id);
 
-                        if (!isAllowed) return null;
+                            if (!isAllowed) return null;
 
-                        if (isReadonlyMode)
+                            if (isReadonlyMode)
+                                return (
+                                    isSelected && (
+                                        <Grid container spacing={1.5} paddingLeft={3} paddingTop={1}>
+                                            <Grid item>
+                                                {currentCategory.iconFileId ? (
+                                                    <CustomIcon
+                                                        iconUrl={currentCategory.iconFileId}
+                                                        height="20px"
+                                                        width="20px"
+                                                        color={theme.palette.primary.main}
+                                                    />
+                                                ) : (
+                                                    <Hive
+                                                        sx={{
+                                                            color: theme.palette.primary.main,
+                                                            height: '20px',
+                                                            width: '20px',
+                                                        }}
+                                                    />
+                                                )}
+                                            </Grid>
+
+                                            <Grid item>
+                                                <Typography key={currentCategory._id}>{currentCategory.displayName}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                );
+
                             return (
-                                isSelected && (
-                                    <Grid container spacing={1.5} paddingLeft={3} paddingTop={1}>
-                                        <Grid item>
-                                            {currentCategory.iconFileId ? (
-                                                <CustomIcon
-                                                    iconUrl={currentCategory.iconFileId}
-                                                    height="20px"
-                                                    width="20px"
-                                                    color={theme.palette.primary.main}
-                                                />
-                                            ) : (
-                                                <Hive
-                                                    sx={{
-                                                        color: theme.palette.primary.main,
-                                                        height: '20px',
-                                                        width: '20px',
-                                                    }}
-                                                />
-                                            )}
-                                        </Grid>
-
-                                        <Grid item>
-                                            <Typography key={currentCategory._id}>{currentCategory.displayName}</Typography>
-                                        </Grid>
-                                    </Grid>
-                                )
+                                <FormControlLabel
+                                    key={currentCategory._id}
+                                    sx={{ paddingLeft: 3 }}
+                                    label={currentCategory.displayName}
+                                    labelPlacement="end"
+                                    control={<MeltaCheckbox checked={isSelected} onChange={() => handleCheckboxChange(currentCategory._id)} />}
+                                />
                             );
-
-                        return (
-                            <FormControlLabel
-                                key={currentCategory._id}
-                                sx={{ paddingLeft: 3 }}
-                                label={currentCategory.displayName}
-                                labelPlacement="end"
-                                control={<MeltaCheckbox checked={isSelected} onChange={() => handleCheckboxChange(currentCategory._id)} />}
-                            />
-                        );
-                    })}
+                        })}
+                    </Grid>
                 </FormGroup>
 
                 {touched.categoryIds && errors.categoryIds && (
