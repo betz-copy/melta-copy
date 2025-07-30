@@ -47,7 +47,7 @@ const GridLayout: React.FC<GridLayoutProps> = ({
             preventCollision={!compactType}
             autoSize
             draggableHandle={draggableHandle}
-            resizeHandles={['se']}
+            resizeHandles={['sw']}
         >
             {generateDom()}
         </ResponsiveReactGridLayout>
