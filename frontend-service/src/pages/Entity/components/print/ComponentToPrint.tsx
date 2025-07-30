@@ -25,15 +25,21 @@ export const renderConnectionTree = (
 
     return connectionsTemplates.flatMap(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
         const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
-        const connectedEntities: IEntity[] = [];
+
+        const connectedEntities: Map<string, IEntity> = new Map();
+
         for (const connection of connectionsInstances) {
             if (connection.relationship.templateId === relationshipTemplate._id && connection[entityType].properties._id === entity.properties._id) {
                 const connectedEntity =
                     connection.sourceEntity.properties._id === entity.properties._id ? connection.destinationEntity : connection.sourceEntity;
-                if (options.showDisabled || !connectedEntity.properties.disabled) connectedEntities.push(connectedEntity);
+
+                if (options.showDisabled || !connectedEntity.properties.disabled)
+                    connectedEntities.set(connectedEntity.properties._id, connectedEntity);
             }
         }
-        if (!connectedEntities.length) return [];
+
+        if (!connectedEntities.size) return [];
+
         return (
             <div key={relationshipTemplate._id}>
                 <RelationshipPrintTitle
@@ -41,7 +47,8 @@ export const renderConnectionTree = (
                     isExpandedEntityRelationshipSource={isExpandedEntityRelationshipSource}
                     sxOverride={{ marginTop: '2rem', marginBottom: '0.5rem' }}
                 />
-                {connectedEntities.map((connectedEntity) => (
+
+                {[...connectedEntities.values()].map((connectedEntity) => (
                     <div key={connectedEntity.properties._id} style={{ marginBottom: '0.5rem' }}>
                         <EntityComponentToPrint
                             entityTemplate={entityTemplates.get(connectedEntity.templateId)!}
