@@ -40,7 +40,7 @@ const RjsfUserWidget = ({
                 textFieldProps={textFieldProps}
                 values={options.globalValues}
                 currentUser={{ value: currentUser, set: setCurrentUser }}
-                handleOnChange={(user: IKartoffelUserStringFields | null, values?: any) => handleOnChange(user, values)}
+                handleOnChange={handleOnChange}
             />
         </Grid>
     );

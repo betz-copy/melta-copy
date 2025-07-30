@@ -34,7 +34,7 @@ const UserInput: React.FC<UserInputProps> = ({
             phone: chosenUser.phone?.join(','),
         };
 
-        if (handleOnChange) handleOnChange(formattedUser, values);
+        handleOnChange(formattedUser, values);
 
         currentUser.set(formattedUser);
     };
@@ -53,10 +53,10 @@ const UserInput: React.FC<UserInputProps> = ({
                 disabled={disabled}
                 enableClear
                 onDisplayValueChange={(_, newDisplayValue) => {
-                    if (newDisplayValue === '') {
-                        if (handleOnChange) handleOnChange(null, values);
-                        currentUser.set(undefined);
-                    }
+                    if (newDisplayValue) return;
+
+                    handleOnChange(null, values);
+                    currentUser.set(undefined);
                 }}
                 textFieldProps={textFieldProps}
             />

@@ -48,11 +48,11 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                             ...filterField,
                             filter: user
                                 ? JSON.stringify({
-                                      _id: user?._id || user?.id,
-                                      fullName: user?.fullName,
-                                      jobTitle: user?.jobTitle,
-                                      hierarchy: user?.hierarchy,
-                                      mail: user?.mail,
+                                      _id: user._id || user.id,
+                                      fullName: user.fullName,
+                                      jobTitle: user.jobTitle,
+                                      hierarchy: user.hierarchy,
+                                      mail: user.mail,
                                   })
                                 : undefined,
                         } as IAGGridTextFilter)
