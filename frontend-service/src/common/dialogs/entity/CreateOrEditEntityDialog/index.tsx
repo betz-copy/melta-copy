@@ -71,16 +71,16 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
     const mergedProperties = {
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
-                .map(([key, prop]) => {
-                    if (prop.format === 'user' && currentUser && prop.defaultValue === ByCurrentDefaultValue.byCurrentUser)
+                .map(([key, { defaultValue, format: formatProperty }]) => {
+                    if (formatProperty === 'user' && currentUser && defaultValue === ByCurrentDefaultValue.byCurrentUser)
                         properties[key] = JSON.stringify(currentUser);
 
-                    if ((prop.format === 'date' || prop.format === 'date-time') && prop.defaultValue === ByCurrentDefaultValue.byCurrentDate) {
+                    if ((formatProperty === 'date' || formatProperty === 'date-time') && defaultValue === ByCurrentDefaultValue.byCurrentDate) {
                         const currentDate = new Date();
-                        const isDateTime = prop.format === 'date-time';
-                        properties[key] = isDateTime ? currentDate.toISOString() : format(currentDate, 'yyyy-MM-dd');
+                        properties[key] = formatProperty === 'date-time' ? currentDate.toISOString() : format(currentDate, 'yyyy-MM-dd');
                     }
-                    return [key, properties[key] ?? prop.defaultValue];
+
+                    return [key, properties[key] ?? defaultValue];
                 })
                 .filter(([_key, value]) => !!value),
         ),
