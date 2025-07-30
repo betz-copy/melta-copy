@@ -29,7 +29,7 @@ const { signaturePrefix } = environment;
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
-        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+        (value) => ((value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId') && value.display !== false,
     );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));

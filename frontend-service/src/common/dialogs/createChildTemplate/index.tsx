@@ -92,12 +92,14 @@ const CreateChildTemplateDialog: React.FC<{
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
                 const property = childTemplate?.properties.properties[key];
-                const isSelected = (childTemplate ? key in childTemplate.properties.properties : false) || isRequired;
                 const defaultValue = property?.defaultValue;
+                const isSelected =
+                    (childTemplate ? key in childTemplate.properties.properties && childTemplate.properties.properties[key].display : false) ||
+                    (isRequired && defaultValue === undefined);
                 const isEditableByUser = property?.isEditableByUser;
 
                 initialFields[key] = {
-                    selected: isSelected || isRequired,
+                    selected: isSelected || (isRequired && defaultValue === undefined),
                     fieldValue: value,
                     ...(defaultValue && { defaultValue }),
                     ...(isEditableByUser && { isEditableByUser }),
@@ -301,7 +303,6 @@ const CreateChildTemplateDialog: React.FC<{
     const handleCheckboxChange = (fieldName: string, checked: boolean) => {
         const newFieldFilters = { ...templateFieldsFilters };
         if (!checked) {
-            setFieldChips((prev) => prev.filter((chip) => chip.fieldName !== fieldName));
             newFieldFilters[fieldName].isEditableByUser = false;
         }
 
@@ -340,7 +341,7 @@ const CreateChildTemplateDialog: React.FC<{
                 onSubmit={async ({ name, displayName, description, category }) => {
                     if (matchValidationError.size > 0) return;
 
-                    const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
+                    const latestFields = Object.entries(templateFieldsFilters);
 
                     const properties: IChildTemplate['properties'] = { properties: {} };
 
@@ -355,10 +356,18 @@ const CreateChildTemplateDialog: React.FC<{
                             ...(filterChips.length > 0 && { filters: { $or: filtersArray } }),
                             ...('defaultValue' in fieldConfig &&
                                 fieldConfig.defaultValue !== undefined && { defaultValue: fieldConfig.defaultValue }),
+                            display: fieldConfig.selected,
                         };
 
                         properties.properties[fieldName] = childProp;
                     });
+
+                    properties.properties = Object.fromEntries(
+                        Object.entries(properties.properties).filter(
+                            ([_key, { display, filters, defaultValue }]) =>
+                                display === true || (display === false && (defaultValue !== undefined || filters !== undefined)),
+                        ),
+                    );
 
                     const baseTemplate: IChildTemplate = {
                         name: `${entityTemplate.name}_${name}`,

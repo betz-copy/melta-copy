@@ -18,6 +18,8 @@ const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedF
                         filters: child.properties.properties[key].filters,
                         isFilterByCurrentUser: child.filterByCurrentUserField === key,
                         isFilterByUserUnit: child.filterByUnitUserField === key,
+                        isEditableByUser: child.properties.properties[key].isEditableByUser,
+                        display: child.properties.properties[key].display,
                     },
                 ]),
         ),
