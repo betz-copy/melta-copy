@@ -17,7 +17,7 @@ const childTemplatePropertySchema = Joi.object({
 const ChildTemplateSchema = {
     name: Joi.string().required(),
     displayName: Joi.string().required(),
-    description: Joi.string(),
+    description: Joi.string().allow(''),
     parentTemplateId: MongoIdSchema.required(),
     category: MongoIdSchema.required(),
     properties: Joi.object({

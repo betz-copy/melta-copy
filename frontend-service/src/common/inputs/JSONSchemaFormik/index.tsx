@@ -25,8 +25,12 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
+import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
+import { environment } from '../../../globals';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { uiSchemaUtils } from './ utils';
+
+const { dateRegex } = environment;
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -53,6 +57,14 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv);
 
+    ajv.addFormat('date', {
+        type: 'string',
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || dateRegex.test(value),
+    });
+    ajv.addFormat('date-time', {
+        type: 'string',
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !isNaN(Date.parse(value)),
+    });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
@@ -60,6 +72,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
+            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
+
             try {
                 const userObj = JSON.parse(user);
                 return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;

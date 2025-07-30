@@ -689,16 +689,17 @@ const CreateChildTemplateDialog: React.FC<{
                                                     onCheckboxChange={handleCheckboxChange}
                                                     matchValidationError={matchValidationError}
                                                     setMatchValidationError={setMatchValidationError}
+                                                    selectedUserField={userField.selectedUserField}
                                                 />
                                             </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>
                             </DialogContent>
-                            <DialogActions>
-                                <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
+                            <DialogActions sx={{ margin: '10px' }}>
+                                {isUpdate && <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>}
                                 <Button type="submit" variant="contained" disabled={(isUpdate && !hasChanges) || matchValidationError.size > 0}>
-                                    {i18next.t(`createChildTemplateDialog.buttons.${isUpdate ? 'update' : 'create'}`)}
+                                    {i18next.t(`actions.${isUpdate ? 'edit' : 'create'}`)}
                                 </Button>
                             </DialogActions>
                         </Form>
