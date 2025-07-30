@@ -52,23 +52,24 @@ const RjsfSelectWidget = ({
     ...textFieldProps
 }: WidgetProps) => {
     const { defaultValue } = options;
-    const { enumOptions: items } = getUiOptions(uiSchema) as {
-        enumOptions: Array<{
-            label: string;
-            value: string;
-            color?: string;
-        }>;
-    };
+    const { enumOptions: items = [] } =
+        (getUiOptions(uiSchema) as {
+            enumOptions?: Array<{
+                label: string;
+                value: string;
+                color?: string;
+            }>;
+        }) || {};
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
     if (multiple) {
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) && items) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
         } else {
             selectedValue = [];
         }
     } else {
-        selectedValue = items.find((opt) => opt.value === value) || null;
+        selectedValue = items ? items.find((opt) => opt.value === value) || null : null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
