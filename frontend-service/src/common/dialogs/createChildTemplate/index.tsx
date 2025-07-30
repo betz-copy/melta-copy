@@ -362,6 +362,13 @@ const CreateChildTemplateDialog: React.FC<{
                         properties.properties[fieldName] = childProp;
                     });
 
+                    properties.properties = Object.fromEntries(
+                        Object.entries(properties.properties).filter(
+                            ([_key, { display, filters, defaultValue }]) =>
+                                display === true || (display === false && (defaultValue !== undefined || filters !== undefined)),
+                        ),
+                    );
+
                     const baseTemplate: IChildTemplate = {
                         name: `${entityTemplate.name}_${name}`,
                         displayName: isUpdate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`,

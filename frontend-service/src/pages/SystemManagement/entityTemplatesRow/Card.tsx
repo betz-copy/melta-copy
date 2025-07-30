@@ -460,7 +460,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                             : entityTemplate.properties?.properties || {},
                     )
-                        .filter(([, value]) => isFile(value))
+                        .filter(([, value]) => isFile(value) && value.display !== false)
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
