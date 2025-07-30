@@ -2,7 +2,7 @@ import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
-import { IConnectionTemplateOfExpandedEntity } from '..';
+import { INestedRelationshipTemplates } from '..';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { IEntityExpanded } from '../../../interfaces/entities';
@@ -15,7 +15,7 @@ import { Print } from './print';
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    connectionsTemplates: INestedRelationshipTemplates[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
     const theme = useTheme();
 

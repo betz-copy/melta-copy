@@ -2,18 +2,18 @@ import { environment } from '../globals';
 import { IEntityExpanded } from '../interfaces/entities';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
-import { IConnectionTemplateOfExpandedEntity } from '../pages/Entity';
+import { INestedRelationshipTemplates } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
 
 const { maxPrintLevel } = environment;
 
 export const sortTemplatesChildrenToParents = (
     depth: number,
-    parents: IConnectionTemplateOfExpandedEntity[],
+    parents: INestedRelationshipTemplates[],
     data: IEntityExpanded,
     relationshipTemplates: IRelationshipTemplateMap,
     entityTemplates: IEntityTemplateMap,
-): IConnectionTemplateOfExpandedEntity[] => {
+): INestedRelationshipTemplates[] => {
     return parents.map((parent) => {
         const currentEntityTemplate = parent.isExpandedEntityRelationshipSource
             ? parent.relationshipTemplate.destinationEntity
@@ -27,7 +27,7 @@ export const sortTemplatesChildrenToParents = (
             parent.relationshipTemplate,
             data,
             true,
-        ).filter((child) => child.relationshipTemplate._id !== parent.relationshipTemplate._id);
+        );
 
         const nestedChildren =
             depth < maxPrintLevel && children.length > 0
@@ -41,11 +41,7 @@ export const sortTemplatesChildrenToParents = (
     });
 };
 
-export const updateChildrenToParent = (
-    depth: number,
-    parents: IConnectionTemplateOfExpandedEntity[],
-    updatedParent: IConnectionTemplateOfExpandedEntity,
-) => {
+export const updateChildrenToParent = (depth: number, parents: INestedRelationshipTemplates[], updatedParent: INestedRelationshipTemplates) => {
     return parents.map((parent) => {
         const isMatchingParent = updatedParent.relationshipTemplate._id === parent.relationshipTemplate._id;
 
@@ -63,10 +59,10 @@ export const updateChildrenToParent = (
 };
 
 const mergeChildren = (
-    existingChildren: IConnectionTemplateOfExpandedEntity[],
-    newChildren: IConnectionTemplateOfExpandedEntity[],
-): IConnectionTemplateOfExpandedEntity[] => {
-    const merged: IConnectionTemplateOfExpandedEntity[] = [...existingChildren];
+    existingChildren: INestedRelationshipTemplates[],
+    newChildren: INestedRelationshipTemplates[],
+): INestedRelationshipTemplates[] => {
+    const merged: INestedRelationshipTemplates[] = [...existingChildren];
 
     for (const newChild of newChildren) {
         const matchIndex = existingChildren.findIndex((c) => c.relationshipTemplate._id === newChild.relationshipTemplate._id);
@@ -84,14 +80,10 @@ const mergeChildren = (
     return merged;
 };
 
-export const mergeAncestryTree = (
-    nodes: IConnectionTemplateOfExpandedEntity[],
-    newNode: IConnectionTemplateOfExpandedEntity,
-): IConnectionTemplateOfExpandedEntity[] => {
+export const mergeAncestryTree = (nodes: INestedRelationshipTemplates[], newNode: INestedRelationshipTemplates): INestedRelationshipTemplates[] => {
     const index = nodes.findIndex((node) => node.relationshipTemplate._id === newNode.relationshipTemplate._id);
 
     if (index === -1) {
-        // If the node doesn't exist, add it
         return [...nodes, newNode];
     }
 
@@ -105,7 +97,7 @@ export const mergeAncestryTree = (
     return [...nodes.slice(0, index), updated, ...nodes.slice(index + 1)];
 };
 
-export const findAncestryTree = (nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | undefined => {
+export const findAncestryTree = (nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
     const targetId = id.split('-')[1];
 
     for (const node of nodes) {

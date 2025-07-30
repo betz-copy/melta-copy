@@ -4,7 +4,7 @@ import { Box, FormControl, Select, useTheme } from '@mui/material';
 import { RichTreeViewPro, TreeItemProps } from '@mui/x-tree-view-pro';
 import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { INestedRelationshipTemplates } from '../..';
 import { CustomExpandMore } from '../../../../common/SelectCheckBox';
 import TreeItem from '../../../../common/Tree/TreeItem';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
@@ -16,7 +16,7 @@ import { useUserStore } from '../../../../stores/user';
 import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 
-const collectAllSelectedItemIds = (nodes: IConnectionTemplateOfExpandedEntity[], selectedIds: Set<string>) => {
+const collectAllSelectedItemIds = (nodes: INestedRelationshipTemplates[], selectedIds: Set<string>) => {
     for (const node of nodes) {
         selectedIds.add(getItemId(node));
         if (node.children && node.children.length > 0) {
@@ -25,19 +25,19 @@ const collectAllSelectedItemIds = (nodes: IConnectionTemplateOfExpandedEntity[],
     }
 };
 
-// item id is node id - parent id (if he has one)
-const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: IConnectionTemplateOfExpandedEntity) =>
+// item id is node depth - node id - parent id (if he has one)
+const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: INestedRelationshipTemplates) =>
     `${depth}-${_id}${parentRelationship ? `-${parentRelationship?._id}` : ''}`;
 
-const getItemLabel = ({ relationshipTemplate: { displayName, sourceEntity, destinationEntity } }: IConnectionTemplateOfExpandedEntity) =>
+const getItemLabel = ({ relationshipTemplate: { displayName, sourceEntity, destinationEntity } }: INestedRelationshipTemplates) =>
     `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`;
 
 export type EntityConnectionsProps = {
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-    setConnectionsTemplates: Dispatch<SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    connectionsTemplates: INestedRelationshipTemplates[];
+    setConnectionsTemplates: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
     setConnectionsInstances: Dispatch<SetStateAction<IConnection[]>>;
-    selectedConnections: IConnectionTemplateOfExpandedEntity[];
-    setSelectedConnections: Dispatch<SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    selectedConnections: INestedRelationshipTemplates[];
+    setSelectedConnections: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
 };
 
 const RelationshipSelection: React.FC<{
@@ -78,7 +78,7 @@ const RelationshipSelection: React.FC<{
         enabled: false,
     });
 
-    const findNodeById = (nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | undefined => {
+    const findNodeById = (nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
         for (const node of nodes) {
             if (getItemId(node) === id) return node;
             if (node.children) {
@@ -89,7 +89,7 @@ const RelationshipSelection: React.FC<{
         return undefined;
     };
 
-    const findParent = useCallback((nodes: IConnectionTemplateOfExpandedEntity[], id: string): IConnectionTemplateOfExpandedEntity | null => {
+    const findParent = useCallback((nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | null => {
         const targetId = id.split('-')[1];
         for (const node of nodes) {
             if (node.children?.some((child) => child.relationshipTemplate._id === targetId)) {
@@ -133,7 +133,7 @@ const RelationshipSelection: React.FC<{
 
                     if (childIndex !== -1 && childIndex !== undefined) {
                         // If the child is already selected, remove it
-                        const updatedParent: IConnectionTemplateOfExpandedEntity = {
+                        const updatedParent: INestedRelationshipTemplates = {
                             ...parent,
                             children: (parent.children ?? []).filter(
                                 (child) => child.relationshipTemplate._id !== currentNode.relationshipTemplate._id,
@@ -179,7 +179,7 @@ const RelationshipSelection: React.FC<{
 
     const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} />, []);
 
-    const fetchTreeItems = async (parentId?: string): Promise<IConnectionTemplateOfExpandedEntity[]> => {
+    const fetchTreeItems = async (parentId?: string): Promise<INestedRelationshipTemplates[]> => {
         const { data } = await getExpandedData();
 
         if (!data) return [];

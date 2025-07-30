@@ -3,7 +3,7 @@ import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { INestedRelationshipTemplates } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
@@ -16,7 +16,7 @@ import './print.css';
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    connections: IConnectionTemplateOfExpandedEntity[];
+    connections: INestedRelationshipTemplates[];
 }> = ({ entityTemplate, expandedEntity, connections }) => {
     const [openModal, setOpenModal] = useState(false);
 
@@ -26,7 +26,7 @@ const Print: React.FC<{
     const [selectedFiles, setSelectedFiles] = useState(files);
     const [filesLoadingStatus, setFilesLoadingStatus] = useState({});
 
-    const [selectedConnections, setSelectedConnections] = React.useState<IConnectionTemplateOfExpandedEntity[]>([]);
+    const [selectedConnections, setSelectedConnections] = React.useState<INestedRelationshipTemplates[]>([]);
     const [connectionsTemplates, setConnectionsTemplates] = React.useState(connections);
     const [connectionsInstances, setConnectionsInstances] = React.useState<IConnection[]>([]);
 

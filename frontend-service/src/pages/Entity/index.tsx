@@ -65,7 +65,7 @@ export const getButtonState = (
 
 const ConnectionsTableTitle: React.FC<{
     expandedEntity: IEntityExpanded;
-    connectionTemplate: Pick<IConnectionTemplateOfExpandedEntity, 'relationshipTemplate' | 'isExpandedEntityRelationshipSource'>;
+    connectionTemplate: Pick<INestedRelationshipTemplates, 'relationshipTemplate' | 'isExpandedEntityRelationshipSource'>;
 }> = ({ expandedEntity, connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource } }) => {
     return (
         <RelationshipTitle
@@ -88,7 +88,7 @@ const ConnectionsTableTitle: React.FC<{
 
 export const ConnectionsTable: React.FC<{
     expandedEntity: IEntityExpanded;
-    connectionTemplate: IConnectionTemplateOfExpandedEntity;
+    connectionTemplate: INestedRelationshipTemplates;
     templateIds: string[];
     isEditButtonsDisabled: boolean;
     disabledButtonText: string;
@@ -335,13 +335,13 @@ export const ConnectionsTable: React.FC<{
     );
 };
 
-export interface IConnectionTemplateOfExpandedEntity {
+export interface INestedRelationshipTemplates {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
     hasInstances: boolean;
     depth: number;
     parentRelationship?: IMongoRelationshipTemplatePopulated;
-    children: IConnectionTemplateOfExpandedEntity[];
+    children: INestedRelationshipTemplates[];
 }
 
 const Entity: React.FC = () => {

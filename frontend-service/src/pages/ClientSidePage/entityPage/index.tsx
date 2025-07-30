@@ -12,7 +12,7 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
-import { ConnectionsTable, IConnectionTemplateOfExpandedEntity } from '../../Entity';
+import { ConnectionsTable, INestedRelationshipTemplates } from '../../Entity';
 import { EntityDetails } from '../../Entity/components/EntityDetails';
 import { RelationshipIcon } from '../../Entity/RelationshipIcon';
 
@@ -47,7 +47,7 @@ const ClientSideEntityPage: React.FC = () => {
     const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     );
-    const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
+    const connectionsTemplates: INestedRelationshipTemplates[] = [];
 
     populatedRelationshipTemplates.forEach((relationshipTemplate) => {
         const hasInstances = !!expandedEntity?.connections.some(

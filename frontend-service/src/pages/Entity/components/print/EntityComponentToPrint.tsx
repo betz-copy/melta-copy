@@ -1,7 +1,7 @@
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { INestedRelationshipTemplates } from '../..';
 import { BlueTitle } from '../../../../common/BlueTitle';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { IConnection, IEntity } from '../../../../interfaces/entities';
@@ -58,7 +58,7 @@ const EntityComponentToPrint: React.FC<{
         showDisabled: boolean;
     };
     showPreviewPropertiesOnly?: boolean;
-    expandedRelationships?: { instances: IConnection[]; templates: IConnectionTemplateOfExpandedEntity[] };
+    expandedRelationships?: { instances: IConnection[]; templates: INestedRelationshipTemplates[] };
 }> = ({ entityTemplate, entity, options, showPreviewPropertiesOnly, expandedRelationships }) => {
     const theme = useTheme();
 

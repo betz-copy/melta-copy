@@ -3,7 +3,7 @@ import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntityExpanded } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
-import { IConnectionTemplateOfExpandedEntity } from '../pages/Entity';
+import { INestedRelationshipTemplates } from '../pages/Entity';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
     if (templateA.category._id !== templateB.category._id) {
@@ -31,8 +31,8 @@ export const getFullRelationshipTemplates = (
     parentRelationshipTemplate?: IMongoRelationshipTemplatePopulated,
     expandedEntity?: IEntityExpanded,
     filterOnlyThoseWithInstances = false,
-): IConnectionTemplateOfExpandedEntity[] => {
-    const result: IConnectionTemplateOfExpandedEntity[] = [];
+): INestedRelationshipTemplates[] => {
+    const result: INestedRelationshipTemplates[] = [];
 
     for (const relationshipTemplate of relationshipTemplates.values()) {
         const isSelfProperty =
@@ -48,6 +48,8 @@ export const getFullRelationshipTemplates = (
         const hasInstances = expandedEntity?.connections.some((connection) => connection.relationship.templateId === relationshipTemplate._id)!;
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
+
+        if (parentRelationshipTemplate?._id === relationshipTemplate._id) continue;
 
         result.push({
             relationshipTemplate: populateRelationshipTemplate(relationshipTemplate, entityTemplates),

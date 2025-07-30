@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { INestedRelationshipTemplates } from '../..';
 import { BlueTitle } from '../../../../common/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
 import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
@@ -13,7 +13,7 @@ import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponen
 
 export const renderConnectionTree = (
     entity: IEntity,
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[],
+    connectionsTemplates: INestedRelationshipTemplates[],
     connectionsInstances: IConnection[],
     options: {
         showEntityDates: boolean;
@@ -65,7 +65,7 @@ const ComponentToPrint = React.forwardRef<
     {
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
-        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+        connectionsTemplates: INestedRelationshipTemplates[];
         connectionsInstances: IConnection[];
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
