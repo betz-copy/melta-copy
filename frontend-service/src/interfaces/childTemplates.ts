@@ -42,6 +42,7 @@ export interface IChildTemplateProperty {
     defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
+    display?: boolean;
 }
 
 export interface IChildTemplate {

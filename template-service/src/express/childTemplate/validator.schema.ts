@@ -9,6 +9,7 @@ const childTemplatePropertySchema = Joi.object({
         return value;
     }),
     isEditableByUser: Joi.boolean(),
+    display: Joi.boolean(),
 });
 
 const childEntityTemplateSchema = {

@@ -171,14 +171,14 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         setAddFilterToField(null);
     };
 
-    const isSubmitDisabled = (fieldFilter: IFieldFilter, isRequired: boolean, fieldName: string, fieldSchema: IEntitySingleProperty) => {
+    const isSubmitDisabled = (fieldName: string, fieldSchema: IEntitySingleProperty) => {
         const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === fieldName);
         const byCurrentUserDefaultValue = fieldSchema.format === 'user' && defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentUser;
         const byCurrentDateDefaultValue =
             (fieldSchema.format === 'date' || fieldSchema.format === 'date-time') &&
             defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentDate;
 
-        return (!fieldFilter.selected && !isRequired) || isDisallowedFormat(fieldName) || byCurrentUserDefaultValue || byCurrentDateDefaultValue;
+        return isDisallowedFormat(fieldName) || byCurrentUserDefaultValue || byCurrentDateDefaultValue;
     };
 
     const onDeleteFilterChip = (chip: IFieldChip) => {
@@ -240,8 +240,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     <FormControlLabel
                                         control={
                                             <MeltaCheckbox
-                                                checked={isRequired ? true : fieldFilter.selected}
-                                                disabled={isRequired}
+                                                checked={fieldFilter.selected}
+                                                disabled={isRequired && fieldFilter.defaultValue === undefined}
                                                 onChange={(e) => onCheckboxChange(fieldName, e.target.checked)}
                                             />
                                         }
@@ -268,12 +268,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                 <Button
                                                     color="primary"
                                                     onClick={() =>
-                                                        !isSubmitDisabled(fieldFilter, isRequired, fieldName, property) &&
-                                                        handleSelectProperty(fieldName, ChipType.Filter)
+                                                        !isSubmitDisabled(fieldName, property) && handleSelectProperty(fieldName, ChipType.Filter)
                                                     }
                                                     size="small"
                                                     sx={{ minWidth: '32px', p: '4px' }}
-                                                    disabled={isSubmitDisabled(fieldFilter, isRequired, fieldName, property)}
+                                                    disabled={isSubmitDisabled(fieldName, property)}
                                                 >
                                                     <AddRounded />
                                                 </Button>
@@ -288,6 +287,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             defaultChips,
                                             entityTemplate.properties.properties[fieldName],
                                             (chip) => {
+                                                if (isRequired) onCheckboxChange(fieldName, true);
                                                 setFieldChips((prev) =>
                                                     prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === chip.chipType)),
                                                 );
@@ -315,7 +315,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                         sx={{ minWidth: '32px', p: '4px' }}
                                                         disabled={
                                                             isSerialNumberField ||
-                                                            (!fieldFilter.selected && !isRequired) ||
                                                             isDisallowedFormat(fieldName) ||
                                                             isKartoffelUserField ||
                                                             isRelationshipRefField

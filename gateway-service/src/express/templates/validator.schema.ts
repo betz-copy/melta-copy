@@ -11,6 +11,7 @@ const childTemplatePropertySchema = Joi.object({
     defaultValue: Joi.any(),
     filters: searchFilterSchema,
     isEditableByUser: Joi.boolean(),
+    display: Joi.boolean(),
 });
 
 const ChildTemplateSchema = {

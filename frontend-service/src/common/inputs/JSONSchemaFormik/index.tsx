@@ -106,6 +106,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'defaultValue',
         'isFilterByCurrentUser',
         'isFilterByUserUnit',
+        'display',
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({
