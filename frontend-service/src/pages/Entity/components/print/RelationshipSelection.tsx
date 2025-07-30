@@ -66,7 +66,7 @@ const RelationshipSelection: React.FC<{
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(flattenSelectedIds);
     const [expansionDepth, setExpansionDepth] = useState<number>(1);
 
-    const templateIds = Object.keys(entityTemplates);
+    const templateIds = [...entityTemplates.keys()];
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>({
         queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, expansionDepth],
         queryFn: () =>

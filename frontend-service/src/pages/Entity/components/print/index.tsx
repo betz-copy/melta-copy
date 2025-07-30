@@ -1,7 +1,7 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { INestedRelationshipTemplates } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
@@ -34,6 +34,10 @@ const Print: React.FC<{
     const [showDisabled, setShowDisabled] = useState(true);
     const [showEntityDates, setShowEntityDates] = useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState(false);
+
+    useEffect(() => {
+        setConnectionsTemplates(connections);
+    }, [connections]);
 
     const handleClose = () => {
         setSelectedConnections([]);
