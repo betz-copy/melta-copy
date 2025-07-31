@@ -268,6 +268,44 @@ templatesRouter.post(
     templatesControllerMiddleware.searchRulesTemplates,
 );
 
+// child templates
+templatesRouter.post(
+    '/child',
+    busboyMiddleware,
+    ValidateRequest(createChildTemplateSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
+    templatesControllerMiddleware.createChildTemplate,
+);
+
+templatesRouter.post(
+    '/child/search',
+    ValidateRequest(searchChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.get(
+    '/child',
+    ValidateRequest(getAllChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.put(
+    '/child/:id',
+    ValidateRequest(updateChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateChildTemplate,
+);
+
+templatesRouter.delete(
+    '/child/:id',
+    ValidateRequest(deleteChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    TemplatesServiceProxy,
+);
+
 // Printing Templates CRUD
 templatesRouter.post(
     '/printing-templates',
