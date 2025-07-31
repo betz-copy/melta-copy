@@ -508,14 +508,15 @@ export const getFilesName = (files: string[]): string => {
     return fileNames.join(', ');
 };
 
-export const addStringFieldsAndNormalizeSpecialStringValues = (
+export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
+    entityTemplateService: EntityTemplateManagerService,
     recursiveRelationshipReference = false,
-): Record<string, any> => {
+): Promise<Record<string, any>> => {
     const normalizedEntity = {};
 
-    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+    Object.entries(entityTemplate.properties.properties).forEach(async ([key, value]) => {
         if (!(key in entityProperties)) {
             if (value.type === 'boolean') {
                 normalizedEntity[key] = false;
@@ -578,7 +579,12 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
 
         if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
             if (recursiveRelationshipReference) {
-                normalizedEntity[key] = propertyValue.properties[value.relationshipReference!.relatedTemplateField] || propertyValue.properties._id;
+                normalizedEntity[key] = await addStringFieldsAndNormalizeSpecialStringValues(
+                    propertyValue.properties,
+                    await entityTemplateService.getEntityTemplateById(propertyValue.templateId),
+                    entityTemplateService,
+                    Boolean(Object.values(propertyValue.properties).find((value: any) => value.properties)),
+                );
             } else {
                 normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
                 Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {

@@ -274,6 +274,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                     if (relatedEntityId) {
                         const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+
                         fixedProperties[name] = fixedField;
                         relatedEntitiesByIds[relatedEntityId] = relatedEntity;
                     }
@@ -288,7 +289,7 @@ class EntityManager extends DefaultManagerNeo4j {
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
                 },
             },
         );
@@ -370,7 +371,12 @@ class EntityManager extends DefaultManagerNeo4j {
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
-        const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
+        const relatedEntityFixProperties = await addStringFieldsAndNormalizeSpecialStringValues(
+            relatedEntity.properties,
+            relatedEntityTemplate,
+            this.entityTemplateManagerService,
+            true,
+        );
 
         return {
             fixedField: {
@@ -1504,7 +1510,7 @@ class EntityManager extends DefaultManagerNeo4j {
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 props: {
-                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
                     updatedAt: getNeo4jDateTime(),
                     _id: id,
                 },
