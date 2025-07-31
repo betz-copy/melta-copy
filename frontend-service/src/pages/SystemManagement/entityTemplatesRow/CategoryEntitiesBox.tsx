@@ -258,6 +258,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     <EntityTemplateCard
                                                         entityTemplate={{
                                                             ...entityTemplate,
+                                                            category: childTemplate.category,
                                                             _id: childTemplate._id,
                                                         }}
                                                         setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
