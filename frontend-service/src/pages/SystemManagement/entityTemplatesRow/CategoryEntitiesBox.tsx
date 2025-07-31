@@ -268,7 +268,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                         setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                         entityHasWritePermission={entityHasWritePermission}
                                                         isDisabledView={isDisabled}
-                                                        displayCategoryTooltip={isDisabled}
                                                         isChildTemplate={true}
                                                         title={childTemplate.displayName}
                                                         categoryColor={entityTemplatesWithCategory.category.color}
@@ -299,7 +298,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             isDisabledView={true}
                                             isChildTemplate={false}
                                             categoryColor={entityTemplatesWithCategory.category.color}
-                                            displayCategoryTooltip
                                         />
                                     </Grid>
                                     {childTemplatesForParent.map((childTemplate) => (

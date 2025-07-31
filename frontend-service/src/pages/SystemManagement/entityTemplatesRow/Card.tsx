@@ -97,7 +97,6 @@ interface EntityTemplateCardProps {
     isChildTemplate?: boolean;
     title?: string;
     categoryColor: string;
-    displayCategoryTooltip?: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -112,7 +111,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     isChildTemplate = false,
     title = entityTemplate.displayName,
     categoryColor,
-    displayCategoryTooltip = false,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -306,17 +304,17 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 }}
                             />
                         )}
-                        {(childTemplates?.get(entityTemplate._id) || displayCategoryTooltip) && (
+                        {(childTemplates?.get(entityTemplate._id) || isDisabledView) && (
                             <MeltaTooltip
                                 title={
                                     <Grid container flexDirection="column" alignItems="center">
-                                        {displayCategoryTooltip &&
-                                            (entityTemplate.category.displayName || categories.get(entityTemplate.category as unknown as string)) && (
+                                        {isDisabledView &&
+                                            (entityTemplate.category.displayName || categories.get(String(entityTemplate.category))) && (
                                                 <Grid container gap="5px">
                                                     <Typography variant="body2">{`${i18next.t('entityTemplatesRow.existsInCategory')}: `}</Typography>
                                                     <Typography variant="body2" fontWeight="bold">
                                                         {entityTemplate.category.displayName ||
-                                                            categories.get(entityTemplate.category as unknown as string)!.displayName}
+                                                            categories.get(String(entityTemplate.category))!.displayName}
                                                     </Typography>
                                                 </Grid>
                                             )}
