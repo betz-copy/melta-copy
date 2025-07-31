@@ -64,6 +64,7 @@ const InstancesPermissionsCard: React.FC<{
                                 onChange={(value) => {
                                     searchText?.set(value);
                                 }}
+                                placeholder={i18next.t('searchCategoryOrTemplate')}
                                 borderRadius="7px"
                                 width="500px"
                                 height="40px"
