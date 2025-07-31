@@ -9,6 +9,7 @@ import CategoryCheckboxPermission from './categoryCheckboxPermission';
 import { PermissionData } from '../../interfaces/users';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import { BlueTitle } from '../BlueTitle';
+import SearchInput from '../inputs/SearchInput';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];
@@ -37,7 +38,8 @@ const InstancesPermissionsCard: React.FC<{
         permissionType: permissionTypeCheckboxProps;
         disabled?: boolean;
     };
-}> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps, formikProps, permissionsPath, workspaceId }) => {
+    searchText?: { value: string; set: (text: string) => void };
+}> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps, formikProps, permissionsPath, workspaceId, searchText }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const bgcolor = darkMode ? '#242424' : 'white';
 
@@ -55,6 +57,19 @@ const InstancesPermissionsCard: React.FC<{
                                     style={{ marginRight: '5px', padding: '5px', fontWeight: 600 }}
                                 />
                             </Box>
+                        </Grid>
+                        <Grid item margin={2}>
+                            <SearchInput
+                                value={searchText?.value}
+                                onChange={(value) => {
+                                    searchText?.set(value);
+                                }}
+                                placeholder={i18next.t('searchCategoryOrTemplate')}
+                                borderRadius="7px"
+                                width="500px"
+                                height="40px"
+                                showBorder
+                            />
                         </Grid>
                         <Grid item xs={6} marginTop="10px">
                             <Typography sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight="bold">

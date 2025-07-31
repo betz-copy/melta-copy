@@ -294,6 +294,7 @@ export default {
         noOptions: 'אין תוצאות',
     },
     searchLabel: 'חיפוש שם תבנית',
+    searchCategoryOrTemplate: 'חיפוש שם קטגוריה / תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
         filterEntity: 'סינון על יישות',

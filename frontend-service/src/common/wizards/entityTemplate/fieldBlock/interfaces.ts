@@ -38,6 +38,7 @@ export interface GroupProps<PropertiesType extends string, Values extends Record
     group: GroupProperty;
     index: number;
     moveField: (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => void;
+    moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
     touched: FormikTouched<Values> | undefined;
     errors: FormikErrors<Values> | undefined;
     propertiesType: PropertiesType;
