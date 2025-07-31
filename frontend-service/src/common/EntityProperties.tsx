@@ -463,7 +463,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     sx={{
                                         width: '100%',
                                         borderRadius: '10px',
-                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.6)',
+                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.3)',
                                         padding: '12px',
                                         marginTop: '3px',
                                         marginBottom: '3px',
