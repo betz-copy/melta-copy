@@ -25,12 +25,12 @@ export const generateNewItemSizes = (localStorageKey: string, itemId: string) =>
     const maxY = savedLayout.length ? Math.max(...savedLayout.map((item) => item.y)) : 0;
     const lastRowItems = savedLayout.filter((item) => item.y === maxY);
 
-    const gridMap = Array(cols).fill(false);
+    const gridMap: boolean[] = Array(cols).fill(false);
     lastRowItems.forEach(({ x, w }) => {
         for (let i = x; i < x + w; i++) gridMap[i] = true;
     });
 
-    const availableX = gridMap.findLastIndex((__, x) => x <= cols - itemWidth && gridMap.slice(x, x + itemWidth).every((slot) => !slot));
+    const availableX = gridMap.length - gridMap.reverse().findIndex((__, x) => x <= cols - itemWidth && gridMap.slice(x, x + itemWidth).every((slot) => !slot));
 
     const availableY = availableX !== -1 ? maxY : maxY + cols;
 
