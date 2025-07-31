@@ -258,6 +258,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     <EntityTemplateCard
                                                         entityTemplate={{
                                                             ...entityTemplate,
+                                                            category: childTemplate.category,
                                                             _id: childTemplate._id,
                                                         }}
                                                         setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
@@ -267,6 +268,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                         setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                         entityHasWritePermission={entityHasWritePermission}
                                                         isDisabledView={isDisabled}
+                                                        displayCategoryTooltip={isDisabled}
                                                         isChildTemplate={true}
                                                         title={childTemplate.displayName}
                                                         categoryColor={entityTemplatesWithCategory.category.color}
@@ -297,6 +299,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             isDisabledView={true}
                                             isChildTemplate={false}
                                             categoryColor={entityTemplatesWithCategory.category.color}
+                                            displayCategoryTooltip
                                         />
                                     </Grid>
                                     {childTemplatesForParent.map((childTemplate) => (
