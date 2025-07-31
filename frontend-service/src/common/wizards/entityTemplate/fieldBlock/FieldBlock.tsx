@@ -567,6 +567,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                     group={item}
                                                     index={index}
                                                     moveField={moveField}
+                                                    moveGroup={moveGroup}
                                                     touched={touched}
                                                     errors={errors}
                                                     propertiesType={propertiesType}
