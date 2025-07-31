@@ -7,6 +7,7 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
+import { flatten, unflatten } from 'flatley';
 import {
     IEntitySingleProperty,
     IMongoEntityTemplate,
@@ -60,6 +61,7 @@ import {
     generateDefaultProperties,
     getNeo4jDateTime,
     normalizeChartResponse,
+    normalizeFields,
     normalizeGetDbConstraints,
     normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
@@ -923,56 +925,26 @@ class EntityManager extends DefaultManagerNeo4j {
         return node;
     }
 
-    static fixReturnedEntityReferencesFields(entity: IEntity) {
-        const fixedExpandedEntity = entity;
-
-        const relatedEntities = {};
-
-        Object.entries(entity.properties).forEach(([key, value]) => {
-            if (key.includes('.') && key.endsWith(`${config.neo4j.relationshipReferencePropertySuffix}`)) {
-                const innerKeys = key.split('.').map((innerKey) => innerKey.replace(config.neo4j.relationshipReferencePropertySuffix, ''));
-
-                if (!relatedEntities[innerKeys[0]]) {
-                    relatedEntities[innerKeys[0]] = {
-                        properties: {},
-                        templateId: '',
-                    };
-                }
-
-                if (innerKeys[1] === 'properties') {
-                    if (innerKeys[3]) {
-                        let fourthKey = innerKeys[3];
-                        // currently only user and user array should have a 4th key
-                        if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]]) {
-                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = {};
-                        }
-
-                        if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-                            // user
-                            fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
-                        } else if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
-                            // User arrays are stored in arrays for each field, (i.e. ids: [id1, id2 ...])
-                            // so we want to convert them into an array of users (i.e. [{id: id1 ...}, {id: id2 ...} ...])
-                            fourthKey = innerKeys[3].replace(`${config.neo4j.usersFieldsPropertySuffix}`, '');
-                        }
-                        relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
-                    } else {
-                        relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
-                    }
-                } else if (innerKeys[1] === 'templateId') {
-                    relatedEntities[innerKeys[0]].templateId = value;
-                }
-
-                delete fixedExpandedEntity.properties[key];
+    // Only deals with relationships
+    static fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
+        Object.entries(properties).forEach(([key, value]) => {
+            if (!key.endsWith(config.neo4j.relationshipReferencePropertySuffix)) {
+                acc[key] = value;
+                return;
             }
+
+            acc[key.replace(config.neo4j.relationshipReferencePropertySuffix, '')] = value;
         });
 
-        fixedExpandedEntity.properties = {
-            ...fixedExpandedEntity.properties,
-            ...relatedEntities,
-        };
+        acc = unflatten(acc);
 
-        return fixedExpandedEntity;
+        Object.entries(acc).forEach(([key, value]) => {
+            if (!value.properties) return;
+
+            acc[key] = { ...value, properties: this.fixReturnedEntityReferencesFields(normalizeFields(flatten(value.properties, { safe: true }))) };
+        });
+
+        return acc;
     }
 
     async getEntitiesByIds(ids: string[]) {

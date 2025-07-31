@@ -31,7 +31,7 @@ export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
 
-const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
+export const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
     const usersArrayKeys: Set<string> = new Set<string>();
@@ -134,12 +134,10 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         : never;
 
 const nodeToEntity = (node: Node): IEntity => {
-    const entity = {
+    return {
         templateId: node.labels[0],
-        properties: normalizeFields(node.properties),
+        properties: EntityManager.fixReturnedEntityReferencesFields(normalizeFields(node.properties)),
     };
-
-    return EntityManager.fixReturnedEntityReferencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
