@@ -1,5 +1,5 @@
 import { Download } from '@mui/icons-material';
-import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, Grid, Link, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -23,13 +23,13 @@ import { useUserStore } from '../../../stores/user';
 
 const { excelExtension } = environment.loadExcel;
 
-export const CardTitle = ({ title, description }: { title: string; description?: string }) => {
+export const CardTitle = ({ title, description, href }: { title: string; description?: string; href?: string }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
     const theme = useTheme();
 
     return (
-        <>
+        <Link href={href} underline="none">
             <BlueTitle
                 title={title}
                 component="h4"
@@ -43,7 +43,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
             <Typography variant="subtitle1" color={theme.palette.primary.main} sx={{ textAlign: 'center', minHeight: '1.5em' }}>
                 {description || ''}
             </Typography>
-        </>
+        </Link>
     );
 };
 

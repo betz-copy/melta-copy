@@ -17,6 +17,7 @@ import { matchValueAgainstFilter } from '../../../utils/filters';
 import { isValidAGGridFilter } from '../../FilterComponent';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
+import { isEqual } from 'lodash';
 
 const getFilterOperator = (filterField: IFieldChip['filterField']) => {
     const operatorMap: Record<string, string> = {
@@ -199,10 +200,15 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         } as IAGGridDateFilter);
     };
 
-    const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
+    const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
         setCurrentFieldError(undefined);
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
-        const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
+
+        let updatedValues: (string | null | IUser)[];
+
+        if (checked) updatedValues = Array.from(new Set([...values, ...options]));
+        else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
+
         checkMatchValidations({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
@@ -226,6 +232,38 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                   }
                 : {};
 
+        const enumOptions = propEnum ?? items?.enum;
+
+        if (enumOptions) {
+            const isDefault = dialogType === ChipType.Default;
+
+            if (isDefault && propEnum)
+                return (
+                    <SelectFilterInput
+                        filterField={localFilterField?.filterType === 'text' ? (localFilterField as IAGGridTextFilter) : undefined}
+                        enumOptions={enumOptions}
+                        handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
+                        readOnly={readOnly}
+                        error={isError}
+                        helperText={currentFieldError}
+                        {...defaultFilterProps}
+                    />
+                );
+
+            return (
+                <MultipleSelectFilterInput
+                    filterField={localFilterField?.filterType === 'set' ? localFilterField : undefined}
+                    handleCheckboxChange={handleCheckboxChange}
+                    enumOptions={enumOptions}
+                    readOnly={readOnly}
+                    isError={isError}
+                    helperText={currentFieldError}
+                    allowEmpty={!isDefault}
+                    {...defaultFilterProps}
+                />
+            );
+        }
+
         if (format === 'user' && dialogType === ChipType.Default)
             return (
                 <UserFilterInput
@@ -235,20 +273,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     {...defaultFilterProps}
                 />
             );
-
-        if (propEnum) {
-            return (
-                <SelectFilterInput
-                    filterField={localFilterField?.filterType === 'text' ? (localFilterField as IAGGridTextFilter) : undefined}
-                    enumOptions={propEnum}
-                    handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
-                    readOnly={readOnly}
-                    error={isError}
-                    helperText={currentFieldError}
-                    {...defaultFilterProps}
-                />
-            );
-        }
 
         if (format === 'date-time' || format === 'date') {
             return (
@@ -272,20 +296,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
                     error={isError}
-                    helperText={currentFieldError}
-                    {...defaultFilterProps}
-                />
-            );
-        }
-
-        if (items?.enum) {
-            return (
-                <MultipleSelectFilterInput
-                    filterField={localFilterField?.filterType === 'set' ? localFilterField : undefined}
-                    handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={items.enum}
-                    readOnly={readOnly}
-                    isError={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
                 />

@@ -10,6 +10,8 @@ export const filterTemplateToSearchFilter = (
     templateId: string,
     queryClient: QueryClient,
 ): ISearchFilter | undefined => {
+    console.log({ filterModel });
+
     if (filterModel.length === 0) return undefined;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
