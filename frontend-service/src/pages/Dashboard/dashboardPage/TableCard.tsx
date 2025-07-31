@@ -48,7 +48,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
 };
 
 const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
-    const titleSectionHeight = 120;
+    const titleSectionHeight = 80;
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);

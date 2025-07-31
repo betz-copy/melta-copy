@@ -111,6 +111,7 @@ export default {
         areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
         succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
         failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+        existsInCategory: 'נמצא בקטגוריה',
     },
     clientSidePage: {
         simba: {
@@ -292,6 +293,7 @@ export default {
         noOptions: 'אין תוצאות',
     },
     searchLabel: 'חיפוש שם תבנית',
+    searchCategoryOrTemplate: 'חיפוש שם קטגוריה / תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
         filterEntity: 'סינון על יישות',
