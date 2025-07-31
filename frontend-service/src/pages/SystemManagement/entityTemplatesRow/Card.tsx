@@ -27,6 +27,7 @@ import { checkUserChildTemplatePermission } from '../../../utils/permissions/tem
 import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
+import { ICategoryMap } from '../../../interfaces/categories';
 
 const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];
@@ -115,6 +116,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const hasWritePermission = useMemo(() => {
         if (isChildTemplate) {
@@ -136,7 +138,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups } = entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
@@ -259,6 +261,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                       propertiesPreview,
                                                       propertiesTypeOrder,
                                                       uniqueConstraints,
+                                                      fieldGroups,
                                                   },
                                               });
                                               setIsHoverOnCard(false);
@@ -301,20 +304,33 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 }}
                             />
                         )}
-                        {childTemplates?.get(entityTemplate._id) && (
+                        {(childTemplates?.get(entityTemplate._id) || isDisabledView) && (
                             <MeltaTooltip
                                 title={
-                                    <div>
-                                        <Typography variant="body2">{childTemplates.get(entityTemplate._id)?.description}</Typography>
-                                        <Grid container spacing={1} sx={{ mt: 1 }}>
-                                            {childTemplates.get(entityTemplate._id) &&
-                                                getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
-                                                    <Grid item key={index}>
-                                                        <ColoredEnumChip color={chip.color} label={chip.label} />
-                                                    </Grid>
-                                                ))}
-                                        </Grid>
-                                    </div>
+                                    <Grid container flexDirection="column" alignItems="center">
+                                        {isDisabledView &&
+                                            (entityTemplate.category.displayName || categories.get(String(entityTemplate.category))) && (
+                                                <Grid container gap="5px">
+                                                    <Typography variant="body2">{`${i18next.t('entityTemplatesRow.existsInCategory')}: `}</Typography>
+                                                    <Typography variant="body2" fontWeight="bold">
+                                                        {entityTemplate.category.displayName ||
+                                                            categories.get(String(entityTemplate.category))!.displayName}
+                                                    </Typography>
+                                                </Grid>
+                                            )}
+                                        {childTemplates?.get(entityTemplate._id) && (
+                                            <Grid>
+                                                <Typography variant="body2">{childTemplates.get(entityTemplate._id)?.description}</Typography>
+                                                <Grid container spacing={1} sx={{ mt: 1 }}>
+                                                    {getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
+                                                        <Grid item key={index}>
+                                                            <ColoredEnumChip color={chip.color} label={chip.label} />
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Grid>
+                                        )}
+                                    </Grid>
                                 }
                             >
                                 <InfoOutlined

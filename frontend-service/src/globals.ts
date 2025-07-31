@@ -165,6 +165,8 @@ export const environment = {
             '#FB8383',
             '#D498F0',
         ],
+        cols: 12,
+        itemWidth: 4,
     },
     dashboard: {
         dashboardOrderKey: 'dashboardOrder',

@@ -112,6 +112,7 @@ export default {
         areYouSureDeleteEntityTemplateContent: 'האם אתה בטוח שברצונך למחוק את תבנית הישות?',
         succeededToDeleteEntityTemplate: 'תבנית הישות נמחקה בהצלחה',
         failedToDeleteEntityTemplate: 'נכשל למחוק תבנית ישות',
+        existsInCategory: 'נמצא בקטגוריה',
     },
     clientSidePage: {
         simba: {
