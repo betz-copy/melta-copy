@@ -146,6 +146,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     group,
     index,
     moveField,
+    moveGroup,
     touched,
     errors,
     propertiesType,
@@ -180,19 +181,27 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
-        drop(item: CommonFormInputProperties & { index: number; parentId: string | null }, monitor) {
+        drop(item: (CommonFormInputProperties | GroupProperty) & { index: number; parentId: string | null }, monitor) {
             if (!ref.current || !monitor.isOver({ shallow: true })) return;
 
             const hoverIndex = index;
+            const isGroup = Array.isArray((item as GroupProperty).fields);
 
-            if (isGroupOpen) {
-                if (group.fields.length === 0 && item.parentId !== group.id) {
-                    moveField(item, 0, group.id);
-
-                    item.index = 0;
-                    item.parentId = group.id;
-                } else moveField(item, hoverIndex, group.id);
-            } else moveField(item, hoverIndex, null);
+            if (isGroup) {
+                const draggedIndex = item.index;
+                if (draggedIndex !== hoverIndex && moveGroup) {
+                    moveGroup(item as GroupProperty, hoverIndex);
+                }
+            } else {
+                const fieldItem = item as CommonFormInputProperties & { index: number; parentId: string | null };
+                if (isGroupOpen) {
+                    if (group.fields.length === 0 && fieldItem.parentId !== group.id) {
+                        moveField(fieldItem, 0, group.id);
+                        fieldItem.index = 0;
+                        fieldItem.parentId = group.id;
+                    } else moveField(fieldItem, hoverIndex, group.id);
+                } else moveField(fieldItem, hoverIndex, null);
+            }
         },
     });
 
