@@ -22,6 +22,7 @@ import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
 import { ByCurrentDefaultValue } from '../../interfaces/childTemplates';
+import { isEqual } from 'lodash';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -105,9 +106,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         if (!selectedTemplate) return;
 
-        const { format, type } = selectedTemplate.properties.properties[newProperty];
+        const { format, type, enum: enumValues } = selectedTemplate.properties.properties[newProperty];
 
-        const selectedFilter = (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+        const selectedFilter =
+            (enumValues && initializedFilterField['array']) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 
         if (selectedFilter) setFilterField(selectedFilter);
     };
@@ -150,10 +152,13 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         );
     };
 
-    const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
+    const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
         const { values } = filterField as IAGGridSetFilter;
 
-        const updatedValues = checked ? [...values, option] : values?.filter((item) => item !== option);
+        let updatedValues: (string | null | IUser)[];
+
+        if (checked) updatedValues = Array.from(new Set([...values, ...options]));
+        else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
         const updatedFilterField = { ...filterField, values: updatedValues } as IAGGridSetFilter;
 
         setFilterField(updatedFilterField);
@@ -180,12 +185,14 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         // no files in graph filter
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
-        if (propEnum)
+        const enumOptions = propEnum ?? items?.enum;
+
+        if (enumOptions)
             return (
-                <SelectFilterInput
-                    filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
-                    enumOptions={propEnum}
-                    handleFilterFieldChange={handleFilterFieldChange}
+                <MultipleSelectFilterInput
+                    filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
+                    handleCheckboxChange={handleCheckboxChange}
+                    enumOptions={enumOptions}
                     readOnly={readOnly}
                 />
             );
@@ -207,16 +214,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
                     isBooleanSelect
                     handleFilterFieldChange={handleFilterFieldChange}
-                    readOnly={readOnly}
-                />
-            );
-
-        if (items && selectedTemplate.properties.properties[selectedProperty].items?.enum)
-            return (
-                <MultipleSelectFilterInput
-                    filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
-                    handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={items?.enum}
                     readOnly={readOnly}
                 />
             );

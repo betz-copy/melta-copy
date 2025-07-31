@@ -163,6 +163,18 @@ const inFilterOfArrayField = (field: string, rhs: NonNullable<IFilterOfField['$i
     const rhsParamName = 'rhs';
     const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
 
+    if (rhs.includes(null))
+        return {
+            cypherQuery: `
+            (
+                (node.${field} IS NULL AND $${rhsParamPath} IS NOT NULL) OR 
+                size([rhsItem IN $${rhsParamPath} WHERE rhsItem IS NOT NULL AND rhsItem IN node.${field}]) > 0 OR
+                (any(rhsItem IN $${rhsParamPath} WHERE rhsItem IS NULL) AND any(item IN node.${field} WHERE item IS NULL))
+            )
+            `,
+            parameters: { [rhsParamName]: rhs.filter((rhsItem) => rhsItem !== null) },
+        };
+
     return { cypherQuery: `size([rhsItem IN $${rhsParamPath} WHERE rhsItem IN node.${field}]) > 0`, parameters: { [rhsParamName]: rhs } };
 };
 

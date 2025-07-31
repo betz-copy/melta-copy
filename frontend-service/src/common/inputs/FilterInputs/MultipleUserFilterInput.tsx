@@ -8,7 +8,7 @@ interface MultipleUserFilterInputProps {
     filterField: IAGGridSetFilter | undefined;
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
-    handleCheckboxChange: (option: string | IUser, checked: boolean) => void;
+    handleCheckboxChange: (option: (string | IUser)[], checked: boolean) => void;
     readOnly: boolean;
     isUsersArray?: boolean;
     isError?: boolean;
@@ -34,7 +34,7 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
             label=""
             onChange={(_e, chosenUser, reason) => {
                 if (reason !== 'selectOption' || !chosenUser) return;
-                handleCheckboxChange(isUsersArray ? chosenUser : chosenUser.fullName, true);
+                handleCheckboxChange(isUsersArray ? [chosenUser] : [chosenUser.fullName], true);
 
                 setInputValue('');
             }}
@@ -45,7 +45,7 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
             currentUsers={filterField?.values as string[]}
             onRemove={(index) => {
                 const currentUser = filterField?.values[index];
-                handleCheckboxChange(currentUser as string, false);
+                handleCheckboxChange([currentUser as string], false);
                 return undefined;
             }}
             overrideSx={{
