@@ -24,8 +24,8 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import FilterValidation from '../../error';
 import config from '../../config';
+import FilterValidation from '../../error';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -523,10 +523,8 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
 ): Promise<Record<string, any>> => {
     const normalizedEntity: Record<string, any> = {};
 
-    const propertyEntries = Object.entries(entityTemplate.properties.properties);
-
     await Promise.all(
-        propertyEntries.map(async ([key, value]) => {
+        Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
             if (!(key in entityProperties)) {
                 if (value.type === 'boolean') {
                     normalizedEntity[key] = false;
@@ -539,17 +537,17 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             const { type, format, items } = value;
 
             if (format === 'user') {
-                config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
-                    normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-                        JSON.parse(propertyValue)[userField.originalFieldName];
+                config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                        JSON.parse(propertyValue)[originalFieldName];
                 });
                 return;
             }
 
             if (type === 'array' && items?.format === 'user') {
-                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
-                    normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                        (user: string) => JSON.parse(user)[userField.originalFieldName],
+                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                        (user: string) => JSON.parse(user)[userFieldoriginalFieldName],
                     );
                 });
                 return;
@@ -593,7 +591,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
 
                     const hasNestedRelationship = Object.values(relatedEntityTemplate.properties.properties).some(
-                        ({ format }) => format === 'relationshipReference',
+                        ({ format: nestedFormat }) => nestedFormat === 'relationshipReference',
                     );
 
                     relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
