@@ -30,7 +30,10 @@ type Relationship = Neo4jRelationship<number>;
 export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
-
+/**
+ * Fix the values of an entity that is saved in neo4j to its original values.
+ * For example dates and fixing the user fields to be without the suffix.
+ */
 export const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
