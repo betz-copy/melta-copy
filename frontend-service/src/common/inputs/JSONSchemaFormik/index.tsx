@@ -9,8 +9,12 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
+import { environment } from '../../../globals';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
+import { EntityWizardValues } from '../../dialogs/entity';
+import { uiSchemaUtils } from './ utils';
 import './form.css';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
@@ -24,10 +28,6 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
-import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { environment } from '../../../globals';
-import { EntityWizardValues } from '../../dialogs/entity';
-import { uiSchemaUtils } from './ utils';
 
 const { dateRegex } = environment;
 
