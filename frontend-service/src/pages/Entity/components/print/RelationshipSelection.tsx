@@ -89,12 +89,10 @@ const RelationshipSelection: React.FC<{
         return undefined;
     };
 
-    const findParent = useCallback((nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | null => {
+    const findParent = useCallback((nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
         const targetId = id.split('-')[1];
         for (const node of nodes) {
-            if (node.children?.some((child) => child.relationshipTemplate._id === targetId)) {
-                return node;
-            }
+            if (node.children?.some((child) => child.relationshipTemplate._id === targetId)) return node;
 
             if (node.children && node.children.length > 0) {
                 const found = findParent(node.children, id);
@@ -102,73 +100,57 @@ const RelationshipSelection: React.FC<{
             }
         }
 
-        return null;
+        return undefined;
     }, []);
 
     const handleSelectedItemsChange = (itemIds: string[]) => {
         const currentSelectedNodesIds = new Set<string>();
         let currentSelectedNodes = [...selectedConnections];
 
-        const changedIds = [
-            ...itemIds.filter((itemId) => !selectedItemsIds.includes(itemId)),
-            ...selectedItemsIds.filter((selectedItemId) => !itemIds.includes(selectedItemId)),
-        ];
+        const changedIds = [...itemIds.filter((id) => !selectedItemsIds.includes(id)), ...selectedItemsIds.filter((id) => !itemIds.includes(id))];
 
-        changedIds.forEach((id) => {
+        for (const id of changedIds) {
             const currentNode = findNodeById(connectionsTemplates, id);
 
-            if (!currentNode) return;
+            if (!currentNode) continue;
 
             if (currentNode.parentRelationship) {
                 // handle a child
-
                 const parent = findParent(selectedConnections, id);
 
                 if (!!parent) {
                     // if the parent is selected
-
-                    const childIndex = parent.children?.findIndex(
-                        (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
+                    const isChildAlreadySelected = parent.children?.some(
+                        ({ relationshipTemplate }) => relationshipTemplate._id === currentNode.relationshipTemplate._id,
                     );
 
-                    if (childIndex !== -1 && childIndex !== undefined) {
-                        // If the child is already selected, remove it
-                        const updatedParent: INestedRelationshipTemplates = {
-                            ...parent,
-                            children: (parent.children ?? []).filter(
-                                (child) => child.relationshipTemplate._id !== currentNode.relationshipTemplate._id,
-                            ),
-                        };
-                        currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
-                    } else {
-                        // If the child is not selected, add it
-                        const updatedParent = {
-                            ...parent,
-                            children: [...parent.children, currentNode],
-                        };
-                        currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
-                    }
+                    const updatedParent: INestedRelationshipTemplates = {
+                        ...parent,
+                        children: isChildAlreadySelected
+                            ? parent.children?.filter(({ relationshipTemplate }) => relationshipTemplate._id !== currentNode.relationshipTemplate._id)
+                            : [...parent.children, currentNode],
+                    };
+                    currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
                 } else {
                     // if the parent isn't selected
-
                     const ancestryTree = findAncestryTree(connectionsTemplates, id);
                     if (ancestryTree) currentSelectedNodes = mergeAncestryTree(currentSelectedNodes, ancestryTree);
                 }
             } else {
                 // if it's a parent
-                const parentIndex = currentSelectedNodes.findIndex(
-                    (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
-                );
+                const isParentSelected = currentSelectedNodes.some((node) => node.relationshipTemplate._id === currentNode.relationshipTemplate._id);
 
-                if (parentIndex !== -1) {
+                if (isParentSelected) {
                     // If the parent is selected, remove it
-                    currentSelectedNodes.splice(parentIndex, 1);
+                    currentSelectedNodes = currentSelectedNodes.filter(
+                        ({ relationshipTemplate }) => relationshipTemplate._id !== currentNode.relationshipTemplate._id,
+                    );
                 } else {
                     // If the parent is not selected, add it
                     currentSelectedNodes.push(currentNode);
                 }
             }
-        });
+        }
 
         collectAllSelectedItemIds(currentSelectedNodes, currentSelectedNodesIds);
 
