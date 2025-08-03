@@ -1,17 +1,16 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Box, FormControl, Select, useTheme } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { RichTreeViewPro, TreeItemProps } from '@mui/x-tree-view-pro';
-import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useMemo, useState } from 'react';
+import i18next from 'i18next';
+import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { INestedRelationshipTemplates } from '../..';
-import { CustomExpandMore } from '../../../../common/SelectCheckBox';
 import TreeItem from '../../../../common/Tree/TreeItem';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
 import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
@@ -159,7 +158,7 @@ const RelationshipSelection: React.FC<{
         return Array.from(currentSelectedNodesIds);
     };
 
-    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} />, []);
+    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} removeDivider />, []);
 
     const fetchTreeItems = async (parentId?: string): Promise<INestedRelationshipTemplates[]> => {
         const { data } = await getExpandedData();
@@ -187,107 +186,32 @@ const RelationshipSelection: React.FC<{
     };
 
     return (
-        <RichTreeViewPro
-            items={[]}
-            dataSource={{
-                getChildrenCount: (item) => item?.children.length,
-                getTreeItems: fetchTreeItems,
-            }}
-            slots={{
-                expandIcon: ChevronLeft,
-                collapseIcon: ExpandLess,
-                item: TreeItemWrapper,
-            }}
-            multiSelect
-            checkboxSelection
-            getItemId={getItemId}
-            getItemLabel={getItemLabel}
-            selectedItems={selectedItemsIds}
-            onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
-        />
+        <>
+            <Typography color="#53566E" fontSize="14px" marginBottom={1}>
+                {i18next.t('entityPage.print.chooseRelationship')}
+            </Typography>
+            <Grid maxHeight="228px" sx={{ overflowY: 'auto' }}>
+                <RichTreeViewPro
+                    items={[]}
+                    dataSource={{
+                        getChildrenCount: (item) => item?.children.length,
+                        getTreeItems: fetchTreeItems,
+                    }}
+                    slots={{
+                        expandIcon: ChevronLeft,
+                        collapseIcon: ExpandLess,
+                        item: TreeItemWrapper,
+                    }}
+                    multiSelect
+                    checkboxSelection
+                    getItemId={getItemId}
+                    getItemLabel={getItemLabel}
+                    selectedItems={selectedItemsIds}
+                    onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
+                />
+            </Grid>
+        </>
     );
 };
 
-type RelationshipSelectProps = PropsWithChildren<{
-    title: string;
-    expandedEntity: IEntityExpanded;
-    entityConnections: EntityConnectionsProps;
-    size?: 'small' | 'medium';
-    overrideSx?: object;
-    isSelectDisabled?: boolean;
-}>;
-
-const RelationshipSelect = ({
-    title,
-    expandedEntity,
-    entityConnections,
-    size = 'medium',
-    overrideSx,
-    isSelectDisabled = false,
-}: RelationshipSelectProps) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const theme = useTheme();
-
-    return (
-        <FormControl>
-            <Select
-                displayEmpty
-                disabled={isSelectDisabled}
-                renderValue={() => <Box>{title}</Box>}
-                MenuProps={{
-                    PaperProps: {
-                        style: {
-                            height: '333px',
-                            minWidth: '219px',
-                            width: '300px',
-                            ...(darkMode ? {} : { backgroundColor: '#FFFFFF' }),
-                            borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
-                            padding: '10px, 10px, 5px, 10px',
-                            boxShadow: '-2px 2px 6px 0px #1E27754D',
-                            top: '39px',
-                            gap: '15px',
-                            marginTop: '5px',
-                            border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
-                        },
-                        sx: {
-                            overflowY: 'overlay',
-                            '::-webkit-scrollbar-track': {
-                                marginY: '1rem',
-                                bgcolor: '#FFFFFF',
-                                borderRadius: '5px',
-                            },
-                            '::-webkit-scrollbar-thumb': { background: '#EBEFFA' },
-                        },
-                    },
-                }}
-                IconComponent={(params) => CustomExpandMore({ undefined, ...params })}
-                size={size}
-                sx={{
-                    ...overrideSx,
-                    fontFamily: 'Rubik',
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    boxShadow: 'none',
-                    borderRadius: '8px',
-                    ...(darkMode
-                        ? {
-                              color: theme.palette.primary.main,
-                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
-                          }
-                        : {
-                              '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
-                              background: '#FFFFFF',
-                              color: '#787C9E',
-                          }),
-                    maxWidth: !overrideSx ? '131px' : undefined,
-                    maxHeight: '34px',
-                    padding: '0px, 8px',
-                }}
-            >
-                <RelationshipSelection entityConnections={entityConnections} expandedEntity={expandedEntity} />
-            </Select>
-        </FormControl>
-    );
-};
-
-export default RelationshipSelect;
+export default RelationshipSelection;

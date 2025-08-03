@@ -9,6 +9,8 @@ import {
     FormControlLabel,
     Grid,
     IconButton,
+    Switch,
+    TextField,
     useTheme,
 } from '@mui/material';
 import i18next from 'i18next';
@@ -19,12 +21,11 @@ import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import RelationshipSelect, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
+import RelationshipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import { BlueTitle } from '../BlueTitle';
-import { MeltaCheckbox } from '../MeltaCheckbox';
+import MultipleSelect from '../inputs/MultipleSelect';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { SelectCheckbox } from '../SelectCheckBox';
 
 type IOption = {
     show: boolean;
@@ -42,7 +43,6 @@ interface IEntityPrint {
     instance: IEntityExpanded;
     entityConnections: EntityConnectionsProps;
     options: {
-        date: IOption;
         disabled: IOption;
         entityDates: IOption;
         previewPropertiesOnly: IOption;
@@ -85,7 +85,22 @@ const PrintOptionsDialog: React.FC<{
     filesLoadingStatus: Record<string, boolean>;
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, printItem, files, setFiles, selectedFiles, setSelectedFiles, filesLoadingStatus, setFilesLoadingStatus, onClick }) => {
+    title: string | undefined;
+    setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
+}> = ({
+    open,
+    handleClose,
+    printItem,
+    files,
+    setFiles,
+    selectedFiles,
+    setSelectedFiles,
+    filesLoadingStatus,
+    setFilesLoadingStatus,
+    onClick,
+    title,
+    setTitle,
+}) => {
     const theme = useTheme();
     const [isLoading, setIsLoading] = useState(false);
     const { type, template, instance, options } = printItem;
@@ -125,6 +140,8 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
+    const getFile = (optionId: string) => files.find(({ id }) => id === optionId)!;
+
     return (
         <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
             <DialogTitle>
@@ -140,39 +157,52 @@ const PrintOptionsDialog: React.FC<{
                 </Grid>
             </DialogTitle>
 
-            <DialogContent style={{ width: '500px' }}>
-                <Grid container direction="column" spacing={1} alignItems="center">
+            <DialogContent style={{ width: '600px' }}>
+                <Grid>
+                    <Grid item marginTop={0.5} marginBottom={2}>
+                        <TextField
+                            fullWidth
+                            value={title}
+                            onChange={({ target: { value: newValue } }) => setTitle(newValue)}
+                            label={i18next.t('entityPage.print.title')}
+                        />
+                    </Grid>
                     <Grid item>
-                        {type === PrintType.Entity && printItem.entityConnections && printItem.entityConnections.connectionsTemplates.length > 0 && (
-                            <RelationshipSelect
-                                expandedEntity={instance}
-                                entityConnections={printItem.entityConnections}
-                                title={i18next.t('entityPage.print.chooseRelationship')}
-                            />
+                        {type === PrintType.Entity && printItem.entityConnections.connectionsTemplates.length > 0 && (
+                            <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
                         )}
-
+                    </Grid>
+                    <Grid item marginTop={1}>
                         {files.length !== 0 && (
-                            <SelectCheckbox
-                                title={i18next.t('entityPage.print.chooseFiles')}
-                                options={files}
-                                isDraggableDisabled
-                                selectedOptions={selectedFiles}
-                                setSelectedOptions={setSelectedFiles}
-                                getOptionId={(file) => file.id}
-                                getOptionLabel={(file) => file.name}
+                            <MultipleSelect
+                                id="print"
+                                multiple
+                                items={files.map(({ id, name }) => ({ label: name, value: id }))}
+                                selectedValue={selectedFiles.map(({ id, name }) => ({ label: name, value: id }))}
+                                onChange={(_event, newVal) => {
+                                    if (newVal === null) return;
+                                    setSelectedFiles(Array.isArray(newVal) ? newVal.map((val) => getFile(val.value)) : [getFile(newVal.value)]);
+                                }}
+                                textFieldProps={{}}
+                                onBlur={() => {}}
+                                onFocus={() => {}}
+                                variant="outlined"
+                                rawErrors={[]}
+                                label={i18next.t('entityPage.print.chooseFiles')}
                             />
                         )}
                     </Grid>
-                    <Grid paddingTop="25px">
+                    <Grid container marginTop={1}>
                         {Object.entries(options).map(([key, value]) => {
                             const isDisabled =
-                                key === 'previewPropertiesOnly' && 'propertiesPreview' in template && template.propertiesPreview.length === 0;
+                                key === 'previewPropertiesOnly' && type === PrintType.Entity && template.propertiesPreview.length === 0;
 
                             const label = (
                                 <FormControlLabel
-                                    control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
+                                    control={<Switch checked={value.show} onChange={() => value.set((cur) => !cur)} />}
                                     label={i18next.t(value.label)}
                                     disabled={isDisabled}
+                                    sx={{ color: '#53566E', fontSize: '14px' }}
                                 />
                             );
                             return (
@@ -190,21 +220,25 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                 </Grid>
             </DialogContent>
-            <DialogActions style={{ paddingLeft: '24px' }}>
-                <Button
-                    onClick={(ev) => {
-                        handleClose();
-                        onClick(ev);
-                    }}
-                    endIcon={<PrintOutlined />}
-                    disabled={isLoading}
-                >
-                    {i18next.t('entityPage.print.continue')}
-                    {isLoading && <CircularProgress size={20} />}
-                </Button>
+            <DialogActions>
+                <Grid container justifyContent="center" marginBottom={2}>
+                    <Button
+                        variant="contained"
+                        onClick={(ev) => {
+                            handleClose();
+                            onClick(ev);
+                        }}
+                        endIcon={<PrintOutlined />}
+                        disabled={isLoading}
+                        sx={{ borderRadius: '7px', fontWeight: 400 }}
+                    >
+                        {i18next.t('entityPage.print.continue')}
+                        {isLoading && <CircularProgress size={20} />}
+                    </Button>
+                </Grid>
             </DialogActions>
         </Dialog>
     );
 };
 
-export { PrintOptionsDialog };
+export default PrintOptionsDialog;

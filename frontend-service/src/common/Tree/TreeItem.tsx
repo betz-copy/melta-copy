@@ -71,8 +71,8 @@ const draggableHandle = (
     </TreeItemIconContainer>
 );
 
-const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: boolean }>((props, ref) => {
-    const { id, itemId, label, disabled, children, showIcon, ...other } = props;
+const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: boolean; removeDivider?: boolean }>((props, ref) => {
+    const { id, itemId, label, disabled, children, showIcon, removeDivider, ...other } = props;
     const {
         getRootProps,
         getContentProps,
@@ -147,7 +147,7 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
                     <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
                 </TreeItemContent>
                 {children && <TreeItemGroupTransition {...getGroupTransitionProps()} />}
-                {itemDepth === 0 && status.expandable && DivideMenuItems}
+                {!removeDivider && itemDepth === 0 && status.expandable && DivideMenuItems}
             </TreeItemRoot>
         </TreeItemProvider>
     );

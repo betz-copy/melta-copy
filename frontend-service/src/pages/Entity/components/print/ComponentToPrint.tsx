@@ -78,7 +78,6 @@ const ComponentToPrint = React.forwardRef<
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
-            showDate: boolean;
             showDisabled: boolean;
             showEntityDates: boolean;
             showEntityFiles: boolean;
@@ -116,7 +115,7 @@ const ComponentToPrint = React.forwardRef<
                                 {entityTemplate.displayName}
                             </Typography>
                         </Box>
-                        {options.showDate && <Box>{new Date().toLocaleDateString('en-uk')}</Box>}
+                        {<Box>{new Date().toLocaleDateString('en-uk')}</Box>}
                     </Box>
                     <EntityComponentToPrint entityTemplate={entityTemplate} entity={expandedEntity.entity} options={options} />
                 </Grid>

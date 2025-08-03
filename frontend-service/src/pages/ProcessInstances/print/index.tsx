@@ -1,20 +1,20 @@
+import { Print as PrintIcon } from '@mui/icons-material';
+import { IconButton, ThemeProvider } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
-import { IconButton, ThemeProvider } from '@mui/material';
-import { Print as PrintIcon } from '@mui/icons-material';
-import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { ComponentToPrint } from './ComponentToPrint';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { useReactToPrint } from 'react-to-print';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
+import { MenuButton } from '../../../common/MenuButton';
+import PrintOptionsDialog, { PrintType } from '../../../common/print/PrintOptionsDialog';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { IFile } from '../../../interfaces/preview';
-import { MenuButton } from '../../../common/MenuButton';
-import { PrintOptionsDialog, PrintType } from '../../../common/print/PrintOptionsDialog';
-import '../../Entity/components/print/print.css';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { lightTheme } from '../../../theme';
+import '../../Entity/components/print/print.css';
+import { ComponentToPrint } from './ComponentToPrint';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
@@ -31,6 +31,8 @@ const Print: React.FC<{
     const [files, setFiles] = useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
     const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
+
+    const [title, setTitle] = useState<string | undefined>(undefined);
 
     const [showSummary, setShowSummary] = useState<boolean>(true);
 
@@ -99,6 +101,8 @@ const Print: React.FC<{
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
+                    title={title}
+                    setTitle={setTitle}
                 />
             )}
         </>

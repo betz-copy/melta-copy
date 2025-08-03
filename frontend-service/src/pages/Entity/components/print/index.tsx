@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { INestedRelationshipTemplates } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { PrintOptionsDialog, PrintType } from '../../../../common/print/PrintOptionsDialog';
+import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
@@ -30,7 +30,8 @@ const Print: React.FC<{
     const [connectionsTemplates, setConnectionsTemplates] = useState<INestedRelationshipTemplates[]>(connections);
     const [connectionsInstances, setConnectionsInstances] = useState<IConnection[]>([]);
 
-    const [showDate, setShowDate] = useState<boolean>(true);
+    const [title, setTitle] = useState<string | undefined>(undefined);
+
     const [showDisabled, setShowDisabled] = useState<boolean>(true);
     const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
@@ -58,14 +59,13 @@ const Print: React.FC<{
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 
     const options = {
-        date: { show: showDate, set: setShowDate, label: 'entityPage.print.showDate' },
         disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
-        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
         previewPropertiesOnly: {
             show: showPreviewPropertiesOnly,
             set: setShowPreviewPropertiesOnly,
             label: 'entityPage.print.showOnlyPreviewProperties',
         },
+        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
     };
 
     return (
@@ -88,7 +88,7 @@ const Print: React.FC<{
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}
-                        options={{ showDate, showDisabled, showEntityDates, showEntityFiles: !!selectedFiles.length, showPreviewPropertiesOnly }}
+                        options={{ showDisabled, showEntityDates, showEntityFiles: !!selectedFiles.length, showPreviewPropertiesOnly }}
                     />
                 </ThemeProvider>
             </div>
@@ -116,6 +116,8 @@ const Print: React.FC<{
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
+                    title={title}
+                    setTitle={setTitle}
                 />
             )}
         </>
