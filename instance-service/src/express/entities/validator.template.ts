@@ -516,14 +516,15 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
 ): Promise<Record<string, any>> => {
     const normalizedEntity = {};
 
-    Object.entries(entityTemplate.properties.properties).forEach(async ([key, value]) => {
+    // TODO: for of
+    for (const [key, value] of Object.entries(entityTemplate.properties.properties)) {
         if (!(key in entityProperties)) {
             if (value.type === 'boolean') {
                 normalizedEntity[key] = false;
                 normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
             }
 
-            return;
+            continue;
         }
 
         const propertyValue = entityProperties[key];
@@ -533,7 +534,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
                     JSON.parse(propertyValue)[userField.originalFieldName];
             });
-            return;
+            continue;
         }
 
         if (type === 'array' && items?.format === 'user') {
@@ -543,7 +544,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 );
             });
 
-            return;
+            continue;
         }
 
         // For Neo4j fulltext search (supports only string properties)
@@ -567,32 +568,36 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
 
-            return;
+            continue;
         }
 
         if (type === 'string' && format === 'date-time') {
             normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(new Date(propertyValue));
 
-            return;
+            continue;
         }
 
         if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
+            let relationShipPropValue: Record<string, any> = propertyValue;
+
             if (recursiveRelationshipReference) {
-                normalizedEntity[key] = await addStringFieldsAndNormalizeSpecialStringValues(
+                const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
+
+                relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
                     propertyValue.properties,
-                    await entityTemplateService.getEntityTemplateById(propertyValue.templateId),
+                    relatedEntityTemplate,
                     entityTemplateService,
-                    Boolean(Object.values(propertyValue.properties).find((value: any) => value.properties)),
+                    Boolean(Object.values(relatedEntityTemplate.properties.properties).find(({ format }) => format === 'relationshipReference')),
                 );
-            } else {
-                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
-                Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {
-                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
-                });
             }
 
-            return;
+            normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
+            Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
+                normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+            });
+
+            continue;
         }
         if (type === 'string' && format === 'location') {
             const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
@@ -600,11 +605,11 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
             normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
 
-            return;
+            continue;
         }
 
         normalizedEntity[key] = propertyValue;
-    });
+    }
 
     return normalizedEntity;
 };

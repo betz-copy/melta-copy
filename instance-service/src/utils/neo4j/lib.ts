@@ -48,12 +48,17 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
         }
 
         if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
-            usersArrayKeys.add(key.split('.')[0]);
+            // Find the user field of the key (everything before the suffix)
+            const currentUserField = config.neo4j.usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+                key.includes(suffixFieldName),
+            )!.suffixFieldName;
+            usersArrayKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
+        // TODO
         if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-            userKeys.add(key.split('.')[0]);
+            userKeys.add(key.split(config.neo4j.userFieldPropertySuffix)[0]);
             return;
         }
 
@@ -91,7 +96,7 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
         usersArrayKeys.forEach((userKey) => {
             props[userKey] = properties[
                 `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
-            ].map((_id, index) => {
+            ].map((_id: string, index: string | number) => {
                 const objToReturn: any = {};
 
                 config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
