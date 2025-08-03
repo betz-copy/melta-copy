@@ -7,11 +7,14 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
+import { environment } from '../../../globals';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
+import { EntityWizardValues } from '../../dialogs/entity';
+import { uiSchemaUtils } from './ utils';
 import './form.css';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
@@ -25,12 +28,14 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
-import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
-import { environment } from '../../../globals';
-import { EntityWizardValues } from '../../dialogs/entity';
-import { uiSchemaUtils } from './ utils';
 
 const { dateRegex } = environment;
+
+export type LeafError = { _errors?: string[] };
+
+export type ErrorMessage<T extends string | LeafError> = {
+    [key: string]: T | ErrorMessage<T>;
+};
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -51,6 +56,23 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
         return [field, ajvError.message];
     });
     return Object.fromEntries(formikErrorsEntries);
+};
+
+const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchema<{}>>(
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    originalErrors: T,
+) => {
+    const finalErrors = { ...originalErrors };
+
+    template.fieldGroups?.forEach((fieldGroup) => {
+        fieldGroup.fields.forEach((field) => {
+            if (originalErrors[field]) {
+                finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
+            }
+        });
+    });
+
+    return finalErrors;
 };
 
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
@@ -146,13 +168,42 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     return { ...formikErrors, ...childTemplateFilterErrors };
 };
 
-const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
-    // assuming no complex fields (nested/array). need recursion for nested fields
+const formikErrorsToRjsfExtraErrorsRec = (
+    formikErrors: ErrorMessage<string> | string,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+): ErrorSchema<{}> => {
+    if (typeof formikErrors === 'string') {
+        return { __errors: [formikErrors] };
+    }
 
-    return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
+    if (Array.isArray(formikErrors)) {
+        return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
+    }
+
+    if (typeof formikErrors === 'object' && formikErrors !== null) {
+        const newObj: Record<string, any> = {};
+        for (const key in formikErrors) {
+            newObj[key] = formikErrorsToRjsfExtraErrorsRec(formikErrors[key], template);
+        }
+        return newObj;
+    }
+
+    return formikErrors;
 };
 
-const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
+const formikErrorsToRjsfExtraErrors = (
+    formikErrors: ErrorMessage<string> | string,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+): ErrorSchema<{}> => {
+    const nestedErrors = convertErrorsToNestedGroups(template, formikErrors);
+    return formikErrorsToRjsfExtraErrorsRec(nestedErrors, template);
+};
+
+const mergeErrorSchemas = (
+    errors1: ErrorSchema<{}>,
+    errors2: ErrorSchema<{}>,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+) => {
     const merged = { ...errors1 };
     for (const key in errors2) {
         if (errors2.hasOwnProperty(key)) {
@@ -160,7 +211,8 @@ const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) =
             else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
         }
     }
-    return merged;
+
+    return convertErrorsToNestedGroups(template, merged);
 };
 
 const getComponent = (
@@ -209,8 +261,8 @@ interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplatePopulated['properties'];
     values: EntityWizardValues;
     setValues: FormikHelpers<any>['setValues'];
-    errors: FormikErrors<any>;
-    uniqueErrors?: FormikErrors<any>;
+    errors: FormikErrors<{}>;
+    uniqueErrors?: FormikErrors<{}>;
     touched: FormikTouched<any>;
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
@@ -253,12 +305,16 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         });
     }, [values.template]);
 
-    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
-    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
+    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors, values.template);
+    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => {
+        const fieldGroup = values.template?.fieldGroups?.find((group) => group.fields.includes(key));
+        if (fieldGroup) return touched[`${fieldGroup.name}_${key}`];
+        return touched[key];
+    });
+    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
 
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
+    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique, values.template);
 
     const Widgets = React.useMemo(
         () => ({
