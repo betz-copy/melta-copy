@@ -25,7 +25,7 @@ const ClientSidePageInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const setClientSideUser = useClientSideUserStore((state) => state.setClientSideUser);
 
-    const { usersInfoChildTemplateId, clientSideWorkspaceName } = workspace.metadata.clientSide;
+    const { usersInfoChildTemplateId, clientSideWorkspaceName, fullNameField } = workspace.metadata.clientSide;
     const user = AuthService.getUser();
 
     const queryClient = useQueryClient();
@@ -48,7 +48,7 @@ const ClientSidePageInner: React.FC = () => {
         },
     });
 
-    const currentUser: IKartoffelUser = JSON.parse(currentUserFromClientSide?.properties.full_name || '{}');
+    const currentUser: IKartoffelUser = JSON.parse(currentUserFromClientSide?.properties[fullNameField] || '{}');
 
     useEffect(() => {
         if (currentUserFromClientSide) {

@@ -314,6 +314,7 @@ const config = {
         usersInfoChildTemplateId: env.get('CLIENT_SIDE_USERS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         numOfPropsToShow: env.get('CLIENT_SIDE_NUM_OF_PROPS_TO_SHOW').default(9).asIntPositive(),
         clientSideWorkspaceName: env.get('CLIENT_SIDE_WORKSPACE_NAME').default('simba').asString(),
+        fullNameField: env.get('CLIENT_SIDE_USERS_INFO_FIELD').default('full_name').asString(),
     },
     mapPage: {
         sourceTemplateId: env.get('MAPPAGE_SOURCE_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
