@@ -1,14 +1,27 @@
 import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton } from '@mui/material';
+import {
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControlLabel,
+    Grid,
+    IconButton,
+    useTheme,
+} from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import RelationshipSelect, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
+import { BlueTitle } from '../BlueTitle';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { SelectCheckbox } from '../SelectCheckBox';
@@ -19,108 +32,78 @@ type IOption = {
     label: string;
 };
 
-const getFilesFromTemplate = (
-    instanceProperties: IEntity | InstanceProperties,
-    templateProperties:
-        | IEntityTemplate['properties']
-        | {
-              type: 'object';
-              properties: Record<string, IProcessSingleProperty>;
-              required: string[];
-          },
-): IFile[] => {
-    return Object.keys(templateProperties.properties)
-        .flatMap((propertyKey) => {
-            const propertySchema = templateProperties.properties[propertyKey];
-            const propertyValue = instanceProperties[propertyKey];
+export enum PrintType {
+    Entity = 'entity',
+    Process = 'process',
+}
+interface IEntityPrint {
+    type: PrintType.Entity;
+    template: IMongoEntityTemplatePopulated;
+    instance: IEntityExpanded;
+    entityConnections: EntityConnectionsProps;
+    options: {
+        date: IOption;
+        disabled: IOption;
+        entityDates: IOption;
+        previewPropertiesOnly: IOption;
+    };
+}
 
-            if (propertyValue) {
-                if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
-                if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
-                    return propertyValue.map((id: string) => getFile(id));
-            }
-            return [];
-        })
-        .filter((file) => file !== undefined) as IFile[];
+interface IProcessPrint {
+    type: PrintType.Process;
+    template: IMongoProcessTemplatePopulated;
+    instance: IMongoProcessInstancePopulated;
+    options: { processSummary: IOption };
+}
+
+type PrintItem = IEntityPrint | IProcessPrint;
+
+const getFilesFromTemplate = (
+    instanceProps: IEntity['properties'] | InstanceProperties,
+    templateProps: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated['details'] | IMongoStepTemplatePopulated,
+): IFile[] => {
+    return Object.keys(templateProps.properties.properties).flatMap((propertyKey) => {
+        const propertySchema = templateProps.properties.properties[propertyKey];
+        const propertyValue = instanceProps[propertyKey];
+
+        if (propertyValue) {
+            if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
+            if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') return propertyValue.map((id: string) => getFile(id));
+        }
+        return [];
+    });
 };
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
-    instance: IEntityExpanded | IMongoProcessInstancePopulated;
-    entityConnections?: EntityConnectionsProps;
+    printItem: PrintItem;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesLoadingStatus: {};
-    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
-    options: {
-        date?: IOption;
-        disabled?: IOption;
-        entityDates?: IOption;
-        previewPropertiesOnly?: IOption;
-        processSummary?: IOption;
-    };
+    filesLoadingStatus: Record<string, boolean>;
+    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({
-    open,
-    handleClose,
-    template,
-    instance,
-    entityConnections,
-    files,
-    setFiles,
-    selectedFiles,
-    setSelectedFiles,
-    filesLoadingStatus,
-    setFilesLoadingStatus,
-    onClick,
-    options,
-}) => {
+}> = ({ open, handleClose, printItem, files, setFiles, selectedFiles, setSelectedFiles, filesLoadingStatus, setFilesLoadingStatus, onClick }) => {
+    const theme = useTheme();
     const [isLoading, setIsLoading] = useState(false);
+    const { type, template, instance, options } = printItem;
 
-    const getPropertiesFiles = React.useCallback((): IFile[] => {
-        if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
-        return getFilesFromTemplate(
-            (instance as IMongoProcessInstancePopulated).details,
-            (template as IMongoProcessTemplatePopulated).details.properties,
-        );
+    const getPropertiesFiles = useCallback((): IFile[] => {
+        if (type === PrintType.Entity) return getFilesFromTemplate(instance.entity.properties, template);
+        return getFilesFromTemplate(instance.details, template.details);
     }, [template, instance]);
 
-    const getProcessStepsFiles = React.useCallback((): IFile[] => {
-        if ('steps' in template && 'steps' in instance) {
-            return template.steps
-                .flatMap((stepTemplate) => {
-                    return instance.steps.flatMap((step) => {
-                        return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
-                            if (step.properties) {
-                                const propertySchema = stepTemplate.properties.properties[propertyKey];
-                                const propertyValue = step.properties[propertyKey];
-                                if (propertyValue) {
-                                    if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
-                                    if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
-                                        return propertyValue.map((id: string) => getFile(id));
-                                }
-                            }
-                            return [];
-                        });
-                    });
-                })
-                .filter((file) => file !== undefined) as IFile[];
-        }
-        return [];
+    const getProcessStepsFiles = useCallback((): IFile[] => {
+        if (type === PrintType.Entity) return [];
+        return template.steps.flatMap((stepTemplate) => instance.steps.flatMap((step) => getFilesFromTemplate(step.properties ?? {}, stepTemplate)));
     }, [instance, template]);
 
     useEffect(() => {
-        const currFiles = getPropertiesFiles()
-            .filter((file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported')
-            .concat(
-                getProcessStepsFiles().filter(
-                    (file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported',
-                ),
-            );
+        const filterFiles = ({ contentType }: IFile) => contentType !== 'video' && contentType !== 'audio' && contentType !== 'unsupported';
+        const currFiles = getPropertiesFiles().filter(filterFiles).concat(getProcessStepsFiles().filter(filterFiles));
+
         setFiles(currFiles);
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
@@ -144,23 +127,26 @@ const PrintOptionsDialog: React.FC<{
 
     return (
         <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
-            <DialogTitle paddingLeft="4px">
-                <Grid container display="flex" justifyContent="space-between">
-                    <Grid item> {i18next.t('entityPage.print.printOptions')}</Grid>
+            <DialogTitle>
+                <Grid container display="flex" justifyContent="space-between" alignItems="center">
+                    <Grid item>
+                        <BlueTitle title={i18next.t('entityPage.print.printOptions')} component="h6" variant="h6" />
+                    </Grid>
                     <Grid item>
                         <IconButton onClick={handleClose}>
-                            <CloseOutlined />
+                            <CloseOutlined sx={{ color: theme.palette.primary.main }} />
                         </IconButton>
                     </Grid>
                 </Grid>
             </DialogTitle>
+
             <DialogContent style={{ width: '500px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {entityConnections && entityConnections.connectionsTemplates.length > 0 && (
+                        {type === PrintType.Entity && printItem.entityConnections && printItem.entityConnections.connectionsTemplates.length > 0 && (
                             <RelationshipSelect
-                                expandedEntity={instance as IEntityExpanded}
-                                entityConnections={entityConnections}
+                                expandedEntity={instance}
+                                entityConnections={printItem.entityConnections}
                                 title={i18next.t('entityPage.print.chooseRelationship')}
                             />
                         )}

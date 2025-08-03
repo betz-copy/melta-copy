@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { IconButton, ThemeProvider } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
@@ -12,7 +12,7 @@ import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/pr
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { IFile } from '../../../interfaces/preview';
 import { MenuButton } from '../../../common/MenuButton';
-import { PrintOptionsDialog } from '../../../common/print/PrintOptionsDialog';
+import { PrintOptionsDialog, PrintType } from '../../../common/print/PrintOptionsDialog';
 import '../../Entity/components/print/print.css';
 import { lightTheme } from '../../../theme';
 
@@ -24,27 +24,31 @@ const Print: React.FC<{
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isProcessCard?: boolean;
 }> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isProcessCard }) => {
-    const [openModal, setOpenModal] = useState(false);
+    const componentRef = useRef(null);
+
+    const [openModal, setOpenModal] = useState<boolean>(false);
+
+    const [files, setFiles] = useState<IFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
+    const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
+
+    const [showSummary, setShowSummary] = useState<boolean>(true);
+
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
 
-    const componentRef = React.useRef(null);
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
     });
 
-    const [files, setFiles] = useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState(files);
-
-    const [showSummary, setShowSummary] = useState(true);
-    const [filesLoadingStatus, setFilesLoadingStatus] = useState({});
-
     const getPageMargins = () => {
         // eslint-disable-next-line quotes
         return `@page { margin: 15px 10px 15px 10px !important; }`;
     };
+
+    const options = { processSummary: { show: showSummary, set: setShowSummary, label: 'wizard.processInstance.print.showSummary' } };
 
     return (
         <>
@@ -73,7 +77,7 @@ const Print: React.FC<{
                         ref={componentRef}
                         processTemplate={processTemplate}
                         processInstance={processInstance}
-                        options={{ showSummary, showFiles: selectedFiles.length !== 0 }}
+                        options={{ showSummary, showFiles: !!selectedFiles.length }}
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         mutateAsync={mutateAsync}
@@ -87,8 +91,7 @@ const Print: React.FC<{
                 <PrintOptionsDialog
                     open={openModal}
                     handleClose={handleClose}
-                    instance={processInstance}
-                    template={processTemplate}
+                    printItem={{ type: PrintType.Process, instance: processInstance, template: processTemplate, options }}
                     files={files}
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
@@ -96,9 +99,6 @@ const Print: React.FC<{
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
-                    options={{
-                        processSummary: { show: showSummary, set: setShowSummary, label: 'wizard.processInstance.print.showSummary' },
-                    }}
                 />
             )}
         </>

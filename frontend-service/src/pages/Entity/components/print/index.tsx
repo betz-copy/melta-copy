@@ -1,11 +1,11 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { INestedRelationshipTemplates } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
+import { PrintOptionsDialog, PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
@@ -18,22 +18,22 @@ const Print: React.FC<{
     expandedEntity: IEntityExpanded;
     connections: INestedRelationshipTemplates[];
 }> = ({ entityTemplate, expandedEntity, connections }) => {
-    const [openModal, setOpenModal] = useState(false);
+    const componentRef = useRef(null);
 
-    const componentRef = React.useRef(null);
+    const [openModal, setOpenModal] = useState<boolean>(false);
 
     const [files, setFiles] = useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState(files);
-    const [filesLoadingStatus, setFilesLoadingStatus] = useState({});
+    const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
+    const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
 
-    const [selectedConnections, setSelectedConnections] = React.useState<INestedRelationshipTemplates[]>([]);
-    const [connectionsTemplates, setConnectionsTemplates] = React.useState(connections);
-    const [connectionsInstances, setConnectionsInstances] = React.useState<IConnection[]>([]);
+    const [selectedConnections, setSelectedConnections] = useState<INestedRelationshipTemplates[]>([]);
+    const [connectionsTemplates, setConnectionsTemplates] = useState<INestedRelationshipTemplates[]>(connections);
+    const [connectionsInstances, setConnectionsInstances] = useState<IConnection[]>([]);
 
-    const [showDate, setShowDate] = useState(true);
-    const [showDisabled, setShowDisabled] = useState(true);
-    const [showEntityDates, setShowEntityDates] = useState(true);
-    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState(false);
+    const [showDate, setShowDate] = useState<boolean>(true);
+    const [showDisabled, setShowDisabled] = useState<boolean>(true);
+    const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
+    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
 
     useEffect(() => {
         setConnectionsTemplates(connections);
@@ -57,6 +57,17 @@ const Print: React.FC<{
 
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 
+    const options = {
+        date: { show: showDate, set: setShowDate, label: 'entityPage.print.showDate' },
+        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
+        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
+        previewPropertiesOnly: {
+            show: showPreviewPropertiesOnly,
+            set: setShowPreviewPropertiesOnly,
+            label: 'entityPage.print.showOnlyPreviewProperties',
+        },
+    };
+
     return (
         <>
             <MeltaTooltip title={i18next.t('entityPage.print.header')}>
@@ -77,21 +88,25 @@ const Print: React.FC<{
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}
-                        options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
+                        options={{ showDate, showDisabled, showEntityDates, showEntityFiles: !!selectedFiles.length, showPreviewPropertiesOnly }}
                     />
                 </ThemeProvider>
             </div>
             {openModal && (
                 <PrintOptionsDialog
                     open={openModal}
-                    instance={expandedEntity}
-                    template={entityTemplate}
-                    entityConnections={{
-                        connectionsTemplates,
-                        setConnectionsTemplates,
-                        setConnectionsInstances,
-                        selectedConnections,
-                        setSelectedConnections,
+                    printItem={{
+                        type: PrintType.Entity,
+                        instance: expandedEntity,
+                        template: entityTemplate,
+                        entityConnections: {
+                            connectionsTemplates,
+                            setConnectionsTemplates,
+                            setConnectionsInstances,
+                            selectedConnections,
+                            setSelectedConnections,
+                        },
+                        options,
                     }}
                     handleClose={handleClose}
                     files={files}
@@ -101,16 +116,6 @@ const Print: React.FC<{
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
-                    options={{
-                        date: { show: showDate, set: setShowDate, label: 'entityPage.print.showDate' },
-                        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
-                        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
-                        previewPropertiesOnly: {
-                            show: showPreviewPropertiesOnly,
-                            set: setShowPreviewPropertiesOnly,
-                            label: 'entityPage.print.showOnlyPreviewProperties',
-                        },
-                    }}
                 />
             )}
         </>

@@ -279,7 +279,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         [],
     );
 
-    const schemaWithGroups = values.template.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
+    const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
         const properties = fields.reduce((acc, field) => {
             const propertyInSchema = schema.properties[field];
             if (!propertyInSchema) return acc;

@@ -123,7 +123,6 @@ const ComponentToPrint = React.forwardRef<
                 {connectionsTemplates.length > 0 && (
                     <>
                         <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-
                         {renderConnectionTree(expandedEntity.entity, connectionsTemplates, connectionsInstances, options)}
                     </>
                 )}
