@@ -547,7 +547,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             if (type === 'array' && items?.format === 'user') {
                 config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
                     normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                        (user: string) => JSON.parse(user)[userFieldoriginalFieldName],
+                        (user: string) => JSON.parse(user)[originalFieldName],
                     );
                 });
                 return;
