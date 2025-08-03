@@ -172,7 +172,7 @@ const PrintOptionsDialog: React.FC<{
                             <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
                         )}
                     </Grid>
-                    <Grid item marginTop={1}>
+                    <Grid item marginTop={2}>
                         {files.length !== 0 && (
                             <MultipleSelect
                                 id="print"
