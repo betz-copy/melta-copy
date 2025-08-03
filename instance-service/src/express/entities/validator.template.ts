@@ -514,102 +514,108 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityTemplateService: EntityTemplateManagerService,
     recursiveRelationshipReference = false,
 ): Promise<Record<string, any>> => {
-    const normalizedEntity = {};
+    const normalizedEntity: Record<string, any> = {};
 
-    // TODO: for of
-    for (const [key, value] of Object.entries(entityTemplate.properties.properties)) {
-        if (!(key in entityProperties)) {
-            if (value.type === 'boolean') {
-                normalizedEntity[key] = false;
-                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+    const propertyEntries = Object.entries(entityTemplate.properties.properties);
+
+    await Promise.all(
+        propertyEntries.map(async ([key, value]) => {
+            if (!(key in entityProperties)) {
+                if (value.type === 'boolean') {
+                    normalizedEntity[key] = false;
+                    normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+                }
+                return;
             }
 
-            continue;
-        }
+            const propertyValue = entityProperties[key];
+            const { type, format, items } = value;
 
-        const propertyValue = entityProperties[key];
-        const { type, format, items } = value;
-        if (format === 'user') {
-            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
-                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-                    JSON.parse(propertyValue)[userField.originalFieldName];
-            });
-            continue;
-        }
-
-        if (type === 'array' && items?.format === 'user') {
-            config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
-                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                    (user) => JSON.parse(user)[userField.originalFieldName],
-                );
-            });
-
-            continue;
-        }
-
-        // For Neo4j fulltext search (supports only string properties)
-        if (type !== 'string') {
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
-        }
-
-        if (type === 'boolean') {
-            normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
-        }
-
-        if (type === 'array' && value.items?.format === 'fileId') {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
-        }
-
-        if (type === 'string' && (format === 'fileId' || format === 'signature')) {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
-        }
-
-        if (type === 'string' && format === 'date') {
-            normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
-
-            continue;
-        }
-
-        if (type === 'string' && format === 'date-time') {
-            normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(new Date(propertyValue));
-
-            continue;
-        }
-
-        if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-            let relationShipPropValue: Record<string, any> = propertyValue;
-
-            if (recursiveRelationshipReference) {
-                const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
-
-                relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
-                    propertyValue.properties,
-                    relatedEntityTemplate,
-                    entityTemplateService,
-                    Boolean(Object.values(relatedEntityTemplate.properties.properties).find(({ format }) => format === 'relationshipReference')),
-                );
+            if (format === 'user') {
+                config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                        JSON.parse(propertyValue)[userField.originalFieldName];
+                });
+                return;
             }
 
-            normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
-            Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
-                normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
-            });
+            if (type === 'array' && items?.format === 'user') {
+                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                        (user: string) => JSON.parse(user)[userField.originalFieldName],
+                    );
+                });
+                return;
+            }
 
-            continue;
-        }
-        if (type === 'string' && format === 'location') {
-            const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
-            normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
-            normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
+            // For Neo4j fulltext search (supports only string properties)
+            if (type !== 'string') {
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
+            }
 
-            continue;
-        }
+            if (type === 'boolean') {
+                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
+            }
 
-        normalizedEntity[key] = propertyValue;
-    }
+            if (type === 'array' && items?.format === 'fileId') {
+                normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
+            }
+
+            if (type === 'string' && (format === 'fileId' || format === 'signature')) {
+                normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
+            }
+
+            if (type === 'string' && format === 'date') {
+                const date = new Date(propertyValue);
+                normalizedEntity[key] = getNeo4jDate(date);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(date);
+                return;
+            }
+
+            if (type === 'string' && format === 'date-time') {
+                const dateTime = new Date(propertyValue);
+                normalizedEntity[key] = getNeo4jDateTime(dateTime);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(dateTime);
+                return;
+            }
+
+            if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
+                let relationShipPropValue: Record<string, any> = propertyValue;
+
+                if (recursiveRelationshipReference) {
+                    const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
+
+                    const hasNestedRelationship = Object.values(relatedEntityTemplate.properties.properties).some(
+                        ({ format }) => format === 'relationshipReference',
+                    );
+
+                    relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
+                        propertyValue.properties,
+                        relatedEntityTemplate,
+                        entityTemplateService,
+                        hasNestedRelationship,
+                    );
+                }
+
+                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
+                Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
+                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                });
+
+                return;
+            }
+
+            if (type === 'string' && format === 'location') {
+                const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
+                normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
+                normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
+                return;
+            }
+
+            normalizedEntity[key] = propertyValue;
+        }),
+    );
 
     return normalizedEntity;
 };
