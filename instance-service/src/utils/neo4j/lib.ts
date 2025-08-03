@@ -56,9 +56,11 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
             return;
         }
 
-        // TODO
         if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-            userKeys.add(key.split(config.neo4j.userFieldPropertySuffix)[0]);
+            const currentUserField = config.neo4j.userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+                key.includes(suffixFieldName),
+            )!.suffixFieldName;
+            userKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
