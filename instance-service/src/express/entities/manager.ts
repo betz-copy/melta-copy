@@ -931,7 +931,11 @@ class EntityManager extends DefaultManagerNeo4j {
         return node;
     }
 
-    // Only deals with relationships
+    /**
+     * Converts a flattened entity (that has a relationshipReference field) into an unflattened (nested) entity
+     * @param acc accumulator, accumulates the unflattened fields and in the end becomes the unflattened entity properties
+     * @returns the unflattened properties of the previously flattened entity
+     */
     static fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
         Object.entries(properties).forEach(([key, value]) => {
             if (!key.endsWith(config.neo4j.relationshipReferencePropertySuffix)) {

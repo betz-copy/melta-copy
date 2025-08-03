@@ -508,6 +508,13 @@ export const getFilesName = (files: string[]): string => {
     return fileNames.join(', ');
 };
 
+/**
+ * Prepares the entityProperties to be inserted to neo4j.
+ * Adds suffixes to special keys (such as booleans and users)
+ * And changes some of the values to strings (dates, users, bools etc...)
+ * @param recursiveRelationshipReference
+ * @returns flattened entity (i.e. an object with no nested properties, using key paths as keys).
+ */
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
