@@ -1,21 +1,21 @@
+import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import i18next from 'i18next';
+import _debounce from 'lodash.debounce';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import _debounce from 'lodash.debounce';
-import i18next from 'i18next';
-import { ExpandMore, InfoOutlined } from '@mui/icons-material';
-import { MeltaTooltip } from '../MeltaTooltip';
-import { IEntity, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { EntityPropertiesInternal } from '../EntityProperties';
-import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
-import { locationConverterToString } from '../../utils/map/convert';
-import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
+import { IEntity, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
+import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { locationConverterToString } from '../../utils/map/convert';
+import { EntityPropertiesInternal } from '../EntityProperties';
+import { MeltaTooltip } from '../MeltaTooltip';
+import RelationshipReferenceView from '../RelationshipReferenceView';
+import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -221,7 +221,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         error={isError}
                         fullWidth
                         helperText={helperText}
-                        label={label}
+                        label={String(label)}
                         InputProps={{
                             ...params.InputProps,
                             readOnly,

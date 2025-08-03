@@ -1,15 +1,15 @@
-import { v4 as uuidv4 } from 'uuid';
-import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
-import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import {
-    ValidationError,
     ActionErrors,
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
     IRelationship,
     SplitBy,
+    ValidationError,
 } from '@microservices/shared';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
+import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
@@ -30,7 +30,10 @@ type Relationship = Neo4jRelationship<number>;
 export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
-
+/**
+ * Fix the values of an entity that is saved in neo4j to its original values.
+ * For example dates and fixing the user fields to be without the suffix.
+ */
 export const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
@@ -48,12 +51,19 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
         }
 
         if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
-            usersArrayKeys.add(key.split('.')[0]);
+            // Find the user field of the key (everything before the suffix)
+            const currentUserField = config.neo4j.usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+                key.includes(suffixFieldName),
+            )!.suffixFieldName;
+            usersArrayKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
         if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-            userKeys.add(key.split('.')[0]);
+            const currentUserField = config.neo4j.userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+                key.includes(suffixFieldName),
+            )!.suffixFieldName;
+            userKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
@@ -91,7 +101,7 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
         usersArrayKeys.forEach((userKey) => {
             props[userKey] = properties[
                 `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
-            ].map((_id, index) => {
+            ].map((_id: string, index: string | number) => {
                 const objToReturn: any = {};
 
                 config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
