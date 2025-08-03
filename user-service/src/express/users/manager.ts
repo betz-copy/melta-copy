@@ -53,7 +53,12 @@ class UsersManager {
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
             const relatedIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
-            query.$or = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
+            const searchByRelatedIds = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
+
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: searchByRelatedIds }];
+                delete query.$or;
+            } else query.$or = searchByRelatedIds;
         }
 
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })

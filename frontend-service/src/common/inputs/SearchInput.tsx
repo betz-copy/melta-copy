@@ -16,6 +16,7 @@ const SearchInput: React.FC<{
     height?: string;
     width?: string;
     isGlobalSearch?: boolean;
+    showBorder?: boolean;
 }> = ({
     value,
     onChange,
@@ -27,6 +28,7 @@ const SearchInput: React.FC<{
     toTopBar = false,
     height = '34px',
     width = '231px',
+    showBorder= false,
 }) => {
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -50,7 +52,12 @@ const SearchInput: React.FC<{
                 height,
                 width,
                 padding: '0px, 8px, 0px, 8px',
-                ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF', '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }),
+                ...(darkMode
+                    ? {}
+                    : {
+                          backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                          '& .MuiOutlinedInput-notchedOutline': { border: showBorder ? '' : 'none' },
+                      }),
             }}
             InputProps={{
                 style: {

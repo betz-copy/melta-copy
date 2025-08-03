@@ -23,7 +23,8 @@ const ManagePermissions: React.FC<{
     formikProps: FormikProps<PermissionData>;
     dialogPermissionData: Map<string, CategoryWithTemplates>;
     disableCheckboxes?: boolean;
-}> = ({ mode, workspace, formikProps, dialogPermissionData, disableCheckboxes }) => {
+    searchText?: { value: string; set: (text: string) => void };
+}> = ({ mode, workspace, formikProps, dialogPermissionData, disableCheckboxes, searchText }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
@@ -69,6 +70,7 @@ const ManagePermissions: React.FC<{
             )}
             <Box marginTop="25px">
                 <InstancesPermissionsCard
+                    searchText={searchText}
                     viewMode={mode === 'view'}
                     formikProps={formikProps}
                     workspaceId={workspace._id}

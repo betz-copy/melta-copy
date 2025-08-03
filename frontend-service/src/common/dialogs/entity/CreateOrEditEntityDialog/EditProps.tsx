@@ -139,7 +139,7 @@ const EditProps: React.FC<{
         if (!checked) {
             setFieldTouched(`properties.${field}`, false);
             setFieldValue(`properties.${field}`, undefined);
-        } else if(schema.properties[field].defaultValue) {
+        } else if (schema.properties[field].defaultValue) {
             setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
         }
 

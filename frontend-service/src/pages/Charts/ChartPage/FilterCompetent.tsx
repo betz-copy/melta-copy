@@ -79,9 +79,11 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                             onChange={(_e, selectedField) => {
                                                 const selectedKey = selectedField || '';
                                                 const selectedProp = entityTemplate?.properties.properties[selectedKey];
-                                                const { format, type } = selectedProp || {};
+                                                const { format, type, enum: enumValues } = selectedProp || {};
                                                 const newFilterField =
-                                                    (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+                                                    (enumValues && initializedFilterField['array']) ||
+                                                    (format && initializedFilterField[format]) ||
+                                                    (type && initializedFilterField[type]);
 
                                                 const newFiltersArray = [...filters];
                                                 newFiltersArray[index] = {
@@ -101,6 +103,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                             isOptionEqualToValue={(option, value) => option === value}
                                             getOptionDisabled={(option) => {
                                                 const propertyTemplate = entityTemplate?.properties.properties[option];
+
                                                 if (propertyTemplate?.format === 'relationshipReference') {
                                                     const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
                                                     return !entityTemplates?.get(relatedTemplateId);

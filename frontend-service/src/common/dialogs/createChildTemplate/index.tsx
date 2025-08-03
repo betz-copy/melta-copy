@@ -92,12 +92,14 @@ const CreateChildTemplateDialog: React.FC<{
             Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
                 const isRequired = entityTemplate.properties.required.includes(key);
                 const property = childTemplate?.properties.properties[key];
-                const isSelected = (childTemplate ? key in childTemplate.properties.properties : false) || isRequired;
                 const defaultValue = property?.defaultValue;
+                const isSelected =
+                    (childTemplate ? key in childTemplate.properties.properties && childTemplate.properties.properties[key].display : false) ||
+                    (isRequired && defaultValue === undefined);
                 const isEditableByUser = property?.isEditableByUser;
 
                 initialFields[key] = {
-                    selected: isSelected || isRequired,
+                    selected: isSelected || (isRequired && defaultValue === undefined),
                     fieldValue: value,
                     ...(defaultValue && { defaultValue }),
                     ...(isEditableByUser && { isEditableByUser }),
@@ -301,7 +303,6 @@ const CreateChildTemplateDialog: React.FC<{
     const handleCheckboxChange = (fieldName: string, checked: boolean) => {
         const newFieldFilters = { ...templateFieldsFilters };
         if (!checked) {
-            setFieldChips((prev) => prev.filter((chip) => chip.fieldName !== fieldName));
             newFieldFilters[fieldName].isEditableByUser = false;
         }
 
@@ -340,7 +341,7 @@ const CreateChildTemplateDialog: React.FC<{
                 onSubmit={async ({ name, displayName, description, category }) => {
                     if (matchValidationError.size > 0) return;
 
-                    const latestFields = Object.entries(templateFieldsFilters).filter(([_, field]) => field.selected);
+                    const latestFields = Object.entries(templateFieldsFilters);
 
                     const properties: IChildTemplate['properties'] = { properties: {} };
 
@@ -355,10 +356,18 @@ const CreateChildTemplateDialog: React.FC<{
                             ...(filterChips.length > 0 && { filters: { $or: filtersArray } }),
                             ...('defaultValue' in fieldConfig &&
                                 fieldConfig.defaultValue !== undefined && { defaultValue: fieldConfig.defaultValue }),
+                            display: fieldConfig.selected,
                         };
 
                         properties.properties[fieldName] = childProp;
                     });
+
+                    properties.properties = Object.fromEntries(
+                        Object.entries(properties.properties).filter(
+                            ([_key, { display, filters, defaultValue }]) =>
+                                display === true || (display === false && (defaultValue !== undefined || filters !== undefined)),
+                        ),
+                    );
 
                     const baseTemplate: IChildTemplate = {
                         name: `${entityTemplate.name}_${name}`,
@@ -419,7 +428,7 @@ const CreateChildTemplateDialog: React.FC<{
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
                                     <Grid container item spacing={2}>
-                                        <Grid item xs={6}>
+                                        <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateName')}
@@ -434,7 +443,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 disabled={isUpdate}
                                             />
                                         </Grid>
-                                        <Grid item xs={6}>
+                                        <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateDisplayName')}
@@ -449,7 +458,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 disabled={isUpdate}
                                             />
                                         </Grid>
-                                        <Grid item xs={12}>
+                                        <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateDetails')}
@@ -459,7 +468,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 error={touched.description && Boolean(errors.description)}
                                                 helperText={touched.description && errors.description}
                                                 multiline
-                                                rows={2}
+                                                rows={1}
                                             />
                                         </Grid>
                                     </Grid>
@@ -680,16 +689,17 @@ const CreateChildTemplateDialog: React.FC<{
                                                     onCheckboxChange={handleCheckboxChange}
                                                     matchValidationError={matchValidationError}
                                                     setMatchValidationError={setMatchValidationError}
+                                                    selectedUserField={userField.selectedUserField}
                                                 />
                                             </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>
                             </DialogContent>
-                            <DialogActions>
-                                <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>
+                            <DialogActions sx={{ margin: '10px' }}>
+                                {isUpdate && <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>}
                                 <Button type="submit" variant="contained" disabled={(isUpdate && !hasChanges) || matchValidationError.size > 0}>
-                                    {i18next.t(`createChildTemplateDialog.buttons.${isUpdate ? 'update' : 'create'}`)}
+                                    {i18next.t(`actions.${isUpdate ? 'edit' : 'create'}`)}
                                 </Button>
                             </DialogActions>
                         </Form>

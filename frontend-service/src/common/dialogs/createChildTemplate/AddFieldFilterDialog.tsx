@@ -3,7 +3,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, I
 import { format } from 'date-fns';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { ChipType, IFieldChip, IFieldFilter } from '../../../interfaces/childTemplates';
+import { ByCurrentDefaultValue, ChipType, IFieldChip, IFieldFilter } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
@@ -16,6 +16,8 @@ import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { isValidAGGridFilter } from '../../FilterComponent';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
+import { isEqual } from 'lodash';
 
 const getFilterOperator = (filterField: IFieldChip['filterField']) => {
     const operatorMap: Record<string, string> = {
@@ -26,8 +28,9 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         lessThan: '$lt',
         lessThanOrEqual: '$lte',
         inRange: '$in',
+        between: '$between',
         not: '$not',
-        // contains: '$rgx', // contains always true in the validation
+        contains: '$rgx', // contains always true in the validation
         notContains: '$notContains',
     };
 
@@ -35,6 +38,10 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         case 'text':
         case 'number':
         case 'date':
+            if (filterField.type === 'inRange') {
+                return operatorMap['between'];
+            }
+
             return operatorMap[filterField.type];
         case 'set':
             return filterField.values && filterField.values.length > 0 ? '$in' : null;
@@ -50,7 +57,7 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
         case 'number':
             return filterField.filter;
         case 'date':
-            return filterField.dateFrom;
+            return filterField.dateTo ? [filterField.dateFrom, filterField.dateTo] : filterField.dateFrom;
         case 'set':
             return filterField.values;
         default:
@@ -130,7 +137,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         const filtersChip = fieldChips.filter((chip) => chip.chipType === ChipType.Filter && chip.fieldName === currentFieldName);
 
         if (dialogType === ChipType.Default && filtersChip.length > 0) {
-            const anyValid = filtersChip.some(({ filterField }) => checkMatchValidation(filterField, fieldName, value.filter));
+            const anyValid = filtersChip.some(({ filterField }) => checkMatchValidation(filterField, fieldName, getFilterValue(value)));
 
             if (!anyValid) {
                 onFailedMatch();
@@ -169,16 +176,23 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         setLocalFilterField(value);
     };
 
-    const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
+    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
         setCurrentFieldError(undefined);
 
         const fieldSchema = entityTemplate.properties.properties[currentFieldName];
 
         const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
 
-        const dateString = newValue ? format(newValue, dateFormat) : null;
+        const dateString = newValue
+            ? newValue === ByCurrentDefaultValue.byCurrentDate
+                ? ByCurrentDefaultValue.byCurrentDate
+                : format(newValue, dateFormat)
+            : null;
 
-        checkMatchValidations(newValue);
+        checkMatchValidations({
+            ...localFilterField,
+            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
+        } as IAGGridDateFilter);
 
         setLocalFilterField({
             ...localFilterField,
@@ -186,17 +200,23 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         } as IAGGridDateFilter);
     };
 
-    const handleCheckboxChange = (option: string | IUser, checked: boolean) => {
+    const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
         setCurrentFieldError(undefined);
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
-        checkMatchValidations(values);
-        const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
+
+        let updatedValues: (string | null | IUser)[];
+
+        if (checked) updatedValues = Array.from(new Set([...values, ...options]));
+        else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
+
+        checkMatchValidations({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
         setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
+        checkMatchValidations({ ...localFilterField, type: newTypeFilter } as any);
     };
 
     const renderFilterInput = () => {
@@ -212,19 +232,47 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                   }
                 : {};
 
-        if (propEnum) {
+        const enumOptions = propEnum ?? items?.enum;
+
+        if (enumOptions) {
+            const isDefault = dialogType === ChipType.Default;
+
+            if (isDefault && propEnum)
+                return (
+                    <SelectFilterInput
+                        filterField={localFilterField?.filterType === 'text' ? (localFilterField as IAGGridTextFilter) : undefined}
+                        enumOptions={enumOptions}
+                        handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
+                        readOnly={readOnly}
+                        error={isError}
+                        helperText={currentFieldError}
+                        {...defaultFilterProps}
+                    />
+                );
+
             return (
-                <SelectFilterInput
-                    filterField={localFilterField?.filterType === 'text' ? (localFilterField as IAGGridTextFilter) : undefined}
-                    enumOptions={propEnum}
-                    handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
+                <MultipleSelectFilterInput
+                    filterField={localFilterField?.filterType === 'set' ? localFilterField : undefined}
+                    handleCheckboxChange={handleCheckboxChange}
+                    enumOptions={enumOptions}
                     readOnly={readOnly}
-                    error={isError}
+                    isError={isError}
                     helperText={currentFieldError}
+                    allowEmpty={!isDefault}
                     {...defaultFilterProps}
                 />
             );
         }
+
+        if (format === 'user' && dialogType === ChipType.Default)
+            return (
+                <UserFilterInput
+                    filterField={localFilterField?.filterType === 'text' ? localFilterField : undefined}
+                    handleFilterFieldChange={handleFilterFieldChange}
+                    handleFilterTypeChange={handleFilterTypeChange}
+                    {...defaultFilterProps}
+                />
+            );
 
         if (format === 'date-time' || format === 'date') {
             return (
@@ -232,6 +280,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     filterField={localFilterField?.filterType === 'date' ? localFilterField : undefined}
                     handleFilterTypeChange={handleFilterTypeChange}
                     handleDateChange={handleDateChange}
+                    currentDateCheckbox={dialogType === ChipType.Default}
                     readOnly={readOnly}
                     entityFilter={entityFilter}
                     {...defaultFilterProps}
@@ -247,20 +296,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
                     error={isError}
-                    helperText={currentFieldError}
-                    {...defaultFilterProps}
-                />
-            );
-        }
-
-        if (items?.enum) {
-            return (
-                <MultipleSelectFilterInput
-                    filterField={localFilterField?.filterType === 'set' ? localFilterField : undefined}
-                    handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={items.enum}
-                    readOnly={readOnly}
-                    isError={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
                 />

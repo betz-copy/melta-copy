@@ -38,7 +38,7 @@ const parseFilterObject = (filters: any): any | null => {
 };
 
 const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
-    const enumEquals = filterObj.$and.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
+    const enumEquals = filterObj.$or.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
 };
@@ -90,6 +90,7 @@ const dePopulateChildProperties = (
             defaultValue: value.defaultValue,
             filters: value.filters ? JSON.parse(value.filters) : undefined,
             isEditableByUser: value.isEditableByUser,
+            display: value.display,
         };
         return acc;
     }, {});

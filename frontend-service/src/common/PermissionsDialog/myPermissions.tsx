@@ -3,7 +3,7 @@ import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
 import _isEqual from 'lodash.isequal';
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -52,6 +52,7 @@ const MyPermissions: React.FC<{
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const [searchText, setSearchText] = useState('');
 
     const queryClient = useQueryClient();
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
@@ -250,10 +251,11 @@ const MyPermissions: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()])}
+                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()], searchText)}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                                 disableCheckboxes={!!formikRole}
+                                searchText={{ value: searchText, set: setSearchText }}
                             />
                         </DialogContent>
 

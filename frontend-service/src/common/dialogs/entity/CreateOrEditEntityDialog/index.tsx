@@ -6,7 +6,7 @@ import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
 import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -23,13 +23,14 @@ import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 import { IChooseTemplateMode } from '../ChooseTemplate';
 import { UserState, useUserStore } from '../../../../stores/user';
+import { format } from 'date-fns';
 
 const { signaturePrefix } = environment;
 
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
-        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+        (value) => ((value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId') && value.display !== false,
     );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
@@ -70,9 +71,16 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
     const mergedProperties = {
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
-                .map(([key, prop]) => {
-                    if (prop.format === 'user' && currentUser) properties[key] = JSON.stringify(currentUser);
-                    return [key, properties[key] ?? prop.defaultValue];
+                .map(([key, { defaultValue, format: formatProperty }]) => {
+                    if (formatProperty === 'user' && currentUser && defaultValue === ByCurrentDefaultValue.byCurrentUser)
+                        properties[key] = JSON.stringify(currentUser);
+
+                    if ((formatProperty === 'date' || formatProperty === 'date-time') && defaultValue === ByCurrentDefaultValue.byCurrentDate) {
+                        const currentDate = new Date();
+                        properties[key] = formatProperty === 'date-time' ? currentDate.toISOString() : format(currentDate, 'yyyy-MM-dd');
+                    }
+
+                    return [key, properties[key] ?? defaultValue];
                 })
                 .filter(([_key, value]) => !!value),
         ),

@@ -223,10 +223,7 @@ const useMutationHandler = (
                         },
                     },
                 },
-                {
-                    autoClose: false,
-                    style: { width: '335px' },
-                },
+                { style: { width: '335px' } },
             );
 
             mutationPromise.finally(resolve);

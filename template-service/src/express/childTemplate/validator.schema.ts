@@ -9,12 +9,13 @@ const childTemplatePropertySchema = Joi.object({
         return value;
     }),
     isEditableByUser: Joi.boolean(),
+    display: Joi.boolean(),
 });
 
 const childEntityTemplateSchema = {
     name: variableNameValidation.required(),
     displayName: Joi.string().required(),
-    description: Joi.string(),
+    description: Joi.string().allow(''),
     parentTemplateId: MongoIdSchema.required(),
     category: MongoIdSchema.required(),
     properties: Joi.object({

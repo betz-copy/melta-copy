@@ -7,6 +7,7 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
+import { flatten, unflatten } from 'flatley';
 import {
     IEntitySingleProperty,
     IMongoEntityTemplate,
@@ -45,6 +46,7 @@ import {
     IMultipleSelect,
     getFilterFromChildTemplate,
     combineFilters,
+    IChildTemplatePopulated,
 } from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
@@ -59,6 +61,7 @@ import {
     generateDefaultProperties,
     getNeo4jDateTime,
     normalizeChartResponse,
+    normalizeFields,
     normalizeGetDbConstraints,
     normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
@@ -271,6 +274,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                     if (relatedEntityId) {
                         const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+
                         fixedProperties[name] = fixedField;
                         relatedEntitiesByIds[relatedEntityId] = relatedEntity;
                     }
@@ -285,7 +289,7 @@ class EntityManager extends DefaultManagerNeo4j {
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
                 },
             },
         );
@@ -367,7 +371,12 @@ class EntityManager extends DefaultManagerNeo4j {
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
-        const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
+        const relatedEntityFixProperties = await addStringFieldsAndNormalizeSpecialStringValues(
+            relatedEntity.properties,
+            relatedEntityTemplate,
+            this.entityTemplateManagerService,
+            true,
+        );
 
         return {
             fixedField: {
@@ -471,6 +480,7 @@ class EntityManager extends DefaultManagerNeo4j {
         crudAction: IEntityCrudAction,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
+        childTemplate?: IChildTemplatePopulated,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -505,6 +515,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     transaction,
                     entitiesTemplatesByIds,
                     this.workspaceId,
+                    childTemplate,
                 );
             },
             true,
@@ -597,12 +608,19 @@ class EntityManager extends DefaultManagerNeo4j {
         userId?: string,
         entity?: IEntity,
         duplicatedFromId?: string,
+        childTemplate?: IChildTemplatePopulated,
     ) => {
         const entitiesTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate._id, entityTemplate.actions);
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
-        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, entitiesTemplatesByIds, userId);
+        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(
+            mainAction,
+            crudAction,
+            entitiesTemplatesByIds,
+            userId,
+            childTemplate,
+        );
 
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate, entitiesTemplatesByIds);
 
@@ -651,13 +669,23 @@ class EntityManager extends DefaultManagerNeo4j {
         childTemplateId?: string,
     ) {
         let template = entityTemplate;
+        let childTemplate: IChildTemplatePopulated | undefined = undefined;
+
         if (childTemplateId) {
-            const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
+            childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
 
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onCreateEntity)) {
-            const actions = await this.buildActionsArray(IEntityCrudAction.onCreateEntity, properties, template, userId, undefined, duplicatedFromId);
+            const actions = await this.buildActionsArray(
+                IEntityCrudAction.onCreateEntity,
+                properties,
+                template,
+                userId,
+                undefined,
+                duplicatedFromId,
+                childTemplate,
+            );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
 
@@ -903,56 +931,26 @@ class EntityManager extends DefaultManagerNeo4j {
         return node;
     }
 
-    static fixReturnedEntityReferencesFields(entity: IEntity) {
-        const fixedExpandedEntity = entity;
-
-        const relatedEntities = {};
-
-        Object.entries(entity.properties).forEach(([key, value]) => {
-            if (key.includes('.') && key.endsWith(`${config.neo4j.relationshipReferencePropertySuffix}`)) {
-                const innerKeys = key.split('.').map((innerKey) => innerKey.replace(config.neo4j.relationshipReferencePropertySuffix, ''));
-
-                if (!relatedEntities[innerKeys[0]]) {
-                    relatedEntities[innerKeys[0]] = {
-                        properties: {},
-                        templateId: '',
-                    };
-                }
-
-                if (innerKeys[1] === 'properties') {
-                    if (innerKeys[3]) {
-                        let fourthKey = innerKeys[3];
-                        // currently only user and user array should have a 4th key
-                        if (!relatedEntities[innerKeys[0]].properties[innerKeys[2]]) {
-                            relatedEntities[innerKeys[0]].properties[innerKeys[2]] = {};
-                        }
-
-                        if (innerKeys[3].endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-                            // user
-                            fourthKey = innerKeys[3].replace(config.neo4j.userFieldPropertySuffix, '');
-                        } else if (innerKeys[3].endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
-                            // User arrays are stored in arrays for each field, (i.e. ids: [id1, id2 ...])
-                            // so we want to convert them into an array of users (i.e. [{id: id1 ...}, {id: id2 ...} ...])
-                            fourthKey = innerKeys[3].replace(`${config.neo4j.usersFieldsPropertySuffix}`, '');
-                        }
-                        relatedEntities[innerKeys[0]].properties[innerKeys[2]][fourthKey] = value;
-                    } else {
-                        relatedEntities[innerKeys[0]].properties[innerKeys[2]] = value;
-                    }
-                } else if (innerKeys[1] === 'templateId') {
-                    relatedEntities[innerKeys[0]].templateId = value;
-                }
-
-                delete fixedExpandedEntity.properties[key];
+    // Only deals with relationships
+    static fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
+        Object.entries(properties).forEach(([key, value]) => {
+            if (!key.endsWith(config.neo4j.relationshipReferencePropertySuffix)) {
+                acc[key] = value;
+                return;
             }
+
+            acc[key.replace(config.neo4j.relationshipReferencePropertySuffix, '')] = value;
         });
 
-        fixedExpandedEntity.properties = {
-            ...fixedExpandedEntity.properties,
-            ...relatedEntities,
-        };
+        acc = unflatten(acc);
 
-        return fixedExpandedEntity;
+        Object.entries(acc).forEach(([key, value]) => {
+            if (!value.properties) return;
+
+            acc[key] = { ...value, properties: this.fixReturnedEntityReferencesFields(normalizeFields(flatten(value.properties, { safe: true }))) };
+        });
+
+        return acc;
     }
 
     async getEntitiesByIds(ids: string[]) {
@@ -1515,7 +1513,7 @@ class EntityManager extends DefaultManagerNeo4j {
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 props: {
-                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
                     updatedAt: getNeo4jDateTime(),
                     _id: id,
                 },
@@ -1892,7 +1890,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             let queryAccordingToFieldType = constraint.property;
             const constraintProp = template.properties.properties[constraint.property];
- 
+
             if (constraintProp.format === 'relationshipReference') {
                 queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
             } else if (constraintProp.format === 'user') {

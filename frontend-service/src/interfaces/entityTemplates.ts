@@ -25,6 +25,7 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    properties?: Record<string, IEntitySingleProperty>; // For groups inside of entity
     isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;
@@ -44,8 +45,10 @@ export interface IEntitySingleProperty {
     color?: string;
     filters?: string;
     defaultValue?: any;
+    default?: any; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
     isFilterByCurrentUser?: boolean;
     isFilterByUserUnit?: boolean;
+    display?: boolean;
 }
 
 export interface IProperties {

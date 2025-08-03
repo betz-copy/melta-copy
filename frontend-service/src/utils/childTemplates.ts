@@ -17,13 +17,13 @@ const parseFilterObject = (filters: any): any | null => {
 };
 
 const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
-    const enumEquals = filterObj.$and.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
+    const enumEquals = filterObj.$or.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
 };
 
 const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
-    const multiEnumIn = filterObj.$and
+    const multiEnumIn = filterObj.$or
         .map((condition: any) => condition.multiEnum?.$in)
         .filter((val: any): val is string[] => Array.isArray(val))
         .flat();

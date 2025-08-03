@@ -16,10 +16,16 @@ export enum ViewType {
     userPage = 'userPage',
 }
 
+export enum ByCurrentDefaultValue {
+    byCurrentUser = 'byCurrentUser',
+    byCurrentDate = 'byCurrentDate',
+}
+
 export interface IChildTemplateProperty {
-    defaultValue?: string | number | boolean | Date | string[];
+    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
+    display?: boolean;
 }
 
 export interface IChildTemplate {

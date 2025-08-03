@@ -291,7 +291,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature','comment'];
+                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'];
 
                 const textDirection =
                     format && !excludedFormats.includes(format)
@@ -463,7 +463,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     sx={{
                                         width: '100%',
                                         borderRadius: '10px',
-                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.6)',
+                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.3)',
                                         padding: '12px',
                                         marginTop: '3px',
                                         marginBottom: '3px',
@@ -476,7 +476,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             width: '100%',
                                         }}
                                     >
-                                        <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="20px">
+                                        <Typography fontWeight="bold" fontSize="16px" color="primary" paddingBottom={1} marginBottom="20px">
                                             {group.displayName}
                                         </Typography>
                                         <Grid container>

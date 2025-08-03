@@ -164,6 +164,8 @@ export const environment = {
             '#FB8383',
             '#D498F0',
         ],
+        cols: 12,
+        itemWidth: 4,
     },
     dashboard: {
         dashboardOrderKey: 'dashboardOrder',
@@ -318,7 +320,7 @@ export const environment = {
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
-    dateOrDateTimeRegex: /^\d{4}-\d{2}-\d{2}([T\s]\d{2}:\d{2}(:\d{2})?)?$/,
+    dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     maxPrintLevel: 5,
     fileExtensions: {
         defaultImage: 'png',
