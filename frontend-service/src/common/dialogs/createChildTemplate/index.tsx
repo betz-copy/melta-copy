@@ -194,7 +194,7 @@ const CreateChildTemplateDialog: React.FC<{
                 queryClient.invalidateQueries('getEntityTemplates'),
                 queryClient.invalidateQueries('searchEntityTemplates'),
             ]).then(() => {
-                toast.success(i18next.t(`createChildTemplateDialog.succeededTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`));
+                toast.success(i18next.t(`childTemplate.succeededTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`));
                 handleClose();
             });
         },
@@ -202,7 +202,7 @@ const CreateChildTemplateDialog: React.FC<{
             toast.error(
                 <ErrorToast
                     axiosError={err}
-                    defaultErrorMessage={i18next.t(`createChildTemplateDialog.failedTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`)}
+                    defaultErrorMessage={i18next.t(`childTemplate.failedTo${childTemplate ? 'Update' : 'Create'}ChildTemplate`)}
                 />,
             );
         },
@@ -416,7 +416,7 @@ const CreateChildTemplateDialog: React.FC<{
                     return (
                         <Form>
                             <DialogTitle>
-                                {`${i18next.t(`createChildTemplateDialog.${isUpdate ? 'updateTemplate' : 'template'}Title`)}- ${
+                                {`${i18next.t(`childTemplate.${isUpdate ? 'updateTemplate' : 'template'}Title`)}- ${
                                     childTemplate ? childTemplate.displayName : entityTemplate.displayName
                                 }`}
                                 <IconButton
@@ -440,7 +440,7 @@ const CreateChildTemplateDialog: React.FC<{
                                         <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
-                                                label={i18next.t('createChildTemplateDialog.templateName')}
+                                                label={i18next.t('childTemplate.templateName')}
                                                 name="name"
                                                 value={values.name.trimStart()}
                                                 onChange={(e) => handleChange({ target: { name: 'name', value: e.target.value.trimStart() } })}
@@ -455,7 +455,7 @@ const CreateChildTemplateDialog: React.FC<{
                                         <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
-                                                label={i18next.t('createChildTemplateDialog.templateDisplayName')}
+                                                label={i18next.t('childTemplate.templateDisplayName')}
                                                 name="displayName"
                                                 value={values.displayName.trimStart()}
                                                 onChange={(e) => handleChange({ target: { name: 'displayName', value: e.target.value.trimStart() } })}
@@ -469,7 +469,7 @@ const CreateChildTemplateDialog: React.FC<{
                                         <Grid item xs={4}>
                                             <TextField
                                                 fullWidth
-                                                label={i18next.t('createChildTemplateDialog.templateDetails')}
+                                                label={i18next.t('childTemplate.templateDetails')}
                                                 name="description"
                                                 value={values.description}
                                                 onChange={handleChange}
@@ -510,7 +510,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     <FormControlLabel
                                                         value="categoryPage"
                                                         control={<Radio />}
-                                                        label={i18next.t('createChildTemplateDialog.status.categoryPage')}
+                                                        label={i18next.t('childTemplate.status.categoryPage')}
                                                         componentsProps={{
                                                             typography: { sx: { fontSize: '14px' } },
                                                         }}
@@ -518,7 +518,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     <FormControlLabel
                                                         value="userPage"
                                                         control={<Radio />}
-                                                        label={i18next.t('createChildTemplateDialog.status.userPage')}
+                                                        label={i18next.t('childTemplate.status.userPage')}
                                                         componentsProps={{
                                                             typography: { sx: { fontSize: '14px' } },
                                                         }}
@@ -542,14 +542,14 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 }}
                                                             />
                                                         }
-                                                        label={i18next.t('createChildTemplateDialog.userType.regularUser')}
+                                                        label={i18next.t('childTemplate.userType.regularUser')}
                                                         componentsProps={{
                                                             typography: { sx: { fontSize: '14px' } },
                                                         }}
                                                     />
                                                     {userField.selectedUserField && (
                                                         <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t('createChildTemplateDialog.selectUserDialog.byUser')} : ${
+                                                            {`${i18next.t('childTemplate.selectUserDialog.byUser')} : ${
                                                                 entityTemplate.properties.properties[userField.selectedUserField].title
                                                             }`}
                                                         </Typography>
@@ -571,14 +571,14 @@ const CreateChildTemplateDialog: React.FC<{
                                                                 }}
                                                             />
                                                         }
-                                                        label={i18next.t('createChildTemplateDialog.userType.specialUser')}
+                                                        label={i18next.t('childTemplate.userType.specialUser')}
                                                         componentsProps={{
                                                             typography: { sx: { fontSize: '14px' } },
                                                         }}
                                                     />
                                                     {unitUserField.selectedUnitUserField && (
                                                         <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t('createChildTemplateDialog.selectUserUnitDialog.label')} : ${
+                                                            {`${i18next.t('childTemplate.selectUserUnitDialog.label')} : ${
                                                                 entityTemplate.properties.properties[unitUserField.selectedUnitUserField].title
                                                             }`}
                                                         </Typography>
@@ -610,7 +610,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                             }
                                                             name="category"
                                                             variant="outlined"
-                                                            label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
+                                                            label={i18next.t('childTemplate.categoryType.relatedToLabel')}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (
@@ -628,7 +628,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     rows={1}
                                                     dir="rtl"
                                                     variant="outlined"
-                                                    value={i18next.t('createChildTemplateDialog.connectToUserPage')}
+                                                    value={i18next.t('childTemplate.connectToUserPage')}
                                                     disabled
                                                 />
                                             </Grid>
@@ -640,33 +640,33 @@ const CreateChildTemplateDialog: React.FC<{
                                             <Typography
                                                 sx={{ fontWeight: 400, fontSize: '16px', mb: isEmpty(touched) || hasCheckedBox ? '19px' : '0px' }}
                                             >
-                                                {i18next.t('createChildTemplateDialog.columns.title')}
+                                                {i18next.t('childTemplate.columns.title')}
                                             </Typography>
                                             {!isEmpty(touched) && !hasCheckedBox && (
                                                 <Typography sx={{ fontSize: '12px', color: 'error.main', mb: '19px' }}>
-                                                    {i18next.t('createChildTemplateDialog.fieldFilterTableNoChecks')}
+                                                    {i18next.t('childTemplate.fieldFilterTableNoChecks')}
                                                 </Typography>
                                             )}
                                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
                                                 <Grid item xs={3}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
-                                                        {i18next.t('createChildTemplateDialog.columns.nameCol')}
+                                                        {i18next.t('childTemplate.columns.nameCol')}
                                                     </Typography>
                                                 </Grid>
                                                 <Grid item xs={3}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                                        {i18next.t('createChildTemplateDialog.columns.filterCol')}
+                                                        {i18next.t('childTemplate.columns.filterCol')}
                                                     </Typography>
                                                 </Grid>
                                                 <Grid item xs={3}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                                        {i18next.t('createChildTemplateDialog.columns.defaultCol')}
+                                                        {i18next.t('childTemplate.columns.defaultCol')}
                                                     </Typography>
                                                 </Grid>
                                                 {childTemplateViewType === ViewType.userPage && (
                                                     <Grid item xs={3}>
                                                         <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                                            {i18next.t('createChildTemplateDialog.columns.filterByUserCol')}
+                                                            {i18next.t('childTemplate.columns.filterByUserCol')}
                                                         </Typography>
                                                     </Grid>
                                                 )}
@@ -694,7 +694,7 @@ const CreateChildTemplateDialog: React.FC<{
                                 <Grid container justifyContent="center">
                                     {isUpdate && (
                                         <Button sx={{ borderRadius: '7px', padding: '6.99px 10px' }} onClick={handleClose}>
-                                            {i18next.t('createChildTemplateDialog.buttons.cancel')}
+                                            {i18next.t('childTemplate.buttons.cancel')}
                                         </Button>
                                     )}
                                     <Button
@@ -748,9 +748,9 @@ const CreateChildTemplateDialog: React.FC<{
                     });
                 }}
                 entityTemplate={entityTemplate}
-                title={i18next.t('createChildTemplateDialog.selectUserUnitDialog.title')}
-                content={i18next.t('createChildTemplateDialog.selectUserUnitDialog.content')}
-                label={i18next.t('createChildTemplateDialog.selectUserUnitDialog.label')}
+                title={i18next.t('childTemplate.selectUserUnitDialog.title')}
+                content={i18next.t('childTemplate.selectUserUnitDialog.content')}
+                label={i18next.t('childTemplate.selectUserUnitDialog.label')}
             />
         </Dialog>
     );

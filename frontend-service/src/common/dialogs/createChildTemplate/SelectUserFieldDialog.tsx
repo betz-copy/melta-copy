@@ -35,21 +35,21 @@ const SelectUserFieldDialog: React.FC<SelectUserFieldDialogProps> = ({
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle color={(theme) => theme.palette.primary.main} sx={{ fontSize: '16px', fontWeight: 400 }}>
-                {title || i18next.t('createChildTemplateDialog.selectUserDialog.title')}
+                {title || i18next.t('childTemplate.selectUserDialog.title')}
             </DialogTitle>
             <DialogContent>
-                <Typography sx={{ fontSize: '14px', mb: 2 }}>{content || i18next.t('createChildTemplateDialog.selectUserDialog.description')}</Typography>
+                <Typography sx={{ fontSize: '14px', mb: 2 }}>{content || i18next.t('childTemplate.selectUserDialog.description')}</Typography>
                 <Autocomplete
                     options={userFields}
                     getOptionLabel={(field) => entityTemplate.properties.properties[field].title}
                     value={value}
                     onChange={(_event, newVal) => setValue(newVal)}
-                    renderInput={(params) => <TextField {...params} label={label || i18next.t('createChildTemplateDialog.selectUserDialog.selectUser')} />}
+                    renderInput={(params) => <TextField {...params} label={label || i18next.t('childTemplate.selectUserDialog.selectUser')} />}
                 />
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'center', mb: 2 }}>
                 <Button variant="contained" color="primary" disabled={!value} onClick={() => onSubmit(value!)}>
-                    {i18next.t('createChildTemplateDialog.selectUserDialog.addAction')}
+                    {i18next.t('childTemplate.selectUserDialog.addAction')}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -1678,7 +1678,7 @@ export default {
             destTemplateId: 'ID תבנית יעד',
         },
     },
-    createChildTemplateDialog: {
+    childTemplate: {
         templateTitle: 'יצירת תבנית בן',
         updateTemplateTitle: 'עריכת תבנית בן',
         templateName: 'שם תבנית בן באנגלית',

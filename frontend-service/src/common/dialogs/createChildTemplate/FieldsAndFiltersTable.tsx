@@ -31,11 +31,11 @@ const getFormattedDefaultValue = (value: string | number | boolean | Date | stri
             case 'date-time':
             case 'date':
                 return value === ByCurrentDefaultValue.byCurrentDate
-                    ? i18next.t('createChildTemplateDialog.currentDate')
+                    ? i18next.t('childTemplate.currentDate')
                     : new Date(value).toLocaleDateString('he-IL');
 
             case 'user':
-                if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('createChildTemplateDialog.byUser');
+                if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('childTemplate.byUser');
 
                 const userObj = JSON.parse(value);
                 if (userObj.fullName && userObj.hierarchy) {
@@ -202,9 +202,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     newMap.set(
                         chip.fieldName,
                         i18next.t('validation.matchFilter', {
-                            dialogType: i18next.t(
-                                `createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`,
-                            ),
+                            dialogType: i18next.t(`childTemplate.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
                         }),
                     );
                 else newMap.delete(chip.fieldName);
@@ -265,7 +263,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                         <Grid item>
                                             {property?.format === 'user' && selectedUserField === fieldName ? (
                                                 <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                    {i18next.t('createChildTemplateDialog.byUser')}
+                                                    {i18next.t('childTemplate.byUser')}
                                                 </Typography>
                                             ) : (
                                                 <Button
@@ -308,7 +306,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             <Grid item>
                                                 {property?.format === 'user' && selectedUserField === fieldName ? (
                                                     <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                        {i18next.t('createChildTemplateDialog.byUser')}
+                                                        {i18next.t('childTemplate.byUser')}
                                                     </Typography>
                                                 ) : (
                                                     <Button

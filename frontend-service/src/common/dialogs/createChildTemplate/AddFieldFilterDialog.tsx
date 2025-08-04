@@ -126,7 +126,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     const onFailedMatch = () => {
         setMatchValidationError(
             i18next.t('validation.matchFilter', {
-                dialogType: i18next.t(`createChildTemplateDialog.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
+                dialogType: i18next.t(`childTemplate.dialogType.${dialogType === ChipType.Filter ? ChipType.Default : ChipType.Filter}`),
             }),
         );
     };
@@ -380,9 +380,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
             <DialogTitle>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography>
-                        {i18next.t(`createChildTemplateDialog.field${dialogType.charAt(0).toUpperCase()}${dialogType.slice(1)}Dialog.title`)}
-                    </Typography>
+                    <Typography>{i18next.t(`childTemplate.field${dialogType.charAt(0).toUpperCase()}${dialogType.slice(1)}Dialog.title`)}</Typography>
                     <IconButton onClick={handleClose}>
                         <CloseIcon />
                     </IconButton>
@@ -421,7 +419,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                             sx={{ borderRadius: '7px', padding: '6.99px 30px', fontWeight: 400 }}
                             disabled={!isValueValid() || isError || !!matchValidationError}
                         >
-                            {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
+                            {i18next.t('childTemplate.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>
                 </Grid>

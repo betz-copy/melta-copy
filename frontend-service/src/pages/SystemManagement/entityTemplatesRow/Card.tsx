@@ -35,21 +35,21 @@ const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     if (childTemplate.isFilterByUserUnit) {
         chips.push({
             color: '#2CB93A',
-            label: i18next.t('createChildTemplateDialog.permissionsPage.unit'),
+            label: i18next.t('childTemplate.permissionsPage.unit'),
         });
     }
 
     if (childTemplate.isFilterByCurrentUser) {
         chips.push({
             color: '#0072C6',
-            label: i18next.t('createChildTemplateDialog.permissionsPage.user'),
+            label: i18next.t('childTemplate.permissionsPage.user'),
         });
     }
 
     if (childTemplate.viewType === 'userPage') {
         chips.push({
             color: '#CF9030',
-            label: i18next.t('createChildTemplateDialog.permissionsPage.userPage'),
+            label: i18next.t('childTemplate.permissionsPage.userPage'),
         });
     }
 
@@ -356,7 +356,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     {childTemplatesList.length > 0 && (
                         <Grid item container>
                             <Typography color={theme.palette.primary.main} sx={{ mt: 2 }}>
-                                {i18next.t('createChildTemplateDialog.childTemplates')}
+                                {i18next.t('childTemplate.childTemplates')}
                             </Typography>
                         </Grid>
                     )}
@@ -389,25 +389,19 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             <Grid container spacing={1} sx={{ mt: 1 }}>
                                                 {childTemplate.isFilterByUserUnit && (
                                                     <Grid item>
-                                                        <ColoredEnumChip
-                                                            color="#2CB93A"
-                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.unit')}
-                                                        />
+                                                        <ColoredEnumChip color="#2CB93A" label={i18next.t('childTemplate.permissionsPage.unit')} />
                                                     </Grid>
                                                 )}
                                                 {childTemplate.isFilterByCurrentUser && (
                                                     <Grid item>
-                                                        <ColoredEnumChip
-                                                            color="#0072C6"
-                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.user')}
-                                                        />
+                                                        <ColoredEnumChip color="#0072C6" label={i18next.t('childTemplate.permissionsPage.user')} />
                                                     </Grid>
                                                 )}
                                                 {childTemplate.viewType === 'userPage' && (
                                                     <Grid item>
                                                         <ColoredEnumChip
                                                             color="#CF9030"
-                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.userPage')}
+                                                            label={i18next.t('childTemplate.permissionsPage.userPage')}
                                                         />
                                                     </Grid>
                                                 )}
