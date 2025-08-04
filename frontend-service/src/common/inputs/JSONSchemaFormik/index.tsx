@@ -64,7 +64,7 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
 ) => {
     const finalErrors = { ...originalErrors };
 
-    template.fieldGroups?.forEach((fieldGroup) => {
+    template?.fieldGroups?.forEach((fieldGroup) => {
         fieldGroup.fields.forEach((field) => {
             if (originalErrors[field]) {
                 finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
@@ -335,7 +335,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         [],
     );
 
-    const schemaWithGroups = values.template.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
+    const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
         const properties = fields.reduce((acc, field) => {
             const propertyInSchema = schema.properties[field];
             if (!propertyInSchema) return acc;
