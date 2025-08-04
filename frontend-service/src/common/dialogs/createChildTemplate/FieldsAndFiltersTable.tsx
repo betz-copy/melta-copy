@@ -355,7 +355,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     );
                 })}
             </Grid>
-
             {addFilterToField && dialogType && (
                 <AddFieldFilterDialog
                     open={!!addFilterToField}
