@@ -1,15 +1,15 @@
 import { Box, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { FormikProps } from 'formik';
 import { PermissionScope } from '../../interfaces/permissions';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { MeltaCheckbox } from '../MeltaCheckbox';
-import CategoryCheckboxPermission from './categoryCheckboxPermission';
 import { PermissionData } from '../../interfaces/users';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
-import { BlueTitle } from '../BlueTitle';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import SearchInput from '../inputs/SearchInput';
+import CategoryCheckboxPermission from './categoryCheckboxPermission';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];

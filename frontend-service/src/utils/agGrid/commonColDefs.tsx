@@ -13,9 +13,10 @@ import Chip from '@mui/material/Chip';
 import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar from '../../common/UserAvatar';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
@@ -32,7 +33,6 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);

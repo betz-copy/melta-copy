@@ -1,6 +1,6 @@
-import React from 'react';
 import { CheckboxProps, SxProps } from '@mui/material';
-import { MeltaCheckbox } from '../MeltaCheckbox';
+import React from 'react';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
 
 const PermissionScopeBtn: React.FC<{

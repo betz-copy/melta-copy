@@ -1,11 +1,11 @@
 /* eslint-disable no-nested-ternary */
 import { Autocomplete, Grid, TextField } from '@mui/material';
-import i18next from 'i18next';
-import React from 'react';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { BlueTitle } from '../../../BlueTitle';
+import i18next from 'i18next';
+import React from 'react';
 import { useDarkModeStore } from '../../../../stores/darkMode';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,

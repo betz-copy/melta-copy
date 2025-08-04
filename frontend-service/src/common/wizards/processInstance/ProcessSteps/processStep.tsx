@@ -14,19 +14,19 @@ import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { updateStepRequest } from '../../../../services/processesService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
 import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { BlueTitle } from '../../../BlueTitle';
 import { ErrorToast } from '../../../ErrorToast';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { EntityReference } from '../EntityReference';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../ProcessSummaryStep/ProcessStatus';
 import { getStepValuesFromStepInstance } from './stepsFormik';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 
 export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
     if (!values.comments) {

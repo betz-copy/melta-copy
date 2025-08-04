@@ -1,16 +1,16 @@
 import { Box, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled } from '@mui/material';
-import React from 'react';
 import i18next from 'i18next';
-import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
+import React from 'react';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
-import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
+import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { CommentsDetails } from '../ProcessSteps/processStep';
-import { MeltaTooltip } from '../../../MeltaTooltip';
-import { BlueTitle } from '../../../BlueTitle';
+import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
 
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;

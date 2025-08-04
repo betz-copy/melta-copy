@@ -5,9 +5,9 @@ import { Link } from 'wouter';
 import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
-import { EntityPropertiesInternal } from './EntityProperties';
-import { MeltaTooltip } from './MeltaTooltip';
 import { useWorkspaceStore } from '../stores/workspace';
+import { EntityPropertiesInternal } from './EntityProperties';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 export interface EntityLinkProps {
     entity: IEntity | null;

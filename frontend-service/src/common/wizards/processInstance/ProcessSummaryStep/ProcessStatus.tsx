@@ -18,7 +18,7 @@ import {
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';
-import { BlueTitle } from '../../../BlueTitle';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { ProcessStepValues } from '../ProcessSteps/index';
 
 interface StatusDisplayProps {

@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { INestedRelationshipTemplates } from '../..';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';

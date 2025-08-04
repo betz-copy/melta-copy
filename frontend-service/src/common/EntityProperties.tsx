@@ -9,18 +9,18 @@ import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
+import { HighlightText } from '../utils/HighlightText';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
+import { extractUtmLocation, locationConverterToString } from '../utils/map/convert';
+import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
-import { MeltaTooltip } from './MeltaTooltip';
-import RelationshipReferenceView from './RelationshipReferenceView';
-import { getFixedNumber, getTextDirection } from '../utils/stringValues';
-import { HighlightText } from '../utils/HighlightText';
-import { BlueTitle } from './BlueTitle';
-import UserAvatar from './UserAvatar';
-import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
-import { extractUtmLocation, locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
+import BlueTitle from './MeltaDesigns/BlueTitle';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
+import RelationshipReferenceView from './RelationshipReferenceView';
+import UserAvatar from './UserAvatar';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 

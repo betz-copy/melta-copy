@@ -1,6 +1,6 @@
 import {
-    ControlPoint as AddIcon,
     Add,
+    ControlPoint as AddIcon,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
@@ -12,10 +12,10 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
 import React, { MouseEventHandler, useMemo, useState } from 'react';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { MenuButton } from '../../../common/MenuButton';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { MenuButton } from '../../../common/MenuButton';
 
 export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;

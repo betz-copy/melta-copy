@@ -1,7 +1,7 @@
-import React, { useState, useRef, useLayoutEffect, createRef } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import React, { createRef, useLayoutEffect, useRef, useState } from 'react';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { HighlightText } from '../HighlightText';
 
 interface IOverflowWrapperProps<T> {

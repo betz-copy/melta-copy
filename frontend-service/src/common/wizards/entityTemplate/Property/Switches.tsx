@@ -1,13 +1,13 @@
-import React, { SetStateAction } from 'react';
-import { Box, Switch, FormControlLabel } from '@mui/material';
-import _debounce from 'lodash.debounce';
+import { Box, FormControlLabel } from '@mui/material';
 import i18next from 'i18next';
-import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
-import { commentColors } from '../../../inputs/JSONSchemaFormik/RjsfCommentWidget';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
+import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { commentColors } from '../../../inputs/JSONSchemaFormik/RjsfCommentWidget';
 import SelectAutocomplete from '../../../inputs/SelectAutocomplete';
+import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
+import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
 
 export interface SwitchesProps {
     value: CommonFormInputProperties;
@@ -70,9 +70,8 @@ export const Switches: React.FC<SwitchesProps> = ({
 
             const references = Object.values(properties).reduce(
                 (refAcc: (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[], property) => {
-                    if (property.format === 'relationshipReference' && property.relationshipReference)
-                        refAcc.push(property.relationshipReference);
-                    
+                    if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
                     return refAcc;
                 },
                 [],
@@ -128,7 +127,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={required}
                             name={required}
                             onChange={(_e, checked) => {
@@ -161,7 +160,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             )}
             <FormControlLabel
                 control={
-                    <Switch
+                    <MeltaSwitch
                         id={readOnly}
                         name={readOnly}
                         onChange={(_e, checked) => {
@@ -179,7 +178,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {value.preview !== undefined && !isComment && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={preview}
                             name={preview}
                             onChange={onChange}
@@ -193,7 +192,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {value.hide !== undefined && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={hide}
                             name={hide}
                             onChange={onChange}
@@ -212,7 +211,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                 !isComment && (
                     <FormControlLabel
                         control={
-                            <Switch
+                            <MeltaSwitch
                                 id={String(unique)}
                                 name={String(unique)}
                                 checked={unique}
@@ -239,14 +238,14 @@ export const Switches: React.FC<SwitchesProps> = ({
                 )}
             {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                 <FormControlLabel
-                    control={<Switch id={calculateTime} name={calculateTime} onChange={onChange} checked={value.calculateTime ?? false} />}
+                    control={<MeltaSwitch id={calculateTime} name={calculateTime} onChange={onChange} checked={value.calculateTime ?? false} />}
                     label={i18next.t('validation.calculateTime')}
                 />
             )}
             {isText && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={type}
                             name={type}
                             onChange={(e) => {
@@ -267,7 +266,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {isIdentifierAble && supportIdentifier && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={identifier}
                             name={identifier}
                             onChange={(_e, checked) => {
@@ -292,7 +291,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                 <>
                     <FormControlLabel
                         control={
-                            <Switch
+                            <MeltaSwitch
                                 id={hideFromDetailsPage}
                                 name={hideFromDetailsPage}
                                 onChange={(_e, checked) => {

@@ -17,8 +17,8 @@ import {
 } from '@mui/x-tree-view-pro';
 import React, { useMemo } from 'react';
 import { CustomIcon } from '../CustomIcon';
-import { MeltaCheckbox } from '../MeltaCheckbox';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 const LabelWithToolTip = ({ children, className }) => (
     <Box

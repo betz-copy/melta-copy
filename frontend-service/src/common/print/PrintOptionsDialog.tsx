@@ -9,7 +9,6 @@ import {
     FormControlLabel,
     Grid,
     IconButton,
-    Switch,
     TextField,
     useTheme,
 } from '@mui/material';
@@ -23,9 +22,10 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import RelationshipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
-import { BlueTitle } from '../BlueTitle';
 import MultipleSelect from '../inputs/MultipleSelect';
-import { MeltaTooltip } from '../MeltaTooltip';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import MeltaSwitch from '../MeltaDesigns/MeltaSwitch';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 type IOption = {
     show: boolean;
@@ -192,14 +192,14 @@ const PrintOptionsDialog: React.FC<{
                             />
                         )}
                     </Grid>
-                    <Grid container marginTop={1}>
+                    <Grid container marginTop={1} gap={1} padding={1}>
                         {Object.entries(options).map(([key, value]) => {
                             const isDisabled =
                                 key === 'previewPropertiesOnly' && type === PrintType.Entity && template.propertiesPreview.length === 0;
 
                             const label = (
                                 <FormControlLabel
-                                    control={<Switch checked={value.show} onChange={() => value.set((cur) => !cur)} />}
+                                    control={<MeltaSwitch id={key} name={key} checked={value.show} onChange={() => value.set((cur) => !cur)} />}
                                     label={i18next.t(value.label)}
                                     disabled={isDisabled}
                                     sx={{ color: '#53566E', fontSize: '14px' }}

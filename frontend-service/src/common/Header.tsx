@@ -1,7 +1,7 @@
-import React from 'react';
 import { Grid } from '@mui/material';
-import { BlueTitle } from './BlueTitle';
+import React from 'react';
 import { useDarkModeStore } from '../stores/darkMode';
+import BlueTitle from './MeltaDesigns/BlueTitle';
 
 const Header: React.FC<{ title: string }> = ({ title, children }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);

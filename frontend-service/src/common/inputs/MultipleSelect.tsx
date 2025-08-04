@@ -1,9 +1,9 @@
+import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
-import { ExpandMore, Close } from '@mui/icons-material';
-import { ColoredEnumChip } from '../ColoredEnumChip';
-import { MeltaCheckbox } from '../MeltaCheckbox';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
+import { ColoredEnumChip } from '../ColoredEnumChip';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 
 export interface ISelectOption {
     label: string;

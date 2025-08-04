@@ -1,21 +1,21 @@
-import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
-import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
+import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
+import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
+import { getEntityTemplateFilesFieldsInfo } from '.';
+import { EntityWizardValues } from '..';
+import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { BlueTitle } from '../../../BlueTitle';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { ChooseTemplate, IChooseTemplateMode } from '../ChooseTemplate';
-import { getEntityTemplateFilesFieldsInfo } from '.';
-import { EntityWizardValues } from '..';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { Draft } from '../draftWarningDialog/index';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 const EditProps: React.FC<{
     values: FormikState<EntityWizardValues>['values'];

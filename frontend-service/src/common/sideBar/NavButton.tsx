@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
 import { Link, useRoute } from 'wouter';
-import { MeltaTooltip } from '../MeltaTooltip';
+import  MeltaTooltip  from '../MeltaDesigns/MeltaTooltip';
 import { StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
 

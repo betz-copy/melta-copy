@@ -2,10 +2,10 @@ import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { getStepName } from '../../../../utils/processes';
-import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
-import { MeltaTooltip } from '../../../MeltaTooltip';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 
 interface StepNameProps {
     step: IMongoStepInstancePopulated | null;

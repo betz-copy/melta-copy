@@ -1,16 +1,16 @@
-import { Grid, IconButton, Link, Typography } from '@mui/material';
-import React, { ReactNode, useMemo, useState } from 'react';
 import { AutoAwesome } from '@mui/icons-material';
+import { Grid, IconButton, Link, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { environment } from '../../globals';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
+import { HighlightText } from '../../utils/HighlightText';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
-import { HighlightText } from '../../utils/HighlightText';
-import { MeltaTooltip } from '../MeltaTooltip';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const OpenPreviewContent: React.FC<{
     fileName: string;

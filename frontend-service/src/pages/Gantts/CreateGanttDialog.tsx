@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import { LoadingButton } from '@mui/lab';
 import { Button, Dialog, Grid, TextField } from '@mui/material';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { LoadingButton } from '@mui/lab';
 import { ErrorToast } from '../../common/ErrorToast';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { createGantt } from '../../services/ganttsService';
-import { BlueTitle } from '../../common/BlueTitle';
 
 type ICreateGanttDialogProps = {
     open: boolean;

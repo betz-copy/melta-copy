@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import React from 'react';
 import { DayNightSwitch } from '../inputs/DayNightSwitch';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 interface SwitchThemeButtonProps {
     text: string;
