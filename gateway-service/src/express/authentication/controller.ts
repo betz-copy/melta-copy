@@ -6,11 +6,11 @@ import { ShragaUser } from '../../utils/express/passport';
 import { AuthenticationManager } from './manager';
 import WorkspaceService from '../workspaces/service';
 
-const { accessTokenName, clientSideEndURL, unauthorizedId } = config.authentication.shragaAuthentication;
+const { accessTokenName, clientSideURLPrefix, unauthorizedId } = config.authentication.shragaAuthentication;
 
 class AuthenticationController {
-    static async createClientSideToken(userId: string) {
-        const clientSideWorkspace = await WorkspaceService.getFile(clientSideEndURL);
+    static async createClientSideToken(userId: string, workspaceId) {
+        const clientSideWorkspace = await WorkspaceService.getById(workspaceId);
         const { usersInfoChildTemplateId, clientSideWorkspaceName } = clientSideWorkspace.metadata?.clientSide || {};
 
         const token = AuthenticationManager.createAccessToken({
@@ -39,8 +39,8 @@ class AuthenticationController {
 
         let token: string;
 
-        if (RelayState?.includes(clientSideEndURL)) {
-            token = await AuthenticationController.createClientSideToken(id);
+        if (RelayState?.includes(clientSideURLPrefix)) {
+            token = await AuthenticationController.createClientSideToken(id, RelayState.split('/').pop());
         } else {
             token = await AuthenticationController.createUserToken(id);
         }
