@@ -1,19 +1,19 @@
-import React, { useMemo } from 'react';
 import { Box } from '@mui/material';
-import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import ManagementPermissionsCard, { managementTypes } from './managementPermissionsCard';
-import InstancesPermissionsCard from './instancesPermissionsCard';
+import React, { useMemo } from 'react';
+import { useQueryClient } from 'react-query';
+import { ICategoryMap } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
+import { PermissionData } from '../../interfaces/users';
+import { IMetadata, IWorkspace } from '../../interfaces/workspaces';
 import {
     checkUserCategoryPermission,
     getChangedCategoryPermissions,
     getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IMetadata, IWorkspace } from '../../interfaces/workspaces';
 import { CategoryWithTemplates } from '../../utils/permissions/permissionOfUserDialog';
-import { PermissionData } from '../../interfaces/users';
+import InstancesPermissionsCard from './instancesPermissionsCard';
+import ManagementPermissionsCard, { managementTypes } from './managementPermissionsCard';
 
 const ManagePermissions: React.FC<{
     mode: 'create' | 'edit' | 'view';
@@ -70,6 +70,7 @@ const ManagePermissions: React.FC<{
             )}
             <Box marginTop="25px">
                 <InstancesPermissionsCard
+                    key={`${workspace._id}-instances-permissions`}
                     searchText={searchText}
                     viewMode={mode === 'view'}
                     formikProps={formikProps}
