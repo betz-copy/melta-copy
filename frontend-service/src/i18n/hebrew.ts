@@ -1746,5 +1746,8 @@ export default {
             filter: 'סינון',
             default: 'ברירת מחדל',
         },
+        error: {
+            minProperties: 'יש להגדיר לפחות שדה אחד להצגה',
+        },
     },
 };

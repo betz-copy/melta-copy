@@ -418,6 +418,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                             variant="contained"
                             color="primary"
                             onClick={handleSubmit}
+                            sx={{ borderRadius: '7px', padding: '6.99px 30px', fontWeight: 400 }}
                             disabled={!isValueValid() || isError || !!matchValidationError}
                         >
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}

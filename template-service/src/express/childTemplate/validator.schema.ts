@@ -19,7 +19,7 @@ const childEntityTemplateSchema = {
     parentTemplateId: MongoIdSchema.required(),
     category: MongoIdSchema.required(),
     properties: Joi.object({
-        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).min(1).required(),
     }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),

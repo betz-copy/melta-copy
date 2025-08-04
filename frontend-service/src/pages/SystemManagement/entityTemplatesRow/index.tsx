@@ -7,7 +7,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { CreateChildTemplateDialog } from '../../../common/dialogs/createChildTemplate';
+import CreateChildTemplateDialog from '../../../common/dialogs/createChildTemplate';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';

@@ -167,7 +167,7 @@ const CreateChildTemplateDialog: React.FC<{
         [entityTemplate],
     );
 
-    const { mutateAsync: handleChildTemplate } = useMutation<IMongoChildTemplate, AxiosError, IChildTemplate | [IChildTemplate, string]>({
+    const { mutateAsync: handleChildTemplate, isLoading } = useMutation<IMongoChildTemplate, AxiosError, IChildTemplate | [IChildTemplate, string]>({
         mutationFn: (template) => {
             if (Array.isArray(template)) {
                 const [templateData, id] = template;
@@ -371,7 +371,7 @@ const CreateChildTemplateDialog: React.FC<{
 
                     const baseTemplate: IChildTemplate = {
                         name: `${entityTemplate.name}_${name}`,
-                        displayName: isUpdate ? childTemplate.displayName : `${entityTemplate.displayName}-${displayName}`,
+                        displayName: `${entityTemplate.displayName}-${displayName}`,
                         description,
                         parentTemplateId: entityTemplate._id,
                         category: category!._id,
@@ -392,17 +392,20 @@ const CreateChildTemplateDialog: React.FC<{
                     }
                 }}
             >
-                {({ values, handleChange, touched, errors, setFieldValue }) => {
+                {(formikProps) => {
+                    const { values, handleChange, touched, errors, setFieldValue, dirty } = formikProps;
+
                     useEffect(() => {
                         if (!childTemplate) return;
 
+                        const hasDisplayNameChange = values.displayName !== (childTemplate.displayName || '');
                         const hasDescriptionChange = values.description !== (childTemplate.description || '');
                         const hasCategoryChange = JSON.stringify(values.category?._id) !== JSON.stringify(childTemplate.category);
 
-                        if (hasDescriptionChange || hasCategoryChange) {
+                        if (hasDescriptionChange || hasCategoryChange || hasDisplayNameChange) {
                             setHasChanges(true);
                         }
-                    }, [values.description, values.category]);
+                    }, [values.description, values.category, values.displayName]);
 
                     return (
                         <Form>
@@ -455,7 +458,6 @@ const CreateChildTemplateDialog: React.FC<{
                                                 InputProps={{
                                                     startAdornment: <InputAdornment position="start">{entityTemplate.displayName}-</InputAdornment>,
                                                 }}
-                                                disabled={isUpdate}
                                             />
                                         </Grid>
                                         <Grid item xs={4}>
@@ -586,23 +588,23 @@ const CreateChildTemplateDialog: React.FC<{
                                                 <Autocomplete
                                                     id="category"
                                                     options={Array.from(categories.values())}
-                                                    disableCloseOnSelect
-                                                    onChange={(event, newVal) => {
-                                                        event.preventDefault();
-                                                        setFieldValue('category', newVal);
-                                                    }}
-                                                    value={values.category}
+                                                    onChange={(_e, value) => setFieldValue('category', value || '')}
+                                                    value={values.category._id ? values.category : null}
                                                     getOptionLabel={(option) => option.displayName}
                                                     isOptionEqualToValue={(option, value) => option._id === value._id}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}
+                                                            error={Boolean(touched.category && errors.category)}
                                                             fullWidth
+                                                            helperText={
+                                                                (touched.category && errors.category?._id) ||
+                                                                errors.category?.displayName ||
+                                                                errors.category?.name
+                                                            }
                                                             name="category"
                                                             variant="outlined"
                                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
-                                                            error={touched.category && Boolean(errors.category)}
-                                                            helperText={touched.category && errors.category?.displayName}
                                                         />
                                                     )}
                                                     renderOption={(props, category) => (
@@ -610,27 +612,6 @@ const CreateChildTemplateDialog: React.FC<{
                                                             <ColoredEnumChip label={category.displayName} color="default" />
                                                         </li>
                                                     )}
-                                                    renderTags={(tagValue, getTagProps) =>
-                                                        tagValue.map((category, index) => {
-                                                            const { key, onDelete, ...restTagProps } = getTagProps({ index });
-                                                            const isOriginal = category._id === entityTemplate?.category?._id;
-
-                                                            return (
-                                                                <ColoredEnumChip
-                                                                    key={key}
-                                                                    label={category.displayName}
-                                                                    color="default"
-                                                                    {...restTagProps}
-                                                                    style={{
-                                                                        margin: '0 4px 4px 0',
-                                                                        borderRadius: '10px',
-                                                                        opacity: isOriginal ? 0.8 : 1,
-                                                                    }}
-                                                                    onDelete={onDelete}
-                                                                />
-                                                            );
-                                                        })
-                                                    }
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -678,7 +659,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 )}
                                             </Grid>
 
-                                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', pr: 2, pl: 2 }}>
+                                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
                                                 <FieldsAndFiltersTable
                                                     entityTemplate={entityTemplate}
                                                     templateFieldsFilters={templateFieldsFilters}
@@ -692,15 +673,33 @@ const CreateChildTemplateDialog: React.FC<{
                                                     selectedUserField={userField.selectedUserField}
                                                 />
                                             </Grid>
+                                            {!Object.values(templateFieldsFilters).some(({ selected }) => !!selected) && (
+                                                <Grid sx={{ mt: 1, pr: 2, pl: 2 }}>
+                                                    <Typography color="error" variant="caption" fontSize="14px">
+                                                        {i18next.t('createChildTemplateDialog.error.minProperties')}
+                                                    </Typography>
+                                                </Grid>
+                                            )}
                                         </Grid>
                                     </Grid>
                                 </Grid>
                             </DialogContent>
                             <DialogActions sx={{ margin: '10px' }}>
-                                {isUpdate && <Button onClick={handleClose}>{i18next.t('createChildTemplateDialog.buttons.cancel')}</Button>}
-                                <Button type="submit" variant="contained" disabled={(isUpdate && !hasChanges) || matchValidationError.size > 0}>
-                                    {i18next.t(`actions.${isUpdate ? 'edit' : 'create'}`)}
-                                </Button>
+                                <Grid container justifyContent="center">
+                                    {isUpdate && (
+                                        <Button sx={{ borderRadius: '7px', padding: '6.99px 10px' }} onClick={handleClose}>
+                                            {i18next.t('createChildTemplateDialog.buttons.cancel')}
+                                        </Button>
+                                    )}
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        sx={{ borderRadius: '7px', padding: '6.99px 30px', fontWeight: 400 }}
+                                        disabled={!dirty || isLoading || (isUpdate && !hasChanges) || matchValidationError.size > 0}
+                                    >
+                                        {i18next.t(`actions.${isUpdate ? 'save' : 'create'}`)}
+                                    </Button>
+                                </Grid>
                             </DialogActions>
                         </Form>
                     );
@@ -751,4 +750,4 @@ const CreateChildTemplateDialog: React.FC<{
     );
 };
 
-export { CreateChildTemplateDialog };
+export default CreateChildTemplateDialog;
