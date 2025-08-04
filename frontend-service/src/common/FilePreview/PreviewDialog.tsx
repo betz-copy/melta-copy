@@ -128,7 +128,13 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                             img.style.width = 'auto';
                         }
                     }}
-                    style={{ maxWidth: '100%', maxHeight: '95vh', transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
+                    style={{
+                        maxWidth: '100%',
+                        maxHeight: '95vh',
+                        transform: `scale(${zoomLevel})`,
+                        transformOrigin: 'center center',
+                        backgroundColor: 'white',
+                    }}
                 />
             </div>
         );
