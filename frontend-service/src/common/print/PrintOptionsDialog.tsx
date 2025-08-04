@@ -181,7 +181,7 @@ const PrintOptionsDialog: React.FC<{
                                 selectedValue={selectedFiles.map(({ id, name }) => ({ label: name, value: id }))}
                                 onChange={(_event, newVal) => {
                                     if (newVal === null) return;
-                                    setSelectedFiles(Array.isArray(newVal) ? newVal.map((val) => getFile(val.value)) : [getFile(newVal.value)]);
+                                    setSelectedFiles(Array.isArray(newVal) ? newVal.map(({ value }) => getFile(value)) : [getFile(newVal.value)]);
                                 }}
                                 textFieldProps={{}}
                                 onBlur={() => {}}
