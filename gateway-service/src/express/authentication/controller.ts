@@ -36,18 +36,22 @@ class AuthenticationController {
 
     static async createTokenAndRedirect(req: Request, res: Response) {
         const { RelayState, id } = req.user as ShragaUser;
+        let redirectUrl = RelayState || '/';
 
         let token: string;
 
         if (RelayState?.includes(clientSideURLPrefix)) {
-            token = await AuthenticationController.createClientSideToken(id, RelayState.split('/').pop());
+            const workspaceId = redirectUrl.split('/').pop();
+
+            token = await AuthenticationController.createClientSideToken(id, workspaceId);
+            redirectUrl = `${redirectUrl.split('/').slice(0, -1).join('/')}/main`;
         } else {
             token = await AuthenticationController.createUserToken(id);
         }
 
         res.cookie(accessTokenName, token);
 
-        return res.redirect(RelayState || '/');
+        return res.redirect(redirectUrl);
     }
 }
 
