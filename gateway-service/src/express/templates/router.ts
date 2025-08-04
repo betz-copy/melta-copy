@@ -308,31 +308,31 @@ templatesRouter.delete(
 
 // Printing Templates CRUD
 templatesRouter.post(
-    '/printing-templates',
+    '/print',
     ValidateRequest(createPrintingTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.createPrintingTemplate,
 );
 templatesRouter.get(
-    '/printing-templates/:id',
+    '/print/:id',
     ValidateRequest(getPrintingTemplateByIdSchema),
     AuthorizerControllerMiddleware.userCanReadTemplates,
     templatesControllerMiddleware.getPrintingTemplateById,
 );
 templatesRouter.put(
-    '/printing-templates/:id',
+    '/print/:id',
     ValidateRequest(updatePrintingTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.updatePrintingTemplate,
 );
 templatesRouter.delete(
-    '/printing-templates/:id',
+    '/print/:id',
     ValidateRequest(deletePrintingTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.deletePrintingTemplate,
 );
 templatesRouter.post(
-    '/printing-templates/search',
+    '/print/search',
     ValidateRequest(searchPrintingTemplatesSchema),
     AuthorizerControllerMiddleware.userCanReadTemplates,
     templatesControllerMiddleware.searchPrintingTemplates,

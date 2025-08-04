@@ -784,6 +784,7 @@ export default {
             appendSignatureField: 'הוספת שדה החתמה בסוף',
             addEntityCheckbox: 'הוספת תיבת סימון לכל ישות',
             note: 'שימו לב! טבלאות אשר לא יוגדרו במסך זה יודפסו עם עמודות התצוגה המקדימה שלהן בלבד',
+            mustAddAtLeastOneTemplateToPrint: 'יש להוסיף לפחות תבנית אחת להדפסה',
             category: 'קטגוריה',
             entityTemplate: 'תבנית ישות',
             columns: 'עמודות להדפסה',

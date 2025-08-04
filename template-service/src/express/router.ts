@@ -16,7 +16,7 @@ appRouter.use('/api/templates/entities', entityTemplateRouter);
 appRouter.use('/api/templates/child', childTemplateRouter);
 appRouter.use('/api/templates/categories', categoryRouter);
 appRouter.use('/api/templates/config', configRouter);
-appRouter.use('/api/templates/printingTemplates', printingTemplateRouter);
+appRouter.use('/api/templates/print', printingTemplateRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');

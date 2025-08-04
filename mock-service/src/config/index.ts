@@ -29,7 +29,7 @@ const config = {
             createChildTemplateRoute: env.get('CREATE_CHILD_TEMPLATE_ROUTE').default('/api/templates/child').asString(),
         },
         printingTemplates: {
-            createPrintingTemplateRoute: env.get('CREATE_PRINTING_TEMPLATE_ROUTE').default('/api/templates/printingTemplates').asString(),
+            createPrintingTemplateRoute: env.get('CREATE_PRINTING_TEMPLATE_ROUTE').default('/api/templates/print').asString(),
         },
         config: {
             createOrderConfigRoute: env.get('CREATE_ORDER_CONFIG_ROUTE').default('/api/templates/config/categoryOrder').asString(),

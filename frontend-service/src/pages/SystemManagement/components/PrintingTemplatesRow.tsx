@@ -8,19 +8,17 @@ import { CreateButton } from './CreateButton';
 import { environment } from '../../../globals';
 import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
 import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
-import axios from '../../../axios';
+import { searchPrintingTemplatesRequest, deletePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 import { PrintingTemplateCard } from './PrintingTemplateCard';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { toast } from 'react-toastify';
 
 const fetchPrintingTemplates = async () => {
-    const { data } = await axios.post('/templates/printing-templates/search', {});
-    return data;
+    return await searchPrintingTemplatesRequest({});
 };
 
 const deletePrintingTemplate = async (templateId: string) => {
-    const { data } = await axios.delete(`/templates/printing-templates/${templateId}`);
-    return data;
+    return await deletePrintingTemplateRequest(templateId);
 };
 
 const PrintingTemplatesRow: React.FC = () => {
@@ -102,7 +100,7 @@ const PrintingTemplatesRow: React.FC = () => {
                             printingTemplateWizardDialogState.printingTemplate || {
                                 name: '',
                                 sections: [],
-                                compactView: false,
+                                compactView: true,
                                 addEntityCheckbox: false,
                                 appendSignatureField: false,
                                 _id: '',

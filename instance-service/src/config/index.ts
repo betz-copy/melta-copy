@@ -83,10 +83,7 @@ const config = {
                 .asString(),
         },
         printingTemplates: {
-            getPrintingTemplateByIdRoute: env
-                .get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_GET_PRINTING_TEMPLATE_BY_ID_ROUTE')
-                .default('/api/templates/printingTemplates')
-                .asString(),
+            basePrintingTemplatesRoute: env.get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_BASE_ROUTE').default('/api/templates/print').asString(),
         },
         children: {
             getByIdRoute: env.get('TEMPLATE_SERVICE_CHILDREN_GET_BY_ID_ROUTE').default('/api/templates/child').asString(),

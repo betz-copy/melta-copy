@@ -97,10 +97,7 @@ const config = {
                 .asString(),
         },
         printingTemplates: {
-            basePrintingTemplatesRoute: env
-                .get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_BASE_ROUTE')
-                .default('/api/templates/printingTemplates')
-                .asString(),
+            basePrintingTemplatesRoute: env.get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_BASE_ROUTE').default('/api/templates/print').asString(),
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         userDoesntExistUnderReq: env.get('USER_NOT_EXIST_UNDER_REQUEST').default(`User doesn't exists under request`).asString(),

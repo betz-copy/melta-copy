@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Grid, Typography, TextField, IconButton, FormControlLabel, Button, Chip, Box as MuiBox, Autocomplete } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,13 +12,12 @@ import * as Yup from 'yup';
 import { MeltaCheckbox } from '../../../common/MeltaCheckbox';
 import { BlueTitle } from '../../../common/BlueTitle';
 import i18next from 'i18next';
-import axios from '../../../axios';
 import { toast } from 'react-toastify';
+import { createPrintingTemplateRequest, updatePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 
 interface PrintingTemplateCardProps {
     onClose: () => void;
     printingTemplate: IMongoPrintingTemplate;
-    onAfterSave?: () => void;
 }
 
 const sectionSchema = Yup.object().shape({
@@ -32,30 +31,10 @@ const sectionSchema = Yup.object().shape({
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().required(i18next.t('wizard.printingTemplate.requiredField')),
-    sections: Yup.array().of(sectionSchema).min(1, i18next.t('wizard.printingTemplate.requiredField')),
+    sections: Yup.array().of(sectionSchema).min(1, i18next.t('wizard.printingTemplate.mustAddAtLeastOneTemplateToPrint')),
 });
 
-const getInitialValues = (printingTemplate: IMongoPrintingTemplate) => {
-    return {
-        ...printingTemplate,
-        name: printingTemplate.name || '',
-        sections:
-            printingTemplate.sections && printingTemplate.sections.length > 0
-                ? printingTemplate.sections
-                : [
-                      {
-                          categoryId: '',
-                          entityTemplateId: '',
-                          selectedColumns: [],
-                      },
-                  ],
-        compactView: printingTemplate.compactView ?? false,
-        addEntityCheckbox: printingTemplate.addEntityCheckbox ?? false,
-        appendSignatureField: printingTemplate.appendSignatureField ?? false,
-    };
-};
-
-const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClose, printingTemplate, onAfterSave }) => {
+const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClose, printingTemplate }) => {
     const queryClient = useQueryClient();
     const categoriesMap = queryClient.getQueryData<ICategoryMap>('getCategories');
     const entityTemplatesMap = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
@@ -63,13 +42,47 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     const entityTemplates = entityTemplatesMap ? Array.from(entityTemplatesMap.values()) : [];
 
     const formik = useFormik({
-        initialValues: getInitialValues(printingTemplate),
+        initialValues: printingTemplate,
         validationSchema,
         enableReinitialize: true,
-        onSubmit: (values) => {
+        onSubmit: () => {
             onClose();
         },
     });
+
+    const hasChanges = useMemo(() => {
+        const initialValues = printingTemplate;
+        const currentValues = formik.values;
+
+        if (initialValues.name !== currentValues.name) return true;
+
+        if (initialValues.sections.length !== currentValues.sections.length) return true;
+
+        for (let i = 0; i < currentValues.sections.length; i++) {
+            const initialSection = initialValues.sections[i];
+            const currentSection = currentValues.sections[i];
+
+            if (!initialSection) return true;
+
+            if (
+                initialSection.categoryId !== currentSection.categoryId ||
+                initialSection.entityTemplateId !== currentSection.entityTemplateId ||
+                JSON.stringify(initialSection.selectedColumns) !== JSON.stringify(currentSection.selectedColumns)
+            ) {
+                return true;
+            }
+        }
+
+        if (
+            initialValues.compactView !== currentValues.compactView ||
+            initialValues.addEntityCheckbox !== currentValues.addEntityCheckbox ||
+            initialValues.appendSignatureField !== currentValues.appendSignatureField
+        ) {
+            return true;
+        }
+
+        return false;
+    }, [formik.values, printingTemplate]);
 
     const getEntitiesForCategory = (categoryId: string) => entityTemplates.filter((et) => et.category._id === categoryId);
     const getColumnsForEntityTemplate = (entityTemplateId: string) => {
@@ -79,19 +92,10 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     };
 
     const handleSave = async (values: IMongoPrintingTemplate) => {
+        const isUpdate = Boolean(values._id);
         try {
-            let response;
-            const apiRoute = '/templates/printing-templates';
-            const isUpdate = Boolean(values._id);
-
-            if (isUpdate) {
-                const { _id, createdAt, updatedAt, ...rest } = values;
-                response = await axios.put(`${apiRoute}/${values._id}`, rest);
-            } else {
-                const { _id, createdAt, updatedAt, ...rest } = values;
-                response = await axios.post(apiRoute, rest);
-            }
-            const savedTemplate = response.data;
+            const { _id, createdAt, updatedAt, ...rest } = values;
+            const savedTemplate = isUpdate ? await updatePrintingTemplateRequest(values._id, rest) : await createPrintingTemplateRequest(rest);
             queryClient.setQueryData<IMongoPrintingTemplate[]>('getPrintingTemplates', (old = []) => {
                 const idx = old.findIndex((t) => t._id === savedTemplate._id);
                 if (idx !== -1) {
@@ -109,9 +113,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
             }
 
             onClose();
-            if (onAfterSave) onAfterSave();
         } catch (err) {
-            const isUpdate = Boolean(values._id);
             if (isUpdate) {
                 toast.error(i18next.t('wizard.printingTemplate.failedToUpdate'));
             } else {
@@ -121,19 +123,20 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     };
 
     return (
-        <MuiBox sx={{ direction: 'rtl' }}>
+        <MuiBox>
             <FormikProvider value={formik}>
                 <form onSubmit={formik.handleSubmit}>
                     <MuiBox
                         sx={{
                             position: 'relative',
-                            height: '85vh',
                             bgcolor: 'background.paper',
                             borderRadius: 4,
                             p: 4,
+                            maxHeight: '80vh',
+                            overflow: 'auto',
                         }}
                     >
-                        <Grid container alignItems="center" justifyContent="space-between" direction="row-reverse" sx={{ mb: 3 }}>
+                        <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
                             <Grid item>
                                 <BlueTitle
                                     title={
@@ -151,8 +154,8 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                 </IconButton>
                             </Grid>
                         </Grid>
-                        <Grid container alignItems="center" justifyContent="flex-end" spacing={2} direction="row-reverse" sx={{ mb: 2 }}>
-                            <Grid item sx={{ minWidth: 300, flex: 1 }}>
+                        <Grid container alignItems="center" justifyContent="flex-start" spacing={5} sx={{ mb: 2 }}>
+                            <Grid item sx={{ flexShrink: 0, minWidth: 450 }}>
                                 <TextField
                                     name="name"
                                     value={formik.values.name}
@@ -175,8 +178,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                             {i18next.t('wizard.printingTemplate.compactView')}
                                         </Typography>
                                     }
-                                    labelPlacement="start"
-                                    sx={{ mr: 0 }}
+                                    labelPlacement="end"
                                 />
                             </Grid>
                             <Grid item>
@@ -192,8 +194,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                             {i18next.t('wizard.printingTemplate.appendSignatureField')}
                                         </Typography>
                                     }
-                                    labelPlacement="start"
-                                    sx={{ mr: 0 }}
+                                    labelPlacement="end"
                                 />
                             </Grid>
                             <Grid item>
@@ -209,20 +210,19 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                             {i18next.t('wizard.printingTemplate.addEntityCheckbox')}
                                         </Typography>
                                     }
-                                    labelPlacement="start"
-                                    sx={{ ml: 0 }}
+                                    labelPlacement="end"
                                 />
                             </Grid>
                         </Grid>
                         {formik.touched.name && formik.errors.name && (
-                            <Grid container justifyContent="flex-end" sx={{ mb: 1 }}>
-                                <Typography color="error" textAlign="right">
+                            <Grid container justifyContent="flex-start" sx={{ mb: 1 }}>
+                                <Typography color="error" textAlign="left">
                                     {formik.errors.name}
                                 </Typography>
                             </Grid>
                         )}
-                        <Grid container justifyContent="flex-end" sx={{ mb: 2 }}>
-                            <Typography color="#9398C2" textAlign="right">
+                        <Grid container justifyContent="flex-start" sx={{ mb: 2 }}>
+                            <Typography color="#9398C2" textAlign="left" fontSize={13}>
                                 {i18next.t('wizard.printingTemplate.note')}
                             </Typography>
                         </Grid>
@@ -235,8 +235,18 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         const sectionError = getIn(formik.errors, `sections[${idx}]`) || {};
                                         const sectionTouched = getIn(formik.touched, `sections[${idx}]`) || {};
                                         return (
-                                            <Grid key={idx} container alignItems="center" spacing={2} sx={{ p: 2 }} direction="row-reverse">
-                                                <Grid item sx={{ width: 250 }}>
+                                            <Grid
+                                                key={idx}
+                                                container
+                                                alignItems="center"
+                                                spacing={2}
+                                                sx={{
+                                                    p: 2,
+                                                    flexWrap: 'nowrap',
+                                                    minWidth: 0,
+                                                }}
+                                            >
+                                                <Grid item sx={{ width: 250, flexShrink: 0, minWidth: 250 }}>
                                                     <Autocomplete
                                                         options={categories}
                                                         getOptionLabel={(option) => option.displayName}
@@ -259,7 +269,6 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                                 size="small"
                                                                 variant="outlined"
                                                                 fullWidth
-                                                                dir="rtl"
                                                             />
                                                         )}
                                                         fullWidth
@@ -267,7 +276,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                         isOptionEqualToValue={(option, value) => option._id === value._id}
                                                     />
                                                 </Grid>
-                                                <Grid item sx={{ width: 250 }}>
+                                                <Grid item sx={{ width: 250, flexShrink: 0, minWidth: 250 }}>
                                                     <Autocomplete
                                                         options={entities}
                                                         getOptionLabel={(option) => option.displayName}
@@ -289,7 +298,6 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                                 size="small"
                                                                 variant="outlined"
                                                                 fullWidth
-                                                                dir="rtl"
                                                             />
                                                         )}
                                                         fullWidth
@@ -298,7 +306,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                         disabled={!section.categoryId}
                                                     />
                                                 </Grid>
-                                                <Grid item sx={{ width: 570 }}>
+                                                <Grid item sx={{ width: 570, flexShrink: 0, minWidth: 570 }}>
                                                     <Autocomplete
                                                         options={columns}
                                                         getOptionLabel={(option) => option.name}
@@ -327,7 +335,6 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                                 size="small"
                                                                 variant="outlined"
                                                                 fullWidth
-                                                                dir="rtl"
                                                             />
                                                         )}
                                                         renderTags={(value) =>
@@ -349,7 +356,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                         disabled={!section.entityTemplateId}
                                                     />
                                                 </Grid>
-                                                <Grid item>
+                                                <Grid item sx={{ flexShrink: 0, minWidth: 'auto' }}>
                                                     <IconButton onClick={() => remove(idx)} size="small">
                                                         <DeleteIcon />
                                                     </IconButton>
@@ -357,7 +364,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                             </Grid>
                                         );
                                     })}
-                                    <Grid container justifyContent="flex-end" sx={{ mt: 2 }}>
+                                    <Grid container justifyContent="flex-start" sx={{ mt: 2 }}>
                                         <Button
                                             type="button"
                                             variant="text"
@@ -369,14 +376,24 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                             </Typography>
                                         </Button>
                                     </Grid>
+
+                                    {formik.touched.sections && formik.errors.sections && formik.values.sections.length === 0 && (
+                                        <Grid container justifyContent="flex-start" sx={{ mt: 1 }}>
+                                            <Typography color="error" variant="body2">
+                                                {formik.errors.sections}
+                                            </Typography>
+                                        </Grid>
+                                    )}
                                 </>
                             )}
                         </FieldArray>
                         <Grid container justifyContent="center" sx={{ mt: 4 }}>
                             <Button
                                 type="button"
+                                sx={{ marginBottom: '10px' }}
                                 variant="contained"
                                 color="primary"
+                                disabled={!hasChanges}
                                 onClick={async () => {
                                     formik.setTouched(
                                         {
