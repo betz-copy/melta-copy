@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/ReadonlyFilterInput';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '../../../../interfaces/charts';
 import { ChartForm } from '../../../../interfaces/dashboard';

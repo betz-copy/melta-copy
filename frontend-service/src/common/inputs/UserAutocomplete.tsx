@@ -1,14 +1,14 @@
+import { ExpandMore } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { ExpandMore } from '@mui/icons-material';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../UserAvatar';
 
 export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {

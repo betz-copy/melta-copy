@@ -2,7 +2,7 @@ import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { MeltaTooltip } from '../../../MeltaTooltip';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 
 interface ProcessNameProps {
     process: IMongoProcessInstancePopulated | null;

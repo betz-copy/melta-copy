@@ -1,7 +1,7 @@
 import { Check, Remove } from '@mui/icons-material';
 import { Box, Checkbox, SxProps, useTheme } from '@mui/material';
 import React, { CSSProperties, useMemo } from 'react';
-import { useDarkModeStore } from '../stores/darkMode';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 interface MeltaCheckboxProps {
     checked?: boolean;
@@ -92,4 +92,4 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
     );
 };
 
-export { MeltaCheckbox };
+export default MeltaCheckbox;

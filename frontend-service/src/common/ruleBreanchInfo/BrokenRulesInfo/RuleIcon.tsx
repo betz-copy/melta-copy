@@ -1,9 +1,9 @@
-import React from 'react';
 import { Gavel as GavelIcon } from '@mui/icons-material';
-import i18next from 'i18next';
 import { Icon } from '@mui/material';
+import i18next from 'i18next';
+import React from 'react';
 import { IMongoRule } from '../../../interfaces/rules';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
 interface RuleIconProps {
     ruleType: IMongoRule['actionOnFail'];

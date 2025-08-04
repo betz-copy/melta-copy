@@ -1,7 +1,8 @@
-import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useQueryClient } from 'react-query';
+import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -16,17 +17,16 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
-import { populateRelationshipTemplate } from '../../utils/templates';
-import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
-import { IUser } from '../../interfaces/users';
-import { EntityLink, EntityLinkProps } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';
-import { EntityPropertiesInternal } from '../EntityProperties';
-import { environment } from '../../globals';
+import { IUser } from '../../interfaces/users';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
-import { MeltaTooltip } from '../MeltaTooltip';
+import { populateRelationshipTemplate } from '../../utils/templates';
+import { EntityLink, EntityLinkProps } from '../EntityLink';
+import { EntityPropertiesInternal } from '../EntityProperties';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 
 interface EntityInfoProps {
     entity: IEntity | string | null;
@@ -204,7 +204,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const relationshipTemplate = allowedRelationships.find((relationship) => relationship._id === relationshipTemplateId)!;
-    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates);
+    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, entityTemplates);
 
     return (
         <Typography component="p" variant="body1">

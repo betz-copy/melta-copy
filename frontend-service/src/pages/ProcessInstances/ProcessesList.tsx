@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { InfiniteScroll } from '../../common/InfiniteScroll';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
+import { environment } from '../../globals';
+import { PermissionScope } from '../../interfaces/permissions';
+import { IMongoProcessInstancePopulated, Status } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { searchProcessesRequest } from '../../services/processesService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard from './ProcessCard';
-import { searchProcessesRequest } from '../../services/processesService';
-import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
-import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { BlueTitle } from '../../common/BlueTitle';
-import { environment } from '../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 

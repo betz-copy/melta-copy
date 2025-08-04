@@ -1,16 +1,16 @@
+import { Hive } from '@mui/icons-material';
+import { Card, CardContent, Divider, FormControlLabel, FormGroup, Grid, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import { Card, CardContent, Divider, FormControlLabel, FormGroup, Grid, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
-import { StepComponentProps } from '..';
 import { IFrameWizardValues } from '.';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
+import { StepComponentProps } from '..';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { useUserStore } from '../../../stores/user';
 import { ViewMode } from '../../../interfaces/dashboard';
+import { useUserStore } from '../../../stores/user';
 import { CustomIcon } from '../../CustomIcon';
-import { Hive } from '@mui/icons-material';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 
 const settingIFramesPermissionsSchema = Yup.object({
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),

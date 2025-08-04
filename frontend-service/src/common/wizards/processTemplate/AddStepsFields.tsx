@@ -1,25 +1,24 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import _debounce from 'lodash.debounce';
+import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { FieldArray, FormikErrors } from 'formik';
-import { v4 as uuid } from 'uuid';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
+import { v4 as uuid } from 'uuid';
+import * as Yup from 'yup';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
-import { ProcessTemplateWizardValues } from './index';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
+import { FieldBlockDND } from '../entityTemplate/fieldBlock/FieldBlock';
+import { FieldBlockAccordion, ItemTypes } from '../entityTemplate/fieldBlock/interfaces';
 import { StepComponentProps } from '../index';
+import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
+import { ProcessTemplateWizardValues } from './index';
 import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
-import { FieldBlockDND } from '../entityTemplate/fieldBlock/FieldBlock';
-import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { FieldBlockAccordion, ItemTypes } from '../entityTemplate/fieldBlock/interfaces';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;

@@ -1,10 +1,10 @@
 import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment } from 'react';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IEntity } from '../../../../interfaces/entities';
-import { environment } from '../../../../globals';
 import { formatToString } from '../../../../common/EntityProperties';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
+import { environment } from '../../../../globals';
+import { IEntity } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const { ganttSettings } = environment;
 

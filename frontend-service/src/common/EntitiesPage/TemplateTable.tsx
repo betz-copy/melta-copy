@@ -26,6 +26,7 @@ import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IKartoffelUser } from '../../interfaces/users';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -35,19 +36,18 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../utils/templates';
-import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, TablePageType } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
 import { TableButton } from '../TableButton';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { LoadExcelButton } from './Buttons/LoadExcel';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
-import { IKartoffelUser } from '../../interfaces/users';
 
 const {
     loadExcel: { excelExtension },

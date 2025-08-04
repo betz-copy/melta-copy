@@ -1,14 +1,14 @@
-import React from 'react';
-import { FormikErrors, FormikProps } from 'formik';
 import { Box, Grid, Typography } from '@mui/material';
+import { FormikErrors, FormikProps } from 'formik';
 import i18next from 'i18next';
-import { ProcessStepValues } from '../ProcessSteps';
+import React from 'react';
 import { ProcessDetailsValues } from '.';
 import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
-import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import OpenPreview from '../../../FilePreview/OpenPreview';
-import { BlueTitle } from '../../../BlueTitle';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { ProcessStepValues } from '../ProcessSteps';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 

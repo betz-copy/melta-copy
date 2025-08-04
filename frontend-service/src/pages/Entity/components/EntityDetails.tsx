@@ -106,12 +106,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
-                    return {
-                        ...expandedEntity,
-                        entity: data,
-                    };
-                });
+                queryClient.setQueryData(
+                    ['getExpandedEntity', entity.properties._id, { [entity.properties._id]: { maxLevel: 1 } }, { templateIds }],
+                    () => {
+                        return {
+                            ...expandedEntity,
+                            entity: data,
+                        };
+                    },
+                );
                 setUpdateStatusWithRuleBreachDialogState({ isOpen: false });
 
                 if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));

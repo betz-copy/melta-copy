@@ -16,14 +16,14 @@ import _debounce from 'lodash.debounce';
 import React, { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../common/BlueTitle';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import UserAutocomplete from '../../common/inputs/UserAutocomplete';
 import { PermissionScope } from '../../interfaces/permissions';
 import { IMongoUser, IUser } from '../../interfaces/users';
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
-import { useUserStore } from '../../stores/user';
 
 interface IPermissionsDialogProps {
     open: boolean;

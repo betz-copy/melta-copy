@@ -1,15 +1,15 @@
-import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { Dispatch, SetStateAction } from 'react';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
-import { BlueTitle } from '../../common/BlueTitle';
-import { AddProcessButton } from './AddProcessButton';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import './ProcessesList.css';
-import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { AddProcessButton } from './AddProcessButton';
+import './ProcessesList.css';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;

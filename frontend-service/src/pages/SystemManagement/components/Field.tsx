@@ -1,14 +1,15 @@
 /* eslint-disable no-restricted-globals */
-import React, { useState, useEffect } from 'react';
-import { TextField, Switch, InputAdornment } from '@mui/material';
+import { InputAdornment, TextField } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import MeltaSwitch from '../../../common/MeltaDesigns/MeltaSwitch';
+import { environment } from '../../../globals';
+import { IMetadata } from '../../../interfaces/workspaces';
+import { BackendConfigState } from '../../../services/backendConfigService';
 import { updateMetadata } from '../../../services/workspacesService';
 import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
-import { IMetadata } from '../../../interfaces/workspaces';
-import { environment } from '../../../globals';
-import { BackendConfigState } from '../../../services/backendConfigService';
 
 interface FieldProps {
     keyPath: string;
@@ -130,7 +131,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
             break;
         case 'boolean':
             inputElement = (
-                <Switch
+                <MeltaSwitch
                     id={keyPath}
                     name={keyPath}
                     checked={Boolean(inputValue)}

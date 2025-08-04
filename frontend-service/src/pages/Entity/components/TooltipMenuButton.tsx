@@ -1,7 +1,7 @@
-import React from 'react';
-import { MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { SvgIconComponent } from '@mui/icons-material';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { ListItemIcon, ListItemText, MenuItem } from '@mui/material';
+import React from 'react';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 
 interface TooltipMenuButtonProps {
     tooltipTitle: string;

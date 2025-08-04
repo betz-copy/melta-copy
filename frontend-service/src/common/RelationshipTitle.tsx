@@ -4,10 +4,10 @@ import '../css/realtionshipTitle.css';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
+import { useWorkspaceStore } from '../stores/workspace';
 import { getEntityTemplateColor } from '../utils/colors';
 import { EntityTemplateColor } from './EntityTemplateColor';
-import { MeltaTooltip } from './MeltaTooltip';
-import { useWorkspaceStore } from '../stores/workspace';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 const ArrowTail: React.FC = () => {
     const theme = useTheme();

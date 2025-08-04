@@ -1,16 +1,16 @@
-import React, { ReactElement, useEffect } from 'react';
 import { Box } from '@mui/material';
 import i18next from 'i18next';
+import React, { ReactElement, useEffect } from 'react';
+import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
+import '../../css/pages.css';
+import { PermissionScope } from '../../interfaces/permissions';
+import { useUserStore } from '../../stores/user';
 import { CategoriesRow } from './components/CategoriesRow';
-import EntityTemplatesRow from './entityTemplatesRow';
+import { ConfigurationManagement } from './components/ConfigurationManagement';
+import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
 import { RulesRow } from './components/RulesRow';
-import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
-import '../../css/pages.css';
-import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ConfigurationManagement } from './components/ConfigurationManagement';
-import MeltaTabs from '../../common/MeltaTabs';
+import EntityTemplatesRow from './entityTemplatesRow';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);

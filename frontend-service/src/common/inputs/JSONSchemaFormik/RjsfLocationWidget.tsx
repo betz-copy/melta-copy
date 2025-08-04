@@ -1,18 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
-import React, { useEffect, useState } from 'react';
+import MapIcon from '@mui/icons-material/Map';
+import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
-import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
-import MapIcon from '@mui/icons-material/Map';
 import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { environment } from '../../../globals';
+import { SplitBy } from '../../../interfaces/entities';
 import LocationField from '../../../pages/Map/LocationField';
 import { stringToCoordinates } from '../../../utils/map';
 import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { SplitBy } from '../../../interfaces/entities';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -88,7 +88,7 @@ const RjsfLocationWidget = ({
     registry,
     color,
     propertyReadOnly,
-    hideError,  
+    hideError,
     hideLabel,
     ...textFieldProps
 }: WidgetProps) => {

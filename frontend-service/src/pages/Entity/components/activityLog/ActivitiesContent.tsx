@@ -3,16 +3,16 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
+import DateRange from '../../../../common/inputs/DateRange';
+import MultipleSelect from '../../../../common/inputs/MultipleSelect';
 import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
-import ActivityLogRow from './ActivityLogRow';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import DateRange from '../../../../common/inputs/DateRange';
-import MultipleSelect from '../../../../common/inputs/MultipleSelect';
+import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import { FilterButton } from '../../../SystemManagement/components/FilterButton';
+import ActivityLogRow from './ActivityLogRow';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
@@ -108,7 +108,8 @@ const ActivitiesContent: React.FC<{
                         multiple
                         selectedValue={selectedValue}
                         onChange={(_event, newVal) => {
-                            setActivitiesFilterValue(newVal.map((val) => val.value));
+                            if (newVal === null) return;
+                            setActivitiesFilterValue(Array.isArray(newVal) ? newVal.map((val) => val.value) : [newVal.value]);
                         }}
                         textFieldProps={{}}
                         required={false}

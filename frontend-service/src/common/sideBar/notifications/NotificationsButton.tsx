@@ -1,9 +1,9 @@
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { Grid, IconButton } from '@mui/material';
 import React from 'react';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import { NotificationCount } from './NotificationCount';
 import { INotificationGroupCountDetails } from '../../../interfaces/notifications';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { NotificationCount } from './NotificationCount';
 
 interface NotificationsButtonProps {
     notificationCountDetails: INotificationGroupCountDetails;

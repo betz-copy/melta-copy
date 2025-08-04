@@ -43,11 +43,11 @@ import { createChildTemplate, updateChildTemplate } from '../../../services/temp
 import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { ErrorToast } from '../../ErrorToast';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import SelectUserFieldDialog from './SelectUserFieldDialog';
 import { createChildTemplateSchema } from './validation';
-import { emptyChildTemplate } from '../entity';
 
 const { columnWidths } = environment.agGrid.localStorage;
 

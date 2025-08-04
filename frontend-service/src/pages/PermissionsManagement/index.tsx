@@ -1,14 +1,13 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
 import React, { ReactElement, useEffect } from 'react';
-import _debounce from 'lodash.debounce';
 import '../../css/pages.css';
 
-import MeltaTabs from '../../common/MeltaTabs';
-import UsersRow from './components/UsersRow';
-import RolesRow from './components/RolesRow';
-import { useUserStore } from '../../stores/user';
+import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
 import { PermissionScope } from '../../interfaces/permissions';
+import { useUserStore } from '../../stores/user';
+import RolesRow from './components/RolesRow';
+import UsersRow from './components/UsersRow';
 
 const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     useEffect(() => setTitle(i18next.t('permissions.permissionsManagementPageTitle')), [setTitle]);

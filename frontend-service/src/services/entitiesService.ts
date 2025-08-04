@@ -153,7 +153,7 @@ export const editManyEntitiesByExcelRequest = async (
 
 export const getExpandedEntityByIdRequest = async (
     entityId: string,
-    expandedParams: { [key: string]: number },
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
         disabled?: boolean;
         templateIds: string[];

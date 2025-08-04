@@ -1,16 +1,16 @@
 import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import { cloneDeep } from 'lodash';
 import React, { useState } from 'react';
+import { ByCurrentDefaultValue, ChipType, IFieldChip, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
-import { ByCurrentDefaultValue, ChipType, IFieldChip, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
-import { cloneDeep } from 'lodash';
 
 const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined, fieldSchema: IEntitySingleProperty): string => {
     if (value === null || value === undefined) return '';

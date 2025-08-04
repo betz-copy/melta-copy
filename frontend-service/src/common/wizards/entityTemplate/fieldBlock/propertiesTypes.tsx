@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { Delete as DeleteIcon, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { Delete as DeleteIcon } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
+import React, { useEffect, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { FieldEditCardProps, MemoFieldEditCard } from '../FieldEditCard';
-import { MemoAttachmentEditCard } from '../AttachmentEditCard';
-import { MeltaTooltip } from '../../../MeltaTooltip';
-import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
 import { useDarkModeStore } from '../../../../stores/darkMode';
-import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { MemoAttachmentEditCard } from '../AttachmentEditCard';
+import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { FieldEditCardProps, MemoFieldEditCard } from '../FieldEditCard';
 import { AttachmentsProps, FieldBlockAccordion, FieldProps, GroupProps, ItemTypes } from './interfaces';
 
 export const getFieldData = (displayValuesCopy: any, fieldIndex: number, groupIndex?: number) => {

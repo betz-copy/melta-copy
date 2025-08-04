@@ -1,7 +1,9 @@
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
+import { IEntityExpanded } from '../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
+import { INestedRelationshipTemplates } from '../pages/Entity';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
     if (templateA.category._id !== templateB.category._id) {
@@ -11,16 +13,54 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 };
 
 export const populateRelationshipTemplate = (
-    relationshipTemplate: IMongoRelationshipTemplate,
-    entityTemplates: IMongoEntityTemplatePopulated[],
+    { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate }: IMongoRelationshipTemplate,
+    entityTemplates: IEntityTemplateMap,
 ): IMongoRelationshipTemplatePopulated => {
-    const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
-
     return {
-        sourceEntity: entityTemplates.find((entity) => entity._id === sourceEntityId)!,
-        destinationEntity: entityTemplates.find((entity) => entity._id === destinationEntityId)!,
+        sourceEntity: entityTemplates.get(sourceEntityId)!,
+        destinationEntity: entityTemplates.get(destinationEntityId)!,
         ...restOfRelationshipTemplate,
     };
+};
+
+export const getFullRelationshipTemplates = (
+    relationshipTemplates: IRelationshipTemplateMap,
+    entityTemplates: IEntityTemplateMap,
+    parentEntityTemplate: IMongoEntityTemplatePopulated,
+    depth: number,
+    parentRelationshipTemplate?: IMongoRelationshipTemplatePopulated,
+    expandedEntity?: IEntityExpanded,
+    filterOnlyThoseWithInstances = false,
+): INestedRelationshipTemplates[] => {
+    const result: INestedRelationshipTemplates[] = [];
+
+    for (const relationshipTemplate of relationshipTemplates.values()) {
+        const isSelfProperty =
+            relationshipTemplate.isProperty &&
+            parentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
+                relationshipTemplate._id;
+
+        const isConnected =
+            relationshipTemplate.sourceEntityId === parentEntityTemplate._id || relationshipTemplate.destinationEntityId === parentEntityTemplate._id;
+
+        if (isSelfProperty || !isConnected) continue;
+
+        const hasInstances = expandedEntity?.connections.some(({ relationship }) => relationship.templateId === relationshipTemplate._id)!;
+
+        if (filterOnlyThoseWithInstances && !hasInstances) continue;
+
+        if (parentRelationshipTemplate?._id === relationshipTemplate._id) continue;
+
+        result.push({
+            relationshipTemplate: populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+            hasInstances,
+            isExpandedEntityRelationshipSource: relationshipTemplate.sourceEntityId === parentEntityTemplate._id,
+            children: [],
+            depth,
+            parentRelationship: parentRelationshipTemplate,
+        });
+    }
+    return result;
 };
 
 export const getOppositeEntityTemplate = (entityTemplateId: string, relationshipTemplate: IMongoRelationshipTemplatePopulated) => {
@@ -91,13 +131,7 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
 };
 
 export const isChildTemplate = (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated | undefined | null
-  ): template is IMongoChildTemplatePopulated => {
-    return (
-      typeof template === 'object' &&
-      template !== null &&
-      'parentTemplate' in template &&
-      Boolean(template.parentTemplate)
-    );
-  };
-  
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated | undefined | null,
+): template is IMongoChildTemplatePopulated => {
+    return typeof template === 'object' && template !== null && 'parentTemplate' in template && Boolean(template.parentTemplate);
+};

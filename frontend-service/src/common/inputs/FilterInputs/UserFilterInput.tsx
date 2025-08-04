@@ -1,12 +1,12 @@
 import { FormControlLabel, Grid } from '@mui/material';
+import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IKartoffelUserStringFields } from '../../../interfaces/users';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { UserInput } from '../UserInput';
-import i18next from 'i18next';
 
 interface UserFilterProps {
     filterField: IAGGridTextFilter | undefined;
