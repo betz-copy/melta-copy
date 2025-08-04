@@ -1,10 +1,34 @@
 import { UiSchema } from '@rjsf/utils';
-import { cloneDeep } from 'lodash';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import _ from 'lodash';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
 import { EntityWizardValues } from '../../dialogs/entity';
 import i18next from 'i18next';
 import { FormikHelpers } from 'formik';
 import { IKartoffelUser } from '../../../interfaces/users';
+import { flatten } from 'flat';
+
+const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, selectedUser: IKartoffelUser | null) => {
+    return Object.entries(properties).reduce((acc, [key, value]) => {
+        if (changedUserKey === key) {
+            acc[key] = selectedUser
+                ? JSON.stringify({
+                      _id: selectedUser?._id || selectedUser?.id,
+                      fullName: selectedUser?.fullName,
+                      jobTitle: selectedUser?.jobTitle,
+                      hierarchy: selectedUser?.hierarchy,
+                      mail: selectedUser?.mail,
+                  })
+                : undefined;
+        }
+        if (value.properties) {
+            acc[key] = changeRelatedUserFields(value.properties, changedUserKey, selectedUser);
+        } else if (value.expandedUserField?.relatedUserField === changedUserKey) {
+            acc[key] = selectedUser?.[value.expandedUserField.kartoffelField];
+        }
+
+        return acc;
+    }, {});
+};
 
 const getFieldUiSchema = (
     schema: IMongoEntityTemplatePopulated['properties'],
@@ -73,32 +97,23 @@ const getFieldUiSchema = (
             'ui:widget': 'UserWidget',
             'ui:options': {
                 globalValues: values,
-                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
-                    const userFieldsToUpdate = Object.keys(schema.properties).filter(
-                        (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
-                    );
+                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {              
+                    // TODO: refactor - this code gets the fields that need to be modified so the displayed fields will be set in a nested way..
+                    const changedPropertiesOfUser = changeRelatedUserFields(schema.properties, propertyKey, user);
 
-                    const clonedValues = cloneDeep(curValues);
+                    // in order to set the values in the backend, we need to send the updated fields flatten
+                    const flattenChangedPropertiesOfUser: Object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
 
-                    const propertiesToUpdate = clonedValues.properties;
+                    const updatedFlattenFileds = {};
 
-                    userFieldsToUpdate.forEach((key) => {
-                        const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
-                        propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
+                    Object.keys(flattenChangedPropertiesOfUser).forEach((key) => {
+                        updatedFlattenFileds[key.split('.').pop() || key] = flattenChangedPropertiesOfUser[key];
                     });
 
-                    propertiesToUpdate[propertyKey] = user
-                        ? JSON.stringify({
-                              _id: user?._id || user?.id,
-                              fullName: user?.fullName,
-                              jobTitle: user?.jobTitle,
-                              hierarchy: user?.hierarchy,
-                              mail: user?.mail,
-                          })
-                        : undefined;
-
                     setValues({
-                        ...propertiesToUpdate,
+                        ...curValues.properties,
+                        ...changedPropertiesOfUser,
+                        ...updatedFlattenFileds,
                     });
                 },
             },
