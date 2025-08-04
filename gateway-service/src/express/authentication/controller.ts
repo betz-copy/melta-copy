@@ -41,10 +41,10 @@ class AuthenticationController {
         let token: string;
 
         if (RelayState?.includes(clientSideURLPrefix)) {
-            const workspaceId = redirectUrl.split('/').pop();
+            const workspaceId = redirectUrl.split('/').pop()!;
 
             token = await AuthenticationController.createClientSideToken(id, workspaceId);
-            redirectUrl = `${redirectUrl.split('/').slice(0, -1).join('/')}/main`;
+            redirectUrl = redirectUrl.replace(workspaceId, 'main');
         } else {
             token = await AuthenticationController.createUserToken(id);
         }
