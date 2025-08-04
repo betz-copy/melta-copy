@@ -1671,6 +1671,7 @@ export default {
             usersInfoChildTemplateId: 'ID תבנית משתמשים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
             clientSideWorkspaceName: 'שם סביבת צד לקוח',
+            fullNameField: 'שם שדה של שם משתמש בעמוד לקוח',
         },
         mapPage: {
             sourceTemplateId: 'ID תבנית מקור',

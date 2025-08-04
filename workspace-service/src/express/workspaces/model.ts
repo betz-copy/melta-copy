@@ -37,6 +37,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             usersInfoChildTemplateId: { type: String },
             numOfPropsToShow: { type: Number },
             clientSideWorkspaceName: { type: String },
+            fullNameField: { type: String },
         },
         mapPage: {
             sourceTemplateId: { type: String },

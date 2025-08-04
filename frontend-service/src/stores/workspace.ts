@@ -40,6 +40,7 @@ export const defaultMetadata = {
         usersInfoChildTemplateId: '',
         numOfPropsToShow: 9,
         clientSideWorkspaceName: 'simba',
+        fullNameField: 'full_name',
     },
     mapPage: {
         sourceTemplateId: '',
