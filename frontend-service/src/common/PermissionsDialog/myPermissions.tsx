@@ -2,12 +2,12 @@ import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitl
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
+import _debounce from 'lodash.debounce';
 import _isEqual from 'lodash.isequal';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import _debounce from 'lodash.debounce';
 
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { createUserRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest, updateUserRoleIdsRequest } from '../../services/userService';
@@ -16,13 +16,13 @@ import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 
-import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import ManagePermissions from './managePermissions';
+import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
+import { createDialogCategories, didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import { BlueTitle } from '../BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
-import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import ManagePermissions from './managePermissions';
 
 export const defaultEmptyUser = {
     _id: '',
@@ -142,16 +142,16 @@ const MyPermissions: React.FC<{
         },
     );
 
-    const { data: workspaceRoles, refetch: searchRolesOptions } = useQuery(
-        ['getAllWorkspaceRolesRequest', existingUser],
-        () => getAllWorkspaceRolesRequest([workspace._id]),
-        {
-            enabled: !!workspace,
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            retry: false,
-        },
-    );
+    const {
+        data: workspaceRoles,
+        refetch: searchRolesOptions,
+        isLoading,
+    } = useQuery(['getAllWorkspaceRolesRequest', existingUser], () => getAllWorkspaceRolesRequest([workspace._id]), {
+        enabled: !!workspace,
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        retry: false,
+    });
 
     const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
 
@@ -244,6 +244,7 @@ const MyPermissions: React.FC<{
                                         helperText={touched.roleIds ? errors.roleIds : ''}
                                         enableClear={mode !== 'view'}
                                         refetch={searchRolesOptionsDebounced}
+                                        isLoading={isLoading}
                                     />
                                 </Box>
                             )}

@@ -35,6 +35,7 @@ const metadataSchema = Joi.object({
         usersInfoChildTemplateId: Joi.string(),
         numOfPropsToShow: Joi.number(),
         clientSideWorkspaceName: Joi.string().valid('simba', 'azarim'),
+        fullNameField: Joi.string(),
     }).optional(),
     mapPage: Joi.object({
         sourceTemplateId: Joi.string().allow(''),

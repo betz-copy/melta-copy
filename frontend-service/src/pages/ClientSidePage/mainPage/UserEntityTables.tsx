@@ -76,7 +76,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                 const parentTemplate = entityTemplates.get(childTemplate.parentTemplate._id);
                                 if (!parentTemplate) return null;
 
-                                const childTemplatePropertiesList = Object.keys(childTemplate.properties);
+                                const childTemplatePropertiesList = Object.keys(childTemplate.properties.properties);
                                 const childTemplateProperties = Object.fromEntries(
                                     Object.entries(parentTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
                                 ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
@@ -85,13 +85,13 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     (propertyKey) =>
                                         (childTemplateProperties[propertyKey] = {
                                             ...childTemplateProperties[propertyKey],
-                                            isEditableByUser: childTemplate.properties[propertyKey].isEditableByUser,
-                                            defaultValue: childTemplate.properties[propertyKey].defaultValue,
+                                            isEditableByUser: childTemplate.properties.properties[propertyKey].isEditableByUser,
+                                            defaultValue: childTemplate.properties.properties[propertyKey].defaultValue,
                                         }),
                                 );
 
-                                const defaultFilter = childTemplate.properties
-                                    ? Object.entries(childTemplate.properties).reduce(
+                                const defaultFilter = childTemplate.properties.properties
+                                    ? Object.entries(childTemplate.properties.properties).reduce(
                                           (acc, [key, prop]) => {
                                               if (prop.filters) {
                                                   const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;

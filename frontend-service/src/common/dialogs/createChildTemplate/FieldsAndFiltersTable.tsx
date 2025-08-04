@@ -117,8 +117,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         setAddFilterToField(fieldName);
         setDialogType(type);
 
-        const { format, type: fieldType } = entityTemplate.properties.properties[fieldName];
-        const selectedFilter = (format && initializedFilterField[format]) || (fieldType && initializedFilterField[fieldType]);
+        const { format, type: fieldType, enum: enumValues } = entityTemplate.properties.properties[fieldName];
+        const selectedFilter =
+            (enumValues && initializedFilterField['array']) ||
+            (format && initializedFilterField[format]) ||
+            (fieldType && initializedFilterField[fieldType]);
 
         if (selectedFilter) {
             setTemplateFieldsFilters((prev) => ({
@@ -235,7 +238,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                     return (
                         <React.Fragment key={fieldName}>
-                            <Grid container alignItems="center" justifyContent="space-between" sx={{ height: '38px', ml: 1 }}>
+                            <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
                                 <Grid item xs={3}>
                                     <FormControlLabel
                                         control={

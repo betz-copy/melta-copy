@@ -1662,6 +1662,7 @@ export default {
         greaterThanOrEqual: 'יותר או שווה ל',
         greaterThan: 'יותר מ',
         inRange: 'בין',
+        empty: 'ריק',
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
@@ -1697,6 +1698,7 @@ export default {
             usersInfoChildTemplateId: 'ID תבנית משתמשים',
             numOfPropsToShow: 'מספר שדות להצגה בעמוד לקוח במידע של משתמש',
             clientSideWorkspaceName: 'שם סביבת צד לקוח',
+            fullNameField: 'שם שדה של שם משתמש בעמוד לקוח',
         },
         mapPage: {
             sourceTemplateId: 'ID תבנית מקור',
@@ -1736,8 +1738,8 @@ export default {
             title: 'ערך ברירת מחדל',
         },
         byUser: 'לפי משתמש מחובר',
-        connectedUser:'משתמש מחובר',
-        currentDate:'תאריך נוכחי',
+        connectedUser: 'משתמש מחובר',
+        currentDate: 'תאריך נוכחי',
         byUnit: 'לפי יחידת המשתמש',
         connectToUserPage: 'שיוך לעמוד לקוח',
         selectUserDialog: {
