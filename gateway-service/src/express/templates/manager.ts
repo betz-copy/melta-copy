@@ -1726,14 +1726,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // child entity templates
     async getAllowedChildEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        if (!userPermissions.admin && !userPermissions.instances) return [];
+        if (!userPermissions?.admin && !userPermissions?.instances) return [];
 
         const ids: string[] = [];
-        for (const category of Object.values(userPermissions.instances?.categories ?? {})) {
-            ids.push(...Object.keys(category.entityTemplates));
+        for (const category of Object.values(userPermissions?.instances?.categories ?? {})) {
+            ids.push(...Object.keys(category?.entityTemplates ?? {}));
         }
 
-        return this.entityTemplateService.searchChildTemplates(userPermissions.admin ? {} : { ids });
+        return this.entityTemplateService.searchChildTemplates(userPermissions?.admin ? {} : { ids });
     }
 
     // rules
