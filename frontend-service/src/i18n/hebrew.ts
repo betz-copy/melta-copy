@@ -1710,6 +1710,7 @@ export default {
         fieldDefaultDialog: {
             title: 'ערך ברירת מחדל',
         },
+        fieldFilterTableNoChecks: 'יש לסמן לפחות עמודה אחת',
         byUser: 'לפי משתמש מחובר',
         connectedUser: 'משתמש מחובר',
         currentDate: 'תאריך נוכחי',
