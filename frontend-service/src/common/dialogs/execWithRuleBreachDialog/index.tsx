@@ -5,9 +5,9 @@ import { useQueryClient } from 'react-query';
 import { ActionTypes, IActionMetadataPopulated, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
-import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
-import { MeltaTooltip } from '../../MeltaTooltip';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
 
 const ExecWithRuleBreachDialog: React.FC<{
     isSubmitting: boolean;

@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { Grid, styled } from '@mui/material';
-import { BlueTitle } from './BlueTitle';
+import BlueTitle from './MeltaDesigns/BlueTitle';
 import { useWorkspaceStore } from '../stores/workspace';
 
 export const TopBarGrid = styled(Grid)(({ theme }) => {

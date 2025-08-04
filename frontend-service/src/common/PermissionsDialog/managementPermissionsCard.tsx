@@ -2,9 +2,9 @@ import { Box, FormControlLabel, FormGroup } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { MeltaCheckbox } from '../MeltaCheckbox';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
-import { BlueTitle } from '../BlueTitle';
 
 interface ManagementPermissionsCardProps {
     disabled: boolean;

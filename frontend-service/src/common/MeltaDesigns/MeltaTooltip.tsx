@@ -15,4 +15,4 @@ const MeltaTooltip: React.FC<TooltipProps> = ({ children, ...tooltipProps }) => 
     );
 };
 
-export { MeltaTooltip };
+export default MeltaTooltip;

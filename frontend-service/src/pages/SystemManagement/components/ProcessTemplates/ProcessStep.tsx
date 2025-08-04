@@ -2,7 +2,7 @@ import { ChevronLeft, ExpandMore, ScatterPlotOutlined as HiveIcon } from '@mui/i
 import { Button, Grid, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import { CustomIcon } from '../../../../common/CustomIcon';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessProperties } from './ProcessProperties';
 import { StepReviewers } from './StepReviewers';

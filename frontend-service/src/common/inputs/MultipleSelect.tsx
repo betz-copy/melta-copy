@@ -1,61 +1,52 @@
+import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
-import { ExpandMore, Close } from '@mui/icons-material';
-import { ColoredEnumChip } from '../ColoredEnumChip';
-import { MeltaCheckbox } from '../MeltaCheckbox';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
+import { ColoredEnumChip } from '../ColoredEnumChip';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
+
+export interface ISelectOption {
+    label: string;
+    value: string;
+    color?: string;
+}
 
 const MultipleSelect: React.FC<{
-    items: {
-        label: string;
-        value: string;
-        color?: string;
-    }[];
     id: string;
-    disabled?: boolean;
-    readonly?: boolean;
-    multiple?: boolean;
-    selectedValue:
-        | {
-              label: string;
-              value: string;
-              color?: string;
-          }
-        | {
-              label: string;
-              value: string;
-              color?: string;
-          }[]
-        | null;
-    onChange: (event, newVal) => void;
-    textFieldProps: any;
-    required?: boolean;
-    autofocus?: boolean;
+    items: ISelectOption[];
+    selectedValue: ISelectOption | ISelectOption[] | null;
+    onChange: (event: React.SyntheticEvent, newVal: ISelectOption | ISelectOption[] | null) => void;
     onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
     onFocus: (event: React.FocusEvent<HTMLInputElement>) => void;
     variant: 'standard' | 'outlined';
     rawErrors: string[];
+    textFieldProps: any;
+    value?: any;
+    multiple?: boolean;
+    disabled?: boolean;
+    readonly?: boolean;
+    required?: boolean;
+    autofocus?: boolean;
     label?: string;
     color?: string;
-    value: any;
     placeholder?: string;
 }> = ({
-    items,
     id,
-    disabled,
-    readonly,
-    multiple,
+    items,
     selectedValue,
     onChange,
-    textFieldProps,
-    autofocus,
     onBlur,
     onFocus,
     variant,
     rawErrors,
+    textFieldProps,
+    value,
+    multiple,
+    disabled,
+    readonly,
+    autofocus,
     label,
     color,
-    value,
     placeholder,
 }) => {
     return (
@@ -75,7 +66,7 @@ const MultipleSelect: React.FC<{
             renderOption={(props, option) => {
                 return (
                     <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
-                        {multiple && <MeltaCheckbox checked={value.includes(option.value)} />}
+                        {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
                         <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
                     </MenuItem>
                 );

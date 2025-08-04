@@ -44,7 +44,7 @@ export const EntityProtectedRoute: React.FC<{
     const templates = [...entityTemplates.values(), ...childTemplatesArray];
     const templateIds = templates.map(({ _id }) => _id);
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
+    const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity, isLoading } = useQuery(
         ['getExpandedEntity', entityId, expanded, { templateIds }],
         () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),

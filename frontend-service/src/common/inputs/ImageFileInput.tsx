@@ -1,18 +1,18 @@
-import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility, DocumentScanner } from '@mui/icons-material';
-import { Accept, useDropzone } from 'react-dropzone';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import Camera from '../dialogs/Camera';
+import { CameraAltOutlined as CameraIcon, CloseOutlined as DeleteIcon, DocumentScanner, Visibility } from '@mui/icons-material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
+import { Accept, useDropzone } from 'react-dropzone';
+import { toast } from 'react-toastify';
+import { environment } from '../../globals';
+import { getFileName } from '../../utils/getFileName';
 import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
-import { getFileName } from '../../utils/getFileName';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import Camera from '../dialogs/Camera';
 import ImageView from '../dialogs/Camera/ImageView';
-import { environment } from '../../globals';
 import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {

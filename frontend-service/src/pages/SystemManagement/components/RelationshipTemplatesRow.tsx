@@ -401,12 +401,18 @@ const RelationshipTemplatesRow: React.FC = () => {
                     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
-                    queryKey={['searchRelationshipTemplates', searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow, allowedRelationships]}
+                    queryKey={[
+                        'searchRelationshipTemplates',
+                        searchText,
+                        sourceEntityTemplatesToShow,
+                        destinationEntityTemplatesToShow,
+                        allowedRelationships,
+                    ]}
                     queryFunction={({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
                             filterRelationships({
                                 relationshipTemplates: allowedRelationships.map((relationshipTemplate) =>
-                                    populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates),
+                                    populateRelationshipTemplate(relationshipTemplate, entityTemplates),
                                 ),
                                 destinationEntityTemplatesToShow,
                                 sourceEntityTemplatesToShow,

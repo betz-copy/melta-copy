@@ -1,24 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
-import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
-import i18next from 'i18next';
-import { SelectCheckbox } from '../SelectCheckBox';
-import { MeltaCheckbox } from '../MeltaCheckbox';
-import { IFile } from '../../interfaces/preview';
-import { getFile } from '../../utils/getFileType';
-import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
 import {
-    IConnectionExpanded,
-    IConnectionTemplateExpanded,
-    IEntityExpandedWithRelatedRelationships,
-    ISelectRelationshipTemplates,
-} from '../../pages/Entity/components/print';
-import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
-import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
-import { MeltaTooltip } from '../MeltaTooltip';
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControlLabel,
+    Grid,
+    IconButton,
+    TextField,
+    useTheme,
+} from '@mui/material';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useState } from 'react';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IFile } from '../../interfaces/preview';
+import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
+import RelationshipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
+import { getFile } from '../../utils/getFileType';
+import MultipleSelect from '../inputs/MultipleSelect';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import MeltaSwitch from '../MeltaDesigns/MeltaSwitch';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 type IOption = {
     show: boolean;
@@ -26,63 +33,64 @@ type IOption = {
     label: string;
 };
 
-const getFilesFromTemplate = (
-    instanceProperties: IEntity | InstanceProperties,
-    templateProperties:
-        | IEntityTemplate['properties']
-        | {
-              type: 'object';
-              properties: Record<string, IProcessSingleProperty>;
-              required: string[];
-          },
-): IFile[] => {
-    return Object.keys(templateProperties.properties)
-        .flatMap((propertyKey) => {
-            const propertySchema = templateProperties.properties[propertyKey];
-            const propertyValue = instanceProperties[propertyKey];
+export enum PrintType {
+    Entity = 'entity',
+    Process = 'process',
+}
+interface IEntityPrint {
+    type: PrintType.Entity;
+    template: IMongoEntityTemplatePopulated;
+    instance: IEntityExpanded;
+    entityConnections: EntityConnectionsProps;
+    options: {
+        disabled: IOption;
+        entityDates: IOption;
+        previewPropertiesOnly: IOption;
+    };
+}
 
-            if (propertyValue) {
-                if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
-                if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
-                    return propertyValue.map((id: string) => getFile(id));
-            }
-            return [];
-        })
-        .filter((file) => file !== undefined) as IFile[];
+interface IProcessPrint {
+    type: PrintType.Process;
+    template: IMongoProcessTemplatePopulated;
+    instance: IMongoProcessInstancePopulated;
+    options: { processSummary: IOption };
+}
+
+type PrintItem = IEntityPrint | IProcessPrint;
+
+const getFilesFromTemplate = (
+    instanceProps: IEntity['properties'] | InstanceProperties,
+    templateProps: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated['details'] | IMongoStepTemplatePopulated,
+): IFile[] => {
+    return Object.keys(templateProps.properties.properties).flatMap((propertyKey) => {
+        const propertySchema = templateProps.properties.properties[propertyKey];
+        const propertyValue = instanceProps[propertyKey];
+
+        if (propertyValue) {
+            if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
+            if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') return propertyValue.map((id: string) => getFile(id));
+        }
+        return [];
+    });
 };
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
-    instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstancePopulated;
+    printItem: PrintItem;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesLoadingStatus: {};
-    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
-    entityConnections?: {
-        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-        expandedRelationshipTemplates: IConnectionTemplateExpanded[];
-        expandedRelationships: IConnectionExpanded[];
-        selectedConnections: ISelectRelationshipTemplates[];
-        setSelectedConnections: React.Dispatch<React.SetStateAction<ISelectRelationshipTemplates[]>>;
-    };
-    options: {
-        date?: IOption;
-        disabled?: IOption;
-        entityDates?: IOption;
-        previewPropertiesOnly?: IOption;
-        processSummary?: IOption;
-    };
+    filesLoadingStatus: Record<string, boolean>;
+    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
     onClick: React.MouseEventHandler<HTMLButtonElement>;
+    title: string | undefined;
+    setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
 }> = ({
     open,
     handleClose,
-    template,
-    instance,
-    entityConnections,
+    printItem,
     files,
     setFiles,
     selectedFiles,
@@ -90,50 +98,27 @@ const PrintOptionsDialog: React.FC<{
     filesLoadingStatus,
     setFilesLoadingStatus,
     onClick,
-    options,
+    title,
+    setTitle,
 }) => {
+    const theme = useTheme();
     const [isLoading, setIsLoading] = useState(false);
+    const { type, template, instance, options } = printItem;
 
-    const getPropertiesFiles = React.useCallback((): IFile[] => {
-        if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
-        return getFilesFromTemplate(
-            (instance as IMongoProcessInstancePopulated).details,
-            (template as IMongoProcessTemplatePopulated).details.properties,
-        );
+    const getPropertiesFiles = useCallback((): IFile[] => {
+        if (type === PrintType.Entity) return getFilesFromTemplate(instance.entity.properties, template);
+        return getFilesFromTemplate(instance.details, template.details);
     }, [template, instance]);
 
-    const getProcessStepsFiles = React.useCallback((): IFile[] => {
-        if ('steps' in template && 'steps' in instance) {
-            return template.steps
-                .flatMap((stepTemplate) => {
-                    return instance.steps.flatMap((step) => {
-                        return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
-                            if (step.properties) {
-                                const propertySchema = stepTemplate.properties.properties[propertyKey];
-                                const propertyValue = step.properties[propertyKey];
-                                if (propertyValue) {
-                                    if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
-                                    if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
-                                        return propertyValue.map((id: string) => getFile(id));
-                                }
-                            }
-                            return [];
-                        });
-                    });
-                })
-                .filter((file) => file !== undefined) as IFile[];
-        }
-        return [];
+    const getProcessStepsFiles = useCallback((): IFile[] => {
+        if (type === PrintType.Entity) return [];
+        return template.steps.flatMap((stepTemplate) => instance.steps.flatMap((step) => getFilesFromTemplate(step.properties ?? {}, stepTemplate)));
     }, [instance, template]);
 
     useEffect(() => {
-        const currFiles = getPropertiesFiles()
-            .filter((file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported')
-            .concat(
-                getProcessStepsFiles().filter(
-                    (file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported',
-                ),
-            );
+        const filterFiles = ({ contentType }: IFile) => contentType !== 'video' && contentType !== 'audio' && contentType !== 'unsupported';
+        const currFiles = getPropertiesFiles().filter(filterFiles).concat(getProcessStepsFiles().filter(filterFiles));
+
         setFiles(currFiles);
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
@@ -155,114 +140,69 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    const allRelevantConnections: ISelectRelationshipTemplates[] = [];
-
-    if (entityConnections) {
-        const { connectionsTemplates, expandedRelationshipTemplates, expandedRelationships } = entityConnections;
-        const entityExpanded = instance as IEntityExpanded;
-
-        const relevantParents = connectionsTemplates.filter(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
-            const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
-
-            const relevantConnections = entityExpanded.connections.filter(
-                (connection) =>
-                    connection.relationship.templateId === _id && connection[entityType].properties._id === entityExpanded.entity.properties._id,
-            );
-
-            return relevantConnections.length > 0;
-        });
-
-        const relevantChildren = expandedRelationshipTemplates.filter(
-            ({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource, parentRelationship }) => {
-                const relevantParentRelationship = relevantParents.find(
-                    (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship!.relationshipTemplate._id,
-                );
-
-                if (!relevantParentRelationship) return false;
-                const parentInstance = (instance as IEntityExpanded).connections.find(
-                    (connection) => relevantParentRelationship.relationshipTemplate._id === connection.relationship.templateId,
-                );
-                const entityId = relevantParentRelationship.isExpandedEntityRelationshipSource
-                    ? parentInstance?.destinationEntity.properties._id
-                    : parentInstance?.sourceEntity.properties._id;
-
-                const entityType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
-                const relevantConnections = expandedRelationships.filter(
-                    (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entityId,
-                );
-
-                return relevantConnections.length > 0;
-            },
-        );
-
-        const relationshipMap = new Map<string, ISelectRelationshipTemplates>();
-
-        relevantParents.forEach((relevantParent) => {
-            const parentId = relevantParent.relationshipTemplate._id;
-
-            if (!relationshipMap.has(parentId)) {
-                relationshipMap.set(parentId, {
-                    ...relevantParent,
-                    children: [],
-                });
-            }
-        });
-
-        relevantChildren.forEach((relevantChild) => {
-            const parentId = relevantChild.parentRelationship!.relationshipTemplate._id;
-
-            const parentNode = relationshipMap.get(parentId);
-            if (parentNode) parentNode.children?.push(relevantChild);
-        });
-
-        allRelevantConnections.push(...relationshipMap.values());
-    }
+    const getFile = (optionId: string) => files.find(({ id }) => id === optionId)!;
 
     return (
         <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
-            <DialogTitle paddingLeft="4px">
-                <Grid container display="flex" justifyContent="space-between">
-                    <Grid item> {i18next.t('entityPage.print.printOptions')}</Grid>
+            <DialogTitle>
+                <Grid container display="flex" justifyContent="space-between" alignItems="center">
+                    <Grid item>
+                        <BlueTitle title={i18next.t('entityPage.print.printOptions')} component="h6" variant="h6" />
+                    </Grid>
                     <Grid item>
                         <IconButton onClick={handleClose}>
-                            <CloseOutlined />
+                            <CloseOutlined sx={{ color: theme.palette.primary.main }} />
                         </IconButton>
                     </Grid>
                 </Grid>
             </DialogTitle>
-            <DialogContent style={{ width: '500px' }}>
-                <Grid container direction="column" spacing={1} alignItems="center">
+
+            <DialogContent style={{ width: '600px' }}>
+                <Grid>
+                    <Grid item marginTop={0.5} marginBottom={2}>
+                        <TextField
+                            fullWidth
+                            value={title}
+                            onChange={({ target: { value: newValue } }) => setTitle(newValue)}
+                            label={i18next.t('entityPage.print.title')}
+                        />
+                    </Grid>
                     <Grid item>
-                        {entityConnections && allRelevantConnections.length > 0 && (
-                            <RelationshipSelect
-                                options={allRelevantConnections}
-                                selectedOptions={entityConnections.selectedConnections}
-                                setSelectedOptions={entityConnections.setSelectedConnections}
-                                title={i18next.t('entityPage.print.chooseRelationship')}
-                            />
+                        {type === PrintType.Entity && printItem.entityConnections.connectionsTemplates.length > 0 && (
+                            <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
                         )}
+                    </Grid>
+                    <Grid item marginTop={2}>
                         {files.length !== 0 && (
-                            <SelectCheckbox
-                                title={i18next.t('entityPage.print.chooseFiles')}
-                                options={files}
-                                isDraggableDisabled
-                                selectedOptions={selectedFiles}
-                                setSelectedOptions={setSelectedFiles}
-                                getOptionId={(file) => file.id}
-                                getOptionLabel={(file) => file.name}
+                            <MultipleSelect
+                                id="print"
+                                multiple
+                                items={files.map(({ id, name }) => ({ label: name, value: id }))}
+                                selectedValue={selectedFiles.map(({ id, name }) => ({ label: name, value: id }))}
+                                onChange={(_event, newVal) => {
+                                    if (newVal === null) return;
+                                    setSelectedFiles(Array.isArray(newVal) ? newVal.map(({ value }) => getFile(value)) : [getFile(newVal.value)]);
+                                }}
+                                textFieldProps={{}}
+                                onBlur={() => {}}
+                                onFocus={() => {}}
+                                variant="outlined"
+                                rawErrors={[]}
+                                label={i18next.t('entityPage.print.chooseFiles')}
                             />
                         )}
                     </Grid>
-                    <Grid paddingTop="25px">
+                    <Grid container marginTop={1} gap={1} padding={1}>
                         {Object.entries(options).map(([key, value]) => {
                             const isDisabled =
-                                key === 'previewPropertiesOnly' && 'propertiesPreview' in template && template.propertiesPreview.length === 0;
+                                key === 'previewPropertiesOnly' && type === PrintType.Entity && template.propertiesPreview.length === 0;
 
                             const label = (
                                 <FormControlLabel
-                                    control={<MeltaCheckbox checked={value.show} onChange={() => value.set((cur) => !cur)} />}
+                                    control={<MeltaSwitch id={key} name={key} checked={value.show} onChange={() => value.set((cur) => !cur)} />}
                                     label={i18next.t(value.label)}
                                     disabled={isDisabled}
+                                    sx={{ color: '#53566E', fontSize: '14px' }}
                                 />
                             );
                             return (
@@ -280,21 +220,25 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                 </Grid>
             </DialogContent>
-            <DialogActions style={{ paddingLeft: '24px' }}>
-                <Button
-                    onClick={(ev) => {
-                        handleClose();
-                        onClick(ev);
-                    }}
-                    endIcon={<PrintOutlined />}
-                    disabled={isLoading}
-                >
-                    {i18next.t('entityPage.print.continue')}
-                    {isLoading && <CircularProgress size={20} />}
-                </Button>
+            <DialogActions>
+                <Grid container justifyContent="center" marginBottom={2}>
+                    <Button
+                        variant="contained"
+                        onClick={(ev) => {
+                            handleClose();
+                            onClick(ev);
+                        }}
+                        endIcon={<PrintOutlined />}
+                        disabled={isLoading}
+                        sx={{ borderRadius: '7px', fontWeight: 400 }}
+                    >
+                        {i18next.t('entityPage.print.continue')}
+                        {isLoading && <CircularProgress size={20} />}
+                    </Button>
+                </Grid>
             </DialogActions>
         </Dialog>
     );
 };
 
-export { PrintOptionsDialog };
+export default PrintOptionsDialog;

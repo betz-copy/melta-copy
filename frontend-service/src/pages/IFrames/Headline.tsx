@@ -13,7 +13,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import { DashboardItemType } from '../../interfaces/dashboard';
 import { IMongoIFrame } from '../../interfaces/iFrames';

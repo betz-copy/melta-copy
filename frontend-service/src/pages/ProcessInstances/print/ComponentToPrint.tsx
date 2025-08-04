@@ -1,22 +1,22 @@
-import React from 'react';
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import { UseMutateAsyncFunction } from 'react-query';
 import { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { noop } from 'lodash';
-import { BlueTitle } from '../../../common/BlueTitle';
+import React from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
+import { toast } from 'react-toastify';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
+import { FileToPrint } from '../../../common/print/FileToPrint';
+import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
+import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
+import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { IFile } from '../../../interfaces/preview';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
-import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
-import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
-import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
 import { getProcessByIdRequest } from '../../../services/processesService';
-import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
-import { FileToPrint } from '../../../common/print/FileToPrint';
 import { useUserStore } from '../../../stores/user';
+import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
+import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,

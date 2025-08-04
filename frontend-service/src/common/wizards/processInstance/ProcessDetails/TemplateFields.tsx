@@ -2,12 +2,12 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';
 import React from 'react';
-import { FileAttachments } from './FileAttachmentFields';
-import { SchemaForm } from './SchemaForm';
-import { BlueTitle } from '../../../BlueTitle';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { FileAttachments } from './FileAttachmentFields';
 import OpenEntityReference from './OpenEntityReference';
+import { SchemaForm } from './SchemaForm';
 
 export const TemplateFields = ({
     toPrint,

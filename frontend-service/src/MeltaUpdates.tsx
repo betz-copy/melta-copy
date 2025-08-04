@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import React from 'react';
 import Confetti from 'react-confetti';
 import ReactDOM from 'react-dom';
-import { MeltaTooltip } from './common/MeltaTooltip';
+import MeltaTooltip from './common/MeltaDesigns/MeltaTooltip';
 import { useDarkModeStore } from './stores/darkMode';
 
 interface MeltaUpdatesProps {

@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import * as Cesium from 'cesium';
-import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import { Layers } from '@mui/icons-material';
+import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
+import * as Cesium from 'cesium';
 import i18next from 'i18next';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 type LayerProvider = {

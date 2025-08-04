@@ -13,7 +13,7 @@ import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService'
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { locationConverterToString } from '../../utils/map/convert';
 import { EntityPropertiesInternal } from '../EntityProperties';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 

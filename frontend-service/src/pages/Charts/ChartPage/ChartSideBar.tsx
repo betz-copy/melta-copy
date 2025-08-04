@@ -19,20 +19,20 @@ import { useQueryClient } from 'react-query';
 import { InfoTypography } from '../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
 import { IChart, IPermission } from '../../../interfaces/charts';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
 import { dashboardInitialValues } from '../../../utils/dashboard/formik';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
-import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;

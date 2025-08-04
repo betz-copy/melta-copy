@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RichTreeViewPro, TreeItem2Props, TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro, TreeItemProps, TreeViewBaseItem, RichTreeViewProProps } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
 import { Box, Divider } from '@mui/material';
@@ -8,6 +8,7 @@ import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
+// TODO: extend RichTreeViewProProps
 interface TreeProps<T extends {}> {
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
@@ -19,6 +20,7 @@ interface TreeProps<T extends {}> {
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
     selectAll?: boolean;
+    // Flattened tree is used for SelectAll component.
     flattenedTree?: T[];
     filteredTreeItems?: T[];
     isSelectDisabled?: boolean;
@@ -26,6 +28,7 @@ interface TreeProps<T extends {}> {
     showIcon?: boolean;
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
+    dataSource?: RichTreeViewProProps<T, TreeProps<T>['multi']>['dataSource'];
 }
 
 const Tree = <T extends {}>({
@@ -45,6 +48,7 @@ const Tree = <T extends {}>({
     parentInfersChildren = true,
     onDragEnd,
     showIcon,
+    dataSource,
 }: TreeProps<T>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
         useTreeUtils(getItemId, parentInfersChildren, treeItems);
@@ -56,7 +60,7 @@ const Tree = <T extends {}>({
         [getItemId, preSelectedItemsIds, selectParentIfAllChildrenAreSelected, treeItems],
     );
 
-    const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
+    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
 
     useEffect(() => {
         setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds ?? []);
@@ -107,12 +111,8 @@ const Tree = <T extends {}>({
                 getItemId={getItemId}
                 getItemLabel={getItemLabel}
                 selectedItems={selectedItemsIds}
-                onSelectedItemsChange={(_event, itemIds) => {
-                    setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi));
-                }}
-                onExpandedItemsChange={(_event: React.SyntheticEvent, itemIds: string[]) => {
-                    setExpandedItemsIds(itemIds);
-                }}
+                onSelectedItemsChange={(_event, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi))}
+                onExpandedItemsChange={(_event: React.SyntheticEvent<Element, Event> | null, itemIds: string[]) => setExpandedItemsIds(itemIds)}
                 expandedItems={expandedItemsIds}
                 itemsReordering={isDraggable}
                 expansionTrigger="iconContainer"
@@ -121,10 +121,10 @@ const Tree = <T extends {}>({
                     collapseIcon: ExpandLess,
                     item: TreeItemWrapper,
                 }}
-                experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
                 onItemPositionChange={onDragEnd}
                 disableSelection={isSelectDisabled}
+                dataSource={dataSource}
             />
         </>
     );

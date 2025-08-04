@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation, useParams } from 'wouter';
-import { BlueTitle } from '../../common/BlueTitle';
+import  BlueTitle  from '../../common/MeltaDesigns/BlueTitle';
 import '../../css/pages.css';
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';

@@ -1,7 +1,7 @@
 import { Card, Grid } from '@mui/material';
 import React from 'react';
 import Iframe from 'react-iframe';
-import { BlueTitle } from '../../../../common/BlueTitle';
+import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { StepComponentProps } from '../../../../common/wizards';
 import { IFrameWizardValues } from '../../../../common/wizards/iFrame';
 import { useWorkspaceStore } from '../../../../stores/workspace';

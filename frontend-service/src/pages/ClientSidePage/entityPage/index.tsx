@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
 import { Hive as HiveIcon } from '@mui/icons-material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
-import { useParams } from 'wouter';
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
-import { ConnectionsTable, IConnectionTemplateOfExpandedEntity } from '../../Entity';
+import { useParams } from 'wouter';
+import { CustomIcon } from '../../../common/CustomIcon';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { ICategoryMap } from '../../../interfaces/categories';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
+import { ConnectionsTable, INestedRelationshipTemplates } from '../../Entity';
 import { EntityDetails } from '../../Entity/components/EntityDetails';
 import { RelationshipIcon } from '../../Entity/RelationshipIcon';
-import { BlueTitle } from '../../../common/BlueTitle';
-import i18next from 'i18next';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { CustomIcon } from '../../../common/CustomIcon';
 
 const ClientSideEntityPage: React.FC = () => {
     const theme = useTheme();
@@ -26,7 +26,6 @@ const ClientSideEntityPage: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getClientSideEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getClientSideRelationshipTemplates')!;
 
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = Array.from(entityTemplates.values());
     const allowedRelationships: IMongoRelationshipTemplate[] = Array.from(relationshipTemplates.values());
 
     const expanded = entityId ? { [entityId]: 1 } : {};
@@ -46,9 +45,9 @@ const ClientSideEntityPage: React.FC = () => {
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
 
     const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
-        populateRelationshipTemplate(currRelationshipTemplate, allowedEntityTemplates),
+        populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     );
-    const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
+    const connectionsTemplates: INestedRelationshipTemplates[] = [];
 
     populatedRelationshipTemplates.forEach((relationshipTemplate) => {
         const hasInstances = !!expandedEntity?.connections.some(
@@ -67,6 +66,8 @@ const ClientSideEntityPage: React.FC = () => {
                     relationshipTemplate,
                     isExpandedEntityRelationshipSource: true,
                     hasInstances,
+                    depth: 1,
+                    children: [],
                 });
             }
             if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
@@ -74,6 +75,8 @@ const ClientSideEntityPage: React.FC = () => {
                     relationshipTemplate,
                     isExpandedEntityRelationshipSource: false,
                     hasInstances,
+                    depth: 1,
+                    children: [],
                 });
             }
         }

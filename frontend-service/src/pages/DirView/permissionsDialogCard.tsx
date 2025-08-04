@@ -5,13 +5,13 @@ import randomColor from 'randomcolor';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
+import { ICompactPermissions } from '../../interfaces/permissions/permissions';
 import { IMongoUser, RelatedPermission } from '../../interfaces/users';
+import { syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';
-import { ICompactPermissions } from '../../interfaces/permissions/permissions';
-import { syncPermissionsRequest } from '../../services/userService';
 
 interface IPermissionsDialogCardProps {
     user: IMongoUser;

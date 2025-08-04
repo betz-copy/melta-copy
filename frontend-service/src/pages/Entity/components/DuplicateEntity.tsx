@@ -2,15 +2,16 @@ import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
+import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { StatusCodes } from 'http-status-codes';
-import { BlueTitle } from '../../../common/BlueTitle';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
@@ -20,11 +21,10 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
+import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
-import { useSearchParams } from '../../../utils/hooks/useSearchParams';
-import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 
 const { errorCodes } = environment;
 

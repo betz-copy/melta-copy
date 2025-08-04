@@ -20,7 +20,7 @@ import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import { createDialogCategories, didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
-import { BlueTitle } from '../BlueTitle';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import ManagePermissions from './managePermissions';
 

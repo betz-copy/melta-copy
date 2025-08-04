@@ -2,7 +2,7 @@ import { History } from '@mui/icons-material';
 import { Button, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -26,7 +26,7 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
                     variant="contained"
                     startIcon={<History />}
                     onClick={() => setOpenPopper((previousOpen) => !previousOpen)}
-                    sx={{ marginLeft: '1rem' }}
+                    sx={{ marginLeft: '1rem', color: 'white' }}
                 >
                     {i18next.t('entityPage.activityLog.header')}
                 </Button>

@@ -8,18 +8,18 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
-import { PermissionData, RelatedPermission } from '../../interfaces/users';
 import { IRole } from '../../interfaces/roles';
+import { PermissionData, RelatedPermission } from '../../interfaces/users';
 import { createRoleRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import ManagePermissions from './managePermissions';
-import { BlueTitle } from '../BlueTitle';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { createDialogCategories, didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import ManagePermissions from './managePermissions';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
