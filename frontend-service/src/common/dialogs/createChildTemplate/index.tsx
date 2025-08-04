@@ -20,6 +20,7 @@ import {
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -85,6 +86,7 @@ const CreateChildTemplateDialog: React.FC<{
     const [fieldChips, setFieldChips] = useState<IFieldChip[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
     const [matchValidationError, setMatchValidationError] = useState<Map<string, string>>(new Map());
+    const [hasCheckedBox, setHasCheckedBox] = useState(Object.values(templateFieldsFilters).some((field) => field.selected));
 
     useEffect(() => {
         if (entityTemplate) {
@@ -145,6 +147,10 @@ const CreateChildTemplateDialog: React.FC<{
 
         setFieldChips(chips);
     }, [childTemplate]);
+
+    useEffect(() => {
+        setHasCheckedBox(Object.values(templateFieldsFilters).some((field) => field.selected));
+    }, [templateFieldsFilters]);
 
     const userFields = useMemo(() => {
         return entityTemplate
@@ -339,7 +345,7 @@ const CreateChildTemplateDialog: React.FC<{
                 initialValues={replaceNamePrefix(childTemplate ?? emptyChildTemplate)}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async ({ name, displayName, description, category }) => {
-                    if (matchValidationError.size > 0) return;
+                    if (matchValidationError.size > 0 || !hasCheckedBox) return;
 
                     const latestFields = Object.entries(templateFieldsFilters);
 
@@ -405,7 +411,7 @@ const CreateChildTemplateDialog: React.FC<{
                         if (hasDescriptionChange || hasCategoryChange || hasDisplayNameChange) {
                             setHasChanges(true);
                         }
-                    }, [values.description, values.category, values.displayName]);
+                    }, [values.description, values.category, values.displayName, templateFieldsFilters]);
 
                     return (
                         <Form>
@@ -631,9 +637,16 @@ const CreateChildTemplateDialog: React.FC<{
 
                                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
                                         <Grid item xs={12}>
-                                            <Typography sx={{ fontWeight: 400, fontSize: '16px', marginBottom: '19px' }}>
+                                            <Typography
+                                                sx={{ fontWeight: 400, fontSize: '16px', mb: isEmpty(touched) || hasCheckedBox ? '19px' : '0px' }}
+                                            >
                                                 {i18next.t('createChildTemplateDialog.columns.title')}
                                             </Typography>
+                                            {!isEmpty(touched) && !hasCheckedBox && (
+                                                <Typography sx={{ fontSize: '12px', color: 'error.main', mb: '19px' }}>
+                                                    {i18next.t('createChildTemplateDialog.fieldFilterTableNoChecks')}
+                                                </Typography>
+                                            )}
                                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
                                                 <Grid item xs={3}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
@@ -673,13 +686,6 @@ const CreateChildTemplateDialog: React.FC<{
                                                     selectedUserField={userField.selectedUserField}
                                                 />
                                             </Grid>
-                                            {!Object.values(templateFieldsFilters).some(({ selected }) => !!selected) && (
-                                                <Grid sx={{ mt: 1, pr: 2, pl: 2 }}>
-                                                    <Typography color="error" variant="caption" fontSize="14px">
-                                                        {i18next.t('createChildTemplateDialog.error.minProperties')}
-                                                    </Typography>
-                                                </Grid>
-                                            )}
                                         </Grid>
                                     </Grid>
                                 </Grid>

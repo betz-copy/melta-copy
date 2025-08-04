@@ -1710,6 +1710,7 @@ export default {
         fieldDefaultDialog: {
             title: 'ערך ברירת מחדל',
         },
+        fieldFilterTableNoChecks: 'יש לסמן לפחות עמודה אחת',
         byUser: 'לפי משתמש מחובר',
         connectedUser: 'משתמש מחובר',
         currentDate: 'תאריך נוכחי',
@@ -1745,9 +1746,6 @@ export default {
         dialogType: {
             filter: 'סינון',
             default: 'ברירת מחדל',
-        },
-        error: {
-            minProperties: 'יש להגדיר לפחות שדה אחד להצגה',
         },
     },
 };
