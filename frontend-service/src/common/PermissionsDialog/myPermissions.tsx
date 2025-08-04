@@ -142,16 +142,16 @@ const MyPermissions: React.FC<{
         },
     );
 
-    const { data: workspaceRoles, refetch: searchRolesOptions } = useQuery(
-        ['getAllWorkspaceRolesRequest', existingUser],
-        () => getAllWorkspaceRolesRequest([workspace._id]),
-        {
-            enabled: !!workspace,
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            retry: false,
-        },
-    );
+    const {
+        data: workspaceRoles,
+        refetch: searchRolesOptions,
+        isLoading,
+    } = useQuery(['getAllWorkspaceRolesRequest', existingUser], () => getAllWorkspaceRolesRequest([workspace._id]), {
+        enabled: !!workspace,
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        retry: false,
+    });
 
     const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
 
@@ -244,6 +244,7 @@ const MyPermissions: React.FC<{
                                         helperText={touched.roleIds ? errors.roleIds : ''}
                                         enableClear={mode !== 'view'}
                                         refetch={searchRolesOptionsDebounced}
+                                        isLoading={isLoading}
                                     />
                                 </Box>
                             )}

@@ -221,7 +221,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         error={isError}
                         fullWidth
                         helperText={helperText}
-                        label={label}
+                        label={String(label)}
                         InputProps={{
                             ...params.InputProps,
                             readOnly,

@@ -1,60 +1,60 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-continue */
 /* eslint-disable no-await-in-loop */
+import {
+    ActionsLog,
+    ActionTypes,
+    BadRequestError,
+    combineFilters,
+    getFilterFromChildTemplate,
+    IAction,
+    IActivityLog,
+    IBrokenRule,
+    IChartBody,
+    IChildTemplatePopulated,
+    IConstraint,
+    IConstraintsOfTemplate,
+    ICreateEntityMetadata,
+    IDeleteEntityBody,
+    IDeleteRelationshipReference,
+    IDuplicateEntityMetadata,
+    IEntity,
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IEntityWithDirectRelationships,
+    IMongoEntityTemplate,
+    IMongoRule,
+    IMultipleSelect,
+    IRelationship,
+    IRelationshipReference,
+    IRequiredConstraint,
+    ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    ISemanticSearchResult,
+    IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
+    IUpdatedFields,
+    IUpdateEntityMetadata,
+    NotFoundError,
+    ServiceError,
+    ValidationError,
+} from '@microservices/shared';
+import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import { flatten, unflatten } from 'flatley';
-import {
-    IEntitySingleProperty,
-    IMongoEntityTemplate,
-    IRelationshipReference,
-    IMongoRule,
-    ActionTypes,
-    ICreateEntityMetadata,
-    IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IAction,
-    IBrokenRule,
-    IConstraint,
-    IConstraintsOfTemplate,
-    IEntity,
-    IEntityWithDirectRelationships,
-    IRequiredConstraint,
-    ISearchBatchBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    IUniqueConstraint,
-    IUniqueConstraintOfTemplate,
-    IRelationship,
-    IDeleteRelationshipReference,
-    IUpdatedFields,
-    ActionsLog,
-    IDeleteEntityBody,
-    IEntityTemplate,
-    ISemanticSearchResult,
-    ISearchEntitiesByLocationBody,
-    IActivityLog,
-    IChartBody,
-    NotFoundError,
-    ServiceError,
-    ValidationError,
-    BadRequestError,
-    IMultipleSelect,
-    getFilterFromChildTemplate,
-    combineFilters,
-    IChildTemplatePopulated,
-} from '@microservices/shared';
-import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
-import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
+import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -74,15 +74,15 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
+import BulkActionManager from '../bulkActions/manager';
 import RelationshipManager from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import BulkActionManager from '../bulkActions/manager';
-import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
+import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
-import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
@@ -669,7 +669,7 @@ class EntityManager extends DefaultManagerNeo4j {
         childTemplateId?: string,
     ) {
         let template = entityTemplate;
-        let childTemplate: IChildTemplatePopulated | undefined = undefined;
+        let childTemplate: IChildTemplatePopulated | undefined;
 
         if (childTemplateId) {
             childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
@@ -931,7 +931,11 @@ class EntityManager extends DefaultManagerNeo4j {
         return node;
     }
 
-    // Only deals with relationships
+    /**
+     * Converts a flattened entity (that has a relationshipReference field) into an unflattened (nested) entity
+     * @param acc accumulator, accumulates the unflattened fields and in the end becomes the unflattened entity properties
+     * @returns the unflattened properties of the previously flattened entity
+     */
     static fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
         Object.entries(properties).forEach(([key, value]) => {
             if (!key.endsWith(config.neo4j.relationshipReferencePropertySuffix)) {
@@ -942,6 +946,7 @@ class EntityManager extends DefaultManagerNeo4j {
             acc[key.replace(config.neo4j.relationshipReferencePropertySuffix, '')] = value;
         });
 
+        // eslint-disable-next-line no-param-reassign
         acc = unflatten(acc);
 
         Object.entries(acc).forEach(([key, value]) => {
@@ -1894,8 +1899,10 @@ class EntityManager extends DefaultManagerNeo4j {
             if (constraintProp.format === 'relationshipReference') {
                 queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
             } else if (constraintProp.format === 'user') {
+                // For user fields, we need to use the actual property name that contains dots
                 queryAccordingToFieldType = `${constraint.property}.id_userField`;
             } else if (constraintProp.items?.format === 'user') {
+                // For user array fields, we need to use the actual property name that contains dots
                 queryAccordingToFieldType = `${constraint.property}.ids_usersFields`;
             }
             await transaction
@@ -1945,13 +1952,13 @@ class EntityManager extends DefaultManagerNeo4j {
         const createUniqueConstraintsPromises = uniqueConstraintsToCreate.map(async (constraint) => {
             const propsPart = constraint.properties.map((prop) => {
                 if (template.properties.properties[prop].format === 'relationshipReference') {
-                    return `n.${prop}.properties._id_reference`;
+                    return `n.\`${prop}.properties._id_reference\``;
                 } // TODO - also create on required
                 if (template.properties.properties[prop].format === 'user') {
-                    return `n.${prop}.id_userField`;
+                    return `n.\`${prop}.id_userField\``;
                 }
                 if (template.properties.properties[prop].items?.format === 'user') {
-                    return `n.${prop}.ids_usersFields`;
+                    return `n.\`${prop}.ids_usersFields\``;
                 }
 
                 return `n.${prop}`;

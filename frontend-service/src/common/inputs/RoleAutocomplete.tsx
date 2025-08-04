@@ -8,6 +8,7 @@ export interface IRoleAutocomplete {
     value?: IRole;
     options?: IRole[];
     refetch: any;
+    isLoading: boolean;
     displayValue?: string;
     onChange: AutocompleteProps<IRole, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IRole, undefined, undefined, undefined>['onInputChange'];
@@ -31,6 +32,7 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
     value,
     options = [],
     refetch,
+    isLoading,
     onChange,
     onDisplayValueChange,
     onBlur,
@@ -65,7 +67,7 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
                 getOptionDisabled={isOptionDisabled}
                 isOptionEqualToValue={(option, currentValue) => option._id === currentValue?._id}
                 options={options}
-                loading={!options.length}
+                loading={isLoading}
                 loadingText={i18next.t('roleAutocomplete.loading')}
                 noOptionsText={i18next.t('roleAutocomplete.noOptions')}
                 renderInput={(params) => (
