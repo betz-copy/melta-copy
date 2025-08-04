@@ -45,7 +45,7 @@ export const getFullRelationshipTemplates = (
 
         if (isSelfProperty || !isConnected) continue;
 
-        const hasInstances = expandedEntity?.connections.some((connection) => connection.relationship.templateId === relationshipTemplate._id)!;
+        const hasInstances = expandedEntity?.connections.some(({ relationship }) => relationship.templateId === relationshipTemplate._id)!;
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 
