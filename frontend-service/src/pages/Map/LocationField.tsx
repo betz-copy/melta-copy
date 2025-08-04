@@ -7,7 +7,7 @@ import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { CesiumMovementEvent, Viewer } from 'resium';
-import { MeltaTooltip } from '../../common/MeltaDesigns/MeltaTooltip';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
