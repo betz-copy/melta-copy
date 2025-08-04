@@ -47,6 +47,7 @@ export interface IMetadata {
         usersInfoChildTemplateId: string;
         numOfPropsToShow: number;
         clientSideWorkspaceName: 'simba' | 'azarim';
+        fullNameField: string;
     };
     mapPage: {
         sourceTemplateId: string;

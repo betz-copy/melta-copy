@@ -6,6 +6,7 @@ import {
     NotFoundError,
     UploadedFile,
 } from '@microservices/shared';
+import config from '../../config';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -71,7 +72,7 @@ class ClientSideManager extends DefaultManagerProxy<null> {
         const instances = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
             skip: 0,
             limit: 1,
-            filter: { $and: [{ disabled: { $in: [false] } }, { full_name: { $eq: kartoffelId } }] },
+            filter: { $and: [{ disabled: { $in: [false] } }, { [config.clientSide.fullNameField]: { $eq: kartoffelId } }] },
             showRelationships: true,
             sort: [],
         });

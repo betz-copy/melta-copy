@@ -189,6 +189,7 @@ const main = async () => {
             usersInfoChildTemplateId: createdSimbaDriverChildTemplate._id,
             numOfPropsToShow: 9,
             clientSideWorkspaceName: 'simba' as const,
+            fullNameField: 'full_name',
         },
     };
 

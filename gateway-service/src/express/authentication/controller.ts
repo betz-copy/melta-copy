@@ -6,11 +6,11 @@ import { ShragaUser } from '../../utils/express/passport';
 import { AuthenticationManager } from './manager';
 import WorkspaceService from '../workspaces/service';
 
-const { accessTokenName, clientSideEndURL, unauthorizedId } = config.authentication.shragaAuthentication;
+const { accessTokenName, clientSideURLPrefix, unauthorizedId } = config.authentication.shragaAuthentication;
 
 class AuthenticationController {
-    static async createClientSideToken(userId: string) {
-        const clientSideWorkspace = await WorkspaceService.getFile(clientSideEndURL);
+    static async createClientSideToken(userId: string, workspaceId) {
+        const clientSideWorkspace = await WorkspaceService.getById(workspaceId);
         const { usersInfoChildTemplateId, clientSideWorkspaceName } = clientSideWorkspace.metadata?.clientSide || {};
 
         const token = AuthenticationManager.createAccessToken({
@@ -36,18 +36,22 @@ class AuthenticationController {
 
     static async createTokenAndRedirect(req: Request, res: Response) {
         const { RelayState, id } = req.user as ShragaUser;
+        let redirectUrl = RelayState || '/';
 
         let token: string;
 
-        if (RelayState?.includes(clientSideEndURL)) {
-            token = await AuthenticationController.createClientSideToken(id);
+        if (RelayState?.includes(clientSideURLPrefix)) {
+            const workspaceId = redirectUrl.split('/').pop()!;
+
+            token = await AuthenticationController.createClientSideToken(id, workspaceId);
+            redirectUrl = redirectUrl.replace(workspaceId, 'main');
         } else {
             token = await AuthenticationController.createUserToken(id);
         }
 
         res.cookie(accessTokenName, token);
 
-        return res.redirect(RelayState || '/');
+        return res.redirect(redirectUrl);
     }
 }
 
