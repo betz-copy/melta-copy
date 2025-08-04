@@ -1896,8 +1896,10 @@ class EntityManager extends DefaultManagerNeo4j {
             if (constraintProp.format === 'relationshipReference') {
                 queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
             } else if (constraintProp.format === 'user') {
+                // For user fields, we need to use the actual property name that contains dots
                 queryAccordingToFieldType = `${constraint.property}.id_userField`;
             } else if (constraintProp.items?.format === 'user') {
+                // For user array fields, we need to use the actual property name that contains dots
                 queryAccordingToFieldType = `${constraint.property}.ids_usersFields`;
             }
             await transaction
@@ -1947,13 +1949,13 @@ class EntityManager extends DefaultManagerNeo4j {
         const createUniqueConstraintsPromises = uniqueConstraintsToCreate.map(async (constraint) => {
             const propsPart = constraint.properties.map((prop) => {
                 if (template.properties.properties[prop].format === 'relationshipReference') {
-                    return `n.${prop}.properties._id_reference`;
+                    return `n.\`${prop}.properties._id_reference\``;
                 } // TODO - also create on required
                 if (template.properties.properties[prop].format === 'user') {
-                    return `n.${prop}.id_userField`;
+                    return `n.\`${prop}.id_userField\``;
                 }
                 if (template.properties.properties[prop].items?.format === 'user') {
-                    return `n.${prop}.ids_usersFields`;
+                    return `n.\`${prop}.ids_usersFields\``;
                 }
 
                 return `n.${prop}`;
