@@ -41,7 +41,13 @@ class ElasticClient {
 
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
-        this.createIndex();
+        this.createIndex()
+            .then(() => {
+                logger.info(`Index created successfully: ${index}-${useDevBucket ? devBucketPrefix : ''}${this.workspaceId}`);
+            })
+            .catch((error) => {
+                logger.error('Error creating index:', { error });
+            });
     }
 
     static async initialize() {
