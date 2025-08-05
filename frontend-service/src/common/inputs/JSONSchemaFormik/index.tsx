@@ -11,7 +11,7 @@ import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { uiSchemaUtils } from './ utils';
@@ -364,11 +364,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             schema={schema}
             uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main)}
             onChange={({ formData }) => {
-                Object.entries(formData).forEach(([key, value]) => {
+                Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         formData[key] = undefined;
                     }
-                    if (value && typeof value === 'object') {
+                    // if the value is an object without properties, we assume it's a grouped field and flatten it
+                    // rjsf library does support grouped fields, but we do not save them as so in the db.
+                    if (value && typeof value === 'object' && !value.properties) {
                         for (const [groupedKey, groupedValue] of Object.entries(value)) {
                             formData[groupedKey] = groupedValue;
                         }
