@@ -169,7 +169,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                         const parsed = JSON.parse(prop);
 
-                        return parsed.fullName;
+                        if (parsed.fullName) return parsed.fullName;
+
+                        return prop;
                     });
                     return parsedArray.join(', ');
                 } catch {
