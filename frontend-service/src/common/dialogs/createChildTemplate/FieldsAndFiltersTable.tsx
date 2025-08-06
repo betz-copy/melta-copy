@@ -11,6 +11,7 @@ import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
+import { FormikProps } from 'formik';
 
 const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined, fieldSchema: IEntitySingleProperty): string => {
     if (value === null || value === undefined) return '';
@@ -89,6 +90,7 @@ interface IFieldsAndFiltersTableProps {
     matchValidationError: Map<string, string>;
     setMatchValidationError: React.Dispatch<React.SetStateAction<Map<string, string>>>;
     selectedUserField?: string;
+    formikProps: FormikProps<any>;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
@@ -102,7 +104,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     matchValidationError,
     setMatchValidationError,
     selectedUserField,
+    formikProps,
 }) => {
+    const { values, setFieldValue, setFieldTouched } = formikProps;
+
     const [addFilterToField, setAddFilterToField] = useState<string | null>(null);
     const [dialogType, setDialogType] = useState<ChipType | null>(null);
 
@@ -213,6 +218,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         setFieldChips((prev) =>
             prev.filter((c) => !(c.fieldName === chip.fieldName && c.chipType === 'filter' && c.filterField === chip.filterField)),
         );
+        setFieldTouched(`properties.${chip.fieldName}`, true);
+        console.log({ hi: values.properties.properties[chip.fieldName] });
+        // const { [dialogType as string]: _err, ...rest } = values.properties.properties[chip.fieldName]; // TODO: fix multi filters
+
+        // setFieldValue(`properties.properties.${chip.fieldName}`, rest);
     };
 
     return (
@@ -371,6 +381,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     dialogType={dialogType}
                     fieldChips={fieldChips}
                     setMatchValidationErrorMap={setMatchValidationError}
+                    formikProps={formikProps}
                 />
             )}
         </>

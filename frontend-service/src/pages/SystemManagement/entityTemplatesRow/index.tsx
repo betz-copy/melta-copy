@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import AddChildTemplateDialog, { ActionMode } from '../../../common/dialogs/AddChildTemplate';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import CreateChildTemplateDialog from '../../../common/dialogs/createChildTemplate';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -115,6 +116,7 @@ const EntityTemplatesRow: React.FC = () => {
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
         childTemplate?: IMongoChildTemplatePopulated;
+        actionType?: ActionMode;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -441,11 +443,17 @@ const EntityTemplatesRow: React.FC = () => {
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />
-            <CreateChildTemplateDialog
+            {/* <CreateChildTemplateDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}
                 childTemplate={addChildTemplateDialogState.childTemplate}
+            /> */}
+            <AddChildTemplateDialog
+                open={addChildTemplateDialogState.isWizardOpen}
+                handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                entityTemplate={addChildTemplateDialogState.entityTemplate}
+                mutationProps={{ actionType: addChildTemplateDialogState.actionType, payload: addChildTemplateDialogState.childTemplate }}
             />
         </Grid>
     );

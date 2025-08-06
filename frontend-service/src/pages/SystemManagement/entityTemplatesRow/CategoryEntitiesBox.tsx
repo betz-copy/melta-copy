@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
+import { ActionMode } from '../../../common/dialogs/AddChildTemplate';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -45,6 +46,7 @@ interface CategoryEntitiesBoxProps {
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
             childTemplate?: IMongoChildTemplatePopulated;
+            actionType?: ActionMode;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<

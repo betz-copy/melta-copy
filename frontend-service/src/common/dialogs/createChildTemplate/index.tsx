@@ -306,17 +306,6 @@ const CreateChildTemplateDialog: React.FC<{
         unitUserField.selectedUnitUserField,
     ]);
 
-    const handleCheckboxChange = (fieldName: string, checked: boolean) => {
-        const newFieldFilters = { ...templateFieldsFilters };
-        if (!checked) {
-            newFieldFilters[fieldName].isEditableByUser = false;
-        }
-
-        newFieldFilters[fieldName].selected = checked;
-
-        setTemplateFieldsFilters(newFieldFilters);
-    };
-
     if (!entityTemplate || !categories || !allTemplates) return null;
     const existingNames = childTemplates
         ? Array.from(childTemplates.values())
@@ -400,6 +389,7 @@ const CreateChildTemplateDialog: React.FC<{
             >
                 {(formikProps) => {
                     const { values, handleChange, touched, errors, setFieldValue, dirty } = formikProps;
+                    console.log({ values, touched, errors });
 
                     useEffect(() => {
                         if (!childTemplate) return;
@@ -412,6 +402,18 @@ const CreateChildTemplateDialog: React.FC<{
                             setHasChanges(true);
                         }
                     }, [values.description, values.category, values.displayName, templateFieldsFilters]);
+
+                    const handleCheckboxChange = (fieldName: string, checked: boolean) => {
+                        const newFieldFilters = { ...templateFieldsFilters };
+                        if (!checked) {
+                            newFieldFilters[fieldName].isEditableByUser = false;
+                        }
+
+                        newFieldFilters[fieldName].selected = checked;
+
+                        setTemplateFieldsFilters(newFieldFilters);
+                        setFieldValue(`properties.properties.${fieldName}`, checked ? { display: true } : undefined);
+                    };
 
                     return (
                         <Form>
@@ -642,9 +644,9 @@ const CreateChildTemplateDialog: React.FC<{
                                             >
                                                 {i18next.t('childTemplate.columns.title')}
                                             </Typography>
-                                            {!isEmpty(touched) && !hasCheckedBox && (
+                                            {errors.properties?.properties && (
                                                 <Typography sx={{ fontSize: '12px', color: 'error.main', mb: '19px' }}>
-                                                    {i18next.t('childTemplate.fieldFilterTableNoChecks')}
+                                                    {errors.properties?.properties}
                                                 </Typography>
                                             )}
                                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
@@ -684,6 +686,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     matchValidationError={matchValidationError}
                                                     setMatchValidationError={setMatchValidationError}
                                                     selectedUserField={userField.selectedUserField}
+                                                    formikProps={formikProps}
                                                 />
                                             </Grid>
                                         </Grid>
