@@ -13,7 +13,6 @@ import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
-import { EntityWizardValues } from '../../dialogs/entity';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
 import InputAccordion from './InputAccordion';
@@ -259,7 +258,7 @@ const getComponent = (
 
 interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplatePopulated['properties'];
-    values: EntityWizardValues;
+    values: any
     setValues: FormikHelpers<any>['setValues'];
     errors: FormikErrors<{}>;
     uniqueErrors?: FormikErrors<{}>;
