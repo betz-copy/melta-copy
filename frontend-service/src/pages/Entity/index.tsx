@@ -406,7 +406,7 @@ const Entity: React.FC = () => {
                         const otherEntityTemplate = isExpandedEntityRelationshipSource
                             ? relationshipTemplate.destinationEntity
                             : relationshipTemplate.sourceEntity;
-                        return otherEntityTemplate.category._id === category._id;
+                        return otherEntityTemplate?.category._id === category._id;
                     })
                     .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
                 relationshipCount:
