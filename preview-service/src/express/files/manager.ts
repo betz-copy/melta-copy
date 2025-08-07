@@ -1,10 +1,10 @@
+import { NotFoundError } from '@microservices/shared';
 import * as libreoffice from 'libreoffice-convert';
+import { menash } from 'menashmq';
 import { Readable } from 'stream';
 import { promisify } from 'util';
-import { menash } from 'menashmq';
-import { NotFoundError } from '@microservices/shared';
-import { streamToBuffer } from '../../utils/fs';
 import config from '../../config';
+import { streamToBuffer } from '../../utils/fs';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
 const {
@@ -21,12 +21,14 @@ class FilesManager extends DefaultManagerMinio {
         try {
             const fileStream = await this.minioClient.downloadFileStream(pdfFileName);
             const fileBuffer = await streamToBuffer(fileStream);
+
             return Readable.from(fileBuffer);
         } catch (error: any) {
             if (error.code === 'NoSuchKey') {
                 await menash.send(rabbit.previewQueue, filePath, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
                 throw new NotFoundError('File Not Found');
             }
+
             throw error;
         }
     }
@@ -35,6 +37,7 @@ class FilesManager extends DefaultManagerMinio {
         const fileStream = await this.minioClient.downloadFileStream(filePath);
         const fileBuffer = await streamToBuffer(fileStream);
         const convertedBuffer = await libreConvert(fileBuffer, document.previewFileType, undefined);
+
         return { previewBuffer: Readable.from(convertedBuffer), fileSize: convertedBuffer.length };
     }
 
@@ -46,6 +49,7 @@ class FilesManager extends DefaultManagerMinio {
         const pdfFileName = `${document.previewPrefix}${originalFileName.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
         const { previewBuffer, fileSize } = await this.createFilePreview(originalFileName);
         const res = await this.uploadFileToMinio(previewBuffer as Readable, pdfFileName, fileSize);
+
         return res;
     }
 }
