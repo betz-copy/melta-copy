@@ -190,9 +190,7 @@ services:
   preview-service:
     build:
       context: .
-      dockerfile: Dockerfile.base
-      args:
-        SERVICE_NAME: 'preview-service'
+      dockerfile: ./preview-service/Dockerfile
     command: ['npm', 'run', 'start', '-w', 'preview-service']
     environment:
       PORT: 8000
