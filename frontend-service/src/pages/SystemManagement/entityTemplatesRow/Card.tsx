@@ -18,6 +18,7 @@ import {
     IChildTemplatePopulated,
     IMongoChildTemplatePopulated,
     TemplateItem,
+    ViewType,
 } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
@@ -47,7 +48,7 @@ const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
         });
     }
 
-    if (childTemplate.viewType === 'userPage') {
+    if (childTemplate.viewType === ViewType.userPage) {
         chips.push({
             color: '#CF9030',
             label: i18next.t('childTemplate.permissionsPage.userPage'),
@@ -401,7 +402,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                         <ColoredEnumChip color="#0072C6" label={i18next.t('childTemplate.permissionsPage.user')} />
                                                     </Grid>
                                                 )}
-                                                {childTemplate.viewType === 'userPage' && (
+                                                {childTemplate.viewType === ViewType.userPage && (
                                                     <Grid item>
                                                         <ColoredEnumChip
                                                             color="#CF9030"

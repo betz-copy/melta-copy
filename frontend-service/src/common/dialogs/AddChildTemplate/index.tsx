@@ -18,6 +18,7 @@ import {
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -35,6 +36,7 @@ import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import SelectUserFieldDialog from '../createChildTemplate/SelectUserFieldDialog';
 import { createChildTemplateSchema } from '../createChildTemplate/validation';
 import { emptyChildTemplate } from '../entity';
+import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 
 export enum ActionMode {
     Create = 'create',
@@ -330,6 +332,47 @@ const AddChildTemplateDialog: React.FC<{
                                                     )}
                                                 </Grid>
                                             )}
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
+                                        <Grid item xs={12}>
+                                            <Typography sx={{ fontWeight: 400, fontSize: '16px', mb: isEmpty(touched) ? '19px' : '0px' }}>
+                                                {i18next.t('childTemplate.columns.title')}
+                                            </Typography>
+                                            {errors.properties?.properties && (
+                                                <Typography sx={{ fontSize: '12px', color: 'error.main', mb: '19px' }}>
+                                                    {errors.properties?.properties}
+                                                </Typography>
+                                            )}
+                                            <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
+                                                <Grid item xs={3}>
+                                                    <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
+                                                        {i18next.t('childTemplate.columns.nameCol')}
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
+                                                        {i18next.t('childTemplate.columns.filterCol')}
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
+                                                        {i18next.t('childTemplate.columns.defaultCol')}
+                                                    </Typography>
+                                                </Grid>
+                                                {values.viewType === ViewType.userPage && (
+                                                    <Grid item xs={3}>
+                                                        <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
+                                                            {i18next.t('childTemplate.columns.filterByUserCol')}
+                                                        </Typography>
+                                                    </Grid>
+                                                )}
+                                            </Grid>
+
+                                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
+                                                <FieldsAndFiltersTable formikProps={formikProps} entityTemplate={entityTemplate} />
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>

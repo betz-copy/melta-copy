@@ -1,4 +1,4 @@
-import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@microservices/shared';
+import { MongoIdSchema, searchFilterSchema, variableNameValidation, ViewType } from '@microservices/shared';
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({
@@ -23,7 +23,7 @@ const childEntityTemplateSchema = {
     }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
-    viewType: Joi.string().valid('categoryPage', 'userPage').required(),
+    viewType: Joi.string().valid(ViewType.categoryPage, ViewType.userPage).required(),
     isFilterByCurrentUser: Joi.boolean().default(false),
     filterByCurrentUserField: Joi.string(),
     filterByUnitUserField: Joi.string(),

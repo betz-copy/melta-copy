@@ -182,10 +182,10 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         setCurrentFieldError(undefined);
         checkMatchValidations(value);
         setLocalFilterField(value);
-        console.log({ value });
         const prev = values.properties.properties[currentFieldName];
         console.log({
             prev,
+            value,
             filter: filterModelToFilterOfTemplatePerField(entityTemplate.properties.properties[currentFieldName], currentFieldName, value!),
         });
 

@@ -443,18 +443,18 @@ const EntityTemplatesRow: React.FC = () => {
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />
-            {/* <CreateChildTemplateDialog
+            <CreateChildTemplateDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}
                 childTemplate={addChildTemplateDialogState.childTemplate}
-            /> */}
-            <AddChildTemplateDialog
+            />
+            {/* <AddChildTemplateDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}
                 mutationProps={{ actionType: addChildTemplateDialogState.actionType, payload: addChildTemplateDialogState.childTemplate }}
-            />
+            /> */}
         </Grid>
     );
 };

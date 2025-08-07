@@ -1,9 +1,10 @@
 import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { cloneDeep } from 'lodash';
 import React, { useState } from 'react';
-import { ByCurrentDefaultValue, ChipType, IFieldChip, ITemplateFieldsFilters } from '../../../interfaces/childTemplates';
+import { ByCurrentDefaultValue, ChipType, IFieldChip, ITemplateFieldsFilters, ViewType } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -11,7 +12,6 @@ import { initializedFilterField } from '../../FilterComponent';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import AddFieldFilterDialog, { checkMatchValidation } from './AddFieldFilterDialog';
-import { FormikProps } from 'formik';
 
 const getFormattedDefaultValue = (value: string | number | boolean | Date | string[] | undefined, fieldSchema: IEntitySingleProperty): string => {
     if (value === null || value === undefined) return '';
@@ -83,7 +83,7 @@ interface IFieldsAndFiltersTableProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     templateFieldsFilters: ITemplateFieldsFilters;
     setTemplateFieldsFilters: React.Dispatch<React.SetStateAction<ITemplateFieldsFilters>>;
-    viewType: 'categoryPage' | 'userPage';
+    viewType: ViewType;
     fieldChips: IFieldChip[];
     setFieldChips: React.Dispatch<React.SetStateAction<IFieldChip[]>>;
     onCheckboxChange: (fieldName: string, checked: boolean) => void;
@@ -244,6 +244,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     const filterChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Filter);
                     const defaultChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Default);
 
+                    console.log({ fieldFilter });
+
                     return (
                         <React.Fragment key={fieldName}>
                             <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
@@ -339,7 +341,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     </Grid>
                                 </Grid>
 
-                                {viewType === 'userPage' && (
+                                {viewType === ViewType.userPage && (
                                     <Grid item xs={3} sx={{ textAlign: 'center' }}>
                                         <MeltaCheckbox
                                             checked={templateFieldsFilters[fieldName]?.isEditableByUser || false}
