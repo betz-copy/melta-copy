@@ -97,10 +97,9 @@ const manipulateOnExecutionOutput = async (
 
                 const propertyValue = properties[name];
 
-                if (value.format === 'relationshipReference') {
+                if (value.format === 'relationshipReference')
                     entityAfterManipulations.properties[name] =
-                        typeof propertyValue === 'object' ? propertyValue._id : currentEntity.properties[name].properties._id;
-                }
+                        typeof propertyValue === 'object' && propertyValue._id ? propertyValue._id : currentEntity.properties[name].properties._id;
 
                 if (value.format === 'date-time' && isDate(propertyValue)) entityAfterManipulations.properties[name] = propertyValue.toISOString();
 

@@ -38,7 +38,10 @@ const parseFilterObject = (filters: any): any | null => {
 };
 
 const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
-    const enumEquals = filterObj.$or.map((condition: any) => condition.enum?.$eq).filter((val: any): val is string => typeof val === 'string');
+    const enumEquals = filterObj.$or
+        .map((condition: any) => condition.enum?.$in)
+        .filter((val: any): val is string[] => Array.isArray(val))
+        .flat();
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
 };
