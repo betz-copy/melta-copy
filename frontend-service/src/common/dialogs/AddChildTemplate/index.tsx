@@ -24,6 +24,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import {
     IChildTemplate,
+    IChildTemplateForm,
     IChildTemplateMap,
     IChildTemplatePopulatedFromDb,
     IMongoChildTemplatePopulated,
@@ -37,6 +38,11 @@ import SelectUserFieldDialog from '../createChildTemplate/SelectUserFieldDialog'
 import { createChildTemplateSchema } from '../createChildTemplate/validation';
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
+import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
+import { parseFilters } from '../../../services/templates/entityTemplatesService';
+import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
+import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 export enum ActionMode {
     Create = 'create',
@@ -75,12 +81,31 @@ const AddChildTemplateDialog: React.FC<{
     const [openSelectUserFieldDialog, setOpenSelectUserFieldDialog] = React.useState<boolean>(false);
     const [openSelectUnitFieldDialog, setOpenSelectUnitFieldDialog] = React.useState<boolean>(false);
 
-    const replaceNamePrefix = (childTemplate: IMongoChildTemplatePopulated) => ({
-        ...childTemplate,
-        name: childTemplate.name.replace(`${entityTemplate.name}_`, ''),
-        displayName: childTemplate.displayName.replace(`${entityTemplate.displayName}-`, ''),
-        category: childTemplate._id ? childTemplate.category : entityTemplate.category,
-    });
+    const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
+        const newProperties = Object.fromEntries(
+            Object.entries(properties.properties).map(([key, { filters, defaultValue, isEditableByUser, display }]) => [
+                key,
+                {
+                    defaultValue,
+                    isEditableByUser,
+                    display,
+                    filters: filters
+                        ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient)
+                              .map(({ filterField }) => filterField)
+                              .filter((f) => f !== undefined)
+                        : undefined,
+                },
+            ]),
+        );
+
+        return {
+            ...rest,
+            name: name.replace(`${entityTemplate.name}_`, ''),
+            displayName: displayName.replace(`${entityTemplate.displayName}-`, ''),
+            category: rest._id ? category : entityTemplate.category,
+            properties: { ...properties, properties: newProperties },
+        };
+    };
 
     const existingNames = childTemplates
         ? Array.from(childTemplates.values())
@@ -139,15 +164,26 @@ const AddChildTemplateDialog: React.FC<{
 
     return (
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
-            <Formik<IChildTemplatePopulatedFromDb>
-                initialValues={replaceNamePrefix(childTemplate ?? emptyChildTemplate)}
+            <Formik<IChildTemplateForm>
+                initialValues={getInitialValues(childTemplate ?? emptyChildTemplate)}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async (values, formikHelpers) => {
                     formikHelpers.setTouched({});
+                    const newProperties = Object.fromEntries(
+                        Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
+                            key,
+                            {
+                                ...rest
+                                // filters:  filters? filterModelToFilterOfTemplatePerField(entityTemplate.properties.properties[key], key, value!): undefined
+                                filters: filters? filterDocumentToFilterBackend(values.parentTemplate._id, filters.map(filter => ({ filterProperty: key, filterField: filter})), queryClient): undefined
+                            },
+                        ]),
+                    );
                     handleChildTemplate({
                         ...values,
                         parentTemplateId: entityTemplate._id,
                         category: values.category._id,
+                        properties: { ...values.properties, properties: {} },
                     });
                 }}
             >

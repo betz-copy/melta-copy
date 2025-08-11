@@ -9,6 +9,7 @@ import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { formatToString } from '../../EntityProperties';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { initializedFilterField } from '../../FilterComponent';
 
 const renderChips = (
     chips: IFieldChip[],
@@ -44,6 +45,46 @@ interface IFieldsAndFiltersTableProps {
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikProps, entityTemplate }) => {
     const { values, setFieldValue } = formikProps;
+
+    const [dialogType, setDialogType] = useState<ChipType | null>(null);
+
+    const isDisallowedFormat = (fieldName: string) => {
+        const prop = entityTemplate.properties.properties[fieldName];
+        const disabledFormats = ['fileId', 'signature', 'location', 'comment', 'kartoffelUserField'];
+        const disabledArrayFormats = ['fileId', 'user'];
+        return disabledFormats.includes(prop.format ?? '') || !!(prop.items && disabledArrayFormats.includes(prop.items.format ?? ''));
+    };
+
+    const isSubmitDisabled = (fieldName: string, fieldSchema: IEntitySingleProperty) => {
+        const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === fieldName);
+        const byCurrentUserDefaultValue = fieldSchema.format === 'user' && defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentUser;
+        const byCurrentDateDefaultValue =
+            (fieldSchema.format === 'date' || fieldSchema.format === 'date-time') &&
+            defaultChip?.defaultValue === ByCurrentDefaultValue.byCurrentDate;
+
+        return isDisallowedFormat(fieldName) || byCurrentUserDefaultValue || byCurrentDateDefaultValue;
+    };
+
+    const handleSelectProperty = (fieldName: string, type: ChipType) => {
+        setAddFilterToField(fieldName);
+        setDialogType(type);
+
+        const { format, type: fieldType, enum: enumValues } = entityTemplate.properties.properties[fieldName];
+        const selectedFilter =
+            (enumValues && initializedFilterField['array']) ||
+            (format && initializedFilterField[format]) ||
+            (fieldType && initializedFilterField[fieldType]);
+
+        if (selectedFilter) {
+            setTemplateFieldsFilters((prev) => ({
+                ...prev,
+                [fieldName]: {
+                    ...prev[fieldName],
+                    filterField: selectedFilter,
+                },
+            }));
+        }
+    };
 
     // const onDeleteFilterChip = (chip: IFieldChip) => {
     //     const updatedFilters = (values.properties.properties[chip.fieldName].filters ?? { $or: [] }).$or.filter((c) => c !== chip);

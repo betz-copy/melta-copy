@@ -2,10 +2,11 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { variableNameValidation } from '../../../utils/validation';
 import { checkMatchValidation } from './AddFieldFilterDialog';
+import { filterFieldSchema } from '../../wizards/entityTemplate/AddFields';
 
 const childTemplatePropertySchema = Yup.object({
     defaultValue: Yup.mixed().optional(),
-    filters: Yup.mixed().optional(),
+    filters: filterFieldSchema,
     isEditableByUser: Yup.boolean().optional(),
     display: Yup.boolean().optional(),
 }).test('filter-default-match', i18next.t('childTemplate.fieldFilterTableMismatch'), function (value, context) {

@@ -90,7 +90,7 @@ const agGridSetFilterSchema = Yup.object({
 });
 
 // Dynamic filter field validation based on `filterType`
-const filterFieldSchema = Yup.lazy((value: any) => {
+export const filterFieldSchema = Yup.lazy((value: any) => {
     switch (value?.filterType) {
         case 'text':
             return agGridTextFilterSchema;

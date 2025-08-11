@@ -1,3 +1,4 @@
+import { IAGGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoCategory } from './categories';
 import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
@@ -72,6 +73,10 @@ export type IChildTemplateMap = Map<string, IChildTemplatePopulated>;
 export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
     parentTemplate: IMongoEntityTemplatePopulated;
     category: IMongoCategory;
+}
+
+export interface IChildTemplateForm extends Omit<IChildTemplatePopulatedFromDb, 'properties'> {
+    properties: { properties: Record<string, Omit<IChildTemplateProperty, 'filters'> & { filters?: IAGGridFilter[] }> };
 }
 
 export interface IChildTemplatePopulated
