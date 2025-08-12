@@ -221,7 +221,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Grid>
                                 <Grid
                                     onClick={() => {
-                                        navigate(`/entity/${entity.properties._id}/graph`);
+                                        navigate(
+                                            `/entity/${entity.properties._id}/graph${
+                                                isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
+                                            }`,
+                                        );
                                     }}
                                 >
                                     <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
