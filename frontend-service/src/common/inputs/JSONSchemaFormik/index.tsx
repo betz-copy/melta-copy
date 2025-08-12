@@ -258,7 +258,7 @@ const getComponent = (
 
 interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplatePopulated['properties'];
-    values: any
+    values: any;
     setValues: FormikHelpers<any>['setValues'];
     errors: FormikErrors<{}>;
     uniqueErrors?: FormikErrors<{}>;

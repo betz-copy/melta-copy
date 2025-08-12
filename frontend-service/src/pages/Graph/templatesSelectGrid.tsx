@@ -103,20 +103,16 @@ const singleTree = (
     onClick: () => void,
 ) => (
     <Tree
-        flattenedTree={firstTree.flattenedTree}
         preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
         getItemId={getOptionId}
         getItemLabel={getOptionLabel}
-        multi
+        allowMultiSelect
         treeItems={firstTree.tree}
         filteredTreeItems={firstTree.filteredTree}
         onSelectItems={(ids) => {
-            const filteredFirstOptions = firstTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
-            setSelectedTemplates((prev) => {
-                const prevIds = prev.map(getOptionId);
-                const filteredSecondOptions = secondTree.flattenedTree.filter((option) => prevIds.includes(getOptionId(option)));
-                return [...filteredFirstOptions, ...filteredSecondOptions];
-            });
+            const newTree = [...firstTree.flattenedTree, ...secondTree.flattenedTree].filter((option) => ids.includes(getOptionId(option)));
+
+            setSelectedTemplates(newTree);
             onClick();
         }}
     />

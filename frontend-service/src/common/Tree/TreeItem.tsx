@@ -125,7 +125,7 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
                 <TreeItemContent
                     {...getContentProps()}
                     sx={{
-                        backgroundColor: status.selected ? 'transparent' : undefined,
+                        backgroundColor: 'transparent !important',
                     }}
                 >
                     {(status.expandable || itemDepth !== 0 || !draggable) &&
