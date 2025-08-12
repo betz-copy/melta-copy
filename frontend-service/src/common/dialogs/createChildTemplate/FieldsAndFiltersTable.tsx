@@ -244,8 +244,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     const filterChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Filter);
                     const defaultChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Default);
 
-                    console.log({ fieldFilter });
-
                     return (
                         <React.Fragment key={fieldName}>
                             <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>

@@ -215,6 +215,13 @@ const ChildTemplateFormDialog: React.FC<{
                         { mode: FilterMode.Unit, fields: unitFields, checked: values.isFilterByUserUnit, value: values.filterByUnitUserField },
                     ];
 
+                    const tableTitles = [
+                        { title: 'name' },
+                        { title: 'filter', sxOverride: { textAlign: 'center' } },
+                        { title: 'default', sxOverride: { textAlign: 'center' } },
+                        { title: 'filterByUser', sxOverride: { textAlign: 'center' }, show: values.viewType === ViewType.userPage },
+                    ];
+
                     return (
                         <Form>
                             <DialogTitle>
@@ -346,28 +353,15 @@ const ChildTemplateFormDialog: React.FC<{
                                                 </Typography>
                                             )}
                                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
-                                                <Grid item xs={3}>
-                                                    <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
-                                                        {i18next.t('childTemplate.columns.nameCol')}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={3}>
-                                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                                        {i18next.t('childTemplate.columns.filterCol')}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={3}>
-                                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                                        {i18next.t('childTemplate.columns.defaultCol')}
-                                                    </Typography>
-                                                </Grid>
-                                                {values.viewType === ViewType.userPage && (
-                                                    <Grid item xs={3}>
-                                                        <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                                            {i18next.t('childTemplate.columns.filterByUserCol')}
-                                                        </Typography>
-                                                    </Grid>
-                                                )}
+                                                {tableTitles
+                                                    .filter(({ show }) => show !== false)
+                                                    .map(({ title, sxOverride }) => (
+                                                        <Grid item xs={3}>
+                                                            <Typography sx={{ fontWeight: 400, fontSize: '14px', ...sxOverride }}>
+                                                                {i18next.t(`childTemplate.columns.${title}Col`)}
+                                                            </Typography>
+                                                        </Grid>
+                                                    ))}
                                             </Grid>
 
                                             <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
@@ -381,14 +375,14 @@ const ChildTemplateFormDialog: React.FC<{
                             <DialogActions sx={{ margin: '10px' }}>
                                 <Grid container justifyContent="center">
                                     {actionType === ActionMode.Update && (
-                                        <Button sx={{ borderRadius: '7px', padding: '6.99px 10px' }} onClick={handleClose}>
+                                        <Button sx={{ borderRadius: '7px', padding: '7px 10px' }} onClick={handleClose}>
                                             {i18next.t('childTemplate.buttons.cancel')}
                                         </Button>
                                     )}
                                     <Button
                                         type="submit"
                                         variant="contained"
-                                        sx={{ borderRadius: '7px', padding: '6.99px 30px', fontWeight: 400 }}
+                                        sx={{ borderRadius: '7px', padding: '7px 30px', fontWeight: 400 }}
                                         disabled={!dirty || isLoading}
                                     >
                                         {i18next.t(`actions.${actionType === ActionMode.Update ? 'save' : 'create'}`)}
