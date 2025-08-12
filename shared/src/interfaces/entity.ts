@@ -176,6 +176,7 @@ export interface ISearchBatchBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+            childTemplateId?: string;
         };
     };
     sort: ISearchSort;
@@ -234,6 +235,7 @@ export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
 export interface ITemplateSearchBody {
     textSearch?: string;
     templateIds: string[];
+    childTemplateIds?: string[];
 }
 
 export interface IExportEntitiesBody {

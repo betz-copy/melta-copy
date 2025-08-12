@@ -1728,12 +1728,28 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async getAllowedChildEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         if (!userPermissions?.admin && !userPermissions?.instances) return [];
 
+        const allChildEntityTemplates = await this.entityTemplateService.searchChildTemplates({});
+
+        if (userPermissions?.admin) return allChildEntityTemplates;
+
         const ids: string[] = [];
-        for (const category of Object.values(userPermissions?.instances?.categories ?? {})) {
-            ids.push(...Object.keys(category?.entityTemplates ?? {}));
+        const allChildTemplateIds = new Set(Object.values(allChildEntityTemplates).map((tpl) => tpl._id));
+
+        for (const [categoryId, category] of Object.entries(userPermissions?.instances?.categories ?? {})) {
+            const entityTemplateIds = Object.keys(category?.entityTemplates ?? {});
+            if (category.scope) {
+                const templatesInCategory = Object.values(allChildEntityTemplates)
+                    .filter((template) => template.category._id === categoryId)
+                    .map((template) => template._id);
+
+                ids.push(...templatesInCategory);
+            } else if (entityTemplateIds.length > 0) {
+                const filtered = entityTemplateIds.filter((id) => allChildTemplateIds.has(id));
+                ids.push(...filtered);
+            }
         }
 
-        return this.entityTemplateService.searchChildTemplates(userPermissions?.admin ? {} : { ids });
+        return this.entityTemplateService.searchChildTemplates({ ids });
     }
 
     // rules

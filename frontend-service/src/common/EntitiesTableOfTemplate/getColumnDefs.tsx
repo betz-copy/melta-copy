@@ -468,7 +468,9 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && pageType !== environment.clientSideId && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph${
+                                        isChildTemplate(template) ? `?childTemplateId=${template._id}` : ''
+                                    }`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}

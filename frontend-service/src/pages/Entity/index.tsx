@@ -361,11 +361,11 @@ const Entity: React.FC = () => {
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const templateIds = Array.from(entityTemplates.keys());
+    const templateIds = childTemplateId ? [] : Array.from(entityTemplates.keys());
 
     const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
-        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
+        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId }),
     );
 
     const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
@@ -415,7 +415,7 @@ const Entity: React.FC = () => {
                         const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
 
                         if (
-                            connectionRelationshipTemplate.isProperty &&
+                            connectionRelationshipTemplate?.isProperty &&
                             currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
                                 ?.relationshipTemplateId === connectionRelationshipTemplate._id
                         )
@@ -424,7 +424,7 @@ const Entity: React.FC = () => {
                         if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
                             return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
 
-                        return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
+                        return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
                     }).length,
             };
         })
