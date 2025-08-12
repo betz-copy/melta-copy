@@ -73,6 +73,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     childEntityTemplateMap?: IChildTemplateMap;
     currentUser: UserState['user'];
     currentClientSideUser: IEntity;
+    actionsColumnWidth?: number;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -104,12 +105,16 @@ export const getColumnDefs = <Data extends any = EntityData>({
     childEntityTemplateMap,
     currentUser,
     currentClientSideUser,
+    actionsColumnWidth = 200,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
 
-    const filteredProperties = template.propertiesOrder.filter((propertyOrder) => !template.properties.properties[propertyOrder]?.comment && template.properties.properties[propertyOrder]?.display !== false);
+    const filteredProperties = template.propertiesOrder.filter(
+        (propertyOrder) =>
+            !template.properties.properties[propertyOrder]?.comment && template.properties.properties[propertyOrder]?.display !== false,
+    );
 
     const columnDefs = filteredProperties.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
@@ -362,7 +367,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
             pinned: 'left',
             menuTabs: [],
             sortable: false,
-            width: 200,
+            width: actionsColumnWidth,
             flex: 0,
             resizable: false,
             lockPosition: true,

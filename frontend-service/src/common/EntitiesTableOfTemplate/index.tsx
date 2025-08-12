@@ -250,6 +250,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     disableFilter?: boolean;
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    actionsColumnWidth?: number;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -298,6 +299,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             disableFilter = false,
             columnsToShow,
             setUpdatedTemplateIds,
+            actionsColumnWidth,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -435,6 +437,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             childEntityTemplateMap: childTemplates,
             currentUser,
             currentClientSideUser: clientSideUserEntity,
+            actionsColumnWidth,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
