@@ -628,8 +628,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
         const templatesWithoutChildId = Object.entries(searchBody.templates ?? {}).reduce(
-            (acc, [templateId, template]) => {
-                const { childTemplateId, ...rest } = template;
+            (acc, [templateId, { childTemplateId: _childTemplateId, ...rest }]) => {
                 acc[templateId] = rest;
                 return acc;
             },
@@ -665,6 +664,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {
         const { childTemplateIds, ...restSearchBody } = searchBody;
+
         const parentTemplateIds = childTemplateIds?.length
             ? await Promise.all(
                   childTemplateIds.map(async (templateId) => {

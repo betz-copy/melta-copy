@@ -145,7 +145,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
     const countRequestTemplateIds = new Set<string>();
     const countRequestChildTemplateIds = new Set<string>();
 
-    templates.forEach((t) => (isChildTemplate(t) ? countRequestChildTemplateIds : countRequestTemplateIds).add(t._id));
+    templates.forEach((template) => (isChildTemplate(template) ? countRequestChildTemplateIds : countRequestTemplateIds).add(template._id));
 
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds),Array.from(countRequestChildTemplateIds), searchInput, semanticSearch);
 

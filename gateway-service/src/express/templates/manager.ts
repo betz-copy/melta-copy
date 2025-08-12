@@ -1733,7 +1733,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (userPermissions?.admin) return allChildEntityTemplates;
 
         const ids: string[] = [];
-        const allChildTemplateIds = new Set(Object.values(allChildEntityTemplates).map((tpl) => tpl._id));
+        const allChildTemplateIds = new Set(Object.values(allChildEntityTemplates).map((childTemplate) => childTemplate._id));
 
         for (const [categoryId, category] of Object.entries(userPermissions?.instances?.categories ?? {})) {
             const entityTemplateIds = Object.keys(category?.entityTemplates ?? {});

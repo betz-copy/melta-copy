@@ -94,9 +94,8 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanSearchEntitiesBatch(req: Request) {
         const templateIds = Object.entries(req.body.templates ?? {}).map(([templateId, template]) => {
-            if (typeof template === 'object' && template !== null && 'childTemplateId' in template) {
-                return (template as any).childTemplateId ?? templateId;
-            }
+            if (typeof template === 'object' && template !== null && 'childTemplateId' in template)
+                return (template.childTemplateId as string | undefined) ?? templateId;
             return templateId;
         });
 
