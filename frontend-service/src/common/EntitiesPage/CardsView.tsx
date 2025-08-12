@@ -92,6 +92,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                         [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
+                                            childTemplateId: template._id
                                         },
                                     },
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),

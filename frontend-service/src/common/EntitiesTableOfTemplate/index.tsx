@@ -110,6 +110,7 @@ export const getDatasource = <Data extends any = EntityData>(
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -143,6 +144,7 @@ export const getDatasource = <Data extends any = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
+                          childTemplateId,
                       ),
             );
 
