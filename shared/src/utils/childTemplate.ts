@@ -39,20 +39,11 @@ const parseFilterObject = (filters: any): any | null => {
 
 const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
     const enumEquals = filterObj.$or
-        .map((condition: any) => condition.enum?.$in)
+        .map((condition: any) => (Object.values(condition) as any)[0]?.$in)
         .filter((val: any): val is string[] => Array.isArray(val))
         .flat();
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
-};
-
-const getFilteredMultiEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
-    const multiEnumIn = filterObj.$or
-        .map((condition: any) => condition.multiEnum?.$in)
-        .filter((val: any): val is string[] => Array.isArray(val))
-        .flat();
-
-    return multiEnumIn.length > 0 ? enumVals.filter((val) => multiEnumIn.includes(val)) : enumVals;
 };
 
 const getChildPropertiesFiltered = (
@@ -63,20 +54,10 @@ const getChildPropertiesFiltered = (
     for (const [key, value] of Object.entries(childProperties)) {
         const filterObj = parseFilterObject(value.filters);
 
-        let newValue = { ...value };
+        const newValue = { ...value };
 
         if (value.enum && filterObj) {
             newValue.enum = getFilteredEnum(value.enum, filterObj);
-        }
-
-        if (value.type === 'array' && value.items?.enum && filterObj) {
-            newValue = {
-                ...value,
-                items: {
-                    ...value.items,
-                    enum: getFilteredMultiEnum(value.items.enum, filterObj),
-                },
-            };
         }
 
         properties[key] = newValue;
