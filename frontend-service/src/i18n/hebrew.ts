@@ -1679,19 +1679,18 @@ export default {
         },
     },
     childTemplate: {
-        templateTitle: 'יצירת תבנית בן',
-        updateTemplateTitle: 'עריכת תבנית בן',
-        templateName: 'שם תבנית בן באנגלית',
-        templateDisplayName: 'שם תצוגת תבנית בן',
-        templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
+        createTitle: 'יצירת תבנית בן',
+        updateTitle: 'עריכת תבנית בן',
+        name: 'שם תבנית בן באנגלית',
+        displayName: 'שם תצוגת תבנית בן',
+        description: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
         status: {
             categoryPage: 'מוצג בעמוד קטגוריה',
             userPage: 'מוצג בעמוד לקוח',
         },
-        userType: {
-            regularUser: 'סינון עפ״י משתמש מחובר',
-            specialUser: 'סינון עפ״י יחידת המשתמש',
-            relatedToLabel: 'שיוך לעמוד לקוח',
+        filterBy: {
+            User: 'סינון עפ״י משתמש מחובר',
+            Unit: 'סינון עפ״י יחידת המשתמש',
         },
         categoryType: {
             relatedToLabel: 'שיוך לקטגוריה',
@@ -1719,22 +1718,21 @@ export default {
         selectUserDialog: {
             title: 'בחירת שם משתמש',
             description: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודה ממנה ילקח המידע',
-            selectUser: 'משתמש',
-            addAction: 'הוספה',
-            byUser: 'משתמש',
+            label: 'משתמש',
         },
-        selectUserUnitDialog: {
+        selectUnitDialog: {
             title: 'בחירת יחידה',
-            content: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודת יחידה שממנה ילקח המידע',
+            description: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודת יחידה שממנה ילקח המידע',
             label: 'יחידה',
         },
-        failedToCreateChildTemplate: 'נכשל ליצור תבנית ישות בן',
-        failedToUpdateChildTemplate: 'נכשל לעדכן תבנית ישות בן',
+        addAction: 'הוספה',
         permissionsPage: {
             unit: 'יחידה',
             user: 'משתמש',
             userPage: 'עמוד לקוח',
         },
+        failedToCreateChildTemplate: 'נכשל ליצור תבנית ישות בן',
+        failedToUpdateChildTemplate: 'נכשל לעדכן תבנית ישות בן',
         succeededToCreateChildTemplate: 'תבנית בן נוצרה בהצלחה',
         succeededToUpdateChildTemplate: 'תבנית בן עודכנה בהצלחה',
         childTemplates: 'תבניות בן',

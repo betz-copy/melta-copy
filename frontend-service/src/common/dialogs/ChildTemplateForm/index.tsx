@@ -22,27 +22,18 @@ import { isEmpty } from 'lodash';
 import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IChildTemplate,
-    IChildTemplateForm,
-    IChildTemplateMap,
-    IChildTemplatePopulatedFromDb,
-    IMongoChildTemplatePopulated,
-    ViewType,
-} from '../../../interfaces/childTemplates';
+import { IChildTemplate, IChildTemplateForm, IChildTemplateMap, IMongoChildTemplatePopulated, ViewType } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
+import { parseFilters } from '../../../services/templates/entityTemplatesService';
+import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import SelectUserFieldDialog from '../createChildTemplate/SelectUserFieldDialog';
+import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
+import SelectFilterByFieldDialog from './SelectFilterByFieldDialog';
 import { createChildTemplateSchema } from '../createChildTemplate/validation';
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
-import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import { parseFilters } from '../../../services/templates/entityTemplatesService';
-import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
-import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
-import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 export enum ActionMode {
     Create = 'create',
@@ -50,7 +41,7 @@ export enum ActionMode {
     Update = 'update',
 }
 
-enum FilterMode {
+export enum FilterMode {
     User = 'User',
     Unit = 'Unit',
 }
@@ -65,7 +56,7 @@ export type IMutationProps = IMutationWithPayload & {
     onError?: (childTemplate: IMongoChildTemplatePopulated) => void;
 };
 
-const AddChildTemplateDialog: React.FC<{
+const ChildTemplateFormDialog: React.FC<{
     mutationProps: IMutationProps;
     open: boolean;
     handleClose: () => void;
@@ -78,8 +69,10 @@ const AddChildTemplateDialog: React.FC<{
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
 
-    const [openSelectUserFieldDialog, setOpenSelectUserFieldDialog] = React.useState<boolean>(false);
-    const [openSelectUnitFieldDialog, setOpenSelectUnitFieldDialog] = React.useState<boolean>(false);
+    const [selectFilterByFieldDialog, setSelectFilterByFieldDialog] = React.useState<{ open: boolean; mode: FilterMode }>({
+        open: false,
+        mode: FilterMode.User,
+    });
 
     const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
         const newProperties = Object.fromEntries(
@@ -162,6 +155,14 @@ const AddChildTemplateDialog: React.FC<{
             .map(([key]) => key);
     }, [entityTemplate]);
 
+    const radioValues = ['categoryPage', 'userPage'];
+
+    const textFields = [
+        { title: 'name', startAdornment: `${entityTemplate.name}_`, disableInUpdate: true },
+        { title: 'displayName', startAdornment: `${entityTemplate.displayName}-`, disableInUpdate: true },
+        { title: 'description' },
+    ];
+
     return (
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik<IChildTemplateForm>
@@ -173,9 +174,15 @@ const AddChildTemplateDialog: React.FC<{
                         Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
                             key,
                             {
-                                ...rest
+                                ...rest,
                                 // filters:  filters? filterModelToFilterOfTemplatePerField(entityTemplate.properties.properties[key], key, value!): undefined
-                                filters: filters? filterDocumentToFilterBackend(values.parentTemplate._id, filters.map(filter => ({ filterProperty: key, filterField: filter})), queryClient): undefined
+                                filters: filters
+                                    ? filterDocumentToFilterBackend(
+                                          values.parentTemplate._id,
+                                          filters.map((filter) => ({ filterProperty: key, filterField: filter })),
+                                          queryClient,
+                                      )
+                                    : undefined,
                             },
                         ]),
                     );
@@ -183,7 +190,7 @@ const AddChildTemplateDialog: React.FC<{
                         ...values,
                         parentTemplateId: entityTemplate._id,
                         category: values.category._id,
-                        properties: { ...values.properties, properties: {} },
+                        properties: { ...values.properties, properties: newProperties },
                     });
                 }}
             >
@@ -191,8 +198,7 @@ const AddChildTemplateDialog: React.FC<{
                     const { values, handleChange, setFieldValue, dirty, touched, errors } = formikProps;
 
                     const updateFilterBy = (open: boolean, mode: FilterMode, field?: string, isFilterByCurrentUser?: boolean) => {
-                        if (mode === FilterMode.User) setOpenSelectUserFieldDialog(open);
-                        else setOpenSelectUnitFieldDialog(open);
+                        setSelectFilterByFieldDialog({ open, mode });
 
                         handleChange({
                             target: { name: `filterBy${mode === FilterMode.User ? 'Current' : mode}UserField`, value: field },
@@ -204,11 +210,16 @@ const AddChildTemplateDialog: React.FC<{
                             });
                     };
 
+                    const checkboxesFields = [
+                        { mode: FilterMode.User, fields: userFields, checked: values.isFilterByCurrentUser, value: values.filterByCurrentUserField },
+                        { mode: FilterMode.Unit, fields: unitFields, checked: values.isFilterByUserUnit, value: values.filterByUnitUserField },
+                    ];
+
                     return (
                         <Form>
                             <DialogTitle>
                                 <Typography fontSize="16px" fontWeight={400}>{`${i18next.t(
-                                    `childTemplate.${actionType === ActionMode.Update ? 'updateTemplate' : 'template'}Title`,
+                                    `childTemplate.${actionType === ActionMode.Duplicate ? 'create' : actionType}Title`,
                                 )} - ${childTemplate?.displayName ?? entityTemplate.displayName}`}</Typography>
                                 <IconButton
                                     aria-label="close"
@@ -229,48 +240,29 @@ const AddChildTemplateDialog: React.FC<{
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 1 }}>
                                     <Grid container item spacing={2}>
-                                        <Grid item xs={4}>
-                                            <TextField
-                                                fullWidth
-                                                label={i18next.t('childTemplate.templateName')}
-                                                name="name"
-                                                value={values.name.trimStart()}
-                                                onChange={(e) => handleChange({ target: { name: 'name', value: e.target.value.trimStart() } })}
-                                                error={touched.name && Boolean(errors.name)}
-                                                helperText={touched.name && errors.name}
-                                                InputProps={{
-                                                    startAdornment: <InputAdornment position="start">{entityTemplate.name}_</InputAdornment>,
-                                                }}
-                                                disabled={actionType === ActionMode.Update}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <TextField
-                                                fullWidth
-                                                label={i18next.t('childTemplate.templateDisplayName')}
-                                                name="displayName"
-                                                value={values.displayName.trimStart()}
-                                                onChange={(e) => handleChange({ target: { name: 'displayName', value: e.target.value.trimStart() } })}
-                                                error={touched.displayName && Boolean(errors.displayName)}
-                                                helperText={touched.displayName && errors.displayName}
-                                                InputProps={{
-                                                    startAdornment: <InputAdornment position="start">{entityTemplate.displayName}-</InputAdornment>,
-                                                }}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <TextField
-                                                fullWidth
-                                                label={i18next.t('childTemplate.templateDetails')}
-                                                name="description"
-                                                value={values.description}
-                                                onChange={handleChange}
-                                                error={touched.description && Boolean(errors.description)}
-                                                helperText={touched.description && errors.description}
-                                                multiline
-                                                rows={1}
-                                            />
-                                        </Grid>
+                                        {textFields.map(({ title, startAdornment, disableInUpdate }) => (
+                                            <Grid item xs={4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={i18next.t(`childTemplate.${title}`)}
+                                                    name={title}
+                                                    value={values[title].trimStart()}
+                                                    onChange={(e) => handleChange({ target: { name: title, value: e.target.value.trimStart() } })}
+                                                    error={touched[title] && Boolean(errors[title])}
+                                                    helperText={touched[title] && errors[title]}
+                                                    InputProps={{
+                                                        startAdornment: startAdornment && (
+                                                            <InputAdornment position="start">
+                                                                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                                                                    {startAdornment}
+                                                                </Typography>
+                                                            </InputAdornment>
+                                                        ),
+                                                    }}
+                                                    disabled={disableInUpdate && actionType === ActionMode.Update}
+                                                />
+                                            </Grid>
+                                        ))}
                                     </Grid>
 
                                     <Grid container direction="row" sx={{ pt: 3, pl: 3 }} alignItems="center" justifyContent="space-between">
@@ -298,75 +290,47 @@ const AddChildTemplateDialog: React.FC<{
                                                     }}
                                                     row
                                                 >
-                                                    <FormControlLabel
-                                                        value="categoryPage"
-                                                        control={<Radio />}
-                                                        label={i18next.t('childTemplate.status.categoryPage')}
-                                                        componentsProps={{
-                                                            typography: { sx: { fontSize: '14px' } },
-                                                        }}
-                                                    />
-                                                    <FormControlLabel
-                                                        value="userPage"
-                                                        control={<Radio />}
-                                                        label={i18next.t('childTemplate.status.userPage')}
-                                                        componentsProps={{
-                                                            typography: { sx: { fontSize: '14px' } },
-                                                        }}
-                                                    />
+                                                    {radioValues.map((val) => (
+                                                        <FormControlLabel
+                                                            value={val}
+                                                            control={<Radio />}
+                                                            label={i18next.t(`childTemplate.status.${val}`)}
+                                                            componentsProps={{
+                                                                typography: { sx: { fontSize: '14px' } },
+                                                            }}
+                                                        />
+                                                    ))}
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={5.5} container direction="row" justifyContent="space-between">
-                                            {userFields.length > 0 && (
-                                                <Grid item>
-                                                    <FormControlLabel
-                                                        control={
-                                                            <MeltaCheckbox
-                                                                checked={values.isFilterByCurrentUser}
-                                                                onChange={(e) =>
-                                                                    updateFilterBy(!!e.target.checked, FilterMode.User, undefined, e.target.checked)
+                                            {checkboxesFields.map(
+                                                ({ mode, fields, checked, value }) =>
+                                                    fields.length > 0 && (
+                                                        <Grid item>
+                                                            <FormControlLabel
+                                                                control={
+                                                                    <MeltaCheckbox
+                                                                        checked={checked}
+                                                                        onChange={(e) =>
+                                                                            updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
+                                                                        }
+                                                                    />
                                                                 }
+                                                                label={i18next.t(`childTemplate.filterBy.${mode}`)}
+                                                                componentsProps={{
+                                                                    typography: { sx: { fontSize: '14px' } },
+                                                                }}
                                                             />
-                                                        }
-                                                        label={i18next.t('childTemplate.userType.regularUser')}
-                                                        componentsProps={{
-                                                            typography: { sx: { fontSize: '14px' } },
-                                                        }}
-                                                    />
-                                                    {values.filterByCurrentUserField && (
-                                                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t('childTemplate.selectUserDialog.byUser')} : ${
-                                                                entityTemplate.properties.properties[values.filterByCurrentUserField].title
-                                                            }`}
-                                                        </Typography>
-                                                    )}
-                                                </Grid>
-                                            )}
-                                            {unitFields.length > 0 && (
-                                                <Grid item>
-                                                    <FormControlLabel
-                                                        control={
-                                                            <MeltaCheckbox
-                                                                checked={values.isFilterByUserUnit}
-                                                                onChange={(e) =>
-                                                                    updateFilterBy(!!e.target.checked, FilterMode.Unit, undefined, e.target.checked)
-                                                                }
-                                                            />
-                                                        }
-                                                        label={i18next.t('childTemplate.userType.specialUser')}
-                                                        componentsProps={{
-                                                            typography: { sx: { fontSize: '14px' } },
-                                                        }}
-                                                    />
-                                                    {values.filterByUnitUserField && (
-                                                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                            {`${i18next.t('childTemplate.selectUserUnitDialog.label')} : ${
-                                                                entityTemplate.properties.properties[values.filterByUnitUserField].title
-                                                            }`}
-                                                        </Typography>
-                                                    )}
-                                                </Grid>
+                                                            {value && (
+                                                                <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
+                                                                    {`${i18next.t(`childTemplate.select${mode}Dialog.label`)} : ${
+                                                                        entityTemplate.properties.properties[value].title
+                                                                    }`}
+                                                                </Typography>
+                                                            )}
+                                                        </Grid>
+                                                    ),
                                             )}
                                         </Grid>
                                     </Grid>
@@ -432,24 +396,18 @@ const AddChildTemplateDialog: React.FC<{
                                 </Grid>
                             </DialogActions>
 
-                            <SelectUserFieldDialog
-                                open={openSelectUserFieldDialog}
-                                userFields={userFields}
-                                selectedField={values.filterByCurrentUserField || null}
-                                onClose={() => updateFilterBy(false, FilterMode.User, undefined, false)}
-                                onSubmit={(field) => updateFilterBy(false, FilterMode.User, field)}
+                            <SelectFilterByFieldDialog
+                                open={selectFilterByFieldDialog.open}
+                                field={selectFilterByFieldDialog.mode === FilterMode.User ? userFields : unitFields}
+                                selectedField={
+                                    (selectFilterByFieldDialog.mode === FilterMode.User
+                                        ? values.filterByCurrentUserField
+                                        : values.filterByUnitUserField) || null
+                                }
+                                onClose={() => updateFilterBy(false, selectFilterByFieldDialog.mode, undefined, false)}
+                                onSubmit={(field) => updateFilterBy(false, selectFilterByFieldDialog.mode, field)}
                                 entityTemplate={entityTemplate}
-                            />
-                            <SelectUserFieldDialog
-                                open={openSelectUnitFieldDialog}
-                                userFields={unitFields}
-                                selectedField={values.filterByUnitUserField || null}
-                                onClose={() => updateFilterBy(false, FilterMode.Unit, undefined, false)}
-                                onSubmit={(field) => updateFilterBy(false, FilterMode.Unit, field)}
-                                entityTemplate={entityTemplate}
-                                title={i18next.t('childTemplate.selectUserUnitDialog.title')}
-                                content={i18next.t('childTemplate.selectUserUnitDialog.content')}
-                                label={i18next.t('childTemplate.selectUserUnitDialog.label')}
+                                filterMode={selectFilterByFieldDialog.mode}
                             />
                         </Form>
                     );
@@ -459,4 +417,4 @@ const AddChildTemplateDialog: React.FC<{
     );
 };
 
-export default AddChildTemplateDialog;
+export default ChildTemplateFormDialog;
