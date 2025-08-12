@@ -56,7 +56,13 @@ const renderChips = (
     fieldSchema: IEntitySingleProperty,
     onDelete: (chip: IFieldChip) => void,
     matchErrorMap?: Map<string, string>,
+    isFilterByUser?: boolean,
 ): React.ReactNode[] => {
+    if (isFilterByUser)
+        return [
+            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>{i18next.t('createChildTemplateDialog.byUser')}</Typography>,
+        ];
+
     return chips.map((chip, index) => {
         const label =
             chip.chipType === ChipType.Filter
@@ -236,6 +242,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     const filterChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Filter);
                     const defaultChips = fieldChips.filter((c) => c.fieldName === fieldName && c.chipType === ChipType.Default);
 
+                    const isFilterByUser = property?.format === 'user' && selectedUserField === fieldName;
+
                     return (
                         <React.Fragment key={fieldName}>
                             <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
@@ -260,14 +268,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(filterChips, property, onDeleteFilterChip)}
+                                        {renderChips(filterChips, property, onDeleteFilterChip, undefined, isFilterByUser)}
 
                                         <Grid item>
-                                            {property?.format === 'user' && selectedUserField === fieldName ? (
-                                                <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                    {i18next.t('createChildTemplateDialog.byUser')}
-                                                </Typography>
-                                            ) : (
+                                            {!isFilterByUser && (
                                                 <Button
                                                     color="primary"
                                                     onClick={() =>
@@ -303,31 +307,27 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                 }));
                                             },
                                             matchValidationError,
+                                            isFilterByUser,
                                         )}
-                                        {!defaultChips.length && (
-                                            <Grid item>
-                                                {property?.format === 'user' && selectedUserField === fieldName ? (
-                                                    <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                        {i18next.t('createChildTemplateDialog.byUser')}
-                                                    </Typography>
-                                                ) : (
-                                                    <Button
-                                                        color="primary"
-                                                        onClick={() => handleSelectProperty(fieldName, ChipType.Default)}
-                                                        size="small"
-                                                        sx={{ minWidth: '32px', p: '4px' }}
-                                                        disabled={
-                                                            isSerialNumberField ||
-                                                            isDisallowedFormat(fieldName) ||
-                                                            isKartoffelUserField ||
-                                                            isRelationshipRefField
-                                                        }
-                                                    >
-                                                        <AddRounded />
-                                                    </Button>
-                                                )}
-                                            </Grid>
-                                        )}
+
+                                        <Grid item>
+                                            {!isFilterByUser && (
+                                                <Button
+                                                    color="primary"
+                                                    onClick={() => handleSelectProperty(fieldName, ChipType.Default)}
+                                                    size="small"
+                                                    sx={{ minWidth: '32px', p: '4px' }}
+                                                    disabled={
+                                                        isSerialNumberField ||
+                                                        isDisallowedFormat(fieldName) ||
+                                                        isKartoffelUserField ||
+                                                        isRelationshipRefField
+                                                    }
+                                                >
+                                                    <AddRounded />
+                                                </Button>
+                                            )}
+                                        </Grid>
                                     </Grid>
                                 </Grid>
 
