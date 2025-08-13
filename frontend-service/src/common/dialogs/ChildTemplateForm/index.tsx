@@ -83,7 +83,7 @@ const ChildTemplateFormDialog: React.FC<{
                     isEditableByUser,
                     display,
                     filters: filters
-                        ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient)
+                        ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, '$or')
                               .map(({ filterField }) => filterField)
                               .filter((f) => f !== undefined)
                         : undefined,

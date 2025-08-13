@@ -1,8 +1,8 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import { variableNameValidation } from '../../../utils/validation';
-import { checkMatchValidation } from './AddFieldFilterDialog';
 import { filterFieldSchema } from '../../wizards/entityTemplate/AddFields';
+import { checkMatchValidation } from './AddFieldFilterDialog';
 
 const childTemplatePropertySchema = Yup.object({
     defaultValue: Yup.mixed().optional(),
@@ -50,17 +50,19 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
             otherwise: Yup.string().nullable().notRequired(),
         }),
         properties: Yup.object({
-            properties: Yup.object()
-                .test('at-least-one-property', i18next.t('childTemplate.fieldFilterTableNoChecks'), (value) => Object.keys(value).length > 0)
-                .test('validate-each-field-schema', 'Invalid childTemplate property', async function (value) {
-                    if (!value || typeof value !== 'object') return false;
-
-                    try {
-                        await Promise.all(Object.values(value).map((field) => childTemplatePropertySchema.validate(field)));
-                        return true;
-                    } catch (err: any) {
-                        return this.createError({ message: err.message });
-                    }
-                }),
+            // properties: Yup.object().test(
+            //     'at-least-one-property',
+            //     i18next.t('childTemplate.fieldFilterTableNoChecks'),
+            //     (value) => Object.keys(value).length > 0,
+            // ),
+            // .test('validate-each-field-schema', 'Invalid childTemplate property', async function (value) {
+            //     if (!value || typeof value !== 'object') return false;
+            //     try {
+            //         await Promise.all(Object.values(value).map((field) => childTemplatePropertySchema.validate(field)));
+            //         return true;
+            //     } catch (err: any) {
+            //         return this.createError({ message: err.message });
+            //     }
+            // }), //TODO: fix
         }),
     });

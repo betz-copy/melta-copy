@@ -196,10 +196,9 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         const defaultChip = fieldChips.find((c) => c.chipType === ChipType.Default && c.fieldName === chip.fieldName);
 
         if (defaultChip) {
-            const anyValid =
-                newFilters.length > 0
-                    ? newFilters.some(({ filterField }) => checkMatchValidation(filterField, chip.fieldName, defaultChip.defaultValue))
-                    : true;
+            const anyValid = newFilters.length
+                ? newFilters.some(({ filterField }) => checkMatchValidation(filterField, chip.fieldName, defaultChip.defaultValue))
+                : true;
 
             setMatchValidationError((prev) => {
                 const newMap = new Map(prev);

@@ -31,13 +31,14 @@ export const FilterModelToFilterRecord = (
     filterModel: ISearchFilter | undefined,
     templateId: string,
     queryClient: QueryClient,
+    andOr: '$and' | '$or' = '$and',
 ): IFilterTemplate[] => {
-    if (!filterModel?.$and || !Array.isArray(filterModel.$and)) return [];
+    if (!filterModel?.[andOr] || !Array.isArray(filterModel?.[andOr])) return [];
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId)!;
 
-    return filterModel.$and.reduce<IFilterTemplate[]>((acc, filter) => {
+    return filterModel[andOr].reduce<IFilterTemplate[]>((acc, filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
             if (!fieldFilter) return;
 
