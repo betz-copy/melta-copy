@@ -1702,11 +1702,10 @@ export default {
             defaultCol: 'ערך ברירת מחדל בהוספה',
             filterByUserCol: 'עריכה ע"י משתמש קצה',
         },
-        fieldFilterDialog: {
+        fieldFiltersDialog: {
             title: 'סינון שדה',
-            addFilter: 'הוספה',
         },
-        fieldDefaultDialog: {
+        fieldDefaultValueDialog: {
             title: 'ערך ברירת מחדל',
         },
         fieldFilterTableNoChecks: 'יש לסמן לפחות עמודה אחת',

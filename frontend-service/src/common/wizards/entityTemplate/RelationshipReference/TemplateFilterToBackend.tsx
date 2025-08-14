@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { ISearchFilter } from '../../../../interfaces/entities';
+import { FilterLogicalOperator, ISearchFilter } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -9,6 +9,7 @@ export const filterTemplateToSearchFilter = (
     filterModel: IFilterTemplate[],
     templateId: string,
     queryClient: QueryClient,
+    andOr: FilterLogicalOperator = FilterLogicalOperator.AND,
 ): ISearchFilter | undefined => {
     if (filterModel.length === 0) return undefined;
 
@@ -22,16 +23,15 @@ export const filterTemplateToSearchFilter = (
         return filterModelToFilterOfTemplatePerField(propertyTemplate, filterProperty, filterField);
     });
 
-    return {
-        $and: filters,
-    };
+    if (andOr === FilterLogicalOperator.AND) return { [FilterLogicalOperator.AND]: filters };
+    else return { [FilterLogicalOperator.OR]: filters };
 };
 
 export const FilterModelToFilterRecord = (
     filterModel: ISearchFilter | undefined,
     templateId: string,
     queryClient: QueryClient,
-    andOr: '$and' | '$or' = '$and',
+    andOr: FilterLogicalOperator = FilterLogicalOperator.AND,
 ): IFilterTemplate[] => {
     if (!filterModel?.[andOr] || !Array.isArray(filterModel?.[andOr])) return [];
 

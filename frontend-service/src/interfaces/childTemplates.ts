@@ -12,9 +12,9 @@ export interface IFieldFilter {
 }
 
 export enum ChipType {
-    Filter = 'filter',
-    Default = 'default',
-    EditByUser = 'editByUser',
+    Filter = 'filters',
+    Default = 'defaultValue',
+    EditByUser = 'isEditableByUser',
 }
 
 export type AllowedChipType = Exclude<ChipType, ChipType.EditByUser>;

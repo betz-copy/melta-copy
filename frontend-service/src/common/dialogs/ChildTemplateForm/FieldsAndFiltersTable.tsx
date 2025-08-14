@@ -2,7 +2,7 @@ import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ByCurrentDefaultValue, ChipType, IChildTemplateForm, IChildTemplateProperty, ViewType } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
@@ -60,8 +60,6 @@ const renderChips = (
     onDelete: (chip: IChip, mode: ChipType) => void,
     // matchErrorMap?: Map<string, string>,
 ): React.ReactNode[] => {
-    if (chips.length) console.log({ chips });
-
     return chips.map((chip, index) => {
         const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);
 
@@ -87,13 +85,8 @@ interface IFieldsAndFiltersTableProps {
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikProps, entityTemplate }) => {
     const { values, setFieldValue, setFieldTouched } = formikProps;
-    console.log({ values });
 
     const [addFilterField, setAddFilterField] = useState<{ dialogType: ChipType; fieldName: string } | undefined>(undefined);
-
-    useEffect(() => {
-        console.log('hi');
-    }, [values]);
 
     return (
         <>
@@ -127,7 +120,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                         const prev = values.properties.properties[fieldName];
                         setFieldValue(`properties.properties.${fieldName}`, {
                             ...prev,
-                            [mode]: mode === ChipType.Default ? undefined : prev[mode].filter((c) => c !== chip),
+                            [mode]: mode === ChipType.Default ? undefined : (prev[mode] as IAGGridFilter[] | undefined)?.filter((c) => c !== chip),
                         });
                     };
 
@@ -283,11 +276,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     entityTemplate={entityTemplate}
                     onClose={() => setAddFilterField(undefined)}
                     onSubmit={(fieldValue: any) => {
-                        console.log({ fieldValue });
-
+                        const value = values.properties.properties[addFilterField.fieldName];
                         setFieldValue(`properties.properties.${addFilterField.fieldName}`, {
-                            ...values.properties.properties[addFilterField.fieldName],
-                            [addFilterField.dialogType]: fieldValue,
+                            ...value,
+                            [addFilterField.dialogType]:
+                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...(value.filters ?? []), fieldValue],
                         });
                         setAddFilterField(undefined);
                     }}

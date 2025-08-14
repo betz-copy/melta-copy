@@ -149,7 +149,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
     const isValueValid = () => {
         if (localFilterField === undefined) return false;
-        if (dialogType !== 'editByUser') return isValidAGGridFilter(localFilterField);
+        if (dialogType !== ChipType.EditByUser) return isValidAGGridFilter(localFilterField);
         return true;
     };
 
@@ -304,7 +304,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                             sx={{ borderRadius: '7px', padding: '6.99px 30px', fontWeight: 400 }}
                             disabled={!isValueValid() || isError}
                         >
-                            {i18next.t('childTemplate.fieldFilterDialog.addFilter')}
+                            {i18next.t('childTemplate.addAction')}
                         </Button>
                     </Grid>
                 </Grid>

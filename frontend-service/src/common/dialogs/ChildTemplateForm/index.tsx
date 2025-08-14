@@ -23,6 +23,7 @@ import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IChildTemplate, IChildTemplateForm, IChildTemplateMap, IMongoChildTemplatePopulated, ViewType } from '../../../interfaces/childTemplates';
+import { FilterLogicalOperator } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
@@ -84,7 +85,7 @@ const ChildTemplateFormDialog: React.FC<{
                     isEditableByUser,
                     display: Object.keys(entityTemplate.properties).includes(key) ? true : display,
                     filters: filters
-                        ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, '$or')
+                        ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, FilterLogicalOperator.OR)
                               .map(({ filterField }) => filterField)
                               .filter((f) => f !== undefined)
                         : undefined,
@@ -180,12 +181,12 @@ const ChildTemplateFormDialog: React.FC<{
                             key,
                             {
                                 ...rest,
-                                // filters:  filters? filterModelToFilterOfTemplatePerField(entityTemplate.properties.properties[key], key, value!): undefined
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
                                           values.parentTemplate._id,
                                           filters.map((filter) => ({ filterProperty: key, filterField: filter })),
                                           queryClient,
+                                          FilterLogicalOperator.OR,
                                       )
                                     : undefined,
                             },
@@ -253,7 +254,7 @@ const ChildTemplateFormDialog: React.FC<{
                                 <Grid container spacing={2} direction="column" sx={{ pt: 1 }}>
                                     <Grid container item spacing={2}>
                                         {textFields.map(({ title, startAdornment, disableInUpdate }) => (
-                                            <Grid item xs={4}>
+                                            <Grid item xs={4} key={title}>
                                                 <TextField
                                                     fullWidth
                                                     label={i18next.t(`childTemplate.${title}`)}
@@ -310,6 +311,7 @@ const ChildTemplateFormDialog: React.FC<{
                                                             componentsProps={{
                                                                 typography: { sx: { fontSize: '14px' } },
                                                             }}
+                                                            key={val}
                                                         />
                                                     ))}
                                                 </RadioGroup>
@@ -319,7 +321,7 @@ const ChildTemplateFormDialog: React.FC<{
                                             {checkboxesFields.map(
                                                 ({ mode, fields, checked, value }) =>
                                                     fields.length > 0 && (
-                                                        <Grid item>
+                                                        <Grid item key={fields.toString()}>
                                                             <FormControlLabel
                                                                 control={
                                                                     <MeltaCheckbox
@@ -361,7 +363,7 @@ const ChildTemplateFormDialog: React.FC<{
                                                 {tableTitles
                                                     .filter(({ show }) => show !== false)
                                                     .map(({ title, sxOverride }) => (
-                                                        <Grid item xs={3}>
+                                                        <Grid item xs={3} key={title}>
                                                             <Typography sx={{ fontWeight: 400, fontSize: '14px', ...sxOverride }}>
                                                                 {i18next.t(`childTemplate.columns.${title}Col`)}
                                                             </Typography>
