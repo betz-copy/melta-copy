@@ -58,21 +58,13 @@ const renderChips = (
     chips: IAGGridFilter[] | IChildTemplateProperty['defaultValue'][],
     fieldSchema: IEntitySingleProperty,
     onDelete: (chip: IChip, mode: ChipType) => void,
-    // matchErrorMap?: Map<string, string>,
 ): React.ReactNode[] => {
     return chips.map((chip, index) => {
         const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);
 
-        // const matchError = matchErrorMap?.get(chip.fieldName);
-
         return (
             <Grid item key={`${chip}-${mode}-${index}`} justifyItems="center">
                 <ColoredEnumChip label={label} onDelete={() => onDelete(chip, mode)} color="default" />
-                {/* {matchError && (
-                    <Typography variant="body2" color="error" align="left" style={{ marginTop: '8px' }}>
-                        {matchError}
-                    </Typography>
-                )} */}
             </Grid>
         );
     });
@@ -105,7 +97,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     const isRelationshipRefField = property?.format === 'relationshipReference';
 
                     const onCheckboxChange = (checked: boolean) => {
-                        setFieldTouched(`properties.${fieldName}`, true);
+                        setFieldTouched(`properties.properties.${fieldName}`, true);
                         setFieldValue(`properties.properties.${fieldName}`, {
                             ...value,
                             display: checked,
@@ -116,7 +108,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     const onDeleteFilterChip = (chip: IChip, mode: ChipType) => {
                         if (isRequired && mode == ChipType.Default) onCheckboxChange(true);
 
-                        setFieldTouched(`properties.${fieldName}`, true);
+                        setFieldTouched(`properties.properties.${fieldName}`, true);
                         const prev = values.properties.properties[fieldName];
                         setFieldValue(`properties.properties.${fieldName}`, {
                             ...prev,
@@ -142,32 +134,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                         return isDisallowedFormat() || byCurrentUserDefaultValue || byCurrentDateDefaultValue;
                     };
 
-                    const handleSelectProperty = (dialogType: ChipType) => {
-                        setAddFilterField({ dialogType, fieldName });
-
-                        // const { format, type: fieldType, enum: enumValues } = entityTemplate.properties.properties[fieldName];
-                        // const selectedFilter =
-                        //     (enumValues && initializedFilterField['array']) ||
-                        //     (format && initializedFilterField[format]) ||
-                        //     (fieldType && initializedFilterField[fieldType]);
-                        // console.log({ selectedFilter });
-
-                        // if (selectedFilter) { //TODO: see if this is necessary
-                        //     setFieldValue({
-                        //         ...prev,
-                        //         [fieldName]: {
-                        //             ...prev[fieldName],
-                        //             filterField: selectedFilter,
-                        //         },
-                        //     });
-
-                        //     setFieldValue(`properties.properties.${fieldName}`, {
-                        //         ...value,
-                        //         display: checked,
-                        //         isEditableByUser: !checked ? false : value.isEditableByUser,
-                        //     });
-                        // }
-                    };
+                    const handleSelectProperty = (dialogType: ChipType) => setAddFilterField({ dialogType, fieldName });
 
                     return (
                         <React.Fragment key={fieldName}>
@@ -217,13 +184,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(
-                                            ChipType.Default,
-                                            value.defaultValue ? [value.defaultValue] : [],
-                                            property,
-                                            onDeleteFilterChip,
-                                            // matchValidationError, //TODO: handle match validation error
-                                        )}
+                                        {renderChips(ChipType.Default, value.defaultValue ? [value.defaultValue] : [], property, onDeleteFilterChip)}
                                         {!value.defaultValue && (
                                             <Grid item>
                                                 {property?.format === 'user' && values.filterByCurrentUserField === fieldName ? (

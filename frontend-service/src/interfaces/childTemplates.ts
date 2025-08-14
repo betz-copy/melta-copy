@@ -75,8 +75,10 @@ export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate,
     category: IMongoCategory;
 }
 
+export type IChildTemplateFormProperty = Omit<IChildTemplateProperty, 'filters'> & { filters?: IAGGridFilter[] };
+
 export interface IChildTemplateForm extends Omit<IChildTemplatePopulatedFromDb, 'properties'> {
-    properties: { properties: Record<string, Omit<IChildTemplateProperty, 'filters'> & { filters?: IAGGridFilter[] }> };
+    properties: { properties: Record<string, IChildTemplateFormProperty> };
 }
 
 export interface IChildTemplatePopulated

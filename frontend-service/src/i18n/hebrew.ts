@@ -996,8 +996,9 @@ export default {
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         notMatchingToFilter: 'לא תואם לסינון',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
-        matchFilter: 'הערך לא תואם את הגדרות ה{{dialogType}}',
+        matchFilter: 'בשדה {{fieldName}} הערך ברירת מחדל לא תואם את הגדרות הסינון',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
+        invalidProperty: 'שדה לא תקין',
     },
     propertyTypes: {
         string: 'טקסט',
@@ -1741,8 +1742,8 @@ export default {
             cancel: 'ביטול',
         },
         dialogType: {
-            filter: 'סינון',
-            default: 'ברירת מחדל',
+            filters: 'סינון',
+            defaultValue: 'ברירת מחדל',
         },
     },
 };

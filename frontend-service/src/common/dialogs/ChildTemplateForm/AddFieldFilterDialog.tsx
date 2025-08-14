@@ -29,7 +29,7 @@ interface IAddFilterFieldDialogProps {
 
 const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
     addFilterField,
-    formikProps: { errors, setFieldError, setFieldTouched },
+    formikProps: { errors, setFieldTouched },
     entityTemplate,
     onClose,
     onSubmit,
@@ -49,30 +49,19 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         (property.type && initializedFilterField[property.type]);
 
     const [inputValue, setInputValue] = useState<string>('');
-    const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(selectedFilter); //TODO: fix
+    const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(selectedFilter);
 
     const handleClose = () => {
-        // setMatchValidationError(null);
         onClose();
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
-        setFieldError(`properties.properties[${fieldName}].filters`, undefined); //TODO: if yup validation works not relevant
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
-        // checkMatchValidations({ ...localFilterField, type: newTypeFilter } as any);
     };
 
-    const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => {
-        // const prev = values.properties.properties[fieldName];
-
-        setFieldError(`properties.properties[${fieldName}].filters`, undefined); //TODO: if yup validation works not relevant
-        // checkMatchValidations(value);
-        setLocalFilterField(value);
-    };
+    const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => setLocalFilterField(value);
 
     const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
-        setFieldError(`properties.properties[${fieldName}].filters`, undefined); //TODO: if yup validation works not relevant
-
         const fieldSchema = entityTemplate.properties.properties[fieldName];
 
         const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
@@ -82,11 +71,6 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 ? ByCurrentDefaultValue.byCurrentDate
                 : format(newValue, dateFormat)
             : null;
-
-        // checkMatchValidations({
-        //     ...localFilterField,
-        //     ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
-        // });
 
         setLocalFilterField({
             ...localFilterField,
@@ -98,44 +82,22 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         setFieldTouched(`properties.properties${fieldName}`, true);
 
         if (!localFilterField) return;
-        // setMatchValidationError(null);
-        // setMatchValidationErrorMap((prev) => {
-        //     const newMap = new Map(prev);
-        //     newMap.delete(currentFieldName);
-        //     return newMap;
-        // });
 
-        if (dialogType === ChipType.Default) {
-            // const fieldSchema = entityTemplate.properties.properties[fieldName];
-            let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
-
-            if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') defaultValue = localFilterField.filter;
-            else if (localFilterField.filterType === 'set') defaultValue = localFilterField.values;
-            else if (localFilterField.filterType === 'date') defaultValue = localFilterField.dateFrom;
-
-            // const templateSchema = {
-            //     ...entityTemplate.properties,
-            //     required: [],
-            //     properties: {
-            //         [fieldName]: fieldSchema,
-            //     },
-            // };
-
-            // const formData = { [fieldName]: defaultValue };
-
-            // const ajvErrors = ajvValidate(templateSchema, formData);
-
-            // if (ajvErrors && ajvErrors[fieldName]) setCurrentFieldError(ajvErrors[currentFieldName] as string);
-            // else
-            onSubmit(defaultValue);
-        } else {
-            // updateFieldFilter(localFilterField, currentFieldName);
+        if (dialogType !== ChipType.Default) {
             onSubmit(localFilterField);
+            return;
         }
+
+        let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
+
+        if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') defaultValue = localFilterField.filter;
+        else if (localFilterField.filterType === 'set') defaultValue = localFilterField.values;
+        else if (localFilterField.filterType === 'date') defaultValue = localFilterField.dateFrom;
+
+        onSubmit(defaultValue);
     };
 
     const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
-        setFieldError(`properties.properties[${fieldName}].filters`, undefined); //TODO: if yup validation works not relevant
         const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
 
         let updatedValues: (string | null | IUser)[];
@@ -143,7 +105,6 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         if (checked) updatedValues = Array.from(new Set([...values, ...options]));
         else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
 
-        // checkMatchValidations({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
         setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
 
@@ -285,11 +246,6 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
                     <Grid item xs={12}>
                         {renderFilterInput()}
-                        {/* {matchValidationError && (
-                            <Typography variant="body2" color="error" align="left" style={{ marginTop: '8px' }}>
-                                {matchValidationError}
-                            </Typography>
-                        )} */}
                     </Grid>
                 </Grid>
             </DialogContent>

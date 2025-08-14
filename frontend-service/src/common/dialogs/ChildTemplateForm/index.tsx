@@ -104,17 +104,9 @@ const ChildTemplateFormDialog: React.FC<{
         };
     };
 
-    const existingNames = childTemplates
-        ? Array.from(childTemplates.values())
-              .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
-              .map((t) => t.name)
-        : [];
+    const existingNames = childTemplates ? Array.from(childTemplates.values()).map((t) => t.name) : [];
 
-    const existingDisplayNames = childTemplates
-        ? Array.from(childTemplates.values())
-              .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
-              .map((t) => t.displayName)
-        : [];
+    const existingDisplayNames = childTemplates ? Array.from(childTemplates.values()).map((t) => t.displayName) : [];
 
     const { mutateAsync: handleChildTemplate, isLoading } = useMutation({
         mutationFn: (templateData: IChildTemplate) => {
@@ -171,7 +163,7 @@ const ChildTemplateFormDialog: React.FC<{
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik<IChildTemplateForm>
                 initialValues={getInitialValues(childTemplate ?? emptyChildTemplate)}
-                validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
+                validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames, entityTemplate)}
                 onSubmit={async (values, formikHelpers) => {
                     const pickedValues = pick(values, childTemplateKeys) as unknown as IChildTemplate;
 
@@ -192,6 +184,7 @@ const ChildTemplateFormDialog: React.FC<{
                             },
                         ]),
                     );
+
                     handleChildTemplate({
                         ...pickedValues,
                         parentTemplateId: entityTemplate._id,
@@ -351,13 +344,20 @@ const ChildTemplateFormDialog: React.FC<{
 
                                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
                                         <Grid item xs={12}>
-                                            <Typography sx={{ fontWeight: 400, fontSize: '16px', mb: isEmpty(touched) ? '19px' : '0px' }}>
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: 400,
+                                                    fontSize: '16px',
+                                                }}
+                                            >
                                                 {i18next.t('childTemplate.columns.title')}
                                             </Typography>
-                                            {errors.properties?.properties && (
-                                                <Typography sx={{ fontSize: '12px', color: 'error.main', mb: '19px' }}>
-                                                    {errors.properties?.properties}
-                                                </Typography>
+                                            {!isEmpty(touched) && errors.properties?.properties && (
+                                                <Grid sx={{ my: 1, pr: 2, pl: 2 }}>
+                                                    <Typography color="error" variant="caption" fontSize="14px">
+                                                        {errors.properties?.properties}
+                                                    </Typography>
+                                                </Grid>
                                             )}
                                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
                                                 {tableTitles
