@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { FilterLogicalOperator, ISearchFilter } from '../../../../interfaces/entities';
+import { FilterLogicalOperator, IFilterOfField, ISearchFilter } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -38,7 +38,9 @@ export const FilterModelToFilterRecord = (
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId)!;
 
-    return filterModel[andOr].reduce<IFilterTemplate[]>((acc, filter) => {
+    const fieldFilters = filterModel?.[andOr] as IFilterOfField[];
+
+    return fieldFilters.reduce<IFilterTemplate[]>((acc, filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
             if (!fieldFilter) return;
 
@@ -52,6 +54,7 @@ export const FilterModelToFilterRecord = (
                 });
             }
         });
+
         return acc;
     }, []);
 };

@@ -7,19 +7,12 @@ import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { ActionMode } from '../../../common/dialogs/ChildTemplateForm';
+import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildTemplateForm';
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { ICategoryMap } from '../../../interfaces/categories';
-import {
-    EntityTemplateType,
-    IChildTemplateMap,
-    IChildTemplatePopulated,
-    IMongoChildTemplatePopulated,
-    TemplateItem,
-    ViewType,
-} from '../../../interfaces/childTemplates';
+import { EntityTemplateType, IChildTemplateMap, IChildTemplatePopulated, TemplateItem, ViewType } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
@@ -82,8 +75,7 @@ interface EntityTemplateCardProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildTemplatePopulated;
-            actionType?: ActionMode;
+            mutationProps?: IMutationWithPayload;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -230,8 +222,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                 ...entityTemplate,
                                                 _id: childTemplate.parentTemplate._id,
                                             },
-                                            childTemplate,
-                                            actionType: ActionMode.Update,
+                                            mutationProps: {
+                                                actionType: ActionMode.Update,
+                                                payload: childTemplate,
+                                            },
                                         });
                                     } else {
                                         setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
@@ -245,14 +239,16 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                               setAddChildTemplateDialogState({
                                                   isWizardOpen: true,
                                                   entityTemplate: childTemplate.parentTemplate,
-                                                  childTemplate: {
-                                                      ...childTemplate,
-                                                      category: emptyEntityTemplate.category,
-                                                      displayName: emptyEntityTemplate.displayName,
-                                                      name: emptyEntityTemplate.name,
-                                                      description: '',
+                                                  mutationProps: {
+                                                      actionType: ActionMode.Duplicate,
+                                                      payload: {
+                                                          ...childTemplate,
+                                                          category: emptyEntityTemplate.category,
+                                                          displayName: emptyEntityTemplate.displayName,
+                                                          name: emptyEntityTemplate.name,
+                                                          description: '',
+                                                      },
                                                   },
-                                                  actionType: ActionMode.Duplicate,
                                               });
                                               setIsHoverOnCard(false);
                                           }
@@ -296,7 +292,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     childTemplates?.get(entityTemplate._id)
                                         ? undefined
                                         : () => {
-                                              setAddChildTemplateDialogState({ isWizardOpen: true, entityTemplate, actionType: ActionMode.Create });
+                                              setAddChildTemplateDialogState({
+                                                  isWizardOpen: true,
+                                                  entityTemplate,
+                                                  mutationProps: { actionType: ActionMode.Create, payload: undefined },
+                                              });
                                               setIsHoverOnCard(false);
                                           }
                                 }

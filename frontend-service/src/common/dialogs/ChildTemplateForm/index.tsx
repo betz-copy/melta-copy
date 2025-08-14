@@ -32,10 +32,11 @@ import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import { createChildTemplateSchema } from '../createChildTemplate/validation';
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import SelectFilterByFieldDialog from './SelectFilterByFieldDialog';
+import { createChildTemplateSchema } from './validation';
+import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 
 export enum ActionMode {
     Create = 'create',
@@ -59,12 +60,14 @@ export type IMutationProps = IMutationWithPayload & {
 };
 
 const ChildTemplateFormDialog: React.FC<{
-    mutationProps: IMutationProps;
+    mutationProps?: IMutationProps;
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
 }> = ({ mutationProps, open, handleClose, entityTemplate }) => {
     if (!entityTemplate) return null;
+
+    if (!mutationProps) return null;
 
     const { actionType, payload: childTemplate } = mutationProps;
 
@@ -77,7 +80,7 @@ const ChildTemplateFormDialog: React.FC<{
     });
 
     const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
-        const newProperties = Object.fromEntries(
+        const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries(
             Object.entries(properties.properties).map(([key, { filters, defaultValue, isEditableByUser, display }]) => [
                 key,
                 {
@@ -87,7 +90,7 @@ const ChildTemplateFormDialog: React.FC<{
                     filters: filters
                         ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, FilterLogicalOperator.OR)
                               .map(({ filterField }) => filterField)
-                              .filter((f) => f !== undefined)
+                              .filter((f): f is IAGGridFilter => f !== undefined) 
                         : undefined,
                 },
             ]),
@@ -98,7 +101,7 @@ const ChildTemplateFormDialog: React.FC<{
             name: name.replace(`${entityTemplate.name}_`, ''),
             displayName: displayName.replace(`${entityTemplate.displayName}-`, ''),
             category: rest._id ? category : entityTemplate.category,
-            properties: { ...properties, properties: newProperties },
+            properties: { properties: newProperties },
             filterByCurrentUserField: rest.filterByCurrentUserField ?? undefined, //somehow it's null in mongo
             filterByUnitUserField: rest.filterByUnitUserField ?? undefined, //somehow it's null in mongo
         };

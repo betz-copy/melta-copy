@@ -5,9 +5,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
-import { ActionMode } from '../../../common/dialogs/ChildTemplateForm';
+import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateForm';
 import { IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
+import { IChildTemplateMap, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
@@ -45,8 +45,7 @@ interface CategoryEntitiesBoxProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildTemplatePopulated;
-            actionType?: ActionMode;
+            mutationProps?: IMutationWithPayload;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<

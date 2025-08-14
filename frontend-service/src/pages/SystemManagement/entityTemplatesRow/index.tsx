@@ -6,9 +6,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import ChildTemplateFormDialog, { ActionMode } from '../../../common/dialogs/ChildTemplateForm';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import CreateChildTemplateDialog from '../../../common/dialogs/createChildTemplate';
+import ChildTemplateFormDialog, { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateForm';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
@@ -16,7 +15,7 @@ import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
+import { IChildTemplateMap, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
@@ -115,8 +114,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
-        childTemplate?: IMongoChildTemplatePopulated;
-        actionType?: ActionMode;
+        mutationProps?: IMutationWithPayload;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -443,17 +441,11 @@ const EntityTemplatesRow: React.FC = () => {
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />
-            {/* <CreateChildTemplateDialog
-                open={addChildTemplateDialogState.isWizardOpen}
-                handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                entityTemplate={addChildTemplateDialogState.entityTemplate}
-                childTemplate={addChildTemplateDialogState.childTemplate}
-            /> */}
             <ChildTemplateFormDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}
-                mutationProps={{ actionType: addChildTemplateDialogState.actionType, payload: addChildTemplateDialogState.childTemplate }}
+                mutationProps={addChildTemplateDialogState.mutationProps}
             />
         </Grid>
     );
