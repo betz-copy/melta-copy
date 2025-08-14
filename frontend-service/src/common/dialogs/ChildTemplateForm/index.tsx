@@ -104,9 +104,10 @@ const ChildTemplateFormDialog: React.FC<{
         };
     };
 
-    const existingNames = childTemplates ? Array.from(childTemplates.values()).map((t) => t.name) : [];
+    const existingNames = childTemplates && actionType !== ActionMode.Update ? Array.from(childTemplates.values()).map((t) => t.name) : [];
 
-    const existingDisplayNames = childTemplates ? Array.from(childTemplates.values()).map((t) => t.displayName) : [];
+    const existingDisplayNames =
+        childTemplates && actionType !== ActionMode.Update ? Array.from(childTemplates.values()).map((t) => t.displayName) : [];
 
     const { mutateAsync: handleChildTemplate, isLoading } = useMutation({
         mutationFn: (templateData: IChildTemplate) => {

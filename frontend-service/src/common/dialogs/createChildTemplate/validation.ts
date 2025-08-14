@@ -9,26 +9,20 @@ import { checkMatchValidation } from './AddFieldFilterDialog';
 const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
     Yup.object({
         defaultValue: Yup.mixed().optional(),
-        filters: filterFieldSchema,
+        filters: filterFieldSchema(false),
         isEditableByUser: Yup.boolean().optional(),
         display: Yup.boolean().optional(),
-    }).test('filter-default-match', i18next.t('validation.matchFilter', { fieldName }), function (value) {
-        if (!value) return true;
+    })
+        .optional()
+        .test('filter-default-match', i18next.t('validation.matchFilter', { fieldName }), function (value) {
+            if (!value) return true;
 
-        const { defaultValue, filters } = value;
+            const { defaultValue, filters } = value;
 
-        console.log({ value, fieldName, propKey });
-        console.log({
-            res:
-                filters && filters.length && defaultValue
-                    ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue))
-                    : false,
+            return filters && filters.length && defaultValue
+                ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue))
+                : true;
         });
-
-        return filters && filters.length && defaultValue
-            ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue))
-            : true;
-    });
 
 export const createChildTemplateSchema = (existingNames: string[], existingDisplayNames: string[], parentTemplate: IMongoEntityTemplatePopulated) =>
     Yup.object({
