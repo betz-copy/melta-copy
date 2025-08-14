@@ -1,10 +1,74 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
-import { IChildTemplateFormProperty } from '../../../interfaces/childTemplates';
+import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { matchValueAgainstFilter } from '../../../utils/filters';
 import { variableNameValidation } from '../../../utils/validation';
 import { filterFieldSchema } from '../../wizards/entityTemplate/AddFields';
-import { checkMatchValidation } from './AddFieldFilterDialog';
+
+const getFilterOperator = (filterField: IFieldChip['filterField']) => {
+    const operatorMap: Record<string, string> = {
+        equals: '$eq',
+        notEqual: '$ne',
+        greaterThan: '$gt',
+        greaterThanOrEqual: '$gte',
+        lessThan: '$lt',
+        lessThanOrEqual: '$lte',
+        inRange: '$in',
+        between: '$between',
+        not: '$not',
+        contains: '$rgx', // contains always true in the validation
+        notContains: '$notContains',
+    };
+
+    switch (filterField?.filterType) {
+        case 'text':
+        case 'number':
+        case 'date':
+            if (filterField.type === 'inRange') {
+                return operatorMap['between'];
+            }
+
+            return operatorMap[filterField.type];
+        case 'set':
+            return filterField.values && filterField.values.length > 0 ? '$in' : null;
+        default:
+            console.warn('Unsupported filter type:', filterField);
+            return null;
+    }
+};
+
+const getFilterValue = (filterField: IFieldChip['filterField']) => {
+    switch (filterField?.filterType) {
+        case 'text':
+        case 'number':
+            return filterField.filter;
+        case 'date':
+            return filterField.dateTo ? [filterField.dateFrom, filterField.dateTo] : filterField.dateFrom;
+        case 'set':
+            return filterField.values;
+        default:
+            console.warn('Unsupported filter type:', filterField);
+            return null;
+    }
+};
+
+const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: any) => {
+    const data = { [fieldName]: value };
+
+    const operator = getFilterOperator(filterField);
+
+    if (operator) {
+        const filter = {
+            [fieldName]: {
+                [operator]: getFilterValue(filterField),
+            },
+        };
+
+        return matchValueAgainstFilter(data, filter);
+    }
+    return true;
+};
 
 const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
     Yup.object({

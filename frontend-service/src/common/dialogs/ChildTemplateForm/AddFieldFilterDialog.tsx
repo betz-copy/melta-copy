@@ -17,6 +17,7 @@ import { MultipleUserFilterInput } from '../../inputs/FilterInputs/MultipleUserF
 import { SelectFilterInput } from '../../inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
+import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 
 interface IAddFilterFieldDialogProps {
@@ -29,18 +30,13 @@ interface IAddFilterFieldDialogProps {
 
 const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
     addFilterField,
-    formikProps: { errors, setFieldTouched },
+    formikProps: { setFieldTouched },
     entityTemplate,
     onClose,
     onSubmit,
 }) => {
     if (!addFilterField) return null;
     const { dialogType, fieldName } = addFilterField;
-
-    const readOnly = false;
-    const entityFilter = false;
-    const errorHelperText = errors.properties?.properties?.[fieldName]?.filters;
-    const isError = !!errorHelperText;
 
     const property = entityTemplate.properties.properties[fieldName];
     const selectedFilter =
@@ -50,18 +46,29 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
     const [inputValue, setInputValue] = useState<string>('');
     const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(selectedFilter);
+    const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
+
+    const readOnly = false;
+    const entityFilter = false;
+    const isError = !!currentFieldError;
 
     const handleClose = () => {
         onClose();
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+        setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };
 
-    const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => setLocalFilterField(value);
+    const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => {
+        setCurrentFieldError(undefined);
+        setLocalFilterField(value);
+    };
 
     const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
+        setCurrentFieldError(undefined);
+
         const fieldSchema = entityTemplate.properties.properties[fieldName];
 
         const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
@@ -76,6 +83,19 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
             ...localFilterField,
             ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
         } as IAGGridDateFilter);
+    };
+
+    const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
+        setCurrentFieldError(undefined);
+
+        const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
+
+        let updatedValues: (string | null | IUser)[];
+
+        if (checked) updatedValues = Array.from(new Set([...values, ...options]));
+        else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
+
+        setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
 
     const handleSubmit = () => {
@@ -94,18 +114,20 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         else if (localFilterField.filterType === 'set') defaultValue = localFilterField.values;
         else if (localFilterField.filterType === 'date') defaultValue = localFilterField.dateFrom;
 
-        onSubmit(defaultValue);
-    };
+        const templateSchema = {
+            ...entityTemplate.properties,
+            required: [],
+            properties: {
+                [fieldName]: entityTemplate.properties.properties[fieldName],
+            },
+        };
 
-    const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
-        const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
+        const formData = { [fieldName]: defaultValue };
 
-        let updatedValues: (string | null | IUser)[];
+        const ajvErrors = ajvValidate(templateSchema, formData);
 
-        if (checked) updatedValues = Array.from(new Set([...values, ...options]));
-        else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
-
-        setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
+        if (ajvErrors && ajvErrors[fieldName]) setCurrentFieldError(ajvErrors[fieldName] as string);
+        else onSubmit(defaultValue);
     };
 
     const isValueValid = () => {
@@ -139,7 +161,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                         handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                         readOnly={readOnly}
                         error={isError}
-                        helperText={errorHelperText}
+                        helperText={currentFieldError}
                         {...defaultFilterProps}
                     />
                 );
@@ -151,7 +173,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                     enumOptions={enumOptions}
                     readOnly={readOnly}
                     isError={isError}
-                    helperText={errorHelperText}
+                    helperText={currentFieldError}
                     allowEmpty={!isDefault}
                     {...defaultFilterProps}
                 />
@@ -190,7 +212,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                     handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
                     error={isError}
-                    helperText={errorHelperText}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -206,7 +228,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                     readOnly={readOnly}
                     isUsersArray
                     isError={isError}
-                    helperText={errorHelperText}
+                    helperText={currentFieldError}
                     {...defaultFilterProps}
                 />
             );
@@ -221,7 +243,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 type={type}
                 readOnly={readOnly}
                 error={isError}
-                helperText={errorHelperText}
+                helperText={currentFieldError}
                 {...defaultFilterProps}
             />
         );
