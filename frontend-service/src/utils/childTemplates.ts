@@ -1,5 +1,5 @@
 import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IChildTemplate, IChildTemplateMap, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
 import { IKartoffelUser } from '../interfaces/users';
@@ -68,3 +68,19 @@ export const getChildrenWithWritePermission = (
     Array.from(childEntityTemplateMap.values()).filter(
         (child) => child.parentTemplate._id === parentId && isUserHasWritePermissions(currentClientSideUser, currentUser, child),
     );
+
+export const childTemplateKeys: (keyof IChildTemplate)[] = [
+    'name',
+    'displayName',
+    'description',
+    'parentTemplateId',
+    'category',
+    'properties',
+    'disabled',
+    'actions',
+    'viewType',
+    'isFilterByCurrentUser',
+    'isFilterByUserUnit',
+    'filterByCurrentUserField',
+    'filterByUnitUserField',
+];

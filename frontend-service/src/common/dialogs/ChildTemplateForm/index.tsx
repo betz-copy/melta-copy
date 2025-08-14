@@ -18,7 +18,7 @@ import {
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import { isEmpty } from 'lodash';
+import { isEmpty, pick } from 'lodash';
 import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -26,14 +26,15 @@ import { IChildTemplate, IChildTemplateForm, IChildTemplateMap, IMongoChildTempl
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
+import { childTemplateKeys } from '../../../utils/childTemplates';
 import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import SelectFilterByFieldDialog from './SelectFilterByFieldDialog';
 import { createChildTemplateSchema } from '../createChildTemplate/validation';
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
+import SelectFilterByFieldDialog from './SelectFilterByFieldDialog';
 
 export enum ActionMode {
     Create = 'create',
@@ -81,7 +82,7 @@ const ChildTemplateFormDialog: React.FC<{
                 {
                     defaultValue,
                     isEditableByUser,
-                    display,
+                    display: Object.keys(entityTemplate.properties).includes(key) ? true : display,
                     filters: filters
                         ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, '$or')
                               .map(({ filterField }) => filterField)
@@ -97,6 +98,8 @@ const ChildTemplateFormDialog: React.FC<{
             displayName: displayName.replace(`${entityTemplate.displayName}-`, ''),
             category: rest._id ? category : entityTemplate.category,
             properties: { ...properties, properties: newProperties },
+            filterByCurrentUserField: rest.filterByCurrentUserField ?? undefined, //somehow it's null in mongo
+            filterByUnitUserField: rest.filterByUnitUserField ?? undefined, //somehow it's null in mongo
         };
     };
 
@@ -169,6 +172,8 @@ const ChildTemplateFormDialog: React.FC<{
                 initialValues={getInitialValues(childTemplate ?? emptyChildTemplate)}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames)}
                 onSubmit={async (values, formikHelpers) => {
+                    const pickedValues = pick(values, childTemplateKeys) as unknown as IChildTemplate;
+
                     formikHelpers.setTouched({});
                     const newProperties = Object.fromEntries(
                         Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
@@ -187,10 +192,10 @@ const ChildTemplateFormDialog: React.FC<{
                         ]),
                     );
                     handleChildTemplate({
-                        ...values,
+                        ...pickedValues,
                         parentTemplateId: entityTemplate._id,
                         category: values.category._id,
-                        properties: { ...values.properties, properties: newProperties },
+                        properties: { properties: newProperties },
                     });
                 }}
             >
