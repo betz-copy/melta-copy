@@ -134,8 +134,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const isDefaultVisibilityColumn = defaultVisibleColumns[property] !== undefined;
         const isColumnInDisplayList = columnsToShow?.includes(property) ?? true;
 
-        const hideColumn =
-            (isPreviewEmpty && hideNonPreview && !isFirstTwoProperties) ||
+        const hideColumn = hideNonPreview ?
+            (isPreviewEmpty && hideNonPreview && !isFirstTwoProperties) :
             archive ||
             (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
             !isColumnInDisplayList;
