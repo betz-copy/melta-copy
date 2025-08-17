@@ -1,7 +1,7 @@
 import * as bodyParser from 'body-parser';
-import helmet from 'helmet';
 import { once } from 'events';
 import express from 'express';
+import helmet from 'helmet';
 import * as http from 'http';
 
 import { errorMiddleware } from '@microservices/shared';
