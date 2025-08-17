@@ -136,6 +136,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(),
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+            childTemplateId: Joi.string(),
         }),
         sort: Joi.any(),
     },
@@ -168,6 +169,7 @@ export const searchEntitiesByLocationRequestSchema = Joi.object({
 export const getEntitiesCountByTemplates = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
+        childTemplateIds: Joi.array().items(Joi.string()),
         textSearch: Joi.string().allow(''),
         shouldSemanticSearch: Joi.boolean().default(true),
     },

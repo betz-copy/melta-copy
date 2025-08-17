@@ -260,14 +260,13 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         if (onDragEnd) return onDragEnd(transformedDrag);
                         return onDragEndDefault(transformedDrag);
                     }}
-                    isSelectDisabled={isSelectDisabled}
+                    isSelectable={!isSelectDisabled}
                     selectAll={!hideChooseAll}
-                    flattenedTree={[...(groupsProps.useGroups ? (groupsProps.groups as any[]) : []), ...options]}
                     preSelectedItemsIds={selectedOptionIds}
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
                     filteredTreeItems={filteredTree()}
-                    multi
+                    allowMultiSelect
                     treeItems={treeItems()}
                     isDraggable={!isDraggableDisabled}
                     onSelectItems={(ids) => {

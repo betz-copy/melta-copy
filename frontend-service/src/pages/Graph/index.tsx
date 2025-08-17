@@ -59,6 +59,7 @@ const Graph: React.FC = () => {
 
     const { entityId } = useParams<{ entityId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
     const [graphMenuState, setGraphMenuState] = useState<Omit<genericMenuState, 'node'>>();
@@ -141,7 +142,11 @@ const Graph: React.FC = () => {
         [entityId]: { maxLevel: 1 },
     };
 
-    const { refetch: getExpandedEntityById, error } = useQuery<IEntityExpanded>(
+    const {
+        refetch: getExpandedEntityById,
+        error,
+        data: expandedEntity,
+    } = useQuery<IEntityExpanded>(
         [
             'getExpandedEntity',
             entityId,
@@ -149,6 +154,7 @@ const Graph: React.FC = () => {
             {
                 disabled: false,
                 templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                childTemplateId,
             },
             filterRecord,
         ],
@@ -159,6 +165,7 @@ const Graph: React.FC = () => {
                 {
                     disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                    childTemplateId,
                 },
                 filterRecord,
             ),
@@ -177,6 +184,9 @@ const Graph: React.FC = () => {
         setIsLoading(expandedEntity !== undefined);
 
         const nextBatch = currentBatchIndex + BatchSize;
+
+        if (!expandedEntity?.entity) return;
+
         let expandedEntityGraphData = await expandedEntityToGraphData(
             {
                 ...expandedEntity,
@@ -185,7 +195,7 @@ const Graph: React.FC = () => {
                         currentBatchIndex,
                         nextBatch > expandedEntity!.connections.length ? expandedEntity!.connections.length : nextBatch,
                     ) ?? [],
-                entity: expandedEntity!.entity,
+                entity: expandedEntity.entity,
             },
             entityTemplates,
             childTemplates,
@@ -201,7 +211,10 @@ const Graph: React.FC = () => {
     };
 
     const loadNextBatch = async () => {
-        const { expandedEntityGraphData, expandedEntity } = await createGraphData();
+        const graphData = await createGraphData();
+
+        if (!graphData) return;
+        const { expandedEntity, expandedEntityGraphData } = graphData;
 
         const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
 
@@ -368,7 +381,8 @@ const Graph: React.FC = () => {
     return (
         <Box ref={ref} position="relative" height="100%" width="100%">
             <GraphTopBar
-                entityId={entityId}
+                templateId={expandedEntity?.entity.templateId}
+                childTemplateId={childTemplateId}
                 filteredEntityTemplates={filteredEntityTemplates}
                 setFilteredEntityTemplates={setFilteredEntityTemplates}
                 onReset={() => {

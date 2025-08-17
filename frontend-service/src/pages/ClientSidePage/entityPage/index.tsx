@@ -28,7 +28,7 @@ const ClientSideEntityPage: React.FC = () => {
 
     const allowedRelationships: IMongoRelationshipTemplate[] = Array.from(relationshipTemplates.values());
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
+    const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery({
         queryKey: ['expandedEntity', entityId],
         queryFn: () => getClientSideExpandedEntityByIdRequest(entityId!, expanded, { templateIds: Array.from(entityTemplates.keys()) }),

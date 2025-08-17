@@ -97,7 +97,8 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
+        const { childTemplateId, ...restBody } = req.body;
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, restBody));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {

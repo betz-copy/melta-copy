@@ -49,5 +49,5 @@ export enum IEntityCrudAction {
 
 export interface IExecutionOutput {
     entityId: string;
-    properties: Record<string, any>;
+    properties: IEntity['properties']; // [propertyName]: new/prev value
 }
