@@ -7,7 +7,7 @@ import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildTemplateForm';
+import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';

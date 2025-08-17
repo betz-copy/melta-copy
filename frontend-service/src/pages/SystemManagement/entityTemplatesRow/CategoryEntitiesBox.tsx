@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
-import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateForm';
+import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';

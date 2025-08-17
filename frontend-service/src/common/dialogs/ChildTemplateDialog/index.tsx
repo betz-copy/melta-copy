@@ -1,5 +1,6 @@
 import { Close } from '@mui/icons-material';
 import {
+    Autocomplete,
     Button,
     Dialog,
     DialogActions,
@@ -22,21 +23,31 @@ import { isEmpty, pick } from 'lodash';
 import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IChildTemplate, IChildTemplateForm, IChildTemplateMap, IMongoChildTemplatePopulated, ViewType } from '../../../interfaces/childTemplates';
+import { ICategoryMap } from '../../../interfaces/categories';
+import {
+    IChildTemplate,
+    IChildTemplateForm,
+    IChildTemplateFormProperty,
+    IChildTemplateMap,
+    IChildTemplateProperty,
+    IMongoChildTemplatePopulated,
+    ViewType,
+} from '../../../interfaces/childTemplates';
 import { FilterLogicalOperator } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
 import { childTemplateKeys } from '../../../utils/childTemplates';
 import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import SelectFilterByFieldDialog from './SelectFilterByFieldDialog';
 import { createChildTemplateSchema } from './validation';
-import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { ColoredEnumChip } from '../../ColoredEnumChip';
 
 export enum ActionMode {
     Create = 'create',
@@ -59,7 +70,7 @@ export type IMutationProps = IMutationWithPayload & {
     onError?: (childTemplate: IMongoChildTemplatePopulated) => void;
 };
 
-const ChildTemplateFormDialog: React.FC<{
+const ChildTemplateDialog: React.FC<{
     mutationProps?: IMutationProps;
     open: boolean;
     handleClose: () => void;
@@ -72,7 +83,8 @@ const ChildTemplateFormDialog: React.FC<{
     const { actionType, payload: childTemplate } = mutationProps;
 
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const [selectFilterByFieldDialog, setSelectFilterByFieldDialog] = React.useState<{ open: boolean; mode: FilterMode }>({
         open: false,
@@ -80,21 +92,25 @@ const ChildTemplateFormDialog: React.FC<{
     });
 
     const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
-        const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries(
-            Object.entries(properties.properties).map(([key, { filters, defaultValue, isEditableByUser, display }]) => [
-                key,
-                {
-                    defaultValue,
-                    isEditableByUser,
-                    display: Object.keys(entityTemplate.properties).includes(key) ? true : display,
-                    filters: filters
-                        ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, FilterLogicalOperator.OR)
-                              .map(({ filterField }) => filterField)
-                              .filter((f): f is IAGGridFilter => f !== undefined) 
-                        : undefined,
-                },
-            ]),
-        );
+        const normalizeProperty = (
+            { display, filters, ...restProp }: IEntitySingleProperty & IChildTemplateProperty,
+            forceDisplay = false,
+        ): IChildTemplateFormProperty => {
+            return {
+                ...restProp,
+                display: forceDisplay ? true : display,
+                filters: filters
+                    ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, FilterLogicalOperator.OR)
+                          .map(({ filterField }) => filterField)
+                          .filter((f): f is IAGGridFilter => f !== undefined)
+                    : undefined,
+            };
+        };
+
+        const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries([
+            ...entityTemplate.properties.required.map((reqKey) => [reqKey, { display: true }]),
+            ...Object.entries(properties.properties).map(([key, prop]) => [key, normalizeProperty(prop)]),
+        ]);
 
         return {
             ...rest,
@@ -107,10 +123,19 @@ const ChildTemplateFormDialog: React.FC<{
         };
     };
 
-    const existingNames = childTemplates && actionType !== ActionMode.Update ? Array.from(childTemplates.values()).map((t) => t.name) : [];
+    const existingNames =
+        actionType !== ActionMode.Update
+            ? Array.from(childTemplates.values())
+                  .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+                  .map((t) => t.name)
+            : [];
 
     const existingDisplayNames =
-        childTemplates && actionType !== ActionMode.Update ? Array.from(childTemplates.values()).map((t) => t.displayName) : [];
+        actionType !== ActionMode.Update
+            ? Array.from(childTemplates.values())
+                  .filter((t) => t.parentTemplate._id === entityTemplate._id && (!childTemplate || t._id !== childTemplate._id))
+                  .map((t) => t.displayName)
+            : [];
 
     const { mutateAsync: handleChildTemplate, isLoading } = useMutation({
         mutationFn: (templateData: IChildTemplate) => {
@@ -169,7 +194,7 @@ const ChildTemplateFormDialog: React.FC<{
                 initialValues={getInitialValues(childTemplate ?? emptyChildTemplate)}
                 validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames, entityTemplate)}
                 onSubmit={async (values, formikHelpers) => {
-                    const pickedValues = pick(values, childTemplateKeys) as unknown as IChildTemplate;
+                    const { name, displayName, ...pickedValues } = pick(values, childTemplateKeys) as unknown as IChildTemplate;
 
                     formikHelpers.setTouched({});
                     const newProperties = Object.fromEntries(
@@ -191,6 +216,8 @@ const ChildTemplateFormDialog: React.FC<{
 
                     handleChildTemplate({
                         ...pickedValues,
+                        name: `${entityTemplate.name}_${name}`,
+                        displayName: `${entityTemplate.displayName}-${displayName}`,
                         parentTemplateId: entityTemplate._id,
                         category: values.category._id,
                         properties: { properties: newProperties },
@@ -346,12 +373,60 @@ const ChildTemplateFormDialog: React.FC<{
                                         </Grid>
                                     </Grid>
 
+                                    <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
+                                        <Grid item xs={6}>
+                                            <FormControl fullWidth>
+                                                <Autocomplete
+                                                    id="category"
+                                                    options={Array.from(categories.values())}
+                                                    onChange={(_e, value) => setFieldValue('category', value || '')}
+                                                    value={values.category._id ? values.category : null}
+                                                    getOptionLabel={(option) => option.displayName}
+                                                    isOptionEqualToValue={(option, value) => option._id === value._id}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            error={Boolean(touched.category && errors.category)}
+                                                            fullWidth
+                                                            helperText={
+                                                                (touched.category && errors.category?._id) ||
+                                                                errors.category?.displayName ||
+                                                                errors.category?.name
+                                                            }
+                                                            name="category"
+                                                            variant="outlined"
+                                                            label={i18next.t('childTemplate.categoryType.relatedToLabel')}
+                                                        />
+                                                    )}
+                                                    renderOption={(props, category) => (
+                                                        <li {...props} key={category._id}>
+                                                            <ColoredEnumChip label={category.displayName} color="default" />
+                                                        </li>
+                                                    )}
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        {!!unitFields.length && (
+                                            <Grid item xs={5.5}>
+                                                <TextField
+                                                    fullWidth
+                                                    rows={1}
+                                                    dir="rtl"
+                                                    variant="outlined"
+                                                    value={i18next.t('childTemplate.connectToUserPage')}
+                                                    disabled
+                                                />
+                                            </Grid>
+                                        )}
+                                    </Grid>
+
                                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
                                         <Grid item xs={12}>
                                             <Typography
                                                 sx={{
                                                     fontWeight: 400,
                                                     fontSize: '16px',
+                                                    mb: 2,
                                                 }}
                                             >
                                                 {i18next.t('childTemplate.columns.title')}
@@ -422,4 +497,4 @@ const ChildTemplateFormDialog: React.FC<{
     );
 };
 
-export default ChildTemplateFormDialog;
+export default ChildTemplateDialog;

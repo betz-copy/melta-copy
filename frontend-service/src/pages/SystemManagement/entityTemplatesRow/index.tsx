@@ -7,7 +7,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import ChildTemplateFormDialog, { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateForm';
+import ChildTemplateDialog, { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
@@ -441,7 +441,7 @@ const EntityTemplatesRow: React.FC = () => {
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />
-            <ChildTemplateFormDialog
+            <ChildTemplateDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}

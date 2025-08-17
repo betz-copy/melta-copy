@@ -211,7 +211,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                     <Grid item xs={3} sx={{ textAlign: 'center' }}>
                                         <MeltaCheckbox
                                             checked={value.isEditableByUser || false}
-                                            disabled={value.display}
+                                            disabled={!value.display}
                                             onChange={(e) => {
                                                 setFieldValue(`properties.properties.${fieldName}`, {
                                                     ...value,
@@ -241,7 +241,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                         setFieldValue(`properties.properties.${addFilterField.fieldName}`, {
                             ...value,
                             [addFilterField.dialogType]:
-                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...(value.filters ?? []), fieldValue],
+                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...((value && value.filters) ?? []), fieldValue],
                         });
                         setAddFilterField(undefined);
                     }}
