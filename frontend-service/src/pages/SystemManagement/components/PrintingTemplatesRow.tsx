@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Grid, Typography, Dialog } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { useUserStore } from '../../../stores/user';
+// import { useUserStore } from '../../../stores/user';
 import i18next from 'i18next';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { CreateButton } from './CreateButton';
-import { environment } from '../../../globals';
+// import { environment } from '../../../globals';
 import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
 import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
 import { searchPrintingTemplatesRequest, deletePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
@@ -22,8 +22,8 @@ const deletePrintingTemplate = async (templateId: string) => {
 };
 
 const PrintingTemplatesRow: React.FC = () => {
-    const { infiniteScrollPageCount } = environment.processInstances;
-    const currentUser = useUserStore((state) => state.user);
+    // const { infiniteScrollPageCount } = environment.processInstances;
+    // const currentUser = useUserStore((state) => state.user);
     const [searchText, setSearchText] = useState('');
     const queryClient = useQueryClient();
 

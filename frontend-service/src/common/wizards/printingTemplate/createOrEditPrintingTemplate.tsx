@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
-import { useQueryClient } from 'react-query';
+import { useQueryClient, useMutation } from 'react-query';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { Formik, FieldArray, getIn } from 'formik';
@@ -41,22 +41,50 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     const categories = categoriesMap ? Array.from(categoriesMap.values()) : [];
     const entityTemplates = entityTemplatesMap ? Array.from(entityTemplatesMap.values()) : [];
 
+    const createMutation = useMutation({
+        mutationFn: createPrintingTemplateRequest,
+        onSuccess: (savedTemplate) => {
+            queryClient.setQueryData<IMongoPrintingTemplate[]>('getPrintingTemplates', (old = []) => {
+                return [...old, savedTemplate];
+            });
+            toast.success(i18next.t('wizard.printingTemplate.createdSuccessfully'));
+            onClose();
+        },
+        onError: () => {
+            toast.error(i18next.t('wizard.printingTemplate.failedToCreate'));
+        },
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: any }) => updatePrintingTemplateRequest(id, data),
+        onSuccess: (savedTemplate) => {
+            queryClient.setQueryData<IMongoPrintingTemplate[]>('getPrintingTemplates', (old = []) => {
+                const idx = old.findIndex((t) => t._id === savedTemplate._id);
+                if (idx !== -1) {
+                    const updated = [...old];
+                    updated[idx] = savedTemplate;
+                    return updated;
+                }
+                return old;
+            });
+            toast.success(i18next.t('wizard.printingTemplate.updatedSuccessfully'));
+            onClose();
+        },
+        onError: () => {
+            toast.error(i18next.t('wizard.printingTemplate.failedToUpdate'));
+        },
+    });
+
     const hasChanges = useMemo(() => {
         const initialValues = printingTemplate;
-
         return (values: IMongoPrintingTemplate) => {
-            const currentValues = values;
+            if (initialValues.name !== values.name) return true;
+            if (initialValues.sections.length !== values.sections.length) return true;
 
-            if (initialValues.name !== currentValues.name) return true;
-
-            if (initialValues.sections.length !== currentValues.sections.length) return true;
-
-            for (let i = 0; i < currentValues.sections.length; i++) {
+            for (let i = 0; i < values.sections.length; i++) {
                 const initialSection = initialValues.sections[i];
-                const currentSection = currentValues.sections[i];
-
+                const currentSection = values.sections[i];
                 if (!initialSection) return true;
-
                 if (
                     initialSection.categoryId !== currentSection.categoryId ||
                     initialSection.entityTemplateId !== currentSection.entityTemplateId ||
@@ -67,62 +95,56 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
             }
 
             if (
-                initialValues.compactView !== currentValues.compactView ||
-                initialValues.addEntityCheckbox !== currentValues.addEntityCheckbox ||
-                initialValues.appendSignatureField !== currentValues.appendSignatureField
+                initialValues.compactView !== values.compactView ||
+                initialValues.addEntityCheckbox !== values.addEntityCheckbox ||
+                initialValues.appendSignatureField !== values.appendSignatureField
             ) {
                 return true;
             }
-
             return false;
         };
     }, [printingTemplate]);
 
     const getEntitiesForCategory = (categoryId: string) => entityTemplates.filter((et) => et.category._id === categoryId);
+
     const getColumnsForEntityTemplate = (entityTemplateId: string) => {
         const et = entityTemplates.find((et) => et._id === entityTemplateId);
         if (!et) return [];
         return Object.entries(et.properties.properties).map(([key, value]: [string, any]) => ({ id: key, name: value.title || key }));
     };
 
-    const handleSubmit = async (values: IMongoPrintingTemplate) => {
+    const handleSubmit = async (values: IMongoPrintingTemplate, { setTouched }: any) => {
         const isUpdate = Boolean(values._id);
         const { _id, createdAt, updatedAt, ...rest } = values;
 
+        setTouched(
+            {
+                name: true,
+                sections: values.sections.map(() => ({
+                    categoryId: true,
+                    entityTemplateId: true,
+                    selectedColumns: true,
+                })),
+            },
+            true,
+        );
+
         try {
-            const savedTemplate = isUpdate ? await updatePrintingTemplateRequest(values._id, rest) : await createPrintingTemplateRequest(rest);
-
-            queryClient.setQueryData<IMongoPrintingTemplate[]>('getPrintingTemplates', (old = []) => {
-                const idx = old.findIndex((t) => t._id === savedTemplate._id);
-                if (idx !== -1) {
-                    const updated = [...old];
-                    updated[idx] = savedTemplate;
-                    return updated;
-                }
-                return [...old, savedTemplate];
-            });
-
             if (isUpdate) {
-                toast.success(i18next.t('wizard.printingTemplate.updatedSuccessfully'));
+                await updateMutation.mutateAsync({ id: values._id, data: rest });
             } else {
-                toast.success(i18next.t('wizard.printingTemplate.createdSuccessfully'));
+                await createMutation.mutateAsync(rest);
             }
-
-            onClose();
         } catch (err) {
-            if (isUpdate) {
-                toast.error(i18next.t('wizard.printingTemplate.failedToUpdate'));
-            } else {
-                toast.error(i18next.t('wizard.printingTemplate.failedToCreate'));
-            }
+            // Error handling in onError callbacks
         }
     };
 
     return (
         <MuiBox>
             <Formik initialValues={printingTemplate} validationSchema={validationSchema} enableReinitialize={true} onSubmit={handleSubmit}>
-                {({ values, errors, touched, handleChange, handleBlur, setFieldValue, setTouched, validateForm, isValid }) => (
-                    <form>
+                {({ values, errors, touched, handleChange, handleBlur, setFieldValue, handleSubmit: formikHandleSubmit, isSubmitting }) => (
+                    <form onSubmit={formikHandleSubmit}>
                         <MuiBox
                             sx={{
                                 position: 'relative',
@@ -151,6 +173,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                     </IconButton>
                                 </Grid>
                             </Grid>
+
                             <Grid container alignItems="center" justifyContent="flex-start" spacing={5} sx={{ mb: 2 }}>
                                 <Grid item sx={{ flexShrink: 0, minWidth: 450 }}>
                                     <TextField
@@ -211,6 +234,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                     />
                                 </Grid>
                             </Grid>
+
                             {touched.name && errors.name && (
                                 <Grid container justifyContent="flex-start" sx={{ mb: 1 }}>
                                     <Typography color="error" textAlign="left">
@@ -218,11 +242,13 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                     </Typography>
                                 </Grid>
                             )}
+
                             <Grid container justifyContent="flex-start" sx={{ mb: 2 }}>
                                 <Typography color="#9398C2" textAlign="left" fontSize={13}>
                                     {i18next.t('wizard.printingTemplate.note')}
                                 </Typography>
                             </Grid>
+
                             <FieldArray name="sections">
                                 {({ push, remove }) => (
                                     <>
@@ -337,6 +363,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                             renderTags={(value) =>
                                                                 value.map((option) => (
                                                                     <Chip
+                                                                        key={option.id}
                                                                         label={option.name}
                                                                         sx={{
                                                                             backgroundColor: '#EBEFFA',
@@ -384,30 +411,14 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                     </>
                                 )}
                             </FieldArray>
+
                             <Grid container justifyContent="center" sx={{ mt: 4 }}>
                                 <Button
                                     type="submit"
                                     sx={{ marginBottom: '10px' }}
                                     variant="contained"
                                     color="primary"
-                                    disabled={!hasChanges(values)}
-                                    onClick={async () => {
-                                        setTouched(
-                                            {
-                                                name: true,
-                                                sections: values.sections.map(() => ({
-                                                    categoryId: true,
-                                                    entityTemplateId: true,
-                                                    selectedColumns: true,
-                                                })),
-                                            },
-                                            true,
-                                        );
-                                        const isValid = await validateForm().then((errors) => Object.keys(errors).length === 0);
-                                        if (isValid) {
-                                            await handleSubmit({ ...values, _id: printingTemplate._id });
-                                        }
-                                    }}
+                                    disabled={!hasChanges(values) || isSubmitting}
                                 >
                                     {i18next.t('wizard.finish')}
                                 </Button>
