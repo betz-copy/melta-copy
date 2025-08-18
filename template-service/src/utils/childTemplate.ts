@@ -1,6 +1,11 @@
-import { getChildPropertiesFiltered, IChildTemplatePopulated, IChildTemplatePopulatedFromDb, IFullMongoEntityTemplate } from '@microservices/shared';
+import {
+    getChildPropertiesFiltered,
+    IChildTemplatePopulatedFromDb,
+    IFullMongoEntityTemplate,
+    IMongoChildTemplatePopulated,
+} from '@microservices/shared';
 
-const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IChildTemplatePopulated => {
+const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IMongoChildTemplatePopulated => {
     const { parentTemplateId: parentTemplate, ...child } = childTemplate;
     const { properties, ...parent } = parentTemplate;
 

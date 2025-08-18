@@ -8,6 +8,7 @@ import {
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
+    IMongoChildTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
@@ -215,7 +216,7 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get<IMongoChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 

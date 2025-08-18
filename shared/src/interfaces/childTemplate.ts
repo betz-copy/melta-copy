@@ -69,6 +69,11 @@ export interface IChildTemplatePopulated
     };
 }
 
+export interface IMongoChildTemplatePopulated extends IChildTemplatePopulated {
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface IChildTemplateWithParent extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
@@ -86,7 +91,7 @@ export interface EntityTemplateBase {
 
 export interface ChildTemplate extends EntityTemplateBase {
     type: EntityTemplateType.Child;
-    metaData: IChildTemplatePopulated;
+    metaData: IMongoChildTemplatePopulated;
 }
 
 export interface ParentTemplate extends EntityTemplateBase {
