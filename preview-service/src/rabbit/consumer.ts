@@ -1,7 +1,7 @@
-import { ConsumerMessage } from 'menashmq';
 import { ServiceError } from '@microservices/shared';
-import FilesManager from '../express/files/manager';
+import { ConsumerMessage } from 'menashmq';
 import config from '../config';
+import FilesManager from '../express/files/manager';
 
 const {
     service: { workspaceIdHeaderName },

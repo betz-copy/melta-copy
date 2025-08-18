@@ -58,7 +58,11 @@ const renderChips = (
     chips: IAGGridFilter[] | IChildTemplateProperty['defaultValue'][],
     fieldSchema: IEntitySingleProperty,
     onDelete: (chip: IChip, mode: ChipType) => void,
+    isFilterByUser?: boolean,
 ): React.ReactNode[] => {
+    if (isFilterByUser)
+        return [<Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>{i18next.t('childTemplate.byUser')}</Typography>];
+
     return chips.map((chip, index) => {
         const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);
 
@@ -90,6 +94,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                     const isSerialNumberField = !!property?.serialCurrent;
                     const isRelationshipRefField = property?.format === 'relationshipReference';
+                    const isFilterByUser = property?.format === 'user' && values.filterByCurrentUserField === fieldName;
 
                     const onCheckboxChange = (checked: boolean) => {
                         setFieldTouched(`properties.properties.${fieldName}`, true);
@@ -155,14 +160,10 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(ChipType.Filter, value.filters ?? [], property, onDeleteFilterChip)}
+                                        {renderChips(ChipType.Filter, value.filters ?? [], property, onDeleteFilterChip, isFilterByUser)}
 
                                         <Grid item>
-                                            {property?.format === 'user' && values.filterByCurrentUserField === fieldName ? (
-                                                <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                    {i18next.t('childTemplate.byUser')}
-                                                </Typography>
-                                            ) : (
+                                            {!isFilterByUser && (
                                                 <Button
                                                     color="primary"
                                                     onClick={() => !isSubmitDisabled() && handleSelectProperty(ChipType.Filter)}
@@ -179,26 +180,26 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                                 <Grid item xs={3}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(ChipType.Default, value.defaultValue ? [value.defaultValue] : [], property, onDeleteFilterChip)}
-                                        {!value.defaultValue && (
-                                            <Grid item>
-                                                {property?.format === 'user' && values.filterByCurrentUserField === fieldName ? (
-                                                    <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
-                                                        {i18next.t('childTemplate.byUser')}
-                                                    </Typography>
-                                                ) : (
-                                                    <Button
-                                                        color="primary"
-                                                        onClick={() => handleSelectProperty(ChipType.Default)}
-                                                        size="small"
-                                                        sx={{ minWidth: '32px', p: '4px' }}
-                                                        disabled={isSerialNumberField || isDisallowedFormat() || isRelationshipRefField}
-                                                    >
-                                                        <AddRounded />
-                                                    </Button>
-                                                )}
-                                            </Grid>
+                                        {renderChips(
+                                            ChipType.Default,
+                                            value.defaultValue ? [value.defaultValue] : [],
+                                            property,
+                                            onDeleteFilterChip,
+                                            isFilterByUser,
                                         )}
+                                        <Grid item>
+                                            {!isFilterByUser && (
+                                                <Button
+                                                    color="primary"
+                                                    onClick={() => handleSelectProperty(ChipType.Default)}
+                                                    size="small"
+                                                    sx={{ minWidth: '32px', p: '4px' }}
+                                                    disabled={isSerialNumberField || isDisallowedFormat() || isRelationshipRefField}
+                                                >
+                                                    <AddRounded />
+                                                </Button>
+                                            )}
+                                        </Grid>
                                     </Grid>
                                 </Grid>
 

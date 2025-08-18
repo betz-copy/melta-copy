@@ -64,7 +64,7 @@ const searchEntitiesOfTemplateClientSideRequest = async (
 
 const getClientSideExpandedEntityByIdRequest = async (
     entityId: string,
-    expandedParams: { [key: string]: number },
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: { templateIds: string[] },
 ) => {
     const { data } = await axios.post<IEntityExpanded>(`${clientSideRoutes}/entities/expanded/${entityId}`, {

@@ -53,7 +53,15 @@ export const searchEntitiesOfTemplateSchema = Joi.object({
 export const getExpandedEntityByIdRequestSchema = Joi.object({
     query: {},
     body: {
-        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),
+        expandedParams: Joi.object()
+            .pattern(
+                Joi.string(),
+                Joi.object({
+                    minLevel: Joi.number().integer().min(1).max(Joi.ref('maxLevel')).optional(),
+                    maxLevel: Joi.number().integer().min(1).required(),
+                }),
+            )
+            .default({}),
         options: Joi.object({
             templateIds: Joi.array().items(Joi.string()).required(),
         }),

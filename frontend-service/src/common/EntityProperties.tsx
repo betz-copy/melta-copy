@@ -440,6 +440,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 : !getCurrProperty(propertyKey).archive,
         );
 
+    propertiesOrderedToShow = propertiesOrderedToShow.filter((propertyKey) => getCurrProperty(propertyKey).display !== false);
+
     const alreadyRenderedGroups = new Set<string>();
 
     return (

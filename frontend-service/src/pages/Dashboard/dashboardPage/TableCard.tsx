@@ -152,7 +152,8 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                             shouldSavePagination: false,
                             shouldSaveScrollPosition: false,
                         }}
-                        showNavigateToRowButton={false}
+                        showNavigateToRowButton
+                        actionsColumnWidth={125}
                         editable={false}
                         defaultFilter={allFilters}
                         columnsToShow={metaData.columns}

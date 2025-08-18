@@ -72,7 +72,10 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
                 .map(([key, { defaultValue, format: formatProperty }]) => {
-                    if (formatProperty === 'user' && currentUser && defaultValue === ByCurrentDefaultValue.byCurrentUser)
+                    if (
+                        (formatProperty === 'user' && currentUser && defaultValue === ByCurrentDefaultValue.byCurrentUser) ||
+                        ('filterByCurrentUserField' in template && template.filterByCurrentUserField === key)
+                    )
                         properties[key] = JSON.stringify(currentUser);
 
                     if ((formatProperty === 'date' || formatProperty === 'date-time') && defaultValue === ByCurrentDefaultValue.byCurrentDate) {

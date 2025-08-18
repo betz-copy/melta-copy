@@ -127,6 +127,7 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
             })
             .default({}),
         userId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     params: {
         id: Joi.string().required(),

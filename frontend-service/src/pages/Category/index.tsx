@@ -44,7 +44,7 @@ const Category: React.FC = () => {
     authorizedTemplates.forEach((template) => {
         allAuthorizedTemplatesMap.set(template._id, template);
     });
-
+     
     const defaultOrderedTemplateIds: string[] = [];
     const addedTemplateIds = new Set<string>();
 

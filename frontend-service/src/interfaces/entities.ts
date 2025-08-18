@@ -135,6 +135,7 @@ export interface ISearchBatchBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
+            childTemplateId?: string;
         };
     };
     sort?: ISearchSort;

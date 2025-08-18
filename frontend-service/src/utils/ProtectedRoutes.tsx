@@ -2,7 +2,7 @@ import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
 import React, { isValidElement } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { Redirect, useLocation, useParams } from 'wouter';
+import { Redirect, useLocation, useParams, useSearchParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { PermissionScope } from '../interfaces/permissions';
@@ -38,6 +38,9 @@ export const EntityProtectedRoute: React.FC<{
     const params = useParams<{ entityId: string }>();
     const { entityId } = params;
 
+    const [searchParams, _setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
+
     const [_, navigate] = useLocation();
 
     const childTemplatesArray = [...childTemplates.values()];
@@ -47,7 +50,7 @@ export const EntityProtectedRoute: React.FC<{
     const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity, isLoading } = useQuery(
         ['getExpandedEntity', entityId, expanded, { templateIds }],
-        () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
+        () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId  }),
         {
             onError: (error: AxiosError) => {
                 if (error.response?.status === StatusCodes.NOT_FOUND) {

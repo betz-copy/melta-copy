@@ -16,6 +16,7 @@ const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
         case '$gte':
             return actual >= expected;
         case '$in':
+            if (Array.isArray(actual) && Array.isArray(expected)) return actual.some((val) => expected.includes(val));
             return Array.isArray(expected) && expected.includes(actual);
         case '$rgx':
             try {
