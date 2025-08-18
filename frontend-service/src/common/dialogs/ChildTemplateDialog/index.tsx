@@ -6,6 +6,7 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    Divider,
     FormControl,
     FormControlLabel,
     Grid,
@@ -39,6 +40,7 @@ import { createChildTemplate, updateChildTemplate } from '../../../services/temp
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
 import { childTemplateKeys } from '../../../utils/childTemplates';
 import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
+import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
@@ -46,8 +48,7 @@ import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/Relation
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import SelectFilterByFieldDialog from './SelectFilterByFieldDialog';
-import { createChildTemplateSchema } from './validation';
-import { ColoredEnumChip } from '../../ColoredEnumChip';
+import { childTemplateSchema } from './validation';
 
 export enum ActionMode {
     Create = 'create',
@@ -76,9 +77,7 @@ const ChildTemplateDialog: React.FC<{
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
 }> = ({ mutationProps, open, handleClose, entityTemplate }) => {
-    if (!entityTemplate) return null;
-
-    if (!mutationProps) return null;
+    if (!entityTemplate || !mutationProps) return null;
 
     const { actionType, payload: childTemplate } = mutationProps;
 
@@ -93,11 +92,12 @@ const ChildTemplateDialog: React.FC<{
 
     const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
         const normalizeProperty = (
-            { display, filters, ...restProp }: IEntitySingleProperty & IChildTemplateProperty,
+            { display, filters, defaultValue, isEditableByUser }: IEntitySingleProperty & IChildTemplateProperty,
             forceDisplay = false,
         ): IChildTemplateFormProperty => {
             return {
-                ...restProp,
+                defaultValue,
+                isEditableByUser,
                 display: forceDisplay ? true : display,
                 filters: filters
                     ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, FilterLogicalOperator.OR)
@@ -168,17 +168,21 @@ const ChildTemplateDialog: React.FC<{
         },
     });
 
-    const userFields = useMemo(() => {
-        return Object.entries(entityTemplate.properties.properties)
-            .filter(([_, prop]) => prop.format === 'user')
-            .map(([key]) => key);
-    }, [entityTemplate]);
+    const userFields = useMemo(
+        () =>
+            Object.entries(entityTemplate.properties.properties)
+                .filter(([_, prop]) => prop.format === 'user')
+                .map(([key]) => key),
+        [entityTemplate],
+    );
 
-    const unitFields = useMemo(() => {
-        return Object.entries(entityTemplate.properties.properties)
-            .filter(([_, prop]) => prop.format === 'unitField')
-            .map(([key]) => key);
-    }, [entityTemplate]);
+    const unitFields = useMemo(
+        () =>
+            Object.entries(entityTemplate.properties.properties)
+                .filter(([_, prop]) => prop.format === 'unitField')
+                .map(([key]) => key),
+        [entityTemplate],
+    );
 
     const radioValues = ['categoryPage', 'userPage'];
 
@@ -192,11 +196,10 @@ const ChildTemplateDialog: React.FC<{
         <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
             <Formik<IChildTemplateForm>
                 initialValues={getInitialValues(childTemplate ?? emptyChildTemplate)}
-                validationSchema={createChildTemplateSchema(existingNames, existingDisplayNames, entityTemplate)}
-                onSubmit={async (values, formikHelpers) => {
+                validationSchema={childTemplateSchema(existingNames, existingDisplayNames, entityTemplate)}
+                onSubmit={async (values) => {
                     const { name, displayName, ...pickedValues } = pick(values, childTemplateKeys) as unknown as IChildTemplate;
 
-                    formikHelpers.setTouched({});
                     const newProperties = Object.fromEntries(
                         Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
                             key,
@@ -214,7 +217,7 @@ const ChildTemplateDialog: React.FC<{
                         ]),
                     );
 
-                    handleChildTemplate({
+                    await handleChildTemplate({
                         ...pickedValues,
                         name: `${entityTemplate.name}_${name}`,
                         displayName: `${entityTemplate.displayName}-${displayName}`,
@@ -260,9 +263,7 @@ const ChildTemplateDialog: React.FC<{
                                 )} - ${childTemplate?.displayName ?? entityTemplate.displayName}`}</Typography>
                                 <IconButton
                                     aria-label="close"
-                                    onClick={async () => {
-                                        handleClose();
-                                    }}
+                                    onClick={() => handleClose()}
                                     sx={{
                                         position: 'absolute',
                                         right: 12,
@@ -449,6 +450,7 @@ const ChildTemplateDialog: React.FC<{
                                                         </Grid>
                                                     ))}
                                             </Grid>
+                                            <Divider />
 
                                             <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
                                                 <FieldsAndFiltersTable formikProps={formikProps} entityTemplate={entityTemplate} />
@@ -478,7 +480,7 @@ const ChildTemplateDialog: React.FC<{
 
                             <SelectFilterByFieldDialog
                                 open={selectFilterByFieldDialog.open}
-                                field={selectFilterByFieldDialog.mode === FilterMode.User ? userFields : unitFields}
+                                filterModeOptions={selectFilterByFieldDialog.mode === FilterMode.User ? userFields : unitFields}
                                 selectedField={
                                     (selectFilterByFieldDialog.mode === FilterMode.User
                                         ? values.filterByCurrentUserField

@@ -6,7 +6,7 @@ import { FilterMode } from '.';
 
 interface SelectUserFieldDialogProps {
     open: boolean;
-    field: string[];
+    filterModeOptions: string[];
     selectedField: string | null;
     onClose: () => void;
     onSubmit: (field: string) => void;
@@ -19,7 +19,7 @@ interface SelectUserFieldDialogProps {
 
 const SelectFilterByFieldDialog: React.FC<SelectUserFieldDialogProps> = ({
     open,
-    field,
+    filterModeOptions,
     selectedField,
     onClose,
     onSubmit,
@@ -45,7 +45,7 @@ const SelectFilterByFieldDialog: React.FC<SelectUserFieldDialogProps> = ({
                     {content || i18next.t(`childTemplate.select${filterMode}Dialog.description`)}
                 </Typography>
                 <Autocomplete
-                    options={field}
+                    options={filterModeOptions}
                     getOptionLabel={(field) => entityTemplate.properties.properties[field].title}
                     value={value}
                     onChange={(_event, newVal) => setValue(newVal)}

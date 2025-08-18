@@ -39,13 +39,13 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
     const { dialogType, fieldName } = addFilterField;
 
     const property = entityTemplate.properties.properties[fieldName];
-    const selectedFilter =
+    const initializedFilter =
         (property.enum && initializedFilterField['array']) ||
         (property.format && initializedFilterField[property.format]) ||
         (property.type && initializedFilterField[property.type]);
 
     const [inputValue, setInputValue] = useState<string>('');
-    const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(selectedFilter);
+    const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(initializedFilter);
     const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
 
     const readOnly = false;

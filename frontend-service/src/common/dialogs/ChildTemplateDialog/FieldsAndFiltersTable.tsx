@@ -83,11 +83,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
     return (
         <>
             <Grid container>
-                <Grid item xs={12}>
-                    <Divider />
-                </Grid>
-            </Grid>
-            <Grid container>
                 {Object.entries(entityTemplate.properties.properties).map(([fieldName, property]) => {
                     const value = values.properties.properties[fieldName] ?? {};
 
@@ -151,7 +146,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                         label={
                                             <>
                                                 {property.title || fieldName}
-                                                {isRequired && <span>*</span>}
+                                                {isRequired && <span> * </span>}
                                             </>
                                         }
                                         componentsProps={{ typography: { sx: { fontWeight: 400, fontSize: '14px' } } }}

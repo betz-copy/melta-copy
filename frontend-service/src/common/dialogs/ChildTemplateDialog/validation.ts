@@ -88,7 +88,7 @@ const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
                 : true;
         });
 
-export const createChildTemplateSchema = (existingNames: string[], existingDisplayNames: string[], parentTemplate: IMongoEntityTemplatePopulated) =>
+export const childTemplateSchema = (existingNames: string[], existingDisplayNames: string[], parentTemplate: IMongoEntityTemplatePopulated) =>
     Yup.object({
         name: Yup.string()
             .matches(variableNameValidation, i18next.t('validation.variableName'))
@@ -121,17 +121,15 @@ export const createChildTemplateSchema = (existingNames: string[], existingDispl
 
                     return Object.values(value).some((prop: IChildTemplateFormProperty) => prop?.display === true);
                 })
-                .test('validate-each-field-schema', i18next.t('validation.invalidProperty'), async function (value) {
+                .test('validate-each-field-schema', i18next.t('validation.invalidProperty'), function (value) {
                     if (!value || typeof value !== 'object') return false;
 
                     try {
-                        await Promise.all(
-                            Object.entries(value).map(async ([key, field]) => {
-                                await childTemplatePropertySchema(key, parentTemplate.properties.properties[key].title).validate(field, {
-                                    abortEarly: false,
-                                });
-                            }),
-                        );
+                        Object.entries(value).map(([key, field]) => {
+                            childTemplatePropertySchema(key, parentTemplate.properties.properties[key].title).validate(field, {
+                                abortEarly: false,
+                            });
+                        });
                         return true;
                     } catch (err) {
                         if (err instanceof Yup.ValidationError) {
