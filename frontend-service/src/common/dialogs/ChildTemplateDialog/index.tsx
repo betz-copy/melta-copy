@@ -90,26 +90,27 @@ const ChildTemplateDialog: React.FC<{
         mode: FilterMode.User,
     });
 
-    const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
-        const normalizeProperty = (
-            { display, filters, defaultValue, isEditableByUser }: IEntitySingleProperty & IChildTemplateProperty,
-            forceDisplay = false,
-        ): IChildTemplateFormProperty => {
-            return {
-                defaultValue,
-                isEditableByUser,
-                display: forceDisplay ? true : display,
-                filters: filters
-                    ? FilterModelToFilterRecord(parseFilters(filters), rest?.parentTemplate._id!, queryClient, FilterLogicalOperator.OR)
-                          .map(({ filterField }) => filterField)
-                          .filter((f): f is IAGGridFilter => f !== undefined)
-                    : undefined,
-            };
+    const normalizeProperty = (
+        { display, filters, defaultValue, isEditableByUser }: IEntitySingleProperty & IChildTemplateProperty,
+        parentId: string,
+        forceDisplay = false,
+    ): IChildTemplateFormProperty => {
+        return {
+            defaultValue,
+            isEditableByUser,
+            display: forceDisplay || display,
+            filters: filters
+                ? FilterModelToFilterRecord(parseFilters(filters), parentId, queryClient, FilterLogicalOperator.OR)
+                      .map(({ filterField }) => filterField)
+                      .filter((f): f is IAGGridFilter => f !== undefined)
+                : undefined,
         };
+    };
 
+    const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
         const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries([
             ...entityTemplate.properties.required.map((reqKey) => [reqKey, { display: true }]),
-            ...Object.entries(properties.properties).map(([key, prop]) => [key, normalizeProperty(prop)]),
+            ...Object.entries(properties.properties).map(([key, prop]) => [key, normalizeProperty(prop, rest?.parentTemplate._id)]),
         ]);
 
         return {

@@ -118,15 +118,14 @@ export const childTemplateSchema = (existingNames: string[], existingDisplayName
             properties: Yup.object()
                 .test('at-least-one-property-display', i18next.t('childTemplate.fieldFilterTableNoChecks'), (value) => {
                     if (!value || typeof value !== 'object') return false;
-
                     return Object.values(value).some((prop: IChildTemplateFormProperty) => prop?.display === true);
                 })
                 .test('validate-each-field-schema', i18next.t('validation.invalidProperty'), function (value) {
                     if (!value || typeof value !== 'object') return false;
 
                     try {
-                        Object.entries(value).map(([key, field]) => {
-                            childTemplatePropertySchema(key, parentTemplate.properties.properties[key].title).validate(field, {
+                        Object.entries(value).forEach(([key, field]) => {
+                            childTemplatePropertySchema(key, parentTemplate.properties.properties[key].title).validateSync(field, {
                                 abortEarly: false,
                             });
                         });
