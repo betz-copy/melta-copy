@@ -95,7 +95,7 @@ const aggregationSchema = Yup.object({
                     IAggregationType.Minimum,
                     IAggregationType.Maximum,
                 ].includes(type),
-            then: Yup.string().required(i18next.t('validation.required')).nullable(),
+            then: () => Yup.string().required(i18next.t('validation.required')).nullable(),
             otherwise: Yup.string().optional().nullable(),
         }),
 });

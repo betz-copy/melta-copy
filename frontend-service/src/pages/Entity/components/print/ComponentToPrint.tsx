@@ -1,6 +1,6 @@
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { JSX } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { INestedRelationshipTemplates } from '../..';

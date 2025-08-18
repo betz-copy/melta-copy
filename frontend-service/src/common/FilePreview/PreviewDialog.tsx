@@ -6,8 +6,8 @@ import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import ReactPlayer from 'react-player';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileExtension } from '../../utils/getFileType';
@@ -139,7 +139,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
             </div>
         );
     } else if (contentType === 'video' || contentType === 'audio') {
-        previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
+        previewContent = <ReactPlayer style={{ marginTop: '65px' }} src={data} controls playing />;
     } else if (contentType === 'unsupported' || fileId instanceof File) {
         previewContent = (
             <Card sx={{ borderRadius: 2, bgcolor: '#4c494c', display: 'grid', height: 150, padding: 3 }} elevation={10}>

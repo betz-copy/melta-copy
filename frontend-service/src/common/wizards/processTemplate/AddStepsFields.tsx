@@ -58,9 +58,9 @@ const addStepsFieldsSchema = Yup.object({
                 ),
                 reviewers: Yup.array().of(Yup.object({})).min(1, i18next.t('validation.oneField')),
                 icon: Yup.object({
-                    name: Yup.string().nullable(true).optional(),
+                    name: Yup.string().nullable().optional(),
                 }),
-                disableAddingReviewers: Yup.boolean().nullable(true).optional(),
+                disableAddingReviewers: Yup.boolean().nullable().optional(),
                 name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
                 displayName: Yup.string().required(i18next.t('validation.required')),
             }),

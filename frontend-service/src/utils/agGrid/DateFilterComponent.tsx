@@ -1,7 +1,7 @@
 import { TextField } from '@mui/material';
-import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, MobileDatePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import heLocale from 'date-fns/locale/he';
+import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
@@ -15,8 +15,8 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
         <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
-                adapterLocale={heLocale}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                adapterLocale={he}
+                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
             >
                 <MobileDatePicker
                     inputFormat="dd/MM/yyyy"

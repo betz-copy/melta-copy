@@ -1,12 +1,13 @@
-import React from 'react';
-import TextField from '@mui/material/TextField';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import i18next from 'i18next';
-import heLocale from 'date-fns/locale/he';
 import { SxProps } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import { PickersLocaleText } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DatePickerSlotsComponent } from '@mui/x-date-pickers/DatePicker/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { he } from 'date-fns/locale';
+import i18next from 'i18next';
+import React from 'react';
 
 interface DatePickerWrapperProps {
     label?: string;
@@ -39,11 +40,10 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
 }) => (
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
-        adapterLocale={heLocale}
-        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+        adapterLocale={he}
+        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
     >
         <DatePicker
-            inputFormat="dd/MM/yyyy"
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}
             label={label}

@@ -30,6 +30,7 @@ import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
 import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -69,8 +70,11 @@ const RuleBreachDialog: React.FC<{
             onError: (error: AxiosError, status) => {
                 console.error('failed to review ruleBreach. error:', error);
 
-                if (error.response?.data?.metadata?.errorCode === errorCodes.ruleBlock) {
-                    const newRuleBreach = { ...ruleBreach, brokenRules: error.response?.data?.metadata?.brokenRules } as IRuleBreachRequestPopulated;
+                if ((error.response?.data as IErrorResponse)?.metadata?.errorCode === errorCodes.ruleBlock) {
+                    const newRuleBreach = {
+                        ...ruleBreach,
+                        brokenRules: (error.response?.data as IErrorResponse)?.metadata?.brokenRules,
+                    } as IRuleBreachRequestPopulated;
                     onUpdatedRuleBreach(newRuleBreach);
 
                     toast.error(i18next.t('ruleManagement.newBreachDetected'));

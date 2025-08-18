@@ -1,9 +1,9 @@
-import React from 'react';
+import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, CircularProgress, Grid } from '@mui/material';
-import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, Done as DoneIcon } from '@mui/icons-material';
-import i18next from 'i18next';
 import { FormikProps } from 'formik';
+import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
+import React, { JSX } from 'react';
 import { StepType } from '..';
 
 const StepperActions = <T extends object>({

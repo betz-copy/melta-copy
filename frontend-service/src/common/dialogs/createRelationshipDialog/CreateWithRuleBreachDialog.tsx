@@ -10,6 +10,7 @@ import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesSe
 import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';
 import { environment } from '../../../globals';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -59,7 +60,7 @@ const CreateWithRuleBreachDialog: React.FC<{
         },
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }

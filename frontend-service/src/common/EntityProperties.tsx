@@ -2,7 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, useState, JSX } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';

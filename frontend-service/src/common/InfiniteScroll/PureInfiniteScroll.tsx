@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, Key } from 'react';
 import { Grid } from '@mui/material';
+import React, { JSX, Key, useEffect, useRef } from 'react';
 import { GetNextPageParamFunction, QueryFunction, QueryKey, useInfiniteQuery } from 'react-query';
 import { ShowMore } from './ShowMore';
 

@@ -140,21 +140,22 @@ const ImageView: React.FC<IImageView> = ({
                         <img src={imgURL} alt="cameraPic" style={{ width: 1000, height: 775 }} />
                     )}
                 </Box>
-                <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
-                    {(formikProps: FormikProps<string>) => (
+                <Formik<{ name: string | null }> initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
+                    {(formikProps: FormikProps<{ name: string | null }>) => (
                         <Form style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <TextField
                                 label={usePdf ? i18next.t('camera.fileName') : i18next.t('camera.imgName')}
-                                value={imgName}
-                                onChange={(e) => setImgName(e.target.value)}
+                                value={formikProps.values.name}
+                                onChange={(e) => {
+                                    formikProps.setFieldValue('name', e.target.value);
+                                    setImgName(e.target.value);
+                                }}
                                 variant="standard"
                                 type="text"
                                 sx={{ width: 260 }}
                             />
-                            <IconButton disabled={!formikProps.values || !imgName} type="submit" onClick={() => uploadImgOrPdf()}>
-                                <CheckIcon
-                                    style={{ color: !formikProps.values || !imgName ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }}
-                                />
+                            <IconButton disabled={!formikProps.values.name} type="submit" onClick={() => uploadImgOrPdf()}>
+                                <CheckIcon style={{ color: !formikProps.values.name ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }} />
                             </IconButton>
                             <IconButton onClick={pdfClick}>
                                 <PictureAsPdf color={usePdf ? 'primary' : 'disabled'} />

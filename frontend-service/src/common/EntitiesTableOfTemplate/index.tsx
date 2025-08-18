@@ -68,6 +68,7 @@ import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
 import { useUserStore } from '../../stores/user';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -598,7 +599,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                    const errorMetadata = err.response?.data?.metadata;
+                    const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
                     switch (errorMetadata?.errorCode) {
                         case errorCodes.failedConstraintsValidation:

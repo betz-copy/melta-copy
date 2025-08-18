@@ -1,9 +1,9 @@
 import { Grid } from '@mui/material';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useDarkModeStore } from '../stores/darkMode';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 
-const Header: React.FC<{ title: string }> = ({ title, children }) => {
+const Header: React.FC<{ title: string; children?: ReactNode }> = ({ title, children }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (

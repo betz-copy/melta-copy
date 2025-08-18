@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
-import React from 'react';
+import React, { JSX } from 'react';
 import { isSchema } from 'yup';
 import { StepComponentHelpers } from '../../../common/wizards';
 import { DashboardItemForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
@@ -56,7 +56,7 @@ const DashboardItemDetails = <T extends DashboardItemForm>({
             {(formikProps: FormikProps<T>) => {
                 const isValidForm = steps.every((step) =>
                     step.validationSchema && isSchema(step.validationSchema)
-                        ? step.validationSchema.isValidSync(formikProps.values, { abortEarly: false })
+                        ? (step.validationSchema as any).isValidSync(formikProps.values, { abortEarly: false })
                         : true,
                 );
 

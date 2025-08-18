@@ -22,6 +22,7 @@ import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfa
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -75,7 +76,7 @@ const EditEntityDetails: React.FC<{
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;

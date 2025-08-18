@@ -1,5 +1,5 @@
+import { Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
-import { Grid, Card, CardContent } from '@mui/material';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface BoxProps {

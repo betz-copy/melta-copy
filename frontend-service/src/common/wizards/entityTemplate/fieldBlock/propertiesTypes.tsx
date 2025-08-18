@@ -330,7 +330,11 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                         </Grid>
                     </AccordionSummary>
 
-                    <AccordionDetails ref={drop}>
+                    <AccordionDetails
+                        ref={(node) => {
+                            drop(node as any);
+                        }}
+                    >
                         <Grid item marginBottom={3}>
                             <Divider />
                         </Grid>

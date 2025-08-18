@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import { Divider, Grid, IconButton } from '@mui/material';
 import { ChevronRight as ArrowRightIcon, ChevronLeft as ArrowLeftIcon } from '@mui/icons-material';
 import { useDarkModeStore } from '../stores/darkMode';
@@ -10,6 +10,7 @@ interface CompactDrawerProps {
     style?: CSSProperties;
     styleOpen?: CSSProperties;
     styleClosed?: CSSProperties;
+    children?: ReactNode;
 }
 
 export const CompactDrawer: React.FC<CompactDrawerProps> = ({ toggleMinimized, open, locked, style, styleOpen, styleClosed, children }) => {

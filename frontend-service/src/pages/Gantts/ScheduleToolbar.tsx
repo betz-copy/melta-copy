@@ -1,16 +1,16 @@
-import React, { useRef, useState } from 'react';
-import { ScheduleComponent, View } from '@syncfusion/ej2-react-schedule';
-import i18next from 'i18next';
+import { ArrowDropDown as ArrowDropDownIcon, KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon } from '@mui/icons-material';
 import { Button, Divider, Grid, Popover, TextField, Typography } from '@mui/material';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import heLocale from 'date-fns/locale/he';
-import { ArrowDropDown as ArrowDropDownIcon, KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon } from '@mui/icons-material';
+import { ScheduleComponent, View } from '@syncfusion/ej2-react-schedule';
 import { addMonths } from 'date-fns';
+import { he } from 'date-fns/locale';
+import i18next from 'i18next';
+import React, { useRef, useState } from 'react';
 import { getDateWithoutTime } from '../../utils/date';
 
 interface IScheduleToolbar {
-    scheduleRef: React.RefObject<ScheduleComponent>;
+    scheduleRef: React.RefObject<ScheduleComponent | null>;
     darkMode: boolean;
 }
 
@@ -95,9 +95,8 @@ export const ScheduleToolbar: React.FC<IScheduleToolbar> = ({ scheduleRef, darkM
                     onClose={() => setDatePickerOpen(false)}
                     sx={{ direction: 'ltr' }}
                 >
-                    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={heLocale}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
                         <StaticDatePicker
-                            inputFormat="dd/MM/yyyy"
                             value={selectedDate}
                             onChange={(newDate) => {
                                 if (!newDate) return;

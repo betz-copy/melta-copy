@@ -1,9 +1,9 @@
-import React, { Fragment } from 'react';
-import { Grid } from '@mui/material';
 import { Done as DoneIcon } from '@mui/icons-material';
+import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
+import React, { Fragment, JSX } from 'react';
 import { StepType } from '..';
-import { StepNumberTypography, StepNameTypography, DashedHorizontalLine, DashedVerticalLine, StepDescriptionTypography } from './index.styles';
+import { DashedHorizontalLine, DashedVerticalLine, StepDescriptionTypography, StepNameTypography, StepNumberTypography } from './index.styles';
 
 const Stepper = <T extends object>({
     activeStep,

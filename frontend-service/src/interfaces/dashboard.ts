@@ -1,4 +1,5 @@
 import { FormikProps } from 'formik';
+import { JSX } from 'react';
 import { StepType } from '../common/wizards';
 import { IFilterTemplate } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IFrameWizardValues } from '../common/wizards/iFrame';

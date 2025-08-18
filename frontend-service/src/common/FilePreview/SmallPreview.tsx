@@ -2,8 +2,8 @@ import { Box, ButtonBase, Card, CircularProgress, Grid, Skeleton, SxProps, Typog
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { IFile } from '../../interfaces/preview';
 import { VideoPreview } from './VideoPreview';

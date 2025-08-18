@@ -21,6 +21,7 @@ import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 import { environment } from '../../../globals';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { PermissionScope } from '../../../interfaces/permissions';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -194,7 +195,7 @@ const CreateRelationshipDialog: React.FC<{
         },
         {
             onError: (err: AxiosError, { relationshipInstancePopulated }) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setCreateWithRuleBreachDialogState({
                         isOpen: true,

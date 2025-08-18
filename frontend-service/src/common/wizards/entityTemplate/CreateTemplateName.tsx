@@ -43,7 +43,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     value={values.name}
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
-                    helperText={touched.name && errors.name}
+                    helperText={touched.name && errors.name ? String(errors.name) : undefined}
                 />
             </Grid>
             <Grid item>
@@ -53,7 +53,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     value={values.displayName}
                     onChange={handleChange}
                     error={touched.displayName && Boolean(errors.displayName)}
-                    helperText={touched.displayName && errors.displayName}
+                    helperText={touched.displayName && errors.displayName ? String(errors.displayName) : undefined}
                 />
             </Grid>
         </Grid>

@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton, Grid, Popover, Typography } from '@mui/material';
+import { Grid, IconButton, Popover, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
-import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
-import { CalculateDateDifference } from './CalculateDateDifference';
-import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
 import { HighlightText } from '../HighlightText';
+import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../HtmlTagsStringValue';
+import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
+import { CalculateDateDifference } from './CalculateDateDifference';
 
 const Value: React.FC<{
     hideValue: boolean;

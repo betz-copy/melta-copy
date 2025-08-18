@@ -36,6 +36,7 @@ import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -79,8 +80,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         return !canWriteInstance
             ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
             : isEntityDisabled
-            ? i18next.t('entityPage.disabledEntity')
-            : '';
+              ? i18next.t('entityPage.disabledEntity')
+              : '';
     };
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -124,7 +125,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 else toast.success(i18next.t('entityPage.activatedSuccessfully'));
             },
             onError: (err: AxiosError, { disabled }) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === 'RULE_BLOCK') {
                     setUpdateStatusWithRuleBreachDialogState({
                         isOpen: true,
@@ -212,8 +213,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             !canWriteInstance
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
-                                                ? i18next.t('entityPage.disabledEntity')
-                                                : i18next.t('actions.edit')
+                                                  ? i18next.t('entityPage.disabledEntity')
+                                                  : i18next.t('actions.edit')
                                         }
                                         style={{
                                             cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',

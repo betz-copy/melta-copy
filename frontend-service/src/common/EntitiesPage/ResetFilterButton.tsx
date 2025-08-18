@@ -8,7 +8,7 @@ import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 
 const ResetFilterButton: React.FC<{
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity> | undefined>;
+    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity> | null>;
     disableButton: boolean;
 }> = ({ entitiesTableRef, disableButton }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);

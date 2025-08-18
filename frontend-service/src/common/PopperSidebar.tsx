@@ -1,7 +1,7 @@
 import { CloseSharp } from '@mui/icons-material';
 import { Box, ClickAwayListener, Grid, IconButton, Popper, useTheme } from '@mui/material';
 import Slide from '@mui/material/Slide';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useDarkModeStore } from '../stores/darkMode';
 
 const PopperSidebar: React.FC<{
@@ -12,6 +12,7 @@ const PopperSidebar: React.FC<{
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
     isCheckBoxClicked?: boolean;
+    children?: ReactNode;
 }> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', isCheckBoxClicked = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();

@@ -25,6 +25,7 @@ import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -68,7 +69,7 @@ const DuplicateEntity: React.FC<{}> = () => {
             },
             onError: (err: AxiosError) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                     const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);

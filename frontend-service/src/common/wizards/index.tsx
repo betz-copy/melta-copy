@@ -1,12 +1,11 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Formik, Form, FormikProps, FormikConfig, FormikHelpers } from 'formik';
+import { Box, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Form, Formik, FormikConfig, FormikHelpers, FormikProps } from 'formik';
+import React, { JSX, PropsWithChildren, useEffect, useState } from 'react';
 import * as Yup from 'yup';
-import { ObjectShape } from 'yup/lib/object';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { StepperActions } from './stepper/StepperActions';
 import { Stepper } from './stepper';
+import { StepperActions } from './stepper/StepperActions';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -28,12 +27,12 @@ export type StepType<T extends object> = {
     label: string;
     description?: string;
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
-    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
+    validationSchema?: any;
     validate?: FormikConfig<T>['validate'];
     stepperActions?: {
         hide?: 'all' | 'back' | 'next';
-        back?: { text?: string; onClick?: () => void, disabled?: boolean };
-        next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void,  disabled?: boolean};
+        back?: { text?: string; onClick?: () => void; disabled?: boolean };
+        next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void; disabled?: boolean };
     };
     invisibleBeforeStep?: boolean;
 };
@@ -111,12 +110,12 @@ const Wizard = <T extends object>({
                     validationSchema={
                         steps[activeStep].validationSchema instanceof Yup.ObjectSchema
                             ? steps[activeStep].validationSchema
-                            : Yup.object(steps[activeStep].validationSchema as ObjectShape)
+                            : Yup.object(steps[activeStep].validationSchema)
                     }
                     validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
-                            await submitFunction(values);    
+                            await submitFunction(values);
                         } else {
                             await steps[activeStep].stepperActions?.next?.onClick?.(values, actions);
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);

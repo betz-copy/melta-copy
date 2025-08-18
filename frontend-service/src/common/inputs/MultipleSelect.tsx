@@ -58,7 +58,6 @@ const MultipleSelect: React.FC<{
             disableCloseOnSelect={multiple}
             value={selectedValue}
             options={items}
-            placeholder={placeholder}
             getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, val) => option.value === val.value}
             onChange={onChange}
@@ -99,6 +98,7 @@ const MultipleSelect: React.FC<{
                         {...textFieldProps}
                         {...params}
                         autoFocus={autofocus}
+                        placeholder={placeholder}
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}

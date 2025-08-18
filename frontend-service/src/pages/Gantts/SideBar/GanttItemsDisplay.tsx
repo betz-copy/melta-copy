@@ -10,7 +10,7 @@ interface IGanttItemsDisplayProps {
     open: boolean;
     formik: FormikProps<IBasicGantt>;
     edit?: boolean;
-    containerRef?: React.RefObject<HTMLDivElement>;
+    containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const GanttItemsDisplay: React.FC<IGanttItemsDisplayProps> = ({ open, gantt, formik, edit, containerRef }) => {

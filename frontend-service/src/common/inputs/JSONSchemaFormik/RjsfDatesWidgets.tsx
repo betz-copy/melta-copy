@@ -1,17 +1,17 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import React, { useEffect, useState } from 'react';
-import { InputAdornment, styled, TextField, TextFieldProps } from '@mui/material';
-import i18next from 'i18next';
-import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
-import validator from '@rjsf/validator-ajv8';
-import { CalendarToday, Alarm } from '@mui/icons-material';
-import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
-import heLocale from 'date-fns/locale/he';
-import format from 'date-fns/format';
+import { Alarm, CalendarToday } from '@mui/icons-material';
+import { InputAdornment, TextField, TextFieldProps, styled } from '@mui/material';
+import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker, PickersLocaleText, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePickerToolbar } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
+import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
+import { format } from 'date-fns';
+import { he } from 'date-fns/locale';
+import i18next from 'i18next';
+import React, { JSX, useEffect, useState } from 'react';
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -88,8 +88,8 @@ const getRjsfDateOrDateTimeWidget =
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
-                adapterLocale={heLocale}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                adapterLocale={he}
+                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
             >
                 <MuiDatePicker<Date, Date>
                     value={currDate}
@@ -130,9 +130,7 @@ const getRjsfDateOrDateTimeWidget =
                     readOnly={readonly}
                     disabled={disabled}
                     autoFocus={autofocus}
-                    toolbarFormat="dd/MM"
                     onOpen={handleOpenDateOrDateTimePicker}
-                    ToolbarComponent={CustomDateTimePickerToolbar}
                     data-hide-error={hideError}
                     data-hide-label={hideLabel}
                 />

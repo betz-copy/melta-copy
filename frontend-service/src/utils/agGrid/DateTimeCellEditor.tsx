@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TextField, FormControl } from '@mui/material';
-import { DateTimePicker, DatePicker } from '@mui/x-date-pickers';
-import heLocale from 'date-fns/locale/he';
+import { DateTimePicker, DatePicker, PickersLocaleText } from '@mui/x-date-pickers';
+import { he } from 'date-fns/locale';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import i18next from 'i18next';
@@ -32,8 +32,8 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
     return (
         <LocalizationProvider
             dateAdapter={AdapterDateFns}
-            adapterLocale={heLocale}
-            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+            adapterLocale={he}
+            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
         >
             <FormControl fullWidth>
                 {dateOrDateTime === 'dateTime' ? (
