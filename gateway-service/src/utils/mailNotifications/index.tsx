@@ -1,31 +1,33 @@
-import React from 'react';
-import { renderToString } from 'react-dom/server';
 import {
-    IMongoEntityTemplatePopulated,
-    IRule,
-    RuleBreachRequestStatus,
     ActionTypes,
-    IMongoStepTemplate,
-    IDeleteProcessNotificationMetadata,
-    NotificationType,
-    IEntity,
-    IUser,
-    IWorkspace,
     IArchiveProcessNotificationMetadataPopulated,
-    IDateAboutToExpireMetadataPopulated,
-    INewProcessNotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
+    ICreateOrDuplicateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
+    IDateAboutToExpireMetadataPopulated,
+    IDeleteProcessNotificationMetadata,
     IDeleteRelationshipMetadataPopulated,
+    IEntity,
+    IMongoEntityTemplatePopulated,
+    IMongoStepTemplate,
+    INewProcessNotificationMetadataPopulated,
+    IRule,
+    IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachAlertPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachRequestPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
+    IUser,
+    IWorkspace,
+    NotificationType,
+    RuleBreachRequestStatus,
 } from '@microservices/shared';
-import WorkspaceService from '../../express/workspaces/service';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
 import config from '../../config';
+import WorkspaceService from '../../express/workspaces/service';
+import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import hebrew from './hebrew';
@@ -46,10 +48,13 @@ const {
 class MailManager {
     private entityTemplateService: EntityTemplateService;
 
+    private instanceService: InstancesService;
+
     private relationshipsTemplateService: RelationshipsTemplateService;
 
     constructor(private workspaceId: string) {
         this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.instanceService = new InstancesService(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
     }
 
@@ -233,7 +238,7 @@ class MailManager {
 
         return (
             <>
-                {actionType === ActionTypes.CreateRelationship ? hebrew.ruleBreach.relationshipCreation : hebrew.ruleBreach.relationshipDeletion}
+                {actionType === ActionTypes.CreateRelationship ? hebrew.ruleBreach.relationshipCreation : hebrew.ruleBreach.relationshipDeletion}{' '}
                 <strong> {relationshipTemplate.displayName} </strong>
                 {hebrew.ruleBreach.fromEntity} <this.EntityLink entity={sourceEntity} entityTemplate={sourceEntityTemplate!} baseUrl={baseUrl} />
                 {hebrew.ruleBreach.toEntity}
@@ -248,7 +253,20 @@ class MailManager {
 
         return (
             <p>
-                {hebrew.updateEntityActionInfo.updatingEntity}
+                {hebrew.updateEntityActionInfo.updatingEntity}{' '}
+                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
+            </p>
+        );
+    }
+
+    private async getCreatedOrDuplicateEntityActionInfo({ templateId, properties }, actionType: string) {
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const entity = await this.instanceService.getEntityInstanceById(properties._id);
+
+        return (
+            <p>
+                {hebrew.updateEntityActionInfo[actionType === ActionTypes.CreateEntity ? 'createEntity' : 'duplicateEntity']}{' '}
                 <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
             </p>
         );
@@ -260,7 +278,7 @@ class MailManager {
 
         return (
             <p>
-                {hebrew.updateEntityActionInfo.updatingEntityStatus}
+                {hebrew.updateEntityActionInfo.updatingEntityStatus}{' '}
                 <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
                 <strong>
                     {disabled ? hebrew.ruleBreach.updateEntityStatusActionInfo.toDisabled : hebrew.ruleBreach.updateEntityStatusActionInfo.toActive}
@@ -278,6 +296,12 @@ class MailManager {
                         return this.getCreateOrDeleteRelActionInfo(
                             action.actionType,
                             action.actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                        );
+                    case ActionTypes.CreateEntity:
+                    case ActionTypes.DuplicateEntity:
+                        return this.getCreatedOrDuplicateEntityActionInfo(
+                            action.actionMetadata as ICreateOrDuplicateEntityMetadataPopulated,
+                            action.actionType,
                         );
                     case ActionTypes.UpdateEntity:
                         return this.getUpdateEntityActionInfo(action.actionMetadata as IUpdateEntityMetadataPopulated);
