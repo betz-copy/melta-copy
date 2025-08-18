@@ -13,7 +13,7 @@ import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService'
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { locationConverterToString } from '../../utils/map/convert';
 import { EntityPropertiesInternal } from '../EntityProperties';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 
@@ -169,7 +169,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                         const parsed = JSON.parse(prop);
 
-                        return parsed.fullName;
+                        if (parsed.fullName) return parsed.fullName;
+
+                        return prop;
                     });
                     return parsedArray.join(', ');
                 } catch {
@@ -249,8 +251,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
                             {displayOptionValues.map((displayOptionValue, index) => (
                                 <Grid item key={displayOptionValue} xs={4} overflow="hidden">
-                                    <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={index > 0 ? '#9398C2' : '#53566E'} overflow="hidden" fontSize="14px">
+                                    <MeltaTooltip placement="right" title={template.properties.properties[displayKeys[index]].title}>
+                                        <Typography color={'#53566E'} overflow="hidden" fontSize="14px">
                                             {displayOptionValue}
                                         </Typography>
                                     </MeltaTooltip>

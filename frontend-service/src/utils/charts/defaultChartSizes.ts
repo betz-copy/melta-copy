@@ -1,6 +1,5 @@
 import { LayoutItem, Layouts } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
-import { LocalStorage } from '../localStorage';
 
 const { defaultColumnSizes, cols, itemWidth } = environment.charts;
 
@@ -19,32 +18,45 @@ export const generateLayoutDetails = <T extends { _id: string }>(items: T[]) =>
         return acc;
     }, {} as Layouts);
 
-export const generateNewItemSizes = (localStorageKey: string, itemId: string) => {
-    const savedLayout: LayoutItem[] = LocalStorage.get(localStorageKey) || [];
-
-    const maxY = savedLayout.length ? Math.max(...savedLayout.map((item) => item.y)) : 0;
-    const lastRowItems = savedLayout.filter((item) => item.y === maxY);
+export const generateNewItemSizes = (layout: LayoutItem[], itemId: string) => {
+    const maxY = layout.length ? Math.max(...layout.map((item) => item.y)) : 0;
+    const lastRowItems = layout.filter((item) => item.y === maxY);
 
     const gridMap: boolean[] = Array(cols).fill(false);
+
     lastRowItems.forEach(({ x, w }) => {
         for (let i = x; i < x + w; i++) gridMap[i] = true;
     });
 
-    const availableX = gridMap.length - gridMap.reverse().findIndex((__, x) => x <= cols - itemWidth && gridMap.slice(x, x + itemWidth).every((slot) => !slot));
+    const reversedGrid = [...gridMap].reverse();
 
-    const availableY = availableX !== -1 ? maxY : maxY + cols;
+    const availableXFromRight = reversedGrid.findIndex((_, index) => {
+        if (index > cols - itemWidth) return false;
 
-    const newItem = {
+        const slotsToCheck = reversedGrid.slice(index, index + itemWidth);
+        return slotsToCheck.every((slot) => !slot);
+    });
+
+    let x: number;
+    let y: number;
+    
+    if (availableXFromRight !== -1) {
+        x = cols - itemWidth - availableXFromRight;
+        y = maxY;
+    } else {
+        const itemsPerRow = cols / itemWidth;
+        const positionInNewRow = layout.length % itemsPerRow;
+        x = cols - itemWidth - positionInNewRow * itemWidth;
+        y = maxY + 1;
+    }
+
+    return {
         i: itemId,
-        x: availableX !== -1 ? availableX : cols - itemWidth - (savedLayout.length % (cols / itemWidth)) * itemWidth,
-        y: availableY,
+        x,
+        y,
         w: itemWidth,
         h: 11,
         minH: 7,
         minW: 3,
     };
-
-    LocalStorage.set(localStorageKey, [...savedLayout, newItem]);
-
-    return newItem;
 };

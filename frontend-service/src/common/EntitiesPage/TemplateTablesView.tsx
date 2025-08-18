@@ -143,15 +143,11 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
     semanticSearch: boolean,
 ) => {
     const countRequestTemplateIds = new Set<string>();
-    for (const template of templates) {
-        if (isChildTemplate(template)) {
-            countRequestTemplateIds.add(template.parentTemplate._id);
-        } else {
-            countRequestTemplateIds.add(template._id);
-        }
-    }
+    const countRequestChildTemplateIds = new Set<string>();
 
-    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds), searchInput, semanticSearch);
+    templates.forEach((template) => (isChildTemplate(template) ? countRequestChildTemplateIds : countRequestTemplateIds).add(template._id));
+
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds),Array.from(countRequestChildTemplateIds), searchInput, semanticSearch);
 
     return templates.flatMap((template) => {
         const countTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;

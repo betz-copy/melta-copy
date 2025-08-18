@@ -1,7 +1,7 @@
 import { Box, Card, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { BlueTitle } from '../../../common/BlueTitle';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';

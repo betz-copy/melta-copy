@@ -7,8 +7,10 @@ import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { ICategoryMap } from '../../../interfaces/categories';
 import {
     EntityTemplateType,
     IChildTemplateMap,
@@ -26,8 +28,6 @@ import { getFileName } from '../../../utils/getFileName';
 import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
-import { emptyEntityTemplate } from '../../../common/dialogs/entity';
-import { ICategoryMap } from '../../../interfaces/categories';
 
 const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];

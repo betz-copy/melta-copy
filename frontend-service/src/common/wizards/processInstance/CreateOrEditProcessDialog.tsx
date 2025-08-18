@@ -1,23 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider, Fab } from '@mui/material';
-import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import CloseIcon from '@mui/icons-material/Close';
-import { pickBy } from 'lodash';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
+import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { initDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import { BlueTitle } from '../../BlueTitle';
-import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
-import { GeneralDetailsFields } from './ProcessDetails/GeneralDetailsFields';
-import { TemplateFields } from './ProcessDetails/TemplateFields';
-import { setInitialStepsObject } from '../../../utils/processWizard/steps';
-import StepsReviewers from './ProcessDetails/StepsReviewers';
+import { pickBy } from 'lodash';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
+import { setInitialStepsObject } from '../../../utils/processWizard/steps';
+import BlueTitle from '../../MeltaDesigns/BlueTitle';
 import { ProcessDetailsValues } from './ProcessDetails';
+import { initDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
+import { GeneralDetailsFields } from './ProcessDetails/GeneralDetailsFields';
+import StepsReviewers from './ProcessDetails/StepsReviewers';
+import { TemplateFields } from './ProcessDetails/TemplateFields';
 
 interface ISimpleDialogProps {
     open: boolean;

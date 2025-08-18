@@ -239,7 +239,7 @@ const config = {
         deleteDocsSemanticQueue: env.get('DELETE_DOCS_SEMATIC_QUEUE').default('delete_documents_queue').asString(),
     },
     mailerService: {
-        mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
+        mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('kendall.wiegand61@ethereal.email').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

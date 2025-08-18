@@ -1,10 +1,10 @@
 /* eslint-disable no-nested-ternary */
-import { ListItemText, Typography, Grid, useTheme } from '@mui/material';
-import React from 'react';
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
+import { Grid, ListItemText, Typography, useTheme } from '@mui/material';
+import React from 'react';
 import { CustomIcon } from '../../CustomIcon';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;

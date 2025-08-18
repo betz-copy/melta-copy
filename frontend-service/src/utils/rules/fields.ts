@@ -1,4 +1,4 @@
-import { Fields, ImmutableTree, Field } from '@react-awesome-query-builder/mui';
+import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
 import lodashFindLast from 'lodash.findlast';
 import lodashIsEqual from 'lodash.isequal';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -203,7 +203,7 @@ export const getFieldsConfigOfRule = (
     const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, entityTemplates, {});
 
     const connectedTemplatesWithRelationship = allowedRelationships
-        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates))
+        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
         .filter(
             (relationshipTemplate) =>
                 isRelationshipConnectedToEntityTemplate(entityTemplate, relationshipTemplate) && !relationshipTemplate.isProperty,

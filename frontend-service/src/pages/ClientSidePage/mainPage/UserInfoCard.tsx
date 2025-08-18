@@ -1,19 +1,19 @@
-import React from 'react';
-import { CardContent, useTheme, Grid, Card } from '@mui/material';
-import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { BlueTitle } from '../../../common/BlueTitle';
-import { CustomIcon } from '../../../common/CustomIcon';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { getEntityTemplateColor } from '../../../utils/colors';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { EntityProperties } from '../../../common/EntityProperties';
-import { EntityDates } from '../../Entity/components/EntityDates';
-import { IEntity } from '../../../interfaces/entities';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { Card, CardContent, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { Link } from 'wouter';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { EntityProperties } from '../../../common/EntityProperties';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IEntity } from '../../../interfaces/entities';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { getEntityTemplateColor } from '../../../utils/colors';
+import { EntityDates } from '../../Entity/components/EntityDates';
 
 interface IUserInfoCardProps {
     currentUserFromClientSide: IEntity;

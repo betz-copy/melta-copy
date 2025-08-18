@@ -157,17 +157,17 @@ class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         entitiesIdsRulesReasonsMap: EntitiesIdsRulesReasonsMap,
         rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
-    ) {
+    ): Promise<IRuleFailure[]> {
         const entitiesRelevantRulesMap = this.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
-        const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
-        entitiesRelevantRulesMap.forEach(async ({ rules }, entityId) => {
+        const ruleFailuresPromises = Array.from(entitiesRelevantRulesMap.entries()).map(async ([entityId, { rules }]) => {
             const entity = await this.getEntityByIdInTransaction(entityId, transaction);
             const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
-            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules, entityTemplate));
+            return runRulesOnEntity(transaction, entityId, rules, entityTemplate);
         });
 
-        return (await Promise.all(ruleFailuresPromises)).flat();
+        const ruleFailuresNested = await Promise.all(ruleFailuresPromises);
+        return ruleFailuresNested.flat();
     }
 
     runRulesOnEntityDependentViaAggregation = async (
@@ -979,12 +979,15 @@ class EntityManager extends DefaultManagerNeo4j {
     async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
+
         const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
+
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
             normalizeReturnedRelAndEntities(disabled),
             initialCypherQuery.parameters,
         );
+
         if (!initialExpandedEntity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
@@ -1318,7 +1321,7 @@ class EntityManager extends DefaultManagerNeo4j {
     };
 
     private async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
-        const ruleFailuresOfUpdatedEntityPromise = this.runRulesOnEntity(transaction, updatedEntity, updatedProperties);
+        const ruleFailuresOfUpdatedEntityPromise = await this.runRulesOnEntity(transaction, updatedEntity, updatedProperties);
 
         const ruleFailuresOnNeighborsOfEntityPromise = this.runRulesOnNeighborsOfUpdatedEntity(transaction, updatedEntity, updatedProperties);
 
@@ -1542,12 +1545,12 @@ class EntityManager extends DefaultManagerNeo4j {
                 newValue.every((element, index) => element === entity.properties[field][index])
             )
                 continue;
-            if (entity.properties[field] === newValue) continue;
+            if (entity.properties?.[field] === newValue) continue;
             if (
                 propertyTemplate?.format === 'relationshipReference' &&
                 newValue &&
-                entity.properties[field] &&
-                newValue.properties._id === entity.properties[field].properties._id
+                entity.properties?.[field] &&
+                newValue.properties?._id === entity.properties?.[field]?.properties?._id
             )
                 continue;
 

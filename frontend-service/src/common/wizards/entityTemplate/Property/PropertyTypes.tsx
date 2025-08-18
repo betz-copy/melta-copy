@@ -1,49 +1,48 @@
-import React, { SetStateAction, useEffect, useRef, useState } from 'react';
-import { FormikErrors, FormikTouched } from 'formik';
 import {
-    TextField,
-    Box,
-    MenuItem,
-    Grid,
-    FormControlLabel,
-    IconButton,
-    Chip,
-    Autocomplete,
-    Typography,
-    ToggleButtonGroup,
-    ToggleButton,
-    Popover,
-    Backdrop,
-    CircularProgress,
-    ThemeProvider,
-    FormHelperText,
-    createTheme,
-} from '@mui/material';
-import {
-    Delete as DeleteIcon,
-    NotificationsActive as NotificationsActiveIcon,
-    NotificationsOff as NotificationsOffIcon,
     Alarm as CustomAlertIcon,
     Update as DailyAlertIcon,
+    Delete as DeleteIcon,
     Edit as EditIcon,
+    NotificationsActive as NotificationsActiveIcon,
+    NotificationsOff as NotificationsOffIcon,
 } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
-import i18next from 'i18next';
-import { stateToHTML } from 'draft-js-export-html';
-import MUIRichTextEditor from 'mui-rte';
+import {
+    Autocomplete,
+    Backdrop,
+    Box,
+    Chip,
+    CircularProgress,
+    createTheme,
+    FormControlLabel,
+    FormHelperText,
+    Grid,
+    IconButton,
+    MenuItem,
+    Popover,
+    TextField,
+    ThemeProvider,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+} from '@mui/material';
 import { convertToRaw, EditorState } from 'draft-js';
+import { stateToHTML } from 'draft-js-export-html';
+import { FormikErrors, FormikTouched } from 'formik';
+import i18next from 'i18next';
+import MUIRichTextEditor from 'mui-rte';
+import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { dateNotificationTypes } from '.././AddFields';
-import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
-import { MeltaCheckbox } from '../../../MeltaCheckbox';
-import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
-import { MeltaTooltip } from '../../../MeltaTooltip';
-import KartoffelUserField from '.././KartoffelUserField';
-import { getInitialValue, useMuiRteTheme } from '../../../inputs/JSONSchemaFormik/RjsfTextAreaWidget';
-import { CommonFormInputProperties } from '../commonInterfaces';
-import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
+import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
+import { getInitialValue, useMuiRteTheme } from '../../../inputs/JSONSchemaFormik/RjsfTextAreaWidget';
+import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
+import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { dateNotificationTypes } from '.././AddFields';
+import KartoffelUserField from '.././KartoffelUserField';
+import { CommonFormInputProperties } from '../commonInterfaces';
 import RelationshipReferenceField from '../RelationshipReference/RelationshipReferenceField';
 
 enum dateNotificationOptions {

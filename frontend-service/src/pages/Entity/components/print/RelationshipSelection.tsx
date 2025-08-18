@@ -1,271 +1,217 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useMemo, useState } from 'react';
-import { RichTreeViewPro, TreeItem2Props } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Box, FormControl, Select, useTheme } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
+import { RichTreeViewPro, TreeItemProps } from '@mui/x-tree-view-pro';
+import i18next from 'i18next';
+import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
+import { INestedRelationshipTemplates } from '../..';
 import TreeItem from '../../../../common/Tree/TreeItem';
-import { IConnectionTemplateExpanded, ISelectRelationshipTemplates } from '.';
-import { CustomExpandMore } from '../../../../common/SelectCheckBox';
-import { useDarkModeStore } from '../../../../stores/darkMode';
+import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
+import { useUserStore } from '../../../../stores/user';
+import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';
+import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 
-// item id is node id - parent id (if he has one)
-const getItemId = (item: ISelectRelationshipTemplates | IConnectionTemplateExpanded) =>
-    `${item.relationshipTemplate._id}${'parentRelationship' in item ? `-${item.parentRelationship?.relationshipTemplate._id}` : ''}`;
+const collectAllSelectedItemIds = (nodes: INestedRelationshipTemplates[], selectedIds: Set<string>) => {
+    for (const node of nodes) {
+        selectedIds.add(getItemId(node));
+        if (node.children && node.children.length > 0) {
+            collectAllSelectedItemIds(node.children, selectedIds);
+        }
+    }
+};
 
-const getItemLabel = (item: ISelectRelationshipTemplates) =>
-    `${item.relationshipTemplate.displayName} (${item.relationshipTemplate.sourceEntity.displayName} > ${item.relationshipTemplate.destinationEntity.displayName})`;
+// item id is node depth - node id - parent id (if he has one)
+const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: INestedRelationshipTemplates) =>
+    `${depth}-${_id}${parentRelationship ? `-${parentRelationship?._id}` : ''}`;
+
+const getItemLabel = ({ relationshipTemplate: { displayName, sourceEntity, destinationEntity } }: INestedRelationshipTemplates) =>
+    `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`;
+
+export type EntityConnectionsProps = {
+    connectionsTemplates: INestedRelationshipTemplates[];
+    setConnectionsTemplates: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
+    setConnectionsInstances: Dispatch<SetStateAction<IConnection[]>>;
+    selectedConnections: INestedRelationshipTemplates[];
+    setSelectedConnections: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
+};
 
 const RelationshipSelection: React.FC<{
-    options: RelationshipSelectProps['options'];
-    selectedOptions: RelationshipSelectProps['selectedOptions'];
-    setSelectedOptions: RelationshipSelectProps['setSelectedOptions'];
-}> = ({ options, selectedOptions, setSelectedOptions }) => {
-    const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>([]);
+    expandedEntity: IEntityExpanded;
+    entityConnections: EntityConnectionsProps;
+}> = ({
+    expandedEntity,
+    entityConnections: { connectionsTemplates, setConnectionsTemplates, setConnectionsInstances, selectedConnections, setSelectedConnections },
+}) => {
+    const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+
+    const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
 
     const flattenSelectedIds = useMemo(() => {
-        return selectedOptions.flatMap((parent) => [
+        return selectedConnections.flatMap((parent) => [
             parent.relationshipTemplate._id,
             ...(parent.children?.map((child) => child.relationshipTemplate._id) || []),
         ]);
-    }, [selectedOptions]);
+    }, [selectedConnections]);
 
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(flattenSelectedIds);
+    const [expansionDepth, setExpansionDepth] = useState<number>(1);
 
-    const findNodeById = useCallback(
-        (nodes: ISelectRelationshipTemplates[], id: string): ISelectRelationshipTemplates | IConnectionTemplateExpanded | null => {
-            for (const node of nodes) {
-                if (id.startsWith(node.relationshipTemplate._id)) {
-                    if (!node.children || !id.includes('-')) return node;
-                }
+    const templateIds = [...entityTemplates.keys()];
+    const { refetch: getExpandedData } = useQuery<IEntityExpanded>({
+        queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, expansionDepth],
+        queryFn: () =>
+            getExpandedEntityByIdRequest(
+                expandedEntity.entity.properties._id,
+                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1 } },
+                { disabled: false, templateIds: allowedEntityTemplatesIds },
+            ),
+        enabled: false,
+    });
 
-                if (node.children) {
-                    const found = findNodeById(node.children, id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        },
-        [],
-    );
-
-    const findParent = useCallback((nodes: ISelectRelationshipTemplates[], id: string): ISelectRelationshipTemplates | null => {
-        const childId = id.includes('-') ? id.split('-')[0] : id;
-
+    const findNodeById = (nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
         for (const node of nodes) {
-            if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
+            if (getItemId(node) === id) return node;
             if (node.children) {
-                const found = findParent(node.children, childId);
+                const found = findNodeById(node.children, id);
+                if (found) return found;
+            }
+        }
+        return undefined;
+    };
 
+    const findParent = useCallback((nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
+        const targetId = id.split('-')[1];
+        for (const node of nodes) {
+            if (node.children?.some((child) => child.relationshipTemplate._id === targetId)) return node;
+
+            if (node.children && node.children.length > 0) {
+                const found = findParent(node.children, id);
                 if (found) return found;
             }
         }
 
-        return null;
+        return undefined;
     }, []);
 
     const handleSelectedItemsChange = (itemIds: string[]) => {
         const currentSelectedNodesIds = new Set<string>();
-        let currentSelectedNodes: ISelectRelationshipTemplates[] = [...selectedOptions];
+        let currentSelectedNodes = [...selectedConnections];
 
-        const changedIds = [
-            ...itemIds.filter((itemId) => !selectedItemsIds.includes(itemId)),
-            ...selectedItemsIds.filter((selectedItemId) => !itemIds.includes(selectedItemId)),
-        ];
+        const changedIds = [...itemIds.filter((id) => !selectedItemsIds.includes(id)), ...selectedItemsIds.filter((id) => !itemIds.includes(id))];
 
-        changedIds.forEach((id) => {
-            const currentNode = findNodeById(options, id);
+        for (const id of changedIds) {
+            const currentNode = findNodeById(connectionsTemplates, id);
 
-            if (!currentNode) return;
+            if (!currentNode) continue;
 
-            if ('parentRelationship' in currentNode) {
+            if (currentNode.parentRelationship) {
                 // handle a child
-                const parentIndex = currentSelectedNodes.findIndex(
-                    (selectedNode) => currentNode.parentRelationship?.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
-                );
+                const parent = findParent(selectedConnections, id);
 
-                if (parentIndex !== -1) {
+                if (!!parent) {
                     // if the parent is selected
-                    const parent = currentSelectedNodes[parentIndex];
-
-                    const childIndex = parent.children?.findIndex(
-                        (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
+                    const isChildAlreadySelected = parent.children?.some(
+                        ({ relationshipTemplate }) => relationshipTemplate._id === currentNode.relationshipTemplate._id,
                     );
-                    if (childIndex !== -1 && childIndex !== undefined) {
-                        // If the child is already selected, remove it
-                        const updatedChildren = [...(parent.children ?? [])];
-                        updatedChildren.splice(childIndex, 1);
 
-                        currentSelectedNodes = currentSelectedNodes.map((node) => {
-                            if (node.relationshipTemplate._id === parent.relationshipTemplate._id) {
-                                return {
-                                    ...node,
-                                    children: updatedChildren,
-                                };
-                            }
-                            return node;
-                        });
-                    } else {
-                        // If the child is not selected, add it
-                        currentSelectedNodes = currentSelectedNodes.map((node) => {
-                            if (node.relationshipTemplate._id === parent.relationshipTemplate._id) {
-                                return {
-                                    ...node,
-                                    children: [...(node.children ?? []), currentNode],
-                                };
-                            }
-                            return node;
-                        });
-                    }
+                    const updatedParent: INestedRelationshipTemplates = {
+                        ...parent,
+                        children: isChildAlreadySelected
+                            ? parent.children?.filter(({ relationshipTemplate }) => relationshipTemplate._id !== currentNode.relationshipTemplate._id)
+                            : [...parent.children, currentNode],
+                    };
+                    currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
                 } else {
                     // if the parent isn't selected
-                    const parent = findParent(options, id);
-                    if (!parent) throw new Error('child has to have a parent');
-                    currentSelectedNodes.push({
-                        ...parent,
-                        children: [currentNode],
-                    });
+                    const ancestryTree = findAncestryTree(connectionsTemplates, id);
+                    if (ancestryTree) currentSelectedNodes = mergeAncestryTree(currentSelectedNodes, ancestryTree);
                 }
             } else {
                 // if it's a parent
-                const parentIndex = currentSelectedNodes.findIndex(
-                    (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
-                );
+                const isParentSelected = currentSelectedNodes.some((node) => node.relationshipTemplate._id === currentNode.relationshipTemplate._id);
 
-                if (parentIndex !== -1) {
+                if (isParentSelected) {
                     // If the parent is selected, remove it
-                    currentSelectedNodes.splice(parentIndex, 1);
+                    currentSelectedNodes = currentSelectedNodes.filter(
+                        ({ relationshipTemplate }) => relationshipTemplate._id !== currentNode.relationshipTemplate._id,
+                    );
                 } else {
                     // If the parent is not selected, add it
-                    currentSelectedNodes.push({ ...currentNode, children: [] });
+                    currentSelectedNodes.push(currentNode);
                 }
             }
-        });
+        }
 
-        currentSelectedNodes.map((parent) =>
-            parent.children?.map((child) =>
-                currentSelectedNodesIds.add(`${child.relationshipTemplate._id}-${child.parentRelationship?.relationshipTemplate._id}`),
-            ),
-        );
-        currentSelectedNodes.map((parent) => currentSelectedNodesIds.add(parent.relationshipTemplate._id));
+        collectAllSelectedItemIds(currentSelectedNodes, currentSelectedNodesIds);
 
-        setSelectedOptions(currentSelectedNodes);
+        setSelectedConnections(currentSelectedNodes);
+
         return Array.from(currentSelectedNodesIds);
     };
 
-    const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={false} />, []);
+    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} removeDivider />, []);
+
+    const fetchTreeItems = async (parentId?: string): Promise<INestedRelationshipTemplates[]> => {
+        const { data } = await getExpandedData();
+
+        if (!data) return [];
+
+        const sorted = sortTemplatesChildrenToParents(2, connectionsTemplates, data, allRelationshipTemplates, entityTemplates);
+
+        setExpansionDepth((prev) => prev + 1);
+
+        setConnectionsTemplates(sorted);
+        setConnectionsInstances(data.connections);
+
+        if (!parentId) return sorted;
+
+        const parent = findNodeById(sorted, parentId);
+        const selectedParent = findNodeById(selectedConnections, parentId);
+        if (selectedParent && parent!.children) {
+            // if parent is selected select all the children
+            const mergedIds = Array.from(new Set([...selectedItemsIds, ...parent!.children.map(getItemId)]));
+
+            setSelectedItemsIds(handleSelectedItemsChange(mergedIds));
+        }
+        return parent?.children ?? [];
+    };
 
     return (
-        <RichTreeViewPro
-            style={{ direction: 'rtl' }}
-            checkboxSelection
-            multiSelect
-            items={options}
-            getItemId={getItemId}
-            getItemLabel={getItemLabel}
-            selectedItems={selectedItemsIds}
-            onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
-            onExpandedItemsChange={(_, itemIds) => {
-                const ids = itemIds
-                    .map((itemId) => findNodeById(options, itemId))
-                    .filter((item): item is ISelectRelationshipTemplates | IConnectionTemplateExpanded => item !== null)
-                    .map((item) => getItemId(item));
-
-                setExpandedItemsIds(ids);
-            }}
-            expandedItems={expandedItemsIds}
-            expansionTrigger="iconContainer"
-            slots={{
-                expandIcon: ChevronLeft,
-                collapseIcon: ExpandLess,
-                item: TreeItemWrapper,
-            }}
-            experimentalFeatures={{ indentationAtItemLevel: true }}
-        />
+        <>
+            <Typography color="#53566E" fontSize="14px" marginBottom={1}>
+                {i18next.t('entityPage.print.chooseRelationship')}
+            </Typography>
+            <Grid maxHeight="228px" sx={{ overflowY: 'auto' }}>
+                <RichTreeViewPro
+                    items={[]}
+                    dataSource={{
+                        getChildrenCount: (item) => item?.children.length,
+                        getTreeItems: fetchTreeItems,
+                    }}
+                    slots={{
+                        expandIcon: ChevronLeft,
+                        collapseIcon: ExpandLess,
+                        item: TreeItemWrapper,
+                    }}
+                    multiSelect
+                    checkboxSelection
+                    getItemId={getItemId}
+                    getItemLabel={getItemLabel}
+                    selectedItems={selectedItemsIds}
+                    onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
+                />
+            </Grid>
+        </>
     );
 };
 
-type RelationshipSelectProps = PropsWithChildren<{
-    title: string;
-    options: ISelectRelationshipTemplates[];
-    selectedOptions: ISelectRelationshipTemplates[];
-    setSelectedOptions: Dispatch<SetStateAction<ISelectRelationshipTemplates[]>>;
-    size?: 'small' | 'medium';
-    overrideSx?: object;
-    isSelectDisabled?: boolean;
-}>;
-
-const RelationshipSelect = ({
-    title,
-    options,
-    selectedOptions,
-    setSelectedOptions,
-    size = 'medium',
-    overrideSx,
-    isSelectDisabled = false,
-}: RelationshipSelectProps) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const theme = useTheme();
-
-    return (
-        <FormControl>
-            <Select
-                displayEmpty
-                disabled={isSelectDisabled}
-                renderValue={() => <Box>{title}</Box>}
-                MenuProps={{
-                    PaperProps: {
-                        style: {
-                            height: '333px',
-                            minWidth: '219px',
-                            width: '300px',
-                            ...(darkMode ? {} : { backgroundColor: '#FFFFFF' }),
-                            borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
-                            padding: '10px, 10px, 5px, 10px',
-                            boxShadow: '-2px 2px 6px 0px #1E27754D',
-                            top: '39px',
-                            gap: '15px',
-                            marginTop: '5px',
-                            border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
-                        },
-                        sx: {
-                            overflowY: 'overlay',
-                            '::-webkit-scrollbar-track': {
-                                marginY: '1rem',
-                                bgcolor: '#FFFFFF',
-                                borderRadius: '5px',
-                            },
-                            '::-webkit-scrollbar-thumb': { background: '#EBEFFA' },
-                        },
-                    },
-                }}
-                IconComponent={(params) => CustomExpandMore({ undefined, ...params })}
-                size={size}
-                sx={{
-                    ...overrideSx,
-                    fontFamily: 'Rubik',
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    boxShadow: 'none',
-                    borderRadius: '8px',
-                    ...(darkMode
-                        ? {
-                              color: theme.palette.primary.main,
-                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
-                          }
-                        : {
-                              '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
-                              background: '#FFFFFF',
-                              color: '#787C9E',
-                          }),
-                    maxWidth: !overrideSx ? '131px' : undefined,
-                    maxHeight: '34px',
-                    padding: '0px, 8px',
-                }}
-            >
-                <RelationshipSelection options={options} selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} />
-            </Select>
-        </FormControl>
-    );
-};
-
-export default RelationshipSelect;
+export default RelationshipSelection;

@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Divider, Grid, Typography, useTheme } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
+import { Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { ViewingCard } from '../Card';
-import { defaultProcessTemplate, IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { CardMenu } from '../CardMenu';
+import React, { useState } from 'react';
 import { CustomIcon } from '../../../../common/CustomIcon';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
+import { defaultProcessTemplate, IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
+import { defaultStepTemplate } from '../../../../interfaces/processes/stepTemplate';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { ViewingCard } from '../Card';
+import { CardMenu } from '../CardMenu';
 import { ProcessProperties } from './ProcessProperties';
 import { ProcessStep } from './ProcessStep';
-import { useWorkspaceStore } from '../../../../stores/workspace';
-import { defaultStepTemplate } from '../../../../interfaces/processes/stepTemplate';
 
 interface ProcessTemplateCardProps {
     processTemplate: IMongoProcessTemplatePopulated;

@@ -3,24 +3,25 @@ import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material
 import { useTheme } from '@mui/material/styles';
 import i18next from 'i18next';
 import React from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
     set3DView: (is3DView: boolean) => void;
     is3DView: boolean;
-    entityId: string;
     filteredEntityTemplates: IMongoEntityTemplatePopulated[];
     setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templateId?: string;
+    childTemplateId?: string;
 }
 
-const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, entityId }) => {
+const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, templateId, childTemplateId }) => {
     const queryClient = useQueryClient();
 
     const theme = useTheme();
@@ -29,14 +30,10 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const templateIds = Array.from(entityTemplates.keys());
+    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
-    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
-        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
-    );
+    const entityTemplate = childTemplateId ? childEntityTemplates.get(childTemplateId) : templateId ? entityTemplates.get(templateId) : undefined;
 
-    const entityTemplate = expandedEntity ? entityTemplates.get(expandedEntity.entity.templateId || '') : undefined;
     return (
         <Grid
             container

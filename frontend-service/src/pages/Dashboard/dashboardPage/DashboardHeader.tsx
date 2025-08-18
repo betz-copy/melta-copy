@@ -2,9 +2,9 @@ import { Loop } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { BlueTitle } from '../../../common/BlueTitle';
 import { GlobalSearchBar } from '../../../common/EntitiesPage/Headline';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../../common/TopBar';
 import { useWorkspaceStore } from '../../../stores/workspace';
 

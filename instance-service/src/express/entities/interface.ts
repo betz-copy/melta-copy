@@ -3,7 +3,7 @@ import { IEntity, ISearchFilter } from '@microservices/shared';
 export interface IGetExpandedEntityBody {
     disabled: boolean | null;
     templateIds: string[];
-    expandedParams: { [entityId: string]: number };
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
 }
 
@@ -49,5 +49,5 @@ export enum IEntityCrudAction {
 
 export interface IExecutionOutput {
     entityId: string;
-    properties: Record<string, any>;
+    properties: IEntity['properties']; // [propertyName]: new/prev value
 }

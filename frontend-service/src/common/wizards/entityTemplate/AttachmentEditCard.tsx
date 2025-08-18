@@ -1,13 +1,14 @@
-import React, { memo } from 'react';
-import { FormikErrors, FormikTouched } from 'formik';
 import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
-import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
+import { Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
+import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import { CommonFormInputProperties } from './commonInterfaces';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import React, { memo } from 'react';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { CommonFormInputProperties } from './commonInterfaces';
 
 interface AttachmentEditCardProps {
     value: CommonFormInputProperties;
@@ -129,7 +130,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     {value.required !== undefined && (
                                         <FormControlLabel
                                             control={
-                                                <Switch
+                                                <MeltaSwitch
                                                     id={required}
                                                     name={required}
                                                     onChange={onChange}

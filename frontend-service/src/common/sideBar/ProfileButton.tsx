@@ -1,8 +1,8 @@
 import { Grid, IconButton } from '@mui/material';
 import React from 'react';
 import { IUser } from '../../interfaces/users';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../UserAvatar';
-import { MeltaTooltip } from '../MeltaTooltip';
 
 interface ProfileButtonProps {
     currentUser: IUser;

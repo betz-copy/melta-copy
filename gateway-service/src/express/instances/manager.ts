@@ -627,19 +627,28 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
+        const templatesWithoutChildId = Object.entries(searchBody.templates ?? {}).reduce(
+            (acc, [templateId, { childTemplateId: _childTemplateId, ...rest }]) => {
+                acc[templateId] = rest;
+                return acc;
+            },
+            {} as typeof searchBody.templates,
+        );
+
         if (!shouldSemanticSearch || !searchBody.textSearch) {
-            return this.service.searchEntitiesBatch(searchBody);
+            return this.service.searchEntitiesBatch({ ...searchBody, templates: templatesWithoutChildId });
         }
 
         const semanticSearchResult = await this.semanticSearchSearch.search({
             textSearch: searchBody.textSearch,
             limit: searchBody.limit,
             skip: searchBody.skip,
-            templates: Object.keys(searchBody.templates),
+            templates: Object.keys(templatesWithoutChildId),
         });
 
         const allResults = await this.service.searchEntitiesBatch({
             ...searchBody,
+            templates: templatesWithoutChildId,
             entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
         });
 
@@ -654,13 +663,27 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {
+        const { childTemplateIds, ...restSearchBody } = searchBody;
+
+        const parentTemplateIds = childTemplateIds?.length
+            ? await Promise.all(
+                  childTemplateIds.map(async (templateId) => {
+                      const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
+                      return childTemplate?.parentTemplate._id;
+                  }),
+              )
+            : [];
+
+        const templateIds = [...parentTemplateIds, ...searchBody.templateIds];
+
         return this.service.getEntitiesCountByTemplates({
-            ...searchBody,
+            ...restSearchBody,
+            templateIds,
             semanticSearchResult:
                 searchBody.textSearch && shouldSemanticSearch
                     ? await this.semanticSearchSearch.search({
                           textSearch: searchBody.textSearch,
-                          templates: searchBody.templateIds,
+                          templates: templateIds,
                       })
                     : undefined,
         });

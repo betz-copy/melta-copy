@@ -58,6 +58,10 @@ export interface IUpdateEntityStatusMetadataPopulated extends Omit<IUpdateEntity
 export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetadata, 'entityId'> {
     entity: IEntity | null;
 }
+export interface ICreateOrDuplicateEntityMetadataPopulated {
+    templateId: string;
+    properties: Record<string, any>;
+}
 
 export type IActionMetadata =
     | ICreateRelationshipMetadata

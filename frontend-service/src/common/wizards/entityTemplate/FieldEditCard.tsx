@@ -1,31 +1,30 @@
-import React, { memo, SetStateAction } from 'react';
-import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, MenuItem, Grid, Card, CardContent, FormControlLabel, IconButton, Autocomplete } from '@mui/material';
 import {
+    Add as AddIcon,
+    AddLocationAlt,
+    Archive,
     Delete as DeleteIcon,
     DeleteForever as DeleteOff,
     DragHandle as DragHandleIcon,
-    Archive,
-    Unarchive,
-    AddLocationAlt,
     FileCopy,
+    Unarchive,
     WrongLocation,
-    Add as AddIcon,
 } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
+import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
+import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
+import React, { memo, SetStateAction } from 'react';
+import { useQueryClient } from 'react-query';
+import { environment } from '../../../globals';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { arrayTypes } from '../../../services/templates/entityTemplatesService';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties } from './commonInterfaces';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { arrayTypes } from '../../../services/templates/entityTemplatesService';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { environment } from '../../../globals';
-import { Switches } from './Property/Switches';
 import { PropertiesTypes } from './Property/PropertyTypes';
-import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { Switches } from './Property/Switches';
 import { FilterEntitiesByCriteria } from './RelationshipReference/filterEntitiesByCriteria';
 
 const { mapSearchPropertiesLimit } = environment.map;

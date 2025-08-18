@@ -26,4 +26,4 @@ const BlueTitle: React.FC<BlueTitleProps> = ({ title, component, variant, style 
     );
 };
 
-export { BlueTitle };
+export default BlueTitle;

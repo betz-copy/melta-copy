@@ -1,23 +1,23 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled, Typography } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
-import TocIcon from '@mui/icons-material/Toc';
-import i18next from 'i18next';
 import { History } from '@mui/icons-material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { ProcessStep } from './processStep';
+import TocIcon from '@mui/icons-material/Toc';
+import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
-import { useDarkModeStore } from '../../../../stores/darkMode';
-import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
-import { BlueTitle } from '../../../BlueTitle';
-import { MeltaTooltip } from '../../../MeltaTooltip';
+import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ActivitiesContent } from '../../../../pages/Entity/components/activityLog/ActivitiesContent';
+import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { ProcessStep } from './processStep';
 import './processStep.css';
 
 export interface ProcessStepValues {

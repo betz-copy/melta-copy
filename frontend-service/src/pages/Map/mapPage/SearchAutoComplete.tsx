@@ -1,18 +1,18 @@
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import { useInfiniteQuery } from 'react-query';
-import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
 import { InfoOutlined } from '@mui/icons-material';
-import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
-import { IEntity } from '../../../interfaces/entities';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useInfiniteQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getLocationProperties } from '../../../utils/map';
 

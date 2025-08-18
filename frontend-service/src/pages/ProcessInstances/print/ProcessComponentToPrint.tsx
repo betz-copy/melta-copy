@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
-import { EntityDates } from '../../Entity/components/EntityDates';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
+import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
+import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
+import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { IMongoStepInstancePopulated } from '../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
-import { BlueTitle } from '../../../common/BlueTitle';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
-import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { getStepInstanceByStepTemplateId } from '../../../utils/processWizard/steps';
-import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
+import { EntityDates } from '../../Entity/components/EntityDates';
 
 const ProcessComponentToPrint: React.FC<{
     processInstance: IMongoProcessInstancePopulated;

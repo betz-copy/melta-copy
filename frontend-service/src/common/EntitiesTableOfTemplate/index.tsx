@@ -110,6 +110,7 @@ export const getDatasource = <Data extends any = EntityData>(
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -143,6 +144,7 @@ export const getDatasource = <Data extends any = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
+                          childTemplateId,
                       ),
             );
 
@@ -250,6 +252,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     disableFilter?: boolean;
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    actionsColumnWidth?: number;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -298,6 +301,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             disableFilter = false,
             columnsToShow,
             setUpdatedTemplateIds,
+            actionsColumnWidth,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -435,6 +439,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             childEntityTemplateMap: childTemplates,
             currentUser,
             currentClientSideUser: clientSideUserEntity,
+            actionsColumnWidth,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 

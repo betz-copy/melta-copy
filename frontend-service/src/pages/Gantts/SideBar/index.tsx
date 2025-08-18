@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Grid } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import i18next from 'i18next';
+import { Box, Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
-import { Swap } from '../../../common/Swap';
+import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
 import { CompactDrawer } from '../../../common/CompactDrawer';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { Swap } from '../../../common/Swap';
 import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
-import { GanttItemsDisplay } from './GanttItemsDisplay';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { GanttItemsDisplay } from './GanttItemsDisplay';
 
 interface IGanttSideBarProps {
     gantt: IBasicGantt;

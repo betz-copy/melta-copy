@@ -8,7 +8,7 @@ import pickBy from 'lodash.pickby';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../../common/BlueTitle';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';

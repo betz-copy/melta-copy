@@ -1,16 +1,16 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useState } from 'react';
-import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Switch, Typography } from '@mui/material';
-import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
+import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Typography } from '@mui/material';
+import { FieldArray, FormikErrors } from 'formik';
 import i18next from 'i18next';
-import UserAutocomplete from '../../inputs/UserAutocomplete';
-import CreateUserCard from './ApproverCard';
-import { StepsGenericBlockProps } from './StepsBlocksInterface';
+import React, { useState } from 'react';
 import { ProcessTemplateWizardValues } from '.';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import UserAutocomplete from '../../inputs/UserAutocomplete';
+import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
 import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
+import CreateUserCard from './ApproverCard';
+import { StepsGenericBlockProps } from './StepsBlocksInterface';
 
 const StepsApproversBlock: React.FC<
     StepsGenericBlockProps & {
@@ -63,7 +63,7 @@ const StepsApproversBlock: React.FC<
 
                     <FormControlLabel
                         control={
-                            <Switch
+                            <MeltaSwitch
                                 id="disableAddApprovers"
                                 name="disableAddApprovers"
                                 onChange={(_e, checked) => {

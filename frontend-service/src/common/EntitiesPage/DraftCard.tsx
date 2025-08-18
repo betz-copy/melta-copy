@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useDraftsStore } from '../../stores/drafts';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { MenuButton } from '../MenuButton';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import type { Draft } from '../dialogs/entity/draftWarningDialog';

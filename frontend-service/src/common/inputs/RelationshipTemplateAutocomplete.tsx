@@ -48,7 +48,7 @@ const RelationshipTemplateAutocomplete: React.FC<{
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const relationshipTemplatesPopulatedOptions = Array.from(allowedRelationships.values()).map((relationshipTemplate) =>
-        populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates),
+        populateRelationshipTemplate(relationshipTemplate, entityTemplates),
     );
 
     const relationshipTemplatesPopulatedConstrainedOptions = getConstrainedOptions(

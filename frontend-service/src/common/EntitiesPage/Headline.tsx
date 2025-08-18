@@ -15,14 +15,15 @@ import SearchInput from '../inputs/SearchInput';
 import { IMongoCategory } from '../../interfaces/categories';
 import { useWorkspaceStore } from '../../stores/workspace';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
-import { BlueTitle } from '../BlueTitle';
-import { MeltaTooltip } from '../MeltaTooltip';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -201,7 +202,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
 
     const onSuccessCreate = (entity: IEntity) => {
         const handleTemplatesTablesView = () => {
-            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => (isChildTemplate(entityTemplate) ? entityTemplate.parentTemplate?._id : entityTemplate._id) === entity.templateId);
 
             if (template) {
                 try {

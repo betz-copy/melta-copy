@@ -87,7 +87,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
 
-    const childTemplateId = isChildTemplate(entityTemplate) ? entityTemplate._id : undefined;
+    const isChildEntityTemplate = isChildTemplate(entityTemplate);
+
+    const childTemplateId = isChildEntityTemplate ? entityTemplate._id : undefined;
+    const childTemplateParam = isChildEntityTemplate ? `?childTemplateId=${entityTemplate._id}` : '';
 
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
     const canWriteInstance = checkUserTemplatePermission(
@@ -106,12 +109,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
-                    return {
-                        ...expandedEntity,
-                        entity: data,
-                    };
-                });
+                queryClient.setQueryData(
+                    ['getExpandedEntity', entity.properties._id, { [entity.properties._id]: { maxLevel: 1 } }, { templateIds }],
+                    () => {
+                        return {
+                            ...expandedEntity,
+                            entity: data,
+                        };
+                    },
+                );
                 setUpdateStatusWithRuleBreachDialogState({ isOpen: false });
 
                 if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
@@ -218,7 +224,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Grid>
                                 <Grid
                                     onClick={() => {
-                                        navigate(`/entity/${entity.properties._id}/graph`);
+                                        navigate(`/entity/${entity.properties._id}/graph${childTemplateParam}`);
                                     }}
                                 >
                                     <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
@@ -233,14 +239,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(
-                                                    `/entity/${entity.properties._id}/duplicate${
-                                                        isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
-                                                    }`,
-                                                    {
-                                                        state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                    },
-                                                );
+                                                navigate(`/entity/${entity.properties._id}/duplicate${childTemplateParam}`, {
+                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                });
                                             }
                                             handleClose();
                                         }}

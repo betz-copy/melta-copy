@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */
-import React, { useEffect, useState } from 'react';
-import { Autocomplete, TextField, Box, FormControl } from '@mui/material';
 import { Close } from '@mui/icons-material';
+import { Autocomplete, Box, FormControl, TextField } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { ColoredEnumChip } from '../ColoredEnumChip';
-import { MeltaCheckbox } from '../MeltaCheckbox';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 
 export interface Option {
     value: string;
