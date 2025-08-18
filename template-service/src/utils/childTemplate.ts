@@ -10,18 +10,21 @@ const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedF
         Object.fromEntries(
             Object.entries(properties.properties)
                 .filter(([key]) => childPropertyKeys.includes(key))
-                .map(([key, parentProp]) => [
-                    key,
-                    {
-                        ...parentProp,
-                        defaultValue: child.properties.properties[key].defaultValue,
-                        filters: child.properties.properties[key].filters,
-                        isFilterByCurrentUser: child.filterByCurrentUserField === key,
-                        isFilterByUserUnit: child.filterByUnitUserField === key,
-                        isEditableByUser: child.properties.properties[key].isEditableByUser,
-                        display: child.properties.properties[key].display,
-                    },
-                ]),
+                .map(([key, parentProp]) => {
+                    const { defaultValue, filters, isEditableByUser, display } = child.properties.properties[key];
+                    return [
+                        key,
+                        {
+                            ...parentProp,
+                            defaultValue,
+                            filters,
+                            isFilterByCurrentUser: child.filterByCurrentUserField === key,
+                            isFilterByUserUnit: child.filterByUnitUserField === key,
+                            isEditableByUser,
+                            display,
+                        },
+                    ];
+                }),
         ),
     );
 

@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { ISearchFilter } from '../../../../interfaces/entities';
+import { FilterLogicalOperator, IFilterOfField, ISearchFilter } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -9,6 +9,7 @@ export const filterTemplateToSearchFilter = (
     filterModel: IFilterTemplate[],
     templateId: string,
     queryClient: QueryClient,
+    andOr: FilterLogicalOperator = FilterLogicalOperator.AND,
 ): ISearchFilter | undefined => {
     if (filterModel.length === 0) return undefined;
 
@@ -22,22 +23,24 @@ export const filterTemplateToSearchFilter = (
         return filterModelToFilterOfTemplatePerField(propertyTemplate, filterProperty, filterField);
     });
 
-    return {
-        $and: filters,
-    };
+    if (andOr === FilterLogicalOperator.AND) return { [FilterLogicalOperator.AND]: filters };
+    else return { [FilterLogicalOperator.OR]: filters };
 };
 
 export const FilterModelToFilterRecord = (
     filterModel: ISearchFilter | undefined,
     templateId: string,
     queryClient: QueryClient,
+    andOr: FilterLogicalOperator = FilterLogicalOperator.AND,
 ): IFilterTemplate[] => {
-    if (!filterModel?.$and || !Array.isArray(filterModel.$and)) return [];
+    if (!filterModel?.[andOr] || !Array.isArray(filterModel?.[andOr])) return [];
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId)!;
 
-    return filterModel.$and.reduce<IFilterTemplate[]>((acc, filter) => {
+    const fieldFilters = filterModel?.[andOr] as IFilterOfField[];
+
+    return fieldFilters.reduce<IFilterTemplate[]>((acc, filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
             if (!fieldFilter) return;
 
@@ -51,6 +54,7 @@ export const FilterModelToFilterRecord = (
                 });
             }
         });
+
         return acc;
     }, []);
 };
