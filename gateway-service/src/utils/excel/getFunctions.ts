@@ -10,10 +10,11 @@ import {
     IBrokenRule,
     IBrokenRuleEntity,
     IBrokenRulePopulated,
+    IChildTemplatePopulated,
+    IChildTemplateProperty,
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
     IEntity,
-    IChildTemplatePopulated,
     IEntitySingleProperty,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
@@ -85,7 +86,7 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
     return value;
 };
 
-export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
+export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
     const formats = ['relationshipReference', 'fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
     const itemsFormats = ['fileId', 'user'];
 
@@ -93,8 +94,9 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
         formats.includes(propertyTemplate.format ?? '') ||
         (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
     const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
+    const isDisplay = 'display' in propertyTemplate ? !!propertyTemplate.display : true;
 
-    return !unValidFormats && !isSerialNumber;
+    return !unValidFormats && !isSerialNumber && isDisplay;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
