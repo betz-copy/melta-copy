@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes, filterOfTemplateSchema } from '@microservices/shared';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes, filterOfTemplateSchema, ViewType } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
 const searchFilterSchema = Joi.object({
@@ -25,7 +25,7 @@ const ChildTemplateSchema = {
     }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
-    viewType: Joi.string().valid('categoryPage', 'userPage').required(),
+    viewType: Joi.string().valid(ViewType.categoryPage, ViewType.userPage).required(),
     isFilterByCurrentUser: Joi.boolean().default(false),
     isFilterByUserUnit: Joi.boolean().default(false),
     filterByCurrentUserField: Joi.string(),

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { ViewType } from '@microservices/shared';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
@@ -43,7 +44,7 @@ const ChildTemplateSchema = new mongoose.Schema(
         },
         viewType: {
             type: String,
-            enum: ['categoryPage', 'userPage'],
+            enum: [ViewType.categoryPage, ViewType.userPage],
             required: true,
         },
         isFilterByCurrentUser: {

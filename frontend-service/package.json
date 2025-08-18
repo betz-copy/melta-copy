@@ -51,7 +51,7 @@
     "@mui/styles": "^5.2.3",
     "@mui/x-date-pickers": "^5.0.20",
     "@mui/x-license-pro": "^6.10.2",
-    "@mui/x-tree-view-pro": "^8.9.0",
+    "@mui/x-tree-view-pro": "^8.10.0",
     "@react-awesome-query-builder/mui": "^6.4.2",
     "@reactour/tour": "^3.1.2",
     "@rjsf/core": "^5.18.1",

@@ -43,7 +43,7 @@ const CategoryCheckboxPermission: React.FC<{
         );
 
     return (
-        <Grid item container>
+        <Grid item container paddingY={0.5}>
             <Grid xs={6} display="flex" alignItems="center">
                 <IconButton
                     aria-label="arrowLeftRounded"

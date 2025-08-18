@@ -1,9 +1,7 @@
 /* eslint-disable no-nested-ternary */
-import i18next from 'i18next';
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import {
     FilterModelToFilterRecord,
@@ -397,7 +395,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
-                color: comment && !color ? commentColors[i18next.t('validation.colors.blue')] : color,
+                color: comment && !color ? '#4752B6' : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -771,5 +769,6 @@ export {
     updateActionToEntity,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-    updateEnumFieldRequest,
+    updateEnumFieldRequest
 };
+

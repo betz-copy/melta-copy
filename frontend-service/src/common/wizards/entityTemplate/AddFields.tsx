@@ -90,25 +90,28 @@ const agGridSetFilterSchema = Yup.object({
 });
 
 // Dynamic filter field validation based on `filterType`
-const filterFieldSchema = Yup.lazy((value: any) => {
-    switch (value?.filterType) {
-        case 'text':
-            return agGridTextFilterSchema;
-        case 'number':
-            return agGridNumberFilterSchema;
-        case 'date':
-            return agGridDateFilterSchema;
-        case 'set':
-            return agGridSetFilterSchema;
-        default:
-            return Yup.mixed().required(i18next.t('validation.required'));
-    }
-});
+export const filterFieldSchema = (isRequired: boolean = true) =>
+    Yup.lazy((value: any) => {
+        const makeOptional = (schema) => (isRequired ? schema : schema.notRequired().nullable());
+
+        switch (value?.filterType) {
+            case 'text':
+                return makeOptional(agGridTextFilterSchema);
+            case 'number':
+                return makeOptional(agGridNumberFilterSchema);
+            case 'date':
+                return makeOptional(agGridDateFilterSchema);
+            case 'set':
+                return makeOptional(agGridSetFilterSchema);
+            default:
+                return isRequired ? Yup.mixed().required(i18next.t('validation.required')) : Yup.mixed().notRequired().nullable();
+        }
+    });
 
 export const filtersSchema = Yup.array().of(
     Yup.object({
         filterProperty: Yup.string().required(i18next.t('validation.required')),
-        filterField: filterFieldSchema,
+        filterField: filterFieldSchema(),
     }),
 );
 

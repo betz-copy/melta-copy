@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 import {
     BadRequestError,
+    childTemplateKeys,
     ConfigTypes,
     DashboardItemType,
     dePopulateChildProperties,
@@ -50,7 +51,6 @@ import {
     ServiceError,
     TableItem,
     UploadedFile,
-    childTemplateKeys,
     ValidationError,
     IMongoPrintingTemplate,
 } from '@microservices/shared';
@@ -1815,6 +1815,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async updateChildTemplateById(templateId: string, childTemplate: IChildTemplate) {
         const updatedChild = await this.entityTemplateService.updateChildTemplate(templateId, childTemplate);
         if (!updatedChild) throw new BadRequestError('Failed to updated child');
+
+        const { requiredConstraints } = await this.instancesService.getConstraintsOfTemplate(childTemplate.parentTemplateId);
+
+        const requiredNotInProperties = requiredConstraints.find(
+            (requiredKey) => !Object.keys(childTemplate.properties.properties).includes(requiredKey),
+        );
+        if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
 
         const [childTemplatePopulatedWithConstraints] = await this.getAndPopulateAllTemplatesConstraints([updatedChild]);
         return childTemplatePopulatedWithConstraints;

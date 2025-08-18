@@ -4,8 +4,7 @@ import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { commentColors } from '../../../inputs/JSONSchemaFormik/RjsfCommentWidget';
-import SelectAutocomplete from '../../../inputs/SelectAutocomplete';
+import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
 import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
 import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
 
@@ -61,7 +60,6 @@ export const Switches: React.FC<SwitchesProps> = ({
 
     const calculateTime = `properties[${index}].calculateTime`;
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
-    const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
 
     // TODO: when upgrading the mongo version to v5, update the types and delete the (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[] type
     const relationshipRefs = Array.from(entityTemplates.values()).reduce(
@@ -305,26 +303,15 @@ export const Switches: React.FC<SwitchesProps> = ({
                         }
                         label={i18next.t('validation.hideFromDetailsPage')}
                     />
-                    <SelectAutocomplete
-                        options={commentColorsObj}
-                        value={
-                            value.color
-                                ? {
-                                      value: value.color,
-                                      label: Object.entries(commentColors).find(([, val]) => val === value.color)?.[0]!,
-                                  }
-                                : commentColorsObj[0]
-                        }
-                        onValueChange={(newValue) => {
+                    <MinimizedColorPicker
+                        color={value.color}
+                        onColorChange={(newValue) => {
                             setValues?.((prev) => ({
                                 ...prev,
-                                color: newValue as string,
+                                color: newValue,
                             }));
                         }}
-                        colorsOptions={commentColors}
-                        disableClearable
-                        label={i18next.t('validation.colors.colors')}
-                        overrideSx={{ width: '150px' }}
+                        circleSize="1.6rem"
                     />
                 </>
             )}
