@@ -14,6 +14,7 @@ import BlueTitle from '../../MeltaDesigns/BlueTitle';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { createPrintingTemplateRequest, updatePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
+import { IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
 
 interface PrintingTemplateCardProps {
     onClose: () => void;
@@ -44,8 +45,9 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     const createMutation = useMutation({
         mutationFn: createPrintingTemplateRequest,
         onSuccess: (savedTemplate) => {
-            queryClient.setQueryData<IMongoPrintingTemplate[]>('getPrintingTemplates', (old = []) => {
-                return [...old, savedTemplate];
+            queryClient.setQueryData<IPrintingTemplateMap>('getPrintingTemplates', (printingTemplateMap) => {
+                printingTemplateMap!.set(savedTemplate._id, savedTemplate);
+                return printingTemplateMap!;
             });
             toast.success(i18next.t('wizard.printingTemplate.createdSuccessfully'));
             onClose();
@@ -58,14 +60,9 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     const updateMutation = useMutation({
         mutationFn: ({ id, data }: { id: string; data: any }) => updatePrintingTemplateRequest(id, data),
         onSuccess: (savedTemplate) => {
-            queryClient.setQueryData<IMongoPrintingTemplate[]>('getPrintingTemplates', (old = []) => {
-                const idx = old.findIndex((t) => t._id === savedTemplate._id);
-                if (idx !== -1) {
-                    const updated = [...old];
-                    updated[idx] = savedTemplate;
-                    return updated;
-                }
-                return old;
+            queryClient.setQueryData<IPrintingTemplateMap>('getPrintingTemplates', (printingTemplateMap) => {
+                printingTemplateMap!.set(savedTemplate._id, savedTemplate);
+                return printingTemplateMap!;
             });
             toast.success(i18next.t('wizard.printingTemplate.updatedSuccessfully'));
             onClose();

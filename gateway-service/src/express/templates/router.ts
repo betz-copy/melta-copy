@@ -313,6 +313,8 @@ templatesRouter.post(
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.createPrintingTemplate,
 );
+templatesRouter.get('/print/all', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.getAllPrintingTemplates);
+
 templatesRouter.get(
     '/print/:id',
     ValidateRequest(getPrintingTemplateByIdSchema),

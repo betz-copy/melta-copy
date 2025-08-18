@@ -1,6 +1,22 @@
 import Joi from 'joi';
 import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 
+const printingTemplateBodySchema = Joi.object({
+    name: variableNameValidation.required(),
+    sections: Joi.array()
+        .items(
+            Joi.object({
+                categoryId: MongoIdSchema.required(),
+                entityTemplateId: MongoIdSchema.required(),
+                selectedColumns: Joi.array().items(Joi.string()).required(),
+            }),
+        )
+        .required(),
+    compactView: Joi.boolean().required(),
+    addEntityCheckbox: Joi.boolean().required(),
+    appendSignatureField: Joi.boolean().required(),
+});
+
 // GET /api/print/templates/:templateId
 export const getTemplateByIdRequestSchema = Joi.object({
     query: {},
@@ -13,42 +29,14 @@ export const getTemplateByIdRequestSchema = Joi.object({
 // POST /api/print/templates
 export const createTemplateRequestSchema = Joi.object({
     query: {},
-    body: {
-        name: variableNameValidation.required(),
-        sections: Joi.array()
-            .items(
-                Joi.object({
-                    categoryId: MongoIdSchema.required(),
-                    entityTemplateId: MongoIdSchema.required(),
-                    selectedColumns: Joi.array().items(Joi.string()).required(),
-                }),
-            )
-            .required(),
-        compactView: Joi.boolean().required(),
-        addEntityCheckbox: Joi.boolean().required(),
-        appendSignatureField: Joi.boolean().required(),
-    },
+    body: printingTemplateBodySchema,
     params: {},
 });
 
 // PUT /api/print/templates/:templateId
 export const updateTemplateByIdRequestSchema = Joi.object({
     query: {},
-    body: {
-        name: variableNameValidation.required(),
-        sections: Joi.array()
-            .items(
-                Joi.object({
-                    categoryId: MongoIdSchema.required(),
-                    entityTemplateId: MongoIdSchema.required(),
-                    selectedColumns: Joi.array().items(Joi.string()).required(),
-                }),
-            )
-            .required(),
-        compactView: Joi.boolean().required(),
-        addEntityCheckbox: Joi.boolean().required(),
-        appendSignatureField: Joi.boolean().required(),
-    },
+    body: printingTemplateBodySchema,
     params: {
         templateId: MongoIdSchema.required(),
     },

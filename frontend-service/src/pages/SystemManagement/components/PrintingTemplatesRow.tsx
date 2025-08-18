@@ -1,29 +1,17 @@
 import React, { useState } from 'react';
 import { Grid, Typography, Dialog } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-// import { useUserStore } from '../../../stores/user';
 import i18next from 'i18next';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { CreateButton } from './CreateButton';
-// import { environment } from '../../../globals';
 import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
 import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
-import { searchPrintingTemplatesRequest, deletePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 import { PrintingTemplateCard } from './PrintingTemplateCard';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { toast } from 'react-toastify';
-
-const fetchPrintingTemplates = async () => {
-    return await searchPrintingTemplatesRequest({});
-};
-
-const deletePrintingTemplate = async (templateId: string) => {
-    return await deletePrintingTemplateRequest(templateId);
-};
+import { deletePrintingTemplate, fetchPrintingTemplates } from '../../../services/templates/printingTemplateRowService';
 
 const PrintingTemplatesRow: React.FC = () => {
-    // const { infiniteScrollPageCount } = environment.processInstances;
-    // const currentUser = useUserStore((state) => state.user);
     const [searchText, setSearchText] = useState('');
     const queryClient = useQueryClient();
 

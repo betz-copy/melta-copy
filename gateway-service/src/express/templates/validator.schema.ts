@@ -398,42 +398,30 @@ export const createOrderConfigSchema = Joi.object({
 });
 
 // Printing Templates
+const printingTemplateBodySchema = Joi.object({
+    name: Joi.string().required(),
+    sections: Joi.array()
+        .items(
+            Joi.object({
+                categoryId: MongoIdSchema.required(),
+                entityTemplateId: MongoIdSchema.required(),
+                selectedColumns: Joi.array().items(Joi.string()).required(),
+            }),
+        )
+        .required(),
+    compactView: Joi.boolean().required(),
+    addEntityCheckbox: Joi.boolean().required(),
+    appendSignatureField: Joi.boolean().required(),
+});
+
 export const createPrintingTemplateSchema = Joi.object({
     query: {},
-    body: {
-        name: Joi.string().required(),
-        sections: Joi.array()
-            .items(
-                Joi.object({
-                    categoryId: MongoIdSchema.required(),
-                    entityTemplateId: MongoIdSchema.required(),
-                    selectedColumns: Joi.array().items(Joi.string()).required(),
-                }),
-            )
-            .required(),
-        compactView: Joi.boolean().required(),
-        addEntityCheckbox: Joi.boolean().required(),
-        appendSignatureField: Joi.boolean().required(),
-    },
+    body: printingTemplateBodySchema,
 });
 
 export const updatePrintingTemplateSchema = Joi.object({
     query: {},
-    body: {
-        name: Joi.string().required(),
-        sections: Joi.array()
-            .items(
-                Joi.object({
-                    categoryId: MongoIdSchema.required(),
-                    entityTemplateId: MongoIdSchema.required(),
-                    selectedColumns: Joi.array().items(Joi.string()).required(),
-                }),
-            )
-            .required(),
-        compactView: Joi.boolean().required(),
-        addEntityCheckbox: Joi.boolean().required(),
-        appendSignatureField: Joi.boolean().required(),
-    },
+    body: printingTemplateBodySchema,
 });
 
 export const deletePrintingTemplateSchema = Joi.object({

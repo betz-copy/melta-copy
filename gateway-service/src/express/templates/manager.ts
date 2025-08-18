@@ -52,6 +52,7 @@ import {
     UploadedFile,
     childTemplateKeys,
     ValidationError,
+    IMongoPrintingTemplate,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -296,6 +297,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             categoryOrder = null;
         }
 
+        const allPrintingTemplates: IMongoPrintingTemplate[] = [];
+
         return {
             categoryOrder,
             categories: allAllowedCategories,
@@ -304,6 +307,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             rules: allowedRules,
             processTemplates,
             childTemplates: await this.getAndPopulateAllTemplatesConstraints(childTemplatesPopulated, uniqueConstraints),
+            printingTemplates: allPrintingTemplates,
         };
     }
 
