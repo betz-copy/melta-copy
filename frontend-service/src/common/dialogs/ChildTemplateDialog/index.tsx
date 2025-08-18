@@ -94,18 +94,16 @@ const ChildTemplateDialog: React.FC<{
         { display, filters, defaultValue, isEditableByUser }: IEntitySingleProperty & IChildTemplateProperty,
         parentId: string,
         forceDisplay = false,
-    ): IChildTemplateFormProperty => {
-        return {
-            defaultValue,
-            isEditableByUser,
-            display: forceDisplay || display,
-            filters: filters
-                ? FilterModelToFilterRecord(parseFilters(filters), parentId, queryClient, FilterLogicalOperator.OR)
-                      .map(({ filterField }) => filterField)
-                      .filter((f): f is IAGGridFilter => f !== undefined)
-                : undefined,
-        };
-    };
+    ): IChildTemplateFormProperty => ({
+        defaultValue,
+        isEditableByUser,
+        display: forceDisplay || display,
+        filters: filters
+            ? FilterModelToFilterRecord(parseFilters(filters), parentId, queryClient, FilterLogicalOperator.OR)
+                  .map(({ filterField }) => filterField)
+                  .filter((f): f is IAGGridFilter => f !== undefined)
+            : undefined,
+    });
 
     const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
         const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries([
@@ -119,8 +117,8 @@ const ChildTemplateDialog: React.FC<{
             displayName: displayName.replace(`${entityTemplate.displayName}-`, ''),
             category: rest._id ? category : entityTemplate.category,
             properties: { properties: newProperties },
-            filterByCurrentUserField: rest.filterByCurrentUserField ?? undefined, //somehow it's null in mongo
-            filterByUnitUserField: rest.filterByUnitUserField ?? undefined, //somehow it's null in mongo
+            filterByCurrentUserField: rest.filterByCurrentUserField ?? undefined,
+            filterByUnitUserField: rest.filterByUnitUserField ?? undefined,
         };
     };
 

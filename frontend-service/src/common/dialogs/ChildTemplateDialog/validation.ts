@@ -93,10 +93,14 @@ export const childTemplateSchema = (existingNames: string[], existingDisplayName
         name: Yup.string()
             .matches(variableNameValidation, i18next.t('validation.variableName'))
             .required(i18next.t('validation.required'))
-            .test('unique-name', i18next.t('validation.existingName'), (val) => !existingNames.includes(val || '')),
+            .test('unique-name', i18next.t('validation.existingName'), (val) => !existingNames.includes(`${parentTemplate.name}_${val}` || '')),
         displayName: Yup.string()
             .required(i18next.t('validation.required'))
-            .test('unique-displayName', i18next.t('validation.existingDisplayName'), (val) => !existingDisplayNames.includes(val || '')),
+            .test(
+                'unique-displayName',
+                i18next.t('validation.existingDisplayName'),
+                (val) => !existingDisplayNames.includes(`${parentTemplate.displayName}-${val}` || ''),
+            ),
         description: Yup.string(),
         category: Yup.object({
             _id: Yup.string().required(i18next.t('validation.required')),
