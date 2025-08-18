@@ -1,5 +1,6 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
@@ -13,17 +14,16 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
+import { UserState, useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { IChooseTemplateMode } from '../ChooseTemplate';
 import { DraftWarningDialog } from '../draftWarningDialog';
 import { ExportFormats } from '../ExportFormats';
 import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-import { IChooseTemplateMode } from '../ChooseTemplate';
-import { UserState, useUserStore } from '../../../../stores/user';
-import { format } from 'date-fns';
 
 const { signaturePrefix } = environment;
 

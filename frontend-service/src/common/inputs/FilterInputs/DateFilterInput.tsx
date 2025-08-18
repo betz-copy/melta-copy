@@ -111,7 +111,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                                 sx={{ marginLeft: 0.5 }}
                             />
                         }
-                        label={i18next.t('createChildTemplateDialog.currentDate')}
+                        label={i18next.t('childTemplate.currentDate')}
                         componentsProps={{
                             typography: { sx: { fontSize: '14px' } },
                         }}

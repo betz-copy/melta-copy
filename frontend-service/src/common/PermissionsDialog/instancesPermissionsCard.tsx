@@ -58,7 +58,7 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             </Box>
                         </Grid>
-                        <Grid item margin={2}>
+                        <Grid item margin={1.5}>
                             <SearchInput
                                 value={searchText?.value}
                                 onChange={(value) => {
@@ -71,13 +71,13 @@ const InstancesPermissionsCard: React.FC<{
                                 showBorder
                             />
                         </Grid>
-                        <Grid item xs={6} marginTop="10px">
-                            <Typography sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight="bold">
+                        <Grid item xs={5.9} marginTop="10px">
+                            <Typography color={darkMode ? 'white' : '#53566E'} sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight={600}>
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
                         <Grid item xs={3} marginTop="10px">
-                            <Typography paddingLeft="15px" fontWeight="bold">
+                            <Typography color={darkMode ? 'white' : '#53566E'} paddingLeft="10px" fontWeight={600}>
                                 {i18next.t('permissions.permissionsOfUserDialog.read')}
                             </Typography>
                             {!viewMode && (
@@ -92,11 +92,14 @@ const InstancesPermissionsCard: React.FC<{
                                             onChange={checkboxAllProps?.permissionType.read.onChange}
                                         />
                                     }
+                                    componentsProps={{
+                                        typography: { sx: { fontSize: '14px' } },
+                                    }}
                                 />
                             )}
                         </Grid>
-                        <Grid item xs={3} marginTop="10px">
-                            <Typography paddingLeft="15px" fontWeight="bold">
+                        <Grid item xs={3.1} marginTop="10px">
+                            <Typography color={darkMode ? 'white' : '#53566E'} paddingLeft="10px" fontWeight={600}>
                                 {i18next.t('permissions.permissionsOfUserDialog.write')}
                             </Typography>
                             {!viewMode && (
@@ -111,32 +114,37 @@ const InstancesPermissionsCard: React.FC<{
                                             disabled={checkboxAllProps?.disabled}
                                         />
                                     }
+                                    componentsProps={{
+                                        typography: { sx: { fontSize: '14px' } },
+                                    }}
                                 />
                             )}
                         </Grid>
                         <Grid item xs={12}>
-                            <Divider />
+                            <Divider color="#9398C2" />
                         </Grid>
                     </Grid>
-                    {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType, entityTemplates }) => (
-                        <>
-                            <CategoryCheckboxPermission
-                                categoryDisplayName={categoryDisplayName}
-                                viewMode={viewMode}
-                                disabled={disabled}
-                                permissionType={permissionType}
-                                key={categoryId}
-                                formikProps={formikProps}
-                                entityTemplates={entityTemplates}
-                                permissionsPath={permissionsPath}
-                                categoryId={categoryId}
-                                workspaceId={workspaceId}
-                            />
-                            <Grid item xs={12}>
-                                <Divider sx={{ opacity: 0.5 }} />
+                    <Grid height="250px" width="100%" sx={{ overflowY: 'auto' }}>
+                        {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType, entityTemplates }) => (
+                            <Grid gap={2}>
+                                <CategoryCheckboxPermission
+                                    categoryDisplayName={categoryDisplayName}
+                                    viewMode={viewMode}
+                                    disabled={disabled}
+                                    permissionType={permissionType}
+                                    key={categoryId}
+                                    formikProps={formikProps}
+                                    entityTemplates={entityTemplates}
+                                    permissionsPath={permissionsPath}
+                                    categoryId={categoryId}
+                                    workspaceId={workspaceId}
+                                />
+                                <Grid item xs={12}>
+                                    <Divider color="#EBEFFA" sx={{ opacity: 0.5 }} />
+                                </Grid>
                             </Grid>
-                        </>
-                    ))}
+                        ))}
+                    </Grid>
                 </Grid>
             </Box>
         </Box>

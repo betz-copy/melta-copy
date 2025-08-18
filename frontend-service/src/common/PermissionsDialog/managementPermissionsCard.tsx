@@ -39,6 +39,9 @@ const ManagementCheckbox: React.FC<ManagementCheckboxProps> = ({ type, onChange,
                     />
                 )
             }
+            componentsProps={{
+                typography: { sx: { fontSize: '14px' } },
+            }}
         />
     );
 };
