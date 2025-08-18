@@ -2,6 +2,7 @@
 import { Autocomplete, Grid, TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import heLocale from 'date-fns/locale/he';
 import i18next from 'i18next';
 import React from 'react';
 import { useDarkModeStore } from '../../../../stores/darkMode';
@@ -111,8 +112,13 @@ export const GeneralDetailsFields = ({
                     </Grid>
                 )}
                 <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider
+                        dateAdapter={AdapterDateFns}
+                        adapterLocale={heLocale}
+                        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                    >
                         <DatePicker
+                            inputFormat="dd/MM/yyyy"
                             maxDate={values.endDate}
                             label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                             value={values.startDate}
@@ -141,8 +147,13 @@ export const GeneralDetailsFields = ({
                     </LocalizationProvider>
                 </Grid>
                 <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider
+                        dateAdapter={AdapterDateFns}
+                        adapterLocale={heLocale}
+                        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                    >
                         <DatePicker
+                            inputFormat="dd/MM/yyyy"
                             minDate={values.startDate}
                             label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                             value={values.endDate}
