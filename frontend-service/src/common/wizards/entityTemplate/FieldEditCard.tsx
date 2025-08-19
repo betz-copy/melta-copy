@@ -257,7 +257,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     return (
-        <Grid item alignSelf="stretch" marginBottom="1rem">
+        <Grid alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -361,7 +361,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             })}
                                     </TextField>
                                 </Grid>
-                                <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                <Grid container justifyContent="space-between" flexWrap="nowrap">
                                     <PropertiesTypes
                                         entity={entity}
                                         value={value}
@@ -380,7 +380,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     />
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
+                            <Grid container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                 <Switches
                                     value={value}
                                     setValues={setValues}
@@ -462,10 +462,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </MeltaTooltip>
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                            <Grid container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                                 {unique && !value.identifier && value.type !== 'serialNumber' && (
                                     <Grid container direction="row">
-                                        <Grid item container alignItems="center" flexWrap="nowrap">
+                                        <Grid container alignItems="center" flexWrap="nowrap">
                                             <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
                                                 <FormControlLabel
                                                     control={

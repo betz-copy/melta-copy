@@ -3,7 +3,6 @@ import TextField from '@mui/material/TextField';
 import { PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DatePickerSlotsComponent } from '@mui/x-date-pickers/DatePicker/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
@@ -16,7 +15,6 @@ interface DatePickerWrapperProps {
     minDate?: Date | string | null;
     maxDate?: Date | string | null;
     sx?: SxProps;
-    components?: Partial<DatePickerSlotsComponent>;
     isStartDate?: boolean;
     directionIsRow?: boolean;
     readOnly?: boolean;
@@ -31,7 +29,6 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     minDate,
     maxDate,
     sx,
-    components,
     isStartDate = false,
     directionIsRow,
     readOnly = false,
@@ -41,35 +38,26 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
         adapterLocale={he}
-        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
+        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
     >
         <DatePicker
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}
             label={label}
-            value={value}
+            value={!value ? null : typeof value === 'string' ? new Date(value) : value}
             onChange={onChange}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    size="small"
-                    sx={{
-                        boxSizing: 'border-box',
-                        width: '100%',
-                        ...sx,
-                    }}
-                    inputProps={{
-                        ...params.inputProps,
-                        readOnly: disableKeyboardInput,
-                    }}
-                />
-            )}
-            InputProps={{
-                style: {
-                    borderRadius: borderRadius || !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
+            slots={{ textField: TextField }}
+            slotProps={{
+                textField: {
+                    size: 'small',
+                    fullWidth: true,
+                    sx: { boxSizing: 'border-box', width: '100%', ...sx },
+                    InputProps: {
+                        style: { borderRadius: borderRadius || (!directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px') },
+                    },
+                    inputProps: { readOnly: disableKeyboardInput || readOnly, format: 'dd/MM/yyyy' },
                 },
             }}
-            components={components}
             readOnly={readOnly}
             disabled={readOnly}
         />

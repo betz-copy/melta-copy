@@ -19,7 +19,7 @@ export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDelete
                     {`${i18next.t('deleteProcessNotification.deleteProcessNotification')} `}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography display="inline">{`${i18next.t('deleteProcessNotification.theProcess')} `}</Typography>
                 <Typography display="inline" fontWeight="bold">{`${processName} `}</Typography>
 

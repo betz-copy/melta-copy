@@ -336,12 +336,12 @@ const EntityTemplatesRow: React.FC = () => {
     }, [categories]);
 
     return (
-        <Grid item container>
+        <Grid container>
             <Grid container spacing={1} alignItems="center">
-                <Grid item>
+                <Grid>
                     <SearchInput placeholder={i18next.t('globalSearch.searchLabel')} borderRadius="7px" onChange={setSearchText} value={searchText} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <SelectCheckbox
                         title={i18next.t('categories')}
                         options={allowedCategoriesToShow}
@@ -354,7 +354,7 @@ const EntityTemplatesRow: React.FC = () => {
                         horizontalOrigin={156}
                     />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <FilterButton
                         onClick={() => {
                             setSearchText('');
@@ -402,7 +402,7 @@ const EntityTemplatesRow: React.FC = () => {
                         useContainer={false}
                     >
                         {(entityTemplatesWithCategory) => (
-                            <Grid item key={entityTemplatesWithCategory.category._id}>
+                            <Grid key={entityTemplatesWithCategory.category._id}>
                                 <CategoryEntitiesBox
                                     entityTemplatesWithCategory={entityTemplatesWithCategory}
                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}

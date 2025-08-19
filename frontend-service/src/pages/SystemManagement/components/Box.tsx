@@ -28,7 +28,7 @@ export const Box: React.FC<BoxProps> = ({ children, header, addingIcon, onHover 
             <Grid container direction="column">
                 {header}
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container gap="15px" direction="column">
+                    <Grid container gap="15px" direction="column">
                         {children}
                     </Grid>
                 </CardContent>

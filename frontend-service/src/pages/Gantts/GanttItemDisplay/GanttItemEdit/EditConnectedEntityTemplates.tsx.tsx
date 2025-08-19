@@ -40,12 +40,12 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
     const connectedEntityTemplatesKey = `${itemKey}.connectedEntityTemplates`;
 
     return (
-        <Grid item container direction="column" alignItems="stretch">
+        <Grid container direction="column" alignItems="stretch">
             <FieldArray name={connectedEntityTemplatesKey} validateOnChange={false}>
                 {({ push, remove }) => (
                     <>
                         {Boolean(ganttItem.connectedEntityTemplates.length) && (
-                            <Grid item alignSelf="center">
+                            <Grid alignSelf="center">
                                 <ConnectionIcon />
                             </Grid>
                         )}
@@ -89,7 +89,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                         onRemove={() => remove(index)}
                                     />
 
-                                    <Grid item>
+                                    <Grid>
                                         <FormikAutoComplete
                                             formik={formik}
                                             formikField={`${itemConnectedEntityTemplateKey}.relationshipTemplateId`}
@@ -110,7 +110,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                             }}
                                         />
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <FormikAutoComplete
                                             multiple
                                             hideSelectedOptions
@@ -126,7 +126,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                             );
                         })}
 
-                        <Grid item alignSelf="center">
+                        <Grid alignSelf="center">
                             <Button
                                 onClick={() =>
                                     push({

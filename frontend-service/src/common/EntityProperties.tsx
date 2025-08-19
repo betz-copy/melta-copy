@@ -98,7 +98,7 @@ export const formatToString = (
             return (
                 <Grid container gap={1}>
                     <MeltaTooltip title={userObject.fullName}>
-                        <Grid item>
+                        <Grid>
                             <Chip avatar={<UserAvatar user={userObject} size={25} bgColor="1E2775" />} label={userObject.fullName} />
                         </Grid>
                     </MeltaTooltip>
@@ -125,14 +125,14 @@ export const formatToString = (
         }
         if (property.items?.format === 'user') {
             return (
-                <Grid container item>
+                <Grid container>
                     <OverflowWrapper
                         items={value.map((val) => JSON.parse(val))}
                         getItemKey={(item: any) => item._id}
                         renderItem={(item) => (
-                            <Grid item>
+                            <Grid>
                                 <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                                    <Grid item>
+                                    <Grid>
                                         <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
                                     </Grid>
                                 </MeltaTooltip>
@@ -304,7 +304,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 return (
                     <Grid
                         key={propertyKey}
-                        item
                         container
                         flexDirection="row"
                         style={{
@@ -312,12 +311,11 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             marginBottom: '20px',
                         }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
-                        xs={comment ? 12 : undefined}
+                        size={{ xs: comment ? 12 : undefined }}
                     >
-                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                        <Grid container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
                             {!comment && (
                                 <Grid
-                                    item
                                     style={{
                                         width: overrideStyleInLongText ? '10%' : '30%',
                                     }}
@@ -340,7 +338,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 </Grid>
                             )}
                             <Grid
-                                item
                                 container
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
@@ -371,7 +368,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         <HighlightText text={innerContent} searchedText={searchedText} isLink />
                                     </Typography>
                                 </MeltaTooltip>
-                                <Grid item>
+                                <Grid>
                                     {hideField && (
                                         <IconButton
                                             onClick={(event) => {
@@ -461,7 +458,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             return (
                                 <Grid
                                     container
-                                    item
                                     sx={{
                                         width: '100%',
                                         borderRadius: '10px',

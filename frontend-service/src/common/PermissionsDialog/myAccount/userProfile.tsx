@@ -20,7 +20,7 @@ const UserProfile: React.FC<{
 
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
-            <Grid item width="100%" display="flex" justifyItems="start">
+            <Grid width="100%" display="flex" justifyItems="start">
                 <MeltaTooltip title={i18next.t(`user.${editProfile ? 'close' : 'edit'}`)} placement="left">
                     <IconButton
                         onClick={() => {
@@ -39,7 +39,7 @@ const UserProfile: React.FC<{
             </Grid>
 
             {editProfile && (
-                <Grid item marginTop={2}>
+                <Grid marginTop={2}>
                     <UserProfilePicker
                         user={existingUser}
                         onPick={(value?: any) => {

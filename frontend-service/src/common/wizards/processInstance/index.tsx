@@ -1,5 +1,4 @@
-import { History } from '@mui/icons-material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Close, History } from '@mui/icons-material';
 import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { AxiosError } from 'axios';
@@ -136,12 +135,11 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         color: (theme) => theme.palette.grey[500],
                     }}
                 >
-                    <CloseIcon fontSize="large" />
+                    <Close fontSize="large" />
                 </IconButton>
                 <Grid container flexDirection="row" height="100%" flexWrap="nowrap">
                     <Grid
                         container
-                        item
                         height="100%"
                         flexDirection="column"
                         alignItems="center"
@@ -155,8 +153,8 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             boxShadow: '10px 10px 15px 10px #888888',
                         }}
                     >
-                        <Grid container item flexDirection="column" width="100%" height="100%">
-                            <Grid item height="5%">
+                        <Grid container flexDirection="column" width="100%" height="100%">
+                            <Grid height="5%">
                                 <MeltaTooltip
                                     componentsProps={{
                                         tooltip: {
@@ -183,7 +181,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     />
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid item height="95%">
+                            <Grid height="95%">
                                 <GeneralDetails
                                     detailsFormikData={detailsFormikData}
                                     processInstance={processInstance}
@@ -200,10 +198,10 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
+                    <Grid container flexBasis="75%" flexDirection="column" padding="15px">
                         {activeStep === 0 && contentDisplay === environment.processDetailsContentDisplay.summary && (
                             <Grid container flexDirection="column" width="100%" height="100%" flexWrap="nowrap">
-                                <Grid item alignSelf="flex-end" height="50px">
+                                <Grid alignSelf="flex-end" height="50px">
                                     <MeltaTooltip
                                         title={
                                             openActivityPopper
@@ -225,7 +223,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                 </Grid>
                                 {openActivityPopper && (
                                     <Grid
-                                        item
                                         container
                                         direction="column"
                                         wrap="nowrap"

@@ -61,8 +61,8 @@ const MapFilters = ({
     }, [templatesWithLocationField]);
 
     return (
-        <Grid item zIndex={1000} top={10} container wrap="nowrap" gap="15px">
-            <Grid item>
+        <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
+            <Grid>
                 <TemplatesSelectCheckbox
                     title={i18next.t('entityTemplatesCheckboxLabel')}
                     templates={templatesWithLocationField}
@@ -74,7 +74,7 @@ const MapFilters = ({
                     overrideSx={{ background: darkMode ? '#121212' : '#FFFFFF' }}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <SearchAutoComplete
                     selectedTemplates={selectedTemplates}
                     handleEntityClick={moveToEntityLocations}
@@ -82,7 +82,7 @@ const MapFilters = ({
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
             </Grid>
         </Grid>

@@ -63,7 +63,6 @@ const Value: React.FC<{
     return (
         <Grid container justifyContent="space-between" alignItems="center">
             <Grid
-                item
                 sx={{
                     fontFamily: 'Rubik',
                     overflow: 'hidden',
@@ -111,7 +110,7 @@ const Value: React.FC<{
             </Popover>
 
             {hideValue && (
-                <Grid item>
+                <Grid>
                     <IconButton onClick={handleClick}>
                         {hideField ? <VisibilityOff style={{ color: '#9398C2' }} /> : <Visibility style={{ color: '#9398C2' }} />}
                     </IconButton>

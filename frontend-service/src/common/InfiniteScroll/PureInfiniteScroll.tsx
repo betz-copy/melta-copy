@@ -60,7 +60,6 @@ export const PureInfiniteScroll = <T extends any>({
                 page.map((item) => (
                     <Grid
                         justifyContent="space-between"
-                        item
                         key={getItemId(item)}
                         {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
                     >

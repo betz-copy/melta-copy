@@ -1,5 +1,4 @@
-import AddIcon from '@mui/icons-material/Add';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import { Add, FilterAltOff } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -65,10 +64,10 @@ const IFramesPageHeadline: React.FC<{
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid container spacing={3} wrap="nowrap" alignItems="center">
-                <Grid item>
+                <Grid>
                     <BlueTitle title={i18next.t('pages.iFrames')} component="h4" variant="h4" style={{ fontSize: headlineTitleFontSize }} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <SelectCheckbox<IMongoIFrame>
                         title={i18next.t('iFrames.arrangementIFrames')}
                         filterIcon
@@ -85,7 +84,7 @@ const IFramesPageHeadline: React.FC<{
                     />
                 </Grid>
 
-                <Grid item>
+                <Grid>
                     <Grid container wrap="nowrap" gap="15px">
                         <GlobalSearchBar
                             inputValue={inputValue}
@@ -99,17 +98,17 @@ const IFramesPageHeadline: React.FC<{
                         />
                     </Grid>
                 </Grid>
-                <Grid item>
+                <Grid>
                     <MeltaTooltip title={i18next.t('iFrames.filterDrags')}>
                         <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
-                            <FilterAltOffIcon sx={{ fontSize: '26px' }} />
+                            <FilterAltOff sx={{ fontSize: '26px' }} />
                         </IconButton>
                     </MeltaTooltip>
                 </Grid>
             </Grid>
 
             <Grid container justifyContent="flex-end" alignItems="center">
-                <Grid item>
+                <Grid>
                     {currentUser.currentWorkspacePermissions.admin && (
                         <IconButtonWithPopover
                             popoverText={i18next.t('iFrames.addIFrame')}
@@ -118,7 +117,7 @@ const IFramesPageHeadline: React.FC<{
                             }}
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '150px', height: '35px' }}
                         >
-                            <AddIcon htmlColor="white" />
+                            <Add htmlColor="white" />
                             <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
                                 {i18next.t('iFrames.addIFrame')}
                             </Typography>

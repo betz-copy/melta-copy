@@ -60,7 +60,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
         | undefined;
 
     return (
-        <Grid item container justifyContent="space-between" flexWrap="nowrap" width="100%">
+        <Grid container justifyContent="space-between" flexWrap="nowrap" width="100%">
             <Autocomplete
                 id={relatedUserField}
                 options={userPropertiesInTemplate}

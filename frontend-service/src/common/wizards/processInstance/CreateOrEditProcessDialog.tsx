@@ -1,5 +1,4 @@
-import CloseIcon from '@mui/icons-material/Close';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import { NavigateBefore, Close } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
@@ -147,12 +146,11 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                         color: (theme) => theme.palette.grey[500],
                     }}
                 >
-                    <CloseIcon fontSize="large" />
+                    <Close fontSize="large" />
                 </IconButton>
                 <Grid container flexDirection="row" height="100%" width="100%" flexWrap="nowrap">
                     <Grid
                         container
-                        item
                         flexDirection="column"
                         alignItems="center"
                         flexBasis="20%"
@@ -165,7 +163,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                             boxShadow: '1px 1px 10px 1px #888888',
                         }}
                     >
-                        <Grid item width="100%">
+                        <Grid width="100%">
                             <BlueTitle
                                 title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('processInstancesPage.addNewProcess')}
                                 component="h5"
@@ -187,9 +185,9 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                             />
                         </Grid>
                     </Grid>
-                    <Grid container item flexBasis="75%" flexDirection="column" height="100%">
+                    <Grid container flexBasis="75%" flexDirection="column" height="100%">
                         {values.template && (
-                            <Grid item flexBasis="10%" width="100%">
+                            <Grid flexBasis="10%" width="100%">
                                 <Box sx={{ width: '40%', padding: 3 }}>
                                     <Stepper nonLinear activeStep={activeProcessDetailsStep} alternativeLabel>
                                         {steps.map(({ label }) => (
@@ -203,8 +201,8 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                         )}
                         <Divider variant="middle" />
                         {values.template && activeProcessDetailsStep === 0 && (
-                            <Grid item container flexDirection="column" height="85%" width="100%" justifyContent="space-between">
-                                <Grid item height="85%" width="100%">
+                            <Grid container flexDirection="column" height="85%" width="100%" justifyContent="space-between">
+                                <Grid height="85%" width="100%">
                                     <TemplateFields
                                         toPrint={false}
                                         values={values}
@@ -218,7 +216,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                         templateEntityReferenceProperties={templateEntityReferenceProperties}
                                     />
                                 </Grid>
-                                <Grid item container height="10%" width="100%" justifyContent="flex-end">
+                                <Grid container height="10%" width="100%" justifyContent="flex-end">
                                     <Grid>
                                         {values.template && !viewMode && (
                                             <Fab
@@ -233,7 +231,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                                     padding: '10px',
                                                 }}
                                             >
-                                                <NavigateBeforeIcon />
+                                                <NavigateBefore />
                                                 {i18next.t('wizard.processInstance.moveToStepsReviewers')}
                                             </Fab>
                                         )}
@@ -242,7 +240,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                             </Grid>
                         )}
                         {values.template && activeProcessDetailsStep === 1 && (
-                            <Grid item flexBasis="80%" height="80%">
+                            <Grid flexBasis="80%" height="80%">
                                 <StepsReviewers
                                     detailsFormikData={detailsFormikData}
                                     onNext={handleNext}

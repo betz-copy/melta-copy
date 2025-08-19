@@ -11,17 +11,17 @@ import './css/index.css';
 import './css/loading.css';
 import { environment } from './globals';
 import Main from './Main';
+import { useMatomoInstance } from './matomo';
+import ClientSidePage from './pages/ClientSidePage';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getMyUserRequest } from './services/userService';
 import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
-import { useUserStore } from './stores/user';
 import { useDarkModeStore } from './stores/darkMode';
+import { useUserStore } from './stores/user';
 import { useWorkspaceStore } from './stores/workspace';
 import { getWorkspacePermissions } from './utils/permissions';
-import { useMatomoInstance } from './matomo';
-import ClientSidePage from './pages/ClientSidePage';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);

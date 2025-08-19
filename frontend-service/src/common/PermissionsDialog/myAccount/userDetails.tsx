@@ -18,18 +18,18 @@ const UserDetails: React.FC<{ existingUser: IUserPopulated; editProfile: boolean
 
     return (
         <Grid container gap={editProfile ? 1.5 : 2}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
                 <Divider />
             </Grid>
             {Object.entries(userDetailsMap).map(([key, value]) => (
-                <Grid container item key={key} gap={editProfile ? 1.5 : 2}>
-                    <Grid item display="flex" justifyContent="space-between" width="100%" paddingX="10px">
+                <Grid container key={key} gap={editProfile ? 1.5 : 2}>
+                    <Grid display="flex" justifyContent="space-between" width="100%" paddingX="10px">
                         <Typography variant="body1" style={{ fontWeight: 'bold' }}>
                             {i18next.t(`user.${key}`)}
                         </Typography>
                         <Typography variant="body1">{String(value)}</Typography>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                         <Divider />
                     </Grid>
                 </Grid>

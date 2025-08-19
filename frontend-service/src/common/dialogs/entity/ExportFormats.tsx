@@ -132,8 +132,8 @@ export const ExportFormats: React.FC<{
     );
 
     return (
-        <Grid container item justifyContent={justifyContent} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
-            <Grid item>
+        <Grid container justifyContent={justifyContent} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
+            <Grid>
                 <Autocomplete
                     options={documentTemplateIds.map((fileName) => ({
                         label: getFileName(fileName),
@@ -166,7 +166,7 @@ export const ExportFormats: React.FC<{
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <Button
                     sx={{
                         borderRadius: '0.5rem',

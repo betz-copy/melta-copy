@@ -8,19 +8,16 @@ const Header: React.FC<{ title: string; children?: ReactNode }> = ({ title, chil
 
     return (
         <Grid
-            item
             container
             justifyContent="space-between"
             alignItems="center"
             marginBottom="2%"
             style={{ height: '9vh', borderBottom: `1px solid ${darkMode ? '#3d3d42' : '#00000027'}` }}
         >
-            <Grid item>
+            <Grid>
                 <BlueTitle title={title} component="h4" variant="h4" />
             </Grid>
-            <Grid item display="flex">
-                {children}
-            </Grid>
+            <Grid display="flex">{children}</Grid>
         </Grid>
     );
 };

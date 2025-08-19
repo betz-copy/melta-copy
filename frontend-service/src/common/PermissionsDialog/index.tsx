@@ -1,23 +1,23 @@
 /* eslint-disable no-nested-ternary */
-import CloseIcon from '@mui/icons-material/Close';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { ReactElement, useState } from 'react';
-import { useLocation } from 'wouter';
 import { useQueryClient } from 'react-query';
+import { useLocation } from 'wouter';
+import { environment } from '../../globals';
+import { IRole } from '../../interfaces/roles';
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { MeltaUpdates } from '../../MeltaUpdates';
+import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { LocalStorage } from '../../utils/localStorage';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import MyAccount from './myAccount';
 import MyPermissions from './myPermissions';
-import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { BackendConfigState } from '../../services/backendConfigService';
-import { LocalStorage } from '../../utils/localStorage';
-import { environment } from '../../globals';
-import { MeltaUpdates } from '../../MeltaUpdates';
 import RoleDialog from './RoleDialog';
-import { IRole } from '../../interfaces/roles';
 
 const PermissionsDialog: React.FC<{
     isOpen: boolean;
@@ -88,7 +88,7 @@ const PermissionsDialog: React.FC<{
                 >
                     <TabContext value={tabValue}>
                         <Grid container direction="column">
-                            <Grid item>
+                            <Grid>
                                 <TabList
                                     onChange={(_event, newValue) => {
                                         if (newValue === 'myPermissions' && isPreferencesUpdated) {
@@ -113,7 +113,7 @@ const PermissionsDialog: React.FC<{
                                     ))}
                                 </TabList>
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                                     return (
                                         <TabPanel key={tabName} value={tabName} sx={{ padding: 0 }}>

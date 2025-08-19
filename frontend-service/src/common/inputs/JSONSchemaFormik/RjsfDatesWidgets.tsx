@@ -1,10 +1,10 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import { Alarm, CalendarToday } from '@mui/icons-material';
+import { CalendarToday } from '@mui/icons-material';
 import { InputAdornment, TextField, TextFieldProps, styled } from '@mui/material';
 import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker, PickersLocaleText, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePickerToolbar } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
+import { DateTimePickerToolbar } from '@mui/x-date-pickers';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
@@ -17,7 +17,7 @@ export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
         direction: 'rtl',
     },
-}) as (props: BaseToolbarProps<Date, Date | null>) => JSX.Element;
+}) as (props: BaseToolbarProps) => JSX.Element;
 
 const getRjsfDateOrDateTimeWidget =
     (dateOrDateTime: 'date' | 'dateTime') =>
@@ -89,44 +89,45 @@ const getRjsfDateOrDateTimeWidget =
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
+                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
             >
-                <MuiDatePicker<Date, Date>
+                <MuiDatePicker
                     value={currDate}
                     onChange={(val) => {
                         setCurrDate(val);
                         onFormChangeFunction(val);
                     }}
-                    inputFormat={dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm'}
-                    showToolbar
-                    componentsProps={{ actionBar: { actions: ['clear', 'cancel', 'accept'] } }}
+                    slots={{
+                        toolbar: CustomDateTimePickerToolbar,
+                        textField: TextField,
+                    }}
                     label={!hideLabel && (displayLabel ? label || schema.title : false)}
-                    renderInput={(params) => (
-                        <TextField
-                            {...textFieldProps}
-                            color={color as TextFieldProps['color']}
-                            {...params}
-                            id={id}
-                            required={required}
-                            onBlur={_onBlur}
-                            onFocus={_onFocus}
-                            error={!hideError && rawErrors.length > 0}
-                            variant={variant}
-                            InputLabelProps={{ shrink: readonly || undefined }}
-                            InputProps={{
+                    slotProps={{
+                        textField: {
+                            ...textFieldProps,
+                            id,
+                            required,
+                            size: 'small',
+                            color: color as TextFieldProps['color'],
+                            variant,
+                            onBlur: _onBlur,
+                            onFocus: _onFocus,
+                            error: !hideError && rawErrors.length > 0,
+                            InputLabelProps: { shrink: readonly || undefined },
+                            placeholder: defaultValue?.toString(),
+                            InputProps: {
                                 endAdornment: (
-                                    <InputAdornment position="end" style={{ cursor: 'pointer' }}>
-                                        {dateOrDateTime === 'date' ? (
-                                            <CalendarToday fontSize="small" color={!readonly ? 'action' : 'disabled'} />
-                                        ) : (
-                                            <Alarm fontSize="small" color={!readonly ? 'action' : 'disabled'} />
-                                        )}
+                                    <InputAdornment position="end">
+                                        <CalendarToday fontSize="small" />
                                     </InputAdornment>
                                 ),
-                            }}
-                            placeholder={defaultValue?.toString()}
-                        />
-                    )}
+                            },
+                            inputProps: {
+                                format: dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm',
+                            },
+                        },
+                        actionBar: { actions: ['clear', 'cancel', 'accept'] },
+                    }}
                     readOnly={readonly}
                     disabled={disabled}
                     autoFocus={autofocus}

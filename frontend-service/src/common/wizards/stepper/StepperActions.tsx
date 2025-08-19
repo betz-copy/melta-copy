@@ -13,7 +13,7 @@ const StepperActions = <T extends object>({
     isFirstStep,
     isLoading,
     formikProps,
-    checkForChanges
+    checkForChanges,
 }: {
     step: StepType<T>;
     handleBack: () => void;
@@ -27,7 +27,7 @@ const StepperActions = <T extends object>({
 
     return (
         <Grid container justifyContent="space-between" padding="0px 25px">
-            <Grid item>
+            <Grid>
                 {step.stepperActions?.hide !== 'back' && (
                     <Button
                         variant="outlined"
@@ -47,7 +47,7 @@ const StepperActions = <T extends object>({
                     </Button>
                 )}
             </Grid>
-            <Grid item>
+            <Grid>
                 {/* type submit for formik goto next step */}
                 {step?.stepperActions?.hide !== 'next' && (
                     <Button

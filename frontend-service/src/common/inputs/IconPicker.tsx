@@ -77,7 +77,6 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 />
 
                 <Grid
-                    item
                     container
                     justifyContent="space-around"
                     alignContent="center"
@@ -113,7 +112,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 marginBottom="0.4rem"
                 sx={{ direction: 'rtl' }}
             >
-                <Grid item container justifyContent="center">
+                <Grid container justifyContent="center">
                     {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (
                         <IconButton key={name} value={name} onClick={handleIconClick}>
                             {React.createElement(icon, { style: { color: color || darkMode ? 'white' : 'black', fontSize: '1.55rem' } })}

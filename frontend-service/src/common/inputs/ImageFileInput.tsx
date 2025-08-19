@@ -147,21 +147,21 @@ const FileInput: React.FC<FileInputProps> = ({
     return (
         <>
             <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
-                <Grid item>
+                <Grid>
                     <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
                 </Grid>
 
-                <Grid item container>
+                <Grid container>
                     {file?.name?.trim() ? (
-                        <Grid item container style={inputStyle} {...getRootProps()}>
+                        <Grid container style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} />
-                            <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
-                                <Grid item container xs={1} justifyContent="center" paddingTop="5px">
-                                    <Grid item>
+                            <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap">
+                                <Grid container size={{ xs: 1 }} justifyContent="center" paddingTop="5px">
+                                    <Grid>
                                         <FileIcon extension={getFileExtension(file.name!)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
-                                <Grid item xs={10}>
+                                <Grid size={{ xs: 10 }}>
                                     <Typography
                                         style={{
                                             overflow: 'hidden',
@@ -173,8 +173,8 @@ const FileInput: React.FC<FileInputProps> = ({
                                         {isFileFromInput ? file.name : getFileName(file.name!)}
                                     </Typography>
                                 </Grid>
-                                <Grid item container xs={1} justifyContent="flex-end">
-                                    <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                <Grid container size={{ xs: 1 }} justifyContent="flex-end">
+                                    <Grid container justifyContent="flex-end" alignItems="center" wrap="nowrap">
                                         {!isFileFromInput && !disablePreview && (
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}

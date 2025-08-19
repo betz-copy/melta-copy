@@ -52,7 +52,7 @@ export const DraftWarningDialog: React.FC<{
 
                 <DialogActions sx={{ padding: '1rem' }}>
                     <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
-                        <Grid item>
+                        <Grid>
                             <Button
                                 variant="outlined"
                                 sx={{ borderRadius: '8px' }}
@@ -69,7 +69,7 @@ export const DraftWarningDialog: React.FC<{
                                 {i18next.t(`draftSaveDialog.${isEditMode ? 'backToEdit' : 'exit'}`)}
                             </Button>
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <Button
                                 variant="contained"
                                 sx={{ borderRadius: '8px' }}

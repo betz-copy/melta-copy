@@ -136,7 +136,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                     <Box
                         key={entityTemplatesWithCategory.category._id}
                         header={
-                            <Grid item container justifyContent="space-between" alignItems="center" height="40px" width="284px">
+                            <Grid container justifyContent="space-between" alignItems="center" height="40px" width="284px">
                                 <Grid
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}

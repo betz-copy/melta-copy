@@ -85,19 +85,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
             width={250}
             title={
                 <Grid container direction="row" justifyContent="space-between" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
-                    <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                        <Grid item>
+                    <Grid container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid>
                             <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />
                         </Grid>
 
-                        <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        <Grid sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {category.iconFileId ? (
                                 <CustomIcon color={theme.palette.primary.main} iconUrl={category.iconFileId} height="24px" width="24px" />
                             ) : (
                                 <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="small" />
                             )}
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
@@ -115,7 +115,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             </MeltaTooltip>
                         </Grid>
                     </Grid>
-                    <Grid item container flexBasis="10%">
+                    <Grid container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
@@ -227,10 +227,10 @@ const CategoriesRow: React.FC = () => {
             <Droppable droppableId={workspace._id}>
                 {(provided) => (
                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
-                        <Grid item container gap="10px">
+                        <Grid container gap="10px">
                             <Box
                                 header={
-                                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
+                                    <Grid container justifyContent="space-between" alignItems="center" height="40px">
                                         <Typography
                                             style={{
                                                 fontSize: headlineSubTitleFontSize,

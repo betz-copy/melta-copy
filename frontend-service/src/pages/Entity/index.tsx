@@ -176,16 +176,16 @@ export const ConnectionsTable: React.FC<{
 
     return (
         <Grid>
-            <Grid container item justifyContent="space-between" marginBottom="10px">
-                <Grid item container marginTop="10px" width="fit-content">
+            <Grid container justifyContent="space-between" marginBottom="10px">
+                <Grid container marginTop="10px" width="fit-content">
                     <ConnectionsTableTitle
                         expandedEntity={expandedEntity}
                         connectionTemplate={{ relationshipTemplate, isExpandedEntityRelationshipSource }}
                     />
                 </Grid>
 
-                <Grid item container justifyContent="space-between" alignItems="center">
-                    <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                <Grid container justifyContent="space-between" alignItems="center">
+                    <Grid container flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                         <TableButton
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t('entitiesTableOfTemplate.columns'),
@@ -409,23 +409,22 @@ const Entity: React.FC = () => {
                         return otherEntityTemplate?.category._id === category._id;
                     })
                     .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
-                relationshipCount:
-                    // calculate the amount of the related connections of each entity
-                    expandedEntity?.connections.filter((connection) => {
-                        const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
+                // calculate the amount of the related connections of each entity
+                relationshipCount: expandedEntity?.connections.filter((connection) => {
+                    const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
 
-                        if (
-                            connectionRelationshipTemplate?.isProperty &&
-                            currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
-                                ?.relationshipTemplateId === connectionRelationshipTemplate._id
-                        )
-                            return false;
+                    if (
+                        connectionRelationshipTemplate?.isProperty &&
+                        currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
+                            ?.relationshipTemplateId === connectionRelationshipTemplate._id
+                    )
+                        return false;
 
-                        if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                            return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
+                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
 
-                        return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
-                    }).length,
+                    return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
+                }).length,
             };
         })
             .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
@@ -451,16 +450,16 @@ const Entity: React.FC = () => {
                 connectionsTemplates={(connectionsTemplates ?? []).filter((relTemplate) => relTemplate.hasInstances)}
             />
             <Grid className="pageMargin">
-                <Grid item marginTop="20px" data-tour="entity-details">
+                <Grid marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
                 {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                        <Grid item container xs={5} alignItems="center" gap="20px">
-                            <Grid item alignContent="center">
+                        <Grid container size={{ xs: 5 }} alignItems="center" gap="20px">
+                            <Grid alignContent="center">
                                 <RelationshipIcon />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <BlueTitle
                                     title={i18next.t('entityPage.relationshipTitle')}
                                     component="h5"
@@ -469,7 +468,7 @@ const Entity: React.FC = () => {
                                 />
                             </Grid>
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>

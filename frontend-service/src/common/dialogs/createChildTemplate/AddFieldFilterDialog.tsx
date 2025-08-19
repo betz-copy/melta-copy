@@ -1,4 +1,4 @@
-import CloseIcon from '@mui/icons-material/Close';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { format } from 'date-fns';
 import i18next from 'i18next';
@@ -12,12 +12,11 @@ import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSel
 import { MultipleUserFilterInput } from '../../inputs/FilterInputs/MultipleUserFilterInput';
 import { SelectFilterInput } from '../../inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
-
+import { isEqual } from 'lodash';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { isValidAGGridFilter } from '../../FilterComponent';
-import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
-import { isEqual } from 'lodash';
+import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 
 const getFilterOperator = (filterField: IFieldChip['filterField']) => {
     const operatorMap: Record<string, string> = {
@@ -391,7 +390,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
             <DialogContent>
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                         <TextField
                             fullWidth
                             disabled
@@ -400,7 +399,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                         {renderFilterInput()}
                         {matchValidationError && (
                             <Typography variant="body2" color="error" align="left" style={{ marginTop: '8px' }}>
@@ -413,7 +412,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
 
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} display="flex" justifyContent="center">
+                    <Grid size={{ xs: 12 }} display="flex" justifyContent="center">
                         <Button
                             variant="contained"
                             color="primary"

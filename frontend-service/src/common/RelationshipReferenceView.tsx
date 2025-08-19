@@ -1,5 +1,4 @@
-import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { AppRegistration as DefaultEntityTemplateIcon, VisibilityOff } from '@mui/icons-material';
 import { Grid, tooltipClasses, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -54,7 +53,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                     placement="top"
                     title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
                 >
-                    <VisibilityOffIcon sx={{ height, width, color: theme.palette.action.disabled }} />
+                    <VisibilityOff sx={{ height, width, color: theme.palette.action.disabled }} />
                 </MeltaTooltip>
             </Grid>
         );
@@ -88,7 +87,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
     const relationshipObjectToField = (): string => {
         if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'location') {
             return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
-                ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? ''
+                ? (locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? '')
                 : entity.properties[relatedTemplateField].location;
         }
 

@@ -28,10 +28,10 @@ const ReadOnlyFilterInput: React.FC<{ filterField: IGraphFilterBody['filterField
 }) => {
     return (
         <Grid container direction="row" flexWrap="nowrap">
-            <Grid item>
+            <Grid>
                 <ViewModeTextField label={i18next.t('dashboard.field')} value={title} readOnly />
             </Grid>
-            <Grid item flexWrap="wrap">
+            <Grid flexWrap="wrap">
                 <ViewModeTextField label={i18next.t('dashboard.filter')} value={getFilterFieldReadonly(filterField, type)} readOnly multiline />
             </Grid>
         </Grid>

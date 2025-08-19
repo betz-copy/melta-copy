@@ -72,7 +72,7 @@ const renderChips = (
         const matchError = matchErrorMap?.get(chip.fieldName);
 
         return (
-            <Grid item key={`${chip.fieldName}-${chip.chipType}-${index}`} justifyItems="center">
+            <Grid key={`${chip.fieldName}-${chip.chipType}-${index}`} justifyItems="center">
                 <ColoredEnumChip label={label} onDelete={() => onDelete(chip)} color="default" />
                 {matchError && (
                     <Typography variant="body2" color="error" align="left" style={{ marginTop: '8px' }}>
@@ -226,7 +226,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
     return (
         <>
             <Grid container>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Divider />
                 </Grid>
             </Grid>
@@ -247,7 +247,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                     return (
                         <React.Fragment key={fieldName}>
                             <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
-                                <Grid item xs={3}>
+                                <Grid size={{ xs: 3 }}>
                                     <FormControlLabel
                                         control={
                                             <MeltaCheckbox
@@ -266,11 +266,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     />
                                 </Grid>
 
-                                <Grid item xs={3}>
+                                <Grid size={{ xs: 3 }}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
                                         {renderChips(filterChips, property, onDeleteFilterChip, undefined, isFilterByUser)}
 
-                                        <Grid item>
+                                        <Grid>
                                             {!isFilterByUser && (
                                                 <Button
                                                     color="primary"
@@ -288,7 +288,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     </Grid>
                                 </Grid>
 
-                                <Grid item xs={3}>
+                                <Grid size={{ xs: 3 }}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
                                         {renderChips(
                                             defaultChips,
@@ -310,7 +310,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                             isFilterByUser,
                                         )}
 
-                                        <Grid item>
+                                        <Grid>
                                             {!isFilterByUser && (
                                                 <Button
                                                     color="primary"
@@ -332,7 +332,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                 </Grid>
 
                                 {viewType === 'userPage' && (
-                                    <Grid item xs={3} sx={{ textAlign: 'center' }}>
+                                    <Grid size={{ xs: 3 }} sx={{ textAlign: 'center' }}>
                                         <MeltaCheckbox
                                             checked={templateFieldsFilters[fieldName]?.isEditableByUser || false}
                                             disabled={!fieldFilter.selected}
@@ -348,7 +348,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                     </Grid>
                                 )}
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <Divider />
                             </Grid>
                         </React.Fragment>

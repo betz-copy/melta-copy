@@ -26,11 +26,11 @@ export const CompactDrawer: React.FC<CompactDrawerProps> = ({ toggleMinimized, o
             bgcolor={darkMode ? '#161616' : 'white'}
             sx={{ transition: 'all 0.8s ease-in-out', ...style, ...(open ? styleOpen : styleClosed) }}
         >
-            <Grid item height="94%" width="100%">
+            <Grid height="94%" width="100%">
                 {children}
             </Grid>
 
-            <Grid item container direction="column">
+            <Grid container direction="column">
                 <Divider />
                 <IconButton disabled={locked} onClick={toggleMinimized} size="small" style={{ borderRadius: 0, height: '3rem' }}>
                     {open ? <ArrowLeftIcon /> : <ArrowRightIcon />}

@@ -30,7 +30,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({
     return (
         <Grid container direction="column" paddingBottom={2} paddingLeft={2} spacing={2}>
             {!isViewMode && !disableAddingReviewers && (
-                <Grid item paddingBottom="1rem" paddingRight={2}>
+                <Grid paddingBottom="1rem" paddingRight={2}>
                     <UserAutocomplete
                         mode="internal"
                         value={null}
@@ -49,7 +49,6 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({
                 </Grid>
             )}
             <Grid
-                item
                 container
                 direction="column"
                 spacing={1}
@@ -63,12 +62,12 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({
                 }}
             >
                 {forcedReviewers?.map((reviewer) => (
-                    <Grid item key={reviewer._id}>
+                    <Grid key={reviewer._id}>
                         <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#c5c6d4' }} disabled />
                     </Grid>
                 ))}
                 {reviewers?.map((reviewer) => (
-                    <Grid item key={reviewer._id}>
+                    <Grid key={reviewer._id}>
                         {isViewMode ? (
                             <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#E0E1ED' }} />
                         ) : (

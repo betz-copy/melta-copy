@@ -199,11 +199,11 @@ const TemplateTable = forwardRef<
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
-                <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
-                    <Grid item minWidth="fit-content">
+                <Grid container size={{ xs: 5 }} alignItems="center" minWidth="fit-content" gap="10px">
+                    <Grid minWidth="fit-content">
                         <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                     </Grid>
-                    <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                    <Grid minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId ? (
                             <CustomIcon iconUrl={template.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
@@ -216,7 +216,7 @@ const TemplateTable = forwardRef<
                             />
                         )}
                     </Grid>
-                    <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    <Grid minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
                             style={{
                                 minWidth: 'fit-content',
@@ -234,7 +234,7 @@ const TemplateTable = forwardRef<
             </Grid>
 
             <Grid container flexDirection="row" alignItems="center">
-                <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                <Grid container flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('entitiesTableOfTemplate.columns'),
@@ -309,7 +309,7 @@ const TemplateTable = forwardRef<
                     />
                 </Grid>
 
-                <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                <Grid container flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
                     {page !== TablePageType.clientSide && (
                         <EditExcelButton
                             disabled={isEditExcelDisabled}
@@ -388,7 +388,7 @@ const TemplateTable = forwardRef<
                         return 0;
                     })
                     .map((draft) => (
-                        <Grid item key={draft.uniqueId} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
+                        <Grid key={draft.uniqueId} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
                             <DraftCard
                                 draft={draft}
                                 openEditDialog={() => {

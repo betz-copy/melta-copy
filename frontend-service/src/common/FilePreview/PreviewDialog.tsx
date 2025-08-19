@@ -1,7 +1,4 @@
-import { Close as CloseIcon } from '@mui/icons-material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import { Close as CloseIcon, Refresh, ZoomIn, ZoomOut } from '@mui/icons-material';
 import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
@@ -163,7 +160,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                     {noSuchKeyError ? i18next.t('entityPage.previewRefetch') : i18next.t('errorPage.previewLoadingError')}
                 </Typography>
                 <Button onClick={handleRefetch} sx={{ color: 'white' }}>
-                    {isFetching || !noSuchKeyError ? null : <RefreshIcon />}
+                    {isFetching || !noSuchKeyError ? null : <Refresh />}
                 </Button>
             </Grid>
         );
@@ -212,10 +209,10 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
 
                         <DownloadButton fileId={fileId} />
                         <IconButton onClick={handleZoomIn}>
-                            <ZoomInIcon />
+                            <ZoomIn />
                         </IconButton>
                         <IconButton onClick={handleZoomOut}>
-                            <ZoomOutIcon />
+                            <ZoomOut />
                         </IconButton>
                     </FlexBox>
                     {contentType === 'document' && extension !== 'pptx' && (
@@ -256,7 +253,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                     justifyContent="center"
                     alignItems="center"
                 >
-                    <Grid item>{previewContent}</Grid>
+                    <Grid>{previewContent}</Grid>
                 </Grid>
             </DialogContent>
         </Dialog>

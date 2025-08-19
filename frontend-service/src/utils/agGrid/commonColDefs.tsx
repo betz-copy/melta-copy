@@ -499,7 +499,7 @@ export const userColDef = <Data extends any = IUser>(
             return (
                 <Grid container gap={1}>
                     <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
-                        <Grid item>
+                        <Grid>
                             <Chip
                                 avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}
                                 label={JSON.parse(props.value).fullName}
@@ -552,7 +552,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                            <Grid item>
+                            <Grid>
                                 <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
                             </Grid>
                         </MeltaTooltip>

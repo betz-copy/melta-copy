@@ -1,9 +1,4 @@
-import { Hive as HiveIcon } from '@mui/icons-material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import { Hive as HiveIcon, Delete, Edit, Favorite, FavoriteBorder, OpenInFull } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -98,7 +93,7 @@ const IFrameHeadline: React.FC<{
         >
             <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
                 <Grid container wrap="nowrap" alignItems="start" sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Grid item sx={{ paddingLeft: '20px', display: 'flex' }}>
+                    <Grid sx={{ paddingLeft: '20px', display: 'flex' }}>
                         {iFrame.iconFileId ? (
                             <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
                         ) : (
@@ -106,7 +101,7 @@ const IFrameHeadline: React.FC<{
                         )}
                     </Grid>
                     <MeltaTooltip title={iFrame.url} placement="bottom-end">
-                        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Grid sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography
                                 style={{
                                     textOverflow: 'ellipsis',
@@ -127,7 +122,7 @@ const IFrameHeadline: React.FC<{
                 </Grid>
                 {!isIFramePage && (
                     <Grid container wrap="nowrap" justifyContent="flex-end">
-                        <Grid item style={{ padding: '20px' }}>
+                        <Grid style={{ padding: '20px' }}>
                             {isHovered && (
                                 <Grid sx={{ display: 'flex' }}>
                                     {currentUser.currentWorkspacePermissions.admin && (
@@ -144,7 +139,7 @@ const IFrameHeadline: React.FC<{
                                                             })
                                                         }
                                                     >
-                                                        <DeleteIcon color="primary" fontSize="small" />
+                                                        <Delete color="primary" fontSize="small" />
                                                     </IconButton>
                                                 </MeltaTooltip>
                                             </Grid>
@@ -157,7 +152,7 @@ const IFrameHeadline: React.FC<{
                                                                 : setIFrameWizardDialogState({ isWizardOpen: true, iFrame })
                                                         }
                                                     >
-                                                        <EditIcon color="primary" fontSize="small" />
+                                                        <Edit color="primary" fontSize="small" />
                                                     </IconButton>
                                                 </MeltaTooltip>
                                             </Grid>
@@ -190,9 +185,9 @@ const IFrameHeadline: React.FC<{
                                                         }}
                                                     >
                                                         {placeInSideBar ? (
-                                                            <FavoriteIcon color="primary" fontSize="small" />
+                                                            <Favorite color="primary" fontSize="small" />
                                                         ) : (
-                                                            <FavoriteBorderIcon color="primary" fontSize="small" />
+                                                            <FavoriteBorder color="primary" fontSize="small" />
                                                         )}
                                                     </IconButton>
                                                 </MeltaTooltip>
@@ -206,7 +201,7 @@ const IFrameHeadline: React.FC<{
                                                     setOpenFullSize(true);
                                                 }}
                                             >
-                                                <OpenInFullIcon color="primary" fontSize="small" />
+                                                <OpenInFull color="primary" fontSize="small" />
                                             </IconButton>
                                         </MeltaTooltip>
                                     </Grid>

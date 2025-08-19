@@ -626,7 +626,6 @@ export const FieldBlockWrapper = ({
 
     return (
         <Grid
-            item
             style={{
                 opacity: isDragging ? 0.7 : 1,
                 alignSelf: 'stretch',

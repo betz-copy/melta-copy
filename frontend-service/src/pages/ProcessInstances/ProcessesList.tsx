@@ -69,17 +69,16 @@ const ProcessesList: React.FC<{
     }, [isWaitingForMeFilterOn, search, templatesToShowCheckbox, startDateInput, endDateInput]);
 
     return (
-        <Grid item container direction="column" spacing={2}>
+        <Grid container direction="column" spacing={2}>
             {isWaitingForMeFilterOn && (
                 <Grid
-                    item
                     container
                     flexDirection="column"
                     marginTop="15px"
                     sx={{ backgroundColor: darkMode ? '#434343' : '#CCCFE5', borderRadius: '20px', padding: '15px' }}
                     rowGap={3}
                 >
-                    <Grid item>
+                    <Grid>
                         <BlueTitle
                             component="h4"
                             variant="h6"
@@ -87,18 +86,18 @@ const ProcessesList: React.FC<{
                             title={i18next.t('processInstancesPage.waitForMyApprove')}
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <ViewingBox minHeight="80vh">
                             {loadingWaitingForMeProcesses && (
                                 <Grid container width="100%" justifyContent="center">
-                                    <Grid item>
+                                    <Grid>
                                         <CircularProgress sx={{ alignSelf: 'center' }} size="24px" />
                                     </Grid>
                                 </Grid>
                             )}
                             {!loadingWaitingForMeProcesses &&
                                 waitingForMeProcesses.map((process) => (
-                                    <Grid item key={process._id}>
+                                    <Grid key={process._id}>
                                         <ProcessCard
                                             processInstance={process}
                                             onChangedProcessDialogClose={(processId: string | null) => {
@@ -123,7 +122,7 @@ const ProcessesList: React.FC<{
                     </Grid>
                 </Grid>
             )}
-            <Grid item>
+            <Grid>
                 <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstancePopulated>
                         queryKey={[

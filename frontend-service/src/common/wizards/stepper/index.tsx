@@ -34,17 +34,17 @@ const Stepper = <T extends object>({
                         <Fragment key={step.label}>
                             <Grid container justifyContent="start" alignItems="flex-start">
                                 <Grid container justifyContent="start" alignItems="center">
-                                    <Grid item display="flex" justifyContent="center" alignContent="center">
+                                    <Grid display="flex" justifyContent="center" alignContent="center">
                                         <StepNumberTypography type={type} direction="column">
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                         </StepNumberTypography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <StepNameTypography type={type} direction={direction}>
                                             {step.label}
                                         </StepNameTypography>
                                     </Grid>
-                                    <Grid item marginLeft="10px">
+                                    <Grid marginLeft="10px">
                                         {step.description && <StepDescriptionTypography type={type}>{step.description}</StepDescriptionTypography>}
                                     </Grid>
                                 </Grid>
@@ -75,12 +75,12 @@ const Stepper = <T extends object>({
                         <Fragment key={step.label}>
                             <Grid>
                                 <Grid container justifyContent="center" alignItems="center">
-                                    <Grid item display="flex" justifyContent="center" alignContent="center">
+                                    <Grid display="flex" justifyContent="center" alignContent="center">
                                         <StepNumberTypography type={type} direction="row">
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                         </StepNumberTypography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <StepNameTypography type={type} direction={direction}>
                                             {step.label}
                                         </StepNameTypography>

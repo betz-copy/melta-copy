@@ -1,5 +1,5 @@
 import { ArrowDropDown as ArrowDropDownIcon, KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon } from '@mui/icons-material';
-import { Button, Divider, Grid, Popover, TextField, Typography } from '@mui/material';
+import { Button, Divider, Grid, Popover, Typography } from '@mui/material';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ScheduleComponent, View } from '@syncfusion/ej2-react-schedule';
@@ -65,7 +65,7 @@ export const ScheduleToolbar: React.FC<IScheduleToolbar> = ({ scheduleRef, darkM
             bgcolor={darkMode ? '#171717' : '#fafafa'}
             borderBottom={`solid 1px ${darkMode ? '#404040' : 'lightgray'}`}
         >
-            <Grid item container>
+            <Grid container>
                 <Button onClick={() => moveDate(-1, currentView)} sx={{ color: textColor }}>
                     <ArrowRightIcon />
                 </Button>
@@ -104,15 +104,15 @@ export const ScheduleToolbar: React.FC<IScheduleToolbar> = ({ scheduleRef, darkM
                                 scheduleRef.current?.changeDate(newDate);
                                 setDatePickerOpen(false);
                             }}
-                            components={{ ActionBar: () => null }}
-                            renderInput={(params) => <TextField {...params} />}
-                            showToolbar={false}
+                            slots={{ actionBar: () => null }}
+                            displayStaticWrapperAs="desktop"
+                            views={['day']}
                         />
                     </LocalizationProvider>
                 </Popover>
             </Grid>
 
-            <Grid item container wrap="nowrap" justifyContent="flex-end">
+            <Grid container wrap="nowrap" justifyContent="flex-end">
                 <Button
                     onClick={() => scheduleRef.current?.changeDate(new Date())}
                     sx={{ color: getDateWithoutTime(selectedDate) === getDateWithoutTime(new Date()) ? '#225AA7' : textColor }}

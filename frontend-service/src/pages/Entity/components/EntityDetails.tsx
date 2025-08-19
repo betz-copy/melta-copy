@@ -4,10 +4,10 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     ContentCopy as DuplicateIcon,
+    Map,
     MoreVertOutlined,
     Unarchive,
 } from '@mui/icons-material';
-import MapIcon from '@mui/icons-material/Map';
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -23,6 +23,7 @@ import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../interfaces/error';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
@@ -36,7 +37,6 @@ import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import { IErrorResponse } from '../../../interfaces/error';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -192,13 +192,13 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
-                        <Grid item>
+                    <Grid container flexDirection="column" flexWrap="nowrap" padding="20px">
+                        <Grid>
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
                                 {includeLocationProperty && (
                                     <Grid onClick={() => setMapDialogOpen(true)}>
                                         <IconButtonWithPopover popoverText={i18next.t('map')}>
-                                            <MapIcon sx={{ color: '#787c9e' }} />
+                                            <Map sx={{ color: '#787c9e' }} />
                                         </IconButtonWithPopover>
                                     </Grid>
                                 )}
@@ -285,8 +285,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             </Grid>
                         </Grid>
 
-                        <Grid item container justifyContent="space-between" alignItems="stretch" flexDirection="column" spacing={2}>
-                            <Grid item width="100%">
+                        <Grid container justifyContent="space-between" alignItems="stretch" flexDirection="column" spacing={2}>
+                            <Grid width="100%">
                                 <EntityProperties
                                     entityTemplate={entityTemplate}
                                     properties={entity.properties}
@@ -324,12 +324,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 )}
                             </Grid>
 
-                            <Grid item>
+                            <Grid>
                                 <EntityDisableCheckbox isEntityDisabled={isEntityDisabled} />
                             </Grid>
 
                             {entityTemplate.documentTemplatesIds?.length ? (
-                                <Grid item>
+                                <Grid>
                                     <ExportFormats
                                         properties={expandedEntity.entity.properties}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}
@@ -340,7 +340,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Grid>
                             ) : null}
 
-                            <Grid container item justifyContent="space-between">
+                            <Grid container justifyContent="space-between">
                                 <EntityDates
                                     createdAt={expandedEntity.entity.properties.createdAt}
                                     updatedAt={expandedEntity.entity.properties.updatedAt}

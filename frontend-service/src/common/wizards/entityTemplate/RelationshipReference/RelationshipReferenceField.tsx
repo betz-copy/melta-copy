@@ -61,7 +61,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     const activeEntityTemplatesFiltered = convertToRelationshipField?.options ?? Array.from(entityTemplates.values());
 
     return (
-        <Grid item container justifyContent="space-between" flexWrap="nowrap">
+        <Grid container justifyContent="space-between" flexWrap="nowrap">
             {isDisabled && !entityTemplates.has(value.relationshipReference?.relatedTemplateId || '') ? (
                 <Typography variant="body1" color="error">
                     {i18next.t('templateEntitiesAutocomplete.noWritePermissions')}

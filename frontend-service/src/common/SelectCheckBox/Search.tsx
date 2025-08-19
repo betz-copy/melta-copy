@@ -17,8 +17,7 @@ export const Search: React.FC<{ value: string; onChange: (value: string) => void
     return (
         <Grid container>
             <Grid
-                item
-                xs={12}
+                size={{ xs: 12 }}
                 width="199px"
                 height="34px"
                 style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', maxHeight: '34px' }}

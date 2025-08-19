@@ -17,12 +17,12 @@ import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchema
 import { environment } from '../../../globals';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../interfaces/error';
 import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
-import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -143,7 +143,7 @@ const EditEntityDetails: React.FC<{
                                 <CardContent>
                                     <Grid container justifyContent="center">
                                         <Grid container>
-                                            <Grid item xs={12} sm={8}>
+                                            <Grid size={{ xs: 12, sm: 8 }}>
                                                 <BlueTitle
                                                     title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
                                                     component="h6"
@@ -167,12 +167,12 @@ const EditEntityDetails: React.FC<{
                                                 )}
                                             </Grid>
                                             {templateFileKeys.length > 0 && (
-                                                <Grid item xs={12} sm={4}>
+                                                <Grid size={{ xs: 12, sm: 4 }}>
                                                     <Grid container>
-                                                        <Grid item xs={1}>
+                                                        <Grid size={{ xs: 1 }}>
                                                             <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
                                                         </Grid>
-                                                        <Grid item xs={10}>
+                                                        <Grid size={{ xs: 10 }}>
                                                             <BlueTitle
                                                                 title={i18next.t('wizard.entityTemplate.attachments')}
                                                                 component="h6"
@@ -193,7 +193,7 @@ const EditEntityDetails: React.FC<{
                                                             )}
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                                                                    <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                    <Grid key={key} marginTop={index > 0 ? 5 : 0}>
                                                                         {value.items === undefined ? (
                                                                             <InstanceSingleFileInput
                                                                                 fileFieldName={`attachmentsProperties.${key}`}
@@ -232,7 +232,7 @@ const EditEntityDetails: React.FC<{
                                             justifyContent="space-between"
                                             padding="25px 15px 0px 15px"
                                         >
-                                            <Grid item>
+                                            <Grid>
                                                 <Button
                                                     style={{ borderRadius: '7px' }}
                                                     variant="outlined"
@@ -242,7 +242,7 @@ const EditEntityDetails: React.FC<{
                                                     {i18next.t('entityPage.cancel')}
                                                 </Button>
                                             </Grid>
-                                            <Grid item>
+                                            <Grid>
                                                 <Button
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"

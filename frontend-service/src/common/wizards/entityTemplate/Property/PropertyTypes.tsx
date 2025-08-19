@@ -620,7 +620,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 'dateNotification' in value &&
                 (value.dateNotification !== undefined ? (
                     <Grid container direction="row">
-                        <Grid container item direction="row">
+                        <Grid container direction="row">
                             <IconButton
                                 onClick={() => setFieldValue('dateNotification', undefined)}
                                 sx={{ borderRadius: 10 }}

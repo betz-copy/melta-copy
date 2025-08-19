@@ -47,8 +47,8 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                 zIndex: 10,
             }}
         >
-            <Grid container item alignItems="center" flexWrap="nowrap" spacing={1} xs={3}>
-                <Grid item>
+            <Grid container alignItems="center" flexWrap="nowrap" spacing={1} size={{ xs: 3 }}>
+                <Grid>
                     <ProfileButton
                         currentUser={currentUser}
                         text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
@@ -59,7 +59,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
 
                 {currentUser.currentWorkspacePermissions?.admin && (
                     <>
-                        <Grid item>
+                        <Grid>
                             <IconButtonWithPopover
                                 popoverText={i18next.t('permissions.permissionsManagementPageTitle')}
                                 iconButtonProps={{ onClick: openPermissionsDialog, sx: iconButtonStyle }}
@@ -68,7 +68,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                             </IconButtonWithPopover>
                         </Grid>
 
-                        <Grid item>
+                        <Grid>
                             <IconButtonWithPopover
                                 popoverText={i18next.t('workspaces.createNew')}
                                 iconButtonProps={{
@@ -83,11 +83,11 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                     </>
                 )}
 
-                <Grid item>{loading && <Loading />}</Grid>
+                <Grid>{loading && <Loading />}</Grid>
             </Grid>
 
-            <Grid container item alignItems="center" xs={9}>
-                <Grid item>
+            <Grid container alignItems="center" size={{ xs: 9 }}>
+                <Grid>
                     <IconButtonWithPopover
                         popoverText={i18next.t('workspaces.goBack')}
                         iconButtonProps={{ onClick: () => setLocation(location.slice(0, location.lastIndexOf('/')) || '/'), sx: iconButtonStyle }}
@@ -97,19 +97,19 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                     </IconButtonWithPopover>
                 </Grid>
 
-                <Grid item xs>
+                <Grid size={{ xs: 12 }}>
                     <Navigation />
                 </Grid>
             </Grid>
 
-            <Grid container item xs={3} justifyContent="flex-end" alignItems="center" wrap="nowrap">
+            <Grid container size={{ xs: 3 }} justifyContent="flex-end" alignItems="center" wrap="nowrap">
                 {(meltaPlus || darkMode) && (
-                    <Grid item>
+                    <Grid>
                         <SwitchThemeButton text="" isDrawerOpen={false} darkMode={darkMode} onClick={toggleDarkMode} />
                     </Grid>
                 )}
 
-                <Grid item>
+                <Grid>
                     <Box
                         position="relative"
                         onClick={(event) => {

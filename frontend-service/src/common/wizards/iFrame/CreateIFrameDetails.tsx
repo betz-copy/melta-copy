@@ -13,7 +13,7 @@ const createIFrameDetailsSchema = Yup.object({
 const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="name"
                     label={i18next.t('wizard.iFrame.name')}
@@ -24,7 +24,7 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                     sx={{ width: '300px' }}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="url"
                     label={i18next.t('wizard.iFrame.url')}

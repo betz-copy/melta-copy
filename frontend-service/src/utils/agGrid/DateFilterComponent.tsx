@@ -16,24 +16,26 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText<unknown>}
+                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
             >
                 <MobileDatePicker
-                    inputFormat="dd/MM/yyyy"
                     value={date}
                     onChange={onDateChange}
-                    showToolbar
-                    componentsProps={{ actionBar: { actions: ['cancel', 'accept'] } }}
                     label={i18next.t('wizard.date')}
-                    renderInput={(params) => <TextField {...params} />}
-                    toolbarFormat="dd/MM"
-                    ToolbarComponent={CustomDateTimePickerToolbar}
-                    DialogProps={{
-                        PaperProps: {
-                            sx: {
-                                backgroundColor: darkMode ? '#040404' : 'white',
+                    slots={{
+                        toolbar: CustomDateTimePickerToolbar,
+                        textField: (params) => <TextField {...params} />,
+                    }}
+                    slotProps={{
+                        textField: { fullWidth: true, inputProps: { format: 'dd/MM/yyyy' } },
+                        dialog: {
+                            PaperProps: {
+                                sx: {
+                                    backgroundColor: darkMode ? '#040404' : '#fff',
+                                },
                             },
                         },
+                        actionBar: { actions: ['cancel', 'accept'] },
                     }}
                 />
             </LocalizationProvider>

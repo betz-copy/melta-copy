@@ -14,7 +14,7 @@ const PieChart: React.FC<{
 }> = ({ formik, entityTemplate, disabled }) => {
     return (
         <Grid container direction="column" spacing={2}>
-            <Grid item>
+            <Grid>
                 <AxisInput
                     formikField="metaData.dividedByField"
                     formik={formik}
@@ -24,7 +24,7 @@ const PieChart: React.FC<{
                     readonly={disabled}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <AxisInput
                     formikField="metaData.aggregationType"
                     formik={formik}

@@ -39,7 +39,7 @@ const PopperSidebar: React.FC<{
                                 position="sticky"
                                 overflow="none"
                             >
-                                <Grid item padding="15px" sx={{ position: 'relative' }}>
+                                <Grid padding="15px" sx={{ position: 'relative' }}>
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
                                         {title}
                                     </Grid>

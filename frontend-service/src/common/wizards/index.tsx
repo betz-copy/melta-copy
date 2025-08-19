@@ -87,7 +87,7 @@ const Wizard = <T extends object>({
             disableEnforceFocus
         >
             {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}
-            <DialogTitle color={(theme) => theme.palette.primary.main} fontSize="20px" fontWeight="600" fontFamily="Rubik">
+            <DialogTitle sx={{ color: 'primary.main' }} fontSize="20px" fontWeight="600" fontFamily="Rubik">
                 {title}
                 <IconButton
                     aria-label="close"

@@ -142,7 +142,7 @@ const columnDefs = (
                 <ScrollContainer horizontal vertical={false}>
                     <Grid container spacing={1} wrap="nowrap">
                         {categoriesPermissionsPopulated.map(({ _id, category }) => (
-                            <Grid item key={_id}>
+                            <Grid key={_id}>
                                 <Chip label={category.displayName} />
                             </Grid>
                         ))}

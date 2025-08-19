@@ -35,7 +35,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
 }: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>>) => {
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="name"
                     disabled={isEditMode}
@@ -46,7 +46,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     helperText={touched.name && errors.name ? String(errors.name) : undefined}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="displayName"
                     label={i18next.t('wizard.displayName')}

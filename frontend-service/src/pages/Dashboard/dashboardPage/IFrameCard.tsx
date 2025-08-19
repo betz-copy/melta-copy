@@ -9,11 +9,11 @@ const IFrameCard: React.FC<{ metaData: IMongoIFrame }> = ({ metaData }) => {
 
     return (
         <Grid ref={containerRef} sx={{ width: '100%', height: '100%', gap: 2 }} container direction="column">
-            <Grid item>
+            <Grid>
                 <CardTitle title={metaData.name} />
             </Grid>
 
-            <Grid item xs style={{ overflow: 'hidden', flexGrow: 1 }}>
+            <Grid size={{ xs: 12 }} style={{ overflow: 'hidden', flexGrow: 1 }}>
                 <Iframe url={metaData.url} title={metaData.name} width="100%" height="100%" frameBorder={0} />
             </Grid>
         </Grid>

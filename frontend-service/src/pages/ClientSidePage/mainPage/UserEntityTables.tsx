@@ -131,7 +131,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     ),
                                 };
                                 return (
-                                    <Grid item key={childTemplate._id}>
+                                    <Grid key={childTemplate._id}>
                                         <TemplateTable
                                             ref={(el) => {
                                                 if (el) {

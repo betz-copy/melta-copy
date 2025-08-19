@@ -150,19 +150,19 @@ const RuleBreachDialog: React.FC<{
                             </TabPanel>
                             <TabPanel value="2">
                                 <Grid flexDirection="column">
-                                    <Grid item>
+                                    <Grid>
                                         <Typography variant="body1">{`${i18next.t('ruleBreachInfo.actionsBrokeTheFollowingRules')}:`}</Typography>
                                     </Grid>
-                                    <Grid container item paddingRight="15px">
+                                    <Grid container paddingRight="15px">
                                         {ruleBreach.actions.map((action, index) => {
                                             return (
                                                 // eslint-disable-next-line react/no-array-index-key
-                                                <Grid item container key={index} spacing={2}>
-                                                    <Grid item>
+                                                <Grid container key={index} spacing={2}>
+                                                    <Grid>
                                                         <Typography>{index + 1}.</Typography>
                                                     </Grid>
 
-                                                    <Grid item>
+                                                    <Grid>
                                                         <ActionInfo
                                                             actionType={action.actionType}
                                                             actionMetadata={action.actionMetadata}
@@ -176,7 +176,7 @@ const RuleBreachDialog: React.FC<{
                                         })}
                                     </Grid>
                                     {ruleBreach.originUser && (
-                                        <Grid item marginTop="15px">
+                                        <Grid marginTop="15px">
                                             <Box component="span">{i18next.t('ruleBreachAlertNotification.by')}</Box>{' '}
                                             <Box component="span" fontWeight="bold">
                                                 {ruleBreach.originUser.fullName}

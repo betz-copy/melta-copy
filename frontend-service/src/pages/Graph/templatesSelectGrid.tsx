@@ -150,7 +150,7 @@ const TemplatesSelectGrid: React.FC<{
 
     return (
         <Grid container gap="10px">
-            <Grid item>
+            <Grid>
                 <Box sx={{ marginBottom: '20px', overflowY: 'auto', ...floatingBoxStyle }}>
                     <Button
                         className={classes.button}
@@ -230,7 +230,7 @@ const TemplatesSelectGrid: React.FC<{
                 )}
             </Grid>
             {!!secondTree?.filteredTree?.length && (
-                <Grid item>
+                <Grid>
                     <Box style={{ marginTop: '4.4rem' }}>
                         {openFilter && showAll && (
                             <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>

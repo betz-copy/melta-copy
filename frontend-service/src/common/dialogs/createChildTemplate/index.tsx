@@ -433,8 +433,8 @@ const CreateChildTemplateDialog: React.FC<{
                             </DialogTitle>
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 2 }}>
-                                    <Grid container item spacing={2}>
-                                        <Grid item xs={4}>
+                                    <Grid container spacing={2}>
+                                        <Grid size={{ xs: 4 }}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateName')}
@@ -449,7 +449,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 disabled={isUpdate}
                                             />
                                         </Grid>
-                                        <Grid item xs={4}>
+                                        <Grid size={{ xs: 4 }}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateDisplayName')}
@@ -464,7 +464,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 disabled={isUpdate}
                                             />
                                         </Grid>
-                                        <Grid item xs={4}>
+                                        <Grid size={{ xs: 4 }}>
                                             <TextField
                                                 fullWidth
                                                 label={i18next.t('createChildTemplateDialog.templateDetails')}
@@ -480,7 +480,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container direction="row" sx={{ pt: 3, pl: 3 }} alignItems="center" justifyContent="space-between">
-                                        <Grid item xs={6}>
+                                        <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <RadioGroup
                                                     value={childTemplateViewType}
@@ -524,9 +524,9 @@ const CreateChildTemplateDialog: React.FC<{
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={5.5} container direction="row" justifyContent="space-between">
+                                        <Grid size={{ xs: 5.5 }} container direction="row" justifyContent="space-between">
                                             {userFields.length > 0 && (
-                                                <Grid item>
+                                                <Grid>
                                                     <FormControlLabel
                                                         control={
                                                             <MeltaCheckbox
@@ -555,7 +555,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 </Grid>
                                             )}
                                             {hasUnitTypeProperty && (
-                                                <Grid item>
+                                                <Grid>
                                                     <FormControlLabel
                                                         control={
                                                             <MeltaCheckbox
@@ -587,7 +587,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
-                                        <Grid item xs={6}>
+                                        <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <Autocomplete
                                                     id="category"
@@ -641,7 +641,7 @@ const CreateChildTemplateDialog: React.FC<{
                                             </FormControl>
                                         </Grid>
                                         {hasUnitTypeProperty && (
-                                            <Grid item xs={5.5}>
+                                            <Grid size={{ xs: 5.5 }}>
                                                 <TextField
                                                     fullWidth
                                                     rows={1}
@@ -655,7 +655,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                             <Typography
                                                 sx={{ fontWeight: 400, fontSize: '16px', mb: isEmpty(touched) || hasCheckedBox ? '19px' : '0px' }}
                                             >
@@ -667,23 +667,23 @@ const CreateChildTemplateDialog: React.FC<{
                                                 </Typography>
                                             )}
                                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5, pl: 2 }}>
-                                                <Grid item xs={3}>
+                                                <Grid size={{ xs: 3 }}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                                                         {i18next.t('createChildTemplateDialog.columns.nameCol')}
                                                     </Typography>
                                                 </Grid>
-                                                <Grid item xs={3}>
+                                                <Grid size={{ xs: 3 }}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
                                                         {i18next.t('createChildTemplateDialog.columns.filterCol')}
                                                     </Typography>
                                                 </Grid>
-                                                <Grid item xs={3}>
+                                                <Grid size={{ xs: 3 }}>
                                                     <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
                                                         {i18next.t('createChildTemplateDialog.columns.defaultCol')}
                                                     </Typography>
                                                 </Grid>
                                                 {childTemplateViewType === ViewType.userPage && (
-                                                    <Grid item xs={3}>
+                                                    <Grid size={{ xs: 3 }}>
                                                         <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
                                                             {i18next.t('createChildTemplateDialog.columns.filterByUserCol')}
                                                         </Typography>
@@ -691,7 +691,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                 )}
                                             </Grid>
 
-                                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', pr: 2, pl: 2 }}>
+                                            <Grid size={{ xs: 12 }} sx={{ maxHeight: 400, overflowY: 'auto', pr: 2, pl: 2 }}>
                                                 <FieldsAndFiltersTable
                                                     entityTemplate={entityTemplate}
                                                     templateFieldsFilters={templateFieldsFilters}

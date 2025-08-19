@@ -62,7 +62,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     return (
-        <Grid item ref={dragRef} alignSelf="stretch" marginBottom="1rem">
+        <Grid ref={dragRef} alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{

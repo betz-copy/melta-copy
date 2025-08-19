@@ -34,11 +34,11 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
 
         const entityTemplateColor = entityTemplate ? getEntityTemplateColor(entityTemplate) : '';
         return (
-            <Grid item container gap="20px">
-                <Grid item>
+            <Grid container gap="20px">
+                <Grid>
                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '20px' }} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Typography
                         style={{
                             fontSize: headlineSubTitleFontSize,
@@ -59,7 +59,7 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
 
     return relationship ? (
         <Grid container onClick={() => setOpen((prev) => !prev)}>
-            <Grid item paddingTop="8px">
+            <Grid paddingTop="8px">
                 {open ? (
                     <ExpandLessIcon style={{ color: '#787C9E', width: '20px', height: '20px' }} />
                 ) : (
@@ -75,14 +75,14 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                     width: '460px',
                 }}
             >
-                <Grid item container alignItems="center" gap="5px">
+                <Grid container alignItems="center" gap="5px">
                     {header}
                     <Collapse in={open} timeout="auto" unmountOnExit style={{ width: '100%' }}>
-                        <Grid container item gap="20px" flexDirection="column" width="100%">
+                        <Grid container gap="20px" flexDirection="column" width="100%">
                             <Divider orientation="horizontal" style={{ width: '95%', alignSelf: 'center' }} />
-                            <Grid item container flexDirection="column" width="100%">
-                                <Grid item>{entityHeader(relationship?.sourceEntity?._id || '')}</Grid>
-                                <Grid item width="100%">
+                            <Grid container flexDirection="column" width="100%">
+                                <Grid>{entityHeader(relationship?.sourceEntity?._id || '')}</Grid>
+                                <Grid width="100%">
                                     {relationship?.sourceEntity && entityTemplates.get(relationship?.sourceEntity._id) && (
                                         <EntityPropertiesInternal
                                             properties={{
@@ -109,7 +109,7 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                                     )}
                                 </Grid>
                             </Grid>
-                            <Grid item container flexDirection="column">
+                            <Grid container flexDirection="column">
                                 {entityHeader(relationship?.destinationEntity?._id || '')}
                                 {relationship?.destinationEntity && entityTemplates.get(relationship?.destinationEntity._id) && (
                                     <EntityPropertiesInternal

@@ -190,7 +190,7 @@ const EditProps: React.FC<{
                 </p>
             )}
             {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                <Grid item key={key} marginTop={index > 0 ? 2 : 0}>
+                <Grid key={key} marginTop={index > 0 ? 2 : 0}>
                     {value.items ? (
                         <InstanceFileInput
                             key={key}
@@ -222,12 +222,12 @@ const EditProps: React.FC<{
     );
 
     return (
-        <Grid item container xs={12}>
+        <Grid container size={{ xs: 12 }}>
             <Grid container flexDirection="column">
                 <Box width="100%">
-                    <Grid item container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
+                    <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
                         {showTitle && (
-                            <Grid item>
+                            <Grid>
                                 <BlueTitle
                                     title={`${i18next.t(`actions.${isEditMode ? 'edit' : 'create'}ment`)} ${
                                         values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
@@ -240,7 +240,7 @@ const EditProps: React.FC<{
                         )}
 
                         {currentDraft && (
-                            <Grid item container xs={8} justifyContent="right">
+                            <Grid container size={{ xs: 8 }} justifyContent="right">
                                 <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
                                     {i18next.t('draftSaveDialog.lastSavedAt', {
                                         date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
@@ -250,7 +250,7 @@ const EditProps: React.FC<{
                         )}
 
                         {showCloseButton && (
-                            <Grid item>
+                            <Grid>
                                 <IconButton
                                     onClick={() => (wasDirty ? setIsDraftDialogOpen?.(true) : handleClose?.())}
                                     sx={{ color: (theme) => theme.palette.primary.main }}
@@ -261,7 +261,7 @@ const EditProps: React.FC<{
                         )}
                     </Grid>
                     {!entityTemplate._id && (
-                        <Grid item marginTop="20px">
+                        <Grid marginTop="20px">
                             <ChooseTemplate
                                 setFieldValue={setFieldValue}
                                 values={values}
@@ -279,7 +279,7 @@ const EditProps: React.FC<{
                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                     </Grid>
                     {templateFileKeys.length > 0 && (
-                        <Grid item container flexDirection="column">
+                        <Grid container flexDirection="column">
                             <Grid marginTop="20px" alignSelf="stretch">
                                 <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                             </Grid>

@@ -63,9 +63,9 @@ export const RuleCard: React.FC<{
             width={250}
             title={
                 <Grid container gap="10px" paddingLeft="5px" direction="column">
-                    <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
-                        <Grid item flexBasis="95%" height="30px">
-                            <Grid item container alignItems="center" direction="row" flexWrap="nowrap" gap="5px">
+                    <Grid container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
+                        <Grid flexBasis="95%" height="30px">
+                            <Grid container alignItems="center" direction="row" flexWrap="nowrap" gap="5px">
                                 {rule.actionOnFail === 'WARNING' ? (
                                     <WarningAmberRounded sx={{ color: '#FFAC2F' }} />
                                 ) : (
@@ -82,7 +82,7 @@ export const RuleCard: React.FC<{
                                 </Typography>
                             </Grid>
                         </Grid>
-                        <Grid item flexBasis="5%">
+                        <Grid flexBasis="5%">
                             {isHoverOnCard && (
                                 <CardMenu
                                     onOptionsIconClose={() => setIsHoverOnCard(false)}
@@ -110,28 +110,28 @@ export const RuleCard: React.FC<{
                 </Grid>
             }
             expendedCard={
-                <Grid item container gap="10px" paddingLeft="5px" direction="column" marginTop="20px">
-                    <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                <Grid container gap="10px" paddingLeft="5px" direction="column" marginTop="20px">
+                    <Grid container justifyContent="space-between">
+                        <Grid flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.rule.description')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%">
+                        <Grid flexBasis="70%">
                             <Typography>{rule.description}</Typography>
                         </Grid>
                     </Grid>
-                    <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                    <Grid container justifyContent="space-between">
+                        <Grid flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.rule.actionOnFail')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%">
+                        <Grid flexBasis="70%">
                             <Typography>{i18next.t(`wizard.rule.actions.${rule.actionOnFail.toLocaleLowerCase()}`)}</Typography>
                         </Grid>
                     </Grid>
-                    <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                    <Grid container justifyContent="space-between">
+                        <Grid flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.rule.primaryEntityTemplate')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%">
+                        <Grid flexBasis="70%">
                             <Typography sx={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                                 {entityTemplate?.displayName}
                             </Typography>
@@ -201,19 +201,19 @@ const RulesRow: React.FC = () => {
     });
 
     return (
-        <Grid item container>
+        <Grid container>
             <Grid container spacing={1} alignItems="center">
-                <Grid item>
+                <Grid>
                     <SearchInput borderRadius="7px" onChange={setSearchText} placeholder={i18next.t('globalSearch.searchRules')} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <CreateButton
                         onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}
                         text={i18next.t('systemManagement.newRuleTemplate')}
                     />
                 </Grid>
             </Grid>
-            <Grid item container direction="row" gap="30px" marginTop="30px">
+            <Grid container direction="row" gap="30px" marginTop="30px">
                 <InfiniteScroll<IMongoRule>
                     queryKey={['searchRulesTemplates', searchText, allowedRulesAndEntities]}
                     queryFunction={({ pageParam }) =>

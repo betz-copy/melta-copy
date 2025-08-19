@@ -17,6 +17,7 @@ const cesiumCopyTargets = [
 export default defineConfig({
     define: {
         CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
+        global: 'window',
     },
     plugins: [react(), cesium(), viteStaticCopy({ targets: cesiumCopyTargets })],
     server: {

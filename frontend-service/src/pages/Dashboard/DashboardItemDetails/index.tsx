@@ -75,11 +75,11 @@ const DashboardItemDetails = <T extends DashboardItemForm>({
                         />
 
                         <Grid container height="94.7vh" wrap="nowrap">
-                            <Grid item flexGrow={1} overflow="auto">
+                            <Grid flexGrow={1} overflow="auto">
                                 {bodyComponent(formikProps)}
                             </Grid>
 
-                            <Grid item width="375px" flexShrink={0}>
+                            <Grid width="375px" flexShrink={0}>
                                 <DashboardItemDetailsSideBar
                                     activeStep={activeStep}
                                     setActiveStep={setActiveStep}
