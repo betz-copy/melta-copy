@@ -55,18 +55,20 @@ export const PureInfiniteScroll = <T extends any>({
     }, [showMoreRef, isFetchingNextPage, hasNextPage]);
 
     return (
-        <>
-            {data?.pages.map((page) =>
-                page.map((item) => (
-                    <Grid
-                        justifyContent="space-between"
-                        key={getItemId(item)}
-                        {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
-                    >
-                        {children(item)}
-                    </Grid>
-                )),
-            )}
+        <Grid direction="column" width="100%">
+            <Grid container direction="row" gap={3}>
+                {data?.pages.map((page) =>
+                    page.map((item) => (
+                        <Grid
+                            justifyContent="space-between"
+                            key={getItemId(item)}
+                            {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
+                        >
+                            {children(item)}
+                        </Grid>
+                    )),
+                )}
+            </Grid>
 
             <ShowMore
                 ref={showMoreRef}
@@ -75,6 +77,6 @@ export const PureInfiniteScroll = <T extends any>({
                 emptyText={emptyText}
                 endText={endText}
             />
-        </>
+        </Grid>
     );
 };

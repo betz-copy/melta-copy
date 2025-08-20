@@ -68,7 +68,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
 
     return (
         <Grid container justifyContent="center" direction="column" padding={1} width={width} height={height} alignItems="center" flexWrap="nowrap">
-            <Grid container flexWrap="nowrap" justifyContent="space-between" alignItems="center">
+            <Grid container flexWrap="nowrap" justifyContent="space-between" alignItems="center" width="100%">
                 <TextField
                     placeholder={i18next.t('input.imagePicker.iconSearch')}
                     value={searchStr}

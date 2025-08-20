@@ -323,7 +323,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     return (
         <Grid container marginBottom="30px">
-            <Grid container alignItems="center" flexWrap="nowrap" flexDirection="row" justifyContent="space-between">
+            <Grid container alignItems="center" flexWrap="nowrap" flexDirection="row" justifyContent="space-between" width="100%">
                 <Grid container spacing={1} alignItems="center">
                     <Grid>
                         <SearchInput

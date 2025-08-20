@@ -106,7 +106,7 @@ const TemplateTablesViewResults = forwardRef<
     }, [templates, currentUserKartoffelId]);
 
     return (
-        <Grid container direction="column" spacing={1}>
+        <Grid direction="column" spacing={1} width="100%">
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 return (
                     <Grid key={template._id}>

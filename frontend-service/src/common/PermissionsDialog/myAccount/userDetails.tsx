@@ -22,7 +22,7 @@ const UserDetails: React.FC<{ existingUser: IUserPopulated; editProfile: boolean
                 <Divider />
             </Grid>
             {Object.entries(userDetailsMap).map(([key, value]) => (
-                <Grid container key={key} gap={editProfile ? 1.5 : 2}>
+                <Grid container key={key} gap={editProfile ? 1.5 : 2} size={{ xs: 12 }}>
                     <Grid display="flex" justifyContent="space-between" width="100%" paddingX="10px">
                         <Typography variant="body1" style={{ fontWeight: 'bold' }}>
                             {i18next.t(`user.${key}`)}

@@ -340,7 +340,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Grid>
                             ) : null}
 
-                            <Grid container justifyContent="space-between">
+                            <Grid justifyContent="space-between">
                                 <EntityDates
                                     createdAt={expandedEntity.entity.properties.createdAt}
                                     updatedAt={expandedEntity.entity.properties.updatedAt}

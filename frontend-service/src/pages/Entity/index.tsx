@@ -176,7 +176,7 @@ export const ConnectionsTable: React.FC<{
 
     return (
         <Grid>
-            <Grid container justifyContent="space-between" marginBottom="10px">
+            <Grid direction="column" justifyContent="space-between" marginBottom="10px">
                 <Grid container marginTop="10px" width="fit-content">
                     <ConnectionsTableTitle
                         expandedEntity={expandedEntity}

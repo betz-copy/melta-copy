@@ -197,8 +197,8 @@ const TemplateTable = forwardRef<
         : undefined;
 
     return (
-        <Grid container minWidth="fit-content">
-            <Grid container direction="column" width="fit-content" minWidth="fit-content">
+        <Grid container minWidth="fit-content" width="100%">
+            <Grid container direction="column" width="100%" minWidth="fit-content">
                 <Grid container size={{ xs: 5 }} justifyContent="start" alignItems="center" minWidth="fit-content" gap="10px">
                     <Grid minWidth="fit-content">
                         <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
@@ -232,7 +232,7 @@ const TemplateTable = forwardRef<
                     </Grid>
                 </Grid>
 
-                <Grid container direction="row" alignItems="center" justifyItems="space-between">
+                <Grid container direction="row" alignItems="center" justifyContent="space-between">
                     <Grid container>
                         <TableButton
                             iconButtonWithPopoverProps={{

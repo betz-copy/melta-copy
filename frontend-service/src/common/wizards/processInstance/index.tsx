@@ -137,7 +137,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                 >
                     <Close fontSize="large" />
                 </IconButton>
-                <Grid container flexDirection="row" height="100%" flexWrap="nowrap">
+                <Grid container flexDirection="row" height="100%" flexWrap="nowrap" width="100%" size={{ xs: 12 }}>
                     <Grid
                         container
                         height="100%"
@@ -222,15 +222,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     </MeltaTooltip>
                                 </Grid>
                                 {openActivityPopper && (
-                                    <Grid
-                                        container
-                                        direction="column"
-                                        wrap="nowrap"
-                                        overflow="none"
-                                        height="75vh"
-                                        style={{ overflowY: 'auto' }}
-                                        padding="20px"
-                                    >
+                                    <Grid direction="column" wrap="nowrap" overflow="none" height="75vh" style={{ overflowY: 'auto' }} padding="20px">
                                         <ActivitiesContent activityEntityId={processInstance._id} entityTemplate={processTemplate.details} />
                                     </Grid>
                                 )}

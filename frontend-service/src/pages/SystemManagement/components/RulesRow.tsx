@@ -202,7 +202,7 @@ const RulesRow: React.FC = () => {
 
     return (
         <Grid container>
-            <Grid container spacing={1} alignItems="center">
+            <Grid container spacing={1} alignItems="center" marginBottom={3}>
                 <Grid>
                     <SearchInput borderRadius="7px" onChange={setSearchText} placeholder={i18next.t('globalSearch.searchRules')} />
                 </Grid>
@@ -213,39 +213,35 @@ const RulesRow: React.FC = () => {
                     />
                 </Grid>
             </Grid>
-            <Grid container direction="row" gap="30px" marginTop="30px">
-                <InfiniteScroll<IMongoRule>
-                    queryKey={['searchRulesTemplates', searchText, allowedRulesAndEntities]}
-                    queryFunction={({ pageParam }) =>
-                        allowedRulesAndEntities.allowedRules
-                            .filter(({ name }) => searchText === '' || name.includes(searchText))
-                            .splice(pageParam, bulk)
-                    }
-                    onQueryError={(error) => {
-                        console.error('failed to search process templates error:', error);
-                        toast.error(i18next.t('failedToLoadResults'));
-                    }}
-                    getItemId={(rule) => rule._id}
-                    getNextPageParam={(lastPage, allPages) => {
-                        const nextPage = allPages.length * bulk;
-                        return lastPage.length ? nextPage : undefined;
-                    }}
-                    endText={i18next.t('noSearchLeft')}
-                    emptyText={i18next.t('failedToGetTemplates')}
-                    useContainer={false}
-                >
-                    {(rule) => (
-                        <RuleCard
-                            key={rule._id}
-                            entityTemplates={allowedRulesAndEntities.allowedEntityTemplates}
-                            rule={rule}
-                            setDeleteRuleWizardState={setDeleteRuleWizardState}
-                            setRuleWizardDialogState={setRuleWizardDialogState}
-                            updateDisabledMutateAsync={updateDisabledMutateAsync}
-                        />
-                    )}
-                </InfiniteScroll>
-            </Grid>
+            <InfiniteScroll<IMongoRule>
+                queryKey={['searchRulesTemplates', searchText, allowedRulesAndEntities]}
+                queryFunction={({ pageParam }) =>
+                    allowedRulesAndEntities.allowedRules.filter(({ name }) => searchText === '' || name.includes(searchText)).splice(pageParam, bulk)
+                }
+                onQueryError={(error) => {
+                    console.error('failed to search process templates error:', error);
+                    toast.error(i18next.t('failedToLoadResults'));
+                }}
+                getItemId={(rule) => rule._id}
+                getNextPageParam={(lastPage, allPages) => {
+                    const nextPage = allPages.length * bulk;
+                    return lastPage.length ? nextPage : undefined;
+                }}
+                endText={i18next.t('noSearchLeft')}
+                emptyText={i18next.t('failedToGetTemplates')}
+                useContainer={false}
+            >
+                {(rule) => (
+                    <RuleCard
+                        key={rule._id}
+                        entityTemplates={allowedRulesAndEntities.allowedEntityTemplates}
+                        rule={rule}
+                        setDeleteRuleWizardState={setDeleteRuleWizardState}
+                        setRuleWizardDialogState={setRuleWizardDialogState}
+                        updateDisabledMutateAsync={updateDisabledMutateAsync}
+                    />
+                )}
+            </InfiniteScroll>
             <RuleWizard
                 open={ruleWizardDialogState.isWizardOpen}
                 handleClose={() => setRuleWizardDialogState({ isWizardOpen: false, rule: null })}

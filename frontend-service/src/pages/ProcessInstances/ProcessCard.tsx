@@ -1,4 +1,4 @@
-import { Edit, ScatterPlotOutlined as HiveIcon, Unarchive, MoreVertSharp, Delete, Archive } from '@mui/icons-material';
+import { Archive, Delete, Edit, ScatterPlotOutlined as HiveIcon, MoreVertSharp, Unarchive } from '@mui/icons-material';
 import {
     Box,
     Card,
@@ -284,7 +284,7 @@ const ProcessCard: React.FC<{
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
                 {!isLoading ? (
                     <CardContent>
-                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={1}>
+                        <Grid direction="column" alignItems="center" justifyContent="center" spacing={1}>
                             <Grid container direction="row" justifyContent="space-between" alignItems="center" wrap="nowrap" spacing={1}>
                                 <Grid container alignItems="center">
                                     <Grid

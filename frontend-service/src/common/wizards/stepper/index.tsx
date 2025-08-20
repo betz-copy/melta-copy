@@ -65,32 +65,34 @@ const Stepper = <T extends object>({
         );
 
     return (
-        <Grid container justifyContent="space-around" alignItems="center">
-            {steps.length > 1 &&
-                steps.map((step, index) => {
-                    // eslint-disable-next-line no-nested-ternary
-                    const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
+        <Grid container direction="column" justifyContent="space-around" alignItems="center">
+            <Grid container direction="row" width="100%">
+                {steps.length > 1 &&
+                    steps.map((step, index) => {
+                        // eslint-disable-next-line no-nested-ternary
+                        const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
 
-                    return (
-                        <Fragment key={step.label}>
-                            <Grid>
-                                <Grid container justifyContent="center" alignItems="center">
-                                    <Grid display="flex" justifyContent="center" alignContent="center">
-                                        <StepNumberTypography type={type} direction="row">
-                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
-                                        </StepNumberTypography>
-                                    </Grid>
-                                    <Grid>
-                                        <StepNameTypography type={type} direction={direction}>
-                                            {step.label}
-                                        </StepNameTypography>
+                        return (
+                            <Fragment key={step.label}>
+                                <Grid>
+                                    <Grid container justifyContent="center" alignItems="center">
+                                        <Grid display="flex" justifyContent="center" alignContent="center">
+                                            <StepNumberTypography type={type} direction="row">
+                                                {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                            </StepNumberTypography>
+                                        </Grid>
+                                        <Grid>
+                                            <StepNameTypography type={type} direction={direction}>
+                                                {step.label}
+                                            </StepNameTypography>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
-                            </Grid>
-                            {index !== steps.length - 1 && <DashedHorizontalLine />}
-                        </Fragment>
-                    );
-                })}
+                                {index !== steps.length - 1 && <DashedHorizontalLine />}
+                            </Fragment>
+                        );
+                    })}
+            </Grid>
             <Grid
                 container
                 direction="column"
@@ -99,6 +101,7 @@ const Stepper = <T extends object>({
                 height="100%"
                 marginBottom="0.5rem"
                 marginTop="2rem"
+                width="100%"
             >
                 {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
             </Grid>
