@@ -14,7 +14,7 @@ export interface RequestWithSearchPrintingTemplateBody extends RequestWithPermis
 }
 
 class PrintingTemplateService extends TemplatesManagerService {
-    async getAllPrintingTemplates() {
+    async getAllPrintingTemplates(): Promise<IMongoPrintingTemplate[]> {
         const { data } = await this.api.get<IMongoPrintingTemplate[]>(`${basePrintingTemplatesRoute}/all`);
         return data;
     }

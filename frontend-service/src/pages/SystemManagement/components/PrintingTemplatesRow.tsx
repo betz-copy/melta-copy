@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Grid, Typography, Dialog } from '@mui/material';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { CreateButton } from './CreateButton';
-import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
+import { IMongoPrintingTemplate, IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
 import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
 import { PrintingTemplateCard } from './PrintingTemplateCard';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { toast } from 'react-toastify';
-import { deletePrintingTemplate, fetchPrintingTemplates } from '../../../services/templates/printingTemplateRowService';
+import { deletePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 
 const PrintingTemplatesRow: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -31,11 +31,15 @@ const PrintingTemplatesRow: React.FC = () => {
         printingTemplate: null,
     });
 
-    const { data: printingTemplates = [] } = useQuery<IMongoPrintingTemplate[]>('getPrintingTemplates', fetchPrintingTemplates);
+    const processTemplatesMap = queryClient.getQueryData<IPrintingTemplateMap>('getPrintingTemplates')!;
+    const printingTemplates = Array.from(processTemplatesMap.values());
 
-    const deleteMutation = useMutation(deletePrintingTemplate, {
-        onSuccess: () => {
-            queryClient.invalidateQueries('getPrintingTemplates');
+    const deleteMutation = useMutation(deletePrintingTemplateRequest, {
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<IPrintingTemplateMap>('getPrintingTemplates', (data) => {
+                data!.delete(id);
+                return data!;
+            });
             toast.success(i18next.t('wizard.printingTemplate.deletedSuccessfully'));
             setDeletePrintingTemplateDialogState({ isDialogOpen: false, printingTemplateId: null });
         },

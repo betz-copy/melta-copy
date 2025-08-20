@@ -297,7 +297,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             categoryOrder = null;
         }
 
-        const allPrintingTemplates: IMongoPrintingTemplate[] = [];
+        const allPrintingTemplates: IMongoPrintingTemplate[] = await this.printingTemplateService.getAllPrintingTemplates();
 
         return {
             categoryOrder,

@@ -13,7 +13,7 @@ const printingTemplateRouter = Router();
 
 const controller = createController(PrintingTemplateController);
 
-printingTemplateRouter.get('/', controller.getAllPrintingTemplates);
+printingTemplateRouter.get('/all', controller.getAllPrintingTemplates);
 printingTemplateRouter.get('/:templateId', ValidateRequest(getTemplateByIdRequestSchema), controller.getPrintingTemplateById);
 printingTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), controller.createPrintingTemplate);
 printingTemplateRouter.put('/:templateId', ValidateRequest(updateTemplateByIdRequestSchema), controller.updatePrintingTemplateById);
