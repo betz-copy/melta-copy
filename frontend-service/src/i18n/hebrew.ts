@@ -426,6 +426,13 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
     },
+    unitAutocomplete: {
+        label: 'משוייך ליחידה',
+        searchLabel: 'חיפוש יחידות',
+        failedToSearchRoles: 'נכשל לחפש יחידות',
+        loading: 'טוען...',
+        noOptions: 'אין תוצאות',
+    },
     notifications: {
         notificationType: 'התראות למייל',
         title: 'התראות',

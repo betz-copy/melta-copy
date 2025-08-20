@@ -10,7 +10,13 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
-import { createUserRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest, updateUserRoleIdsRequest } from '../../services/userService';
+import {
+    createUserRequest,
+    getAllWorkspaceRolesRequest,
+    syncPermissionsRequest,
+    updateUserRoleIdsRequest,
+    updateUserUnitsRequest,
+} from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -23,6 +29,8 @@ import { createDialogCategories, didPermissionsChange, userHasNoPermissions } fr
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import ManagePermissions from './managePermissions';
+import UnitAutocomplete from '../inputs/UnitAutocomplete';
+import { BackendConfigState } from '../../services/backendConfigService';
 
 export const defaultEmptyUser = {
     _id: '',
@@ -40,6 +48,7 @@ export const defaultEmptyUser = {
     },
     permissions: {},
     displayName: '',
+    units: [],
 } as IUser;
 
 const MyPermissions: React.FC<{
@@ -60,6 +69,9 @@ const MyPermissions: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
+    const { units: unitsArray = [] } = queryClient.getQueryData<BackendConfigState>('getBackendConfig') || {};
+    console.log('🚀 ~ MyPermissions ~ unitsArray:', unitsArray);
+
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
             createUserRequest(
@@ -68,6 +80,7 @@ const MyPermissions: React.FC<{
                 formUser.permissions,
                 workspace._id,
                 formUser.roleIds,
+                formUser.units,
             ),
         {
             onError: (error) => {
@@ -85,6 +98,22 @@ const MyPermissions: React.FC<{
 
     const { mutate: updateUserRoleId } = useMutation(
         (formUser: IUser) => updateUserRoleIdsRequest(formUser._id, workspace._id, formUser.permissions, formUser.roleIds),
+        {
+            onError: (error) => {
+                console.error('failed to upsert permission. error:', error);
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+            },
+            onSuccess: (newUser) => {
+                onSuccess?.(newUser);
+                queryClient.invalidateQueries('allIFrames');
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+                handleClose();
+            },
+        },
+    );
+
+    const { mutate: updateUserUnits } = useMutation(
+        (formUser: IUser) => updateUserUnitsRequest(formUser._id, workspace._id, formUser.permissions, formUser.units),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
@@ -179,12 +208,14 @@ const MyPermissions: React.FC<{
                 else {
                     if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
                     updateUserRoleId(formUser); // role changed, added or deleted
+                    updateUserUnits(formUser); // units changed, added or deleted
                 }
             }}
         >
             {(formikProps: FormikProps<IUser>) => {
                 const { values, touched, errors, handleBlur, setValues, setFieldValue, isSubmitting, initialValues } = formikProps;
                 const formikRole = workspaceRoles?.find((role) => values.roleIds?.includes(role._id));
+                // const formikUnits = workspaceUnits?.find((unit) => values.units?.includes(unit));
 
                 return (
                     <Form>
@@ -248,6 +279,28 @@ const MyPermissions: React.FC<{
                                     />
                                 </Box>
                             )}
+
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
+                                <UnitAutocomplete
+                                    value={values.units}
+                                    options={unitsArray}
+                                    onChange={(_e, chosenUnits, reason) => {
+                                        if (reason === 'clear') {
+                                            setFieldValue('units', []);
+                                            return;
+                                        }
+
+                                        setFieldValue('units', chosenUnits ?? []);
+                                    }}
+                                    onBlur={handleBlur}
+                                    readOnly={mode === 'view'}
+                                    isError={Boolean(touched.roleIds && errors.roleIds)}
+                                    helperText={touched.roleIds ? errors.roleIds : ''}
+                                    enableClear={mode !== 'view'}
+                                    refetch={searchRolesOptionsDebounced}
+                                    isLoading={isLoading}
+                                />
+                            </Box>
 
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
