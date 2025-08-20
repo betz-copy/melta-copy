@@ -294,7 +294,8 @@ export const patchDocumentAsStream = async (
 
     // Extract keys to delete from the document by matching the pattern {{.*?}} in the raw text
     // ? don't ask about the buffer that gets an arrayBuffer, this lib is stupid
-    const keysToDelete = (await mammoth.extractRawText({ buffer: arrayBuffer as Buffer })).value
+    const buffer = Buffer.from(arrayBuffer);
+    const keysToDelete = (await mammoth.extractRawText({ buffer })).value
         .match(/{{.*?}}/g) // Match all occurrences of {{key}} in the document
         ?.map((patch) => patch.replace(/{{|}}/g, '')) // Remove the curly braces from the matched keys
         ?.filter((patch) => !(patch in properties)); // Filter out keys that are present in the properties

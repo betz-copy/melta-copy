@@ -10,11 +10,11 @@ appRouter.use('/api/processes/templates', ProcessTemplateRouter);
 appRouter.use('/api/processes/instances/steps', StepInstanceRouter);
 appRouter.use('/api/processes/instances', ProcessInstanceRouter);
 
-appRouter.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
+appRouter.get('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');
 });
 
-appRouter.use('*', (_req, res) => {
+appRouter.all('*', (_req, res) => {
     res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 

@@ -10,11 +10,11 @@ appRouter.use('/api/permissions', permissionsRouter);
 appRouter.use('/api/roles', rolesRouter);
 appRouter.use('/api/users', usersRouter);
 
-appRouter.use('/isAlive', (_req, res) => {
+appRouter.get('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');
 });
 
-appRouter.use('*', (_req, res) => {
+appRouter.all('*', (_req, res) => {
     res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 
