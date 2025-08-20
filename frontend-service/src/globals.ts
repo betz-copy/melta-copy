@@ -14,6 +14,7 @@ export const environment = {
         clientSideRoutes: '/client-side',
         templatesConfig: '/templates/config',
         relationshipTemplates: '/templates/relationships',
+        printingTemplates: '/templates/print',
         rules: '/templates/rules',
         entities: '/instances/entities',
         relationships: '/instances/relationships',
