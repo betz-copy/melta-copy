@@ -11,7 +11,6 @@ import {
     IAction,
     IBrokenRule,
     IBrokenRuleEntity,
-    IChildTemplatePopulated,
     ICountSearchResult,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -23,6 +22,7 @@ import {
     IExportEntitiesBody,
     IFailedEntity,
     IFullMongoEntityTemplate,
+    IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
     IRelationship,
@@ -945,7 +945,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
             if (childTemplateId) {
                 const notFilterValid = entities.find((entity) =>
-                    matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IChildTemplatePopulated)),
+                    matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IMongoChildTemplatePopulated)),
                 );
 
                 if (notFilterValid)

@@ -131,7 +131,7 @@ const CodeEditorDialog: React.FC<{
                 <DialogTitle>
                     <Grid display="flex" flexDirection="row" alignItems="center" gap=".25rem">
                         <Typography color="primary" fontSize="20px" fontWeight="600" fontFamily="Rubik">
-                            {i18next.t('actions.addActions')}
+                            {i18next.t('actions.addActions')} - {entityTemplate.displayName}
                         </Typography>
                         <IconButtonWithPopover
                             popoverText={i18next.t('systemManagement.entityAction.copyCode')}

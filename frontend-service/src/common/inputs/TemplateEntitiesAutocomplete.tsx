@@ -251,8 +251,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
                             {displayOptionValues.map((displayOptionValue, index) => (
                                 <Grid key={displayOptionValue} size={{ xs: 4 }} overflow="hidden">
-                                    <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={index > 0 ? '#9398C2' : '#53566E'} overflow="hidden" fontSize="14px">
+                                    <MeltaTooltip placement="right" title={template.properties.properties[displayKeys[index]].title}>
+                                        <Typography color={'#53566E'} overflow="hidden" fontSize="14px">
                                             {displayOptionValue}
                                         </Typography>
                                     </MeltaTooltip>

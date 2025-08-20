@@ -1,5 +1,4 @@
-import { AppRegistration as AppRegistrationIcon, InfoOutlined } from '@mui/icons-material';
-import { ArrowBackIosNew } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, ArrowBackIosNew, InfoOutlined } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
@@ -7,17 +6,12 @@ import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { ICategoryMap } from '../../../interfaces/categories';
-import {
-    EntityTemplateType,
-    IChildTemplateMap,
-    IChildTemplatePopulated,
-    IMongoChildTemplatePopulated,
-    TemplateItem,
-} from '../../../interfaces/childTemplates';
+import { EntityTemplateType, IChildTemplateMap, IChildTemplatePopulated, TemplateItem, ViewType } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
@@ -35,21 +29,21 @@ const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     if (childTemplate.isFilterByUserUnit) {
         chips.push({
             color: '#2CB93A',
-            label: i18next.t('createChildTemplateDialog.permissionsPage.unit'),
+            label: i18next.t('childTemplate.permissionsPage.unit'),
         });
     }
 
     if (childTemplate.isFilterByCurrentUser) {
         chips.push({
             color: '#0072C6',
-            label: i18next.t('createChildTemplateDialog.permissionsPage.user'),
+            label: i18next.t('childTemplate.permissionsPage.user'),
         });
     }
 
-    if (childTemplate.viewType === 'userPage') {
+    if (childTemplate.viewType === ViewType.userPage) {
         chips.push({
             color: '#CF9030',
-            label: i18next.t('createChildTemplateDialog.permissionsPage.userPage'),
+            label: i18next.t('childTemplate.permissionsPage.userPage'),
         });
     }
 
@@ -80,7 +74,7 @@ interface EntityTemplateCardProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildTemplatePopulated;
+            mutationProps?: IMutationWithPayload;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
@@ -127,15 +121,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         return entityHasWritePermission;
     }, [isChildTemplate, entityTemplate._id, childTemplates, currentUser, entityHasWritePermission]);
 
-    const childTemplatesList = useMemo(() => {
-        if (!childTemplates) return [];
-        const templates = Array.from(childTemplates.values());
-        const filtered = templates.filter((child) => {
-            return child.parentTemplate._id === entityTemplate._id;
-        });
-        return filtered;
-    }, [childTemplates, entityTemplate._id]);
-
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups } = entityTemplate;
@@ -161,6 +146,16 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     };
 
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
+
+    const filesProps = useMemo(
+        () =>
+            Object.entries(
+                childTemplates?.get(entityTemplate._id)
+                    ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
+                    : entityTemplate.properties?.properties || {},
+            ).filter(([, value]) => isFile(value) && value.display !== false),
+        [childTemplates, entityTemplate._id],
+    );
 
     return (
         <ViewingCard
@@ -227,7 +222,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                 ...entityTemplate,
                                                 _id: childTemplate.parentTemplate._id,
                                             },
-                                            childTemplate,
+                                            mutationProps: {
+                                                actionType: ActionMode.Update,
+                                                payload: childTemplate,
+                                            },
                                         });
                                     } else {
                                         setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
@@ -241,12 +239,15 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                               setAddChildTemplateDialogState({
                                                   isWizardOpen: true,
                                                   entityTemplate: childTemplate.parentTemplate,
-                                                  childTemplate: {
-                                                      ...childTemplate,
-                                                      category: emptyEntityTemplate.category,
-                                                      displayName: emptyEntityTemplate.displayName,
-                                                      name: emptyEntityTemplate.name,
-                                                      description: '',
+                                                  mutationProps: {
+                                                      actionType: ActionMode.Duplicate,
+                                                      payload: {
+                                                          ...childTemplate,
+                                                          category: emptyEntityTemplate.category,
+                                                          displayName: emptyEntityTemplate.displayName,
+                                                          name: emptyEntityTemplate.name,
+                                                          description: '',
+                                                      },
                                                   },
                                               });
                                               setIsHoverOnCard(false);
@@ -291,7 +292,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     childTemplates?.get(entityTemplate._id)
                                         ? undefined
                                         : () => {
-                                              setAddChildTemplateDialogState({ isWizardOpen: true, entityTemplate });
+                                              setAddChildTemplateDialogState({
+                                                  isWizardOpen: true,
+                                                  entityTemplate,
+                                                  mutationProps: { actionType: ActionMode.Create, payload: undefined },
+                                              });
                                               setIsHoverOnCard(false);
                                           }
                                 }
@@ -353,81 +358,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             }
             expendedCard={
                 <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
-                    {childTemplatesList.length > 0 && (
-                        <Grid container>
-                            <Typography color={theme.palette.primary.main} sx={{ mt: 2 }}>
-                                {i18next.t('createChildTemplateDialog.childTemplates')}
-                            </Typography>
-                        </Grid>
-                    )}
-                    {childTemplatesList.map((childTemplate) => (
-                        <Grid key={childTemplate._id} container gap="10px" alignItems="center">
-                            <Grid>
-                                <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ marginRight: '10px' }} />
-                            </Grid>
-                            <Grid>
-                                <MeltaTooltip title={childTemplate.displayName}>
-                                    <Typography
-                                        style={{
-                                            fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
-                                            color: theme.palette.primary.main,
-                                            fontWeight: '400',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                        }}
-                                    >
-                                        {childTemplate.displayName}
-                                    </Typography>
-                                </MeltaTooltip>
-                            </Grid>
-                            <Grid>
-                                <MeltaTooltip
-                                    title={
-                                        <div>
-                                            <Typography variant="body2">{childTemplate.description}</Typography>
-                                            <Grid container spacing={1} sx={{ mt: 1 }}>
-                                                {childTemplate.isFilterByUserUnit && (
-                                                    <Grid>
-                                                        <ColoredEnumChip
-                                                            color="#2CB93A"
-                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.unit')}
-                                                        />
-                                                    </Grid>
-                                                )}
-                                                {childTemplate.isFilterByCurrentUser && (
-                                                    <Grid>
-                                                        <ColoredEnumChip
-                                                            color="#0072C6"
-                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.user')}
-                                                        />
-                                                    </Grid>
-                                                )}
-                                                {childTemplate.viewType === 'userPage' && (
-                                                    <Grid>
-                                                        <ColoredEnumChip
-                                                            color="#CF9030"
-                                                            label={i18next.t('createChildTemplateDialog.permissionsPage.userPage')}
-                                                        />
-                                                    </Grid>
-                                                )}
-                                            </Grid>
-                                        </div>
-                                    }
-                                >
-                                    <InfoOutlined
-                                        sx={{
-                                            fontSize: '16px',
-                                            color: theme.palette.primary.main,
-                                            opacity: 0.7,
-                                            cursor: 'help',
-                                            ml: 1,
-                                        }}
-                                    />
-                                </MeltaTooltip>
-                            </Grid>
-                        </Grid>
-                    ))}
                     <Grid container justifyContent="space-between">
                         <Grid color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
@@ -466,42 +396,38 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 </Grid>
                             </Grid>
                         ))}
-                    <Grid container justifyContent="space-between">
-                        <Grid flexBasis="27%" color={theme.palette.primary.main}>
-                            <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
-                        </Grid>
-                    </Grid>
-                    {Object.entries(
-                        childTemplates?.get(entityTemplate._id)
-                            ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
-                            : entityTemplate.properties?.properties || {},
-                    )
-                        .filter(([, value]) => isFile(value) && value.display !== false)
-                        .map(([key, value]) => (
-                            <Grid key={key} container gap="5px">
-                                <Grid flexBasis="4%" color={theme.palette.primary.main}>
-                                    <ArrowBackIosNew sx={{ fontSize: '12px' }} />
-                                </Grid>
-                                <Grid>
-                                    <MeltaTooltip title={key}>
-                                        <Typography
-                                            style={{
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                width: '100px',
-                                                textAlign: 'right',
-                                            }}
-                                        >
-                                            {key}
-                                        </Typography>
-                                    </MeltaTooltip>
-                                </Grid>
-                                <Grid color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
-                                    {i18next.t(`propertyTypes.${value.format === 'fileId' ? value.format : 'multipleFiles'}`)}
-                                </Grid>
+                    {!!filesProps.length && (
+                        <Grid container justifyContent="space-between">
+                            <Grid flexBasis="27%" color={theme.palette.primary.main}>
+                                <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
                             </Grid>
-                        ))}
+                        </Grid>
+                    )}
+                    {filesProps.map(([key, value]) => (
+                        <Grid key={key} container gap="5px">
+                            <Grid flexBasis="4%" color={theme.palette.primary.main}>
+                                <ArrowBackIosNew sx={{ fontSize: '12px' }} />
+                            </Grid>
+                            <Grid>
+                                <MeltaTooltip title={key}>
+                                    <Typography
+                                        style={{
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            width: '100px',
+                                            textAlign: 'right',
+                                        }}
+                                    >
+                                        {key}
+                                    </Typography>
+                                </MeltaTooltip>
+                            </Grid>
+                            <Grid color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
+                                {i18next.t(`propertyTypes.${value.format === 'fileId' ? value.format : 'multipleFiles'}`)}
+                            </Grid>
+                        </Grid>
+                    ))}
                     {!!entityTemplate.documentTemplatesIds?.length && (
                         <Grid container justifyContent="space-between">
                             <Grid color={theme.palette.primary.main}>

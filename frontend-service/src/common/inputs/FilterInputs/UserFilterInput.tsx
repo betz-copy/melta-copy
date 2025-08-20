@@ -77,7 +77,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                             sx={{ marginLeft: 0.5 }}
                         />
                     }
-                    label={i18next.t('createChildTemplateDialog.connectedUser')}
+                    label={i18next.t('childTemplate.connectedUser')}
                     componentsProps={{
                         typography: { sx: { fontSize: '14px' } },
                     }}

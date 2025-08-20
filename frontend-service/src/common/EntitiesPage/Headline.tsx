@@ -22,6 +22,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { isChildTemplate } from '../../utils/templates';
 import SearchInput from '../inputs/SearchInput';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
@@ -205,7 +206,9 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
 
     const onSuccessCreate = (entity: IEntity) => {
         const handleTemplatesTablesView = () => {
-            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+            const template = entityTemplateSelectCheckboxProps.templates.find(
+                (entityTemplate) => (isChildTemplate(entityTemplate) ? entityTemplate.parentTemplate?._id : entityTemplate._id) === entity.templateId,
+            );
 
             if (template) {
                 try {

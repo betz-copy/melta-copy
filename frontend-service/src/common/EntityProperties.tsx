@@ -308,7 +308,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                         flexDirection="row"
                         style={{
                             ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
-                            marginBottom: '20px',
+                            marginBottom: '10px',
                         }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
                         size={{ xs: comment ? 12 : undefined }}

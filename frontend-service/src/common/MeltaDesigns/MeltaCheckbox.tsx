@@ -45,9 +45,9 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
 
     return (
         <Checkbox
-            checked={checked}
-            indeterminate={indeterminate}
-            disabled={disabled}
+            checked={Boolean(checked)}
+            indeterminate={Boolean(indeterminate)}
+            disabled={Boolean(disabled)}
             onChange={onChange}
             checkedIcon={
                 <Box
