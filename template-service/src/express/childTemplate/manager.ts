@@ -4,6 +4,7 @@ import {
     IChildTemplatePopulated,
     IChildTemplatePopulatedFromDb,
     IMongoChildTemplate,
+    IMongoChildTemplatePopulated,
     NotFoundError,
 } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
@@ -25,7 +26,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         parentTemplatesIds?: string[];
         limit: number;
         skip: number;
-    }): Promise<IChildTemplatePopulated[]> {
+    }): Promise<IMongoChildTemplatePopulated[]> {
         const { search: displayName, ids, categoryIds, limit, skip, parentTemplatesIds } = searchQuery;
         const query: FilterQuery<IChildTemplate> = {};
 
