@@ -96,8 +96,8 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                         <ArrowForward sx={{ ...iconStyle, ...(location === '/' ? { color: 'gray', opacity: 0.5 } : {}) }} />
                     </IconButtonWithPopover>
                 </Grid>
-
-                <Grid size={{ xs: 12 }}>
+                +
+                <Grid size="grow">
                     <Navigation />
                 </Grid>
             </Grid>

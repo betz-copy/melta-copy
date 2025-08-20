@@ -21,13 +21,15 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
                 <MobileDatePicker
                     value={date}
                     onChange={onDateChange}
+                    format="dd/MM/yyyy"
+                    enableAccessibleFieldDOMStructure={false}
                     label={i18next.t('wizard.date')}
                     slots={{
                         toolbar: CustomDateTimePickerToolbar,
                         textField: (params) => <TextField {...params} />,
                     }}
                     slotProps={{
-                        textField: { fullWidth: true, inputProps: { format: 'dd/MM/yyyy' } },
+                        textField: { fullWidth: true },
                         dialog: {
                             PaperProps: {
                                 sx: {

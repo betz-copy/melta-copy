@@ -131,10 +131,11 @@ export const GeneralDetailsFields = ({
                                     onBlur: () => setFieldTouched('startDate'),
                                     error: touched.startDate && Boolean(errors.startDate),
                                     helperText: touched.startDate ? errors.startDate : '',
-                                    InputProps: { disableUnderline: viewMode },
                                 },
                             }}
                             readOnly={viewMode}
+                            enableAccessibleFieldDOMStructure={false}
+                            format="dd/MM/yyyy"
                         />
                     </LocalizationProvider>
                 </Grid>
@@ -142,10 +143,12 @@ export const GeneralDetailsFields = ({
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
                             minDate={values.startDate}
+                            format="dd/MM/yyyy"
+                            enableAccessibleFieldDOMStructure={false}
                             label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                             value={values.endDate}
                             onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
-                            slots={{ textField: TextField }}
+                            slots={{ textField: (params) => <TextField {...params} /> }}
                             slotProps={{
                                 textField: {
                                     size: 'small',
@@ -157,7 +160,6 @@ export const GeneralDetailsFields = ({
                                     onBlur: () => setFieldTouched('endDate'),
                                     error: touched.endDate && Boolean(errors.endDate),
                                     helperText: touched.endDate ? errors.endDate : '',
-                                    InputProps: { disableUnderline: viewMode },
                                 },
                             }}
                             readOnly={viewMode}

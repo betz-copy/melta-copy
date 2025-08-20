@@ -26,8 +26,10 @@ const IFramesPageHeadline: React.FC<{
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
+
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
     const [inputValue, setInputValue] = useState('');
+
     const currentUser = useUserStore((state) => state.user);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { headlineTitleFontSize } = workspace.metadata.mainFontSizes;

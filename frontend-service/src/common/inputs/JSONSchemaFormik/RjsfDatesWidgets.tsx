@@ -93,13 +93,15 @@ const getRjsfDateOrDateTimeWidget =
             >
                 <MuiDatePicker
                     value={currDate}
+                    format={dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm'}
+                    enableAccessibleFieldDOMStructure={false}
                     onChange={(val) => {
                         setCurrDate(val);
                         onFormChangeFunction(val);
                     }}
                     slots={{
                         toolbar: CustomDateTimePickerToolbar,
-                        textField: TextField,
+                        textField: (params) => <TextField {...params} />,
                     }}
                     label={!hideLabel && (displayLabel ? label || schema.title : false)}
                     slotProps={{
@@ -121,9 +123,6 @@ const getRjsfDateOrDateTimeWidget =
                                         <CalendarToday fontSize="small" />
                                     </InputAdornment>
                                 ),
-                            },
-                            inputProps: {
-                                format: dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm',
                             },
                         },
                         actionBar: { actions: ['clear', 'cancel', 'accept'] },

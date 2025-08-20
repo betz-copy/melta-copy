@@ -41,12 +41,14 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
     >
         <DatePicker
+            format="dd/MM/yyyy"
+            enableAccessibleFieldDOMStructure={false}
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}
             label={label}
             value={!value ? null : typeof value === 'string' ? new Date(value) : value}
             onChange={onChange}
-            slots={{ textField: TextField }}
+            slots={{ textField: (params) => <TextField {...params} size="small" fullWidth /> }}
             slotProps={{
                 textField: {
                     size: 'small',
@@ -55,7 +57,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
                     InputProps: {
                         style: { borderRadius: borderRadius || (!directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px') },
                     },
-                    inputProps: { readOnly: disableKeyboardInput || readOnly, format: 'dd/MM/yyyy' },
+                    inputProps: { readOnly: disableKeyboardInput || readOnly },
                 },
             }}
             readOnly={readOnly}

@@ -13,7 +13,7 @@ const IFrameCard: React.FC<{ metaData: IMongoIFrame }> = ({ metaData }) => {
                 <CardTitle title={metaData.name} />
             </Grid>
 
-            <Grid size={{ xs: 12 }} style={{ overflow: 'hidden', flexGrow: 1 }}>
+            <Grid size="grow" style={{ overflow: 'hidden', flexGrow: 1 }}>
                 <Iframe url={metaData.url} title={metaData.name} width="100%" height="100%" frameBorder={0} />
             </Grid>
         </Grid>

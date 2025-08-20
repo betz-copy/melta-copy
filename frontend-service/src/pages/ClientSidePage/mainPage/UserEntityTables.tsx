@@ -5,7 +5,7 @@ import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/Templ
 import { useQuery, useQueryClient } from 'react-query';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
+import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { CircularProgress, Typography } from '@mui/material';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
