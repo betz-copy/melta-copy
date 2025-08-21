@@ -43,7 +43,7 @@ class Server {
 
         app.use(appRouter);
 
-        appRouter.all('*', (_req, res) => {
+        appRouter.all(/(.*)/, (_req, res) => {
             res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
         });
 

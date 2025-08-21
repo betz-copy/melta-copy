@@ -85,8 +85,7 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
             ],
         };
 
-        await this.model.updateMany(filter, { status });
-        return this.model.find(filter).lean<IRuleBreachRequest[]>();
+        return this.model.updateMany(filter, { status, new: true }).lean<IRuleBreachRequest[]>();
     }
 
     public async updateRuleBreachRequestStatus(

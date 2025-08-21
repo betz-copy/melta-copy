@@ -85,6 +85,7 @@ const App: React.FC = () => {
             const isClientSide = user?.id === environment.clientSideId;
 
             if (!user || isUserUnauthorized) {
+                console.log({ user, isUserUnauthorized });
                 if (isUserUnauthorized) setIsErrorMyUser(true);
                 return;
             }
