@@ -2,7 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
-import React, { CSSProperties, useState, JSX } from 'react';
+import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
@@ -311,7 +311,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             marginBottom: '10px',
                         }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
-                        size={{ xs: comment ? 12 : undefined }}
+                        size={{ xs: 12 }}
                     >
                         <Grid container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
                             {!comment && (

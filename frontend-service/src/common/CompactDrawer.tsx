@@ -1,6 +1,6 @@
-import React, { CSSProperties, ReactNode } from 'react';
+import { ChevronLeft as ArrowLeftIcon, ChevronRight as ArrowRightIcon } from '@mui/icons-material';
 import { Divider, Grid, IconButton } from '@mui/material';
-import { ChevronRight as ArrowRightIcon, ChevronLeft as ArrowLeftIcon } from '@mui/icons-material';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useDarkModeStore } from '../stores/darkMode';
 
 interface CompactDrawerProps {
@@ -30,7 +30,7 @@ export const CompactDrawer: React.FC<CompactDrawerProps> = ({ toggleMinimized, o
                 {children}
             </Grid>
 
-            <Grid container direction="column">
+            <Grid container direction="column" size={{ xs: 12 }}>
                 <Divider />
                 <IconButton disabled={locked} onClick={toggleMinimized} size="small" style={{ borderRadius: 0, height: '3rem' }}>
                     {open ? <ArrowLeftIcon /> : <ArrowRightIcon />}

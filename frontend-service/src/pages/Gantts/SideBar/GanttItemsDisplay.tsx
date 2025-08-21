@@ -1,6 +1,6 @@
-import React from 'react';
 import { Divider, Grid } from '@mui/material';
 import { FormikProps } from 'formik';
+import React from 'react';
 import { IBasicGantt } from '../../../interfaces/gantts';
 import { GanttItemDisplay } from '../GanttItemDisplay';
 import { GroupByDisplay } from './GroupByDisplay';
@@ -17,7 +17,6 @@ export const GanttItemsDisplay: React.FC<IGanttItemsDisplayProps> = ({ open, gan
     return (
         <Grid
             ref={containerRef}
-            container
             direction="column"
             alignItems="center"
             wrap="nowrap"

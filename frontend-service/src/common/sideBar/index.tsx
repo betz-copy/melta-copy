@@ -1,3 +1,4 @@
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
     CalendarMonth as CalendarIcon,
     MeetingRoom as ExitIcon,
@@ -5,21 +6,21 @@ import {
     Gavel as GavelIcon,
     Hive as HiveIcon,
     ManageAccounts as ManageAccountsIcon,
-    Add as PlusIcon,
-    Widgets as WidgetsIcon,
     Map,
+    Add as PlusIcon,
     StarBorderPurple500,
+    Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
+import { RelatedPermission } from '../../interfaces/users';
 import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -38,7 +39,6 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
-import { RelatedPermission } from '../../interfaces/users';
 
 interface SideBarProps {
     toggleDrawer: () => any;
