@@ -100,7 +100,7 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
         const updatedQuery = this.handleQuery(query);
 
         return transaction(async (session) => {
-            await this.model.updateMany(updatedQuery, { $pull: { viewers: viewerId } }, { new: true, session });
+            await this.model.updateMany(updatedQuery, { $pull: { viewers: viewerId } }, { session });
             const notification = await this.model.find(updatedQuery, {}, { session }).lean();
 
             await this.model.deleteMany({ viewers: { $size: 0 } }, { session });
