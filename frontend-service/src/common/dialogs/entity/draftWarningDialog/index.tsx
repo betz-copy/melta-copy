@@ -51,7 +51,7 @@ export const DraftWarningDialog: React.FC<{
                 <Divider sx={{ margin: '1rem' }} />
 
                 <DialogActions sx={{ padding: '1rem' }}>
-                    <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
+                    <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between" width="100%">
                         <Grid>
                             <Button
                                 variant="outlined"

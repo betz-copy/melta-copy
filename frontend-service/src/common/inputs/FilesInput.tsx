@@ -81,6 +81,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
         BorderRadius: '10px',
         padding: '10px',
         height: errorText ? '200px' : '100%',
+        width: '100%',
         display: 'flex',
         justifyContext: 'center',
         alignItems: 'center',
@@ -131,7 +132,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
                                     </Typography>
                                 </Grid>
                                 <Grid container size={{ xs: 1 }}>
-                                    <Grid container justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                    <Grid justifyContent="flex-end" alignItems="center" wrap="nowrap">
                                         {!isFileFromInput(file) && (
                                             <OpenPreview fileId={file.name} img={<Visibility fontSize="small" />} showText={false} />
                                         )}

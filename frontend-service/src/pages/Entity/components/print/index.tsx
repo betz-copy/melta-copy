@@ -51,7 +51,7 @@ const Print: React.FC<{
     };
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
     } as UseReactToPrintOptions);

@@ -32,8 +32,8 @@ const Stepper = <T extends object>({
 
                     return (
                         <Fragment key={step.label}>
-                            <Grid container justifyContent="start" alignItems="flex-start">
-                                <Grid container justifyContent="start" alignItems="center">
+                            <Grid direction="column" justifyContent="start" alignItems="flex-start" size={{ xs: 12 }}>
+                                <Grid container direction="row" justifyContent="start" alignItems="center">
                                     <Grid display="flex" justifyContent="center" alignContent="center">
                                         <StepNumberTypography type={type} direction="column">
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
@@ -65,34 +65,32 @@ const Stepper = <T extends object>({
         );
 
     return (
-        <Grid container direction="column" justifyContent="space-around" alignItems="center">
-            <Grid container direction="row" width="100%">
-                {steps.length > 1 &&
-                    steps.map((step, index) => {
-                        // eslint-disable-next-line no-nested-ternary
-                        const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
+        <Grid container direction={direction} justifyContent="space-around" alignItems="center">
+            {steps.length > 1 &&
+                steps.map((step, index) => {
+                    // eslint-disable-next-line no-nested-ternary
+                    const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
 
-                        return (
-                            <Fragment key={step.label}>
-                                <Grid>
-                                    <Grid container justifyContent="center" alignItems="center">
-                                        <Grid display="flex" justifyContent="center" alignContent="center">
-                                            <StepNumberTypography type={type} direction="row">
-                                                {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
-                                            </StepNumberTypography>
-                                        </Grid>
-                                        <Grid>
-                                            <StepNameTypography type={type} direction={direction}>
-                                                {step.label}
-                                            </StepNameTypography>
-                                        </Grid>
+                    return (
+                        <Fragment key={step.label}>
+                            <Grid>
+                                <Grid container justifyContent="center" alignItems="center">
+                                    <Grid display="flex" justifyContent="center" alignContent="center">
+                                        <StepNumberTypography type={type} direction="row">
+                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                        </StepNumberTypography>
+                                    </Grid>
+                                    <Grid>
+                                        <StepNameTypography type={type} direction={direction}>
+                                            {step.label}
+                                        </StepNameTypography>
                                     </Grid>
                                 </Grid>
-                                {index !== steps.length - 1 && <DashedHorizontalLine />}
-                            </Fragment>
-                        );
-                    })}
-            </Grid>
+                            </Grid>
+                            {index !== steps.length - 1 && <DashedHorizontalLine />}
+                        </Fragment>
+                    );
+                })}
             <Grid
                 container
                 direction="column"

@@ -40,7 +40,7 @@ const Print: React.FC<{
     const handleClose = () => setOpenModal(false);
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
     } as UseReactToPrintOptions);

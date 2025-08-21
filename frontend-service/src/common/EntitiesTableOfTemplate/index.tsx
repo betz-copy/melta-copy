@@ -755,6 +755,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     }}
                     ref={tableRef}
+                    width="100%"
                 >
                     <AgGridReact<Data>
                         ref={gridRef}
