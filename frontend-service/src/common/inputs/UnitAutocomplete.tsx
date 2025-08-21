@@ -7,10 +7,8 @@ import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 export interface IUnitAutocomplete {
     value?: string[];
     options?: string[];
-    refetch: any;
     isLoading: boolean;
     onChange: AutocompleteProps<string, true, false, false>['onChange'];
-    onDisplayValueChange?: AutocompleteProps<string, true, false, false>['onInputChange'];
     onBlur?: any;
     onFocus?: any;
     isOptionDisabled?: AutocompleteProps<string, true, false, false>['getOptionDisabled'];
@@ -30,10 +28,8 @@ export interface IUnitAutocomplete {
 const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
     value = [],
     options = [],
-    refetch,
     isLoading,
     onChange,
-    onDisplayValueChange,
     onBlur,
     onFocus,
     isOptionDisabled,
@@ -56,11 +52,6 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                 value={value}
                 onChange={(_e, newValue, reason) => {
                     onChange?.(_e, reason === 'clear' ? [] : newValue, reason);
-                    if (reason === 'clear') onDisplayValueChange?.(_e, '', reason);
-                }}
-                onInputChange={(_e, newValue, reason) => {
-                    onDisplayValueChange?.(_e, newValue, reason);
-                    if (reason === 'input' && newValue.length >= 1) refetch();
                 }}
                 disabled={disabled}
                 getOptionLabel={(option) => option}

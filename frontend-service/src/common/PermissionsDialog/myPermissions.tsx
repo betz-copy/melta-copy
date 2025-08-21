@@ -25,12 +25,13 @@ import UserAutocomplete from '../inputs/UserAutocomplete';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
-import { createDialogCategories, didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import ManagePermissions from './managePermissions';
 import UnitAutocomplete from '../inputs/UnitAutocomplete';
 import { BackendConfigState } from '../../services/backendConfigService';
+import _ from 'lodash';
 
 export const defaultEmptyUser = {
     _id: '',
@@ -70,7 +71,6 @@ const MyPermissions: React.FC<{
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const { units: unitsArray = [] } = queryClient.getQueryData<BackendConfigState>('getBackendConfig') || {};
-    console.log('🚀 ~ MyPermissions ~ unitsArray:', unitsArray);
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
@@ -113,7 +113,7 @@ const MyPermissions: React.FC<{
     );
 
     const { mutate: updateUserUnits } = useMutation(
-        (formUser: IUser) => updateUserUnitsRequest(formUser._id, workspace._id, formUser.permissions, formUser.units),
+        (formUser: IUser) => updateUserUnitsRequest(formUser._id, workspace._id, formUser.units),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
@@ -297,7 +297,6 @@ const MyPermissions: React.FC<{
                                     isError={Boolean(touched.roleIds && errors.roleIds)}
                                     helperText={touched.roleIds ? errors.roleIds : ''}
                                     enableClear={mode !== 'view'}
-                                    refetch={searchRolesOptionsDebounced}
                                     isLoading={isLoading}
                                 />
                             </Box>
@@ -320,9 +319,9 @@ const MyPermissions: React.FC<{
                                         <Button
                                             type="submit"
                                             disabled={
-                                                isSubmitting ||
-                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
-                                                userHasNoPermissions(values.permissions[workspace._id])
+                                                userHasNoPermissions(values.permissions[workspace._id]) &&
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) &&
+                                                _.isEqual(initialValues.units, values.units)
                                             }
                                             variant="contained"
                                         >

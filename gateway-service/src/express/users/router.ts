@@ -25,6 +25,7 @@ import {
     updateUserRoleIdsRequestSchema,
     userRoleWorkspaceRequestSchema,
     getAllWorkspaceRolesSchema,
+    updateUserUnitsRequestSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -65,6 +66,8 @@ usersRouter.patch(
     ValidateRequest(updateUserRoleIdsRequestSchema),
     wrapController(UsersController.updateUserRoleIds),
 );
+
+usersRouter.patch('/:userId/units', ValidateRequest(updateUserUnitsRequestSchema), wrapController(UsersController.updateUserUnits));
 
 usersRouter.post(
     '/',

@@ -90,10 +90,9 @@ export const updateUserRoleIdsRequest = async (
 export const updateUserUnitsRequest = async (
     userId: string,
     workspaceId: string,
-    permissions: ICompactNullablePermissions,
     units?: IUser['units'],
 ) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/units`, { workspaceId, units, permissions });
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/units`, { workspaceId, units });
     return data;
 };
 

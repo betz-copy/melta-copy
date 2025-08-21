@@ -101,6 +101,10 @@ class UsersManager {
         return UserService.updateUser(userId, { roleIds: updatedRoleIds });
     }
 
+    static async updateUserUnits(userId: string, units: string[]): Promise<IUser> {
+        return UserService.updateUser(userId, { units } as Partial<IBaseUser>);
+    }
+
     private static validateDigitalIdentity(
         kartoffelId: string,
         digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
@@ -119,7 +123,10 @@ class UsersManager {
         permissions: ICompactPermissions,
         workspaceId: string,
         roleIds?: string[],
+        units?: string[],
     ): Promise<IUser> {
+        // eslint-disable-next-line no-console
+        console.log('🚀 ~ UsersManager ~ createUser ~ units:', units);
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource)
@@ -141,6 +148,7 @@ class UsersManager {
             externalMetadata: { kartoffelId, digitalIdentitySource },
             preferences,
             roleIds,
+            units,
         });
     }
 

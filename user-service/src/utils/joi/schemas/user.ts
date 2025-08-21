@@ -9,6 +9,7 @@ export const baseUserSchema = joi.object({
     mail: joi.string(),
     profile: joi.string(),
     roleIds: joi.array().items(joi.string()).allow(null),
+    units: joi.array().items(joi.string()),
     preferences: joi.object({
         darkMode: joi.boolean(),
         mailsNotificationsTypes: joi.array().items(joi.string()),
