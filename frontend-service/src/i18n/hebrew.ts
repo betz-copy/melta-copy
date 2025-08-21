@@ -643,11 +643,12 @@ export default {
             propertyPreview: 'תצוגה מצומצמת',
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
-            chooseCategroy: 'בחירת קטגוריה',
-            chooseEntityTemplateName: 'בחירת שם תבנית',
+            chooseCategory: 'בחירת קטגוריה',
+            entitySettings: 'הגדרות',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
             exportDocuments: 'פורמטים לייצוא',
+            exportDocumentsSelect:`יישות לייצוא עפ"י פורמט`,
             // eslint-disable-next-line quotes
             exportDocumentsInfo:
                 'העלאת פורמט קובץ מאפשרת יצירת מבנה קובץ בו התוכן יוחלף בהתאם לשדות היישות. הוספת {{  }} מסביב לשם השדה כפי שמופיע בהגדרות הישות: {{ שם השדה באנגלית }}  בקובץ ה-word יאפשר החלפת טקסט זה בערך המוזן ע"י המשתמש לאחר מילוי היישות.',
@@ -694,6 +695,7 @@ export default {
             filterType: '',
             relatedUser: 'משתמש מקושר',
             fieldDisplay: 'שדה להצגה',
+            currentAccountDisplay: `תצוגת עו"ש`, 
             kartoffelUserFields: {
                 displayName: 'שם לתצוגה',
                 identityCard: 'מספר זהות',

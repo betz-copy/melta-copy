@@ -84,6 +84,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
+    currentAccountDisplay?: string;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

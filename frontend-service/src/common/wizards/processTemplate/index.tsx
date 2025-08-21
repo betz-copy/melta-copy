@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName';
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
@@ -65,7 +65,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     const queryClient = useQueryClient();
     const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
+    const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
 
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>
@@ -96,8 +96,10 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     const stepsComponents: StepType<ProcessTemplateWizardValues>[] = [
         {
             label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
-            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-            validationSchema: createTemplateNameSchema,
+            component: (props, { isEditMode }) => (
+                <CreateTemplateName {...props} isEditMode={isEditMode} gridProps={{ direction: 'column', alignItems: 'center', spacing: 1 }} />
+            ),
+            validationSchema: createTemplateSettingsSchema,
         },
         {
             label: i18next.t('wizard.processTemplate.otherDetails'),

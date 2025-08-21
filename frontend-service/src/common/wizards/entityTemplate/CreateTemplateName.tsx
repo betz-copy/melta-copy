@@ -32,9 +32,10 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
     errors,
     handleChange,
     isEditMode,
-}: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>>) => {
+    gridProps,
+}: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & { gridProps?: object }) => {
     return (
-        <Grid container direction="column" alignItems="center" spacing={1}>
+        <Grid container item {...gridProps}>
             <Grid item>
                 <TextField
                     name="name"
@@ -44,6 +45,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
                     helperText={touched.name && errors.name}
+                    sx={{ width: '240px' }}
                 />
             </Grid>
             <Grid item>
@@ -54,6 +56,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     onChange={handleChange}
                     error={touched.displayName && Boolean(errors.displayName)}
                     helperText={touched.displayName && errors.displayName}
+                    sx={{ width: '240px' }}
                 />
             </Grid>
         </Grid>

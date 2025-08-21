@@ -17,7 +17,8 @@ const chooseCategorySchema = Yup.object({
     }).required(i18next.t('validation.required')),
 });
 
-const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+const ChooseCategory = (props) => {
+    const { values, touched, errors, setFieldValue, isEditMode } = props;
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
 
@@ -31,7 +32,7 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}
             isOptionEqualToValue={(option, value) => option._id === value._id}
-            sx={{ width: 300 }}
+            sx={{ width: 240 }}
             renderInput={(params) => (
                 <TextField
                     {...params}
@@ -43,6 +44,7 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
                     label={i18next.t('category')}
                 />
             )}
+            disabled={isEditMode ?? false}
         />
     );
 };

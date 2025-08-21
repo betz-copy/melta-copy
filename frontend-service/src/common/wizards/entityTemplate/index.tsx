@@ -2,7 +2,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
@@ -22,11 +22,11 @@ import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { CreateTemplateSettings } from './CreateTemplateSettings';
 import { UploadExportFormats } from './UploadExportFormats';
+import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 
 const { errorCodes } = environment;
 
@@ -113,11 +113,13 @@ const EntityTemplateWizard: React.FC<
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+    const [exportFormats, setExportFormats] = useState(false);
+    const [showAccountDisplay, setShowAccountDisplay] = useState(initialValues.currentAccountDisplay ? true : false);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {
@@ -234,14 +236,16 @@ const EntityTemplateWizard: React.FC<
 
     const steps: StepType<EntityTemplateWizardValues>[] = [
         {
-            label: i18next.t('wizard.entityTemplate.chooseCategroy'),
-            component: (props) => <ChooseCategory {...props} />,
-            validationSchema: chooseCategorySchema,
-        },
-        {
-            label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
-            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-            validationSchema: createTemplateNameSchema,
+            label: i18next.t('wizard.entityTemplate.entitySettings'),
+            component: (props, { isEditMode }) => (
+                <CreateTemplateSettings
+                    {...props}
+                    isEditMode={isEditMode}
+                    exportFormats={{ value: exportFormats, set: setExportFormats }}
+                    showAccountDisplay={{ value: showAccountDisplay, set: setShowAccountDisplay }}
+                />
+            ),
+            validationSchema: createTemplateSettingsSchema,
         },
         {
             label: i18next.t('wizard.entityTemplate.chooseIcon'),
@@ -252,10 +256,14 @@ const EntityTemplateWizard: React.FC<
             component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
             validationSchema: addFieldsSchema,
         },
-        {
-            label: i18next.t('wizard.entityTemplate.exportDocuments'),
-            component: (props) => <UploadExportFormats {...props} />,
-        },
+        ...(exportFormats
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.exportDocuments'),
+                      component: (props) => <UploadExportFormats {...props} />,
+                  } satisfies StepType<EntityTemplateWizardValues>,
+              ]
+            : []),
     ];
 
     return (

@@ -73,6 +73,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
+    currentAccountDisplay?: string;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

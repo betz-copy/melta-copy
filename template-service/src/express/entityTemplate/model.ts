@@ -77,6 +77,9 @@ const EntityTemplateSchema = new mongoose.Schema(
         fieldGroups: {
             type: [FieldGroupSchema],
         },
+        currentAccountDisplay: {
+            type: String,
+        },
     },
     {
         timestamps: true,
