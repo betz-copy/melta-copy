@@ -1,20 +1,19 @@
-import React, { useMemo } from 'react';
-import { Grid, Typography, TextField, IconButton, FormControlLabel, Button, Chip, Box as MuiBox, Autocomplete } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
-import { useQueryClient, useMutation } from 'react-query';
+import { Autocomplete, Button, Chip, FormControlLabel, Grid, IconButton, Box as MuiBox, TextField, Typography } from '@mui/material';
+import { FieldArray, Formik, getIn } from 'formik';
+import i18next from 'i18next';
+import React, { useMemo } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import * as Yup from 'yup';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { Formik, FieldArray, getIn } from 'formik';
-import * as Yup from 'yup';
-import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import BlueTitle from '../../MeltaDesigns/BlueTitle';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
+import { IMongoPrintingTemplate, IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
 import { createPrintingTemplateRequest, updatePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
-import { IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
+import BlueTitle from '../../MeltaDesigns/BlueTitle';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 
 interface PrintingTemplateCardProps {
     onClose: () => void;
@@ -153,7 +152,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                             }}
                         >
                             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-                                <Grid item>
+                                <Grid>
                                     <BlueTitle
                                         title={
                                             printingTemplate._id
@@ -164,7 +163,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         variant="h6"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <IconButton aria-label="close" onClick={onClose}>
                                         <CloseIcon />
                                     </IconButton>
@@ -172,7 +171,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                             </Grid>
 
                             <Grid container alignItems="center" justifyContent="flex-start" spacing={5} sx={{ mb: 2 }}>
-                                <Grid item sx={{ flexShrink: 0, minWidth: 450 }}>
+                                <Grid sx={{ flexShrink: 0, minWidth: 450 }}>
                                     <TextField
                                         name="name"
                                         value={values.name}
@@ -187,7 +186,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         inputProps={{ style: { textAlign: 'right', fontWeight: 400, fontSize: 14 } }}
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <FormControlLabel
                                         control={<MeltaCheckbox checked={true} disabled={true} />}
                                         label={
@@ -198,7 +197,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         labelPlacement="end"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <FormControlLabel
                                         control={
                                             <MeltaCheckbox
@@ -214,7 +213,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         labelPlacement="end"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <FormControlLabel
                                         control={
                                             <MeltaCheckbox
@@ -266,7 +265,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                         minWidth: 0,
                                                     }}
                                                 >
-                                                    <Grid item sx={{ width: 250, flexShrink: 0, minWidth: 250 }}>
+                                                    <Grid sx={{ width: 250, flexShrink: 0, minWidth: 250 }}>
                                                         <Autocomplete
                                                             options={categories}
                                                             getOptionLabel={(option) => option.displayName}
@@ -296,7 +295,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                             isOptionEqualToValue={(option, value) => option._id === value._id}
                                                         />
                                                     </Grid>
-                                                    <Grid item sx={{ width: 250, flexShrink: 0, minWidth: 250 }}>
+                                                    <Grid sx={{ width: 250, flexShrink: 0, minWidth: 250 }}>
                                                         <Autocomplete
                                                             options={entities}
                                                             getOptionLabel={(option) => option.displayName}
@@ -326,7 +325,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                             disabled={!section.categoryId}
                                                         />
                                                     </Grid>
-                                                    <Grid item sx={{ width: 570, flexShrink: 0, minWidth: 570 }}>
+                                                    <Grid sx={{ width: 570, flexShrink: 0, minWidth: 570 }}>
                                                         <Autocomplete
                                                             options={columns}
                                                             getOptionLabel={(option) => option.name}
@@ -377,7 +376,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                                             disabled={!section.entityTemplateId}
                                                         />
                                                     </Grid>
-                                                    <Grid item sx={{ flexShrink: 0, minWidth: 'auto' }}>
+                                                    <Grid sx={{ flexShrink: 0, minWidth: 'auto' }}>
                                                         <IconButton onClick={() => remove(idx)} size="small">
                                                             <DeleteIcon />
                                                         </IconButton>
@@ -401,7 +400,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         {touched.sections && errors.sections && values.sections.length === 0 && (
                                             <Grid container justifyContent="flex-start" sx={{ mt: 1 }}>
                                                 <Typography color="error" variant="body2">
-                                                    {errors.sections}
+                                                    {String(errors.sections)}
                                                 </Typography>
                                             </Grid>
                                         )}
