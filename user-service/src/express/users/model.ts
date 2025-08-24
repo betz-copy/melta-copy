@@ -28,7 +28,10 @@ const UserSchema = new mongoose.Schema(
             type: String,
         },
         roleIds: { type: [String], index: true },
-        units: { type: [String] },
+        units: {
+            type: Map,
+            of: [String],
+        },
         preferences: {
             darkMode: {
                 type: Boolean,

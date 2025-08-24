@@ -22,16 +22,16 @@ import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 
+import _ from 'lodash';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
+import { BackendConfigState } from '../../services/backendConfigService';
 import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
-import ManagePermissions from './managePermissions';
 import UnitAutocomplete from '../inputs/UnitAutocomplete';
-import { BackendConfigState } from '../../services/backendConfigService';
-import _ from 'lodash';
+import ManagePermissions from './managePermissions';
 
 export const defaultEmptyUser = {
     _id: '',
@@ -49,8 +49,29 @@ export const defaultEmptyUser = {
     },
     permissions: {},
     displayName: '',
-    units: [],
+    units: {},
 } as IUser;
+
+export const getDefaultEmptyUser = (workspaceId: string) => ({
+    _id: '',
+    fullName: '',
+    jobTitle: '',
+    hierarchy: '',
+    mail: '',
+    profile: '',
+    preferences: {
+        darkMode: false,
+    },
+    externalMetadata: {
+        kartoffelId: '',
+        digitalIdentitySource: '',
+    },
+    permissions: {},
+    displayName: '',
+    units: {
+        [workspaceId]: [],
+    },
+});
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -112,21 +133,18 @@ const MyPermissions: React.FC<{
         },
     );
 
-    const { mutate: updateUserUnits } = useMutation(
-        (formUser: IUser) => updateUserUnitsRequest(formUser._id, workspace._id, formUser.units),
-        {
-            onError: (error) => {
-                console.error('failed to upsert permission. error:', error);
-                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
-            },
-            onSuccess: (newUser) => {
-                onSuccess?.(newUser);
-                queryClient.invalidateQueries('allIFrames');
-                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
-                handleClose();
-            },
+    const { mutate: updateUserUnits } = useMutation((formUser: IUser) => updateUserUnitsRequest(formUser._id, workspace._id, formUser.units), {
+        onError: (error) => {
+            console.error('failed to upsert permission. error:', error);
+            toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
         },
-    );
+        onSuccess: (newUser) => {
+            onSuccess?.(newUser);
+            queryClient.invalidateQueries('allIFrames');
+            toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+            handleClose();
+        },
+    });
 
     const { mutateAsync: deletePermissionsOfUser } = useMutation(
         () => syncPermissionsRequest(existingUser!._id, RelatedPermission.User, { [workspace._id]: deletePermissions }, true),
@@ -188,7 +206,7 @@ const MyPermissions: React.FC<{
 
     return (
         <Formik
-            initialValues={existingUser ? _cloneDeep(existingUser) : defaultEmptyUser}
+            initialValues={existingUser ? _cloneDeep(existingUser) : (getDefaultEmptyUser(workspace._id) as IUser)}
             validationSchema={Yup.object({
                 fullName: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
@@ -203,17 +221,21 @@ const MyPermissions: React.FC<{
                 const currentRole = workspaceRoles?.find((role) => formUser.roleIds?.includes(role._id));
 
                 if (mode === 'create') createUser(formUser);
-                else if (prevRole == undefined && currentRole === undefined)
-                    syncUserPermissions(formUser); // update personal permissions (without roles)
                 else {
-                    if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
-                    updateUserRoleId(formUser); // role changed, added or deleted
-                    updateUserUnits(formUser); // units changed, added or deleted
+                    if (!_.isEqual(existingUser?.units, formUser.units)) updateUserUnits(formUser); // units changed, added or deleted
+
+                    if (!_.isEqual(existingUser?.permissions, formUser.permissions)) {
+                        syncUserPermissions(formUser); // update personal permissions (without roles)
+                    } else {
+                        if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
+                        updateUserRoleId(formUser); // role changed, added or deleted
+                    }
                 }
             }}
         >
             {(formikProps: FormikProps<IUser>) => {
                 const { values, touched, errors, handleBlur, setValues, setFieldValue, isSubmitting, initialValues } = formikProps;
+                console.log('🚀 ~ values:', values);
                 const formikRole = workspaceRoles?.find((role) => values.roleIds?.includes(role._id));
                 // const formikUnits = workspaceUnits?.find((unit) => values.units?.includes(unit));
 
@@ -282,15 +304,21 @@ const MyPermissions: React.FC<{
 
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <UnitAutocomplete
-                                    value={values.units}
+                                    value={values.units?.[workspace._id] ?? []}
                                     options={unitsArray}
                                     onChange={(_e, chosenUnits, reason) => {
                                         if (reason === 'clear') {
-                                            setFieldValue('units', []);
+                                            setFieldValue('units', {
+                                                ...values.units,
+                                                [workspace._id]: [],
+                                            });
                                             return;
                                         }
 
-                                        setFieldValue('units', chosenUnits ?? []);
+                                        setFieldValue('units', {
+                                            ...values.units,
+                                            [workspace._id]: chosenUnits ?? [],
+                                        });
                                     }}
                                     onBlur={handleBlur}
                                     readOnly={mode === 'view'}

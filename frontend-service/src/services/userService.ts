@@ -45,7 +45,7 @@ export const createUserRequest = async (
     permissions: ICompactPermissions,
     workspaceId: string,
     roleIds?: string[],
-    units?: string[],
+    units?: Record<string, string[]>,
 ) => {
     const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions, workspaceId, roleIds, units });
     return data;
@@ -87,11 +87,7 @@ export const updateUserRoleIdsRequest = async (
     return data;
 };
 
-export const updateUserUnitsRequest = async (
-    userId: string,
-    workspaceId: string,
-    units?: IUser['units'],
-) => {
+export const updateUserUnitsRequest = async (userId: string, workspaceId: string, units?: IUser['units']) => {
     const { data } = await axios.patch<IUser>(`${users}/${userId}/units`, { workspaceId, units });
     return data;
 };
@@ -101,8 +97,14 @@ export const syncPermissionsRequest = async (
     permissionType: RelatedPermission,
     permissions: ICompactNullablePermissions,
     dontDeleteUser?: boolean,
+    units?: IUser['units'],
 ) => {
-    const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, { permissionType, permissions, dontDeleteUser });
+    const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, {
+        permissionType,
+        permissions,
+        dontDeleteUser,
+        units,
+    });
     return data;
 };
 

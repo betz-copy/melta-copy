@@ -101,7 +101,7 @@ class UsersManager {
         return UserService.updateUser(userId, { roleIds: updatedRoleIds });
     }
 
-    static async updateUserUnits(userId: string, units: string[]): Promise<IUser> {
+    static async updateUserUnits(userId: string, units: IUser['units']): Promise<IUser> {
         return UserService.updateUser(userId, { units } as Partial<IBaseUser>);
     }
 
@@ -123,10 +123,8 @@ class UsersManager {
         permissions: ICompactPermissions,
         workspaceId: string,
         roleIds?: string[],
-        units?: string[],
+        units?: IUser['units'],
     ): Promise<IUser> {
-        // eslint-disable-next-line no-console
-        console.log('🚀 ~ UsersManager ~ createUser ~ units:', units);
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource)
@@ -141,6 +139,8 @@ class UsersManager {
         } = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
+        // eslint-disable-next-line no-console
+        console.log('🚀 ~ UsersManager ~ createUser ~ unitsObject:', units);
 
         return UserService.createUser({
             ...(digitalIdentity as IUser),

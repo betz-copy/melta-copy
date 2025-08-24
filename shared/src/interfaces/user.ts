@@ -19,7 +19,7 @@ export interface IBaseUser {
         digitalIdentitySource: string;
     };
     roleIds?: string[];
-    units?: string[];
+    units?: Record<string, string[]>;
 }
 
 export interface IUser extends IBaseUser {
