@@ -1,23 +1,30 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import { CalendarToday } from '@mui/icons-material';
-import { InputAdornment, TextField, TextFieldProps, styled } from '@mui/material';
-import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker, PickersLocaleText, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
+import { TextField, TextFieldProps, styled } from '@mui/material';
+import { DateTimePickerToolbar, LocalizationProvider, PickersLocaleText, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePickerToolbar } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
-import React, { JSX, useEffect, useState } from 'react';
+import React, { JSX, useState } from 'react';
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
         direction: 'rtl',
     },
 }) as (props: BaseToolbarProps) => JSX.Element;
+
+const parseDefaultDate = (val: any) => {
+    if (!val) return null;
+    const date = new Date(val);
+    if (isNaN(date.getTime())) return null;
+    return date;
+};
 
 const getRjsfDateOrDateTimeWidget =
     (dateOrDateTime: 'date' | 'dateTime') =>
@@ -44,17 +51,15 @@ const getRjsfDateOrDateTimeWidget =
         ...textFieldProps
     }: WidgetProps) => {
         const { defaultValue } = options;
-        const [currDate, setCurrDate] = useState<Date | null>((defaultValue as Date | undefined) ?? null);
-
         const { rootSchema } = registry;
+
+        const [currDate, setCurrDate] = useState<Date | null>(parseDefaultDate(value ?? defaultValue));
+
+        const inputFormat = dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm';
+        const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
         const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
 
-        const MuiDatePicker = dateOrDateTime === 'date' ? MobileDatePicker : MobileDateTimePicker;
-
-        useEffect(() => {
-            if (value) setCurrDate(value);
-            else if (defaultValue) setCurrDate(new Date(defaultValue as string));
-        }, [value]);
+        const MuiDatePicker = dateOrDateTime === 'date' ? DatePicker : DateTimePicker;
 
         const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => {
             const isEmpty = !newValue;
@@ -65,26 +70,18 @@ const getRjsfDateOrDateTimeWidget =
 
         const onChangeDateWidget = (date: Date | null) => {
             if (!date) return onChange(undefined);
-            const dateString = format(date, 'yyyy-MM-dd');
+            const dateString = dateOrDateTime === 'date' ? format(date, 'yyyy-MM-dd') : date.toISOString();
             return onChange(dateString);
         };
-        const onChangeDateTimeWidget = (date: Date | null) => {
-            if (!date) return onChange(undefined);
-            const dateString = date.toISOString();
-            return onChange(dateString);
-        };
-
-        const onFormChangeFunction = dateOrDateTime === 'date' ? onChangeDateWidget : onChangeDateTimeWidget;
 
         const handleOpenDateOrDateTimePicker = () => {
             if (currDate) return;
 
             const currentDate = new Date();
             setCurrDate(currentDate);
-            onFormChangeFunction(currentDate);
+            onChangeDateWidget(currentDate);
         };
 
-        const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
@@ -93,17 +90,22 @@ const getRjsfDateOrDateTimeWidget =
             >
                 <MuiDatePicker
                     value={currDate}
-                    format={dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm'}
                     enableAccessibleFieldDOMStructure={false}
+                    onOpen={handleOpenDateOrDateTimePicker}
                     onChange={(val) => {
                         setCurrDate(val);
-                        onFormChangeFunction(val);
+                        onChangeDateWidget(val);
                     }}
                     slots={{
-                        toolbar: CustomDateTimePickerToolbar,
-                        textField: (params) => <TextField {...params} />,
+                        textField: (params) => (
+                            <TextField
+                                {...params}
+                                value={currDate ? format(currDate, inputFormat) : ''}
+                                style={{ textAlign: 'right' }}
+                                inputFormat={inputFormat}
+                            />
+                        ),
                     }}
-                    label={!hideLabel && (displayLabel ? label || schema.title : false)}
                     slotProps={{
                         textField: {
                             ...textFieldProps,
@@ -117,20 +119,13 @@ const getRjsfDateOrDateTimeWidget =
                             error: !hideError && rawErrors.length > 0,
                             InputLabelProps: { shrink: readonly || undefined },
                             placeholder: defaultValue?.toString(),
-                            InputProps: {
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <CalendarToday fontSize="small" />
-                                    </InputAdornment>
-                                ),
-                            },
                         },
-                        actionBar: { actions: ['clear', 'cancel', 'accept'] },
+                        actionBar: { actions: ['clear', 'cancel'] },
                     }}
+                    label={!hideLabel && (displayLabel ? label || schema.title : false)}
                     readOnly={readonly}
                     disabled={disabled}
                     autoFocus={autofocus}
-                    onOpen={handleOpenDateOrDateTimePicker}
                     data-hide-error={hideError}
                     data-hide-label={hideLabel}
                 />

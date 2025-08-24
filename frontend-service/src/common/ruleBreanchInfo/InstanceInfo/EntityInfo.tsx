@@ -110,7 +110,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
                                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '80px' }} />
                                 </Grid>
 
-                                <Grid container flexDirection="column">
+                                <Grid container flexDirection="column" width="100%">
                                     <Grid>{header(true)}</Grid>
                                     <Grid paddingLeft="15px">{entityPropertiesTooltip}</Grid>
                                 </Grid>

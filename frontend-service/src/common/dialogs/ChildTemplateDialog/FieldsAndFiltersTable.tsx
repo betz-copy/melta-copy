@@ -138,7 +138,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                     return (
                         <React.Fragment key={fieldName}>
-                            <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
+                            <Grid container size={{ xs: 12 }} alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
                                 <Grid size={{ xs: 3 }}>
                                     <FormControlLabel
                                         control={

@@ -189,8 +189,9 @@ const TemplatesSelectGrid: React.FC<{
                         >
                             {i18next.t('graph.filterTitle')}
                         </Typography>
-                        <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
-
+                        <Grid justifyItems="center">
+                            <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
+                        </Grid>
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
                             <SelectAll
                                 allOptionIds={templates.map(getOptionId)}

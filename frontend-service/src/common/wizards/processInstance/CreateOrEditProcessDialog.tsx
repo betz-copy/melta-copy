@@ -146,7 +146,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                         color: (theme) => theme.palette.grey[500],
                     }}
                 >
-                    <Close fontSize="large" />
+                    <Close />
                 </IconButton>
                 <Grid container flexDirection="row" height="100%" width="100%" flexWrap="nowrap">
                     <Grid

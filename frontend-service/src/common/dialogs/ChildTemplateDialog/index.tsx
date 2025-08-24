@@ -451,7 +451,7 @@ const ChildTemplateDialog: React.FC<{
                                             </Grid>
                                             <Divider />
 
-                                            <Grid size={{ xs: 12 }} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
+                                            <Grid sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
                                                 <FieldsAndFiltersTable formikProps={formikProps} entityTemplate={entityTemplate} />
                                             </Grid>
                                         </Grid>

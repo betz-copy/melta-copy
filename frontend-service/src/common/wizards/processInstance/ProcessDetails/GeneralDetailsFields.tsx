@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { Autocomplete, Grid, TextField } from '@mui/material';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { DatePicker, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
 import React from 'react';
@@ -113,7 +113,10 @@ export const GeneralDetailsFields = ({
                     </Grid>
                 )}
                 <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider
+                        dateAdapter={AdapterDateFns}
+                        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                    >
                         <DatePicker
                             maxDate={values.endDate}
                             label={i18next.t('wizard.processInstance.processInstanceStartDate')}
@@ -140,7 +143,10 @@ export const GeneralDetailsFields = ({
                     </LocalizationProvider>
                 </Grid>
                 <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider
+                        dateAdapter={AdapterDateFns}
+                        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                    >
                         <DatePicker
                             minDate={values.startDate}
                             format="dd/MM/yyyy"
