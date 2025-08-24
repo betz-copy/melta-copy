@@ -35,8 +35,8 @@
     },
     "cSpell.words": ["ECEF", "epsg", "hemi", "Highchart", "Highcharts", "kartoffel", "matomo", "melta", "menash", "Rjsf", "Shraga", "wouter"],
     "files.exclude": {
-        "**/node_modules": true
-        // "**/dist": true
+        "**/node_modules": true,
+        "**/dist": true
     },
     "search.exclude": {
         "**/node_modules": true,

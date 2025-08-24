@@ -52,6 +52,7 @@ services:
       MONGO_URL: ${TEMPLATE_SERVICE_MONGO_URL}
       RABBIT_URL: ${RABBIT_URL}
       MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME: ${MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME}
+      MONGO_PRINTING_TEMPLATES_COLLECTION_NAME: ${MONGO_PRINTING_TEMPLATES_COLLECTION_NAME}
       MONGO_RULES_COLLECTION_NAME: ${MONGO_RULES_COLLECTION_NAME}
       MONGO_ENTITY_TEMPLATES_COLLECTION_NAME: ${MONGO_ENTITY_TEMPLATES_COLLECTION_NAME}
       MONGO_CHILD_TEMPLATES_COLLECTION_NAME: ${MONGO_CHILD_TEMPLATES_COLLECTION_NAME}
@@ -237,6 +238,8 @@ services:
     build:
       context: .
       dockerfile: gateway-service/Dockerfile
+      args:
+        SERVICE_NAME: 'gateway-service'
       secrets:
         - npm_token
     environment:
@@ -274,11 +277,10 @@ services:
 
   # frontend-service:
   #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.base
+  #     context: ./frontend-service
+  #     dockerfile: Dockerfile
   #     args:
   #       SERVICE_NAME: 'frontend-service'
-  #   command: ['npm', 'run', 'start', '-w', 'frontend-service']
 
   nginx:
     image: nginx:alpine
