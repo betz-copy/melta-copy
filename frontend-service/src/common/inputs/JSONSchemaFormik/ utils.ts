@@ -97,7 +97,7 @@ const getFieldUiSchema = (
             'ui:widget': 'UserWidget',
             'ui:options': {
                 globalValues: values,
-                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {              
+                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
                     // TODO: refactor - this code gets the fields that need to be modified so the displayed fields will be set in a nested way..
                     const changedPropertiesOfUser = changeRelatedUserFields(schema.properties, propertyKey, user);
 

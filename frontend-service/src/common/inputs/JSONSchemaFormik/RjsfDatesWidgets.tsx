@@ -11,7 +11,7 @@ import validator from '@rjsf/validator-ajv8';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
-import React, { JSX, useState } from 'react';
+import React, { JSX } from 'react';
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -21,6 +21,7 @@ export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
 
 const parseDefaultDate = (val: any) => {
     if (!val) return null;
+
     const date = new Date(val);
     if (isNaN(date.getTime())) return null;
     return date;
@@ -53,8 +54,6 @@ const getRjsfDateOrDateTimeWidget =
         const { defaultValue } = options;
         const { rootSchema } = registry;
 
-        const [currDate, setCurrDate] = useState<Date | null>(parseDefaultDate(value ?? defaultValue));
-
         const inputFormat = dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm';
         const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
         const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
@@ -74,14 +73,6 @@ const getRjsfDateOrDateTimeWidget =
             return onChange(dateString);
         };
 
-        const handleOpenDateOrDateTimePicker = () => {
-            if (currDate) return;
-
-            const currentDate = new Date();
-            setCurrDate(currentDate);
-            onChangeDateWidget(currentDate);
-        };
-
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
@@ -89,22 +80,11 @@ const getRjsfDateOrDateTimeWidget =
                 localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
             >
                 <MuiDatePicker
-                    value={currDate}
+                    value={parseDefaultDate(value)}
                     enableAccessibleFieldDOMStructure={false}
-                    onOpen={handleOpenDateOrDateTimePicker}
-                    onChange={(val) => {
-                        setCurrDate(val);
-                        onChangeDateWidget(val);
-                    }}
+                    onChange={(val) => onChangeDateWidget(val)}
                     slots={{
-                        textField: (params) => (
-                            <TextField
-                                {...params}
-                                value={currDate ? format(currDate, inputFormat) : ''}
-                                style={{ textAlign: 'right' }}
-                                inputFormat={inputFormat}
-                            />
-                        ),
+                        textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputFormat={inputFormat} />,
                     }}
                     slotProps={{
                         textField: {
