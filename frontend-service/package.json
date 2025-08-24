@@ -63,7 +63,7 @@
     "@testing-library/jest-dom": "^6.7.0",
     "@types/lodash.flatten": "^4.4.9",
     "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "axios": "^1.11.0",
@@ -157,6 +157,8 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
+    "@locator/babel-jsx": "^0.4.4",
+    "@locator/runtime": "^0.4.4",
     "@types/chance": "^1.1.7",
     "@types/d3-force": "^3.0.10",
     "@types/js-cookie": "^3.0.6",

@@ -19,7 +19,22 @@ export default defineConfig({
         CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
         global: 'window',
     },
-    plugins: [react(), cesium(), viteStaticCopy({ targets: cesiumCopyTargets })],
+    plugins: [
+        react({
+            babel: {
+                plugins: [
+                    [
+                        '@locator/babel-jsx/dist',
+                        {
+                            env: 'development',
+                        },
+                    ],
+                ],
+            },
+        }),
+        cesium(),
+        viteStaticCopy({ targets: cesiumCopyTargets }),
+    ],
     server: {
         port: 3000,
         host: true,
