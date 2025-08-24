@@ -462,6 +462,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             '.ag-cell-inline-editing input': {
                 border: 'none !important',
             },
+            '.ag-theme-material .ag-header-cell-text': {
+                fontSize: '14px !important',
+            },
         };
 
         const updateVisibleColumns = (params: ColumnVisibleEvent<Data, any> | GridReadyEvent<Data, any>) => {
