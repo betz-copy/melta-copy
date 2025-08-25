@@ -28,14 +28,9 @@
     padding-top: 0px !important;
 }
 
-.MuiFormControl-root > .MuiFormControl-fullWidth {
-    width: 50% !important;
-}
-
-.MuiFormControl-root {
-    display: flex;
-    direction: row;
-    flex-direction: row;
+.muirtl-yqiqnf-MuiGrid-root {
+    width: 47% !important;
+    flex: 1 1 auto !important;
 }
 
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
