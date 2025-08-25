@@ -28,7 +28,7 @@
     padding-top: 0px !important;
 }
 
-.muirtl-yqiqnf-MuiGrid-root {
+.muirtl-yqiqnf-MuiGrid-root:not(:has(.quill)) {
     width: 47% !important;
     flex: 1 1 auto !important;
 }

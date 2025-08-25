@@ -122,7 +122,7 @@ const getFieldUiSchema = (
     if (propertySchema.format === 'text-area')
         return {
             'ui:widget': 'TextAreaWidget',
-            'ui:classNames': 'fullWidth',
+            'ui:classNames': 'full-width-field',
             'ui:options': { toPrint, defaultValue },
         };
     if (propertySchema.format === 'relationshipReference')
@@ -155,8 +155,6 @@ export const uiSchemaUtils = (
 
             for (const [groupedPropertyKey, groupedPropertySchema] of Object.entries(propertySchema.properties)) {
                 const groupedUiSchema = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, groupedPropertyKey, groupedPropertySchema);
-
-                if (!groupedUiSchema['ui:classNames']) groupedUiSchema['ui:classNames'] = 'half-width-field';
 
                 uiSchema[propertyKey][groupedPropertyKey] = groupedUiSchema;
             }
