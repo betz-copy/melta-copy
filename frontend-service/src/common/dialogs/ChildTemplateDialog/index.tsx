@@ -275,7 +275,7 @@ const ChildTemplateDialog: React.FC<{
                             </DialogTitle>
 
                             <DialogContent>
-                                <Grid container spacing={2} direction="column" sx={{ pt: 1 }}>
+                                <Grid container direction="column" sx={{ pt: 1 }}>
                                     <Grid container spacing={2}>
                                         {textFields.map(({ title, startAdornment, disableInUpdate }) => (
                                             <Grid size={{ xs: 4 }} key={title}>
@@ -302,7 +302,7 @@ const ChildTemplateDialog: React.FC<{
                                         ))}
                                     </Grid>
 
-                                    <Grid container direction="row" sx={{ pt: 3, pl: 3 }} alignItems="center" justifyContent="space-between">
+                                    <Grid container direction="row" alignItems="center" justifyContent="space-between">
                                         <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <RadioGroup
@@ -341,39 +341,37 @@ const ChildTemplateDialog: React.FC<{
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
-                                        <Grid size={{ xs: 5.5 }} container direction="row" justifyContent="space-between">
-                                            {checkboxesFields.map(
-                                                ({ mode, fields, checked, value }) =>
-                                                    fields.length > 0 && (
-                                                        <Grid key={fields.toString()}>
-                                                            <FormControlLabel
-                                                                control={
-                                                                    <MeltaCheckbox
-                                                                        checked={checked}
-                                                                        onChange={(e) =>
-                                                                            updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
-                                                                        }
-                                                                    />
-                                                                }
-                                                                label={i18next.t(`childTemplate.filterBy.${mode}`)}
-                                                                componentsProps={{
-                                                                    typography: { sx: { fontSize: '14px' } },
-                                                                }}
-                                                            />
-                                                            {value && (
-                                                                <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                                    {`${i18next.t(`childTemplate.select${mode}Dialog.label`)} : ${
-                                                                        entityTemplate.properties.properties[value].title
-                                                                    }`}
-                                                                </Typography>
-                                                            )}
-                                                        </Grid>
-                                                    ),
-                                            )}
-                                        </Grid>
+                                        {checkboxesFields.map(
+                                            ({ mode, fields, checked, value }) =>
+                                                fields.length > 0 && (
+                                                    <Grid key={fields.toString()}>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <MeltaCheckbox
+                                                                    checked={checked}
+                                                                    onChange={(e) =>
+                                                                        updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
+                                                                    }
+                                                                />
+                                                            }
+                                                            label={i18next.t(`childTemplate.filterBy.${mode}`)}
+                                                            componentsProps={{
+                                                                typography: { sx: { fontSize: '14px' } },
+                                                            }}
+                                                        />
+                                                        {value && (
+                                                            <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
+                                                                {`${i18next.t(`childTemplate.select${mode}Dialog.label`)} : ${
+                                                                    entityTemplate.properties.properties[value].title
+                                                                }`}
+                                                            </Typography>
+                                                        )}
+                                                    </Grid>
+                                                ),
+                                        )}
                                     </Grid>
 
-                                    <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
+                                    <Grid container alignItems="center" justifyContent="space-between">
                                         <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <Autocomplete

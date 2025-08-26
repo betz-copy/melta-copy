@@ -8,7 +8,6 @@ import validator from '@rjsf/validator-ajv8';
 import React from 'react';
 import { containsHTMLTags, convertToPlainText } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
-import './form.css';
 
 const RjsfTextWidget = ({
     id,
@@ -22,7 +21,7 @@ const RjsfTextWidget = ({
     onChange,
     onBlur,
     onFocus,
-    autofocus,
+    autoFocus,
     options,
     schema,
     uiSchema,
@@ -79,7 +78,7 @@ const RjsfTextWidget = ({
             id={id}
             placeholder={placeholder && placeholder?.length > 0 ? placeholder : String(defaultValue ?? '')}
             label={!hideLabel && (displayLabel ? label || schema.title : false)}
-            autoFocus={autofocus}
+            autoFocus={autoFocus}
             required={required}
             disabled={disabled}
             InputLabelProps={{ shrink: readonly || undefined }}

@@ -357,7 +357,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 </Grid>
             }
             expendedCard={
-                <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
+                <Grid container direction="column" gap="10px" width="232px" paddingLeft="20px">
                     <Grid container justifyContent="space-between">
                         <Grid color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>

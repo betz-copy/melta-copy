@@ -268,7 +268,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             },
                         }}
                     >
-                        <Grid container wrap="nowrap">
+                        <Grid container wrap="nowrap" width="100%">
                             <Box style={{ display: 'flex', alignItems: 'center' }}>
                                 <DragHandleIcon fontSize="large" />
                             </Box>

@@ -268,12 +268,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                    <Grid container gap={2} wrap="nowrap" alignItems="center">
                         <Box>
                             <DragHandleIcon fontSize="large" />
                         </Box>
 
-                        <Grid container direction="column">
+                        <Grid container direction="column" width="100%">
                             <Grid container direction="column" marginBottom="0.5rem">
                                 <Grid
                                     container
@@ -361,7 +361,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             })}
                                     </TextField>
                                 </Grid>
-                                <Grid container justifyContent="space-between" flexWrap="nowrap">
+                                <Grid justifyContent="space-between" flexWrap="nowrap">
                                     <PropertiesTypes
                                         entity={entity}
                                         value={value}

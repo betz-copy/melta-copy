@@ -79,7 +79,7 @@ const RjsfLocationWidget = ({
     onChange,
     onBlur,
     onFocus,
-    autofocus,
+    autoFocus,
     options,
     schema,
     uiSchema,
@@ -149,7 +149,7 @@ const RjsfLocationWidget = ({
                             id={id}
                             placeholder={placeholder}
                             label={displayLabel ? label || schema.title : false}
-                            autoFocus={autofocus}
+                            autoFocus={autoFocus}
                             required={required}
                             disabled={disabled}
                             InputLabelProps={{

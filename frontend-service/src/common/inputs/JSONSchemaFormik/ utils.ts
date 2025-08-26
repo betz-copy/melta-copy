@@ -122,7 +122,7 @@ const getFieldUiSchema = (
     if (propertySchema.format === 'text-area')
         return {
             'ui:widget': 'TextAreaWidget',
-            'ui:classNames': 'full-width-field',
+            'ui:classNames': 'fullWidth',
             'ui:options': { toPrint, defaultValue },
         };
     if (propertySchema.format === 'relationshipReference')

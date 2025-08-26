@@ -39,7 +39,7 @@ const getRjsfDateOrDateTimeWidget =
         onChange,
         onBlur,
         onFocus,
-        autofocus,
+        autoFocus,
         schema,
         uiSchema,
         rawErrors = [],
@@ -105,7 +105,7 @@ const getRjsfDateOrDateTimeWidget =
                     label={!hideLabel && (displayLabel ? label || schema.title : false)}
                     readOnly={readonly}
                     disabled={disabled}
-                    autoFocus={autofocus}
+                    autoFocus={autoFocus}
                     data-hide-error={hideError}
                     data-hide-label={hideLabel}
                 />

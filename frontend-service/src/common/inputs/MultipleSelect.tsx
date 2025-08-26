@@ -26,7 +26,7 @@ const MultipleSelect: React.FC<{
     disabled?: boolean;
     readonly?: boolean;
     required?: boolean;
-    autofocus?: boolean;
+    autoFocus?: boolean;
     label?: string;
     color?: string;
     placeholder?: string;
@@ -44,7 +44,7 @@ const MultipleSelect: React.FC<{
     multiple,
     disabled,
     readonly,
-    autofocus,
+    autoFocus,
     label,
     color,
     placeholder,
@@ -97,7 +97,7 @@ const MultipleSelect: React.FC<{
                     <TextField
                         {...textFieldProps}
                         {...params}
-                        autoFocus={autofocus}
+                        autoFocus={autoFocus}
                         placeholder={placeholder}
                         onBlur={onBlur}
                         onFocus={onFocus}

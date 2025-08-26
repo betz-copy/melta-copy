@@ -728,7 +728,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     );
 
     return (
-        <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
+        <Grid container direction="column" alignItems="center" width="100%" style={{ minHeight: '160px' }}>
             {values.propertiesTypeOrder.map((itemId, index) => (
                 <FieldBlockWrapper
                     key={itemId}

@@ -506,7 +506,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 />
             )}
             {value.type === 'pattern' && (
-                <>
+                <Grid container justifyContent="space-between" flexWrap="nowrap">
                     <TextField
                         label={i18next.t('propertyTypes.pattern')}
                         id={pattern}
@@ -536,7 +536,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                         fullWidth
                         disabled={value.deleted}
                     />
-                </>
+                </Grid>
             )}
             {value.type === 'serialNumber' && (
                 <TextField

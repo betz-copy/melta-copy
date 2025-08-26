@@ -2,7 +2,6 @@
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
 import React from 'react';
 import MultipleSelect from '../MultipleSelect';
-import './form.css';
 
 const nums = new Set(['number', 'integer']);
 
@@ -39,7 +38,7 @@ const RjsfSelectWidget = ({
     readonly,
     value,
     multiple,
-    autofocus,
+    autoFocus,
     onChange,
     onBlur,
     onFocus,
@@ -49,6 +48,7 @@ const RjsfSelectWidget = ({
     hideError,
     hideLabel,
     formContext,
+    name,
     ...textFieldProps
 }: WidgetProps) => {
     const { defaultValue } = options;
@@ -104,14 +104,14 @@ const RjsfSelectWidget = ({
             }}
             textFieldProps={textFieldProps}
             required={required}
-            autofocus={autofocus}
+            autoFocus={autoFocus}
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
             rawErrors={!hideError ? rawErrors : []}
             label={!hideLabel ? label || schema.title : undefined}
             color={color}
-            value={value}
+            value={value?.[name]}
             placeholder={Array.isArray(defaultValue) ? defaultValue.join(', ') : (defaultValue as string | undefined)}
         />
     );
