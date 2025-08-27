@@ -1720,8 +1720,10 @@ export default {
             fullNameField: 'שם שדה של שם משתמש בעמוד לקוח',
         },
         mapPage: {
+            showMapPage: 'הצג עמוד מפה',
             sourceTemplateId: 'ID תבנית מקור',
             destTemplateId: 'ID תבנית יעד',
+            sourceFieldForColor: 'שדה מקור',
         },
     },
     childTemplate: {

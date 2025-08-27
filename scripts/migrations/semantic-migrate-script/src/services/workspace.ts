@@ -50,8 +50,10 @@ export interface IMetadata {
         fullNameField: string;
     };
     mapPage: {
+        showMapPage: boolean;
         sourceTemplateId: string;
         destTemplateId: string;
+        sourceFieldForColor: string;
     };
 }
 export interface IWorkspace {

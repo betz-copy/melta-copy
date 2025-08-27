@@ -320,8 +320,10 @@ const config = {
         fullNameField: env.get('CLIENT_SIDE_USERS_INFO_FIELD').default('full_name').asString(),
     },
     mapPage: {
+        showMapPage: env.get('MAPPAGE_SHOW_MAP_PAGE').default('false').asBool(),
         sourceTemplateId: env.get('MAPPAGE_SOURCE_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         destTemplateId: env.get('MAPPAGE_DEST_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        sourceFieldForColor: env.get('MAPPAGE_SOURCE_FIELD_FOR_COLOR').default('source_field_for_color').asString(),
     },
 };
 
