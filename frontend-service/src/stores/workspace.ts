@@ -46,6 +46,7 @@ export const defaultMetadata = {
         sourceTemplateId: '',
         destTemplateId: '',
     },
+    unitsArray: [] as string[],
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

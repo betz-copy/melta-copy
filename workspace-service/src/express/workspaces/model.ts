@@ -43,6 +43,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             sourceTemplateId: { type: String },
             destTemplateId: { type: String },
         },
+        unitsArray: { type: [String] },
     },
     { _id: false },
 );

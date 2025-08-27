@@ -441,7 +441,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 });
             }
             if (type === 'unitField') {
-                schema.properties[name].enum = [...(config?.units || [])];
+                schema.properties[name].enum = [];
             }
         },
     );
@@ -769,6 +769,5 @@ export {
     updateActionToEntity,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-    updateEnumFieldRequest
+    updateEnumFieldRequest,
 };
-

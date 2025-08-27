@@ -41,6 +41,7 @@ const metadataSchema = Joi.object({
         sourceTemplateId: Joi.string().allow(''),
         destTemplateId: Joi.string().allow(''),
     }).optional(),
+    unitsArray: Joi.array().items(Joi.string().trim()).optional(),
 }).optional();
 
 const workspaceSchema = Joi.object({

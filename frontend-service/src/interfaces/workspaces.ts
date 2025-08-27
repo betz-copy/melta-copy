@@ -48,6 +48,7 @@ export interface IMetadata {
         sourceTemplateId: string;
         destTemplateId: string;
     };
+    unitsArray: string[];
 }
 
 export interface IWorkspace {

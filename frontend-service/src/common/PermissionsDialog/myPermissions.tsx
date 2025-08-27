@@ -91,7 +91,7 @@ const MyPermissions: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
-    const { units: unitsArray = [] } = queryClient.getQueryData<BackendConfigState>('getBackendConfig') || {};
+    const unitsArray = workspace.metadata.unitsArray;
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>

@@ -25,6 +25,7 @@ export interface IUser extends IBaseUser {
     roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
     units?: Record<string, string[]>;
+    isRoot?: boolean;
 }
 
 export interface IUserPopulated extends Omit<IUser, 'roleIds'> {

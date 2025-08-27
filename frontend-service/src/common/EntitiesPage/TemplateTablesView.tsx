@@ -13,6 +13,7 @@ import { useUserStore } from '../../stores/user';
 import { isChildTemplate } from '../../utils/templates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -24,7 +25,7 @@ export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
     currentUserKartoffelId?: string,
-    currentUserUnit?: string,
+    currentUserUnit?: string[],
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
@@ -36,7 +37,7 @@ export const getDefaultFilterFromTemplate = (
         }
 
         if (prop.isFilterByUserUnit && currentUserUnit) {
-            filterClauses.push({ [key]: { $eq: currentUserUnit } });
+            filterClauses.push({ [key]: { $in: currentUserUnit } });
         }
 
         if (prop.filters) {
@@ -95,12 +96,19 @@ const TemplateTablesViewResults = forwardRef<
     }, [visibleTemplatesCount]);
 
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId, currentUser?.unit);
+            filters[template._id] = getDefaultFilterFromTemplate(
+                template,
+                isChildTemplate(template),
+                currentUserKartoffelId,
+                currentUser?.units?.[workspace._id] ?? [],
+            );
         });
         return filters;
     }, [templates, currentUserKartoffelId]);
@@ -123,7 +131,7 @@ const TemplateTablesViewResults = forwardRef<
                             page={pageType}
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
-                            defaultFilter={childTemplateDefaultFilters[template._id]}
+                            defaultFilter={childTemplateDefaultFilters[template._id]} //
                         />
                     </Grid>
                 );
@@ -147,7 +155,12 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 
     templates.forEach((template) => (isChildTemplate(template) ? countRequestChildTemplateIds : countRequestTemplateIds).add(template._id));
 
-    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds),Array.from(countRequestChildTemplateIds), searchInput, semanticSearch);
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
+        Array.from(countRequestTemplateIds),
+        Array.from(countRequestChildTemplateIds),
+        searchInput,
+        semanticSearch,
+    );
 
     return templates.flatMap((template) => {
         const countTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;

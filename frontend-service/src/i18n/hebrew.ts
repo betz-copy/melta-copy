@@ -1685,6 +1685,7 @@ export default {
             sourceTemplateId: 'ID תבנית מקור',
             destTemplateId: 'ID תבנית יעד',
         },
+        unitsArray: 'רשימת יחידות',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',
