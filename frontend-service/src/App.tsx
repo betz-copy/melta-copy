@@ -1,4 +1,3 @@
-import { MatomoProvider } from '@datapunt/matomo-tracker-react';
 import Bowser from 'bowser';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -12,6 +11,7 @@ import './css/loading.css';
 import { environment } from './globals';
 import Main from './Main';
 import { useMatomoInstance } from './matomo';
+import MatomoWrapper, { MatomoTracker } from './matomoWrapper';
 import ClientSidePage from './pages/ClientSidePage';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
@@ -130,11 +130,7 @@ const App: React.FC = () => {
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
-    return (
-        <MatomoProvider value={matomoInstance!}>
-            <Main />;
-        </MatomoProvider>
-    );
+    return <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker} children={<Main />} />;
 };
 
 export default App;
