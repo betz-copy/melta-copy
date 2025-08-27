@@ -907,17 +907,137 @@ class EntityManager extends DefaultManagerNeo4j {
         return query;
     }
 
+    private buildPolygonQuery() {
+        let query = this.buildBaseQuery();
+
+        query += `
+        //     AND templateData.polygon IS NOT NULL
+
+        //     WITH n, templateData, [p IN templateData.polygon |
+        //         point({longitude: p[0], latitude: p[1], crs:'wgs-84'})
+        //     ] AS polygon
+
+        //     // Compute bounding box
+        //     WITH n, templateData, polygon,
+        //     reduce(minLon =  180.0,  p IN polygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS minLon,
+        //     reduce(maxLon = -180.0,  p IN polygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS maxLon,
+        //     reduce(minLat =   90.0,  p IN polygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS minLat,
+        //     reduce(maxLat =  -90.0,  p IN polygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS maxLat
+
+        //     WITH n, templateData, polygon,
+        //     point({longitude:minLon, latitude:minLat, crs:'wgs-84'}) AS lowerLeft,
+        //     point({longitude:maxLon, latitude:maxLat, crs:'wgs-84'}) AS upperRight
+
+        //     // Check fields against polygon
+        //     WITH n, templateData, polygon, lowerLeft, upperRight,
+        //     [ field IN templateData.locationFields
+        //     WHERE n[field] IS NOT NULL AND
+        //     (
+        //         // Case 1: field is a list of points
+        //         (n[field][0] IS NOT NULL AND
+        //             ANY(pt IN n[field] WHERE
+        //             point.withinBBox(pt, lowerLeft, upperRight)
+        //             AND
+        //             reduce(crossings = false, i IN range(0, size(polygon)-1) |
+        //                 crossings <> (
+        //                     (polygon[i].latitude > pt.latitude) <> (polygon[(i+1) % size(polygon)].latitude > pt.latitude) AND
+        //                     pt.longitude < (polygon[(i+1) % size(polygon)].longitude - polygon[i].longitude) * (pt.latitude - polygon[i].latitude) /
+        //                                    (polygon[(i+1) % size(polygon)].latitude - polygon[i].latitude) + polygon[i].longitude
+        //                 )
+        //             )
+        //             )
+        //         )
+        //             OR
+        //             // Case 2: field is a single point
+        //             (n[field] IS NOT NULL AND
+        //                 point.withinBBox(n[field], lowerLeft, upperRight)
+        //              AND
+        //                 reduce(crossings = false, i IN range(0, size(polygon)-1) |
+        //                     crossings <> (
+        //                         (polygon[i].latitude > n[field].latitude) <> (polygon[(i+1) % size(polygon)].latitude > n[field].latitude) AND
+        //                         n[field].longitude < (polygon[(i+1) % size(polygon)].longitude - polygon[i].longitude) * (n[field].latitude - polygon[i].latitude) /
+        //                         (polygon[(i+1) % size(polygon)].latitude - polygon[i].latitude) + polygon[i].longitude
+        //                 )
+        //             )
+        //     )
+        // )
+        // | field ] AS matchingFields
+
+        // WITH n, matchingFields
+        // WHERE size(matchingFields) > 0
+
+        // RETURN n, matchingFields
+
+        AND templateData.polygon IS NOT NULL
+              WITH n, templateData, [p IN templateData.polygon |
+                point({longitude: p[0], latitude: p[1], crs:'wgs-84'})
+            ] AS polygon
+          // Compute bounding box
+    WITH n, templateData, polygon,
+         reduce(minLon =  180.0,  p IN polygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS minLon,
+         reduce(maxLon = -180.0,  p IN polygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS maxLon,
+         reduce(minLat =   90.0,  p IN polygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS minLat,
+         reduce(maxLat =  -90.0,  p IN polygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS maxLat
+
+    WITH n, templateData, polygon,
+         point({longitude:minLon, latitude:minLat, crs:'wgs-84'}) AS lowerLeft,
+         point({longitude:maxLon, latitude:maxLat, crs:'wgs-84'}) AS upperRight
+
+    // Normalize fields: wrap single points into lists
+    WITH n, templateData, polygon, lowerLeft, upperRight,
+         [field IN templateData.locationFields |
+             CASE
+                 WHEN n[field] IS NULL THEN []
+                 ELSE [n[field]]                           // already a list
+             END
+         ] AS fieldsAsLists,
+         templateData.locationFields AS originalFields
+
+    // Check each field against polygon
+    WITH n, polygon, lowerLeft, upperRight, originalFields, apoc.coll.flatten(fieldsAsLists, true) AS fieldsAsLists
+    WITH n,
+         [idx IN range(0, size(originalFields)-1) |
+             CASE
+                 WHEN ANY(pt IN fieldsAsLists[idx] WHERE
+                     point.withinBBox(pt, lowerLeft, upperRight) AND
+                     reduce(crossings = false, i IN range(0, size(polygon)-1) |
+                         crossings <> (
+                             (polygon[i].latitude > pt.latitude) <> (polygon[(i+1) % size(polygon)].latitude > pt.latitude) AND
+                             pt.longitude < (polygon[(i+1) % size(polygon)].longitude - polygon[i].longitude) *
+                                             (pt.latitude - polygon[i].latitude) /
+                                             (polygon[(i+1) % size(polygon)].latitude - polygon[i].latitude) +
+                                             polygon[i].longitude
+                         )
+                     )
+                 ) THEN originalFields[idx]
+                 ELSE null
+             END
+         ] AS matchingFields
+
+    // Remove nulls
+    WITH n, [f IN matchingFields WHERE f IS NOT NULL] AS matchingFields
+    WHERE size(matchingFields) > 0
+
+    RETURN n, matchingFields
+    `;
+
+        return query;
+    }
+
     async searchEntitiesByLocation(requestBody: ISearchEntitiesByLocationBody) {
         const { circle, polygon, templates } = requestBody;
-
+        console.dir({ circle, polygon, templates }, { depth: null });
         let query: string | null = null;
 
         if (circle) query = this.buildCircleQuery();
 
+        if (polygon) query = this.buildPolygonQuery();
+        console.dir({ query }, { depth: null });
+
         if (!query) throw new Error('Payload must include either circle or polygon.');
 
         const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
-
+        console.dir({ updatedTemplates }, { depth: null });
         return this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), { templates: updatedTemplates });
     }
 

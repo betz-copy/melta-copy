@@ -169,7 +169,8 @@ export interface ISearchEntitiesByLocationTemplatesBody {
 export interface ISearchEntitiesByLocationBody {
     textSearch?: string;
     templates: ISearchEntitiesByLocationTemplatesBody;
-    circle: Circle;
+    circle?: Circle;
+    polygon?: Polygon;
 }
 
 export interface ISearchResult {
