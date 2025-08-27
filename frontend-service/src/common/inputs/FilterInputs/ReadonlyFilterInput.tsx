@@ -7,14 +7,14 @@ import { ViewModeTextField } from '../ViewModeTextField';
 export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {
     switch (filter?.filterType) {
         case 'date':
-            return `${i18next.t(`filters.${filter.type}`)} ${filter.dateFrom ? new Date(filter.dateFrom).toLocaleDateString('he-IL') : ''} ${
-                filter.dateTo ? ` ${i18next.t('dashboard.to')}  ${new Date(filter.dateTo).toLocaleDateString('he-IL')}` : ''
-            }`;
+            return `${i18next.t(`filters.${filter.filterType}.${filter.type}`)} ${
+                filter.dateFrom ? new Date(filter.dateFrom).toLocaleDateString('he-IL') : ''
+            } ${filter.dateTo ? ` ${i18next.t('dashboard.to')}  ${new Date(filter.dateTo).toLocaleDateString('he-IL')}` : ''}`;
         case 'number':
         case 'text':
             if (fieldTemplateType === 'boolean')
                 return `${i18next.t(`filters.${filter.type}`)} ${filter.filter ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no')}`;
-            return `${i18next.t(`filters.${filter.type}`)}  ${filter.filter}`;
+            return `${i18next.t(`filters.${filter.filterType === 'text' ? 'string' : filter.filterType}.${filter.type}`)}  ${filter.filter}`;
         case 'set':
             return `${i18next.t('filters.contains')} ${filter.values?.map((val) => (val === null ? i18next.t('filters.empty') : val)).join(', ')}`;
         default:
