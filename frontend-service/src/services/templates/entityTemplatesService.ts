@@ -440,9 +440,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     enumPropertiesColors[name][option] = enumColor;
                 });
             }
-            if (type === 'unitField') {
-                schema.properties[name].enum = [];
-            }
         },
     );
 

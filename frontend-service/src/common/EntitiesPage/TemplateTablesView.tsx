@@ -31,12 +31,14 @@ export const getDefaultFilterFromTemplate = (
 
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
 
+    const currentUser = useUserStore((state) => state.user);
+
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         if (prop.isFilterByCurrentUser && currentUserKartoffelId) {
             filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
         }
 
-        if (prop.isFilterByUserUnit && currentUserUnit) {
+        if (prop.isFilterByUserUnit && currentUserUnit && !currentUser.isRoot) {
             filterClauses.push({ [key]: { $in: currentUserUnit } });
         }
 

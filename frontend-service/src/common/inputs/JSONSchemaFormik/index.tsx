@@ -27,6 +27,7 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { dateRegex } = environment;
 
@@ -357,11 +358,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
 
+    const workspaceStore = useWorkspaceStore((state) => state.workspace);
+
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main)}
+            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
