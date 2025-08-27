@@ -19,12 +19,13 @@ const CreateUserCard: React.FC<ApproverCard> = ({ user, remove, userIndex, readO
     return (
         <Grid margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
             {typeof user === 'string' ? (
-                <Chip label={user} variant="outlined" onDelete={readOnly ? undefined : () => remove(userIndex)} />
+                <Chip label={user} variant="outlined" onDelete={readOnly ? undefined : () => remove(userIndex)} key={user} />
             ) : user ? (
                 <Chip
                     avatar={<UserAvatar user={user} size={25} bgColor="1E2775" />}
                     label={user.fullName}
                     onDelete={readOnly ? undefined : () => remove(userIndex)}
+                    key={user._id}
                 />
             ) : null}
         </Grid>

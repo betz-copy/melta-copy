@@ -26,7 +26,7 @@ const MultipleSelect: React.FC<{
     disabled?: boolean;
     readonly?: boolean;
     required?: boolean;
-    autoFocus?: boolean;
+    autofocus?: boolean;
     label?: string;
     color?: string;
     placeholder?: string;
@@ -44,13 +44,13 @@ const MultipleSelect: React.FC<{
     multiple,
     disabled,
     readonly,
-    autoFocus,
+    autofocus,
     label,
     color,
     placeholder,
 }) => {
     return (
-        <Autocomplete<(typeof items)[number], boolean>
+        <Autocomplete<ISelectOption, boolean, false, false>
             id={id}
             disabled={disabled}
             readOnly={readonly}
@@ -59,17 +59,15 @@ const MultipleSelect: React.FC<{
             value={selectedValue}
             options={items}
             getOptionLabel={(option) => option.label}
-            isOptionEqualToValue={(option, val) => option.value === val.value}
+            isOptionEqualToValue={(option, val) => option?.value === val?.value}
             onChange={onChange}
             popupIcon={<ExpandMore />}
-            renderOption={(props, option) => {
-                return (
-                    <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
-                        {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
-                        <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
-                    </MenuItem>
-                );
-            }}
+            renderOption={(props, option) => (
+                <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
+                    {multiple && Array.isArray(selectedValue) && <MeltaCheckbox checked={selectedValue.some((v) => v.value === option.value)} />}
+                    <ColoredEnumChip label={option.label} color={option.color || 'default'} />
+                </MenuItem>
+            )}
             renderTags={(tagValue, getTagProps) => (
                 <OverflowWrapper
                     items={tagValue}
@@ -95,15 +93,15 @@ const MultipleSelect: React.FC<{
                 const isMultiple = selectedValue && !Array.isArray(selectedValue);
                 return (
                     <TextField
-                        {...textFieldProps}
                         {...params}
-                        autoFocus={autoFocus}
-                        placeholder={placeholder}
+                        {...textFieldProps}
+                        autoFocus={autofocus}
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}
                         error={rawErrors.length > 0}
                         label={label}
+                        placeholder={placeholder}
                         InputProps={{
                             ...params.InputProps,
                             startAdornment: isMultiple ? (

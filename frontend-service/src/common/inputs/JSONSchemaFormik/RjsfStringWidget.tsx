@@ -21,7 +21,7 @@ const RjsfTextWidget = ({
     onChange,
     onBlur,
     onFocus,
-    autoFocus,
+    autofocus,
     options,
     schema,
     uiSchema,
@@ -78,7 +78,7 @@ const RjsfTextWidget = ({
             id={id}
             placeholder={placeholder && placeholder?.length > 0 ? placeholder : String(defaultValue ?? '')}
             label={!hideLabel && (displayLabel ? label || schema.title : false)}
-            autoFocus={autoFocus}
+            autoFocus={autofocus}
             required={required}
             disabled={disabled}
             InputLabelProps={{ shrink: readonly || undefined }}

@@ -1,5 +1,5 @@
 import { WidgetProps } from '@rjsf/utils';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserInput } from '../UserInput';
 
 const RjsfUserWidget = ({
@@ -10,16 +10,23 @@ const RjsfUserWidget = ({
     onBlur,
     onFocus,
     id,
-    autoFocus,
+    autofocus,
     options,
     onChange,
+    uiSchema,
+    hideLabel,
+    readonly,
+    hideError,
+    formContext,
     ...textFieldProps
 }: WidgetProps) => {
     const [currentUser, setCurrentUser] = useState(value ? JSON.parse(value) : undefined);
 
     const handleOnChange = options.updateExpandedUserFields;
 
-    if (!currentUser) if (handleOnChange) handleOnChange(null, options.globalValues);
+    useEffect(() => {
+        if (!currentUser && handleOnChange) handleOnChange(null, options.globalValues);
+    }, [currentUser, handleOnChange, options.globalValues]);
 
     return (
         <UserInput
@@ -29,10 +36,17 @@ const RjsfUserWidget = ({
             label={label}
             onBlur={({ target: { value: newValue } }) => onBlur(id, newValue)}
             onFocus={({ target: { value: newValue } }) => onFocus(id, newValue)}
-            autoFocus={autoFocus}
+            autoFocus={autofocus}
             isError={rawErrors.length > 0}
             disabled={disabled}
-            textFieldProps={textFieldProps}
+            textFieldProps={{
+                ...textFieldProps,
+                uischema: uiSchema,
+                hidelabel: hideLabel?.toString(),
+                readOnly: readonly,
+                hideerror: hideError,
+                formcontext: formContext,
+            }}
             values={options.globalValues}
             currentUser={{ value: currentUser, set: setCurrentUser }}
             handleOnChange={handleOnChange}

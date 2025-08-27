@@ -38,7 +38,7 @@ const RjsfSelectWidget = ({
     readonly,
     value,
     multiple,
-    autoFocus,
+    autofocus,
     onChange,
     onBlur,
     onFocus,
@@ -48,7 +48,6 @@ const RjsfSelectWidget = ({
     hideError,
     hideLabel,
     formContext,
-    name,
     ...textFieldProps
 }: WidgetProps) => {
     const { defaultValue } = options;
@@ -62,6 +61,7 @@ const RjsfSelectWidget = ({
         }) || {};
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
+
     if (multiple) {
         if (Array.isArray(value) && items) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
@@ -94,6 +94,7 @@ const RjsfSelectWidget = ({
             selectedValue={selectedValue}
             onChange={(event, newVal) => {
                 event.preventDefault();
+
                 if (multiple) {
                     const mapped = (newVal as (typeof items)[number][]).map((opt) => processValue(schema, opt.value));
                     onChange(mapped.length ? mapped : defaultValue);
@@ -104,14 +105,14 @@ const RjsfSelectWidget = ({
             }}
             textFieldProps={textFieldProps}
             required={required}
-            autoFocus={autoFocus}
+            autofocus={autofocus}
             onBlur={_onBlur}
             onFocus={_onFocus}
             variant={variant}
             rawErrors={!hideError ? rawErrors : []}
             label={!hideLabel ? label || schema.title : undefined}
             color={color}
-            value={value?.[name]}
+            value={value}
             placeholder={Array.isArray(defaultValue) ? defaultValue.join(', ') : (defaultValue as string | undefined)}
         />
     );

@@ -46,21 +46,7 @@ const TextArea = ({
         ],
     };
 
-    const formats = [
-        'header',
-        'font',
-        'size',
-        'bold',
-        'italic',
-        'underline',
-        'strike',
-        'blockquote',
-        'list',
-        'bullet',
-        'indent',
-        'direction',
-        'align',
-    ];
+    const formats = ['header', 'font', 'size', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'list', 'indent', 'direction', 'align'];
 
     const editorStyle = {
         border: readonly ? 'none' : error ? '1px solid #FF0000' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',

@@ -39,7 +39,7 @@ const getRjsfDateOrDateTimeWidget =
         onChange,
         onBlur,
         onFocus,
-        autoFocus,
+        autofocus,
         schema,
         uiSchema,
         rawErrors = [],
@@ -84,7 +84,7 @@ const getRjsfDateOrDateTimeWidget =
                     enableAccessibleFieldDOMStructure={false}
                     onChange={(val) => onChangeDateWidget(val)}
                     slots={{
-                        textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputFormat={inputFormat} />,
+                        textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,
                     }}
                     slotProps={{
                         textField: {
@@ -105,7 +105,7 @@ const getRjsfDateOrDateTimeWidget =
                     label={!hideLabel && (displayLabel ? label || schema.title : false)}
                     readOnly={readonly}
                     disabled={disabled}
-                    autoFocus={autoFocus}
+                    autoFocus={autofocus}
                     data-hide-error={hideError}
                     data-hide-label={hideLabel}
                 />

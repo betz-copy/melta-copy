@@ -155,7 +155,7 @@ const FileInput: React.FC<FileInputProps> = ({
                     {file?.name?.trim() ? (
                         <Grid container style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} />
-                            <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap">
+                            <Grid container flexDirection="row" width="100%" alignItems="center" flexWrap="nowrap">
                                 <Grid container size={{ xs: 1 }} justifyContent="center" paddingTop="5px">
                                     <Grid>
                                         <FileIcon extension={getFileExtension(file.name!)} style={{ height: '20px' }} />

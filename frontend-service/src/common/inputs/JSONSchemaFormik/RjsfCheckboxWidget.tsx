@@ -15,7 +15,7 @@ const RjsfCheckboxWidget = ({
     onChange,
     onBlur,
     onFocus,
-    autoFocus,
+    autofocus,
     options,
     schema,
     uiSchema,

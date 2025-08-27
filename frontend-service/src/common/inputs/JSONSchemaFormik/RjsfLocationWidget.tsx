@@ -79,7 +79,7 @@ const RjsfLocationWidget = ({
     onChange,
     onBlur,
     onFocus,
-    autoFocus,
+    autofocus,
     options,
     schema,
     uiSchema,
@@ -138,7 +138,7 @@ const RjsfLocationWidget = ({
 
     return (
         <Box width="100%">
-            <Grid container justifyContent="space-between" alignItems="center" width="100%">
+            <Grid container justifyContent="space-between" alignContent="center" width="100%">
                 <Grid size={{ xs: 8.25 }}>
                     <MeltaTooltip title={newLocationValue}>
                         <TextField
@@ -149,7 +149,7 @@ const RjsfLocationWidget = ({
                             id={id}
                             placeholder={placeholder}
                             label={displayLabel ? label || schema.title : false}
-                            autoFocus={autoFocus}
+                            autoFocus={autofocus}
                             required={required}
                             disabled={disabled}
                             InputLabelProps={{

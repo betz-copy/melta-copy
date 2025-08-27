@@ -117,7 +117,6 @@ const ActivitiesContent: React.FC<{
                         variant="outlined"
                         rawErrors={[]}
                         label={i18next.t('entityPage.activityLog.activityType')}
-                        value={activitiesFilterValue}
                     />
                 </Grid>
                 <Grid width="300px" marginBottom="10px">

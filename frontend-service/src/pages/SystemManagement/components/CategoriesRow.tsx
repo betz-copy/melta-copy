@@ -224,7 +224,7 @@ const CategoriesRow: React.FC = () => {
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={workspace._id}>
+            <Droppable droppableId={workspace._id} isDropDisabled={false}>
                 {(provided) => (
                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                         <Grid container gap="10px">
