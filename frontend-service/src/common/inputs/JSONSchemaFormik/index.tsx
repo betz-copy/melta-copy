@@ -128,6 +128,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'isFilterByCurrentUser',
         'isFilterByUserUnit',
         'display',
+        'accountBalance'
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({

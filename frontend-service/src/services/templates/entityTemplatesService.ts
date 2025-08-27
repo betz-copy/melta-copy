@@ -50,7 +50,7 @@ type AttachmentOrArchiveProperties = {
     data: EntityTemplateFormInputProperties;
 };
 
-// TODO: shirel - add to property the restMoney && the currentAccount t/f 
+// TODO: shirel - add to property the restMoney && the currentAccount t/f
 const entityTemplateObjectToEntityTemplateForm = (
     entityTemplate: IMongoEntityTemplatePopulated | null,
     queryClient: QueryClient,
@@ -140,6 +140,7 @@ const entityTemplateObjectToEntityTemplateForm = (
             hideFromDetailsPage: value.hideFromDetailsPage || undefined,
             comment: value.comment,
             color: value.color,
+            accountBalance: value.accountBalance,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -349,6 +350,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             color,
             comment,
             expandedUserField,
+            accountBalance,
         }) => {
             if (deleted) return;
             if (type === 'comment' && !comment) return;
@@ -419,6 +421,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     : undefined,
                 comment,
                 expandedUserField,
+                accountBalance,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -770,6 +773,5 @@ export {
     updateActionToEntity,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-    updateEnumFieldRequest
+    updateEnumFieldRequest,
 };
-

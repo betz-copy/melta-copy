@@ -49,6 +49,7 @@ export interface IEntitySingleProperty {
     isFilterByCurrentUser?: boolean;
     isFilterByUserUnit?: boolean;
     display?: boolean;
+    accountBalance?: boolean;
 }
 
 export interface IProperties {
@@ -73,7 +74,6 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
-    currentAccountDisplay?: string;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

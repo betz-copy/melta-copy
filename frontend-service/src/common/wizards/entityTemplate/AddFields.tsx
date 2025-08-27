@@ -229,7 +229,7 @@ type AddFieldsDNDProps = Pick<
     FormikProps<EntityTemplateWizardValues>,
     'values' | 'setValues' | 'touched' | 'errors' | 'setFieldValue' | 'initialValues'
 > &
-    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'>;
+    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { showAccountDisplay?: boolean };
 
 export enum PropertiesTypes {
     properties = 'properties',
@@ -250,8 +250,20 @@ export const FieldBlockWrapper = ({
     initialValues,
     isEditMode,
     setBlock,
+    showAccountDisplay,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
+
+    const hasAccountBalanceField = (Object.values(values.properties) as PropertyItem[]).some((property) => {
+        if (property.type === 'field') {
+            return !!property.data.accountBalance;
+        }
+        if (property.type === 'group') {
+            return property.fields.some((field) => !!field.accountBalance);
+        }
+        return false;
+    });
+
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
         if (property.type === 'field' && property.data?.mapSearch) {
             return [property];
@@ -699,6 +711,8 @@ export const FieldBlockWrapper = ({
                     archive={(ind, groupIndex) => archive(ind, itemId, groupIndex)}
                     remove={remove}
                     onDeleteSure={onDeleteSure}
+                    showAccountDisplay={showAccountDisplay}
+                    hasAccountBalanceField={hasAccountBalanceField}
                 />
             </div>
         </Grid>
@@ -714,6 +728,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     initialValues,
     isEditMode,
     setBlock,
+    showAccountDisplay,
 }) => {
     const moveItem = useCallback(
         (dragIndex, hoverIndex) => {
@@ -742,13 +757,14 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
                     initialValues={initialValues}
                     isEditMode={isEditMode}
                     setBlock={setBlock}
+                    showAccountDisplay={showAccountDisplay}
                 />
             ))}
         </Grid>
     );
 };
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'> & { showAccountDisplay?: boolean }> = ({
     values,
     setValues,
     touched,
@@ -757,6 +773,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     initialValues,
     isEditMode,
     setBlock,
+    showAccountDisplay = false,
 }) => {
     return (
         <DndProvider backend={HTML5Backend}>
@@ -769,6 +786,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                 initialValues={initialValues}
                 isEditMode={isEditMode}
                 setBlock={setBlock}
+                showAccountDisplay={showAccountDisplay}
             />
         </DndProvider>
     );

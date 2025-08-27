@@ -50,6 +50,7 @@ ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
 ajv.addKeyword({ keyword: 'comment', type: 'string' });
 ajv.addKeyword({ keyword: 'color', type: 'string' });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export const stringFormats = [
     'date',
@@ -138,6 +139,7 @@ const propertiesArraySchema = Joi.array()
             comment: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
             color: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
             hideFromDetailsPage: Joi.boolean().when('format', { not: 'comment', then: Joi.forbidden() }),
+            accountBalance: Joi.boolean().optional(),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

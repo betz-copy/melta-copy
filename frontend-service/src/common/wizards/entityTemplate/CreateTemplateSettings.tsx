@@ -9,6 +9,7 @@ import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { CreateTemplateName } from './CreateTemplateName';
 import { InfoOutlined } from '@mui/icons-material';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { property, values } from 'lodash';
 
 export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, currentTemplateId?: string) => {
     const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
@@ -31,7 +32,7 @@ export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, curr
     });
 };
 
-const CreateTemplateSettings = <Values extends { name: string; displayName: string }>(
+const CreateTemplateSettings = <Values extends { name: string; displayName: string; properties }>(
     props: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & {
         exportFormats: { value: boolean; set: (val: boolean) => void };
         showAccountDisplay: { value: boolean; set: (val: boolean) => void };
@@ -48,10 +49,42 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
                     <MeltaCheckbox
                         checked={props.showAccountDisplay.value}
                         onChange={(e) => {
-                            props.showAccountDisplay.set(e.target.checked);
+                            const isChecked = e.target.checked;
+                            props.showAccountDisplay.set(isChecked);
+                            console.log(isChecked, props.values);
+
+                            if (!isChecked) {
+                                props.setFieldValue(
+                                    'properties',
+                                    props.values.properties.map((property) => {
+                                        if (property.type === 'field' && property.data?.accountBalance) {
+                                            const { accountBalance, readOnly, ...rest } = property.data;
+                                            return {
+                                                ...property,
+                                                data: rest,
+                                            };
+                                        }
+
+                                        if (property.type === 'group') {
+                                            return {
+                                                ...property,
+                                                fields: property.fields.map((field) => {
+                                                    if (field.accountBalance) {
+                                                        const { accountBalance, readOnly, ...rest } = field;
+                                                        return rest;
+                                                    }
+                                                    return field;
+                                                }),
+                                            };
+                                        }
+
+                                        return property;
+                                    }),
+                                );
+                            }
                         }}
                     />
-                    <Typography>{i18next.t('wizard.entityTemplate.currentAccountDisplay')}</Typography>
+                    <Typography>{i18next.t('wizard.entityTemplate.walletDisplay')}</Typography>
                     <MeltaTooltip title="fdgdg">
                         <InfoOutlined
                             sx={{

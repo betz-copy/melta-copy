@@ -55,6 +55,7 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     filters?: any;
     defaultValue?: any;
+    accountBalance?: boolean;
 }
 export interface IProperties {
     type: 'object';
@@ -84,7 +85,6 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
-    currentAccountDisplay?: string;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

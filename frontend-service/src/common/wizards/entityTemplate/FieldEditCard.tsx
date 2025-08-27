@@ -67,6 +67,8 @@ export interface FieldEditCardProps {
     onDuplicateKartoffelField?: (fieldIndex: number, groupIndex?: number) => void;
     groupIndex?: number;
     propertiesType: string;
+    showAccountDisplay?: boolean;
+    hasAccountBalanceField?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -107,6 +109,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     onDuplicateKartoffelField,
     groupIndex,
     propertiesType,
+    showAccountDisplay,
+    hasAccountBalanceField,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -397,6 +401,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     supportUnique={supportUnique}
                                     supportIdentifier={supportIdentifier}
                                     hasIdentifier={hasIdentifier}
+                                    showAccountDisplay={showAccountDisplay}
+                                    hasAccountBalanceField={hasAccountBalanceField}
                                 />
                                 <Grid display="flex">
                                     {locationSearchFields?.show &&
@@ -617,6 +623,7 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
+        isEqual(prev.hasAccountBalanceField, next.hasAccountBalanceField) &&
         isEqual(prev.hasIdentifier, next.hasIdentifier) &&
         isEqual(prev.userPropertiesInTemplate, next.userPropertiesInTemplate),
 );

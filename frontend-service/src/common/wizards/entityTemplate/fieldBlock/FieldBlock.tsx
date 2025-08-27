@@ -80,6 +80,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     onDeleteSure,
     remove,
     userPropertiesInTemplate,
+    showAccountDisplay = false,
+    hasAccountBalanceField,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -425,6 +427,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             userPropertiesInTemplate,
             onDuplicateKartoffelField,
             propertiesType,
+            hasAccountBalanceField,
         };
     };
 
@@ -585,6 +588,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                     initialValue={initialValues?.[propertiesType]?.find(
                                                         (property) => property.type === 'group' && property.id === item.id,
                                                     )}
+                                                    showAccountDisplay={showAccountDisplay}
                                                 />
                                             ) : (
                                                 <Field
@@ -599,6 +603,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                     uniqueConstraints={uniqueConstraints}
                                                     setUniqueConstraints={setUniqueConstraints}
                                                     moveGroup={moveGroup}
+                                                    showAccountDisplay={showAccountDisplay}
                                                 />
                                             )}
                                         </Box>

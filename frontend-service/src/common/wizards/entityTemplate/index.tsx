@@ -2,7 +2,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
@@ -69,6 +69,7 @@ export interface EntityTemplateFormInputProperties {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    accountBalance?: boolean;
 }
 
 type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
@@ -114,7 +115,20 @@ const EntityTemplateWizard: React.FC<
     const setUser = useUserStore((state) => state.setUser);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const [exportFormats, setExportFormats] = useState(false);
-    const [showAccountDisplay, setShowAccountDisplay] = useState(initialValues.currentAccountDisplay ? true : false);
+    const [showAccountDisplay, setShowAccountDisplay] = useState<boolean>(false);
+
+    useEffect(() => {
+        setExportFormats(false);
+        const hasAccountBalanceKey = initialValues.properties.some((property) => {
+            if (property.type === 'field') {
+                return !!property.data.accountBalance;
+            } else {
+                return property.fields.some((f) => !!f.accountBalance);
+            }
+        });
+
+        setShowAccountDisplay(hasAccountBalanceKey ?? false);
+    }, [initialValues.properties, open]);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
@@ -134,7 +148,7 @@ const EntityTemplateWizard: React.FC<
             return { template: createdTemplate, childTemplates: [] };
         },
         {
-            onSuccess: async ({ template: data, childTemplates }) => {
+            onSuccess: async ({ template: data, childTemplates }) => { 
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
@@ -253,7 +267,9 @@ const EntityTemplateWizard: React.FC<
         },
         {
             label: i18next.t('wizard.entityTemplate.properties'),
-            component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
+            component: (props, { isEditMode, setBlock }) => (
+                <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} showAccountDisplay={showAccountDisplay} />
+            ),
             validationSchema: addFieldsSchema,
         },
         ...(exportFormats

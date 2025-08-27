@@ -24,6 +24,8 @@ export interface SwitchesProps {
     supportUnique?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
+    showAccountDisplay?: boolean;
+    hasAccountBalanceField?: boolean;
 }
 
 export const Switches: React.FC<SwitchesProps> = ({
@@ -42,6 +44,8 @@ export const Switches: React.FC<SwitchesProps> = ({
     supportUnique,
     supportIdentifier,
     hasIdentifier,
+    showAccountDisplay,
+    hasAccountBalanceField,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -167,7 +171,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                                 readOnly: checked || undefined,
                             }));
                         }}
-                        disabled={value.required || value.archive || value.type === 'kartoffelUserField' || isComment}
+                        disabled={value.required || value.archive || value.type === 'kartoffelUserField' || isComment ||(value.accountBalance && value.type==='number' && areThereAnyInstances)}
                         checked={value.readOnly || isComment}
                     />
                 }
@@ -314,6 +318,29 @@ export const Switches: React.FC<SwitchesProps> = ({
                         circleSize="1.6rem"
                     />
                 </>
+            )}
+            {showAccountDisplay && value.type === 'number' && (
+                <FormControlLabel
+                    control={
+                        <MeltaSwitch
+                            id={type}
+                            name={type}
+                            onChange={(e) => {
+                                setValues?.((prev) => {
+                                    const isChecked = !!e.target.checked;
+                                    return {
+                                        ...prev,
+                                        accountBalance: isChecked,
+                                        readOnly: isChecked ? true : undefined,
+                                    };
+                                });
+                            }}
+                            checked={value.accountBalance ?? false}
+                            disabled={(hasAccountBalanceField && !value.accountBalance) || areThereAnyInstances}
+                        />
+                    }
+                    label={i18next.t('propertyTypes.accountBalance')}
+                />
             )}
         </Box>
     );
