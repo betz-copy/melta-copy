@@ -10,10 +10,12 @@ import {
     createCategorySchema,
     createChildTemplateSchema,
     createEntityTemplateSchema,
+    createPrintingTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
     deleteEntityTemplateSchema,
     deleteFieldValueSchema,
+    deletePrintingTemplateSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     getAllChildTemplatesSchema,
@@ -21,8 +23,10 @@ import {
     searchChildTemplatesSchema,
     getAllConfigsSchema,
     getConfigByTypeSchema,
+    getPrintingTemplateByIdSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
+    searchPrintingTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
@@ -30,6 +34,7 @@ import {
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
+    updatePrintingTemplateSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
     updateChildTemplateSchema,
@@ -299,6 +304,40 @@ templatesRouter.delete(
     ValidateRequest(deleteChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     TemplatesServiceProxy,
+);
+
+// Printing Templates CRUD
+templatesRouter.post(
+    '/print',
+    ValidateRequest(createPrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.createPrintingTemplate,
+);
+templatesRouter.get('/print/all', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.getAllPrintingTemplates);
+
+templatesRouter.get(
+    '/print/:id',
+    ValidateRequest(getPrintingTemplateByIdSchema),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.getPrintingTemplateById,
+);
+templatesRouter.put(
+    '/print/:id',
+    ValidateRequest(updatePrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updatePrintingTemplate,
+);
+templatesRouter.delete(
+    '/print/:id',
+    ValidateRequest(deletePrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.deletePrintingTemplate,
+);
+templatesRouter.post(
+    '/print/search',
+    ValidateRequest(searchPrintingTemplatesSchema),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.searchPrintingTemplates,
 );
 
 export default templatesRouter;

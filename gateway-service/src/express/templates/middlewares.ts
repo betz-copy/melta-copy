@@ -138,6 +138,16 @@ class TemplatesValidator extends DefaultController {
             });
     }
 
+    // Printing Templates
+    async validateUserCanCreatePrintingTemplate(req: Request) {
+        return this.validateUserCanCreateRuleTemplate(req);
+    }
+
+    async validateUserCanUpdateOrDeletePrintingTemplate(req: Request) {
+        return this.validateUserCanUpdateOrDeleteRuleTemplate(req);
+    }
+
+    // Child Templates
     async validateUserCanUpdateOrDeleteChildTemplate(req: RequestWithPermissionsOfUserId, _res: Response, next: NextFunction): Promise<void> {
         try {
             const childTemplateId = req.params.id;
