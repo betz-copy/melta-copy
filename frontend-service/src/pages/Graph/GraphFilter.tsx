@@ -129,7 +129,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         handleSetFilterRecord(value, condition);
     };
 
-    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
+    const handleDateChange = (
+        newValue: Date | null | ByCurrentDefaultValue.byCurrentDate | 'thisWeek' | 'thisMonth' | 'thisYear',
+        isStartDate: boolean,
+    ) => {
         if (!newValue && filterField?.filterType === 'date') {
             const isRemovingStart = isStartDate && !filterField.dateTo;
             const isRemovingEnd = !isStartDate && !filterField.dateFrom;

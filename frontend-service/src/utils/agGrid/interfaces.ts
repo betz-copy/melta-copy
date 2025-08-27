@@ -15,7 +15,19 @@ export interface IAGGidNumberFilter {
 
 export interface IAGGridDateFilter {
     filterType: 'date';
-    type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
+    type:
+        | 'equals'
+        | 'notEqual'
+        | 'lessThan'
+        | 'lessThanOrEqual'
+        | 'greaterThan'
+        | 'greaterThanOrEqual'
+        | 'thisWeek'
+        | 'thisMonth'
+        | 'thisYear'
+        | 'inRange'
+        | 'blank'
+        | 'notBlank';
     dateFrom: string | null;
     dateTo: string | null; // only inRange type
 }

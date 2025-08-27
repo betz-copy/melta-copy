@@ -1665,6 +1665,9 @@ export default {
         greaterThan: 'יותר מ',
         inRange: 'בין',
         empty: 'ריק',
+        thisWeek: 'השבוע',
+        thisMonth: 'החודש',
+        thisYear: 'השנה',
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',

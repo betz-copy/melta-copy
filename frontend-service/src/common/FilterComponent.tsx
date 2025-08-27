@@ -12,6 +12,10 @@ import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
 import { IUser } from '../interfaces/users';
 import { isEqual } from 'lodash';
+import { isValid as IsValidDate, parse } from 'date-fns';
+import { environment } from '../globals';
+
+const { fixedDateFilterNames } = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -31,7 +35,14 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
         case 'number':
             return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
         case 'date':
-            return filter.dateFrom !== null && (filter.type !== 'inRange' || filter.dateTo !== null);
+            if (!filter.dateFrom) return false;
+            if (fixedDateFilterNames.includes(filter.type) && fixedDateFilterNames.includes(filter.dateFrom)) return true;
+
+            const isDateFromValid =
+                IsValidDate(parse(filter.dateFrom, 'yyyy-MM-dd', new Date())) ||
+                IsValidDate(parse(filter.dateFrom, 'yyyy-MM-dd HH:mm:ss', new Date()));
+
+            return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         case 'set':
             return Array.isArray(filter.values) && filter.values.length > 0;
         default:

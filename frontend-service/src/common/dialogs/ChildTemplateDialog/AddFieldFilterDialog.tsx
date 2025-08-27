@@ -66,7 +66,10 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         setLocalFilterField(value);
     };
 
-    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
+    const handleDateChange = (
+        newValue: Date | null | ByCurrentDefaultValue.byCurrentDate | 'thisWeek' | 'thisMonth' | 'thisYear',
+        isStartDate: boolean,
+    ) => {
         setCurrentFieldError(undefined);
 
         const fieldSchema = entityTemplate.properties.properties[fieldName];
@@ -76,6 +79,8 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         const dateString = newValue
             ? newValue === ByCurrentDefaultValue.byCurrentDate
                 ? ByCurrentDefaultValue.byCurrentDate
+                : typeof newValue === 'string'
+                ? newValue
                 : format(newValue, dateFormat)
             : null;
 

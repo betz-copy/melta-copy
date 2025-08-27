@@ -2,6 +2,7 @@ import { CalendarToday } from '@mui/icons-material';
 import { FormControlLabel, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
+import { environment } from '../../../globals';
 import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
@@ -10,13 +11,18 @@ import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
+const { fixedDateFilterNames } = environment;
+
 interface DateFilterInputProps {
     filterField: IAGGridDateFilter | undefined;
     handleFilterTypeChange: (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    handleDateChange: (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => void;
+    handleDateChange: (
+        newValue: Date | null | ByCurrentDefaultValue.byCurrentDate | 'thisWeek' | 'thisMonth' | 'thisYear',
+        isStartDate: boolean,
+    ) => void;
     entityFilter: boolean;
     readOnly?: boolean;
     hideFilterType?: boolean;
@@ -36,12 +42,34 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === 'inRange';
+    const isFixedType = fixedDateFilterNames.includes(filterField?.type ?? '');
 
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
             handleFilterTypeChange('equals');
         }
     }, [forceEqualsType, filterField]);
+
+    useEffect(() => {
+        if (!filterField) return;
+        const { type, dateFrom, dateTo } = filterField;
+
+        if (fixedDateFilterNames.includes(type)) {
+            handleDateChange(type as 'thisWeek' | 'thisMonth' | 'thisYear', true);
+            return;
+        }
+
+        if ((dateFrom && fixedDateFilterNames.includes(dateFrom)) || (dateTo && fixedDateFilterNames.includes(dateTo))) {
+            handleDateChange(null, true);
+            handleDateChange(null, false);
+            return;
+        }
+
+        if (type !== 'inRange' && dateTo !== null) {
+            handleDateChange(null, false);
+            return;
+        }
+    }, [filterField?.type]);
 
     const inputStyle = darkMode
         ? undefined
@@ -61,7 +89,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                 sx={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
             >
                 {!hideFilterType && (
-                    <Grid item xs={isInRangeType ? 12 : 5}>
+                    <Grid item xs={isInRangeType || isFixedType ? 12 : 5}>
                         <TypeSelectFilter
                             filterField={filterField as IAGGridDateFilter}
                             handleFilterTypeChange={handleFilterTypeChange}
@@ -71,32 +99,34 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                     </Grid>
                 )}
 
-                <Grid item xs={hideFilterType || isInRangeType ? 12 : 7} boxSizing="border-box" width="86%">
-                    {isInRangeType && !forceEqualsType ? (
-                        <DateRange
-                            onStartDateChange={(newValue) => handleDateChange(newValue, true)}
-                            onEndDateChange={(newValue) => handleDateChange(newValue, false)}
-                            startDateInput={filterField?.dateFrom ?? null}
-                            endDateInput={filterField?.dateTo ?? null}
-                            directionIsRow={entityFilter}
-                            overrideSx={inputStyle}
-                            readOnly={readOnly || filterField?.dateFrom === ByCurrentDefaultValue.byCurrentDate}
-                        />
-                    ) : (
-                        <DatePickerWrapper
-                            value={filterField?.dateFrom}
-                            onChange={(newValue) => handleDateChange(newValue, true)}
-                            components={{
-                                OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
-                            }}
-                            sx={inputStyle}
-                            isStartDate
-                            directionIsRow={false}
-                            readOnly={readOnly || filterField?.dateFrom === ByCurrentDefaultValue.byCurrentDate}
-                            disableKeyboardInput
-                        />
-                    )}
-                </Grid>
+                {!isFixedType && (
+                    <Grid item xs={hideFilterType || isInRangeType ? 12 : 7} boxSizing="border-box" width="86%">
+                        {isInRangeType && !forceEqualsType ? (
+                            <DateRange
+                                onStartDateChange={(newValue) => handleDateChange(newValue, true)}
+                                onEndDateChange={(newValue) => handleDateChange(newValue, false)}
+                                startDateInput={filterField?.dateFrom ?? null}
+                                endDateInput={filterField?.dateTo ?? null}
+                                directionIsRow={entityFilter}
+                                overrideSx={inputStyle}
+                                readOnly={readOnly || filterField?.dateFrom === ByCurrentDefaultValue.byCurrentDate}
+                            />
+                        ) : (
+                            <DatePickerWrapper
+                                value={filterField?.dateFrom}
+                                onChange={(newValue) => handleDateChange(newValue, true)}
+                                components={{
+                                    OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
+                                }}
+                                sx={inputStyle}
+                                isStartDate
+                                directionIsRow={false}
+                                readOnly={readOnly || filterField?.dateFrom === ByCurrentDefaultValue.byCurrentDate}
+                                disableKeyboardInput
+                            />
+                        )}
+                    </Grid>
+                )}
             </Grid>
             {currentDateCheckbox && (
                 <Grid item xs={12}>

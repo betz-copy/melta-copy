@@ -1,7 +1,10 @@
+import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+
+const { fixedDateFilterNames } = environment;
 
 export interface IGraphFilterToBackendBody {
     [templateId: string]: { filter: ISearchFilter } | {};
@@ -75,6 +78,15 @@ export const handleRegexFilter = (filterValue: string, not: boolean = false): IA
 export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
     if (filterKeys.length === 2) {
         const [dateFrom, dateTo] = filterKeys;
+
+        if (fixedDateFilterNames.includes(fieldFilter[dateFrom] as string)) {
+            return {
+                filterType: 'date',
+                type: fieldFilter[dateFrom] as string,
+                dateFrom: fieldFilter[dateFrom] as string,
+                dateTo: fieldFilter[dateTo] as string,
+            } as IAGGridDateFilter;
+        }
 
         return {
             filterType: 'date',
