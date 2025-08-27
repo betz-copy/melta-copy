@@ -19,6 +19,9 @@ import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { environment } from '../../../globals';
+
+const { loggingDate, loggingDateTime } = environment.formats;
 
 interface IAddFilterFieldDialogProps {
     addFilterField?: { dialogType: ChipType; fieldName: string };
@@ -71,7 +74,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
         const fieldSchema = entityTemplate.properties.properties[fieldName];
 
-        const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
+        const dateFormat = fieldSchema.format === 'date-time' ? loggingDateTime : loggingDate;
 
         const dateString = newValue
             ? newValue === ByCurrentDefaultValue.byCurrentDate

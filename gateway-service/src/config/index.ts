@@ -241,6 +241,10 @@ const config = {
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('kendall.wiegand61@ethereal.email').asString(),
     },
+    formats: {
+        date: env.get('DATE_FORMAT').default('dd/mm/yyyy').asString(),
+        dateTime: env.get('DATE_TIME_FORMAT').default('dd/mm/yyyy hh:mm').asString(),
+    },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),

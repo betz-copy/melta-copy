@@ -51,6 +51,8 @@ import { ScheduleToolbar } from './ScheduleToolbar';
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
 L10n.load({ 'he-IL': hebrew.schedule });
 
+const { date, time } = environment.formats;
+
 const {
     refetchInterval,
     ganttEntitiesChunkSize,
@@ -174,8 +176,8 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
                     width="100%"
                     height="100%"
                     timezone="Asia/Jerusalem"
-                    timeFormat="HH:mm"
-                    dateFormat="dd/MM/yyyy"
+                    timeFormat={time}
+                    dateFormat={date}
                     workDays={[0, 1, 2, 3, 4, 5]}
                     locale="he-IL"
                     selectedDate={new Date(selectedDate)}

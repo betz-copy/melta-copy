@@ -12,6 +12,9 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
+import { environment } from '../../../globals';
+
+const { date, dateTime } = environment.formats;
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -54,7 +57,7 @@ const getRjsfDateOrDateTimeWidget =
         const { defaultValue } = options;
         const { rootSchema } = registry;
 
-        const inputFormat = dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm';
+        const inputFormat = dateOrDateTime === 'date' ? date : dateTime;
         const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
         const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
 

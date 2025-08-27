@@ -5,7 +5,10 @@ import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
+import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
+
+const { date: dateFormat } = environment.formats;
 
 const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -21,7 +24,7 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
                 <MobileDatePicker
                     value={date}
                     onChange={onDateChange}
-                    format="dd/MM/yyyy"
+                    format={dateFormat}
                     enableAccessibleFieldDOMStructure={false}
                     label={i18next.t('wizard.date')}
                     slots={{

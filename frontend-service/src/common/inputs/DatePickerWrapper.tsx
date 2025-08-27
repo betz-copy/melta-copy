@@ -7,6 +7,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
+import { environment } from '../../globals';
+
+const { date } = environment.formats;
 
 interface DatePickerWrapperProps {
     label?: string;
@@ -41,7 +44,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
     >
         <DatePicker
-            format="dd/MM/yyyy"
+            format={date}
             enableAccessibleFieldDOMStructure={false}
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}

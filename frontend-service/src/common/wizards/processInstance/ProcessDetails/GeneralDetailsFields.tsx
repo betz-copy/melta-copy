@@ -4,8 +4,11 @@ import { DatePicker, LocalizationProvider, PickersLocaleText } from '@mui/x-date
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
 import React from 'react';
+import { environment } from '../../../../globals';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+
+const { date } = environment.formats;
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,
@@ -142,7 +145,7 @@ export const GeneralDetailsFields = ({
                             }}
                             readOnly={viewMode}
                             enableAccessibleFieldDOMStructure={false}
-                            format="dd/MM/yyyy"
+                            format={date}
                         />
                     </LocalizationProvider>
                 </Grid>
@@ -153,7 +156,7 @@ export const GeneralDetailsFields = ({
                     >
                         <DatePicker
                             minDate={values.startDate}
-                            format="dd/MM/yyyy"
+                            format={date}
                             enableAccessibleFieldDOMStructure={false}
                             label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                             value={values.endDate}
