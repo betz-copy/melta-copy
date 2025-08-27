@@ -94,7 +94,7 @@ const aggregationSchema = Yup.object({
                 IAggregationType.Sum,
                 IAggregationType.Minimum,
                 IAggregationType.Maximum,
-            ].includes(typeValue as any);
+            ].includes(typeValue as unknown as IAggregationType);
 
             if (requiresByField) {
                 return schema.required(i18next.t('validation.required')).nullable();
@@ -142,7 +142,7 @@ export const chartValidationSchema = Yup.object({
     description: Yup.string(),
     type: Yup.mixed<IChartType>().oneOf(Object.values(IChartType)).required(i18next.t('validation.required')),
     metaData: Yup.mixed()
-        .when('type', (value, schema) => schema.concat(getMetaDataSchema(value as any)))
+        .when('type', (type, schema) => schema.concat(getMetaDataSchema(type as unknown as IChartType)))
         .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
     templateId: Yup.string().required(i18next.t('validation.required')),
