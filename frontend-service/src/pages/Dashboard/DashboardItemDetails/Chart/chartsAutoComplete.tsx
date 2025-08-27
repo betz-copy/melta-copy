@@ -117,7 +117,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
                     {...params}
                     fullWidth
                     label={i18next.t('dashboard.charts.chooseChart')}
-                    InputProps={{ ...params.InputProps, endAdornment: params.InputProps.endAdornment }}
+                    slotProps={{ input: { ...params.InputProps, endAdornment: params.InputProps.endAdornment } }}
                     sx={{ width: '95%' }}
                 />
             )}
@@ -125,12 +125,12 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
                 return (
                     <li {...props}>
                         <Grid container justifyContent="space-between" direction="row" spacing={1}>
-                            <Grid key={option._id} size={{ xs: 4}} overflow="hidden">
+                            <Grid key={option._id} size={{ xs: 4 }} overflow="hidden">
                                 <MeltaTooltip placement="right" title={option.name}>
                                     <Typography overflow="hidden">{option.name}</Typography>
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid size={{ xs: 0}}>
+                            <Grid size={{ xs: 0 }}>
                                 <MeltaTooltip
                                     title={
                                         <Grid container direction="column" spacing={1}>

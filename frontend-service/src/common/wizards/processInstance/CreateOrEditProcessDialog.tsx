@@ -131,7 +131,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
     }, [values.template?._id]);
 
     return (
-        <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ sx: { height: '85vh' } }}>
+        <Dialog open={open} fullWidth maxWidth="xl" slotProps={{ paper: { sx: { height: '85vh' } } }}>
             <FormikProvider value={detailsFormikData}>
                 <IconButton
                     aria-label="close"

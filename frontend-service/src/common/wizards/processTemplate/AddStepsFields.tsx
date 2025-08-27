@@ -144,7 +144,7 @@ const FieldBlockStepWarper = ({
                     }}
                     // eslint-disable-next-line react/no-array-index-key
                     key={index}
-                    TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
+                    slotProps={{ transition: { unmountOnExit: true } }} // performance issues with many steps
                 >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <DragHandleIcon />

@@ -112,7 +112,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                                 label={i18next.t('validation.relatedDirection')}
                                 value={i18next.t(`validation.${value.relationshipReference?.relationshipTemplateDirection}`)}
                                 sx={{ marginRight: '8px', borderRadius: '10px', width: 100 }}
-                                InputProps={{ readOnly: true }}
+                                slotProps={{ input: { readOnly: true } }}
                                 disabled
                             />
                         ) : (

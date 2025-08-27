@@ -117,7 +117,9 @@ const RuleBreachDialog: React.FC<{
         <Dialog
             open={isOpen}
             onClose={handleClose}
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', height: (ruleBreach?.actions?.length || 0) > 1 ? '840px' : 'fit-content' } }}
+            slotProps={{
+                paper: { sx: { bgcolor: darkMode ? '#060606' : 'white', height: (ruleBreach?.actions?.length || 0) > 1 ? '840px' : 'fit-content' } },
+            }}
             fullWidth
         >
             <DialogTitle>

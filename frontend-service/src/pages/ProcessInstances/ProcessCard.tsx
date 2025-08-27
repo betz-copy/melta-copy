@@ -104,7 +104,7 @@ export const StepIcon: React.FC<{
 
     return (
         <MeltaTooltip
-            componentsProps={{
+            slotProps={{
                 tooltip: {
                     sx: {
                         bgcolor: 'rgba(181, 181, 181, 0.9)',

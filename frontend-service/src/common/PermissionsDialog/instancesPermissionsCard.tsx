@@ -92,7 +92,7 @@ const InstancesPermissionsCard: React.FC<{
                                             onChange={checkboxAllProps?.permissionType.read.onChange}
                                         />
                                     }
-                                    componentsProps={{
+                                    slotProps={{
                                         typography: { sx: { fontSize: '14px' } },
                                     }}
                                 />
@@ -114,7 +114,7 @@ const InstancesPermissionsCard: React.FC<{
                                             disabled={checkboxAllProps?.disabled}
                                         />
                                     }
-                                    componentsProps={{
+                                    slotProps={{
                                         typography: { sx: { fontSize: '14px' } },
                                     }}
                                 />

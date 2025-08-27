@@ -139,15 +139,17 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 style: isValueExist ? { display: 'none' } : {},
                             },
                         }}
-                        InputLabelProps={{
-                            ...(params.InputLabelProps,
-                            readOnly && {
-                                sx: {
-                                    '&.Mui-focused': {
-                                        color: 'rgba(0, 0, 0, 0.6)',
+                        slotProps={{
+                            inputLabel: {
+                                ...(params.InputLabelProps,
+                                readOnly && {
+                                    sx: {
+                                        '&.Mui-focused': {
+                                            color: 'rgba(0, 0, 0, 0.6)',
+                                        },
                                     },
-                                },
-                            }),
+                                }),
+                            },
                         }}
                         sx={{
                             ...(readOnly

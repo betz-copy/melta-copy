@@ -181,20 +181,22 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                             sx={{ borderRadius: '7px', width: '100%' }}
                             label={i18next.t('permissions.searchUser')}
                             value={searchText}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment
-                                        position="end"
-                                        sx={{
-                                            fontWeight: '400',
-                                            letterSpacing: '0em',
-                                            lineHeight: '16px',
-                                            gap: '10px',
-                                        }}
-                                    >
-                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
-                                    </InputAdornment>
-                                ),
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment
+                                            position="end"
+                                            sx={{
+                                                fontWeight: '400',
+                                                letterSpacing: '0em',
+                                                lineHeight: '16px',
+                                                gap: '10px',
+                                            }}
+                                        >
+                                            <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                        </InputAdornment>
+                                    ),
+                                },
                             }}
                         />
                     </Grid>

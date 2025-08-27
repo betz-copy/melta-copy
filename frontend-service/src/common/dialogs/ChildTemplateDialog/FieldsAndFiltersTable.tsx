@@ -154,7 +154,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                                 {isRequired && <span> * </span>}
                                             </>
                                         }
-                                        componentsProps={{ typography: { sx: { fontWeight: 400, fontSize: '14px' } } }}
+                                        slotProps={{ typography: { sx: { fontWeight: 400, fontSize: '14px' } } }}
                                     />
                                 </Grid>
 

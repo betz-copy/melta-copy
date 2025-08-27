@@ -217,10 +217,12 @@ const IFrameHeadline: React.FC<{
                 open={openFullSize}
                 onClose={handleClose}
                 maxWidth={false}
-                PaperProps={{
-                    style: {
-                        height: '90vh',
-                        width: '88vw',
+                slotProps={{
+                    paper: {
+                        style: {
+                            height: '90vh',
+                            width: '88vw',
+                        },
                     },
                 }}
             >

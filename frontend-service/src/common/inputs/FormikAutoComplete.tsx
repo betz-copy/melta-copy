@@ -59,11 +59,13 @@ export const FormikAutoComplete = <T,>({
                     label={label}
                     sx={style}
                     variant={readonly ? 'standard' : 'outlined'}
-                    InputProps={{
-                        ...params.InputProps,
-                        endAdornment: !readonly && params.InputProps.endAdornment,
-                        readOnly: readonly,
-                        ...(readonly && { disableUnderline: true }),
+                    slotProps={{
+                        input: {
+                            ...params.InputProps,
+                            endAdornment: !readonly && params.InputProps.endAdornment,
+                            readOnly: readonly,
+                            ...(readonly && { disableUnderline: true }),
+                        },
                     }}
                 />
             )}

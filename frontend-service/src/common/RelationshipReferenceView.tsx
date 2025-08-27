@@ -36,17 +36,17 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
         return (
             <Grid container alignItems="center" justifyContent="flex-start" height="100%" paddingTop={1.5}>
                 <MeltaTooltip
-                    PopperProps={{
-                        sx: {
-                            [`& .${tooltipClasses.tooltip}`]: {
-                                fontSize: '1rem',
-                                color: '#F2F4FA',
-                                backgroundColor: '#F2F4FA !important',
-                                boxShadow: 10,
+                    slotProps={{
+                        popper: {
+                            sx: {
+                                [`& .${tooltipClasses.tooltip}`]: {
+                                    fontSize: '1rem',
+                                    color: '#F2F4FA',
+                                    backgroundColor: '#F2F4FA !important',
+                                    boxShadow: 10,
+                                },
                             },
                         },
-                    }}
-                    slotProps={{
                         arrow: { style: { color: '#F2F4FA' } },
                     }}
                     arrow
@@ -120,17 +120,17 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
     return (
         <Grid>
             <MeltaTooltip
-                PopperProps={{
-                    sx: {
-                        [`& .${tooltipClasses.tooltip}`]: {
-                            fontSize: '1rem',
-                            color: '#F2F4FA',
-                            backgroundColor: '#F2F4FA !important',
-                            boxShadow: 10,
+                slotProps={{
+                    popper: {
+                        sx: {
+                            [`& .${tooltipClasses.tooltip}`]: {
+                                fontSize: '1rem',
+                                color: '#F2F4FA',
+                                backgroundColor: '#F2F4FA !important',
+                                boxShadow: 10,
+                            },
                         },
                     },
-                }}
-                slotProps={{
                     arrow: { style: { color: '#F2F4FA' } },
                 }}
                 arrow

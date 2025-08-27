@@ -78,7 +78,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                         />
                     }
                     label={i18next.t('childTemplate.connectedUser')}
-                    componentsProps={{
+                    slotProps={{
                         typography: { sx: { fontSize: '14px' } },
                     }}
                 />

@@ -425,10 +425,12 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                             vertical: 'top',
                                             horizontal: 'center',
                                         }}
-                                        PaperProps={{
-                                            style: {
-                                                zIndex: 10000,
-                                                borderRadius: '10px',
+                                        slotProps={{
+                                            paper: {
+                                                style: {
+                                                    zIndex: 10000,
+                                                    borderRadius: '10px',
+                                                },
                                             },
                                         }}
                                     >

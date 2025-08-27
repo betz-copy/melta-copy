@@ -185,7 +185,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
             open={open}
             maxWidth="lg"
             fullScreen
-            PaperProps={{ sx: { bgcolor: darkMode ? 'rgba(20,20,20,0.7)' : 'rgba(49,49,49,0.7)' } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? 'rgba(20,20,20,0.7)' : 'rgba(49,49,49,0.7)' } } }}
             disableEnforceFocus
             onClick={(e) => e.stopPropagation()}
         >
@@ -221,16 +221,18 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                                 type="number"
                                 value={jumpToPage}
                                 onChange={(e) => setJumpToPage(e.target.value)}
-                                inputProps={{
-                                    min: 1,
-                                    max: numOfPages,
-                                    style: {
-                                        width: '40px',
-                                        fontSize: '16px',
-                                        outline: 'none',
-                                        padding: '6px 10px',
-                                        color: 'white',
-                                        border: '2px solid white',
+                                slotProps={{
+                                    htmlInput: {
+                                        min: 1,
+                                        max: numOfPages,
+                                        style: {
+                                            width: '40px',
+                                            fontSize: '16px',
+                                            outline: 'none',
+                                            padding: '6px 10px',
+                                            color: 'white',
+                                            border: '2px solid white',
+                                        },
                                     },
                                 }}
                                 onKeyDown={handleEnterKeyPress}

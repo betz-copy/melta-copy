@@ -219,7 +219,7 @@ const CreateRelationshipDialog: React.FC<{
 
     return (
         <>
-            <Dialog open={isOpen} fullWidth maxWidth="xl" PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}>
+            <Dialog open={isOpen} fullWidth maxWidth="xl" slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white' } } }}>
                 <Formik
                     initialValues={initialValues}
                     onSubmit={(values) =>

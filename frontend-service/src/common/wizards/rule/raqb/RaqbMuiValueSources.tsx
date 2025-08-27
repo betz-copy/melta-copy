@@ -60,8 +60,8 @@ export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProp
                 <ExpandMoreSharp />
             </IconButton>
 
-            {/* added PaperProps={{ dir: 'ltr' }} */}
-            <Menu anchorEl={anchorEl} open={open} onClose={handleClose} PaperProps={{ dir: 'ltr' }}>
+            {/* added slotProps={{ paper: { dir: 'ltr' }}} */}
+            <Menu anchorEl={anchorEl} open={open} onClose={handleClose} slotProps={{ paper: { dir: 'ltr' } }}>
                 <FormControl component="fieldset" sx={{ p: 0 }}>
                     <FormLabel component="legend" sx={{ p: 2, pt: 0, pb: 1 }}>
                         {title}

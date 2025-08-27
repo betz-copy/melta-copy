@@ -407,11 +407,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             setFieldValue('comments', e.target.value);
                                                         }}
                                                         style={{ width: '100%', fontSize: '12px' }}
-                                                        InputProps={{
-                                                            style: {
-                                                                whiteSpace: 'pre-line',
-                                                                overflowWrap: 'break-word',
-                                                                fontSize: '12px',
+                                                        slotProps={{
+                                                            input: {
+                                                                style: {
+                                                                    whiteSpace: 'pre-line',
+                                                                    overflowWrap: 'break-word',
+                                                                    fontSize: '12px',
+                                                                },
                                                             },
                                                         }}
                                                     />

@@ -67,7 +67,7 @@ const PermissionsDialog: React.FC<{
             maxWidth="sm"
             keepMounted={false}
             onClose={handleClose}
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', overflow: 'hidden' } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white', overflow: 'hidden' } } }}
         >
             <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8, zIndex: 99 }}>
                 <CloseIcon fontSize="medium" />

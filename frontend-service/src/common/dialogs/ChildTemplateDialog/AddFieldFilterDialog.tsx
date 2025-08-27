@@ -263,7 +263,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
             <DialogContent>
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12 }}>
-                        <TextField fullWidth disabled value={property?.title || fieldName} InputLabelProps={{ shrink: false }} />
+                        <TextField fullWidth disabled value={property?.title || fieldName} slotProps={{ inputLabel: { shrink: false } }} />
                     </Grid>
 
                     <Grid size={{ xs: 12 }}>{renderFilterInput()}</Grid>

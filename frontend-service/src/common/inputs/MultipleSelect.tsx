@@ -102,20 +102,22 @@ const MultipleSelect: React.FC<{
                         error={rawErrors.length > 0}
                         label={label}
                         placeholder={placeholder}
-                        InputProps={{
-                            ...params.InputProps,
-                            startAdornment: isMultiple ? (
-                                <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} style={{ marginLeft: 1 }} />
-                            ) : (
-                                params.InputProps.startAdornment
-                            ),
-                            inputProps: {
-                                ...params.inputProps,
-                                style: isMultiple ? { display: 'none' } : {},
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                startAdornment: isMultiple ? (
+                                    <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} style={{ marginLeft: 1 }} />
+                                ) : (
+                                    params.InputProps.startAdornment
+                                ),
+                                inputProps: {
+                                    ...params.inputProps,
+                                    style: isMultiple ? { display: 'none' } : {},
+                                },
                             },
+                            inputLabel: { shrink: readonly || undefined },
                         }}
                         color={color as TextFieldProps['color']}
-                        InputLabelProps={{ shrink: readonly || undefined }}
                     />
                 );
             }}

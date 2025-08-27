@@ -116,10 +116,12 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
             open={open}
             fullWidth
             maxWidth="xl"
-            PaperProps={{
-                style: {
-                    height: '85vh',
-                    overflowY: 'visible',
+            slotProps={{
+                paper: {
+                    style: {
+                        height: '85vh',
+                        overflowY: 'visible',
+                    },
                 },
             }}
         >
@@ -156,7 +158,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         <Grid container flexDirection="column" width="100%" height="100%">
                             <Grid height="5%">
                                 <MeltaTooltip
-                                    componentsProps={{
+                                    slotProps={{
                                         tooltip: {
                                             sx: {
                                                 bgcolor: 'rgba(181, 181, 181, 0.9)',

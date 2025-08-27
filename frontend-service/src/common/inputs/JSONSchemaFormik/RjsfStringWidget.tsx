@@ -81,8 +81,6 @@ const RjsfTextWidget = ({
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
-            InputLabelProps={{ shrink: readonly || undefined }}
-            inputProps={{ readOnly: readonly }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}
             error={!hideError && rawErrors.length > 0}
@@ -92,20 +90,24 @@ const RjsfTextWidget = ({
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
             }}
-            InputProps={{
-                endAdornment:
-                    inputType === 'number' && schema.serialCurrent === undefined ? (
-                        <InputAdornment position="end">
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <IconButton sx={{ padding: 0 }} size="small" onClick={handleIncrement} disabled={readonly || disabled}>
-                                    <KeyboardArrowUp fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
-                                </IconButton>
-                                <IconButton sx={{ padding: 0 }} size="small" onClick={handleDecrement} disabled={readonly || disabled}>
-                                    <KeyboardArrowDown fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
-                                </IconButton>
-                            </div>
-                        </InputAdornment>
-                    ) : null,
+            slotProps={{
+                input: {
+                    endAdornment:
+                        inputType === 'number' && schema.serialCurrent === undefined ? (
+                            <InputAdornment position="end">
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <IconButton sx={{ padding: 0 }} size="small" onClick={handleIncrement} disabled={readonly || disabled}>
+                                        <KeyboardArrowUp fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                    </IconButton>
+                                    <IconButton sx={{ padding: 0 }} size="small" onClick={handleDecrement} disabled={readonly || disabled}>
+                                        <KeyboardArrowDown fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                    </IconButton>
+                                </div>
+                            </InputAdornment>
+                        ) : null,
+                },
+                htmlInput: { readOnly: readonly },
+                inputLabel: { shrink: readonly || undefined },
             }}
             dir={getTextDirection(value, schema)}
             data-hide-error={hideError}

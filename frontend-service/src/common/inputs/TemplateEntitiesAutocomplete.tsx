@@ -224,16 +224,18 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         fullWidth
                         helperText={helperText}
                         label={String(label)}
-                        InputProps={{
-                            ...params.InputProps,
-                            readOnly,
-                            endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
-                            startAdornment: relProperty ? (
-                                <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
-                            ) : undefined,
-                            inputProps: {
-                                ...params.inputProps,
-                                style: relProperty ? { display: 'none' } : {},
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                readOnly,
+                                endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
+                                startAdornment: relProperty ? (
+                                    <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
+                                ) : undefined,
+                                inputProps: {
+                                    ...params.inputProps,
+                                    style: relProperty ? { display: 'none' } : {},
+                                },
                             },
                         }}
                     />

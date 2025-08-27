@@ -516,27 +516,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             helperText={touchedUniqueGroupName && errorUniqueGroupName}
                                                             sx={{ marginRight: '5px' }}
                                                             fullWidth
-                                                            InputProps={{
-                                                                ...params.InputProps,
-                                                                endAdornment: (
-                                                                    <>
-                                                                        {params.InputProps.endAdornment}
-                                                                        {uniqueConstraintGroupName !== '' &&
-                                                                            params.inputProps.value === uniqueConstraintGroupName &&
-                                                                            uniqueConstraints?.some(
-                                                                                (group) => group.groupName === uniqueConstraintGroupName,
-                                                                            ) && (
-                                                                                <IconButton
-                                                                                    aria-label="delete"
-                                                                                    onClick={() => {
-                                                                                        deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
-                                                                                    }}
-                                                                                >
-                                                                                    <DeleteIcon />
-                                                                                </IconButton>
-                                                                            )}
-                                                                    </>
-                                                                ),
+                                                            slotProps={{
+                                                                input: {
+                                                                    ...params.InputProps,
+                                                                    endAdornment: (
+                                                                        <>
+                                                                            {params.InputProps.endAdornment}
+                                                                            {uniqueConstraintGroupName !== '' &&
+                                                                                params.inputProps.value === uniqueConstraintGroupName &&
+                                                                                uniqueConstraints?.some(
+                                                                                    (group) => group.groupName === uniqueConstraintGroupName,
+                                                                                ) && (
+                                                                                    <IconButton
+                                                                                        aria-label="delete"
+                                                                                        onClick={() => {
+                                                                                            deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
+                                                                                        }}
+                                                                                    >
+                                                                                        <DeleteIcon />
+                                                                                    </IconButton>
+                                                                                )}
+                                                                        </>
+                                                                    ),
+                                                                },
                                                             }}
                                                             onKeyDown={(e) => {
                                                                 e.stopPropagation();

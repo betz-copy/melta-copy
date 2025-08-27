@@ -97,19 +97,21 @@ const errorColDef = <Data extends any = EntityData>(
                 title={message}
                 placement="top"
                 arrow
-                PopperProps={{
-                    sx: {
-                        [`& .${tooltipClasses.tooltip}`]: {
-                            fontSize: '1rem',
-                            backgroundColor: 'white',
-                            borderRadius: '10px',
-                            marginLeft: '5px',
-                            color: '#A40000',
-                            fontWeight: 400,
-                            boxShadow: '0px 2.05px 6.16px 0px #00000040',
-                        },
-                        '& .MuiTooltip-arrow': {
-                            color: 'white',
+                slotProps={{
+                    popper: {
+                        sx: {
+                            [`& .${tooltipClasses.tooltip}`]: {
+                                fontSize: '1rem',
+                                backgroundColor: 'white',
+                                borderRadius: '10px',
+                                marginLeft: '5px',
+                                color: '#A40000',
+                                fontWeight: 400,
+                                boxShadow: '0px 2.05px 6.16px 0px #00000040',
+                            },
+                            '& .MuiTooltip-arrow': {
+                                color: 'white',
+                            },
                         },
                     },
                 }}

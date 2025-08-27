@@ -107,7 +107,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                             />
                         }
                         label={i18next.t('childTemplate.currentDate')}
-                        componentsProps={{
+                        slotProps={{
                             typography: { sx: { fontSize: '14px' } },
                         }}
                     />

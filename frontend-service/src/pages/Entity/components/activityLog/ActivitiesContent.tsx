@@ -80,21 +80,23 @@ const ActivitiesContent: React.FC<{
                         sx={{ borderRadius: '7px', width: '300px' }}
                         placeholder={i18next.t('globalSearch.searchInHistory')}
                         value={searchInput}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment
-                                    position="end"
-                                    sx={{
-                                        fontWeight: '400',
-                                        letterSpacing: '0em',
-                                        lineHeight: '16px',
-                                        gap: '10px',
-                                    }}
-                                >
-                                    <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
-                                </InputAdornment>
-                            ),
-                            startAdornment: <InputAdornment position="start" />,
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment
+                                        position="end"
+                                        sx={{
+                                            fontWeight: '400',
+                                            letterSpacing: '0em',
+                                            lineHeight: '16px',
+                                            gap: '10px',
+                                        }}
+                                    >
+                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                    </InputAdornment>
+                                ),
+                                startAdornment: <InputAdornment position="start" />,
+                            },
                         }}
                     />
                 </Grid>

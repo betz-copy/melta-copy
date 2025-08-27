@@ -287,14 +287,16 @@ const ChildTemplateDialog: React.FC<{
                                                     onChange={(e) => handleChange({ target: { name: title, value: e.target.value.trimStart() } })}
                                                     error={touched[title] && Boolean(errors[title])}
                                                     helperText={touched[title] && errors[title]}
-                                                    InputProps={{
-                                                        startAdornment: startAdornment && (
-                                                            <InputAdornment position="start">
-                                                                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                                                                    {startAdornment}
-                                                                </Typography>
-                                                            </InputAdornment>
-                                                        ),
+                                                    slotProps={{
+                                                        input: {
+                                                            startAdornment: startAdornment && (
+                                                                <InputAdornment position="start">
+                                                                    <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                                                                        {startAdornment}
+                                                                    </Typography>
+                                                                </InputAdornment>
+                                                            ),
+                                                        },
                                                     }}
                                                     disabled={disableInUpdate && actionType === ActionMode.Update}
                                                 />
@@ -332,7 +334,7 @@ const ChildTemplateDialog: React.FC<{
                                                             value={val}
                                                             control={<Radio />}
                                                             label={i18next.t(`childTemplate.status.${val}`)}
-                                                            componentsProps={{
+                                                            slotProps={{
                                                                 typography: { sx: { fontSize: '14px' } },
                                                             }}
                                                             key={val}
@@ -355,7 +357,7 @@ const ChildTemplateDialog: React.FC<{
                                                                 />
                                                             }
                                                             label={i18next.t(`childTemplate.filterBy.${mode}`)}
-                                                            componentsProps={{
+                                                            slotProps={{
                                                                 typography: { sx: { fontSize: '14px' } },
                                                             }}
                                                         />

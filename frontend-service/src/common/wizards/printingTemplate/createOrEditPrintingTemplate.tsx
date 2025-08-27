@@ -183,7 +183,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
                                         placeholder={i18next.t('wizard.printingTemplate.templateName')}
                                         label={i18next.t('wizard.printingTemplate.templateName')}
                                         error={Boolean(touched.name && errors.name)}
-                                        inputProps={{ style: { textAlign: 'right', fontWeight: 400, fontSize: 14 } }}
+                                        slotProps={{ htmlInput: { style: { textAlign: 'right', fontWeight: 400, fontSize: 14 } } }}
                                     />
                                 </Grid>
                                 <Grid>

@@ -183,7 +183,7 @@ const Steps: React.FC<IStepsProp> = ({
                                         <Grid>
                                             <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
                                                 <MeltaTooltip
-                                                    componentsProps={{
+                                                    slotProps={{
                                                         tooltip: {
                                                             sx: {
                                                                 bgcolor: 'rgba(181, 181, 181, 0.9)',

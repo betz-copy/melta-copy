@@ -152,15 +152,21 @@ const RjsfLocationWidget = ({
                             autoFocus={autofocus}
                             required={required}
                             disabled={disabled}
-                            InputLabelProps={{
-                                shrink: readonly || undefined,
-                            }}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start" onClick={() => (error ? '' : setMapOpen(true))} style={{ cursor: 'pointer' }}>
-                                        <Map color={readonly || error ? 'disabled' : 'action'} />
-                                    </InputAdornment>
-                                ),
+                            slotProps={{
+                                inputLabel: {
+                                    shrink: readonly || undefined,
+                                },
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment
+                                            position="start"
+                                            onClick={() => (error ? '' : setMapOpen(true))}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <Map color={readonly || error ? 'disabled' : 'action'} />
+                                        </InputAdornment>
+                                    ),
+                                },
                             }}
                             type={(options.inputType ?? inputType) as string}
                             value={newLocationValue ?? ''}

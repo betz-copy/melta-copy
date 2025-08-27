@@ -68,13 +68,15 @@ export const GeneralDetailsFields = ({
                                 fullWidth
                                 name="template"
                                 variant={variant}
-                                InputProps={{
-                                    ...params.InputProps,
-                                    disableUnderline: !!viewMode,
-                                    endAdornment: viewMode ? null : params.InputProps.endAdornment,
-                                }}
-                                InputLabelProps={{
-                                    shrink: viewMode || undefined,
+                                slotProps={{
+                                    input: {
+                                        ...params.InputProps,
+                                        disableUnderline: !!viewMode,
+                                        endAdornment: viewMode ? null : params.InputProps.endAdornment,
+                                    },
+                                    inputLabel: {
+                                        shrink: viewMode || undefined,
+                                    },
                                 }}
                                 label={
                                     i18next.t(
@@ -99,16 +101,18 @@ export const GeneralDetailsFields = ({
                             label={i18next.t('wizard.processInstance.processInstanceName') as string}
                             value={values.name}
                             variant={variant}
-                            InputLabelProps={{
-                                shrink: viewMode || undefined,
+                            slotProps={{
+                                input: {
+                                    readOnly: viewMode,
+                                },
+                                inputLabel: {
+                                    shrink: viewMode || undefined,
+                                },
                             }}
                             onChange={(e) => setFieldValue('name', e.target.value)}
                             helperText={touched.name ? errors.name : ''}
                             error={touched.name && Boolean(errors.name)}
                             onBlur={handleBlur}
-                            InputProps={{
-                                readOnly: viewMode,
-                            }}
                         />
                     </Grid>
                 )}

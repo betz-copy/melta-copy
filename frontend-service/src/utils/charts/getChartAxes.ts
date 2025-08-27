@@ -88,7 +88,6 @@ const aggregationSchema = Yup.object({
     byField: Yup.string()
         .nullable()
         .when('type', (typeValue, schema) => {
-            // typeValue is the current value of 'type'
             const requiresByField = [
                 IAggregationType.CountDistinct,
                 IAggregationType.Average,

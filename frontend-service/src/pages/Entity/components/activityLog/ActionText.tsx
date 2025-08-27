@@ -254,7 +254,7 @@ const UpdateTextValue: React.FC<{
 
     return value && typeof innerContent === 'string' ? (
         <MeltaTooltip
-            PopperProps={popperProps}
+            slotProps={{ popper: popperProps }}
             disableHoverListener={!innerContent}
             title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent, true)}</Grid>}
             placement="top-start"
