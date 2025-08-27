@@ -82,6 +82,9 @@ const config = {
                 .default('/api/templates/relationships/search')
                 .asString(),
         },
+        printingTemplates: {
+            basePrintingTemplatesRoute: env.get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_BASE_ROUTE').default('/api/templates/print').asString(),
+        },
         children: {
             getByIdRoute: env.get('TEMPLATE_SERVICE_CHILDREN_GET_BY_ID_ROUTE').default('/api/templates/child').asString(),
             getRelatedByIdRoute: env.get('TEMPLATE_SERVICE_CHILDREN_GET_RELATED_BY_ID_ROUTE').default('/api/templates/child/related').asString(),

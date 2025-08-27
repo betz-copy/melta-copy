@@ -396,3 +396,57 @@ export const createOrderConfigSchema = Joi.object({
     },
     params: {},
 });
+
+// Printing Templates
+const printingTemplateBodySchema = Joi.object({
+    name: Joi.string().required(),
+    sections: Joi.array()
+        .items(
+            Joi.object({
+                categoryId: MongoIdSchema.required(),
+                entityTemplateId: MongoIdSchema.required(),
+                selectedColumns: Joi.array().items(Joi.string()).required(),
+            }),
+        )
+        .required(),
+    compactView: Joi.boolean().required(),
+    addEntityCheckbox: Joi.boolean().required(),
+    appendSignatureField: Joi.boolean().required(),
+});
+
+export const createPrintingTemplateSchema = Joi.object({
+    query: {},
+    body: printingTemplateBodySchema,
+});
+
+export const updatePrintingTemplateSchema = Joi.object({
+    query: {},
+    body: printingTemplateBodySchema,
+});
+
+export const deletePrintingTemplateSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+export const getPrintingTemplateByIdSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+export const searchPrintingTemplatesSchema = Joi.object({
+    body: {
+        search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    query: {},
+    params: {},
+});
