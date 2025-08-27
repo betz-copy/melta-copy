@@ -238,6 +238,8 @@ services:
     build:
       context: .
       dockerfile: gateway-service/Dockerfile
+      args:
+        SERVICE_NAME: 'gateway-service'
       secrets:
         - npm_token
     environment:
@@ -275,11 +277,10 @@ services:
 
   # frontend-service:
   #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.base
+  #     context: ./frontend-service
+  #     dockerfile: Dockerfile
   #     args:
   #       SERVICE_NAME: 'frontend-service'
-  #   command: ['npm', 'run', 'start', '-w', 'frontend-service']
 
   nginx:
     image: nginx:alpine
