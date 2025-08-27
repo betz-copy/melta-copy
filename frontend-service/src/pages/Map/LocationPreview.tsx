@@ -6,28 +6,50 @@ import { useQueryClient } from 'react-query';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { locationToWGS84String, jerusalemCoordinates } from '../../utils/map';
+import { locationToWGS84String, jerusalemCoordinates, calculateCenterOfPolygon } from '../../utils/map';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { convertWGS94ToECEF } from '../../utils/map/convert';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
-export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
-    <Entity name={name} description={locationToWGS84String(polygon)} onClick={onClick}>
-        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
-        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
-        {polygon.map((position, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <Entity key={`${position.x}, ${position.y} - ${index}`} position={position}>
-                <PointGraphics color={Color.BLACK} outlineColor={Color.fromCssColorString('#11695a')} pixelSize={10} outlineWidth={2} />
-            </Entity>
-        ))}
-    </Entity>
-);
+export const MeltaPolygon = ({ name, polygon, onClick, color }: { name: string; polygon: Cartesian3[]; onClick?: () => void; color?: string }) => {
+    const centroid = calculateCenterOfPolygon(polygon);
 
-export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
+    return (
+        <>
+            <Entity name={name} description={locationToWGS84String(polygon)}>
+                <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#ffffffff')} width={2} />
+                <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.fromCssColorString(color ?? '#11695a'), 0.3)} />
+                {polygon.map((position, index) => (
+                    <Entity key={`${position.x}, ${position.y} - ${index}`} position={position}>
+                        <PointGraphics color={Color.WHITE} outlineColor={Color.fromCssColorString('#ffffffff')} pixelSize={2} outlineWidth={2} />
+                    </Entity>
+                ))}
+            </Entity>
+
+            <Entity position={centroid} onClick={onClick}>
+                <PointGraphics color={Color.fromCssColorString(color ?? '#11695a')} outlineColor={Color.WHITE} pixelSize={12} outlineWidth={2} />
+            </Entity>
+        </>
+    );
+};
+
+const getColoredLocationIcon = (hex: string) => {
+    const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"
+         viewBox="-12.8 -12.8 89.60 89.60" fill="${hex}" stroke="${hex}">
+      <path d="M32,0C18.746,0,8,10.746,8,24c0,5.219,1.711,10.008,4.555,13.93
+               l16,24C29.414,63.332,30.664,64,32,64s2.586-0.668,3.328-1.781l16-24
+               C54.289,34.008,56,29.219,56,24C56,10.746,45.254,0,32,0z
+               M32,32c-4.418,0-8-3.582-8-8s3.582-8,8-8s8,3.582,8,8S36.418,32,32,32z"/>
+    </svg>`;
+
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
+export const MeltaCoordinate = ({ name, position, onClick, color }: { name: string; position: Cartesian3; onClick?: () => void; color?: string }) => (
     <Entity name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
-        <BillboardGraphics image="/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+        <BillboardGraphics image={getColoredLocationIcon(color ?? '#FF006B')} scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
     </Entity>
 );
 

@@ -81,7 +81,7 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                     formik={formik}
                     formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}
                     options={typeOptions[optionsType]}
-                    label={i18next.t('charts.fieldToView')}
+                    label={label}
                     getOptionLabel={(option) => getOptionLabel(option)}
                     multiple={false}
                     onChange={(newValue) => {
