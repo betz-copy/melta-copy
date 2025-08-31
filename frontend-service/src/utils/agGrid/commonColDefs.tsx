@@ -182,7 +182,6 @@ export const regexColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
-        cellStyle: { direction: 'ltr' },
         editable: (params) => editable(params.data) ?? false,
         cellEditor: 'agTextCellEditor',
     };

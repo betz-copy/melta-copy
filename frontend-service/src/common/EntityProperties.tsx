@@ -255,7 +255,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     entityTemplate.properties.hide,
                 );
 
-                if (!stringFormatValue) return undefined;
+                if (stringFormatValue === null || stringFormatValue === undefined) return undefined;
 
                 const propertyValueColor = getPropertyColor(
                     propertyKey,
@@ -362,7 +362,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                             overflowX: 'hidden',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction: type === 'number' ? 'rtl' : textDirection,
+                                            direction: type === 'number' ? 'ltr' : textDirection,
                                         }}
                                     >
                                         <HighlightText text={innerContent} searchedText={searchedText} isLink />

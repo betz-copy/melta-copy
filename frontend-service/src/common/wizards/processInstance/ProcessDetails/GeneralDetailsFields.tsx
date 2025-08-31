@@ -2,6 +2,7 @@
 import { Autocomplete, Grid, TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../../../globals';
@@ -122,6 +123,7 @@ export const GeneralDetailsFields = ({
                 <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
                     <LocalizationProvider
                         dateAdapter={AdapterDateFns}
+                        adapterLocale={he}
                         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
                     >
                         <DatePicker
@@ -152,6 +154,7 @@ export const GeneralDetailsFields = ({
                 <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
                     <LocalizationProvider
                         dateAdapter={AdapterDateFns}
+                        adapterLocale={he}
                         localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
                     >
                         <DatePicker
@@ -161,7 +164,7 @@ export const GeneralDetailsFields = ({
                             label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                             value={values.endDate}
                             onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
-                            slots={{ textField: (params) => <TextField {...params} /> }}
+                            slots={{ textField: (params) => <TextField {...params} inputfo /> }}
                             slotProps={{
                                 textField: {
                                     size: 'small',

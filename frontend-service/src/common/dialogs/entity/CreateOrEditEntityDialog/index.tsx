@@ -85,7 +85,7 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
 
                     return [key, properties[key] ?? defaultValue];
                 })
-                .filter(([_key, value]) => !!value),
+                .filter(([_key, value]) => value !== null && value !== undefined),
         ),
         disabled: properties.disabled ?? false,
     };
