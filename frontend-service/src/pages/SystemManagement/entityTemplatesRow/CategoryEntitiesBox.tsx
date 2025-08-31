@@ -131,7 +131,12 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
 
     return (
-        <Droppable droppableId={entityTemplatesWithCategory.category._id}>
+        <Droppable
+            droppableId={entityTemplatesWithCategory.category._id}
+            isDropDisabled={false}
+            isCombineEnabled={false}
+            ignoreContainerClipping={false}
+        >
             {(provided) => (
                 <Grid ref={provided.innerRef} {...provided.droppableProps}>
                     <Box

@@ -314,6 +314,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             >
                                 <Grid>
                                     <IconButton
+                                        component="span"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             remove(index);

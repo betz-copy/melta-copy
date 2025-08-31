@@ -1,5 +1,5 @@
 import { Close, ExpandMore } from '@mui/icons-material';
-import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
@@ -64,30 +64,33 @@ const MultipleSelect: React.FC<{
             popupIcon={<ExpandMore />}
             renderOption={(props, option) => (
                 <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
-                    {multiple && Array.isArray(selectedValue) && <MeltaCheckbox checked={selectedValue.some((v) => v.value === option.value)} />}
-                    <ColoredEnumChip label={option.label} color={option.color || 'default'} />
+                    {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
+                    <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
                 </MenuItem>
             )}
-            renderTags={(tagValue, getTagProps) => (
-                <OverflowWrapper
-                    items={tagValue}
-                    propertyToDisplayInTooltip="label"
-                    getItemKey={(item) => item.value}
-                    renderItem={(item, index) => {
-                        const { key, onDelete, ...restTagProps } = getTagProps({ index });
+            renderValue={(tagValue, getTagProps) => (
+                <Grid width="100%">
+                    <OverflowWrapper
+                        items={Array.isArray(tagValue) ? tagValue : [tagValue]}
+                        propertyToDisplayInTooltip="label"
+                        getItemKey={(item) => item.value}
+                        renderItem={(item, index) => {
+                            const { onDelete, ...restTagProps } = getTagProps({ index });
 
-                        return (
-                            <ColoredEnumChip
-                                label={item.label}
-                                color={item.color || 'default'}
-                                onDelete={onDelete}
-                                deleteIcon={<Close />}
-                                {...restTagProps}
-                                style={{ margin: '2px 4px 2px 0' }}
-                            />
-                        );
-                    }}
-                />
+                            return (
+                                <ColoredEnumChip
+                                    label={item.label}
+                                    color={item.color || 'default'}
+                                    onDelete={onDelete}
+                                    deleteIcon={<Close />}
+                                    {...restTagProps}
+                                    key={item.value}
+                                    style={{ margin: '2px 4px 2px 0' }}
+                                />
+                            );
+                        }}
+                    />
+                </Grid>
             )}
             renderInput={(params) => {
                 const isMultiple = selectedValue && !Array.isArray(selectedValue);

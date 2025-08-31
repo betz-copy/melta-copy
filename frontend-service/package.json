@@ -57,7 +57,7 @@
     "@rjsf/core": "^6.0.0-beta.12",
     "@rjsf/mui": "^6.0.0-beta.12",
     "@rjsf/utils": "^6.0.0-beta.12",
-    "@rjsf/validator-ajv8": "^6.0.0-beta.10",
+    "@rjsf/validator-ajv8": "^6.0.0-beta.12",
     "@syncfusion/ej2-react-schedule": "github:MeltaTeam/not-stolen",
     "@szhsin/react-menu": "^4.4.1",
     "@testing-library/jest-dom": "^6.7.0",

@@ -224,7 +224,7 @@ const CategoriesRow: React.FC = () => {
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={workspace._id} isDropDisabled={false}>
+            <Droppable droppableId={workspace._id} isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
                 {(provided) => (
                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                         <Grid container gap="10px">
@@ -263,9 +263,11 @@ const CategoriesRow: React.FC = () => {
                                                 key={category._id}
                                                 index={index}
                                                 isDragDisabled={
-                                                    !currentUser.currentWorkspacePermissions.admin &&
-                                                    currentUser.currentWorkspacePermissions.instances?.categories[category._id].scope ===
-                                                        PermissionScope.read
+                                                    !!(
+                                                        !currentUser.currentWorkspacePermissions.admin &&
+                                                        currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.scope ===
+                                                            PermissionScope.read
+                                                    )
                                                 }
                                             >
                                                 {(draggableProvided) => (
