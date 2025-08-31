@@ -14,7 +14,7 @@ export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], 
         case 'text':
             if (fieldTemplateType === 'boolean')
                 return `${i18next.t(`filters.${filter.type}`)} ${filter.filter ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no')}`;
-            return `${i18next.t(`filters.${filter.filterType === 'text' ? 'string' : filter.filterType}.${filter.type}`)}  ${filter.filter}`;
+            return `${i18next.t(`filters.${filter.filterType}.${filter.type}`)}  ${filter.filter}`;
         case 'set':
             return `${i18next.t('filters.contains')} ${filter.values?.map((val) => (val === null ? i18next.t('filters.empty') : val)).join(', ')}`;
         default:
