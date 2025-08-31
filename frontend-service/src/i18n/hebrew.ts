@@ -1721,9 +1721,9 @@ export default {
         },
         mapPage: {
             showMapPage: 'הצג עמוד מפה',
-            sourceTemplateId: 'ID תבנית מקור',
-            destTemplateId: 'ID תבנית יעד',
-            sourceFieldForColor: 'שדה מקור',
+            sourceTemplateId: 'עמוד מפה-ID תבנית מקור',
+            destTemplateId: 'עמוד מפה-ID תבנית יעד',
+            sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
     },
     childTemplate: {
