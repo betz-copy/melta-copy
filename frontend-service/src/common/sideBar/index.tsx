@@ -7,7 +7,6 @@ import {
     ManageAccounts as ManageAccountsIcon,
     Add as PlusIcon,
     Widgets as WidgetsIcon,
-    Map,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -56,6 +55,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const { metadata } = useWorkspaceStore((state) => state.workspace);
+    const { showMapPage } = metadata.mapPage;
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
@@ -239,6 +241,29 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         )}
                     </Grid>
                 </Grid>
+
+                {showMapPage && (
+                    <>
+                        <Grid item container paddingY="0.5rem">
+                            <NavButton
+                                to="/map"
+                                text={i18next.t('pages.map')}
+                                isDrawerOpen={isDrawerOpen}
+                                onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
+                                isActiveButton={activeButton === 'map'}
+                            >
+                                <CustomImage
+                                    imageUrl="/icons/map-page.svg"
+                                    width="24px"
+                                    height="24px"
+                                    color={activeButton === 'map' ? '#545eb9' : '#FFFFFF'}
+                                />
+                            </NavButton>
+                        </Grid>
+                        <DrawerDivider />
+                    </>
+                )}
+
                 <Grid
                     item
                     container
@@ -391,16 +416,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         isActiveButton={activeButton === 'iFrames'}
                     >
                         <StarBorderPurple500Icon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...iconSize }} />
-                    </NavButton>
-
-                    <NavButton
-                        to="/map"
-                        text={i18next.t('pages.map')}
-                        isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
-                        isActiveButton={activeButton === 'map'}
-                    >
-                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton

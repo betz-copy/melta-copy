@@ -17,7 +17,7 @@ export const MeltaPolygon = ({ name, polygon, onClick, color }: { name: string; 
 
     return (
         <>
-            <Entity name={name} description={locationToWGS84String(polygon)}>
+            <Entity name={name}>
                 <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#ffffffff')} width={2} />
                 <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.fromCssColorString(color ?? '#11695a'), 0.3)} />
                 {polygon.map((position, index) => (
@@ -27,7 +27,7 @@ export const MeltaPolygon = ({ name, polygon, onClick, color }: { name: string; 
                 ))}
             </Entity>
 
-            <Entity position={centroid} onClick={onClick}>
+            <Entity name={name} description={locationToWGS84String(polygon)} position={centroid} onClick={onClick}>
                 <PointGraphics color={Color.fromCssColorString(color ?? '#11695a')} outlineColor={Color.WHITE} pixelSize={12} outlineWidth={2} />
             </Entity>
         </>

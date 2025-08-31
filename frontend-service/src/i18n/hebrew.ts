@@ -1666,7 +1666,7 @@ export default {
             greaterThan: 'אחרי ה',
             inRange: 'בין',
         },
-        string: {
+        text: {
             equals: 'שווה',
             notEqual: 'לא שווה',
             startsWith: 'מתחיל ב',
