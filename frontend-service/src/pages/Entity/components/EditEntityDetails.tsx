@@ -231,6 +231,7 @@ const EditEntityDetails: React.FC<{
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
                                             padding="25px 15px 0px 15px"
+                                            width="100%"
                                         >
                                             <Grid>
                                                 <Button
