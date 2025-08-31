@@ -50,6 +50,8 @@ export const formatToString = (
     options: FormatOptions = {},
     hideProps: string[] = [],
 ) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
@@ -99,7 +101,11 @@ export const formatToString = (
                 <Grid container gap={1}>
                     <MeltaTooltip title={userObject.fullName}>
                         <Grid>
-                            <Chip avatar={<UserAvatar user={userObject} size={25} bgColor="1E2775" />} label={userObject.fullName} />
+                            <Chip
+                                avatar={<UserAvatar user={userObject} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                label={userObject.fullName}
+                            />
                         </Grid>
                     </MeltaTooltip>
                 </Grid>
@@ -133,7 +139,11 @@ export const formatToString = (
                             <Grid>
                                 <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
                                     <Grid>
-                                        <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                                        <Chip
+                                            avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                            label={item.fullName}
+                                        />
                                     </Grid>
                                 </MeltaTooltip>
                             </Grid>

@@ -7,11 +7,14 @@ import React, { memo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { Link } from 'wouter';
 import { IButtonPopoverProps } from '.';
+import { environment } from '../../globals';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
+import { UserState } from '../../stores/user';
 import {
     booleanColDef,
     dateColDef,
@@ -27,17 +30,14 @@ import {
     userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
-import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
-import IconButtonWithPopover from '../IconButtonWithPopover';
-import { ImageWithDisable } from '../ImageWithDisable';
-import { environment } from '../../globals';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { getChildrenWithWritePermission } from '../../utils/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
 import { emptyEntityTemplate } from '../dialogs/entity';
-import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
-import { UserState } from '../../stores/user';
 import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
-import { getChildrenWithWritePermission } from '../../utils/childTemplates';
+import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
+import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
+import IconButtonWithPopover from '../IconButtonWithPopover';
+import { ImageWithDisable } from '../ImageWithDisable';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };

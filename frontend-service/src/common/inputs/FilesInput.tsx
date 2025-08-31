@@ -131,8 +131,8 @@ const FilesInput: React.FC<FilesInputProps> = ({
                                         {isFileFromInput(file) ? file.name : getFileName(file.name)}
                                     </Typography>
                                 </Grid>
-                                <Grid container size={{ xs: 1 }}>
-                                    <Grid justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                <Grid size={{ xs: 1 }}>
+                                    <Grid container justifyContent="flex-end" alignItems="center" wrap="nowrap">
                                         {!isFileFromInput(file) && (
                                             <OpenPreview fileId={file.name} img={<Visibility fontSize="small" />} showText={false} />
                                         )}

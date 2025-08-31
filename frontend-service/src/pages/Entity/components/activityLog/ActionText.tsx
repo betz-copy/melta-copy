@@ -15,6 +15,7 @@ import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getFilesName } from '../../../../utils/getFileName';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { locationConverterToString } from '../../../../utils/map/convert';
@@ -183,6 +184,8 @@ const UpdateTextValue: React.FC<{
     fieldName: string;
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ value, old, fieldName, entityTemplateProperties }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     let innerContent: React.ReactNode;
     if (isLocationData(value))
         innerContent =
@@ -235,9 +238,9 @@ const UpdateTextValue: React.FC<{
 
             return (
                 <Chip
-                    sx={{ marginLeft: '5px' }}
                     size="small"
-                    avatar={<UserAvatar user={JSON.parse(value)} size={23} bgColor="1E2775" />}
+                    avatar={<UserAvatar user={JSON.parse(value)} size={23} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                    sx={{ marginLeft: '5px', background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
                     label={JSON.parse(value).fullName}
                 />
             );

@@ -24,6 +24,7 @@ import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IUser } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -485,6 +486,8 @@ export const userColDef = <Data extends any = IUser>(
     isLastColumn: boolean,
     hideColumn = false,
 ): ColDef => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -494,7 +497,6 @@ export const userColDef = <Data extends any = IUser>(
         field,
         headerName: value.title,
         valueGetter,
-
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             if (!props.value) return '';
             return (
@@ -502,7 +504,8 @@ export const userColDef = <Data extends any = IUser>(
                     <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
                         <Grid>
                             <Chip
-                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}
+                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
                                 label={JSON.parse(props.value).fullName}
                             />
                         </Grid>
@@ -529,6 +532,8 @@ export const userArrayColDef = <Data extends any = IEntity>(
     isLastColumn: boolean,
     hideColumn = false,
 ): ColDef => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -538,7 +543,6 @@ export const userArrayColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
             if (!props.value) return '';
             return (
@@ -554,7 +558,11 @@ export const userArrayColDef = <Data extends any = IEntity>(
                     renderItem={(item) => (
                         <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
                             <Grid>
-                                <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                                <Chip
+                                    avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                    sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                    label={item.fullName}
+                                />
                             </Grid>
                         </MeltaTooltip>
                     )}
