@@ -38,8 +38,10 @@ const metadataSchema = Joi.object({
         fullNameField: Joi.string(),
     }).optional(),
     mapPage: Joi.object({
+        showMapPage: Joi.boolean(),
         sourceTemplateId: Joi.string().allow(''),
         destTemplateId: Joi.string().allow(''),
+        sourceFieldForColor: Joi.string().allow(''),
     }).optional(),
 }).optional();
 
