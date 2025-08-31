@@ -26,7 +26,6 @@ import _ from 'lodash';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
-import { BackendConfigState } from '../../services/backendConfigService';
 import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';

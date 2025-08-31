@@ -18,7 +18,7 @@ export interface ISelectOption {
 const MultipleSelect: React.FC<{
     id: string;
     items: ISelectOption[];
-    schema: RJSFSchema;
+    schema?: RJSFSchema;
     selectedValue: ISelectOption | ISelectOption[] | null;
     onChange: (event: React.SyntheticEvent, newVal: ISelectOption | ISelectOption[] | null) => void;
     onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -58,7 +58,7 @@ const MultipleSelect: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore<IUser>((state) => state.user);
 
-    if (schema.format === 'unitField') {
+    if (schema?.format === 'unitField') {
         items = workspace.metadata.unitsArray.map((unit) => ({ label: unit, value: unit }));
 
         if (!currentUser.isRoot) items = items.filter((unit) => currentUser.units?.[workspace._id]?.includes(unit.label));

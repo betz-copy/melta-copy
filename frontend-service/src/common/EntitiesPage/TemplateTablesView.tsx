@@ -14,6 +14,7 @@ import { isChildTemplate } from '../../utils/templates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { IUser } from '../../interfaces/users';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -24,14 +25,13 @@ export type TemplateTablesViewResultsRef = {
 export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
+    currentUser: IUser,
     currentUserKartoffelId?: string,
     currentUserUnit?: string[],
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
-
-    const currentUser = useUserStore((state) => state.user);
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         if (prop.isFilterByCurrentUser && currentUserKartoffelId) {
@@ -108,12 +108,13 @@ const TemplateTablesViewResults = forwardRef<
             filters[template._id] = getDefaultFilterFromTemplate(
                 template,
                 isChildTemplate(template),
+                currentUser, 
                 currentUserKartoffelId,
                 currentUser?.units?.[workspace._id] ?? [],
             );
         });
         return filters;
-    }, [templates, currentUserKartoffelId]);
+    }, [templates, currentUser, currentUserKartoffelId, workspace._id]);
 
     return (
         <Grid container direction="column" spacing={1}>
