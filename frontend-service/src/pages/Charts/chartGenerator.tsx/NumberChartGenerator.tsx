@@ -30,12 +30,7 @@ export const NumberChartGenerator: React.FC<{
         >
             <CardTitle title={name} description={description} />
 
-            <Typography
-                fontSize="120px"
-                fontWeight="500"
-                color={theme.palette.primary.main}
-                sx={{ textAlign: 'center', marginTop: 6, direction: 'rtl' }}
-            >
+            <Typography fontSize="120px" fontWeight="500" color={theme.palette.primary.main} sx={{ textAlign: 'center', direction: 'rtl' }}>
                 {data[0].x}
             </Typography>
         </Box>

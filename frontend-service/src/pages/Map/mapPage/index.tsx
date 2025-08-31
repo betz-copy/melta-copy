@@ -459,10 +459,7 @@ const MapPage = () => {
                                 onClick={() => {
                                     setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                                 }}
-                                color={
-                                    sourceFieldForColor && sourceTemplate ? sourceTemplateColors?.[node.properties[sourceFieldForColor]] : undefined
-                                }
-                                // selected={selectedEntity?.node.properties._id === node.properties._id}
+                                color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
@@ -474,9 +471,7 @@ const MapPage = () => {
                                 onClick={() => {
                                     setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                                 }}
-                                color={
-                                    sourceFieldForColor && sourceTemplate ? sourceTemplateColors?.[node.properties[sourceFieldForColor]] : undefined
-                                }
+                                color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
