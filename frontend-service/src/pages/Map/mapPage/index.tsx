@@ -60,12 +60,14 @@ const MapPage = () => {
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
-    const { sourceTemplateId, destTemplateId } = metadata.mapPage;
+    const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
     const sourceSearchResults = [...searchedMarkers, ...searchedPolygons]
         .filter(({ node }) => node.templateId === sourceTemplate?._id)
         .map(({ node }) => node);
+
+    const sourceTemplateColors = sourceTemplate?.enumPropertiesColors?.[sourceFieldForColor];
 
     const {
         bounds: searchedEntityBounds,
@@ -365,6 +367,7 @@ const MapPage = () => {
                                 onClick={() => {
                                     setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                                 }}
+                                color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
@@ -376,6 +379,7 @@ const MapPage = () => {
                                 onClick={() => {
                                     setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                                 }}
+                                color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 

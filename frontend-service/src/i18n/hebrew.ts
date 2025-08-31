@@ -1039,7 +1039,7 @@ export default {
         email: 'כתובת מייל',
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
-        relationshipReference: 'שיוך לקשר',
+        relationshipReference: 'קשר ליישות',
         dateNotification: 'התראה לפני סיום',
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',
@@ -1667,7 +1667,7 @@ export default {
             greaterThan: 'אחרי ה',
             inRange: 'בין',
         },
-        string: {
+        text: {
             equals: 'שווה',
             notEqual: 'לא שווה',
             startsWith: 'מתחיל ב',
@@ -1721,8 +1721,10 @@ export default {
             fullNameField: 'שם שדה של שם משתמש בעמוד לקוח',
         },
         mapPage: {
-            sourceTemplateId: 'ID תבנית מקור',
-            destTemplateId: 'ID תבנית יעד',
+            destTemplateId: 'עמוד מפה-ID תבנית יעד',
+            showMapPage: 'הצג עמוד מפה',
+            sourceTemplateId: 'עמוד מפה-ID תבנית מקור',
+            sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
     },
     childTemplate: {
