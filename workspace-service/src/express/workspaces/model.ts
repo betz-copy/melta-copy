@@ -40,8 +40,10 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             fullNameField: { type: String },
         },
         mapPage: {
+            showMapPage: { type: Boolean },
             sourceTemplateId: { type: String },
             destTemplateId: { type: String },
+            sourceFieldForColor: { type: String },
         },
         unitsArray: { type: [String] },
     },

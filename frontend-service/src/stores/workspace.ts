@@ -43,8 +43,10 @@ export const defaultMetadata = {
         fullNameField: 'full_name',
     },
     mapPage: {
+        showMapPage: false,
         sourceTemplateId: '',
         destTemplateId: '',
+        sourceFieldForColor: '',
     },
     unitsArray: [] as string[],
 } as const;
