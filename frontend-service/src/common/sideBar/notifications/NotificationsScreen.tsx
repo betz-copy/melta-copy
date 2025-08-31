@@ -283,6 +283,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     <Grid
                         container
                         sx={{
+                            width: '100%',
                             position: 'absolute',
                             bottom: 0,
                             justifyContent: 'flex-end',
