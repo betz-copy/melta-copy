@@ -67,7 +67,7 @@ const renderChips = (
         const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);
 
         return (
-            <Grid item key={`${chip}-${mode}-${index}`} justifyItems="center">
+            <Grid key={`${chip}-${mode}-${index}`} justifyItems="center">
                 <ColoredEnumChip label={label} onDelete={() => onDelete(chip, mode)} color="default" />
             </Grid>
         );
@@ -138,8 +138,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                     return (
                         <React.Fragment key={fieldName}>
-                            <Grid container alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
-                                <Grid item xs={3}>
+                            <Grid container size={{ xs: 12 }} alignItems="center" justifyContent="space-between" sx={{ py: 0.4, ml: 1 }}>
+                                <Grid size={{ xs: 3 }}>
                                     <FormControlLabel
                                         control={
                                             <MeltaCheckbox
@@ -154,15 +154,15 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                                 {isRequired && <span> * </span>}
                                             </>
                                         }
-                                        componentsProps={{ typography: { sx: { fontWeight: 400, fontSize: '14px' } } }}
+                                        slotProps={{ typography: { sx: { fontWeight: 400, fontSize: '14px' } } }}
                                     />
                                 </Grid>
 
-                                <Grid item xs={3}>
+                                <Grid size={{ xs: 3 }}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
                                         {renderChips(ChipType.Filter, value.filters ?? [], property, onDeleteFilterChip, isFilterByUser)}
 
-                                        <Grid item>
+                                        <Grid>
                                             {!isFilterByUser && (
                                                 <Button
                                                     color="primary"
@@ -178,7 +178,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                     </Grid>
                                 </Grid>
 
-                                <Grid item xs={3}>
+                                <Grid size={{ xs: 3 }}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
                                         {renderChips(
                                             ChipType.Default,
@@ -187,7 +187,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                             onDeleteFilterChip,
                                             isFilterByUser,
                                         )}
-                                        <Grid item>
+                                        <Grid>
                                             {!isFilterByUser && (
                                                 <Button
                                                     color="primary"
@@ -204,7 +204,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                 </Grid>
 
                                 {values.viewType === ViewType.userPage && (
-                                    <Grid item xs={3} sx={{ textAlign: 'center' }}>
+                                    <Grid size={{ xs: 3 }} sx={{ textAlign: 'center' }}>
                                         <MeltaCheckbox
                                             checked={value.isEditableByUser || false}
                                             disabled={!value.display}
@@ -218,7 +218,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                     </Grid>
                                 )}
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <Divider />
                             </Grid>
                         </React.Fragment>

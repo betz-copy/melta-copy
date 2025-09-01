@@ -33,7 +33,7 @@ const ExecWithRuleBreachDialog: React.FC<{
             open
             fullWidth
             maxWidth="sm"
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', borderColor: 'red', borderWidth: '2px', borderStyle: 'dashed' } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white', borderColor: 'red', borderWidth: '2px', borderStyle: 'dashed' } } }}
         >
             <DialogTitle>
                 {i18next.t('execActionWithRuleBreach.actionBroke')}

@@ -11,7 +11,7 @@ export const NodeLabelIconsDescription: React.FC<NodeLabelIconsDescriptionProps>
     return (
         <Grid container direction="column" alignItems="center">
             {node.labelIcons.map((labelIcon) => (
-                <Grid item key={labelIcon.icon}>
+                <Grid key={labelIcon.icon}>
                     <Typography display="inline" color={labelIcon.color}>
                         {labelIcon.icon}
                     </Typography>

@@ -50,15 +50,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     limit,
 }) => {
     return (
-        <Box
-            marginTop={1}
-            marginBottom={1}
-            paddingTop={0.5}
-            paddingLeft={1}
-            sx={{
-                width: '100%',
-            }}
-        >
+        <Box marginTop={1} marginBottom={1} paddingTop={0.5} paddingLeft={1} width="100%">
             <Field
                 validate={(changedValue) => {
                     return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFiles');

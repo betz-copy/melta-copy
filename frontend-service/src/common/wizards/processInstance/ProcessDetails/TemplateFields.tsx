@@ -25,7 +25,6 @@ export const TemplateFields = ({
         values.template && (
             <Grid container flexDirection="column" width="100%" height="100%" justifyContent="space-between" paddingLeft={!viewMode ? '20px' : 0}>
                 <Grid
-                    item
                     sx={{
                         overflowY: 'auto',
                         width: '100%',

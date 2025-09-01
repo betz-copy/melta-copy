@@ -44,7 +44,7 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
         >
             {filterOptions[type].map((option: string) => (
                 <MenuItem key={option} value={option}>
-                    {i18next.t(`filters.${type}.${option}`)}
+                    {i18next.t(`filters.${type === 'string' ? 'text' : type}.${option}`)}
                 </MenuItem>
             ))}
         </StyledFilterInput>

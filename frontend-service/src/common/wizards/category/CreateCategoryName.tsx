@@ -42,7 +42,7 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues, 'isE
 }) => {
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="name"
                     label={i18next.t('wizard.name')}
@@ -54,7 +54,7 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues, 'isE
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <TextField
                     name="displayName"
                     label={i18next.t('wizard.displayName')}

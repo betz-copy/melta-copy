@@ -62,7 +62,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     return (
-        <Grid item ref={dragRef} alignSelf="stretch" marginBottom="1rem">
+        <Grid ref={dragRef} alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -73,12 +73,12 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                    <Grid container gap={2} wrap="nowrap" alignItems="center">
                         <Box>
                             <DragHandleIcon fontSize="large" />
                         </Box>
 
-                        <Grid container direction="column">
+                        <Grid container direction="column" width="100%">
                             <Grid container wrap="nowrap">
                                 <TextField
                                     label={i18next.t('wizard.entityTemplate.attachmentName')}

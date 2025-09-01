@@ -153,7 +153,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         !isNewProperty,
                                     )}
 
-                                <Grid item>
+                                <Grid>
                                     <IconButton onClick={() => handleRemoveFilter(filters, index, handleFilterChange)}>
                                         <Clear />
                                     </IconButton>

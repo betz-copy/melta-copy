@@ -45,17 +45,17 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     return (
         <Grid container direction="column" spacing={4}>
-            <Grid item>
+            <Grid>
                 <Grid container direction="column" spacing={1}>
                     {entitiesCount !== null && (
-                        <Grid item sx={{ color: '#70757a' }}>
+                        <Grid sx={{ color: '#70757a' }}>
                             {i18next.t('entitiesCardView.numberOfSearchResults.approximately')}
                             {entitiesCount} {i18next.t('entitiesCardView.numberOfSearchResults.results')}
                         </Grid>
                     )}
                 </Grid>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Grid container>
                     <InfiniteScroll<
                         IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
@@ -92,7 +92,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                         [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
-                                            childTemplateId: template._id
+                                            childTemplateId: template._id,
                                         },
                                     },
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),

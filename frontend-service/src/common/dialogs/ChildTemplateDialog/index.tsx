@@ -275,10 +275,10 @@ const ChildTemplateDialog: React.FC<{
                             </DialogTitle>
 
                             <DialogContent>
-                                <Grid container spacing={2} direction="column" sx={{ pt: 1 }}>
-                                    <Grid container item spacing={2}>
+                                <Grid container direction="column" sx={{ pt: 1 }}>
+                                    <Grid container spacing={2}>
                                         {textFields.map(({ title, startAdornment, disableInUpdate }) => (
-                                            <Grid item xs={4} key={title}>
+                                            <Grid size={{ xs: 4 }} key={title}>
                                                 <TextField
                                                     fullWidth
                                                     label={i18next.t(`childTemplate.${title}`)}
@@ -287,14 +287,16 @@ const ChildTemplateDialog: React.FC<{
                                                     onChange={(e) => handleChange({ target: { name: title, value: e.target.value.trimStart() } })}
                                                     error={touched[title] && Boolean(errors[title])}
                                                     helperText={touched[title] && errors[title]}
-                                                    InputProps={{
-                                                        startAdornment: startAdornment && (
-                                                            <InputAdornment position="start">
-                                                                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                                                                    {startAdornment}
-                                                                </Typography>
-                                                            </InputAdornment>
-                                                        ),
+                                                    slotProps={{
+                                                        input: {
+                                                            startAdornment: startAdornment && (
+                                                                <InputAdornment position="start">
+                                                                    <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                                                                        {startAdornment}
+                                                                    </Typography>
+                                                                </InputAdornment>
+                                                            ),
+                                                        },
                                                     }}
                                                     disabled={disableInUpdate && actionType === ActionMode.Update}
                                                 />
@@ -302,8 +304,8 @@ const ChildTemplateDialog: React.FC<{
                                         ))}
                                     </Grid>
 
-                                    <Grid container direction="row" sx={{ pt: 3, pl: 3 }} alignItems="center" justifyContent="space-between">
-                                        <Grid item xs={6}>
+                                    <Grid container direction="row" alignItems="center" justifyContent="space-between">
+                                        <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <RadioGroup
                                                     value={values.viewType}
@@ -332,7 +334,7 @@ const ChildTemplateDialog: React.FC<{
                                                             value={val}
                                                             control={<Radio />}
                                                             label={i18next.t(`childTemplate.status.${val}`)}
-                                                            componentsProps={{
+                                                            slotProps={{
                                                                 typography: { sx: { fontSize: '14px' } },
                                                             }}
                                                             key={val}
@@ -341,40 +343,38 @@ const ChildTemplateDialog: React.FC<{
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={5.5} container direction="row" justifyContent="space-between">
-                                            {checkboxesFields.map(
-                                                ({ mode, fields, checked, value }) =>
-                                                    fields.length > 0 && (
-                                                        <Grid item key={fields.toString()}>
-                                                            <FormControlLabel
-                                                                control={
-                                                                    <MeltaCheckbox
-                                                                        checked={checked}
-                                                                        onChange={(e) =>
-                                                                            updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
-                                                                        }
-                                                                    />
-                                                                }
-                                                                label={i18next.t(`childTemplate.filterBy.${mode}`)}
-                                                                componentsProps={{
-                                                                    typography: { sx: { fontSize: '14px' } },
-                                                                }}
-                                                            />
-                                                            {value && (
-                                                                <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
-                                                                    {`${i18next.t(`childTemplate.select${mode}Dialog.label`)} : ${
-                                                                        entityTemplate.properties.properties[value].title
-                                                                    }`}
-                                                                </Typography>
-                                                            )}
-                                                        </Grid>
-                                                    ),
-                                            )}
-                                        </Grid>
+                                        {checkboxesFields.map(
+                                            ({ mode, fields, checked, value }) =>
+                                                fields.length > 0 && (
+                                                    <Grid key={fields.toString()}>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <MeltaCheckbox
+                                                                    checked={checked}
+                                                                    onChange={(e) =>
+                                                                        updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
+                                                                    }
+                                                                />
+                                                            }
+                                                            label={i18next.t(`childTemplate.filterBy.${mode}`)}
+                                                            slotProps={{
+                                                                typography: { sx: { fontSize: '14px' } },
+                                                            }}
+                                                        />
+                                                        {value && (
+                                                            <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
+                                                                {`${i18next.t(`childTemplate.select${mode}Dialog.label`)} : ${
+                                                                    entityTemplate.properties.properties[value].title
+                                                                }`}
+                                                            </Typography>
+                                                        )}
+                                                    </Grid>
+                                                ),
+                                        )}
                                     </Grid>
 
-                                    <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
-                                        <Grid item xs={6}>
+                                    <Grid container alignItems="center" justifyContent="space-between">
+                                        <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <Autocomplete
                                                     id="category"
@@ -407,7 +407,7 @@ const ChildTemplateDialog: React.FC<{
                                             </FormControl>
                                         </Grid>
                                         {!!unitFields.length && (
-                                            <Grid item xs={5.5}>
+                                            <Grid size={{ xs: 5.5 }}>
                                                 <TextField
                                                     fullWidth
                                                     rows={1}
@@ -421,7 +421,7 @@ const ChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                             <Typography
                                                 sx={{
                                                     fontWeight: 400,
@@ -434,7 +434,7 @@ const ChildTemplateDialog: React.FC<{
                                             {!isEmpty(touched) && errors.properties?.properties && (
                                                 <Grid sx={{ my: 1, pr: 2, pl: 2 }}>
                                                     <Typography color="error" variant="caption" fontSize="14px">
-                                                        {errors.properties?.properties}
+                                                        {String(errors.properties?.properties)}
                                                     </Typography>
                                                 </Grid>
                                             )}
@@ -442,7 +442,7 @@ const ChildTemplateDialog: React.FC<{
                                                 {tableTitles
                                                     .filter(({ show }) => show !== false)
                                                     .map(({ title, sxOverride }) => (
-                                                        <Grid item xs={3} key={title}>
+                                                        <Grid size={{ xs: 3 }} key={title}>
                                                             <Typography sx={{ fontWeight: 400, fontSize: '14px', ...sxOverride }}>
                                                                 {i18next.t(`childTemplate.columns.${title}Col`)}
                                                             </Typography>
@@ -451,7 +451,7 @@ const ChildTemplateDialog: React.FC<{
                                             </Grid>
                                             <Divider />
 
-                                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
+                                            <Grid sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
                                                 <FieldsAndFiltersTable formikProps={formikProps} entityTemplate={entityTemplate} />
                                             </Grid>
                                         </Grid>

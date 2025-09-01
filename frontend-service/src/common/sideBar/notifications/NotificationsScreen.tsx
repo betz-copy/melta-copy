@@ -133,10 +133,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             label={
                                 <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
                                     {groupName === 'general' ? <MarkChatUnreadOutlined /> : <SmsOutlined />}
-                                    <Grid item fontWeight={selectedGroup !== groupName ? 400 : undefined}>
+                                    <Grid fontWeight={selectedGroup !== groupName ? 400 : undefined}>
                                         {i18next.t(`notifications.groups.${groupName}`)}
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                                     </Grid>
                                 </Grid>
@@ -162,7 +162,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             ) : (
                 <>
                     <Grid sx={{ display: 'flex', justifyContent: 'space-between', padding: '18px' }}>
-                        <Grid item>
+                        <Grid>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
                                 options={(notificationsMoreData as unknown as IExpandedGroups)[selectedGroup]}
@@ -188,7 +188,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         </Grid>
                         {!openCalenders && (
                             <Grid
-                                item
                                 sx={{
                                     borderRadius: '10px',
                                     display: 'flex',
@@ -275,7 +274,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         }}
                     >
                         {(notification) => (
-                            <Grid item style={{ padding: '8px' }}>
+                            <Grid style={{ padding: '8px' }}>
                                 <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />
                             </Grid>
                         )}
@@ -284,6 +283,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     <Grid
                         container
                         sx={{
+                            width: '100%',
                             position: 'absolute',
                             bottom: 0,
                             justifyContent: 'flex-end',

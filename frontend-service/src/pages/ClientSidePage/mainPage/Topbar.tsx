@@ -56,26 +56,26 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                     zIndex: 10,
                 }}
             >
-                <Grid container item alignItems="center" flexWrap="nowrap" spacing={1}>
-                    <Grid container item alignItems="center" flexWrap="nowrap" spacing={1} xs={8}>
-                        <Grid item display="flex" alignItems="center" justifyContent="center">
+                <Grid container alignItems="center" flexWrap="nowrap" spacing={1}>
+                    <Grid container alignItems="center" flexWrap="nowrap" spacing={1} size={{ xs: 8 }}>
+                        <Grid display="flex" alignItems="center" justifyContent="center">
                             <CustomImage preserveColor imageUrl={`/clientSide/${clientSideWorkspaceName}/background.png`} width="50px" />
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <Divider
                                 orientation="vertical"
                                 variant="middle"
                                 sx={{ height: '40px', margin: '0 10px', borderWidth: '0.5px', borderColor: '#EDEFFA', borderRadius: '30px' }}
                             />
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <Typography fontSize="16px" color="#1e2775">
                                 <b>{i18next.t(`clientSidePage.${clientSideWorkspaceName}.topbar.title`)}</b> {currentUser?.fullName}
                             </Typography>
                         </Grid>
                     </Grid>
-                    <Grid item container justifyContent="flex-end" alignItems="center" flexWrap="nowrap" spacing={1} mr="1rem">
-                        <Grid item>
+                    <Grid container justifyContent="flex-end" alignItems="center" flexWrap="nowrap" spacing={1} mr="1rem">
+                        <Grid>
                             <NotificationsButton
                                 notificationCountDetails={{ total: 0, groups: {} }}
                                 text={i18next.t('notifications.title')}
@@ -86,7 +86,7 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                                 iconColor="#1e2775"
                             />
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <UserAvatar user={currentUser} />
                         </Grid>
                     </Grid>

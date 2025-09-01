@@ -117,7 +117,6 @@ export default ({
             variant="standard"
             autoWidth
             displayEmpty
-            placeholder={placeholder}
             onChange={onChange}
             value={hasValue ? selectedKey : ''}
             disabled={readonly}

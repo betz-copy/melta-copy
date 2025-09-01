@@ -61,17 +61,17 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
             onMouseLeave={() => setHover(false)}
         >
             <Grid container alignItems="center" gap="0.8rem" flexWrap="nowrap">
-                <Grid item container id="user-info" alignItems="center" width="35%" flexWrap="nowrap">
-                    <Grid item padding="10px" id="profile-photo">
+                <Grid container id="user-info" alignItems="center" width="35%" flexWrap="nowrap">
+                    <Grid padding="10px" id="profile-photo">
                         <UserAvatar user={user} size={50} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
                     </Grid>
-                    <Grid item container id="display-name" flexDirection="column" overflow="hidden" width="100px">
-                        <Grid item>
+                    <Grid container id="display-name" flexDirection="column" overflow="hidden" width="100px">
+                        <Grid>
                             <Typography fontSize="16px" fontWeight="500">
                                 {user.fullName}
                             </Typography>
                         </Grid>
-                        <Grid item width="100%">
+                        <Grid width="100%">
                             <MeltaTooltip title={user.hierarchy} placement="bottom">
                                 <Typography
                                     fontFamily="Rubik"
@@ -88,11 +88,11 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                     </Grid>
                 </Grid>
 
-                <Grid item width="5px" height="50px">
+                <Grid width="5px" height="50px">
                     <Divider orientation="vertical" />
                 </Grid>
 
-                <Grid item width="40%" id="permission-scope-updated-date" marginRight="1.8rem">
+                <Grid width="40%" id="permission-scope-updated-date" marginRight="1.8rem">
                     <Typography fontSize="16px" fontWeight="500" whiteSpace="nowrap">
                         {i18next.t('permissions.dialog.permissionType')}: {getPermissionType(user.permissions)} {getPermissionScope(user.permissions)}
                     </Typography>
@@ -102,10 +102,10 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                     </Typography>
                 </Grid>
 
-                <Grid item container width="20%" alignItems="center" justifyContent="space-evenly">
+                <Grid container width="20%" alignItems="center" justifyContent="space-evenly">
                     {hover && canModify && (
                         <>
-                            <Grid item width="5px" height="50px">
+                            <Grid width="5px" height="50px">
                                 <Divider orientation="vertical" />
                             </Grid>
                             <Grid>

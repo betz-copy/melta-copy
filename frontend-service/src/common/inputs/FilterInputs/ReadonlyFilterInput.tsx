@@ -14,7 +14,7 @@ export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], 
         case 'text':
             if (fieldTemplateType === 'boolean')
                 return `${i18next.t(`filters.${filter.type}`)} ${filter.filter ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no')}`;
-            return `${i18next.t(`filters.${filter.filterType === 'text' ? 'string' : filter.filterType}.${filter.type}`)}  ${filter.filter}`;
+            return `${i18next.t(`filters.${filter.filterType}.${filter.type}`)}  ${filter.filter}`;
         case 'set':
             return `${i18next.t('filters.contains')} ${filter.values?.map((val) => (val === null ? i18next.t('filters.empty') : val)).join(', ')}`;
         default:
@@ -28,10 +28,10 @@ const ReadOnlyFilterInput: React.FC<{ filterField: IGraphFilterBody['filterField
 }) => {
     return (
         <Grid container direction="row" flexWrap="nowrap">
-            <Grid item>
+            <Grid>
                 <ViewModeTextField label={i18next.t('dashboard.field')} value={title} readOnly />
             </Grid>
-            <Grid item flexWrap="wrap">
+            <Grid flexWrap="wrap">
                 <ViewModeTextField label={i18next.t('dashboard.filter')} value={getFilterFieldReadonly(filterField, type)} readOnly multiline />
             </Grid>
         </Grid>

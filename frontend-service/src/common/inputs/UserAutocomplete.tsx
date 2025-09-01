@@ -7,6 +7,7 @@ import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../UserAvatar';
@@ -57,6 +58,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     overrideSx,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
@@ -126,28 +129,34 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        InputProps={{
-                            ...params.InputProps,
-                            required,
-                            readOnly,
-                            endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
-                            startAdornment: isValueExist ? (
-                                <Chip avatar={<UserAvatar user={value} size={25} bgColor="1E2775" />} label={value.fullName} />
-                            ) : undefined,
-                            inputProps: {
-                                ...params.inputProps,
-                                style: isValueExist ? { display: 'none' } : {},
-                            },
-                        }}
-                        InputLabelProps={{
-                            ...(params.InputLabelProps,
-                            readOnly && {
-                                sx: {
-                                    '&.Mui-focused': {
-                                        color: 'rgba(0, 0, 0, 0.6)',
-                                    },
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                required,
+                                readOnly,
+                                endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
+                                startAdornment: isValueExist ? (
+                                    <Chip
+                                        avatar={<UserAvatar user={value} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                        label={value.fullName}
+                                        sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                    />
+                                ) : undefined,
+                                inputProps: {
+                                    ...params.inputProps,
+                                    style: isValueExist ? { display: 'none' } : {},
                                 },
-                            }),
+                            },
+                            inputLabel: {
+                                ...(params.InputLabelProps,
+                                readOnly && {
+                                    sx: {
+                                        '&.Mui-focused': {
+                                            color: 'rgba(0, 0, 0, 0.6)',
+                                        },
+                                    },
+                                }),
+                            },
                         }}
                         sx={{
                             ...(readOnly

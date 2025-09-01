@@ -1,4 +1,3 @@
-import { Grid } from '@mui/material';
 import React from 'react';
 import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../interfaces/users';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
@@ -40,27 +39,25 @@ const UserInput: React.FC<UserInputProps> = ({
     };
 
     return (
-        <Grid>
-            <UserAutocomplete
-                mode="kartoffel"
-                value={value}
-                label={label}
-                onChange={(_event: React.SyntheticEvent, chosenUser: IUser | null) => handleUserChange(_event, chosenUser)}
-                onBlur={onBlur}
-                onFocus={onFocus}
-                autoFocus={autoFocus}
-                isError={isError}
-                disabled={disabled}
-                enableClear
-                onDisplayValueChange={(_, newDisplayValue) => {
-                    if (newDisplayValue) return;
+        <UserAutocomplete
+            mode="kartoffel"
+            value={value}
+            label={label}
+            onChange={(_event: React.SyntheticEvent, chosenUser: IUser | null) => handleUserChange(_event, chosenUser)}
+            onBlur={onBlur}
+            onFocus={onFocus}
+            autoFocus={autoFocus}
+            isError={isError}
+            disabled={disabled}
+            enableClear
+            onDisplayValueChange={(_, newDisplayValue) => {
+                if (newDisplayValue) return;
 
-                    handleOnChange(null, values);
-                    currentUser.set(undefined);
-                }}
-                textFieldProps={textFieldProps}
-            />
-        </Grid>
+                handleOnChange(null, values);
+                currentUser.set(undefined);
+            }}
+            textFieldProps={textFieldProps}
+        />
     );
 };
 

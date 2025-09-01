@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { useTheme } from '@mui/material';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
-import { ErrorSchema, RJSFSchema, WidgetProps } from '@rjsf/utils';
+import { ErrorSchema, RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -290,9 +290,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     useEffect(() => {
         // define 100% width to text-area field
-        const containerDiv = document.querySelectorAll(
-            '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
-        );
+        const containerDiv = document.querySelectorAll('.muirtl-yqiqnf-MuiGrid-root');
         containerDiv.forEach((innerDiv) => {
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
             const classesToAdd: string[] = [];
@@ -315,7 +313,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique, values.template);
 
-    const Widgets = React.useMemo(
+    const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({
             CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
             SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),

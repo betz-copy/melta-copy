@@ -8,7 +8,7 @@ import { StepName } from '../StepName';
 export const Description: React.FC<IProcessReviewerUpdateNotificationMetadataPopulated> = ({ process, addedSteps, deletedSteps, unchangedSteps }) => {
     if (!unchangedSteps.length && !addedSteps.length) {
         return (
-            <Grid item>
+            <Grid>
                 <Typography display="inline">{`${i18next.t('processReviewerUpdateNotification.removedFromProcess')} `}</Typography>
                 <ProcessName process={process} />
             </Grid>
@@ -17,14 +17,14 @@ export const Description: React.FC<IProcessReviewerUpdateNotificationMetadataPop
 
     return (
         <>
-            <Grid item>
+            <Grid>
                 <Typography display="inline">{`${i18next.t('processReviewerUpdateNotification.inProcess')} `}</Typography>
                 <ProcessName process={process} />
                 <Typography display="inline">{`${i18next.t('processReviewerUpdateNotification.inTheFollowingSteps')} `}</Typography>
             </Grid>
 
             {Boolean(addedSteps.length) && (
-                <Grid item>
+                <Grid>
                     <Typography sx={{ textDecoration: 'underline' }}>
                         {`${i18next.t('processReviewerUpdateNotification.addedToReviewers')}:`}
                     </Typography>
@@ -36,7 +36,7 @@ export const Description: React.FC<IProcessReviewerUpdateNotificationMetadataPop
                 </Grid>
             )}
             {Boolean(deletedSteps.length) && (
-                <Grid item>
+                <Grid>
                     <Typography sx={{ textDecoration: 'underline' }}>
                         {`${i18next.t('processReviewerUpdateNotification.removedFromReviewers')}:`}
                     </Typography>

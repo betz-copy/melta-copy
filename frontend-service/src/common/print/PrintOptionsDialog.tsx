@@ -146,10 +146,10 @@ const PrintOptionsDialog: React.FC<{
         <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
             <DialogTitle>
                 <Grid container display="flex" justifyContent="space-between" alignItems="center">
-                    <Grid item>
+                    <Grid>
                         <BlueTitle title={i18next.t('entityPage.print.printOptions')} component="h6" variant="h6" />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <IconButton onClick={handleClose}>
                             <CloseOutlined sx={{ color: theme.palette.primary.main }} />
                         </IconButton>
@@ -159,7 +159,7 @@ const PrintOptionsDialog: React.FC<{
 
             <DialogContent style={{ width: '600px' }}>
                 <Grid>
-                    <Grid item marginTop={0.5} marginBottom={2}>
+                    <Grid marginTop={0.5} marginBottom={2}>
                         <TextField
                             fullWidth
                             value={title}
@@ -167,12 +167,12 @@ const PrintOptionsDialog: React.FC<{
                             label={i18next.t('entityPage.print.title')}
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {type === PrintType.Entity && printItem.entityConnections.connectionsTemplates.length > 0 && (
                             <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
                         )}
                     </Grid>
-                    <Grid item marginTop={2}>
+                    <Grid marginTop={2}>
                         {files.length !== 0 && (
                             <MultipleSelect
                                 id="print"

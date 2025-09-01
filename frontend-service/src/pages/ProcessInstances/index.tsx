@@ -1,5 +1,4 @@
-import { Search } from '@mui/icons-material';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import { FilterList, Search } from '@mui/icons-material';
 import { Box, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
@@ -69,7 +68,7 @@ const ProcessInstancesPage: React.FC = () => {
                 endDateInput={endDateInput}
                 searchInput={searchInput}
             />
-            <Grid item container justifyContent="space-evenly">
+            <Grid container justifyContent="space-evenly">
                 <Paper
                     sx={{
                         borderRadius: '15px',
@@ -82,11 +81,11 @@ const ProcessInstancesPage: React.FC = () => {
                         alignItems: 'center',
                     }}
                 >
-                    <Grid item container flexDirection="column" rowGap={3}>
-                        <Grid container item alignItems="center" justifyContent="space-between" alignContent="center">
-                            <Grid container item alignItems="center" width="100px">
+                    <Grid container flexDirection="column" rowGap={3}>
+                        <Grid container alignItems="center" justifyContent="space-between" alignContent="center">
+                            <Grid container alignItems="center" width="100px">
                                 <IconButton disabled>
-                                    <FilterListIcon color="primary" />
+                                    <FilterList color="primary" />
                                 </IconButton>
                                 <BlueTitle
                                     component="h4"
@@ -95,7 +94,7 @@ const ProcessInstancesPage: React.FC = () => {
                                     title={i18next.t('processInstancesPage.filter')}
                                 />
                             </Grid>
-                            <Grid item alignContent="center" onClick={resetFilters}>
+                            <Grid alignContent="center" onClick={resetFilters}>
                                 <BlueTitle
                                     component="h4"
                                     variant="h6"
@@ -110,7 +109,7 @@ const ProcessInstancesPage: React.FC = () => {
                                 />
                             </Grid>
                         </Grid>
-                        <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
+                        <Grid sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
                             <SearchInput
                                 onChange={setSearchInput}
                                 borderRadius="7px"
@@ -126,18 +125,18 @@ const ProcessInstancesPage: React.FC = () => {
                                 toTopBar={false}
                             />
                         </Grid>
-                        <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
+                        <Grid sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
                             <ProcessTemplatesSelectCheckbox
                                 templates={processTemplates}
                                 selectedTemplates={templatesToShowCheckbox}
                                 setSelectedTemplates={setTemplatesToShowCheckbox}
                             />
                         </Grid>
-                        <Grid container item alignItems="center">
-                            <Grid item>
+                        <Grid container alignItems="center">
+                            <Grid>
                                 <MeltaCheckbox checked={isWaitingForMeFilterOn} onChange={(_e, checked) => setIsWaitingForMeFilterOn(checked)} />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <BlueTitle
                                     style={{ fontSize: '14px', fontWeight: '400' }}
                                     component="h4"
@@ -146,8 +145,8 @@ const ProcessInstancesPage: React.FC = () => {
                                 />
                             </Grid>
                         </Grid>
-                        <Grid item container flexDirection="column">
-                            <Grid item>
+                        <Grid container flexDirection="column">
+                            <Grid>
                                 <BlueTitle
                                     style={{ fontSize: '15px', fontWeight: '500' }}
                                     component="h4"
@@ -155,7 +154,7 @@ const ProcessInstancesPage: React.FC = () => {
                                     title={i18next.t('wizard.processInstance.summary.processStatus')}
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <FormControl>
                                     <RadioGroup
                                         aria-labelledby="demo-controlled-radio-buttons-group"
@@ -185,7 +184,7 @@ const ProcessInstancesPage: React.FC = () => {
                                 </FormControl>
                             </Grid>
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <BlueTitle
                                 component="h4"
                                 variant="h6"
@@ -202,7 +201,7 @@ const ProcessInstancesPage: React.FC = () => {
                         </Grid>
                     </Grid>
                 </Paper>
-                <Grid item container width="80%" direction="column" marginBottom="2.5rem">
+                <Grid container width="80%" direction="column" marginBottom="2.5rem">
                     <ProcessesList
                         search={searchInput}
                         onSetStartDate={onSetStartDate}

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Grid, Typography, Dialog } from '@mui/material';
-import { useMutation, useQueryClient } from 'react-query';
+import { Dialog, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import SearchInput from '../../../common/inputs/SearchInput';
-import { CreateButton } from './CreateButton';
-import { IMongoPrintingTemplate, IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
-import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
-import { PrintingTemplateCard } from './PrintingTemplateCard';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import SearchInput from '../../../common/inputs/SearchInput';
+import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
+import { IMongoPrintingTemplate, IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
 import { deletePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
+import { CreateButton } from './CreateButton';
+import { PrintingTemplateCard } from './PrintingTemplateCard';
 
 const PrintingTemplatesRow: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -51,34 +51,29 @@ const PrintingTemplatesRow: React.FC = () => {
     const filteredTemplates = printingTemplates.filter((printingTemplate) => searchText === '' || printingTemplate.name.includes(searchText));
 
     return (
-        <Grid item container marginBottom="30px" gap="30px">
+        <Grid container direction="column" marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
-                <Grid item>
+                <Grid>
                     <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchPrints')} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <CreateButton
                         onClick={() => setPrintingTemplateWizardDialogState({ isWizardOpen: true, printingTemplate: null })}
                         text={i18next.t('systemManagement.newPrintingTemplate')}
                     />
                 </Grid>
             </Grid>
-            <Grid container spacing={2}>
-                {filteredTemplates.length === 0 ? (
-                    <Grid item xs={12}>
-                        <Typography>{i18next.t('failedToGetTemplates')}</Typography>
+            <Grid direction="column" width="100%">
+                {filteredTemplates.map((printingTemplate) => (
+                    <Grid key={printingTemplate._id}>
+                        <PrintingTemplateCard
+                            printingTemplate={printingTemplate}
+                            setPrintingTemplateWizardDialogState={setPrintingTemplateWizardDialogState}
+                            setDeletePrintingTemplateDialogState={setDeletePrintingTemplateDialogState}
+                        />
                     </Grid>
-                ) : (
-                    filteredTemplates.map((printingTemplate) => (
-                        <Grid item key={printingTemplate._id}>
-                            <PrintingTemplateCard
-                                printingTemplate={printingTemplate}
-                                setPrintingTemplateWizardDialogState={setPrintingTemplateWizardDialogState}
-                                setDeletePrintingTemplateDialogState={setDeletePrintingTemplateDialogState}
-                            />
-                        </Grid>
-                    ))
-                )}
+                ))}
+                {!filteredTemplates.length && <Typography>{i18next.t('noOptions')}</Typography>}
             </Grid>
             <Dialog
                 open={printingTemplateWizardDialogState.isWizardOpen}

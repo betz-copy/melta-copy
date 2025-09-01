@@ -6,7 +6,7 @@ const InfoTypography: React.FC<{ text: string }> = ({ text }) => {
     const theme = useTheme();
 
     return (
-        <Grid item container direction="row" alignItems="center" wrap="nowrap" gap={1.5} marginTop={2}>
+        <Grid container direction="row" alignItems="center" wrap="nowrap" gap={1.5} marginTop={2}>
             <InfoOutlined style={{ color: theme.palette.primary.main }} />
             <Typography fontWeight={400} fontSize={14} color="#53566E">
                 {text}

@@ -66,7 +66,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
                     />
                 </Grid>
 
-                <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
+                <Grid container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                     {readonly ? (
                         <IconButtonWithPopover
                             popoverText={hasEditAndDeletePermission ? i18next.t('actions.edit') : i18next.t('charts.dontHavePermissionToEditChart')}
@@ -79,11 +79,11 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
                     ) : (
                         <Grid container justifyContent="space-between" alignItems="center" width="fit-content" wrap="nowrap">
                             {isLoading ? (
-                                <Grid item container alignItems="center" justifyContent="space-around" width="8rem">
+                                <Grid container alignItems="center" justifyContent="space-around" width="8rem">
                                     <CircularProgress size={30} />
                                 </Grid>
                             ) : (
-                                <Grid item container>
+                                <Grid container>
                                     {edit && (
                                         <IconButtonWithPopover
                                             popoverText={i18next.t('actions.cancel')}

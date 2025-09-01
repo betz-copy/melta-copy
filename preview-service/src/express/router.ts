@@ -4,13 +4,13 @@ import filesRouter from './files/router';
 
 const appRouter = Router();
 
-appRouter.use('/isAlive', (_req, res) => {
+appRouter.use('/api/preview', filesRouter);
+
+appRouter.get('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');
 });
 
-appRouter.use('/api/preview', filesRouter);
-
-appRouter.use('*', (_req, res) => {
+appRouter.all(/(.*)/, (_req, res) => {
     res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 
