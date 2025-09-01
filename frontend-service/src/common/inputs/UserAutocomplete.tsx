@@ -87,12 +87,12 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     const isValueExist = value && value.fullName != '';
 
     return (
-        <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.displayName ? '' : value?.fullName ?? ''} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={(_e, newValue, reason) => {
-                    if (newValue) setInputValue(newValue.displayName);
+                    if (newValue) setInputValue(newValue.displayName || newValue?.fullName);
                     onChange?.(_e, newValue, reason);
                 }}
                 popupIcon={<ExpandMore />}
@@ -105,7 +105,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 }}
                 disabled={disabled}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
-                getOptionLabel={({ displayName }) => displayName}
+                getOptionLabel={({ displayName, fullName }) => displayName || fullName}
                 getOptionDisabled={isOptionDisabled}
                 isOptionEqualToValue={(option, currValue) => option._id === currValue?._id}
                 options={
