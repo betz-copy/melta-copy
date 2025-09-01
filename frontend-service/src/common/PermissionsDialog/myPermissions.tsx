@@ -323,6 +323,7 @@ const MyPermissions: React.FC<{
                                     helperText={touched.roleIds ? errors.roleIds : ''}
                                     enableClear={mode !== 'view'}
                                     isLoading={isLoading}
+                                    darkMode={darkMode}
                                 />
                             </Box>
 

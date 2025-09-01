@@ -23,6 +23,7 @@ export interface IUnitAutocomplete {
     autoFocus?: any;
     textFieldProps?: any;
     overrideSx?: Object;
+    darkMode?: boolean;
 }
 
 const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
@@ -44,6 +45,7 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
     autoFocus,
     textFieldProps,
     overrideSx,
+    darkMode,
 }) => {
     return (
         <MeltaTooltip title={value?.join(', ') ?? ''} sx={{ maxWidth: 'none' }}>
@@ -67,7 +69,7 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                             {...getTagProps({ index })}
                             key={option}
                             label={option}
-                            deleteIcon={<Clear sx={{ color: '#9398C2', fontSize: 16 }} />}
+                            deleteIcon={<Clear sx={{ color: darkMode ? '#EBEFFA' : '#9398C2', fontSize: 16 }} />}
                             sx={{
                                 fontFamily: 'Rubik, sans-serif',
                                 fontWeight: 400,
@@ -82,8 +84,11 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                                 gap: '3px',
 
                                 borderColor: 'transparent',
-                                backgroundColor: '#EBEFFA',
-                                color: '#53566E',
+                                backgroundColor: darkMode ? '#53566E' : '#EBEFFA',
+                                color: darkMode ? '#EBEFFA' : '#53566E',
+                                '& .MuiChip-deleteIcon': {
+                                    color: darkMode ? '#EBEFFA' : '#9398C2',
+                                },
 
                                 height: '22px',
                                 minWidth: '74px',
