@@ -41,6 +41,7 @@ const getFieldUiSchema = (
     unitsOptions?: string[],
 ): UiSchema => {
     const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue ?? undefined;
+    const enumPropertiesColors = values.template?.enumPropertiesColors;
     if (propertySchema.archive) return {};
     if (propertySchema.format === 'comment')
         return {
@@ -71,7 +72,6 @@ const getFieldUiSchema = (
             },
         };
     if (propertySchema.format === 'unitField') {
-        console.log('🚀 ~ getFieldUiSchema ~ enumOptions:', unitsOptions);
         return {
             'ui:widget': 'SelectWidget',
             'ui:options': {
@@ -79,7 +79,7 @@ const getFieldUiSchema = (
                 enumOptions: unitsOptions?.map((option) => ({
                     label: option,
                     value: option,
-                    color: values.template?.enumPropertiesColors?.[propertyKey]?.[option],
+                    color: enumPropertiesColors?.[propertyKey]?.[option],
                 })),
             },
         };
@@ -92,7 +92,7 @@ const getFieldUiSchema = (
                 enumOptions: (propertySchema.items?.enum || propertySchema?.enum)!.map((option) => ({
                     label: option,
                     value: option,
-                    color: values.template?.enumPropertiesColors?.[propertyKey]?.[option],
+                    color: enumPropertiesColors?.[propertyKey]?.[option],
                 })),
             },
         };

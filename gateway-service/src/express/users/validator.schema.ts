@@ -35,6 +35,8 @@ const RoleSchema = joi.object({
     name: joi.string().required(),
 });
 
+const unitsSchema = joi.object().pattern(joi.string(), joi.array().items(joi.string()));
+
 // GET /api/users/my
 export const getMyUserRequestSchema = joi.object({
     query: {},
@@ -113,7 +115,7 @@ export const updateUserRoleIdsRequestSchema = joi.object({
 export const updateUserUnitsRequestSchema = joi.object({
     query: {},
     body: {
-        units: joi.any(),
+        units: unitsSchema,
         workspaceId: joi.string(),
     },
     params: {
@@ -128,7 +130,7 @@ export const createUserRequestSchema = joi.object({
         permissions: joi.object(),
         workspaceId: joi.string(),
         roleIds: joi.array().items(joi.string()),
-        units: joi.any(),
+        units: unitsSchema,
     }).required(),
     params: {},
 });

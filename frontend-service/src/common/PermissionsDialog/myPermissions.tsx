@@ -90,7 +90,7 @@ const MyPermissions: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
-    const unitsArray = workspace.metadata.unitsArray;
+    const { unitsArray } = workspace.metadata;
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
@@ -234,9 +234,7 @@ const MyPermissions: React.FC<{
         >
             {(formikProps: FormikProps<IUser>) => {
                 const { values, touched, errors, handleBlur, setValues, setFieldValue, isSubmitting, initialValues } = formikProps;
-                console.log('🚀 ~ values:', values);
                 const formikRole = workspaceRoles?.find((role) => values.roleIds?.includes(role._id));
-                // const formikUnits = workspaceUnits?.find((unit) => values.units?.includes(unit));
 
                 return (
                     <Form>

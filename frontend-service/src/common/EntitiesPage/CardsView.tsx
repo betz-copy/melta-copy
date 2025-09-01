@@ -41,7 +41,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
-    console.log('🚀 ~ currentUser:', currentUser);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
     const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];

@@ -61,11 +61,13 @@ const renderChips = (
     isFilterByUser?: boolean,
     isFilterByUserUnit?: boolean,
 ): React.ReactNode[] => {
-    if (isFilterByUser)
-        return [<Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>{i18next.t('childTemplate.byUser')}</Typography>];
-
-    if (isFilterByUserUnit)
-        return [<Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>{i18next.t('childTemplate.byUnit')}</Typography>];
+    if (isFilterByUser || isFilterByUserUnit) {
+        return [
+            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
+                {i18next.t(`childTemplate.${isFilterByUser ? 'byUser' : 'byUnit'}`)}
+            </Typography>,
+        ];
+    }
 
     return chips.map((chip, index) => {
         const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);

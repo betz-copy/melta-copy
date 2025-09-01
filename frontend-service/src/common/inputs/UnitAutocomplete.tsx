@@ -9,8 +9,8 @@ export interface IUnitAutocomplete {
     options?: string[];
     isLoading: boolean;
     onChange: AutocompleteProps<string, true, false, false>['onChange'];
-    onBlur?: any;
-    onFocus?: any;
+    onBlur?: (event: React.FocusEvent) => void;
+    onFocus?: (event: React.FocusEvent) => void;
     isOptionDisabled?: AutocompleteProps<string, true, false, false>['getOptionDisabled'];
     disabled?: boolean;
     readOnly?: boolean;

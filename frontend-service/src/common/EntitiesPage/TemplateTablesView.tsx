@@ -140,7 +140,7 @@ const TemplateTablesViewResults = forwardRef<
                             page={pageType}
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
-                            defaultFilter={childTemplateDefaultFilters[template._id]} //
+                            defaultFilter={childTemplateDefaultFilters[template._id]}
                         />
                     </Grid>
                 );
