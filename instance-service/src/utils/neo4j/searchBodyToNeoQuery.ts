@@ -1,17 +1,18 @@
+import {
+    FilterLogicalOperator,
+    IEntitySingleProperty,
+    IFilterGroup,
+    IFilterOfField,
+    IFilterOfTemplate,
+    IMongoEntityTemplate,
+    ISearchBatchBody,
+} from '@microservices/shared';
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
-import {
-    IMongoEntityTemplate,
-    IEntitySingleProperty,
-    ISearchBatchBody,
-    IFilterOfField,
-    IFilterGroup,
-    FilterLogicalOperator,
-    IFilterOfTemplate,
-} from '@microservices/shared';
-import { getNeo4jDate, getNeo4jDateTime } from './lib';
 import config from '../../config';
 import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';
+import { getNeo4jDate, getNeo4jDateTime } from './lib';
+import { fromZonedTime } from 'date-fns-tz';
 
 const {
     neo4j: { specialCharsToEscapeNeo4jQuery },
@@ -29,40 +30,39 @@ export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
 
 export type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
 
-const convertRhsToFixedDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
+const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
+    // fromZonedTime is used because for all non-relative date filters are in UTC, but new Date() is in Israel time
     const today: Date = new Date();
 
     const setToEndOfDay = (date: Date) => {
-        if (isDateTime) {
-            date.setHours(32, 59, 59, 999);
-        }
+        if (isDateTime) date.setHours(23, 59, 59, 999);
 
-        return date;
+        return fromZonedTime(date, 'Asia/Jerusalem');
     };
 
     switch (rhs) {
         case 'thisWeek': {
             const dayOfWeek = today.getDay();
-            let firstDay = new Date(today);
+            const firstDay = new Date(today);
             firstDay.setDate(today.getDate() - dayOfWeek);
             const lastDay = new Date(firstDay);
             lastDay.setDate(firstDay.getDate() + 6);
 
-            return operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
+            return operator === '$gte' ? fromZonedTime(firstDay, 'Asia/Jerusalem') : setToEndOfDay(lastDay);
         }
 
         case 'thisMonth': {
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
             const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-            return operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
+            return operator === '$gte' ? fromZonedTime(firstDay, 'Asia/Jerusalem') : setToEndOfDay(lastDay);
         }
 
         case 'thisYear': {
             const firstDay = new Date(today.getFullYear(), 1, 1);
             const lastDay = new Date(today.getFullYear(), 11, 31);
 
-            return operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
+            return operator === '$gte' ? fromZonedTime(firstDay, 'Asia/Jerusalem') : setToEndOfDay(lastDay);
         }
 
         default: {
@@ -90,9 +90,9 @@ const simplePartFilterOfFieldToNeoQuery = (
 
     let rhsParamValue: boolean | string | number | Neo4jDate<number> | Neo4jDateTime<number> | null;
     if (rhs && fieldTemplate.format === 'date') {
-        rhsParamValue = getNeo4jDate(convertRhsToFixedDate(operator, rhs));
+        rhsParamValue = getNeo4jDate(convertRhsToRelativeDate(operator, rhs));
     } else if (rhs && fieldTemplate.format === 'date-time') {
-        rhsParamValue = getNeo4jDateTime(convertRhsToFixedDate(operator, rhs, true));
+        rhsParamValue = getNeo4jDateTime(convertRhsToRelativeDate(operator, rhs, true));
     } else {
         rhsParamValue = rhs;
     }

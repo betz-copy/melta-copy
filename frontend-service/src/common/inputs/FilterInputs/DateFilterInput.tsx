@@ -4,13 +4,13 @@ import React, { useEffect } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter, IFilterDateType, RelativeDateFilters } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
-const { fixedDateFilterNames } = environment;
+const { relativeDateFilters } = environment;
 
 interface DateFilterInputProps {
     filterField: IAGGridDateFilter | undefined;
@@ -18,10 +18,7 @@ interface DateFilterInputProps {
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    handleDateChange: (
-        newValue: Date | null | ByCurrentDefaultValue.byCurrentDate | 'thisWeek' | 'thisMonth' | 'thisYear',
-        isStartDate: boolean,
-    ) => void;
+    handleDateChange: (newValue: IFilterDateType, isStartDate: boolean) => void;
     entityFilter: boolean;
     readOnly?: boolean;
     hideFilterType?: boolean;
@@ -41,7 +38,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === 'inRange';
-    const isFixedType = fixedDateFilterNames.includes(filterField?.type ?? '');
+    const isFixedType = relativeDateFilters.includes(filterField?.type ?? '');
 
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
@@ -53,12 +50,12 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
         if (!filterField) return;
         const { type, dateFrom, dateTo } = filterField;
 
-        if (fixedDateFilterNames.includes(type)) {
-            handleDateChange(type as 'thisWeek' | 'thisMonth' | 'thisYear', true);
+        if (isFixedType) {
+            handleDateChange(type as RelativeDateFilters, true);
             return;
         }
 
-        if ((dateFrom && fixedDateFilterNames.includes(dateFrom)) || (dateTo && fixedDateFilterNames.includes(dateTo))) {
+        if ((dateFrom && relativeDateFilters.includes(dateFrom)) || (dateTo && relativeDateFilters.includes(dateTo))) {
             handleDateChange(null, true);
             handleDateChange(null, false);
             return;
@@ -87,7 +84,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                 sx={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
             >
                 {!hideFilterType && (
-                    <Grid item xs={isInRangeType || isFixedType ? 12 : 5}>
+                    <Grid size={{ xs: isInRangeType || isFixedType ? 12 : 5 }}>
                         <TypeSelectFilter
                             filterField={filterField as IAGGridDateFilter}
                             handleFilterTypeChange={handleFilterTypeChange}

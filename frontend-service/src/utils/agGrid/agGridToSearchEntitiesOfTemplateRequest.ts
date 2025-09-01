@@ -6,7 +6,7 @@ import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridFilterModel, IAGGridRequest, IAGGridSort, IAGGridTextFilter } from './interfaces';
 
-const { fixedDateFilterNames, fileIdLength } = environment;
+const { relativeDateFilters, fileIdLength } = environment;
 
 export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[]): IFilterOfTemplate => {
     return { [field]: { $in: values } };
@@ -98,9 +98,7 @@ export const dateFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
-    if (fixedDateFilterNames.includes(type)) {
-        return { [field]: { $gte: type, $lte: type } };
-    }
+    if (relativeDateFilters.includes(type)) return { [field]: { $gte: type, $lte: type } };
 
     if (!dateFromString) {
         switch (type) {
@@ -141,9 +139,7 @@ export const dateTimeFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
-    if (fixedDateFilterNames.includes(type)) {
-        return { [field]: { $gte: type, $lte: type } };
-    }
+    if (relativeDateFilters.includes(type)) return { [field]: { $gte: type, $lte: type } };
 
     if (!dateFromString) {
         switch (type) {
@@ -156,7 +152,7 @@ export const dateTimeFilterToFilterOfTemplate = (
         }
     }
 
-    const dateFrom = new Date(new Date(dateFromString).getTime() - timezoneOffset);
+    const dateFrom = new Date(dateFromString);
 
     switch (type) {
         case 'equals':

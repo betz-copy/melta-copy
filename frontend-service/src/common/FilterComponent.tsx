@@ -1,7 +1,11 @@
+import { isValid as isValidDate } from 'date-fns';
 import { FormikErrors } from 'formik';
+import { isEqual } from 'lodash';
 import React from 'react';
+import { environment } from '../globals';
 import { ViewMode } from '../interfaces/dashboard';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
+import { IUser } from '../interfaces/users';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { DateFilterInput } from './inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from './inputs/FilterInputs/MultipleSelectFilterInput';
@@ -10,12 +14,8 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
-import { IUser } from '../interfaces/users';
-import { isEqual } from 'lodash';
-import { isValid as IsValidDate, parse } from 'date-fns';
-import { environment } from '../globals';
 
-const { fixedDateFilterNames } = environment;
+const { relativeDateFilters } = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -36,11 +36,9 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
             return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
         case 'date':
             if (!filter.dateFrom) return false;
-            if (fixedDateFilterNames.includes(filter.type) && fixedDateFilterNames.includes(filter.dateFrom)) return true;
+            if (relativeDateFilters.includes(filter.type) && relativeDateFilters.includes(filter.dateFrom)) return true;
 
-            const isDateFromValid =
-                IsValidDate(parse(filter.dateFrom, 'yyyy-MM-dd', new Date())) ||
-                IsValidDate(parse(filter.dateFrom, 'yyyy-MM-dd HH:mm:ss', new Date()));
+            const isDateFromValid = isValidDate(filter.dateFrom);
 
             return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         case 'set':
@@ -214,8 +212,8 @@ export const renderFilterInput = (
                         ? typeof filterErrors === 'string'
                             ? filterErrors
                             : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
-                            ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
-                            : ''
+                              ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
+                              : ''
                         : ''
                 }
             />
@@ -274,8 +272,8 @@ export const renderFilterInput = (
                         ? typeof filterErrors === 'string'
                             ? filterErrors
                             : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
-                            ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
-                            : ''
+                              ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
+                              : ''
                         : ''
                 }
             />

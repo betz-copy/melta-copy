@@ -9,7 +9,7 @@ import { ByCurrentDefaultValue, ChipType, IChildTemplateForm } from '../../../in
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';
@@ -69,10 +69,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         setLocalFilterField(value);
     };
 
-    const handleDateChange = (
-        newValue: Date | null | ByCurrentDefaultValue.byCurrentDate | 'thisWeek' | 'thisMonth' | 'thisYear',
-        isStartDate: boolean,
-    ) => {
+    const handleDateChange = (newValue: IFilterDateType, isStartDate: boolean) => {
         setCurrentFieldError(undefined);
 
         const fieldSchema = entityTemplate.properties.properties[fieldName];
@@ -83,8 +80,8 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
             ? newValue === ByCurrentDefaultValue.byCurrentDate
                 ? ByCurrentDefaultValue.byCurrentDate
                 : typeof newValue === 'string'
-                ? newValue
-                : format(newValue, dateFormat)
+                  ? newValue
+                  : format(newValue, dateFormat)
             : null;
 
         setLocalFilterField({

@@ -227,9 +227,7 @@ export class EntityValidator extends DefaultController {
     }
 
     private strictIsValidDateString(dateString: string, expectedFormat: string) {
-        if (neo4j.fixedDateFilters.includes(dateString)) {
-            return true;
-        }
+        if (neo4j.relativeDateFilters.includes(dateString)) return true;
 
         const parsedDate = parse(dateString, expectedFormat, new Date());
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);

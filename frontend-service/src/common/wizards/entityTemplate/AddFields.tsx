@@ -19,9 +19,11 @@ import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
 import { EntityTemplateWizardValues } from './index';
+import { isValid } from 'date-fns';
 
 const { mapSearchPropertiesLimit } = environment.map;
-const { fixedDateFilterNames } = environment;
+const { relativeDateFilters, filterOptions, dateRegex, dateTimeRegex } = environment;
+
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
@@ -74,30 +76,14 @@ const agGridNumberFilterSchema = Yup.object({
 
 const agGridDateFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['date']).required(),
-    type: Yup.string()
-        .oneOf([
-            'equals',
-            'notEqual',
-            'lessThan',
-            'lessThanOrEqual',
-            'greaterThan',
-            'greaterThanOrEqual',
-            'inRange',
-            'thisWeek',
-            'thisMonth',
-            'thisYear',
-        ])
-        .required(i18next.t('validation.required')),
+    type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
     dateFrom: Yup.string()
         .when('type', {
-            is: (type: string) => fixedDateFilterNames.includes(type),
-            then: (schema) => schema.oneOf([...fixedDateFilterNames]),
+            is: (type: string) => relativeDateFilters.includes(type),
+            then: (schema) => schema.oneOf([...relativeDateFilters]),
             otherwise: (schema) =>
                 schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
-                    const regexDate = /^\d{4}-\d{2}-\d{2}$/;
-                    const regexDatetime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-
-                    return regexDate.test(value!) || regexDatetime.test(value!);
+                    return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
                 }),
         })
         .required(i18next.t('validation.required')),
