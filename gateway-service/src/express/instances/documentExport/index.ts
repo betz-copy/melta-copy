@@ -292,7 +292,7 @@ export const patchDocumentAsStream = async (
         newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
     }
 
-    const nodeBuffer = Buffer.from(arrayBuffer);
+    // const nodeBuffer = Buffer.from(arrayBuffer);
 
     // Extract keys to delete from the document by matching the pattern {{.*?}} in the raw text
     // ? don't ask about the buffer that gets an arrayBuffer, this lib is stupid

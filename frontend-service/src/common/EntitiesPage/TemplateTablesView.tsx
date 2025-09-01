@@ -14,7 +14,6 @@ import { isChildTemplate } from '../../utils/templates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { IUser } from '../../interfaces/users';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -25,9 +24,9 @@ export type TemplateTablesViewResultsRef = {
 export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
-    currentUser: IUser,
     currentUserKartoffelId?: string,
     currentUserUnit?: string[],
+    isUserAdmin?: boolean,
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
@@ -38,7 +37,7 @@ export const getDefaultFilterFromTemplate = (
             filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
         }
 
-        if (prop.isFilterByUserUnit && currentUserUnit && !currentUser.isRoot) {
+        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin) {
             filterClauses.push({ [key]: { $in: currentUserUnit } });
         }
 
@@ -100,6 +99,13 @@ const TemplateTablesViewResults = forwardRef<
     const currentUser = useUserStore((state) => state.user);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
+    const isUserWorkspaceAdmin = () => {
+        if (!currentUser || !workspace || !workspace._id) return false;
+
+        const workspacePermissions = currentUser.permissions?.[workspace._id];
+        return workspacePermissions?.admin?.scope === 'write';
+    };
+
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
@@ -108,9 +114,9 @@ const TemplateTablesViewResults = forwardRef<
             filters[template._id] = getDefaultFilterFromTemplate(
                 template,
                 isChildTemplate(template),
-                currentUser, 
                 currentUserKartoffelId,
                 currentUser?.units?.[workspace._id] ?? [],
+                isUserWorkspaceAdmin(),
             );
         });
         return filters;
