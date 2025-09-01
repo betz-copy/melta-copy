@@ -20,7 +20,7 @@ export const RuleBreachAlertNotification: React.FC<{ notificationMetadata: IRule
                     {i18next.t('ruleBreachAlertNotification.breach')}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography>{i18next.t('ruleBreachAlertNotification.payAttention')}</Typography>
                 <RuleBreachInfo originUser={alert.originUser} brokenRules={alert.brokenRules} actions={alert.actions} isCompact />
             </Grid>

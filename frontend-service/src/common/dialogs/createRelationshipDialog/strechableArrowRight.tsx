@@ -6,8 +6,8 @@ const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) =>
 
     return (
         <Grid container alignItems="center">
-            <Grid item flex={1} height={height / 2} sx={{ backgroundColor: 'primary.main' }} />
-            <Grid item flex={0} style={{ height }}>
+            <Grid flex={1} height={height / 2} sx={{ backgroundColor: 'primary.main' }} />
+            <Grid flex={0} style={{ height }}>
                 <SvgIcon
                     sx={{
                         fontSize: height,

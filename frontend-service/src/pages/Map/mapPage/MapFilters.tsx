@@ -1,15 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo } from 'react';
-import i18next from 'i18next';
+import { Clear } from '@mui/icons-material';
 import { Grid } from '@mui/material';
-import { Delete } from '@mui/icons-material';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
-import SearchAutoComplete from './SearchAutoComplete';
-import { IEntity } from '../../../interfaces/entities';
+import i18next from 'i18next';
+import React, { useEffect } from 'react';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IMongoCategory } from '../../../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IEntity } from '../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import SearchAutoComplete from './SearchAutoComplete';
 
 export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; darkMode: boolean }) => (
     <IconButtonWithPopover
@@ -24,7 +22,7 @@ export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; d
             opacity: 1,
         }}
     >
-        <Delete htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
+        <Clear htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
     </IconButtonWithPopover>
 );
 
@@ -56,25 +54,9 @@ const MapFilters = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const categories: IMongoCategory[] = useMemo(() => {
-        return [...new Map(templatesWithLocationField.map((template) => [template.category._id, template.category])).values()];
-    }, [templatesWithLocationField]);
-
     return (
-        <Grid item zIndex={1000} top={10} container wrap="nowrap" gap="15px">
-            <Grid item>
-                <TemplatesSelectCheckbox
-                    title={i18next.t('entityTemplatesCheckboxLabel')}
-                    templates={templatesWithLocationField}
-                    selectedTemplates={selectedTemplates}
-                    setSelectedTemplates={setSelectedTemplates}
-                    isDraggableDisabled
-                    size="small"
-                    categories={categories}
-                    overrideSx={{ background: darkMode ? '#121212' : '#FFFFFF' }}
-                />
-            </Grid>
-            <Grid item>
+        <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
+            <Grid>
                 <SearchAutoComplete
                     selectedTemplates={selectedTemplates}
                     handleEntityClick={moveToEntityLocations}
@@ -82,7 +64,7 @@ const MapFilters = ({
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
             </Grid>
         </Grid>

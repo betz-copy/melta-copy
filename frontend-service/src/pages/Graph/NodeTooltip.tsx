@@ -28,7 +28,7 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
                 backgroundColor: LocalStorage.get<boolean>(graphSettings.is3DViewLocalStorageKey) ? 'rgba(0, 0, 0, 0.5)' : undefined,
             }}
         >
-            <Grid item>
+            <Grid>
                 {entityTemplate.propertiesPreview.length ? (
                     <EntityPropertiesInternal
                         properties={node.data}
@@ -46,7 +46,7 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
                 )}
             </Grid>
             {Boolean(node.labelIcons.length) && (
-                <Grid item>
+                <Grid>
                     <Divider style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', marginTop: '0.6rem', marginBottom: '0.6rem' }} />
                     <NodeLabelIconsDescription node={node} />
                 </Grid>

@@ -335,6 +335,14 @@ export const environment = {
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     maxPrintLevel: 5,
+    formats: {
+        date: 'dd/MM/yyyy',
+        dateTime: 'dd/MM/yyyy HH:mm',
+        time: 'HH:mm',
+        fullTime: 'HH:mm:ss',
+        loggingDate: 'yyyy-MM-dd',
+        loggingDateTime: 'yyyy-MM-dd HH:mm:ss',
+    },
     fileExtensions: {
         defaultImage: 'png',
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],

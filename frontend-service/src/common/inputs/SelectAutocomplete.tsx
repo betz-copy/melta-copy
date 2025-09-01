@@ -94,8 +94,10 @@ const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
                         variant="outlined"
                         error={false}
                         label={label}
-                        inputProps={{
-                            ...params.inputProps,
+                        slotProps={{
+                            htmlInput: {
+                                ...params.inputProps,
+                            },
                         }}
                     />
                 )}

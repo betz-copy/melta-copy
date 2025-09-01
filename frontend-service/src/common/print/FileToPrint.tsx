@@ -29,7 +29,7 @@ const FileToPrint: React.FC<{
     }, [noSuchKeyError === true]);
 
     return (
-        <Grid item ref={fileRef}>
+        <Grid ref={fileRef}>
             {file.contentType === 'image' ? (
                 <Box
                     sx={{

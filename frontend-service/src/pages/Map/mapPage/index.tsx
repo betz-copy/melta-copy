@@ -60,12 +60,14 @@ const MapPage = () => {
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
-    const { sourceTemplateId, destTemplateId } = metadata.mapPage;
+    const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
     const sourceSearchResults = [...searchedMarkers, ...searchedPolygons]
         .filter(({ node }) => node.templateId === sourceTemplate?._id)
         .map(({ node }) => node);
+
+    const sourceTemplateColors = sourceTemplate?.enumPropertiesColors?.[sourceFieldForColor];
 
     const {
         bounds: searchedEntityBounds,
@@ -279,8 +281,8 @@ const MapPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-            <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
-                <Grid height="100%" item alignSelf="flex-start">
+            <Grid container flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
+                <Grid height="100%" alignSelf="flex-start">
                     <Viewer
                         full
                         ref={viewerRef}
@@ -365,6 +367,7 @@ const MapPage = () => {
                                 onClick={() => {
                                     setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                                 }}
+                                color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
@@ -376,6 +379,7 @@ const MapPage = () => {
                                 onClick={() => {
                                     setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                                 }}
+                                color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
@@ -426,7 +430,7 @@ const MapPage = () => {
                 </Grid>
 
                 {sourceSearchResults.length > 0 && (
-                    <Grid item width="98%">
+                    <Grid width="98%">
                         <EntitiesTable
                             rowData={sourceSearchResults}
                             rowModelType="clientSide"

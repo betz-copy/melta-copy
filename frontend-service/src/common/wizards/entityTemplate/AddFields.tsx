@@ -151,24 +151,26 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
         }),
     relationshipReference: Yup.object().when('type', {
         is: 'relationshipReference',
-        then: Yup.object({
-            relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
-            relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
-            relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
-            filters: filtersSchema,
-        }),
+        then: () =>
+            Yup.object({
+                relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
+                relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
+                relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+                filters: filtersSchema,
+            }),
     }),
     expandedUserField: Yup.object().when('type', {
         is: 'kartoffelUserField',
-        then: Yup.object({
-            relatedUserField: Yup.string().required(i18next.t('validation.required')),
-            kartoffelField: Yup.string().required(i18next.t('validation.required')),
-        }),
+        then: () =>
+            Yup.object({
+                relatedUserField: Yup.string().required(i18next.t('validation.required')),
+                kartoffelField: Yup.string().required(i18next.t('validation.required')),
+            }),
     }),
     mapSearch: Yup.boolean(),
     comment: Yup.string().when('type', {
         is: 'comment',
-        then: Yup.string().required(),
+        then: () => Yup.string().required(),
     }),
 });
 
@@ -197,7 +199,7 @@ const groupSchema = Yup.object({
             });
         }),
 });
-const fieldByTypeSchema = Yup.lazy((item: any): Yup.BaseSchema => {
+const fieldByTypeSchema = Yup.lazy((item: any) => {
     if (item?.type === 'field') return fieldSchema;
     if (item?.type === 'group') return groupSchema;
     return Yup.mixed().notRequired();
@@ -208,7 +210,7 @@ const propertiesSchema = Yup.array()
     .min(1, i18next.t('validation.oneField'))
     .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
         if (!entries) return false;
-        return entries.some((item) => {
+        return (entries as PropertyItem[]).some((item) => {
             if (item.type === 'field') return !item.data?.deleted;
             if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
             return false;
@@ -216,7 +218,7 @@ const propertiesSchema = Yup.array()
     })
     .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
         if (!entries) return false;
-        return entries.some((item) => {
+        return (entries as PropertyItem[]).some((item) => {
             if (item.type === 'field') return item.data?.archive !== true;
             if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
             return false;
@@ -225,7 +227,7 @@ const propertiesSchema = Yup.array()
     .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
         if (!entries) return true;
         let count = 0;
-        for (const item of entries) {
+        for (const item of entries as PropertyItem[]) {
             if (item.type === 'field' && item.data?.mapSearch) count++;
             if (item.type === 'group') {
                 count += item.fields?.filter((f) => f.mapSearch).length || 0;
@@ -651,7 +653,6 @@ export const FieldBlockWrapper = ({
 
     return (
         <Grid
-            item
             style={{
                 opacity: isDragging ? 0.7 : 1,
                 alignSelf: 'stretch',
@@ -751,7 +752,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     );
 
     return (
-        <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
+        <Grid container direction="column" alignItems="center" width="100%" style={{ minHeight: '160px' }}>
             {values.propertiesTypeOrder.map((itemId, index) => (
                 <FieldBlockWrapper
                     key={itemId}

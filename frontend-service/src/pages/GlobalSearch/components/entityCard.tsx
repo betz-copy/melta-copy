@@ -1,6 +1,4 @@
-import { AppRegistration as AppRegistrationIcon, AutoAwesome } from '@mui/icons-material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { AppRegistration as AppRegistrationIcon, AutoAwesome, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
@@ -192,7 +190,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
                     <Grid container alignItems="center" flexDirection="row" gap="15px">
-                        <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        <Grid minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon
                                     color={entityTemplateColor}
@@ -244,11 +242,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 },
                                 popoverText: i18next.t('actions.graph'),
                             },
-                            { icon: open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />, action: onOpen },
+                            { icon: open ? <KeyboardArrowUp /> : <KeyboardArrowDown />, action: onOpen },
                         ].map(
                             (item) =>
                                 item && (
-                                    <Grid item key={item.popoverText}>
+                                    <Grid key={item.popoverText}>
                                         <IconButtonWithPopover
                                             popoverText={(typeof item === 'object' && item.popoverText) || ''}
                                             iconButtonProps={{
@@ -315,7 +313,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         height: '206px',
                     }}
                 >
-                    <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
+                    <Grid size={{ xs: 8 }} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
                         <EntityProperties
                             entityTemplate={entityTemplate}
                             properties={entity.properties}
@@ -336,9 +334,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
-                        <Grid item xs={3.8}>
+                        <Grid size={{ xs: 3.8 }}>
                             <Grid
-                                item
                                 sx={{
                                     height: '167px',
                                     margin: '0.3rem 1rem 1rem 1rem',
@@ -363,7 +360,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <Grid item xs={9}>
+                                    <Grid size={{ xs: 9 }}>
                                         {matchedSentence ? (
                                             <MeltaTooltip
                                                 title={
@@ -405,7 +402,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             </Typography>
                                         )}
                                     </Grid>
-                                    <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                    <Grid size={{ xs: 3 }} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                         {files[previewImageIndex] && (
                                             <OpenPreview
                                                 fileId={files[previewImageIndex].id}
@@ -425,14 +422,14 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     )}
 
                     {hasSomeFileIdPropertyTemplate && files.length === 0 && (
-                        <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
+                        <Grid sx={{ display: 'flex', flexDirection: 'row' }}>
                             <NoFile />
                         </Grid>
                     )}
                 </Grid>
             )}
             <Grid container sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Grid item xs={10.5}>
+                <Grid size={{ xs: 10.5 }}>
                     {open && (
                         <CardContent
                             style={{
@@ -463,7 +460,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         </CardContent>
                     )}
                 </Grid>
-                <Grid item xs={1.3}>
+                <Grid size={{ xs: 1.3 }}>
                     {open &&
                         (files.length ? (
                             <Box
@@ -491,7 +488,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <Grid item xs={9}>
+                                    <Grid size={{ xs: 9 }}>
                                         <MeltaTooltip title={files[previewImageIndex].name}>
                                             <Typography
                                                 sx={{
@@ -508,7 +505,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
-                                    <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Grid size={{ xs: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <OpenPreview
                                             fileId={files[previewImageIndex].id}
                                             img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}

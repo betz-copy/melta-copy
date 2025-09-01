@@ -98,18 +98,21 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         );
         linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
-        const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
-            if (
-                currentAction.actionType === ActionTypes.UpdateEntity &&
-                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-            ) {
-                return {
-                    ...previousUpdatedProperties,
-                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                };
-            }
-            return previousUpdatedProperties;
-        }, (entity as IEntity).properties);
+        const updatedProperties = actions.reduce(
+            (previousUpdatedProperties, currentAction) => {
+                if (
+                    currentAction.actionType === ActionTypes.UpdateEntity &&
+                    (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+                ) {
+                    return {
+                        ...previousUpdatedProperties,
+                        ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
+                    };
+                }
+                return previousUpdatedProperties;
+            },
+            (entity as IEntity).properties,
+        );
 
         entityForLink = {
             templateId: (entity as IEntity).templateId,
@@ -277,7 +280,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
 
     return (
         <Grid container direction="column">
-            <Grid item>
+            <Grid>
                 <Typography component="p" variant="body1">
                     <Box component="span">
                         {actionType === ActionTypes.CreateEntity && i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.creatingEntity')}
@@ -294,7 +297,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                 </Typography>
             </Grid>
             {!isCompact && entityTemplate && (
-                <Grid item alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
+                <Grid alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
                     <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} mode="normal" />
                 </Grid>
             )}
@@ -319,7 +322,7 @@ const UpdateEntityActionInfo: React.FC<{
 
     return (
         <Grid container direction="column">
-            <Grid item>
+            <Grid>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
                     <EntityInstanceLink
@@ -332,7 +335,7 @@ const UpdateEntityActionInfo: React.FC<{
                 </Typography>
             </Grid>
             {!isCompact && entityTemplate && (
-                <Grid item marginTop="5px" border={1} padding="5px" borderRadius="5px">
+                <Grid marginTop="5px" border={1} padding="5px" borderRadius="5px">
                     <UpdatedFieldsDiff entityTemplate={entityTemplate} actionMetadata={actionMetadata} />
                 </Grid>
             )}
@@ -379,7 +382,7 @@ export const ActionInfo: React.FC<{
 }> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties = [] }) => {
     return (
         <Grid container flexDirection="column">
-            <Grid item>
+            <Grid>
                 {(actionType === ActionTypes.CreateRelationship || actionType === ActionTypes.DeleteRelationship) && (
                     <CreateOrDeleteRelActionInfo
                         actionType={actionType}
@@ -412,7 +415,7 @@ export const ActionInfo: React.FC<{
                 )}
             </Grid>
             {originUser && (
-                <Grid item marginLeft="4px">
+                <Grid marginLeft="4px">
                     <Box component="span">{i18next.t('ruleBreachAlertNotification.by')}</Box>{' '}
                     <Box component="span" fontWeight="bold">
                         {originUser.fullName}

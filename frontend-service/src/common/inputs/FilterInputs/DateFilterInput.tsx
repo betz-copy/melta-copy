@@ -1,4 +1,3 @@
-import { CalendarToday } from '@mui/icons-material';
 import { FormControlLabel, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
@@ -82,7 +81,6 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
         <Grid container flexDirection={'column'} spacing={0.5}>
             <Grid
                 container
-                item
                 justifyContent="start"
                 direction={isInRangeType || !entityFilter ? 'column' : 'row'}
                 spacing={1}
@@ -98,9 +96,8 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                         />
                     </Grid>
                 )}
-
                 {!isFixedType && (
-                    <Grid item xs={hideFilterType || isInRangeType ? 12 : 7} boxSizing="border-box" width="86%">
+                    <Grid size={{ xs: hideFilterType || isInRangeType ? 12 : 7 }} boxSizing="border-box" width="86%">
                         {isInRangeType && !forceEqualsType ? (
                             <DateRange
                                 onStartDateChange={(newValue) => handleDateChange(newValue, true)}
@@ -115,9 +112,6 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                             <DatePickerWrapper
                                 value={filterField?.dateFrom}
                                 onChange={(newValue) => handleDateChange(newValue, true)}
-                                components={{
-                                    OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
-                                }}
                                 sx={inputStyle}
                                 isStartDate
                                 directionIsRow={false}
@@ -129,7 +123,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                 )}
             </Grid>
             {currentDateCheckbox && (
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <FormControlLabel
                         control={
                             <MeltaCheckbox
@@ -142,7 +136,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                             />
                         }
                         label={i18next.t('childTemplate.currentDate')}
-                        componentsProps={{
+                        slotProps={{
                             typography: { sx: { fontSize: '14px' } },
                         }}
                     />

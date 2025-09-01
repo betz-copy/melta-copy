@@ -1,9 +1,9 @@
-import React, { Fragment } from 'react';
-import { Grid } from '@mui/material';
 import { Done as DoneIcon } from '@mui/icons-material';
+import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
+import React, { Fragment, JSX } from 'react';
 import { StepType } from '..';
-import { StepNumberTypography, StepNameTypography, DashedHorizontalLine, DashedVerticalLine, StepDescriptionTypography } from './index.styles';
+import { DashedHorizontalLine, DashedVerticalLine, StepDescriptionTypography, StepNameTypography, StepNumberTypography } from './index.styles';
 
 const Stepper = <T extends object>({
     activeStep,
@@ -32,19 +32,19 @@ const Stepper = <T extends object>({
 
                     return (
                         <Fragment key={step.label}>
-                            <Grid container justifyContent="start" alignItems="flex-start">
-                                <Grid container justifyContent="start" alignItems="center">
-                                    <Grid item display="flex" justifyContent="center" alignContent="center">
+                            <Grid direction="column" justifyContent="start" alignItems="flex-start" size={{ xs: 12 }}>
+                                <Grid container direction="row" justifyContent="start" alignItems="center">
+                                    <Grid display="flex" justifyContent="center" alignContent="center">
                                         <StepNumberTypography type={type} direction="column">
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                         </StepNumberTypography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <StepNameTypography type={type} direction={direction}>
                                             {step.label}
                                         </StepNameTypography>
                                     </Grid>
-                                    <Grid item marginLeft="10px">
+                                    <Grid marginLeft="10px">
                                         {step.description && <StepDescriptionTypography type={type}>{step.description}</StepDescriptionTypography>}
                                     </Grid>
                                 </Grid>
@@ -65,7 +65,7 @@ const Stepper = <T extends object>({
         );
 
     return (
-        <Grid container justifyContent="space-around" alignItems="center">
+        <Grid container direction={direction} justifyContent="space-around" alignItems="center">
             {steps.length > 1 &&
                 steps.map((step, index) => {
                     // eslint-disable-next-line no-nested-ternary
@@ -75,12 +75,12 @@ const Stepper = <T extends object>({
                         <Fragment key={step.label}>
                             <Grid>
                                 <Grid container justifyContent="center" alignItems="center">
-                                    <Grid item display="flex" justifyContent="center" alignContent="center">
+                                    <Grid display="flex" justifyContent="center" alignContent="center">
                                         <StepNumberTypography type={type} direction="row">
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                         </StepNumberTypography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <StepNameTypography type={type} direction={direction}>
                                             {step.label}
                                         </StepNameTypography>
@@ -99,6 +99,7 @@ const Stepper = <T extends object>({
                 height="100%"
                 marginBottom="0.5rem"
                 marginTop="2rem"
+                width="100%"
             >
                 {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
             </Grid>

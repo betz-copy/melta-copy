@@ -257,7 +257,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     return (
-        <Grid item alignSelf="stretch" marginBottom="1rem">
+        <Grid alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -268,12 +268,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                    <Grid container gap={2} wrap="nowrap" alignItems="center">
                         <Box>
                             <DragHandleIcon fontSize="large" />
                         </Box>
 
-                        <Grid container direction="column">
+                        <Grid container direction="column" width="100%">
                             <Grid container direction="column" marginBottom="0.5rem">
                                 <Grid
                                     container
@@ -361,7 +361,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             })}
                                     </TextField>
                                 </Grid>
-                                <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                <Grid justifyContent="space-between" flexWrap="nowrap">
                                     <PropertiesTypes
                                         entity={entity}
                                         value={value}
@@ -380,7 +380,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     />
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
+                            <Grid container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                 <Switches
                                     value={value}
                                     setValues={setValues}
@@ -462,10 +462,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </MeltaTooltip>
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                            <Grid container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                                 {unique && !value.identifier && value.type !== 'serialNumber' && (
                                     <Grid container direction="row">
-                                        <Grid item container alignItems="center" flexWrap="nowrap">
+                                        <Grid container alignItems="center" flexWrap="nowrap">
                                             <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
                                                 <FormControlLabel
                                                     control={
@@ -516,27 +516,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             helperText={touchedUniqueGroupName && errorUniqueGroupName}
                                                             sx={{ marginRight: '5px' }}
                                                             fullWidth
-                                                            InputProps={{
-                                                                ...params.InputProps,
-                                                                endAdornment: (
-                                                                    <>
-                                                                        {params.InputProps.endAdornment}
-                                                                        {uniqueConstraintGroupName !== '' &&
-                                                                            params.inputProps.value === uniqueConstraintGroupName &&
-                                                                            uniqueConstraints?.some(
-                                                                                (group) => group.groupName === uniqueConstraintGroupName,
-                                                                            ) && (
-                                                                                <IconButton
-                                                                                    aria-label="delete"
-                                                                                    onClick={() => {
-                                                                                        deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
-                                                                                    }}
-                                                                                >
-                                                                                    <DeleteIcon />
-                                                                                </IconButton>
-                                                                            )}
-                                                                    </>
-                                                                ),
+                                                            slotProps={{
+                                                                input: {
+                                                                    ...params.InputProps,
+                                                                    endAdornment: (
+                                                                        <>
+                                                                            {params.InputProps.endAdornment}
+                                                                            {uniqueConstraintGroupName !== '' &&
+                                                                                params.inputProps.value === uniqueConstraintGroupName &&
+                                                                                uniqueConstraints?.some(
+                                                                                    (group) => group.groupName === uniqueConstraintGroupName,
+                                                                                ) && (
+                                                                                    <IconButton
+                                                                                        aria-label="delete"
+                                                                                        onClick={() => {
+                                                                                            deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
+                                                                                        }}
+                                                                                    >
+                                                                                        <DeleteIcon />
+                                                                                    </IconButton>
+                                                                                )}
+                                                                        </>
+                                                                    ),
+                                                                },
                                                             }}
                                                             onKeyDown={(e) => {
                                                                 e.stopPropagation();

@@ -1,16 +1,16 @@
 import { Box, Collapse, SxProps, Theme, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction } from 'react';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
-const InputAccordion: React.FC<{ label: string; disabled?: boolean; setChecked: Dispatch<SetStateAction<boolean>>; checked: boolean }> = ({
-    children,
-    label,
-    disabled,
-    setChecked,
-    checked,
-}) => {
+const InputAccordion: React.FC<{
+    label: string;
+    disabled?: boolean;
+    setChecked: Dispatch<SetStateAction<boolean>>;
+    checked: boolean;
+    children?: ReactNode;
+}> = ({ children, label, disabled, setChecked, checked }) => {
     const sx: SxProps<Theme> = disabled
         ? {
               color: 'grey',

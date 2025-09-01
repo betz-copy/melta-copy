@@ -115,7 +115,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     }, []);
 
     return (
-        <Grid ref={containerRef} container item width="100%" height="100%" alignItems="center" justifyContent="center">
+        <Grid ref={containerRef} container width="100%" height="100%" alignItems="center" justifyContent="center">
             <Grid sx={{ width: '98%', height: '100%', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
                 <CardTitle title={metaData.name} description={metaData.description} />
 

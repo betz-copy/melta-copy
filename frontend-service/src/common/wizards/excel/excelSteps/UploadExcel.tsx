@@ -85,7 +85,7 @@ export const UploadExcel: React.FC<{
         );
 
     return (
-        <Grid container direction="column" padding="5px">
+        <Grid container direction="column" padding="5px" width="100%">
             <Grid marginTop="5px">
                 <OpenPreview
                     fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
@@ -98,7 +98,7 @@ export const UploadExcel: React.FC<{
                     {i18next.t('wizard.entity.loadEntities.preview')}
                 </Typography>
             </Grid>
-            <Grid sx={{ marginTop: '10px', marginBottom: '10px', width: '100%' }}>
+            <Grid sx={{ my: '10px' }}>
                 <EntitiesTableOfTemplate
                     template={template}
                     getRowId={() => uuid()}

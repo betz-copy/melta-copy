@@ -22,7 +22,7 @@ import { IRole } from '../../../interfaces/roles';
 
 const { infiniteScrollPageCount } = environment.permission;
 
-const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
+const scopesTranslation = i18next.t('permissions.scopes', { returnObjects: true }) as Record<string, string>;
 
 const defaultColDef: ColDef<PermissionData> = {
     editable: false,
@@ -142,7 +142,7 @@ const columnDefs = (
                 <ScrollContainer horizontal vertical={false}>
                     <Grid container spacing={1} wrap="nowrap">
                         {categoriesPermissionsPopulated.map(({ _id, category }) => (
-                            <Grid item key={_id}>
+                            <Grid key={_id}>
                                 <Chip label={category.displayName} />
                             </Grid>
                         ))}

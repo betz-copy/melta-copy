@@ -116,7 +116,7 @@ const DashboardItemDetailsHeader = <T extends DashboardItemForm>({
             style={{ top: 0, right: 0, zIndex: 1 }}
         >
             <Box display="flex" alignItems="center" gap="15px">
-                <Grid item>
+                <Grid>
                     <Typography
                         color={theme.palette.primary.main}
                         fontWeight={400}
@@ -129,12 +129,12 @@ const DashboardItemDetailsHeader = <T extends DashboardItemForm>({
                         {backPath.title}
                     </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="14px">
                         {'>'}
                     </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Typography color={theme.palette.primary.main} fontWeight="600" component="h4" variant="h4" fontSize="24px">
                         {title}
                     </Typography>

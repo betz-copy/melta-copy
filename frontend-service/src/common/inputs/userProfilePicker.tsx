@@ -1,14 +1,14 @@
+import { Payment } from '@mui/icons-material';
 import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import PaymentIcon from '@mui/icons-material/Payment';
+import { environment } from '../../globals';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
-import FileInput from './ImageFileInput';
-import { getNameInitials } from '../../utils/userProfile';
-import { allProfileAvatars } from '../../utils/icons';
-import { environment } from '../../globals';
 import { getKartoffelUserProfileRequest } from '../../services/userService';
+import { allProfileAvatars } from '../../utils/icons';
+import { getNameInitials } from '../../utils/userProfile';
+import FileInput from './ImageFileInput';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
@@ -79,7 +79,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
-            <Grid item margin={0}>
+            <Grid margin={0}>
                 <ToggleButtonGroup value={inputType} exclusive onChange={handleToggleChange} sx={{ height: '2.5rem' }}>
                     <ToggleButton value="chooseAvatar" sx={{ width: '10.5rem' }}>
                         {i18next.t('input.imagePicker.chooseAvatar')}
@@ -96,18 +96,18 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                         }}
                     >
                         {i18next.t('input.imagePicker.kartoffelProfile')}
-                        {inputType === kartoffelProfile && <PaymentIcon />}
+                        {inputType === kartoffelProfile && <Payment />}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
 
             {inputType === 'chooseAvatar' && (
-                <Grid item>
+                <Grid>
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
                             {allAvatarPaths.map((iconName, index) => (
                                 // eslint-disable-next-line react/no-array-index-key
-                                <Grid item key={index} padding={2}>
+                                <Grid key={index} padding={2}>
                                     <Avatar
                                         src={`${environment.avatarIconPath}${iconName}`}
                                         style={{
@@ -122,7 +122,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                                     />
                                 </Grid>
                             ))}
-                            <Grid item padding={2}>
+                            <Grid padding={2}>
                                 <Avatar
                                     style={{
                                         width: 50,
@@ -148,7 +148,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                 </Grid>
             )}
             {inputType === 'chooseFile' && (
-                <Grid item width="100%">
+                <Grid width="100%">
                     <FileInput
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };

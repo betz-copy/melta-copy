@@ -1,4 +1,3 @@
-import { CalendarToday } from '@mui/icons-material';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
@@ -38,26 +37,20 @@ const DateRange: React.FC<{
             display="flex"
             flexDirection={directionIsRow ? 'row' : 'column'}
         >
-            <Grid item style={{ paddingBottom: !directionIsRow ? '10px' : '0px' }}>
+            <Grid style={{ paddingBottom: !directionIsRow ? '10px' : '0px' }}>
                 <DatePickerWrapper
                     label={i18next.t('processInstancesPage.startDate')}
                     value={startDateInput}
                     onChange={onStartDateChange}
                     maxDate={endDateInput ?? maxStartDate}
                     sx={overrideSx}
-                    components={
-                        overrideSx && {
-                            // eslint-disable-next-line react/no-unstable-nested-components
-                            OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
-                        }
-                    }
                     isStartDate
                     directionIsRow={directionIsRow}
                     readOnly={readOnly}
                     borderRadius={borderRadius}
                 />
             </Grid>
-            <Grid item className="processList-dateContainer">
+            <Grid className="processList-dateContainer">
                 <DatePickerWrapper
                     label={i18next.t('processInstancesPage.endDate')}
                     value={endDateInput}
@@ -65,12 +58,6 @@ const DateRange: React.FC<{
                     maxDate={maxEndDate}
                     minDate={startDateInput}
                     sx={overrideSx}
-                    components={
-                        overrideSx && {
-                            // eslint-disable-next-line react/no-unstable-nested-components
-                            OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
-                        }
-                    }
                     directionIsRow={directionIsRow}
                     readOnly={readOnly}
                     borderRadius={borderRadius}

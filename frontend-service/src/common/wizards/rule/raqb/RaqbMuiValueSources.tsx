@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import IconButton from '@mui/material/IconButton';
-import ExpandMoreSharpIcon from '@mui/icons-material/ExpandMoreSharp';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Check from '@mui/icons-material/Check';
+import { Check, ExpandMoreSharp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ValueSourcesProps } from '@react-awesome-query-builder/mui';
@@ -58,11 +57,11 @@ export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProp
     return (
         <div>
             <IconButton size="small" onClick={toggleOpenClose}>
-                <ExpandMoreSharpIcon />
+                <ExpandMoreSharp />
             </IconButton>
 
-            {/* added PaperProps={{ dir: 'ltr' }} */}
-            <Menu anchorEl={anchorEl} open={open} onClose={handleClose} PaperProps={{ dir: 'ltr' }}>
+            {/* added slotProps={{ paper: { dir: 'ltr' }}} */}
+            <Menu anchorEl={anchorEl} open={open} onClose={handleClose} slotProps={{ paper: { dir: 'ltr' } }}>
                 <FormControl component="fieldset" sx={{ p: 0 }}>
                     <FormLabel component="legend" sx={{ p: 2, pt: 0, pb: 1 }}>
                         {title}

@@ -17,8 +17,7 @@ export const Search: React.FC<{ value: string; onChange: (value: string) => void
     return (
         <Grid container>
             <Grid
-                item
-                xs={12}
+                size={{ xs: 12 }}
                 width="199px"
                 height="34px"
                 style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', maxHeight: '34px' }}
@@ -46,37 +45,39 @@ export const Search: React.FC<{ value: string; onChange: (value: string) => void
                     }}
                     placeholder={i18next.t('searchLabel')}
                     fullWidth
-                    InputProps={{
-                        style: {
-                            fontFamily: 'Rubik',
-                            fontSize: '12px',
-                            textAlign: 'right',
-                            borderRadius: '7px',
-                        },
-                        endAdornment: (
-                            <InputAdornment
-                                position="end"
-                                sx={{
-                                    padding: '0px, 10px, 0px, 0px',
-                                    fontWeight: '400',
-                                    letterSpacing: '0em',
-                                    lineHeight: '16px',
-                                    gap: '10px',
-                                }}
-                            >
-                                <Divider
-                                    orientation="vertical"
-                                    style={{
-                                        width: '1px',
-                                        height: '20px',
-                                        borderRadius: '1.5px',
-                                        backgroundColor: theme.palette.primary.main,
+                    slotProps={{
+                        input: {
+                            style: {
+                                fontFamily: 'Rubik',
+                                fontSize: '12px',
+                                textAlign: 'right',
+                                borderRadius: '7px',
+                            },
+                            endAdornment: (
+                                <InputAdornment
+                                    position="end"
+                                    sx={{
+                                        padding: '0px, 10px, 0px, 0px',
+                                        fontWeight: '400',
+                                        letterSpacing: '0em',
+                                        lineHeight: '16px',
+                                        gap: '10px',
                                     }}
-                                />
-                                <SearchIcon sx={{ fontSize: '1.3rem', color: theme.palette.primary.main }} />
-                            </InputAdornment>
-                        ),
-                        startAdornment: <InputAdornment position="start" />,
+                                >
+                                    <Divider
+                                        orientation="vertical"
+                                        style={{
+                                            width: '1px',
+                                            height: '20px',
+                                            borderRadius: '1.5px',
+                                            backgroundColor: theme.palette.primary.main,
+                                        }}
+                                    />
+                                    <SearchIcon sx={{ fontSize: '1.3rem', color: theme.palette.primary.main }} />
+                                </InputAdornment>
+                            ),
+                            startAdornment: <InputAdornment position="start" />,
+                        },
                     }}
                 />
             </Grid>

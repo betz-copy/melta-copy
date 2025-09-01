@@ -46,7 +46,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
             boxShadow="0px 4px 4px #0000000D"
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
         >
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                     style={{
                         color: theme.palette.primary.main,
@@ -65,9 +65,9 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                 </Typography>
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <Grid container alignItems="center" spacing={0.8} wrap="nowrap">
-                    <Grid item>
+                    <Grid>
                         <ToggleButtonGroup value={is3DView ? '3D' : '2D'} size="small" sx={{ height: '2rem', marginX: '0.2rem' }}>
                             <ToggleButton
                                 value="3D"
@@ -93,11 +93,11 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                         </ToggleButtonGroup>
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                         <CopyUrlButton style={{ color: theme.palette.primary.main }} />
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                         <IconButtonWithPopover popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
                             <ResetIcon color="primary" />
                         </IconButtonWithPopover>

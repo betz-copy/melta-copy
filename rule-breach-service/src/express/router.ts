@@ -8,11 +8,11 @@ const appRouter = Router();
 appRouter.use('/api/rule-breaches/alerts', RuleBreachAlertsRouter);
 appRouter.use('/api/rule-breaches/requests', RuleBreachRequestsRouter);
 
-appRouter.use('/isAlive', (_req, res) => {
+appRouter.get('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');
 });
 
-appRouter.use('*', (_req, res) => {
+appRouter.all(/(.*)/, (_req, res) => {
     res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 

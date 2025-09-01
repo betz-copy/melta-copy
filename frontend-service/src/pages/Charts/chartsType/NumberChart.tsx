@@ -13,7 +13,7 @@ const NumberChart: React.FC<{
     disabled: boolean;
 }> = ({ formik, entityTemplate, disabled }) => {
     return (
-        <Grid item marginTop={2}>
+        <Grid marginTop={2}>
             <AxisInput
                 formikField="metaData.accumulator"
                 formik={formik}

@@ -21,7 +21,7 @@ export const ChooseDetails: React.FC<StepComponentProps<WorkspaceWizardValues, '
 
     return (
         <Grid container direction="column" alignItems="center" spacing={2}>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="name"
                     label={i18next.t('wizard.name')}
@@ -32,7 +32,7 @@ export const ChooseDetails: React.FC<StepComponentProps<WorkspaceWizardValues, '
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <TextField
                     name="displayName"
                     label={i18next.t('wizard.displayName')}
@@ -43,7 +43,7 @@ export const ChooseDetails: React.FC<StepComponentProps<WorkspaceWizardValues, '
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     formik={props}
                     formikField="type"

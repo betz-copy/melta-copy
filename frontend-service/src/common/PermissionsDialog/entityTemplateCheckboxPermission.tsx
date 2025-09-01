@@ -1,15 +1,14 @@
+import { ArrowLeftRounded, FilterList } from '@mui/icons-material';
 import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
-import React, { useState } from 'react';
-import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
-import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
-import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
+import React, { useState } from 'react';
+import { ViewType } from '../../interfaces/childTemplates';
 import { IDefaultPermissionDetails, IPermissionMetadata, PermissionScope } from '../../interfaces/permissions';
-import PermissionScopeBtn from './PermissionScopeBtn';
+import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import { ColoredEnumChip } from '../ColoredEnumChip';
-import { ViewType } from '../../interfaces/childTemplates';
-import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
+import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
+import PermissionScopeBtn from './PermissionScopeBtn';
 
 const EntityTemplateCheckboxPermission: React.FC<{
     entityTemplate: entityTemplatePermissionDialog;
@@ -23,9 +22,9 @@ const EntityTemplateCheckboxPermission: React.FC<{
     const [openChildTemplateList, setOpenChildTemplateList] = useState(false);
 
     return (
-        <Grid container xs={12} key={entityTemplate.id}>
-            <Grid item xs={1.2} />
-            <Grid item xs={4.8} display="flex" alignItems="center">
+        <Grid container size={{ xs: 12 }} key={entityTemplate.id}>
+            <Grid size={{ xs: 1.2 }} />
+            <Grid size={{ xs: 4.8 }} display="flex" alignItems="center">
                 {entityTemplate.childTemplates && entityTemplate.childTemplates.length > 0 && (
                     <IconButton
                         aria-label="arrowLeftRounded"
@@ -41,15 +40,15 @@ const EntityTemplateCheckboxPermission: React.FC<{
                             boxSizing: 'border-box',
                         }}
                     >
-                        <ArrowLeftRoundedIcon sx={{ rotate: openChildTemplateList ? '-90deg' : '0deg', transition: 'rotate 0.5s' }} />
+                        <ArrowLeftRounded sx={{ rotate: openChildTemplateList ? '-90deg' : '0deg', transition: 'rotate 0.5s' }} />
                     </IconButton>
                 )}
                 <Typography fontSize={14.5}>{entityTemplate.name}</Typography>
             </Grid>
-            <Grid item xs={0.5} />
+            <Grid size={{ xs: 0.5 }} />
             {!entityTemplate.isParentTemplateInDifferentCategory && (
                 <>
-                    <Grid item xs={2.5}>
+                    <Grid size={{ xs: 2.5 }}>
                         <PermissionScopeBtn
                             viewMode={viewMode}
                             defaultChecked={
@@ -70,8 +69,8 @@ const EntityTemplateCheckboxPermission: React.FC<{
                             checkboxSx={{ width: '17px', height: '17px' }}
                         />
                     </Grid>
-                    <Grid item xs={0.5} />
-                    <Grid item xs={2.5}>
+                    <Grid size={{ xs: 0.5 }} />
+                    <Grid size={{ xs: 2.5 }}>
                         <PermissionScopeBtn
                             viewMode={viewMode}
                             defaultChecked={
@@ -91,13 +90,13 @@ const EntityTemplateCheckboxPermission: React.FC<{
                     </Grid>
                 </>
             )}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
                 <Collapse in={openChildTemplateList}>
                     {entityTemplate.childTemplates?.map((childTemplate) => {
                         return (
-                            <Grid container xs={12} key={childTemplate.id}>
-                                <Grid xs={1.3} />
-                                <Grid xs={4.7} display="flex" alignItems="center">
+                            <Grid container size={{ xs: 12 }} key={childTemplate.id}>
+                                <Grid size={{ xs: 1.3 }} />
+                                <Grid size={{ xs: 4.7 }} display="flex" alignItems="center">
                                     <Grid display="flex" alignItems="center" gap="8px">
                                         <FilterList
                                             fontSize="small"
@@ -118,9 +117,9 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                     </Grid>
                                 </Grid>
                                 {childTemplate.viewType === ViewType.categoryPage && (
-                                    <Grid container xs={6}>
-                                        <Grid xs={1} />
-                                        <Grid xs={5}>
+                                    <Grid container size={{ xs: 6 }}>
+                                        <Grid size={{ xs: 1 }} />
+                                        <Grid size={{ xs: 5 }}>
                                             <PermissionScopeBtn
                                                 viewMode={viewMode}
                                                 defaultChecked={
@@ -136,8 +135,8 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                                 checkboxSx={{ width: '17px', height: '17px' }}
                                             />
                                         </Grid>
-                                        <Grid xs={1} />
-                                        <Grid xs={5}>
+                                        <Grid size={{ xs: 1 }} />
+                                        <Grid size={{ xs: 5 }}>
                                             <PermissionScopeBtn
                                                 viewMode={viewMode}
                                                 defaultChecked={

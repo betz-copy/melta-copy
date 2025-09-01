@@ -1,9 +1,9 @@
-import React from 'react';
+import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, CircularProgress, Grid } from '@mui/material';
-import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, Done as DoneIcon } from '@mui/icons-material';
-import i18next from 'i18next';
 import { FormikProps } from 'formik';
+import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
+import React, { JSX } from 'react';
 import { StepType } from '..';
 
 const StepperActions = <T extends object>({
@@ -13,7 +13,7 @@ const StepperActions = <T extends object>({
     isFirstStep,
     isLoading,
     formikProps,
-    checkForChanges
+    checkForChanges,
 }: {
     step: StepType<T>;
     handleBack: () => void;
@@ -27,7 +27,7 @@ const StepperActions = <T extends object>({
 
     return (
         <Grid container justifyContent="space-between" padding="0px 25px">
-            <Grid item>
+            <Grid>
                 {step.stepperActions?.hide !== 'back' && (
                     <Button
                         variant="outlined"
@@ -47,7 +47,7 @@ const StepperActions = <T extends object>({
                     </Button>
                 )}
             </Grid>
-            <Grid item>
+            <Grid>
                 {/* type submit for formik goto next step */}
                 {step?.stepperActions?.hide !== 'next' && (
                     <Button

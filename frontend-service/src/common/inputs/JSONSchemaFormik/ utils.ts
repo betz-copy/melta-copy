@@ -97,7 +97,7 @@ const getFieldUiSchema = (
             'ui:widget': 'UserWidget',
             'ui:options': {
                 globalValues: values,
-                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {              
+                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
                     // TODO: refactor - this code gets the fields that need to be modified so the displayed fields will be set in a nested way..
                     const changedPropertiesOfUser = changeRelatedUserFields(schema.properties, propertyKey, user);
 
@@ -155,8 +155,6 @@ export const uiSchemaUtils = (
 
             for (const [groupedPropertyKey, groupedPropertySchema] of Object.entries(propertySchema.properties)) {
                 const groupedUiSchema = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, groupedPropertyKey, groupedPropertySchema);
-
-                if (!groupedUiSchema['ui:classNames']) groupedUiSchema['ui:classNames'] = 'half-width-field';
 
                 uiSchema[propertyKey][groupedPropertyKey] = groupedUiSchema;
             }

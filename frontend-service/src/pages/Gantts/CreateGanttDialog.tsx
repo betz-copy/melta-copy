@@ -36,15 +36,15 @@ export const CreateGanttDialog: React.FC<ICreateGanttDialogProps> = ({ open, onC
     return (
         <Dialog open={open}>
             <Grid container direction="column" padding="1rem" alignItems="center" spacing={2}>
-                <Grid item>
+                <Grid>
                     <BlueTitle title={i18next.t('gantts.actions.createGantt')} component="h6" variant="h6" />
                 </Grid>
 
-                <Grid item>
+                <Grid>
                     <TextField value={name} onChange={(event) => setName(event.target.value)} placeholder={i18next.t('gantts.actions.name')} />
                 </Grid>
 
-                <Grid container item justifyContent="space-evenly">
+                <Grid container justifyContent="space-evenly">
                     <Button disabled={isLoading} onClick={onCloseWrapper}>
                         {i18next.t('gantts.actions.cancel')}
                     </Button>

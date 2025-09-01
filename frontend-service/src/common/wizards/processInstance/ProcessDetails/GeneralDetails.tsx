@@ -1,17 +1,17 @@
+import { Groups2 } from '@mui/icons-material';
 import { Button, Card, CardContent, Divider, Grid, Typography } from '@mui/material';
 import { FormikProvider } from 'formik';
+import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import Groups2Icon from '@mui/icons-material/Groups2';
 import { IDetailsStepProp } from '.';
+import { environment } from '../../../../globals';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { initDetailsValues } from './detailsFormik';
 import { GeneralDetailsFields } from './GeneralDetailsFields';
 import { TemplateFields } from './TemplateFields';
-import { environment } from '../../../../globals';
 
 const GeneralDetails: React.FC<IDetailsStepProp> = ({
     detailsFormikData,
@@ -66,8 +66,8 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
             <CardContent sx={{ height: !toPrint ? '100%' : undefined, width: '100%' }}>
                 <FormikProvider value={detailsFormikData}>
                     <Grid container direction="column" height="100%" justifyContent="space-between" width="100%" flexWrap="nowrap">
-                        <Grid item container direction="column" height="90%" width="100%" flexWrap="nowrap">
-                            <Grid item height="20%" minHeight="120px" width="100%">
+                        <Grid container direction="column" height="90%" width="100%" flexWrap="nowrap">
+                            <Grid height="20%" minHeight="120px" width="100%">
                                 <GeneralDetailsFields
                                     processTemplatesMap={processTemplatesMap}
                                     setFieldValue={setFieldValue}
@@ -82,10 +82,10 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                     setFieldTouched={setFieldTouched}
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <Divider variant="fullWidth" sx={{ marginTop: '25px' }} />
                             </Grid>
-                            <Grid item height="75%" width="100%" sx={{ overflowY: 'auto' }}>
+                            <Grid height="75%" width="100%" sx={{ overflowY: 'auto' }}>
                                 {values.template && (
                                     <TemplateFields
                                         toPrint={toPrint}
@@ -102,10 +102,10 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                 )}
                             </Grid>
                         </Grid>
-                        <Grid item container minHeight="25px" height="5%">
+                        <Grid container minHeight="25px" height="5%">
                             {values.template && !!processInstance && !toPrint && (
                                 <Grid container gap="5px" width="100%" wrap="nowrap">
-                                    <Grid item flexBasis="50%">
+                                    <Grid flexBasis="50%">
                                         <Button
                                             variant="outlined"
                                             sx={{
@@ -122,7 +122,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                             }}
                                             startIcon={
                                                 contentDisplay === environment.processDetailsContentDisplay.summary && (
-                                                    <Groups2Icon sx={{ height: '100%' }} />
+                                                    <Groups2 sx={{ height: '100%' }} />
                                                 )
                                             }
                                         >

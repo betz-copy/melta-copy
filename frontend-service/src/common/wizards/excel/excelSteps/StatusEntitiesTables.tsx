@@ -20,7 +20,7 @@ export const StatusEntitiesTables: React.FC<{
     if (isLoadingTables) return <CircularProgress style={{ marginTop: '10px', margin: 'auto' }} />;
 
     return (
-        <Grid container direction="column" padding="5px" paddingY="15px">
+        <Grid container direction="column" padding="5px" paddingY="15px" width="100%">
             <EntitiesTable
                 rowData={tablesData.succeededEntities as IEntity[]}
                 template={template}

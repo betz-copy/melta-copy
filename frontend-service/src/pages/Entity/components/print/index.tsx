@@ -2,7 +2,7 @@ import { PrintOutlined } from '@mui/icons-material';
 import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useReactToPrint, UseReactToPrintOptions } from 'react-to-print';
 import { INestedRelationshipTemplates } from '../..';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
@@ -51,10 +51,10 @@ const Print: React.FC<{
     };
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
-    });
+    } as UseReactToPrintOptions);
 
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 

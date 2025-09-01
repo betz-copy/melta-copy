@@ -11,7 +11,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { isChildTemplate } from '../../utils/templates';
-import { TemplateTable, TemplateTableRef } from './TemplateTable';
+import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
@@ -106,10 +106,10 @@ const TemplateTablesViewResults = forwardRef<
     }, [templates, currentUserKartoffelId]);
 
     return (
-        <Grid container direction="column" spacing={1}>
+        <Grid direction="column" spacing={1} width="100%">
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 return (
-                    <Grid item key={template._id}>
+                    <Grid key={template._id}>
                         <TemplateTable
                             ref={(el) => {
                                 if (el) {
@@ -129,7 +129,7 @@ const TemplateTablesViewResults = forwardRef<
                 );
             })}
             {visibleTemplatesCount < templates.length && (
-                <Grid item container justifyContent="center" ref={loaderRef}>
+                <Grid container justifyContent="center" ref={loaderRef}>
                     <CircularProgress />
                 </Grid>
             )}
@@ -147,7 +147,12 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 
     templates.forEach((template) => (isChildTemplate(template) ? countRequestChildTemplateIds : countRequestTemplateIds).add(template._id));
 
-    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds),Array.from(countRequestChildTemplateIds), searchInput, semanticSearch);
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
+        Array.from(countRequestTemplateIds),
+        Array.from(countRequestChildTemplateIds),
+        searchInput,
+        semanticSearch,
+    );
 
     return templates.flatMap((template) => {
         const countTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;

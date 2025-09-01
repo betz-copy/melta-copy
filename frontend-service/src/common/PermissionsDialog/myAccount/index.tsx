@@ -103,7 +103,6 @@ const MyAccount: React.FC<{
         <Grid container>
             <Grid
                 container
-                item
                 sx={{
                     padding: '0px 17px 6px 10px',
                     margin: '20px',
@@ -123,8 +122,8 @@ const MyAccount: React.FC<{
 
                 <UserDetails existingUser={userPopulated} editProfile={editProfile} />
 
-                <Grid container item display="flex" justifyContent="space-between" alignItems="center" width="100%" margin={1}>
-                    <Grid item>
+                <Grid container display="flex" justifyContent="space-between" alignItems="center" width="100%" margin={1}>
+                    <Grid>
                         <SelectCheckbox
                             title={i18next.t('notifications.notificationType')}
                             options={allNotifications}
@@ -138,7 +137,7 @@ const MyAccount: React.FC<{
                             horizontalOrigin={153}
                         />
                     </Grid>
-                    <Grid item marginRight={1}>
+                    <Grid marginRight={1}>
                         <DayNightSwitch
                             checked={darkMode}
                             onClick={() => {

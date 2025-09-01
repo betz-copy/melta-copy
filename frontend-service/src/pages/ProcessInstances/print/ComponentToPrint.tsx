@@ -72,7 +72,7 @@ const ComponentToPrint = React.forwardRef<
                     </Grid>
                     <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
                         <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
-                            <Grid item xs zeroMinWidth>
+                            <Grid size="grow">
                                 <Box display="flex" alignItems="center" flexWrap="wrap">
                                     <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                         {processInstance.name}
@@ -85,13 +85,13 @@ const ComponentToPrint = React.forwardRef<
                                     </Typography>
                                 </Box>
                             </Grid>
-                            <Grid item container xs="auto" alignItems="center" spacing={1}>
+                            <Grid container size={{ xs: 'auto' }} alignItems="center" spacing={1}>
                                 {processInstance.reviewedAt && (
-                                    <Grid item>
+                                    <Grid>
                                         <ReviewedAtProcessStatus instance={processInstance} isPrinting />
                                     </Grid>
                                 )}
-                                <Grid item>
+                                <Grid>
                                     <ProcessStatus instance={processInstance} isPrinting />
                                 </Grid>
                             </Grid>
@@ -105,7 +105,7 @@ const ComponentToPrint = React.forwardRef<
                         <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`} marginTop={5}>
                             <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
                                 <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
-                                    <Grid item xs zeroMinWidth>
+                                    <Grid size="grow">
                                         <Box display="flex" alignItems="center" flexWrap="wrap">
                                             <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                                 {stepTemplate.displayName}
@@ -118,13 +118,13 @@ const ComponentToPrint = React.forwardRef<
                                             </Typography>
                                         </Box>
                                     </Grid>
-                                    <Grid item container xs="auto" alignItems="center" spacing={1}>
+                                    <Grid container size={{ xs: 'auto' }} alignItems="center" spacing={1}>
                                         {stepInstance.reviewedAt && (
-                                            <Grid item>
+                                            <Grid>
                                                 <ReviewedAtProcessStatus instance={stepInstance} isPrinting />
                                             </Grid>
                                         )}
-                                        <Grid item>
+                                        <Grid>
                                             <ProcessStatus instance={stepInstance} isPrinting />
                                         </Grid>
                                     </Grid>

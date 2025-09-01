@@ -1,7 +1,7 @@
+import { logger } from '@microservices/shared';
 import axios from 'axios';
 import 'elastic-apm-node/start';
 import mongoose from 'mongoose';
-import { logger } from '@microservices/shared';
 import config from './config';
 import Server from './express/server';
 

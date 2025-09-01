@@ -15,6 +15,7 @@ import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getFilesName } from '../../../../utils/getFileName';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { locationConverterToString } from '../../../../utils/map/convert';
@@ -42,7 +43,7 @@ const logTitles = {
 };
 
 const TitleWithIcon = (action: string) => (
-    <Grid item container marginBottom="10px">
+    <Grid container marginBottom="10px">
         <NotificationColor color={logColors[action]} />
         <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
             {logTitles[action]}
@@ -68,7 +69,7 @@ const EmptyMetadataActionText: React.FC<{
     };
 
     return (
-        <Grid item minWidth="190px">
+        <Grid minWidth="190px">
             {TitleWithIcon(action)}
             <StyledTypography variant="body2">{logTexts[action]}</StyledTypography>
         </Grid>
@@ -97,7 +98,7 @@ const RelationshipMetadataActionText: React.FC<{
     const otherEntityTemplate = otherEntityTemplateId ? entityTemplates.get(otherEntityTemplateId) : undefined;
 
     return (
-        <Grid item container>
+        <Grid container>
             {TitleWithIcon(action)}
             <StyledTypography variant="body2" component="span">
                 {action === 'CREATE_RELATIONSHIP'
@@ -135,7 +136,7 @@ const DuplicateEntityMetadataActionText: React.FC<{
     const [_, navigate] = useLocation();
 
     return (
-        <Grid item minWidth="190px">
+        <Grid minWidth="190px">
             {TitleWithIcon('DUPLICATE_ENTITY')}
             <StyledTypography variant="body2" component="span">
                 {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
@@ -183,6 +184,8 @@ const UpdateTextValue: React.FC<{
     fieldName: string;
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ value, old, fieldName, entityTemplateProperties }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     let innerContent: React.ReactNode;
     if (isLocationData(value))
         innerContent =
@@ -235,9 +238,9 @@ const UpdateTextValue: React.FC<{
 
             return (
                 <Chip
-                    sx={{ marginLeft: '5px' }}
                     size="small"
-                    avatar={<UserAvatar user={JSON.parse(value)} size={23} bgColor="1E2775" />}
+                    avatar={<UserAvatar user={JSON.parse(value)} size={23} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                    sx={{ marginLeft: '5px', background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
                     label={JSON.parse(value).fullName}
                 />
             );
@@ -254,12 +257,12 @@ const UpdateTextValue: React.FC<{
 
     return value && typeof innerContent === 'string' ? (
         <MeltaTooltip
-            PopperProps={popperProps}
+            slotProps={{ popper: popperProps }}
             disableHoverListener={!innerContent}
             title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent, true)}</Grid>}
             placement="top-start"
         >
-            <Grid item marginBottom="5px">
+            <Grid marginBottom="5px">
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
                     {contentDisplayNameByTemplate(innerContent)}
@@ -280,9 +283,9 @@ const UpdateEntityMetadataActionText: React.FC<{
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
     return (
-        <Grid item container flexDirection="column">
+        <Grid container flexDirection="column">
             {TitleWithIcon('UPDATE_FIELDS')}
-            <Grid item minWidth="190px">
+            <Grid minWidth="190px">
                 <StyledTypography variant="body2" marginBottom="5px">
                     {actionMetadata.updatedFields.length === 1
                         ? i18next.t('entityPage.activityLog.updateField')
@@ -329,7 +332,7 @@ const UpdateStepProcessMetadataActionText: React.FC<{
     entityTemplate: IMongoStepTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     return (
-        <Grid item minWidth="190px">
+        <Grid minWidth="190px">
             {actionMetadata?.updatedFields && actionMetadata?.updatedFields.length > 0 && (
                 <UpdateEntityMetadataActionText
                     actionMetadata={{ updatedFields: actionMetadata.updatedFields }}

@@ -25,7 +25,7 @@ const LocationAutoCompleteOption: React.FC<LocationAutoCompleteOptionProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <Grid container item alignItems="center" justifyContent="space-between" paddingX="10px">
+        <Grid container alignItems="center" justifyContent="space-between" paddingX="10px">
             <Typography
                 style={{
                     textOverflow: 'ellipsis',
@@ -198,9 +198,9 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
                         <Grid container direction="row" alignItems="center">
-                            <Grid item container direction="column" onClick={() => handleEntityClick(option)}>
-                                <Grid item container alignSelf="center" direction="row" spacing={1}>
-                                    <Grid item>
+                            <Grid container direction="column" onClick={() => handleEntityClick(option)}>
+                                <Grid container alignSelf="center" direction="row" spacing={1}>
+                                    <Grid>
                                         <MeltaTooltip
                                             title={
                                                 template.propertiesPreview.length === 0 ? (
@@ -218,11 +218,11 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                             <InfoOutlined sx={{ color: '#166BD4' }} />
                                         </MeltaTooltip>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <Typography fontWeight={600}>{template.displayName}</Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item container direction="column" spacing={1}>
+                                <Grid container direction="column" spacing={1}>
                                     {template.mapSearchProperties
                                         ? template.mapSearchProperties.map((key, index) => (
                                               <LocationAutoCompleteOption

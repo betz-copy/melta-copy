@@ -1,3 +1,4 @@
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
     CalendarMonth as CalendarIcon,
     MeetingRoom as ExitIcon,
@@ -6,20 +7,19 @@ import {
     Hive as HiveIcon,
     ManageAccounts as ManageAccountsIcon,
     Add as PlusIcon,
+    StarBorderPurple500,
     Widgets as WidgetsIcon,
-    Map,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import StarBorderPurple500Icon from '@mui/icons-material/StarBorderPurple500';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
+import { RelatedPermission } from '../../interfaces/users';
 import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -38,7 +38,6 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
-import { RelatedPermission } from '../../interfaces/users';
 
 interface SideBarProps {
     toggleDrawer: () => any;
@@ -56,6 +55,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const { metadata } = useWorkspaceStore((state) => state.workspace);
+    const { showMapPage } = metadata.mapPage;
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
@@ -106,7 +108,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} data-tour="side-bar" style={{ zIndex: '1' }} sx={{ zIndex: '1' }}>
             <Grid container direction="column" wrap="nowrap" height="100%" sx={{ bgcolor: darkMode ? '#000' : theme.palette.primary.main }}>
                 <Grid
-                    item
                     container
                     direction="column"
                     alignItems="center"
@@ -151,7 +152,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Button>
                     </Box>
 
-                    <Grid item container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
+                    <Grid container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
                         <ProfileButton
                             currentUser={currentUser}
                             text={i18next.t('personalDetails')}
@@ -239,8 +240,30 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         )}
                     </Grid>
                 </Grid>
+
+                {showMapPage && (
+                    <>
+                        <Grid container paddingY="0.5rem">
+                            <NavButton
+                                to="/map"
+                                text={i18next.t('pages.map')}
+                                isDrawerOpen={isDrawerOpen}
+                                onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
+                                isActiveButton={activeButton === 'map'}
+                            >
+                                <CustomImage
+                                    imageUrl="/icons/map-page.svg"
+                                    width="24px"
+                                    height="24px"
+                                    color={activeButton === 'map' ? '#545eb9' : '#FFFFFF'}
+                                />
+                            </NavButton>
+                        </Grid>
+                        <DrawerDivider />
+                    </>
+                )}
+
                 <Grid
-                    item
                     container
                     height="100%"
                     direction="column"
@@ -299,7 +322,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     )}
                 </Grid>
                 <DrawerDivider />
-                <Grid item container direction="column" paddingY="0.5rem">
+                <Grid container direction="column" paddingY="0.5rem">
                     {meltaPlus && (
                         <NavButton
                             to="/fluid-simulation"
@@ -330,7 +353,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         extension={
                             iFramesInSidebar?.length! > 0 ? (
                                 <Grid container display="flex" flexDirection="column">
-                                    <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                    <Grid width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
                                             <Grid
                                                 key={iFrame._id}
@@ -390,17 +413,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'iFrames'}
                     >
-                        <StarBorderPurple500Icon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...iconSize }} />
-                    </NavButton>
-
-                    <NavButton
-                        to="/map"
-                        text={i18next.t('pages.map')}
-                        isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
-                        isActiveButton={activeButton === 'map'}
-                    >
-                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...iconSize }} />
+                        <StarBorderPurple500 fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -507,7 +520,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <>
                         <DrawerDivider />
 
-                        <Grid container item paddingY="0.5rem" justifyContent="center">
+                        <Grid container paddingY="0.5rem" justifyContent="center">
                             <NavButton
                                 to={`~${workspace?.path}`}
                                 text={i18next.t('workspaces.goBack')}
@@ -520,7 +533,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Grid>
                     </>
                 )}
-                <Grid item>
+                <Grid>
                     <IconButton
                         onClick={() => {
                             if (!isDrawerOpen) {

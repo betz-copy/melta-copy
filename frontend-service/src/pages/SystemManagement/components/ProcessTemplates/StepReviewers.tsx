@@ -16,7 +16,7 @@ export const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
 
     return (
         <Grid container>
-            <Grid item>
+            <Grid>
                 <Button
                     onClick={(event) => {
                         event.preventDefault();
@@ -31,7 +31,7 @@ export const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
             </Grid>
             {isOpen &&
                 reviewers.map((reviewer) => (
-                    <Grid item key={reviewer._id}>
+                    <Grid key={reviewer._id}>
                         <Typography
                             style={{
                                 fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
