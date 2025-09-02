@@ -248,3 +248,166 @@ new:
     WHERE size(matchingFields) > 0
 
     RETURN n, matchingFields
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    intersct:
+
+    WITH {
+  `68abfe22bd1e151097774f40`: {
+    locationFields: ['polygon'],
+    polygon: [
+      [34.96064065858675, 32.969975654012586],
+      [35.13841321411152, 32.948769580389715],
+      [35.144080112976575, 32.854235391694594],
+      [35.03217053408893, 32.735355363733355],
+      [34.966674744500004, 32.71742058279105],
+      [34.779721771500604, 32.735107675808216],
+      [34.75060963021374, 32.790439392138765],
+      [34.75060963021374, 32.790439392138765]
+    ]
+  }
+} AS templates
+UNWIND keys(templates) AS templateId
+WITH templateId, templates[templateId] AS templateData
+MATCH (n)
+WHERE labels(n) = [templateId]
+ AND templateData.polygon IS NOT NULL
+      WITH n, templateData, [p IN templateData.polygon |
+                point({longitude: p[0], latitude: p[1], crs:'wgs-84'})
+            ] AS polygon
+
+                WITH n, templateData, polygon,
+         reduce(minLon =  180.0,  p IN polygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS polygonMinLon,
+         reduce(maxLon = -180.0,  p IN polygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS polygonMaxLon,
+         reduce(minLat =   90.0,  p IN polygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS polygonMinLat,
+         reduce(maxLat =  -90.0,  p IN polygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS polygonMaxLat
+
+   
+
+    WITH n, templateData, polygonMinLon, polygonMaxLon, polygonMinLat, polygonMaxLat,
+         [field IN templateData.locationFields |
+             CASE
+                 WHEN n[field] IS NULL THEN []
+                 ELSE [n[field]]                      
+             END
+         ] AS fieldsAsLists,
+         templateData.locationFields AS originalFields
+
+   WITH n, polygonMinLon, polygonMaxLon, polygonMinLat, polygonMaxLat, originalFields, 
+         apoc.coll.flatten(fieldsAsLists, true) AS fieldsAsLists
+
+
+             WITH n,
+         [idx IN range(0, size(originalFields)-1) |
+             CASE
+                 WHEN fieldsAsLists[idx] IS NOT NULL THEN
+                     // Calculate field bounding box and check intersection
+                     CASE
+                         WHEN reduce(fieldMinLon =  180.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.x < fieldMinLon THEN pt.x ELSE fieldMinLon END) <= polygonMaxLon AND
+                              reduce(fieldMaxLon = -180.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.x > fieldMaxLon THEN pt.x ELSE fieldMaxLon END) >= polygonMinLon AND
+                              reduce(fieldMinLat =   90.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.y < fieldMinLat THEN pt.y ELSE fieldMinLat END) <= polygonMaxLat AND
+                              reduce(fieldMaxLat =  -90.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.y > fieldMaxLat THEN pt.y ELSE fieldMaxLat END) >= polygonMinLat
+                         THEN originalFields[idx]
+                         ELSE null
+                     END
+                 ELSE null
+             END
+         ] AS matchingFields
+
+
+
+
+
+    WITH n, [f IN matchingFields WHERE f IS NOT NULL] AS matchingFields
+    WHERE size(matchingFields) > 0
+
+    RETURN n, matchingFields
+
+workksssss b"h:
+       AND templateData.polygon IS NOT NULL
+        WITH n, templateData, [p IN templateData.polygon |
+                point({longitude: p[0], latitude: p[1], crs:'wgs-84'})
+            ] AS polygon
+
+        WITH n, templateData, polygon,
+        reduce(minLon =  180.0,  p IN polygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS polygonMinLon,
+        reduce(maxLon = -180.0,  p IN polygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS polygonMaxLon,
+        reduce(minLat =   90.0,  p IN polygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS polygonMinLat,
+        reduce(maxLat =  -90.0,  p IN polygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS polygonMaxLat
+
+   
+
+        WITH n, templateData, polygonMinLon, polygonMaxLon, polygonMinLat, polygonMaxLat,
+         [field IN templateData.locationFields |
+             CASE
+                 WHEN n[field] IS NULL THEN []
+                 ELSE [n[field]]                      
+             END
+         ] AS fieldsAsLists,
+         templateData.locationFields AS originalFields
+
+        WITH n, polygonMinLon, polygonMaxLon, polygonMinLat, polygonMaxLat, originalFields, 
+         apoc.coll.flatten(fieldsAsLists, true) AS fieldsAsLists
+
+
+             WITH n,
+                [idx IN range(0, size(originalFields)-1) |
+             CASE
+                 WHEN fieldsAsLists[idx] IS NOT NULL THEN
+                     // Calculate field bounding box and check intersection
+                     CASE
+                         WHEN reduce(fieldMinLon =  180.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.x < fieldMinLon THEN pt.x ELSE fieldMinLon END) <= polygonMaxLon AND
+                              reduce(fieldMaxLon = -180.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.x > fieldMaxLon THEN pt.x ELSE fieldMaxLon END) >= polygonMinLon AND
+                              reduce(fieldMinLat =   90.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.y < fieldMinLat THEN pt.y ELSE fieldMinLat END) <= polygonMaxLat AND
+                              reduce(fieldMaxLat =  -90.0,  pt IN fieldsAsLists[idx] | CASE WHEN pt.y > fieldMaxLat THEN pt.y ELSE fieldMaxLat END) >= polygonMinLat
+                         THEN originalFields[idx]
+                         ELSE null
+                     END
+                 ELSE null
+             END
+         ] AS matchingFields
+
+            WITH n, [f IN matchingFields WHERE f IS NOT NULL] AS matchingFields
+    WHERE size(matchingFields) > 0
+
+    RETURN n, matchingFields
+
+
+got entites:
+work:
+  [
+      [34.96064065858675, 32.969975654012586],
+      [35.13841321411152, 32.948769580389715],
+      [35.144080112976575, 32.854235391694594],
+      [35.03217053408893, 32.735355363733355],
+      [34.966674744500004, 32.71742058279105],
+      [34.779721771500604, 32.735107675808216],
+      [34.75060963021374, 32.790439392138765],
+      [34.75060963021374, 32.790439392138765]
+    ]
+
+didnt work:
+ [
+        [ 35.08700427780373, 32.64939786942134 ],
+        [ 34.94234812509149, 32.69230651420709 ],
+        [ 35.09610407268958, 32.751871106895514 ],
+        [ 35.09610407268958, 32.751871106895514 ],
+        [ 35.09610407268958, 32.751871106895514 ]
+      ]

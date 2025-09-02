@@ -49,9 +49,7 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import { polygon as turfPolygon, featureCollection, point as turfPoint } from '@turf/helpers';
-import { intersect } from '@turf/intersect';
-import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
+import { intersect, polygon as turfPolygon, featureCollection, point as turfPoint, booleanPointInPolygon } from '@turf/turf';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
@@ -967,7 +965,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return coords;
     }
 
-    private filterIntersectingPoints(
+    private filterIntersectingEntities(
         searchResult: {
             node: IEntity;
             matchingFields: string[];
@@ -1022,7 +1020,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         if (!polygon) return searchResult;
 
-        return this.filterIntersectingPoints(searchResult, polygon);
+        return this.filterIntersectingEntities(searchResult, polygon);
     }
 
     async getEntityById(id: string) {
