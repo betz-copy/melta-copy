@@ -1,5 +1,5 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import { Add as AddIcon, DarkMode } from '@mui/icons-material';
+import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
