@@ -519,12 +519,15 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
+    coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
 ): Promise<Record<string, any>> => {
     const normalizedEntity: Record<string, any> = {};
 
     await Promise.all(
         Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
+            if (Object.keys(coloredFields ?? {}).includes(key)) normalizedEntity[`${key}${neo4j.colorPropertySuffix}`] = coloredFields?.[key];
+
             if (!(key in entityProperties)) {
                 if (value.type === 'boolean') {
                     normalizedEntity[key] = false;
@@ -598,6 +601,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                         propertyValue.properties,
                         relatedEntityTemplate,
                         entityTemplateService,
+                        coloredFields,
                         hasNestedRelationship,
                     );
                 }

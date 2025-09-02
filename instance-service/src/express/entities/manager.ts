@@ -2,6 +2,7 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-await-in-loop */
 import {
+    ActionOnFail,
     ActionsLog,
     ActionTypes,
     BadRequestError,
@@ -257,12 +258,24 @@ class EntityManager extends DefaultManagerNeo4j {
         }
     };
 
+    getColoredFields(rules: IMongoRule[]) {
+        const indicatorColorRules = rules.filter((r) => r.actionOnFail === ActionOnFail.INDICATOR && r.fieldColor);
+
+        const coloredFields: Record<string, string> = {};
+        indicatorColorRules.forEach(({ fieldColor }) => {
+            coloredFields[fieldColor!.field] = fieldColor!.color;
+        });
+
+        return coloredFields;
+    }
+
     async createEntityInTransaction(
         transaction: Transaction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
         userId?: string,
         duplicatedFromId?: string,
+        coloredFields?: Record<string, string>,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
         const relatedEntitiesByIds: Record<string, IEntity> = {};
@@ -289,7 +302,12 @@ class EntityManager extends DefaultManagerNeo4j {
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(
+                        fixedProperties,
+                        entityTemplate,
+                        this.entityTemplateManagerService,
+                        coloredFields,
+                    )),
                 },
             },
         );
@@ -375,6 +393,7 @@ class EntityManager extends DefaultManagerNeo4j {
             relatedEntity.properties,
             relatedEntityTemplate,
             this.entityTemplateManagerService,
+            undefined, // TODO: check if coloredFields relevant here
             true,
         );
 
@@ -453,10 +472,11 @@ class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
+        coloredFields?: Record<string, string>,
     ) {
         const { properties, templateId } = metadata;
         const entityTemplate = entitiesTemplatesByIds.get(templateId)!;
-        const { createdEntity } = await this.createEntityInTransaction(transaction, properties, entityTemplate, userId);
+        const { createdEntity } = await this.createEntityInTransaction(transaction, properties, entityTemplate, userId, undefined, coloredFields);
         return createdEntity;
     }
 
@@ -465,6 +485,7 @@ class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
+        coloredFields?: Record<string, string>,
     ) {
         const { entityId } = metadata;
         const entity = await this.getEntityByIdInTransaction(entityId, transaction);
@@ -472,7 +493,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const bulkManager = new BulkActionManager(this.workspaceId);
 
         const fixedFields = bulkManager.fixUpdatedFields(metadata, entityTemplate, entity);
-        return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
+        return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId, coloredFields);
     }
 
     async executeEntityTemplateActionOnInstanceCrud(
@@ -481,6 +502,7 @@ class EntityManager extends DefaultManagerNeo4j {
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
         childTemplate?: IChildTemplatePopulated,
+        coloredFields?: Record<string, string>,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -490,15 +512,28 @@ class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
+                        this.createOrDuplicateAction(
+                            actionMetadata as ICreateEntityMetadata,
+                            transaction,
+                            entitiesTemplatesByIds,
+                            userId,
+                            coloredFields,
+                        ),
                     [ActionTypes.DuplicateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
+                        this.createOrDuplicateAction(
+                            actionMetadata as ICreateEntityMetadata,
+                            transaction,
+                            entitiesTemplatesByIds,
+                            userId,
+                            coloredFields,
+                        ),
                     [ActionTypes.UpdateEntity]: async () => {
                         const { updatedEntity } = await this.updateAction(
                             actionMetadata as IUpdateEntityMetadata,
                             transaction,
                             entitiesTemplatesByIds,
                             userId,
+                            coloredFields,
                         );
                         return updatedEntity;
                     },
@@ -698,12 +733,19 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
+                const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
+                    entityTemplateIds: [entityTemplate._id],
+                });
+
+                const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entityTemplate._id, Object.keys(properties));
+
                 const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
                     transaction,
                     properties,
                     template,
                     userId,
                     duplicatedFromId,
+                    this.getColoredFields(relevantRulesOfEntity),
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
 
@@ -1483,6 +1525,7 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         transaction: Transaction,
         userId?: string,
+        coloredFields?: Record<string, string>,
         convertToRelationshipField = false,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
@@ -1518,7 +1561,12 @@ class EntityManager extends DefaultManagerNeo4j {
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 props: {
-                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(
+                        fixedProperties,
+                        entityTemplate,
+                        this.entityTemplateManagerService,
+                        coloredFields,
+                    )),
                     updatedAt: getNeo4jDateTime(),
                     _id: id,
                 },
@@ -1632,6 +1680,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     template,
                     transaction,
                     userId,
+                    this.getColoredFields(ruleFailuresBeforeAction.map(({ rule }) => rule)),
                     convertToRelationshipField,
                 );
 
@@ -1681,6 +1730,7 @@ class EntityManager extends DefaultManagerNeo4j {
                         entityTemplate,
                         transaction,
                         userId,
+                        undefined,
                         true,
                     );
 

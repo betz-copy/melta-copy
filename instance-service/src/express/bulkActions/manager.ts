@@ -283,6 +283,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         actions: IAction[],
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
+        coloredFields?: Record<string, string>,
     ) {
         const results: (IEntity | IRelationship)[] = [];
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -296,6 +297,8 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         actionMetadata.properties,
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
                         userId,
+                        undefined,
+                        coloredFields,
                     );
 
                     results.push(createdEntity);
@@ -311,6 +314,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
                         userId,
                         actionMetadata.entityIdToDuplicate,
+                        coloredFields,
                     );
 
                     results.push(createdEntity);
@@ -356,6 +360,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         transaction,
                         entitiesTemplatesByIds,
                         userId,
+                        coloredFields,
                     );
 
                     results.push(updatedEntity);
@@ -483,14 +488,21 @@ export class BulkActionManager extends DefaultManagerNeo4j {
 
                     const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
 
-                    const [ruleFailuresBeforeAll, { results, allActivityLogsToCreate }] = await Promise.all([
-                        this.entityManager.runRulesOnEntitiesWithRuleReasons(
-                            transaction,
-                            entitiesIdsRulesReasonsMapBeforeRunActions,
-                            rulesByEntityTemplateIds,
-                        ),
-                        this.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId),
-                    ]);
+                    const ruleFailuresBeforeAll = await this.entityManager.runRulesOnEntitiesWithRuleReasons(
+                        transaction,
+                        entitiesIdsRulesReasonsMapBeforeRunActions,
+                        rulesByEntityTemplateIds,
+                    );
+
+                    const coloredFields = this.entityManager.getColoredFields(ruleFailuresBeforeAll.map(({ rule }) => rule));
+
+                    const { results, allActivityLogsToCreate } = await this.runBulkOfActionsInTransaction(
+                        transaction,
+                        actions,
+                        entitiesTemplatesByIds,
+                        userId,
+                        coloredFields,
+                    );
 
                     const entitiesIdsRulesReasonsMapAfterRunActions = await this.getEntitiesIdsRulesReasonsAfter(
                         actions,

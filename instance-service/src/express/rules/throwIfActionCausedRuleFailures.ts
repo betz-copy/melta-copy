@@ -1,9 +1,7 @@
-import _difference from 'lodash.difference';
+import { ActionOnFail, BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
+import _ from 'lodash';
 import _groupBy from 'lodash.groupby';
-import _isEqual from 'lodash.isequal';
-import _mapValues from 'lodash.mapvalues';
 import _sortBy from 'lodash.sortby';
-import { IAction, IBrokenRule, ICausesOfInstance, BadRequestError } from '@microservices/shared';
 import config from '../../config';
 import filteredMap from '../../utils/filteredMap';
 import { isEqualStripUndefined } from '../../utils/lib';
@@ -108,7 +106,9 @@ export const throwIfActionCausedRuleFailures = (
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
     actions?: IAction[],
 ) => {
-    const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
+    const relevantRules = ruleFailuresAfterAction.filter((rule) => rule.rule.actionOnFail !== ActionOnFail.INDICATOR);
+
+    const ruleFailuresWithNewCauses = filteredMap(relevantRules, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
             return rule._id === ruleFailureAfterAction.rule._id && entityId === ruleFailureAfterAction.entityId;
         });
