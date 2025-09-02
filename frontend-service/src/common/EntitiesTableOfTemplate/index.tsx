@@ -441,6 +441,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             currentUser,
             currentClientSideUser: clientSideUserEntity,
             actionsColumnWidth,
+            darkMode,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 

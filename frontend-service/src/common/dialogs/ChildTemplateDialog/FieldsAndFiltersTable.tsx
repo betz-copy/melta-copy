@@ -59,9 +59,15 @@ const renderChips = (
     fieldSchema: IEntitySingleProperty,
     onDelete: (chip: IChip, mode: ChipType) => void,
     isFilterByUser?: boolean,
+    isFilterByUserUnit?: boolean,
 ): React.ReactNode[] => {
-    if (isFilterByUser)
-        return [<Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>{i18next.t('childTemplate.byUser')}</Typography>];
+    if (isFilterByUser || isFilterByUserUnit) {
+        return [
+            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
+                {i18next.t(`childTemplate.${isFilterByUser ? 'byUser' : 'byUnit'}`)}
+            </Typography>,
+        ];
+    }
 
     return chips.map((chip, index) => {
         const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);
@@ -95,6 +101,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     const isSerialNumberField = !!property?.serialCurrent;
                     const isRelationshipRefField = property?.format === 'relationshipReference';
                     const isFilterByUser = property?.format === 'user' && values.filterByCurrentUserField === fieldName;
+                    const isFilterByUserUnit = property?.format === 'unitField' && values.filterByUnitUserField === fieldName;
 
                     const onCheckboxChange = (checked: boolean) => {
                         setFieldTouched(`properties.properties.${fieldName}`, true);
@@ -160,10 +167,17 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
 
                                 <Grid size={{ xs: 3 }}>
                                     <Grid container spacing={0.5} alignItems="center" justifyContent="center">
-                                        {renderChips(ChipType.Filter, value.filters ?? [], property, onDeleteFilterChip, isFilterByUser)}
+                                        {renderChips(
+                                            ChipType.Filter,
+                                            value.filters ?? [],
+                                            property,
+                                            onDeleteFilterChip,
+                                            isFilterByUser,
+                                            isFilterByUserUnit,
+                                        )}
 
                                         <Grid>
-                                            {!isFilterByUser && (
+                                            {!isFilterByUser && !isFilterByUserUnit && (
                                                 <Button
                                                     color="primary"
                                                     onClick={() => !isSubmitDisabled() && handleSelectProperty(ChipType.Filter)}
@@ -186,9 +200,11 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                             property,
                                             onDeleteFilterChip,
                                             isFilterByUser,
+                                            isFilterByUserUnit,
                                         )}
+
                                         <Grid>
-                                            {!isFilterByUser && (
+                                            {!isFilterByUser && !isFilterByUserUnit && (
                                                 <Button
                                                     color="primary"
                                                     onClick={() => handleSelectProperty(ChipType.Default)}

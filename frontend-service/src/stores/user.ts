@@ -13,6 +13,7 @@ export interface UserState {
         };
         displayName: string;
         unit: string;
+        units?: Record<string, string[]>;
         rank: string;
         exp: number;
         iat: number;

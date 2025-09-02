@@ -1,5 +1,5 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, DarkMode } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -74,6 +74,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     currentUser: UserState['user'];
     currentClientSideUser: IEntity;
     actionsColumnWidth?: number;
+    darkMode: boolean;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -106,6 +107,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     currentUser,
     currentClientSideUser,
     actionsColumnWidth = 200,
+    darkMode,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -279,7 +281,16 @@ export const getColumnDefs = <Data extends any = EntityData>({
             );
         }
         if (propertyTemplate.format === 'user') {
-            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], isLastColumn, hideColumn);
+            return userColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                [],
+                defaultColumnWidths[property],
+                isLastColumn,
+                darkMode,
+                hideColumn,
+            );
         }
         if (propertyTemplate.items?.format === 'user') {
             return userArrayColDef(

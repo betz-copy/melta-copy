@@ -16,7 +16,7 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     );
 };
 
-export const didPermissionsChange = (currentPermissions: IUser['permissions'], newPermissions: IUser['permissions']) =>
+export const isPermissionsEquals = (currentPermissions: IUser['permissions'], newPermissions: IUser['permissions']) =>
     isEqualWith(currentPermissions, newPermissions);
 
 export type childTemplatePermissionDialog = {

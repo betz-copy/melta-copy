@@ -88,6 +88,7 @@ const RjsfSelectWidget = ({
         <MultipleSelect
             items={items}
             id={id}
+            schema={schema}
             disabled={disabled}
             readonly={readonly}
             multiple={multiple}
