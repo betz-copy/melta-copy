@@ -16,9 +16,9 @@ export const BrokenRuleActions: React.FC<{
 
     return (
         <Grid>
-            <Grid item>
-                <Grid item container alignItems="center">
-                    <Grid item paddingTop="8px">
+            <Grid>
+                <Grid container alignItems="center">
+                    <Grid paddingTop="8px">
                         {openActions ? (
                             <ExpandLessIcon sx={{ color: '#787C9E', width: '20px', height: '20px' }} />
                         ) : (
@@ -32,12 +32,12 @@ export const BrokenRuleActions: React.FC<{
                 <Collapse in={openActions} timeout="auto" unmountOnExit style={{ marginRight: '15px' }}>
                     {actions.map((action, index) => {
                         return (
-                            <Grid item container key={index} spacing={1}>
-                                <Grid item>
+                            <Grid container key={index} spacing={1}>
+                                <Grid>
                                     <Typography>{index + 1}.</Typography>
                                 </Grid>
 
-                                <Grid item>
+                                <Grid>
                                     <ActionInfo
                                         actionType={action.actionType}
                                         actionMetadata={action.actionMetadata}

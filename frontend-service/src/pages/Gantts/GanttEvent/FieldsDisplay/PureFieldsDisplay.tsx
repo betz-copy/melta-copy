@@ -27,14 +27,14 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                 return (
                     <Fragment key={field}>
                         {!expanded && Boolean(index) && (
-                            <Grid item>
+                            <Grid>
                                 <Typography fontSize={14} sx={{ ...textStyle }}>
                                     {ganttSettings.separators.field}
                                 </Typography>
                             </Grid>
                         )}
 
-                        <Grid item>
+                        <Grid>
                             <MeltaTooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded}>
                                 <Typography
                                     fontSize={14}

@@ -180,8 +180,6 @@ export const uiSchemaUtils = (
                     unitsOptions,
                 );
 
-                if (!groupedUiSchema['ui:classNames']) groupedUiSchema['ui:classNames'] = 'half-width-field';
-
                 uiSchema[propertyKey][groupedPropertyKey] = groupedUiSchema;
             }
         } else uiSchema[propertyKey] = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, propertyKey, propertySchema, unitsOptions);

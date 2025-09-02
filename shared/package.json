@@ -12,11 +12,8 @@
         "prettier:fix": "prettier --config .prettierrc.js 'src/**/*.ts' --write"
     },
     "dependencies": {
-        "mongoose": "^8.8.1",
         "neo4j-driver": "^5.23.0",
         "proj4": "^2.15.0"
     },
-    "devDependencies": {
-        "@types/mongoose": "^5.11.96"
-    }
+    "devDependencies": {}
 }

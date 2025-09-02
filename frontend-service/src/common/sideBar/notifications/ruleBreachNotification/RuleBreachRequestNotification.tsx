@@ -20,7 +20,7 @@ export const RuleBreachRequestNotification: React.FC<{ notificationMetadata: IRu
                     {i18next.t('ruleBreachRequestNotification.requestWaitingForApproval')}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <RuleBreachInfo originUser={request.originUser} brokenRules={request.brokenRules} actions={request.actions} isCompact />
             </Grid>
         </Grid>

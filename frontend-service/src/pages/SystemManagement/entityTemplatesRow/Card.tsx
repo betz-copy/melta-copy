@@ -1,5 +1,4 @@
-import { AppRegistration as AppRegistrationIcon, InfoOutlined } from '@mui/icons-material';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { AppRegistration as AppRegistrationIcon, ArrowBackIosNew, InfoOutlined } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
@@ -171,22 +170,22 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     paddingLeft="20px"
                     flexWrap="nowrap"
                 >
-                    <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                        <Grid item>
+                    <Grid container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid>
                             <EntityTemplateColor
                                 entityTemplateColor={getEntityTemplateColor(childTemplates?.get(entityTemplate._id) ?? entityTemplate, categoryColor)}
                                 style={{ height: '18px' }}
                             />
                         </Grid>
 
-                        <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        <Grid sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
                                 <AppRegistrationIcon style={{ ...workspace.metadata.iconSize }} fontSize="small" />
                             )}
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <MeltaTooltip title={title}>
                                 <Typography
                                     style={{
@@ -204,7 +203,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </MeltaTooltip>
                         </Grid>
                     </Grid>
-                    <Grid item container flexBasis="10%" alignItems="center" justifyContent="flex-end">
+                    <Grid container flexBasis="10%" alignItems="center" justifyContent="flex-end">
                         {isHoverOnCard && !isDisabledView && (
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
@@ -329,7 +328,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                 <Typography variant="body2">{childTemplates.get(entityTemplate._id)?.description}</Typography>
                                                 <Grid container spacing={1} sx={{ mt: 1 }}>
                                                     {getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
-                                                        <Grid item key={index}>
+                                                        <Grid key={index}>
                                                             <ColoredEnumChip color={chip.color} label={chip.label} />
                                                         </Grid>
                                                     ))}
@@ -358,9 +357,9 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 </Grid>
             }
             expendedCard={
-                <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
-                    <Grid item container justifyContent="space-between">
-                        <Grid item color={theme.palette.primary.main}>
+                <Grid container direction="column" gap="10px" width="232px" paddingLeft="20px">
+                    <Grid container justifyContent="space-between">
+                        <Grid color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
                         </Grid>
                     </Grid>
@@ -371,11 +370,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     )
                         .filter(([, value]) => !isFile(value) && value.display !== false)
                         .map(([key, value]) => (
-                            <Grid key={key} item container gap="5px" flexWrap="nowrap">
-                                <Grid item flexBasis="4%" color={theme.palette.primary.main}>
-                                    <ArrowBackIosNewIcon sx={{ fontSize: '12px' }} />
+                            <Grid key={key} container gap="5px" flexWrap="nowrap">
+                                <Grid flexBasis="4%" color={theme.palette.primary.main}>
+                                    <ArrowBackIosNew sx={{ fontSize: '12px' }} />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <MeltaTooltip title={value.title}>
                                         <Typography
                                             style={{
@@ -390,7 +389,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
-                                <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
+                                <Grid color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
                                     {value.format === 'user' || value.format === 'signature'
                                         ? i18next.t(`propertyTypes.${value.format}`)
                                         : i18next.t(`propertyTypes.${value.type}`)}
@@ -398,18 +397,18 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             </Grid>
                         ))}
                     {!!filesProps.length && (
-                        <Grid item container justifyContent="space-between">
-                            <Grid item flexBasis="27%" color={theme.palette.primary.main}>
+                        <Grid container justifyContent="space-between">
+                            <Grid flexBasis="27%" color={theme.palette.primary.main}>
                                 <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
                             </Grid>
                         </Grid>
                     )}
                     {filesProps.map(([key, value]) => (
-                        <Grid key={key} item container gap="5px">
-                            <Grid item flexBasis="4%" color={theme.palette.primary.main}>
-                                <ArrowBackIosNewIcon sx={{ fontSize: '12px' }} />
+                        <Grid key={key} container gap="5px">
+                            <Grid flexBasis="4%" color={theme.palette.primary.main}>
+                                <ArrowBackIosNew sx={{ fontSize: '12px' }} />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <MeltaTooltip title={key}>
                                     <Typography
                                         style={{
@@ -424,24 +423,24 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     </Typography>
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
+                            <Grid color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
                                 {i18next.t(`propertyTypes.${value.format === 'fileId' ? value.format : 'multipleFiles'}`)}
                             </Grid>
                         </Grid>
                     ))}
                     {!!entityTemplate.documentTemplatesIds?.length && (
-                        <Grid item container justifyContent="space-between">
-                            <Grid item color={theme.palette.primary.main}>
+                        <Grid container justifyContent="space-between">
+                            <Grid color={theme.palette.primary.main}>
                                 <Typography>{i18next.t('wizard.entityTemplate.exportDocuments')}</Typography>
                             </Grid>
                         </Grid>
                     )}
                     {entityTemplate.documentTemplatesIds?.map((documentTemplateId) => (
-                        <Grid key={documentTemplateId} item container gap="5px">
-                            <Grid item flexBasis="4%" color={theme.palette.primary.main}>
+                        <Grid key={documentTemplateId} container gap="5px">
+                            <Grid flexBasis="4%" color={theme.palette.primary.main}>
                                 <Typography>-</Typography>
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <MeltaTooltip title={getFileName(documentTemplateId)}>
                                     <Typography
                                         style={{

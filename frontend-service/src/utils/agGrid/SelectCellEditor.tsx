@@ -69,15 +69,17 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
                     fullWidth
                     variant="outlined"
                     error={false}
-                    inputProps={{
-                        ...params.inputProps,
-                        startAdornment:
-                            value && !Array.isArray(value) ? (
-                                <ColoredEnumChip label={value} color={colorsOptions?.[value] || 'default'} />
-                            ) : undefined,
-                        inputProps: {
+                    slotProps={{
+                        htmlInput: {
                             ...params.inputProps,
-                            style: value ? { display: 'none' } : {},
+                            startAdornment:
+                                value && !Array.isArray(value) ? (
+                                    <ColoredEnumChip label={value} color={colorsOptions?.[value] || 'default'} />
+                                ) : undefined,
+                            inputProps: {
+                                ...params.inputProps,
+                                style: value ? { display: 'none' } : {},
+                            },
                         },
                     }}
                 />

@@ -22,7 +22,6 @@ const ContactInfoCard: React.FC = () => {
                     <Grid container direction="column" spacing={1}>
                         {contacts.map((contact, idx) => (
                             <Grid
-                                item
                                 key={idx}
                                 sx={{
                                     display: 'flex',
@@ -34,17 +33,17 @@ const ContactInfoCard: React.FC = () => {
                                     px: 2,
                                 }}
                             >
-                                <Grid item container display="flex" direction="row" justifyContent="space-between" gap={1}>
+                                <Grid container display="flex" direction="row" justifyContent="space-between" gap={1}>
                                     <Typography fontSize="14px" color={propertyTitleColor}>
                                         {contact.role}
                                     </Typography>
-                                    <Grid item justifyContent="start" alignItems="start" display="flex">
+                                    <Grid justifyContent="start" alignItems="start" display="flex">
                                         <Typography fontSize="14px" color={propertyValueColor}>
                                             {contact.name}
                                         </Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item display="flex" gap={1}>
+                                <Grid display="flex" gap={1}>
                                     <Link href={contact.hichatLink}>
                                         <IconButton>
                                             <img src="/icons/hi-chat-icon.svg"></img>

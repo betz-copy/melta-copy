@@ -110,12 +110,14 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     value={typeof inputValue === 'string' && inputValue.endsWith(unit) ? inputValue.replace(unit, '') : inputValue}
                     variant="standard"
                     type={typeof inputValue === 'string' && inputValue.endsWith(unit) ? 'number' : 'text'}
-                    InputProps={{
-                        startAdornment:
-                            typeof value === 'string' && (value as string).endsWith(unit) ? (
-                                <InputAdornment position="start">{unit}</InputAdornment>
-                            ) : null,
-                        disableUnderline: true,
+                    slotProps={{
+                        input: {
+                            startAdornment:
+                                typeof value === 'string' && (value as string).endsWith(unit) ? (
+                                    <InputAdornment position="start">{unit}</InputAdornment>
+                                ) : null,
+                            disableUnderline: true,
+                        },
                     }}
                     onChange={(e) => {
                         const newValue = e.target.value;
@@ -174,7 +176,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     type="number"
                     value={inputValue}
                     variant="standard"
-                    InputProps={{ disableUnderline: true }}
+                    slotProps={{ input: { disableUnderline: true } }}
                     onChange={(e) => {
                         const newValue = parseInt(e.target.value, 10);
                         if (newValue > 0 || isNaN(newValue)) handleInputChange(newValue);

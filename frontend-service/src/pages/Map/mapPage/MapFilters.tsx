@@ -55,8 +55,8 @@ const MapFilters = ({
     }, []);
 
     return (
-        <Grid item zIndex={1000} top={10} container wrap="nowrap" gap="15px">
-            <Grid item>
+        <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
+            <Grid>
                 <SearchAutoComplete
                     selectedTemplates={selectedTemplates}
                     handleEntityClick={moveToEntityLocations}
@@ -64,7 +64,7 @@ const MapFilters = ({
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
             </Grid>
         </Grid>

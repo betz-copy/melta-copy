@@ -48,7 +48,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             sx={{ height: 'fit-content', display: 'flex', flexWrap: 'nowrap' }}
         >
             {!hideFilterType && (
-                <Grid item xs={entityFilter ? 5 : 12}>
+                <Grid size={{ xs: entityFilter ? 5 : 12 }}>
                     <TypeSelectFilter
                         filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
                         handleFilterTypeChange={handleFilterTypeChange}
@@ -58,7 +58,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                 </Grid>
             )}
 
-            <Grid item xs={hideFilterType ? 12 : entityFilter ? 7 : 12}>
+            <Grid size={{ xs: hideFilterType ? 12 : entityFilter ? 7 : 12 }}>
                 <StyledFilterInput
                     size="small"
                     fullWidth

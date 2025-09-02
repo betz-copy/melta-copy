@@ -35,10 +35,10 @@ const FilterSideBar = <T extends TableForm | ChartForm>(
     };
 
     return (
-        <Grid item display="flex" sx={{ flexDirection: 'column' }} gap={3}>
+        <Grid display="flex" sx={{ flexDirection: 'column' }} gap={3}>
             {'columns' in values && (
-                <>
-                    <Grid item>
+                <div>
+                    <Grid>
                         <SelectCheckbox
                             options={entityTemplateFields!}
                             selectedOptions={values.columns}
@@ -53,14 +53,14 @@ const FilterSideBar = <T extends TableForm | ChartForm>(
                             hideChooseAll={viewMode === ViewMode.ReadOnly}
                         />
                     </Grid>
-                    {'columns' in errors && errors.columns && <FormHelperText error>{errors.columns}</FormHelperText>}
+                    {(errors as any).columns && <FormHelperText error>{(errors as any).columns}</FormHelperText>}
 
-                    <Grid item>
+                    <Grid>
                         <Divider sx={{ width: '95%' }} />
                     </Grid>
-                </>
+                </div>
             )}
-            <Grid item sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
+            <Grid sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
                 <FilterCompetent viewMode={viewMode} formik={props} />
             </Grid>
             {viewMode !== ViewMode.ReadOnly && (

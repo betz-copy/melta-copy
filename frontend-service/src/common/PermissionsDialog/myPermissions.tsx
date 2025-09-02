@@ -339,7 +339,7 @@ const MyPermissions: React.FC<{
                         </DialogContent>
 
                         <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
-                            <Grid container justifyContent="space-between" marginTop="15px">
+                            <Grid container justifyContent="space-between" marginTop="15px" width="100%">
                                 <Grid>
                                     {mode !== 'view' && (
                                         <Button

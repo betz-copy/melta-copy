@@ -81,11 +81,13 @@ const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        InputProps={{
-                            ...params.InputProps,
-                            required,
-                            readOnly,
-                            endAdornment: enableClear ? params.InputProps.endAdornment : undefined,
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                required,
+                                readOnly,
+                                endAdornment: enableClear ? params.InputProps.endAdornment : undefined,
+                            },
                         }}
                         sx={overrideSx}
                     />

@@ -1,12 +1,10 @@
-import React from 'react';
+import { Check, Clear, HorizontalRule } from '@mui/icons-material';
 import { Checkbox } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ClearIcon from '@mui/icons-material/Clear';
-import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule';
+import React from 'react';
 
-const CheckedIcon = () => <CheckIcon htmlColor="green" />;
-const UncheckedIcon = () => <ClearIcon htmlColor="#a81105" />;
-const IndeterminateIcon = () => <HorizontalRuleIcon htmlColor="grey" />;
+const CheckedIcon = () => <Check htmlColor="green" />;
+const UncheckedIcon = () => <Clear htmlColor="#a81105" />;
+const IndeterminateIcon = () => <HorizontalRule htmlColor="grey" />;
 
 const PermissionViewIcon = ({ checked, indeterminate }: { checked: boolean; indeterminate?: boolean }) => {
     const determineIcon = () => {

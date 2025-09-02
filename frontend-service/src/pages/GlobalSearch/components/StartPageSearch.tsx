@@ -12,7 +12,7 @@ const StartPageSearch: React.FC<{
 
     return (
         <Grid container direction="column" alignItems="center" spacing={4} sx={{ marginTop: '15vh' }}>
-            <Grid item>
+            <Grid>
                 <MeltaIcon
                     iconUrl={workspace?.logoFileId}
                     width="400px"
@@ -20,7 +20,7 @@ const StartPageSearch: React.FC<{
                     expanded
                 />
             </Grid>
-            <Grid item width="800px">
+            <Grid width="800px">
                 <GlobalSearchBar
                     onSearch={onSearch}
                     placeholder={i18next.t('globalSearch.searchLabel')}

@@ -1,20 +1,20 @@
-import './initWindowGlobal';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './i18n';
-import './utils/agGrid';
-import './utils/cesiumLicense';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { ReactQueryDevtools } from 'react-query/devtools';
 import { ThemeProvider } from '@mui/material';
-import { ToastContainer } from 'react-toastify';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import { ToastContainer } from 'react-toastify';
 import App from './App';
 import { TourWrapper } from './TourWrapper';
-import { darkTheme, lightTheme } from './theme';
-import { useDarkModeStore } from './stores/darkMode';
 import MuiXLicense from './common/MuiLicense';
+import './i18n';
+import './initWindowGlobal';
+import { useDarkModeStore } from './stores/darkMode';
+import { darkTheme, lightTheme } from './theme';
+import './utils/agGrid';
+import './utils/cesiumLicense';
 
 if (import.meta.hot) {
     // eslint-disable-next-line no-console
@@ -61,4 +61,8 @@ const Index: React.FC = () => {
     );
 };
 
-ReactDOM.render(<Index />, document.getElementById('root'));
+const container = document.getElementById('root');
+if (container) {
+    const root = createRoot(container);
+    root.render(<Index />);
+}

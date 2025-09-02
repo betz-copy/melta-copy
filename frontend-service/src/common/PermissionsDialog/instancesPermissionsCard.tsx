@@ -48,7 +48,7 @@ const InstancesPermissionsCard: React.FC<{
             <Box>
                 <Grid container rowGap={1}>
                     <Grid container sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <Box sx={{ background: !darkMode ? '#EBEFFA' : '#1E2A3A', borderRadius: '5px' }}>
                                 <BlueTitle
                                     title={i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
@@ -58,7 +58,7 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             </Box>
                         </Grid>
-                        <Grid item margin={1.5}>
+                        <Grid margin={1.5}>
                             <SearchInput
                                 value={searchText?.value}
                                 onChange={(value) => {
@@ -71,12 +71,12 @@ const InstancesPermissionsCard: React.FC<{
                                 showBorder
                             />
                         </Grid>
-                        <Grid item xs={5.9} marginTop="10px">
+                        <Grid size={{ xs: 5.9 }} marginTop="10px">
                             <Typography color={darkMode ? 'white' : '#53566E'} sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight={600}>
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3} marginTop="10px">
+                        <Grid size={{ xs: 3 }} marginTop="10px">
                             <Typography color={darkMode ? 'white' : '#53566E'} paddingLeft="10px" fontWeight={600}>
                                 {i18next.t('permissions.permissionsOfUserDialog.read')}
                             </Typography>
@@ -92,13 +92,13 @@ const InstancesPermissionsCard: React.FC<{
                                             onChange={checkboxAllProps?.permissionType.read.onChange}
                                         />
                                     }
-                                    componentsProps={{
+                                    slotProps={{
                                         typography: { sx: { fontSize: '14px' } },
                                     }}
                                 />
                             )}
                         </Grid>
-                        <Grid item xs={3.1} marginTop="10px">
+                        <Grid size={{ xs: 3.1 }} marginTop="10px">
                             <Typography color={darkMode ? 'white' : '#53566E'} paddingLeft="10px" fontWeight={600}>
                                 {i18next.t('permissions.permissionsOfUserDialog.write')}
                             </Typography>
@@ -114,13 +114,13 @@ const InstancesPermissionsCard: React.FC<{
                                             disabled={checkboxAllProps?.disabled}
                                         />
                                     }
-                                    componentsProps={{
+                                    slotProps={{
                                         typography: { sx: { fontSize: '14px' } },
                                     }}
                                 />
                             )}
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <Divider color="#9398C2" />
                         </Grid>
                     </Grid>
@@ -139,7 +139,7 @@ const InstancesPermissionsCard: React.FC<{
                                     categoryId={categoryId}
                                     workspaceId={workspaceId}
                                 />
-                                <Grid item xs={12}>
+                                <Grid size={{ xs: 12 }}>
                                     <Divider color="#EBEFFA" sx={{ opacity: 0.5 }} />
                                 </Grid>
                             </Grid>

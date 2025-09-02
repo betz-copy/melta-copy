@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
+import React, { useState } from 'react';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import EntitiesTableOfTemplate, { TablePageType } from '../../EntitiesTableOfTemplate';
@@ -18,7 +18,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'stretch' }}>
             <div>
                 <Grid container justifyContent="center">
-                    <Grid item xs={8}>
+                    <Grid size={{ xs: 8}}>
                         <SearchInput onChange={setQuickFilterTextDebounced} />
                     </Grid>
                 </Grid>

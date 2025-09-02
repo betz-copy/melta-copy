@@ -37,7 +37,7 @@ const SelectFilterByFieldDialog: React.FC<SelectUserFieldDialogProps> = ({
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-            <DialogTitle color={(theme) => theme.palette.primary.main} sx={{ fontSize: '16px', fontWeight: 400 }}>
+            <DialogTitle sx={{ color: 'primary.main', fontSize: '16px', fontWeight: 400 }}>
                 {title || i18next.t(`childTemplate.select${filterMode}Dialog.title`)}
             </DialogTitle>
             <DialogContent>

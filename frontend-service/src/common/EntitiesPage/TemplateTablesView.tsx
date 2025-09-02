@@ -11,7 +11,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { isChildTemplate } from '../../utils/templates';
-import { TemplateTable, TemplateTableRef } from './TemplateTable';
+import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
 
@@ -123,10 +123,10 @@ const TemplateTablesViewResults = forwardRef<
     }, [templates, currentUser, currentUserKartoffelId, workspace._id]);
 
     return (
-        <Grid container direction="column" spacing={1}>
+        <Grid direction="column" spacing={1} width="100%">
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 return (
-                    <Grid item key={template._id}>
+                    <Grid key={template._id}>
                         <TemplateTable
                             ref={(el) => {
                                 if (el) {
@@ -146,7 +146,7 @@ const TemplateTablesViewResults = forwardRef<
                 );
             })}
             {visibleTemplatesCount < templates.length && (
-                <Grid item container justifyContent="center" ref={loaderRef}>
+                <Grid container justifyContent="center" ref={loaderRef}>
                     <CircularProgress />
                 </Grid>
             )}

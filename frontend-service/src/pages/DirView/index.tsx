@@ -7,13 +7,13 @@ import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
+import { handleWorkspace } from '../../utils/permissions';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
 import { Waves } from './Waves';
 import { workspaceObjectToWorkspaceForm, WorkspaceWizard } from './Wizard';
 import { Workspace } from './Workspace';
-import { handleWorkspace } from '../../utils/permissions';
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
@@ -52,7 +52,7 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
 
             <MainBox scrollBarMarginTop="0" style={{ overflowY: 'auto', overflowAnchor: 'none' }}>
                 <Grid container height="80%">
-                    <Grid item xs={10}>
+                    <Grid size={{ xs: 10 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', padding: '1rem' }}>
                             {data?.map((workspace) =>
                                 workspace._id === movedWorkspace?._id ? null : (

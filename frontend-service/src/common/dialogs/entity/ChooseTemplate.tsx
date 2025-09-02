@@ -118,7 +118,11 @@ const ChooseTemplate: React.FC<{
                             color: '#9398C2',
                         },
                     }}
-                    helperText={(touched.template && errors.template?._id) || errors.template?.displayName || errors.template?.properties}
+                    helperText={
+                        (touched.template && errors.template?._id) ||
+                        errors.template?.displayName ||
+                        (typeof errors.template?.properties === 'string' ? errors.template.properties : undefined)
+                    }
                     name="template"
                     variant="outlined"
                     label={i18next.t('entityTemplate')}

@@ -1,13 +1,10 @@
-import { Close as CloseIcon } from '@mui/icons-material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import { Close as CloseIcon, Refresh, ZoomIn, ZoomOut } from '@mui/icons-material';
 import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import ReactPlayer from 'react-player';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileExtension } from '../../utils/getFileType';
@@ -139,7 +136,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
             </div>
         );
     } else if (contentType === 'video' || contentType === 'audio') {
-        previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
+        previewContent = <ReactPlayer style={{ marginTop: '65px' }} src={data} controls playing />;
     } else if (contentType === 'unsupported' || fileId instanceof File) {
         previewContent = (
             <Card sx={{ borderRadius: 2, bgcolor: '#4c494c', display: 'grid', height: 150, padding: 3 }} elevation={10}>
@@ -163,7 +160,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                     {noSuchKeyError ? i18next.t('entityPage.previewRefetch') : i18next.t('errorPage.previewLoadingError')}
                 </Typography>
                 <Button onClick={handleRefetch} sx={{ color: 'white' }}>
-                    {isFetching || !noSuchKeyError ? null : <RefreshIcon />}
+                    {isFetching || !noSuchKeyError ? null : <Refresh />}
                 </Button>
             </Grid>
         );
@@ -188,7 +185,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
             open={open}
             maxWidth="lg"
             fullScreen
-            PaperProps={{ sx: { bgcolor: darkMode ? 'rgba(20,20,20,0.7)' : 'rgba(49,49,49,0.7)' } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? 'rgba(20,20,20,0.7)' : 'rgba(49,49,49,0.7)' } } }}
             disableEnforceFocus
             onClick={(e) => e.stopPropagation()}
         >
@@ -212,10 +209,10 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
 
                         <DownloadButton fileId={fileId} />
                         <IconButton onClick={handleZoomIn}>
-                            <ZoomInIcon />
+                            <ZoomIn />
                         </IconButton>
                         <IconButton onClick={handleZoomOut}>
-                            <ZoomOutIcon />
+                            <ZoomOut />
                         </IconButton>
                     </FlexBox>
                     {contentType === 'document' && extension !== 'pptx' && (
@@ -224,16 +221,18 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                                 type="number"
                                 value={jumpToPage}
                                 onChange={(e) => setJumpToPage(e.target.value)}
-                                inputProps={{
-                                    min: 1,
-                                    max: numOfPages,
-                                    style: {
-                                        width: '40px',
-                                        fontSize: '16px',
-                                        outline: 'none',
-                                        padding: '6px 10px',
-                                        color: 'white',
-                                        border: '2px solid white',
+                                slotProps={{
+                                    htmlInput: {
+                                        min: 1,
+                                        max: numOfPages,
+                                        style: {
+                                            width: '40px',
+                                            fontSize: '16px',
+                                            outline: 'none',
+                                            padding: '6px 10px',
+                                            color: 'white',
+                                            border: '2px solid white',
+                                        },
                                     },
                                 }}
                                 onKeyDown={handleEnterKeyPress}
@@ -256,7 +255,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                     justifyContent="center"
                     alignItems="center"
                 >
-                    <Grid item>{previewContent}</Grid>
+                    <Grid>{previewContent}</Grid>
                 </Grid>
             </DialogContent>
         </Dialog>

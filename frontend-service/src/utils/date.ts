@@ -1,13 +1,16 @@
 import { format } from 'date-fns';
+import { environment } from '../globals';
+
+const { date: dateFormat, time, fullTime } = environment.formats;
 
 export const getShortDate = (date: Date) => {
-    return format(new Date(date), 'dd/MM/yy, HH:mm');
+    return format(new Date(date), [dateFormat, time].join(', '));
 };
 export const getLongDate = (date: Date) => {
-    return format(new Date(date), 'dd/MM/yyyy, HH:mm:ss');
+    return format(new Date(date), [dateFormat, fullTime].join(', '));
 };
 export const getDateWithoutTime = (date: Date) => {
-    return format(new Date(date), 'dd/MM/yyyy');
+    return format(new Date(date), dateFormat);
 };
 
 export const dateBetween = (date: Date, startDate: Date, endDate: Date) => {

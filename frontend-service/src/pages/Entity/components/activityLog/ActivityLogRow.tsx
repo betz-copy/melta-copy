@@ -1,15 +1,15 @@
-import React from 'react';
-import { Typography, Grid, Skeleton } from '@mui/material';
-import { useQuery } from 'react-query';
+import { Grid, Skeleton, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IActivityLog } from '../../../../services/activityLogService';
-import { getUserByIdRequest } from '../../../../services/userService';
-import ActionText from './ActionText';
+import React from 'react';
+import { useQuery } from 'react-query';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { getShortDate } from '../../../../utils/date';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IActivityLog } from '../../../../services/activityLogService';
+import { getUserByIdRequest } from '../../../../services/userService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { getShortDate } from '../../../../utils/date';
+import ActionText from './ActionText';
 
 const ActivityLogRow: React.FC<{
     log: IActivityLog;
@@ -21,19 +21,19 @@ const ActivityLogRow: React.FC<{
 
     return (
         <Grid container flexDirection="column" padding="15px">
-            <Grid item container xs={9}>
-                <Grid item container marginTop="-3px">
+            <Grid container size={{ xs: 9}}>
+                <Grid container marginTop="-3px">
                     {isLoading ? <Skeleton width="15vw" /> : <ActionText log={log} entityTemplate={entityTemplate} />}
                 </Grid>
             </Grid>
-            <Grid item container flexWrap="nowrap" justifyContent="space-between" alignItems="center" marginTop="10px">
-                <Grid item container spacing="5px">
-                    <Grid item>
+            <Grid container flexWrap="nowrap" justifyContent="space-between" alignItems="center" marginTop="10px">
+                <Grid container spacing="5px">
+                    <Grid>
                         <Typography variant="subtitle1" fontSize="12px" fontFamily="Rubik" fontWeight="400" color="#5A6173">
                             {i18next.t('entityPage.activityLog.by')}
                         </Typography>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {isLoading ? (
                             <Skeleton variant="text" width="7vw" />
                         ) : (
@@ -43,7 +43,7 @@ const ActivityLogRow: React.FC<{
                         )}
                     </Grid>
                 </Grid>
-                <Grid item width="130px">
+                <Grid width="130px">
                     {isLoading ? (
                         <Skeleton variant="text" width="5vw" />
                     ) : (

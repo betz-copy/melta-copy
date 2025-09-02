@@ -1,11 +1,13 @@
 /* eslint-disable no-param-reassign */
+import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared';
 import config from '../../config/index';
-import excelConfig from './excelConfig';
 import hexToARGB from './colors';
+import excelConfig from './excelConfig';
 import { isIncludedColumn } from './getFunctions';
+
+const { dateTime, date: dateFormat } = config.formats;
 
 interface IExcelStyle {
     columnHeader: {
@@ -241,10 +243,10 @@ const styleAWorksheet = (
 
                             if (cellValue.includes(':')) {
                                 cell.value = date;
-                                cell.numFmt = 'dd/mm/yyyy hh:mm';
+                                cell.numFmt = dateTime;
                             } else {
                                 cell.value = new Date(date.setHours(0, 0, 0, 0));
-                                cell.numFmt = 'dd/mm/yyyy';
+                                cell.numFmt = dateFormat;
                             }
                         }
                     }
@@ -270,4 +272,4 @@ const styleAWorksheet = (
     });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };
+export { createWorkbook, createWorksheet, fixComplexProperties, styleAWorksheet };

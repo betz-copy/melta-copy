@@ -38,7 +38,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="name"
                     label={i18next.t('wizard.rule.name')}
@@ -48,7 +48,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                     helperText={touched.name && errors.name}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <TextField
                     name="description"
                     label={i18next.t('wizard.rule.description')}
@@ -59,7 +59,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                     multiline
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <FormControl disabled={isEditMode}>
                     <FormLabel error={touched.actionOnFail && Boolean(errors.actionOnFail)}>{i18next.t('wizard.rule.actionOnFail')}</FormLabel>
                     <RadioGroup row name="actionOnFail" onChange={handleChange} value={values.actionOnFail}>
@@ -69,7 +69,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                     <FormHelperText>{touched.actionOnFail && errors.actionOnFail}</FormHelperText>
                 </FormControl>
             </Grid>
-            <Grid item width="250px">
+            <Grid width="250px">
                 <Autocomplete
                     options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('entityTemplateId', value?._id || '')}

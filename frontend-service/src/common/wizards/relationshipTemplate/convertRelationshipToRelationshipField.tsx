@@ -99,7 +99,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                 <form onSubmit={formik.handleSubmit}>
                                     <Grid container gap={2} padding={1}>
                                         <Grid container>
-                                            <Grid item paddingRight={1}>
+                                            <Grid paddingRight={1}>
                                                 <TextField
                                                     id="fieldName"
                                                     name="fieldName"
@@ -113,7 +113,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                     sx={textFieldStyle}
                                                 />
                                             </Grid>
-                                            <Grid item>
+                                            <Grid>
                                                 <TextField
                                                     id="displayFieldName"
                                                     name="displayFieldName"
@@ -128,7 +128,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                 />
                                             </Grid>
                                         </Grid>
-                                        <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                        <Grid container justifyContent="space-between" flexWrap="nowrap">
                                             <RelationshipReferenceField
                                                 value={formik.values}
                                                 index={0}

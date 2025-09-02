@@ -59,18 +59,20 @@ export const FormikAutoComplete = <T,>({
                     label={label}
                     sx={style}
                     variant={readonly ? 'standard' : 'outlined'}
-                    InputProps={{
-                        ...params.InputProps,
-                        endAdornment: !readonly && params.InputProps.endAdornment,
-                        readOnly: readonly,
-                        ...(readonly && { disableUnderline: true }),
+                    slotProps={{
+                        input: {
+                            ...params.InputProps,
+                            endAdornment: !readonly && params.InputProps.endAdornment,
+                            readOnly: readonly,
+                            ...(readonly && { disableUnderline: true }),
+                        },
                     }}
                 />
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (
                     // eslint-disable-next-line react/jsx-key
-                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : option} />
+                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : String(option)} />
                 ))
             }
             popupIcon={<IoIosArrowDown fontSize="Medium" />}

@@ -276,9 +276,9 @@ const ChildTemplateDialog: React.FC<{
 
                             <DialogContent>
                                 <Grid container spacing={2} direction="column" sx={{ pt: 1 }}>
-                                    <Grid container item spacing={2}>
+                                    <Grid container spacing={2}>
                                         {textFields.map(({ title, startAdornment, disableInUpdate }) => (
-                                            <Grid item xs={4} key={title}>
+                                            <Grid size={{ xs: 4 }} key={title}>
                                                 <TextField
                                                     fullWidth
                                                     label={i18next.t(`childTemplate.${title}`)}
@@ -303,7 +303,7 @@ const ChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container direction="row" sx={{ pt: 3, pl: 3 }} alignItems="center" justifyContent="space-between">
-                                        <Grid item xs={6}>
+                                        <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <RadioGroup
                                                     value={values.viewType}
@@ -341,10 +341,8 @@ const ChildTemplateDialog: React.FC<{
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={5.5} container direction="row" justifyContent="space-between">
+                                        <Grid size={{ xs: 5.5 }} container direction="row" justifyContent="space-between">
                                             {checkboxesFields.map(({ mode, fields, checked, value }) => {
-                                                console.log('🚀 ~ value:', value);
-
                                                 if (fields.length === 0) return null;
 
                                                 const isOtherChecked =
@@ -352,7 +350,7 @@ const ChildTemplateDialog: React.FC<{
 
                                                 return (
                                                     <React.Fragment key={fields.toString()}>
-                                                        <Grid item>
+                                                        <Grid>
                                                             <FormControlLabel
                                                                 control={
                                                                     <MeltaCheckbox
@@ -383,7 +381,7 @@ const ChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
-                                        <Grid item xs={6}>
+                                        <Grid size={{ xs: 6 }}>
                                             <FormControl fullWidth>
                                                 <Autocomplete
                                                     id="category"
@@ -416,7 +414,7 @@ const ChildTemplateDialog: React.FC<{
                                             </FormControl>
                                         </Grid>
                                         {!!unitFields.length && (
-                                            <Grid item xs={5.5}>
+                                            <Grid size={{ xs: 5.5 }}>
                                                 <TextField
                                                     fullWidth
                                                     rows={1}
@@ -430,7 +428,7 @@ const ChildTemplateDialog: React.FC<{
                                     </Grid>
 
                                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                             <Typography
                                                 sx={{
                                                     fontWeight: 400,
@@ -443,7 +441,7 @@ const ChildTemplateDialog: React.FC<{
                                             {!isEmpty(touched) && errors.properties?.properties && (
                                                 <Grid sx={{ my: 1, pr: 2, pl: 2 }}>
                                                     <Typography color="error" variant="caption" fontSize="14px">
-                                                        {errors.properties?.properties}
+                                                        {String(errors.properties?.properties)}
                                                     </Typography>
                                                 </Grid>
                                             )}
@@ -451,7 +449,7 @@ const ChildTemplateDialog: React.FC<{
                                                 {tableTitles
                                                     .filter(({ show }) => show !== false)
                                                     .map(({ title, sxOverride }) => (
-                                                        <Grid item xs={3} key={title}>
+                                                        <Grid size={{ xs: 3 }} key={title}>
                                                             <Typography sx={{ fontWeight: 400, fontSize: '14px', ...sxOverride }}>
                                                                 {i18next.t(`childTemplate.columns.${title}Col`)}
                                                             </Typography>
@@ -460,7 +458,7 @@ const ChildTemplateDialog: React.FC<{
                                             </Grid>
                                             <Divider />
 
-                                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
+                                            <Grid size={{ xs: 12 }} sx={{ maxHeight: 400, overflowY: 'auto', px: 2 }}>
                                                 <FieldsAndFiltersTable formikProps={formikProps} entityTemplate={entityTemplate} />
                                             </Grid>
                                         </Grid>

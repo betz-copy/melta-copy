@@ -1,5 +1,5 @@
 import { Close, ExpandMore } from '@mui/icons-material';
-import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
@@ -65,7 +65,7 @@ const MultipleSelect: React.FC<{
     }
 
     return (
-        <Autocomplete<(typeof items)[number], boolean>
+        <Autocomplete<ISelectOption, boolean, false, false>
             id={id}
             disabled={disabled}
             readOnly={readonly}
@@ -73,66 +73,69 @@ const MultipleSelect: React.FC<{
             disableCloseOnSelect={multiple}
             value={selectedValue}
             options={items}
-            placeholder={placeholder}
             getOptionLabel={(option) => option.label}
-            isOptionEqualToValue={(option, val) => option.value === val.value}
+            isOptionEqualToValue={(option, val) => option?.value === val?.value}
             onChange={onChange}
             popupIcon={<ExpandMore />}
-            renderOption={(props, option) => {
-                return (
-                    <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
-                        {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
-                        <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
-                    </MenuItem>
-                );
-            }}
-            renderTags={(tagValue, getTagProps) => (
-                <OverflowWrapper
-                    items={tagValue}
-                    propertyToDisplayInTooltip="label"
-                    getItemKey={(item) => item.value}
-                    renderItem={(item, index) => {
-                        const { key, onDelete, ...restTagProps } = getTagProps({ index });
+            renderOption={(props, option) => (
+                <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
+                    {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
+                    <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
+                </MenuItem>
+            )}
+            renderValue={(tagValue, getTagProps) => (
+                <Grid width="100%">
+                    <OverflowWrapper
+                        items={Array.isArray(tagValue) ? tagValue : [tagValue]}
+                        propertyToDisplayInTooltip="label"
+                        getItemKey={(item) => item.value}
+                        renderItem={(item, index) => {
+                            const { onDelete, ...restTagProps } = getTagProps({ index });
 
-                        return (
-                            <ColoredEnumChip
-                                label={item.label}
-                                color={item.color || 'default'}
-                                onDelete={onDelete}
-                                deleteIcon={<Close />}
-                                {...restTagProps}
-                                style={{ margin: '2px 4px 2px 0' }}
-                            />
-                        );
-                    }}
-                />
+                            return (
+                                <ColoredEnumChip
+                                    label={item.label}
+                                    color={item.color || 'default'}
+                                    onDelete={onDelete}
+                                    deleteIcon={<Close />}
+                                    {...restTagProps}
+                                    key={item.value}
+                                    style={{ margin: '2px 4px 2px 0' }}
+                                />
+                            );
+                        }}
+                    />
+                </Grid>
             )}
             renderInput={(params) => {
                 const isMultiple = selectedValue && !Array.isArray(selectedValue);
                 return (
                     <TextField
-                        {...textFieldProps}
                         {...params}
+                        {...textFieldProps}
                         autoFocus={autofocus}
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}
                         error={rawErrors.length > 0}
                         label={label}
-                        InputProps={{
-                            ...params.InputProps,
-                            startAdornment: isMultiple ? (
-                                <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} style={{ marginLeft: 1 }} />
-                            ) : (
-                                params.InputProps.startAdornment
-                            ),
-                            inputProps: {
-                                ...params.inputProps,
-                                style: isMultiple ? { display: 'none' } : {},
+                        placeholder={placeholder}
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                startAdornment: isMultiple ? (
+                                    <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} style={{ marginLeft: 1 }} />
+                                ) : (
+                                    params.InputProps.startAdornment
+                                ),
+                                inputProps: {
+                                    ...params.inputProps,
+                                    style: isMultiple ? { display: 'none' } : {},
+                                },
                             },
+                            inputLabel: { shrink: readonly || undefined },
                         }}
                         color={color as TextFieldProps['color']}
-                        InputLabelProps={{ shrink: readonly || undefined }}
                     />
                 );
             }}

@@ -1,12 +1,12 @@
+import { ChevronLeft, ExpandMore } from '@mui/icons-material';
+import { Button, Divider, Grid, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import React, { useState } from 'react';
-import { Divider, Grid, Typography, useTheme, Button } from '@mui/material';
+import { useQueryClient } from 'react-query';
+import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
-import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
-import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
-import { ExpandMore, ChevronLeft } from '@mui/icons-material';
-import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface PrintingTemplateCardProps {
     printingTemplate: IMongoPrintingTemplate;
@@ -60,7 +60,6 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
             title={
                 <Grid direction="column" container gap="10px">
                     <Grid
-                        item
                         container
                         direction="row"
                         justifyContent="space-between"
@@ -69,7 +68,7 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
                         flexWrap="nowrap"
                         height="20px"
                     >
-                        <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid container alignItems="center" gap="10px" flexBasis="90%">
                             <Typography
                                 style={{
                                     fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
@@ -84,7 +83,7 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
                                 {printingTemplate.name}
                             </Typography>
                         </Grid>
-                        <Grid item container flexBasis="10%">
+                        <Grid container flexBasis="10%">
                             {isHoverOnCard && (
                                 <CardMenu
                                     onOptionsIconClose={() => setIsHoverOnCard(false)}

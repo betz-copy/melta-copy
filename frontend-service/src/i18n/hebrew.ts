@@ -19,6 +19,7 @@ export default {
     configurationManagement: 'ניהול קונפיגורציות',
     rules: 'חוקים',
     failedToGetTemplates: 'נכשל לטעון תבניות',
+    noOptions: 'אין תוצאות',
     entityTemplatesCheckboxLabel: 'סינון תבניות',
     templateTablesView: 'תצוגת טבלאות',
     cardsView: 'תצוגת כרטיסיות',

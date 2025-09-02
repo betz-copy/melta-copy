@@ -1,14 +1,14 @@
+import { Refresh } from '@mui/icons-material';
 import { Box, ButtonBase, Card, CircularProgress, Grid, Skeleton, SxProps, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import { IFile } from '../../interfaces/preview';
-import { VideoPreview } from './VideoPreview';
 import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import { PreviewDialog } from './PreviewDialog';
+import { VideoPreview } from './VideoPreview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -55,7 +55,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                     >
                         {noSuchKeyError ? i18next.t('entitiesCardView.previewRefetch') : i18next.t('errorPage.previewLoadingError')}
 
-                        {!noSuchKeyError ? null : <RefreshIcon />}
+                        {!noSuchKeyError ? null : <Refresh />}
                     </Typography>
                 </Card>
             );
@@ -117,7 +117,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
 
     return (
         <Grid container sx={{ height: '100%', overflowY: 'hidden', overflowX: 'hidden', fontSize: 'small' }} justifyContent="center">
-            <Grid item sx={sx}>
+            <Grid sx={sx}>
                 <ButtonBase onClick={() => setIsOpen(true)}>{previewContent}</ButtonBase>
 
                 {isOpen && <PreviewDialog fileName={file.name} fileId={file.id} contentType={contentType} open={isOpen} setOpen={setIsOpen} />}

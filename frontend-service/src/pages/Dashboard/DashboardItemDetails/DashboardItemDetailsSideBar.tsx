@@ -41,7 +41,6 @@ const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
     return (
         <TabContext value={activeStep.toString()}>
             <Grid
-                item
                 sx={{
                     backgroundColor: theme.palette.background.paper,
                     boxShadow: '2px 2px 10.15px 0px #1E277533',
@@ -51,7 +50,7 @@ const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
                     height: '100%',
                 }}
             >
-                <Grid item sx={{ marginTop: '5px', justifyContent: 'space-between', width: '92%' }}>
+                <Grid sx={{ marginTop: '5px', justifyContent: 'space-between', width: '92%' }}>
                     <TabList onChange={handleTabChange} variant="standard" sx={{ borderBottom: '1px solid #E0E0E0' }}>
                         {steps.map(({ label }, index) => (
                             <Tab
@@ -72,7 +71,7 @@ const DashboardItemDetailsSideBar = <T extends DashboardItemForm>({
                     </TabList>
                 </Grid>
 
-                <Grid item sx={{ width: '100%', padding: '30px' }}>
+                <Grid sx={{ width: '100%', padding: '30px' }}>
                     {steps.map(({ label }, index) => (
                         <TabPanel key={label} value={index.toString()} sx={{ padding: 0 }}>
                             {steps[index].component(formikProps)}

@@ -149,17 +149,19 @@ const RoleDialog: React.FC<{
                                     onChange={({ target: { value: newValue } }) => setFieldValue('name', newValue)}
                                     onBlur={handleBlur}
                                     label={i18next.t('permissions.roleHeaderName')}
-                                    InputLabelProps={{
-                                        shrink: mode === 'view' || undefined,
-                                        style: {
-                                            fontSize: '14px',
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: mode === 'view' || undefined,
+                                            style: {
+                                                fontSize: '14px',
+                                            },
                                         },
-                                    }}
-                                    inputProps={{
-                                        readOnly: mode === 'view',
-                                        style: {
-                                            textOverflow: 'ellipsis',
-                                            fontSize: '14px',
+                                        htmlInput: {
+                                            readOnly: mode === 'view',
+                                            style: {
+                                                textOverflow: 'ellipsis',
+                                                fontSize: '14px',
+                                            },
                                         },
                                     }}
                                     disabled={mode === 'edit'}
