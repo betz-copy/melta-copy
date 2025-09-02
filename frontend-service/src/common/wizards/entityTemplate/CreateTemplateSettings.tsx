@@ -1,15 +1,19 @@
+import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
+import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import * as Yup from 'yup';
+import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { variableNameValidation } from '../../../utils/validation';
+import { ErrorToast } from '../../ErrorToast';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
 import { ChooseCategory } from './ChooseCategory';
-import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { CreateTemplateName } from './CreateTemplateName';
-import { InfoOutlined } from '@mui/icons-material';
-import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
-import { property, values } from 'lodash';
 
 export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, currentTemplateId?: string) => {
     const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
@@ -32,12 +36,30 @@ export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, curr
     });
 };
 
-const CreateTemplateSettings = <Values extends { name: string; displayName: string; properties }>(
+const CreateTemplateSettings = <Values extends { name: string; displayName: string; properties; _id: string }>(
     props: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & {
         exportFormats: { value: boolean; set: (val: boolean) => void };
         showAccountDisplay: { value: boolean; set: (val: boolean) => void };
     },
 ) => {
+    const { data: areThereInstancesByTemplateIdResponse } = useQuery(
+        ['areThereInstancesByTemplateId', props.values._id],
+        () =>
+            searchEntitiesOfTemplateRequest(props.values._id, {
+                skip: 0,
+                limit: 1,
+            }),
+        {
+            enabled: props.isEditMode,
+            initialData: { count: 1, entities: [] },
+            onError: (error: AxiosError) => {
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
+            },
+        },
+    );
+    const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+
     return (
         <Grid container direction="column" alignItems="center" spacing={4}>
             <Grid item container direction="row" alignItems="center">
@@ -51,7 +73,6 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
                         onChange={(e) => {
                             const isChecked = e.target.checked;
                             props.showAccountDisplay.set(isChecked);
-                            console.log(isChecked, props.values);
 
                             if (!isChecked) {
                                 props.setFieldValue(
@@ -83,9 +104,10 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
                                 );
                             }
                         }}
+                        disabled={areThereAnyInstances}
                     />
                     <Typography>{i18next.t('wizard.entityTemplate.walletDisplay')}</Typography>
-                    <MeltaTooltip title="fdgdg">
+                    <MeltaTooltip title={areThereAnyInstances ? 'לתבנית זו קיימים מופעים לכן לא ניתן לערוך' : 'תצוגת ארנק בלה בלה '}>
                         <InfoOutlined
                             sx={{
                                 fontSize: 16,

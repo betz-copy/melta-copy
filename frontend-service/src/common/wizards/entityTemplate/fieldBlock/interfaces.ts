@@ -112,4 +112,5 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
     onDeleteSure?: (setShowAreUSureDialogForRemoveProperty: (v: boolean) => void) => void;
     showAccountDisplay?: boolean;
     hasAccountBalanceField?: boolean;
+    setTransferTemplate?: (val: boolean) => void;
 }

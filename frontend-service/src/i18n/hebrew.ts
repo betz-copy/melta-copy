@@ -721,6 +721,15 @@ export default {
                 directGroup: 'קבוצה ישירה',
                 hierarchy: 'היררכיה',
             },
+            walletTransfer: {
+                destination: 'מקור',
+                source: 'יעד',
+                amount: 'ערך העברה',
+                description: 'תיאור העברה',
+                exportDocuments: 'פורמטים לייצוא',
+                walletTransferSettings: 'הגדרות העברה לארנק',
+                transfer: 'העברה לארנק',
+            },
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',

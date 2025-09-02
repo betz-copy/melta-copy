@@ -27,6 +27,7 @@ import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterface
 import { CreateTemplateSettings } from './CreateTemplateSettings';
 import { UploadExportFormats } from './UploadExportFormats';
 import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { WalletTransferSettings } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
 
@@ -116,9 +117,11 @@ const EntityTemplateWizard: React.FC<
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const [exportFormats, setExportFormats] = useState(false);
     const [showAccountDisplay, setShowAccountDisplay] = useState<boolean>(false);
+    const [transferTemplate, setTransferTemplate] = useState<boolean>(false);
 
     useEffect(() => {
         setExportFormats(false);
+
         const hasAccountBalanceKey = initialValues.properties.some((property) => {
             if (property.type === 'field') {
                 return !!property.data.accountBalance;
@@ -126,7 +129,6 @@ const EntityTemplateWizard: React.FC<
                 return property.fields.some((f) => !!f.accountBalance);
             }
         });
-
         setShowAccountDisplay(hasAccountBalanceKey ?? false);
     }, [initialValues.properties, open]);
 
@@ -148,7 +150,7 @@ const EntityTemplateWizard: React.FC<
             return { template: createdTemplate, childTemplates: [] };
         },
         {
-            onSuccess: async ({ template: data, childTemplates }) => { 
+            onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
@@ -268,7 +270,13 @@ const EntityTemplateWizard: React.FC<
         {
             label: i18next.t('wizard.entityTemplate.properties'),
             component: (props, { isEditMode, setBlock }) => (
-                <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} showAccountDisplay={showAccountDisplay} />
+                <AddFields
+                    {...props}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    showAccountDisplay={showAccountDisplay}
+                    setTransferTemplate={setTransferTemplate}
+                />
             ),
             validationSchema: addFieldsSchema,
         },
@@ -278,6 +286,15 @@ const EntityTemplateWizard: React.FC<
                       label: i18next.t('wizard.entityTemplate.exportDocuments'),
                       component: (props) => <UploadExportFormats {...props} />,
                   } satisfies StepType<EntityTemplateWizardValues>,
+              ]
+            : []),
+        ...(transferTemplate
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.walletTransfer.walletTransferSettings'),
+                      component: (props) => <WalletTransferSettings {...props} showAccountDisplay={showAccountDisplay} />,
+                  },
+                  // satisfies StepType<EntityTemplateWizardValues>,
               ]
             : []),
     ];

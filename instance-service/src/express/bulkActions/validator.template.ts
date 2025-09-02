@@ -65,6 +65,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;

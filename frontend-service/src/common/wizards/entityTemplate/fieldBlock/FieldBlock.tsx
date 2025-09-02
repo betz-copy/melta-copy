@@ -9,11 +9,12 @@ import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { FieldEditCardProps } from '../FieldEditCard';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
 import { Attachment, getFieldData, Field, Group } from './propertiesTypes';
 import { FieldBlockAccordion, FieldBlockProps, ItemTypes } from './interfaces';
 import { PropertiesTypes } from '../AddFields';
+import { useQueryClient } from 'react-query';
 
 export const FieldBlockDND = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     propertiesType,
@@ -82,6 +83,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     userPropertiesInTemplate,
     showAccountDisplay = false,
     hasAccountBalanceField,
+    setTransferTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -95,6 +97,9 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const orderedItemsRef = useRef(orderedItems);
     orderedItemsRef.current = orderedItems;
 
+    const queryClient = useQueryClient();
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
     }, []);
@@ -103,6 +108,37 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         setOrderedItems(values[propertiesType]);
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
+
+
+    // shirel - dont run when edit template already as a relationship tpo wallet
+    useEffect(() => {
+        const templateHasAccountBalance = (template: any) => {
+            return Object.values(template?.properties?.properties ?? {}).some((property: any) => property.accountBalance);
+        };
+
+        setTransferTemplate?.(
+            orderedItems.some((property: any) => {
+                if (property.type === 'field' && property.data?.relationshipReference) {
+                    const relatedId = property.data.relationshipReference.relatedTemplateId;
+                    const relatedTemplate = templates.get(relatedId);
+                    return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
+                }
+
+                if (property.type === 'group') {
+                    return property.fields.some((field: any) => {
+                        if (field.relationshipReference) {
+                            const relatedId = field.relationshipReference.relatedTemplateId;
+                            const relatedTemplate = templates.get(relatedId);
+                            return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
+                        }
+                        return false;
+                    });
+                }
+
+                return false;
+            }),
+        );
+    }, [orderedItems, templates, setTransferTemplate, values[propertiesType]]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
