@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Clear } from '@mui/icons-material';
-import { Grid } from '@mui/material';
+import { Close, FilterList } from '@mui/icons-material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
@@ -22,7 +22,7 @@ export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; d
             opacity: 1,
         }}
     >
-        <Clear htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
+        <Close htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
     </IconButtonWithPopover>
 );
 
@@ -45,6 +45,8 @@ const MapFilters = ({
     darkMode,
     clearAutocompleteSearch,
 }: Props) => {
+    const [openFilter, setOpenFilter] = React.useState(false);
+    const theme = useTheme();
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
@@ -57,6 +59,39 @@ const MapFilters = ({
     return (
         <Grid item zIndex={1000} top={10} container wrap="nowrap" gap="15px">
             <Grid item>
+                <IconButtonWithPopover
+                    popoverText={i18next.t('graph.filter')}
+                    iconButtonProps={{
+                        onClick: () => setOpenFilter(!openFilter),
+                    }}
+                    style={{
+                        // background: '#fcfeff',
+                        borderRadius: '7px',
+                        border: `1px solid ${theme.palette.primary.main}`,
+                        width: '100px',
+                        height: '35px',
+                        background: darkMode ? '#121212' : '#FFFFFF',
+                    }}
+                >
+                    <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: theme.palette.primary.main }}>
+                        {i18next.t('graph.filter')}
+                    </Typography>
+                    <FilterList htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
+                </IconButtonWithPopover>
+            </Grid>
+            {/* <Grid item>
+                <TemplatesSelectCheckbox
+                    title={i18next.t('entityTemplatesCheckboxLabel')}
+                    templates={templatesWithLocationField}
+                    selectedTemplates={selectedTemplates}
+                    setSelectedTemplates={setSelectedTemplates}
+                    isDraggableDisabled
+                    size="small"
+                    categories={categories}
+                    overrideSx={{ background: darkMode ? '#121212' : '#FFFFFF' }}
+                />
+            </Grid> */}
+            <Grid item>
                 <SearchAutoComplete
                     selectedTemplates={selectedTemplates}
                     handleEntityClick={moveToEntityLocations}
@@ -67,6 +102,8 @@ const MapFilters = ({
             <Grid item>
                 <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
             </Grid>
+
+            {openFilter && <h1>hii</h1>}
         </Grid>
     );
 };
