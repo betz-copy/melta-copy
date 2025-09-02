@@ -62,11 +62,11 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
 
     return (
         <Grid container direction="column" alignItems="center" spacing={4}>
-            <Grid item container direction="row" alignItems="center">
+            <Grid container direction="row" alignItems="center">
                 <ChooseCategory {...props} />
             </Grid>
             <CreateTemplateName {...props} gridProps={{ direction: 'row', alignItems: 'center', spacing: 2 }} />
-            <Grid item container direction="column" alignItems="flex-start" spacing={1}>
+            <Grid container direction="column" alignItems="flex-start" spacing={1}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }} marginBottom={2}>
                     <MeltaCheckbox
                         checked={props.showAccountDisplay.value}

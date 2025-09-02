@@ -38,8 +38,8 @@ export const WalletTransferSettings: React.FC<
                 </MeltaTooltip>
             </Box>
             <Grid container width="100%">
-                <Grid container item spacing={3} direction="row">
-                    <Grid item xs={6}>
+                <Grid container spacing={3} direction="row">
+                    <Grid size={{xs:6}}>
                         <TextField
                             select
                             type="text"
@@ -52,7 +52,7 @@ export const WalletTransferSettings: React.FC<
                             disabled={!walletTransfer}
                         ></TextField>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{xs:6}}>
                         <TextField
                             select
                             type="text"
@@ -66,8 +66,8 @@ export const WalletTransferSettings: React.FC<
                         ></TextField>
                     </Grid>
                 </Grid>
-                <Grid container item spacing={3} direction="row">
-                    <Grid item xs={6}>
+                <Grid container  spacing={3} direction="row">
+                    <Grid size={{xs:6}}>
                         <TextField
                             select
                             type="text"
@@ -80,7 +80,7 @@ export const WalletTransferSettings: React.FC<
                             disabled={!walletTransfer}
                         ></TextField>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{xs:6}}>
                         <TextField
                             select
                             type="text"
