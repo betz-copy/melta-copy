@@ -342,10 +342,17 @@ const ChildTemplateDialog: React.FC<{
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={5.5} container direction="row" justifyContent="space-between">
-                                            {checkboxesFields.map(
-                                                ({ mode, fields, checked, value }) =>
-                                                    fields.length > 0 && (
-                                                        <Grid item key={fields.toString()}>
+                                            {checkboxesFields.map(({ mode, fields, checked, value }) => {
+                                                console.log('🚀 ~ value:', value);
+
+                                                if (fields.length === 0) return null;
+
+                                                const isOtherChecked =
+                                                    mode === FilterMode.User ? values.isFilterByUserUnit : values.isFilterByCurrentUser;
+
+                                                return (
+                                                    <React.Fragment key={fields.toString()}>
+                                                        <Grid item>
                                                             <FormControlLabel
                                                                 control={
                                                                     <MeltaCheckbox
@@ -353,6 +360,7 @@ const ChildTemplateDialog: React.FC<{
                                                                         onChange={(e) =>
                                                                             updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
                                                                         }
+                                                                        disabled={isOtherChecked}
                                                                     />
                                                                 }
                                                                 label={i18next.t(`childTemplate.filterBy.${mode}`)}
@@ -368,8 +376,9 @@ const ChildTemplateDialog: React.FC<{
                                                                 </Typography>
                                                             )}
                                                         </Grid>
-                                                    ),
-                                            )}
+                                                    </React.Fragment>
+                                                );
+                                            })}
                                         </Grid>
                                     </Grid>
 
