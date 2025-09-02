@@ -7,7 +7,7 @@ import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
-import { IRuleMap } from '../../interfaces/rules';
+import { ActionOnFail, IRuleMap } from '../../interfaces/rules';
 import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
@@ -111,10 +111,9 @@ const DeleteRelationshipDialog: React.FC<{
                     isSubmitting={isLoadingDeleteRelationship || isLoadingCreateRuleBreachRequest}
                     onCancel={() => setDeleteWithRuleBreachDialogState({ isOpen: false })}
                     onSubmit={async () => {
-                        const someBrokenRuleIsEnforcement = deleteWithRuleBreachDialogState.brokenRules!.some(({ ruleId }) => {
-                            const rule = rules.get(ruleId)!;
-                            return rule.actionOnFail === 'ENFORCEMENT';
-                        });
+                        const someBrokenRuleIsEnforcement = deleteWithRuleBreachDialogState.brokenRules!.some(
+                            ({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT,
+                        );
 
                         if (someBrokenRuleIsEnforcement) {
                             await createRuleBreachRequest();

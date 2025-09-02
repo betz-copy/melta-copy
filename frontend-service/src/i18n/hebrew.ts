@@ -886,7 +886,11 @@ export default {
             actions: {
                 warning: 'אזהרה',
                 enforcement: 'אכיפה',
+                indicator: 'חיוי',
             },
+            atLeastOne: 'יש לבחור אפשרות אחת לפחות',
+            fieldColor: 'צביעת שדה',
+            fieldToColor: 'שדה לצביעה',
         },
         processInstance: {
             saveBth: 'שמירה',
@@ -978,6 +982,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        forbidden: 'אסור',
         fieldFilterCondition: 'הערך אינו עומד בתנאי הסינון',
         url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',

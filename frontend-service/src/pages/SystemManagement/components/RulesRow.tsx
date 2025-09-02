@@ -11,7 +11,7 @@ import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
+import { ActionOnFail, IMongoRule, IRuleMap } from '../../../interfaces/rules';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
@@ -66,7 +66,7 @@ export const RuleCard: React.FC<{
                     <Grid container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
                         <Grid flexBasis="95%" height="30px">
                             <Grid container alignItems="center" direction="row" flexWrap="nowrap" gap="5px">
-                                {rule.actionOnFail === 'WARNING' ? (
+                                {rule.actionOnFail === ActionOnFail.WARNING ? (
                                     <WarningAmberRounded sx={{ color: '#FFAC2F' }} />
                                 ) : (
                                     <WarningRounded sx={{ color: '#DD3500' }} />

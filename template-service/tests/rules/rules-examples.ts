@@ -1,6 +1,7 @@
-import { IRule } from '../../src/express/rule/interfaces';
-import { IMongoRelationshipTemplate } from '../../src/express/relationshipTemplate/interface';
+import { ActionOnFail } from '@microservices/shared';
 import { ICategory, IEntityTemplatePopulated } from '../../src/express/externalServices/entityTemplateManager';
+import { IMongoRelationshipTemplate } from '../../src/express/relationshipTemplate/interface';
+import { IRule } from '../../src/express/rule/interfaces';
 
 export const fakeStupidCategory: ICategory = {
     _id: 'unnecessary-category',
@@ -157,7 +158,7 @@ export const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTempla
 export const oneTravelAgentPerFlight: IRule = {
     name: 'סוכן נסיעות אחד על טיסה',
     description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',
-    actionOnFail: 'WARNING',
+    actionOnFail: ActionOnFail.WARNING,
     entityTemplateId: flightEntityTemplate._id,
     formula: {
         isGroup: true,
@@ -187,7 +188,7 @@ export const oneTravelAgentPerFlight: IRule = {
 export const noOverlappingFlightsInTrip: IRule = {
     name: 'טיסה אחת ביום לטיול',
     description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
-    actionOnFail: 'WARNING',
+    actionOnFail: ActionOnFail.WARNING,
     disabled: false,
     entityTemplateId: tripEntityTemplate._id,
     formula: {
@@ -297,7 +298,7 @@ export const noOverlappingFlightsInTrip: IRule = {
 export const warnOnEveryFlightOnActiveZone: IRule = {
     name: 'התראה על טיסות בטיול פעיל',
     description: 'התראה על כל טיסה חדשה שמחוברת לטיול פעיל',
-    actionOnFail: 'WARNING',
+    actionOnFail: ActionOnFail.WARNING,
     entityTemplateId: tripEntityTemplate._id,
     formula: {
         isGroup: true,

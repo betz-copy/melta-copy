@@ -18,7 +18,7 @@ import {
     IUpdateEntityStatusMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../interfaces/rules';
+import { ActionOnFail, IMongoRule } from '../../interfaces/rules';
 import { IUser } from '../../interfaces/users';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
@@ -150,7 +150,9 @@ export const EntityForBrokenRules: React.FC<{
             actions={actions}
             entityPropertiesToShowTooltipOverride={entityPropertiesToShowTooltipOverride}
             entityPropertiesToHighlightTooltip={entityPropertiesToHighlightTooltip}
-            entityPropertiesToHighlightColor={ruleTemplate.actionOnFail === 'WARNING' ? theme.palette.warning.main : theme.palette.error.main}
+            entityPropertiesToHighlightColor={
+                ruleTemplate.actionOnFail === ActionOnFail.WARNING ? theme.palette.warning.main : theme.palette.error.main
+            }
         />
     );
 };
