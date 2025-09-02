@@ -32,9 +32,9 @@ const ProcessInstancesHeadline: React.FC<{
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
-            <Grid item>
+            <Grid>
                 <Grid container spacing={5} wrap="nowrap" alignItems="center">
-                    <Grid item>
+                    <Grid>
                         <BlueTitle
                             title={i18next.t('pages.processInstances')}
                             component="h4"
@@ -45,7 +45,7 @@ const ProcessInstancesHeadline: React.FC<{
                 </Grid>
             </Grid>
 
-            <Grid item>
+            <Grid>
                 {(currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
                     currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                     <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px', height: '35px' }}>

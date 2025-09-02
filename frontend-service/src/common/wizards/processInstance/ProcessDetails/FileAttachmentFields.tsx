@@ -34,7 +34,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
 }) => (
     <>
         {Object.entries(templateFileProperties).map(([key, value], index) => (
-            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+            <Grid key={key} marginTop={index > 0 ? 5 : 0}>
                 {value.items === undefined ? (
                     <InstanceSingleFileInput
                         key={key}
@@ -81,14 +81,12 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 }
                 return (
                     <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
-                        <Grid item>
+                        <Grid>
                             <Typography display="inline" variant="body1">
                                 {title}:
                             </Typography>
                         </Grid>
-                        <Grid item maxWidth="170px">
-                            {attachments}
-                        </Grid>
+                        <Grid maxWidth="170px">{attachments}</Grid>
                     </Grid>
                 );
             })}

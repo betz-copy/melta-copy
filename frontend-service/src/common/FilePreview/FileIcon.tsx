@@ -1,5 +1,5 @@
+import { FilePresent } from '@mui/icons-material';
 import React, { CSSProperties } from 'react';
-import FilePresentIcon from '@mui/icons-material/FilePresent';
 
 interface FileIconProps {
     extension: string;
@@ -35,7 +35,7 @@ const FileIcon: React.FC<FileIconProps> = ({ extension, style }) => {
         case '7z':
             return <img src="/icons/files/zip.svg" style={style} alt="Archive Icon" />;
         default:
-            return <FilePresentIcon style={style} />;
+            return <FilePresent style={style} />;
     }
 };
 

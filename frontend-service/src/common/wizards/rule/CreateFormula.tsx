@@ -175,7 +175,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
             <ThemeProvider theme={(outerTheme) => ({ ...outerTheme, direction: 'ltr' })}>
                 <Query {...config} value={values.formula} onChange={onChange} renderBuilder={renderBuilder} />
             </ThemeProvider>
-            {errors.formula && <div style={{ color: '#d32f2f', fontSize: 'larger' }}>{errors.formula}</div>}
+            {errors.formula && <div style={{ color: '#d32f2f', fontSize: 'larger' }}>{String(errors.formula)}</div>}
         </>
     );
 };

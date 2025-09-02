@@ -10,6 +10,7 @@ import { ActionTypes, IUpdateEntityStatusMetadata, IUpdateEntityStatusMetadataPo
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const getActionMetadata = (currEntity: IEntity, disabledStatus: boolean): IUpdateEntityStatusMetadataPopulated => {
     return {
@@ -44,7 +45,7 @@ const UpdateStatusWithRuleBreachDialog: React.FC<{
         },
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === 'RULE_BLOCK') {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }

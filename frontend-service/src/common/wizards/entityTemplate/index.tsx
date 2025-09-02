@@ -10,6 +10,7 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
@@ -24,9 +25,9 @@ import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
+import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { CreateTemplateSettings } from './CreateTemplateSettings';
 import { UploadExportFormats } from './UploadExportFormats';
-import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { WalletTransferSettings } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
@@ -194,7 +195,7 @@ const EntityTemplateWizard: React.FC<
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {
-                const errorMetadata = error.response?.data?.metadata;
+                const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
                     const { type, property, relatedTemplateName } = errorMetadata;

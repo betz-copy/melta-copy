@@ -1,18 +1,18 @@
 import { Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, ReactNode, useState } from 'react';
 import { toast } from 'react-toastify';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
+import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -27,6 +27,7 @@ const AddEntityButton: React.FC<{
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
     getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    children?: ReactNode;
 }> = ({
     style,
     children,

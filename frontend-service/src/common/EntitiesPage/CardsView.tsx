@@ -16,6 +16,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -40,22 +41,23 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
-    const currentUserUnit = currentUser?.unit;
+    const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];
 
     return (
         <Grid container direction="column" spacing={4}>
-            <Grid item>
+            <Grid>
                 <Grid container direction="column" spacing={1}>
                     {entitiesCount !== null && (
-                        <Grid item sx={{ color: '#70757a' }}>
+                        <Grid sx={{ color: '#70757a' }}>
                             {i18next.t('entitiesCardView.numberOfSearchResults.approximately')}
                             {entitiesCount} {i18next.t('entitiesCardView.numberOfSearchResults.results')}
                         </Grid>
                     )}
                 </Grid>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Grid container>
                     <InfiniteScroll<
                         IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
@@ -92,7 +94,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                         [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
-                                            childTemplateId: template._id
+                                            childTemplateId: template._id,
                                         },
                                     },
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),

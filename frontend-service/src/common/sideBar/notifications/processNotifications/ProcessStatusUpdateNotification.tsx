@@ -23,7 +23,7 @@ export const ProcessStatusUpdateNotification: React.FC<{
                     ${i18next.t(`processStatusUpdateNotification.${step !== undefined ? 'step' : 'process'}`)} `}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography display="inline">
                     {`${i18next.t(`processStatusUpdateNotification.${step !== undefined ? 'stepStatusPart1' : 'processStatus'}`)} `}
                 </Typography>

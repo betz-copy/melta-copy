@@ -32,6 +32,7 @@ import {
     IMongoRule,
     INUmberMetaData,
     IPieMetaData,
+    IPrintingTemplate,
     IRelationship,
     IRule,
     isChildTemplate,
@@ -51,6 +52,7 @@ import {
     TableItem,
     UploadedFile,
     ValidationError,
+    IMongoPrintingTemplate,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -68,6 +70,7 @@ import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
+import PrintingTemplateService from '../../externalServices/templates/printingTemplateService';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -99,6 +102,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private entityTemplateService: EntityTemplateService;
 
+    private printingTemplateService: PrintingTemplateService;
+
     private instancesService: InstancesService;
 
     private processService: ProcessService;
@@ -116,6 +121,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.storageService = new StorageService(workspaceId);
         this.relationshipTemplateService = new RelationshipsTemplateService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.printingTemplateService = new PrintingTemplateService(workspaceId);
         this.instancesService = new InstancesService(workspaceId);
         this.processService = new ProcessService(workspaceId);
         this.processManager = new ProcessTemplatesManager(workspaceId);
@@ -291,6 +297,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             categoryOrder = null;
         }
 
+        const allPrintingTemplates: IMongoPrintingTemplate[] = await this.printingTemplateService.getAllPrintingTemplates();
+
         return {
             categoryOrder,
             categories: allAllowedCategories,
@@ -299,6 +307,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             rules: allowedRules,
             processTemplates,
             childTemplates: await this.getAndPopulateAllTemplatesConstraints(childTemplatesPopulated, uniqueConstraints),
+            printingTemplates: allPrintingTemplates,
         };
     }
 
@@ -1775,6 +1784,31 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId);
         const rules = await this.relationshipTemplateService.getManyRulesByIds(rulesIds);
         return rules.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
+    }
+
+    // Printing Templates
+    async createPrintingTemplate(data: IPrintingTemplate) {
+        return this.printingTemplateService.createPrintingTemplate(data);
+    }
+
+    async getPrintingTemplateById(id: string) {
+        return this.printingTemplateService.getPrintingTemplateById(id);
+    }
+
+    async getAllPrintingTemplates() {
+        return this.printingTemplateService.getAllPrintingTemplates();
+    }
+
+    async updatePrintingTemplate(id: string, data: IPrintingTemplate) {
+        return this.printingTemplateService.updatePrintingTemplate(id, data);
+    }
+
+    async deletePrintingTemplate(id: string) {
+        return this.printingTemplateService.deletePrintingTemplate(id);
+    }
+
+    async searchPrintingTemplates(searchBody: ISearchEntityTemplatesBody) {
+        return this.printingTemplateService.searchPrintingTemplates(searchBody);
     }
 
     // Child templates

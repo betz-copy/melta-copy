@@ -1,12 +1,12 @@
-import React from 'react';
 import { Grid, List } from '@mui/material';
+import React from 'react';
 import { useQueryClient } from 'react-query';
+import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleMap } from '../../../interfaces/rules';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { BrokenRuleCompact } from './BrokenRuleCompact';
 import { BrokenRuleFull } from './BrokenRuleFull';
-import { IRuleMap } from '../../../interfaces/rules';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const BrokenRulesInfo: React.FC<{
     brokenRules: IRuleBreachPopulated['brokenRules'];
@@ -21,9 +21,9 @@ export const BrokenRulesInfo: React.FC<{
     if (!allRulesExist) return null;
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
+            <Grid>
                 <List dense={isCompact}>
-                    <Grid container item width="100%" flexDirection="column" rowGap="20px">
+                    <Grid container width="100%" flexDirection="column" rowGap="20px">
                         {brokenRules.map((brokenRule, index) => {
                             const ruleTemplate = rules.get(brokenRule.ruleId)!;
                             return isCompact ? (
@@ -31,7 +31,6 @@ export const BrokenRulesInfo: React.FC<{
                                 <BrokenRuleCompact key={`${brokenRule.ruleId}/${index}`} brokenRule={brokenRule} ruleTemplate={ruleTemplate} />
                             ) : (
                                 <Grid
-                                    item
                                     style={{
                                         backgroundColor: darkMode ? 'transparent' : '#F0F2F7',
                                         borderRadius: '10px',

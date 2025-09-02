@@ -8,7 +8,7 @@ import {
     Edit as EditIcon,
     MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import { CompareArrows } from '@mui/icons-material';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
 import React, { MouseEventHandler, useMemo, useState } from 'react';
@@ -183,7 +183,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.convertToRelationShipFieldClick')}
-                                icon={<CompareArrowsIcon color="action" />}
+                                icon={<CompareArrows color="action" />}
                                 disabled={disabledProps?.isEditDisabled}
                             />
                         </Grid>

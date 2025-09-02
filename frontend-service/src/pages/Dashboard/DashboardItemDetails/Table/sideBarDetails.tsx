@@ -38,7 +38,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
 
     return (
         <Grid container direction="column" spacing={4}>
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     formik={formikProps}
                     formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
@@ -56,12 +56,12 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
             </Grid>
 
             {values.templateId && (
-                <Grid item container direction="column" spacing={4}>
-                    <Grid item>
+                <Grid container direction="column" spacing={4}>
+                    <Grid>
                         <Divider />
                     </Grid>
-                    <Grid item container direction="column" spacing={2.5}>
-                        <Grid item>
+                    <Grid container direction="column" spacing={2.5}>
+                        <Grid>
                             <ViewModeTextField
                                 name="name"
                                 label={i18next.t('dashboard.tables.title')}
@@ -75,7 +75,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
                             />
                         </Grid>
 
-                        <Grid item>
+                        <Grid>
                             <ViewModeTextField
                                 name="description"
                                 multiline
@@ -92,11 +92,11 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
                         </Grid>
                     </Grid>
 
-                    <Grid item container direction="column" spacing={2}>
-                        <Grid item>
+                    <Grid container direction="column" spacing={2}>
+                        <Grid>
                             <InfoTypography text={i18next.t('dashboard.tables.permissionWarning')} />
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <InfoTypography text={i18next.t('dashboard.tables.changeTableSizeWarning')} />
                         </Grid>
                     </Grid>

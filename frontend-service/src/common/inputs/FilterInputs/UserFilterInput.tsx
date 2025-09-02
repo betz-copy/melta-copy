@@ -33,8 +33,8 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
     }, [forceEqualsType, filterField]);
 
     return (
-        <Grid container item flexDirection="column" spacing={1}>
-            <Grid item>
+        <Grid container flexDirection="column" spacing={1}>
+            <Grid>
                 <UserInput
                     label=""
                     value={
@@ -62,7 +62,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                     readOnly={byCurrentUserDefaultValue}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <FormControlLabel
                     control={
                         <MeltaCheckbox
@@ -78,7 +78,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                         />
                     }
                     label={i18next.t('childTemplate.connectedUser')}
-                    componentsProps={{
+                    slotProps={{
                         typography: { sx: { fontSize: '14px' } },
                     }}
                 />

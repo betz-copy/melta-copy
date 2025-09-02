@@ -584,7 +584,9 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 <>
                     <div
                         key={propertiesType}
-                        ref={drop}
+                        ref={(node) => {
+                            drop(node as any);
+                        }}
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -700,8 +702,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                         ?.title
                                 }
                                 ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
-                }`}
+                                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                                }`}
                 onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />
         </FieldBlockAccordion>

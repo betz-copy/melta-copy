@@ -61,7 +61,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     const activeEntityTemplatesFiltered = convertToRelationshipField?.options ?? Array.from(entityTemplates.values());
 
     return (
-        <Grid item container justifyContent="space-between" flexWrap="nowrap">
+        <Grid container justifyContent="space-between" flexWrap="nowrap">
             {isDisabled && !entityTemplates.has(value.relationshipReference?.relatedTemplateId || '') ? (
                 <Typography variant="body1" color="error">
                     {i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
@@ -112,7 +112,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                                 label={i18next.t('validation.relatedDirection')}
                                 value={i18next.t(`validation.${value.relationshipReference?.relationshipTemplateDirection}`)}
                                 sx={{ marginRight: '8px', borderRadius: '10px', width: 100 }}
-                                InputProps={{ readOnly: true }}
+                                slotProps={{ input: { readOnly: true } }}
                                 disabled
                             />
                         ) : (

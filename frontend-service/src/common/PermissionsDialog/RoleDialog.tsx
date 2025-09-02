@@ -17,7 +17,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { createDialogCategories, didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
 
@@ -149,17 +149,19 @@ const RoleDialog: React.FC<{
                                     onChange={({ target: { value: newValue } }) => setFieldValue('name', newValue)}
                                     onBlur={handleBlur}
                                     label={i18next.t('permissions.roleHeaderName')}
-                                    InputLabelProps={{
-                                        shrink: mode === 'view' || undefined,
-                                        style: {
-                                            fontSize: '14px',
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: mode === 'view' || undefined,
+                                            style: {
+                                                fontSize: '14px',
+                                            },
                                         },
-                                    }}
-                                    inputProps={{
-                                        readOnly: mode === 'view',
-                                        style: {
-                                            textOverflow: 'ellipsis',
-                                            fontSize: '14px',
+                                        htmlInput: {
+                                            readOnly: mode === 'view',
+                                            style: {
+                                                textOverflow: 'ellipsis',
+                                                fontSize: '14px',
+                                            },
                                         },
                                     }}
                                     disabled={mode === 'edit'}
@@ -186,7 +188,7 @@ const RoleDialog: React.FC<{
                                             type="submit"
                                             disabled={
                                                 isSubmitting ||
-                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) ||
                                                 userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"

@@ -1,10 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { History } from '@mui/icons-material';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import TocIcon from '@mui/icons-material/Toc';
+import { ArrowBackIos, ArrowForwardIos, History, Toc } from '@mui/icons-material';
 import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
@@ -145,7 +142,6 @@ const Steps: React.FC<IStepsProp> = ({
         >
             <Grid
                 container
-                item
                 flexDirection="column"
                 alignItems="flex-start"
                 gap="35px"
@@ -154,9 +150,9 @@ const Steps: React.FC<IStepsProp> = ({
                     width: '100%',
                 }}
             >
-                <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                    <Grid item container width="70%" minWidth="680px">
-                        <Grid item width="20px">
+                <Grid container width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                    <Grid container width="70%" minWidth="680px">
+                        <Grid width="20px">
                             {!scrollRightDisabled && (
                                 <a
                                     onClick={() => {
@@ -164,14 +160,13 @@ const Steps: React.FC<IStepsProp> = ({
                                     }}
                                     style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                                 >
-                                    <ArrowForwardIosIcon
+                                    <ArrowForwardIos
                                         sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
                                     />
                                 </a>
                             )}
                         </Grid>
                         <Grid
-                            item
                             ref={containerRef}
                             className="scrollable-container"
                             style={{
@@ -188,7 +183,7 @@ const Steps: React.FC<IStepsProp> = ({
                                         <Grid>
                                             <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
                                                 <MeltaTooltip
-                                                    componentsProps={{
+                                                    slotProps={{
                                                         tooltip: {
                                                             sx: {
                                                                 bgcolor: 'rgba(181, 181, 181, 0.9)',
@@ -249,7 +244,7 @@ const Steps: React.FC<IStepsProp> = ({
                                 ))}
                             </Stepper>
                         </Grid>
-                        <Grid item width="20px">
+                        <Grid width="20px">
                             {!scrollLeftDisabled && (
                                 <a
                                     onClick={() => {
@@ -257,16 +252,16 @@ const Steps: React.FC<IStepsProp> = ({
                                     }}
                                     style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                                 >
-                                    <ArrowBackIosIcon
+                                    <ArrowBackIos
                                         sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
                                     />
                                 </a>
                             )}
                         </Grid>
                     </Grid>
-                    <Grid item container justifyContent="flex-end" alignItems="flex-start">
-                        <Grid item container flexDirection="column" width="120px" alignItems="center" gap="10px">
-                            <Grid item>
+                    <Grid container justifyContent="flex-end" alignItems="flex-start">
+                        <Grid container flexDirection="column" width="120px" alignItems="center" gap="10px">
+                            <Grid>
                                 <Box
                                     sx={{
                                         borderRadius: '50%',
@@ -283,10 +278,10 @@ const Steps: React.FC<IStepsProp> = ({
                                         if (!isStepEditMode) setActiveStep(0);
                                     }}
                                 >
-                                    <TocIcon sx={{ color: '#1E2775' }} />
+                                    <Toc sx={{ color: '#1E2775' }} />
                                 </Box>
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <BlueTitle
                                     style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
                                     title={`${i18next.t('wizard.processInstance.nextToSummaryDetails')}`}
@@ -295,7 +290,7 @@ const Steps: React.FC<IStepsProp> = ({
                                 />
                             </Grid>
                         </Grid>
-                        <Grid item alignSelf="flex-start" width="120px" marginTop="2px">
+                        <Grid alignSelf="flex-start" width="120px" marginTop="2px">
                             <MeltaTooltip
                                 title={
                                     openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.stepHeader')
@@ -316,7 +311,6 @@ const Steps: React.FC<IStepsProp> = ({
                 <Divider variant="middle" sx={{ width: '100%' }} />
             </Grid>
             <Grid
-                item
                 height="100%"
                 sx={{
                     overflowY: 'auto',
@@ -346,7 +340,7 @@ const Steps: React.FC<IStepsProp> = ({
                     />
                 )}
                 {currStepInstance && openActivityPopper && (
-                    <Grid item container direction="column" wrap="nowrap" overflow="none" height="65vh" style={{ overflowY: 'auto' }} padding="20px">
+                    <Grid container direction="column" wrap="nowrap" overflow="none" height="65vh" style={{ overflowY: 'auto' }} padding="20px">
                         <ActivitiesContent
                             activityEntityId={currStepInstance._id}
                             entityTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}

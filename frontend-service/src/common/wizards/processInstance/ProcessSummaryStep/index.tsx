@@ -50,7 +50,7 @@ const StepIconComponent = (
             }}
             displayTitle={false}
         />
-        <Grid item alignSelf="center" width="100%">
+        <Grid alignSelf="center" width="100%">
             <StatusDisplay status={stepStatus} displayIcon={false} text={i18next.t(`wizard.processInstance.summary.processStatuses.${stepStatus}`)} />
         </Grid>
     </Grid>
@@ -68,7 +68,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
             style={{ direction: 'rtl' }}
         >
             <Grid container alignItems="space-around" direction="column" width="100%">
-                <Grid item xs={3}>
+                <Grid size={{ xs: 3 }}>
                     <ProcessStatus
                         title={i18next.t('wizard.processInstance.summary.processStatus')}
                         instance={processInstance}
@@ -76,7 +76,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                     />
                 </Grid>
 
-                <Grid item xs={3} width="100%">
+                <Grid size={{ xs: 3 }} width="100%">
                     <Box sx={{ padding: 3, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
                         <Stepper sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
                             {processInstance.steps.map((stepInstance, index) => (
@@ -90,7 +90,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                                         alignItems="center"
                                         gap="10px"
                                     >
-                                        <Grid item width="100%" alignSelf="center">
+                                        <Grid width="100%" alignSelf="center">
                                             <BlueTitle
                                                 style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
                                                 component="h4"
@@ -100,17 +100,17 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                                                 }`}
                                             />
                                         </Grid>
-                                        <Grid item>
+                                        <Grid>
                                             {StepIconComponent(stepInstance, processTemplate.steps[index], setActiveStep, index, stepInstance.status)}
                                         </Grid>
-                                        <Grid item container position="absolute" top="165px" alignItems="center" justifyContent="center">
-                                            <Grid item>
+                                        <Grid container position="absolute" top="165px" alignItems="center" justifyContent="center">
+                                            <Grid>
                                                 <ReviewedAtProcessStatus instance={stepInstance} />
                                             </Grid>
                                             {stepInstance.comments && (
-                                                <Grid item>
+                                                <Grid>
                                                     <MeltaTooltip title={<CommentsDetails values={stepInstance} />}>
-                                                        <Grid item>
+                                                        <Grid>
                                                             <img src="/icons/comment-icon.svg" />
                                                         </Grid>
                                                     </MeltaTooltip>

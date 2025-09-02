@@ -18,7 +18,6 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
-import { BackendConfigState } from '../backendConfigService';
 
 const { entityTemplates } = environment.api;
 
@@ -298,8 +297,6 @@ export const extractGroups = (
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
         values;
     const serialsUniqueConstraints: string[][] = [];
@@ -443,9 +440,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
                     enumPropertiesColors[name][option] = enumColor;
                 });
-            }
-            if (type === 'unitField') {
-                schema.properties[name].enum = [...(config?.units || [])];
             }
         },
     );

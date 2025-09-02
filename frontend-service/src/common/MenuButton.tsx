@@ -10,10 +10,8 @@ const MenuButton: React.FC<{
     return (
         <MenuItem disabled={disabled} onClick={onClick}>
             <Grid container>
-                <Grid item>{icon}</Grid>
-                <Grid item paddingLeft="8px">
-                    {text}
-                </Grid>
+                <Grid>{icon}</Grid>
+                <Grid paddingLeft="8px">{text}</Grid>
             </Grid>
         </MenuItem>
     );

@@ -1,5 +1,4 @@
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Close';
+import { Add, Close } from '@mui/icons-material';
 import {
     Autocomplete,
     Box,
@@ -104,7 +103,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             ? undefined
                             : {
                                   onClick: handleRemoveEntity,
-                                  icon: <RemoveIcon />,
+                                  icon: <Close />,
                                   popoverText: i18next.t('wizard.processInstance.changeEntity'),
                               }
                     }
@@ -129,7 +128,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                 <Button
                     onClick={(event) => setChooseEntityAnchorEl(event.currentTarget)}
                     variant="outlined"
-                    startIcon={<AddIcon style={{ fontSize: '27px' }} />}
+                    startIcon={<Add style={{ fontSize: '27px' }} />}
                     size="large"
                 >
                     {title}
@@ -171,7 +170,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                                     handleBlur(`entityReferences.${field}`)(event);
                                 }}
                             >
-                                <RemoveIcon />
+                                <Close />
                             </IconButton>
                         }
                     />
@@ -212,7 +211,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                                     ? undefined
                                     : {
                                           onClick: handleRemoveEntity,
-                                          icon: <RemoveIcon />,
+                                          icon: <Close />,
                                           popoverText: i18next.t('wizard.processInstance.changeEntity'),
                                       }
                             }
@@ -225,12 +224,12 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
             )}
             {!referencedEntityData && isViewMode && (
                 <Grid container spacing={1} alignItems="center" key={field}>
-                    <Grid item>
+                    <Grid>
                         <Typography display="inline" variant="body1">
                             {title}:
                         </Typography>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <Typography display="inline" variant="h6">
                             -
                         </Typography>

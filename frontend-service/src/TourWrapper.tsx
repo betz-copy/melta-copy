@@ -1,10 +1,10 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { TourProvider, StepType } from '@reactour/tour';
 import i18next from 'i18next';
 import hebrew from './i18n/hebrew';
 
-const TourWrapper: React.FC = ({ children }) => {
+const TourWrapper: React.FC<{ children?: ReactNode }> = ({ children }) => {
     const tourText = i18next.t('tourText', { returnObjects: true }) as (typeof hebrew)['tourText'];
 
     const steps: StepType[] = [

@@ -55,12 +55,12 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
         <Grid container direction="column" spacing={2}>
             {titleFormikField && (
                 <>
-                    <Grid item>
+                    <Grid>
                         <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
                             {label}
                         </Typography>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <ViewModeTextField
                             label={`${i18next.t('charts.title')}`}
                             name={titleFormikField}
@@ -76,12 +76,12 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                     </Grid>
                 </>
             )}
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     formik={formik}
                     formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}
                     options={typeOptions[optionsType]}
-                    label={i18next.t('charts.fieldToView')}
+                    label={label}
                     getOptionLabel={(option) => getOptionLabel(option)}
                     multiple={false}
                     onChange={(newValue) => {
@@ -102,7 +102,7 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                 />
             </Grid>
             {isAggregation(fieldValue) && fieldValue?.type !== IAggregationType.CountAll && (
-                <Grid item>
+                <Grid>
                     <FormikAutoComplete
                         formik={formik}
                         formikField={`${formikField}.byField`}

@@ -11,8 +11,10 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { isChildTemplate } from '../../utils/templates';
-import { TemplateTable, TemplateTableRef } from './TemplateTable';
+import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -24,7 +26,8 @@ export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
     currentUserKartoffelId?: string,
-    currentUserUnit?: string,
+    currentUserUnit?: string[],
+    isUserAdmin?: boolean,
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
@@ -35,8 +38,8 @@ export const getDefaultFilterFromTemplate = (
             filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
         }
 
-        if (prop.isFilterByUserUnit && currentUserUnit) {
-            filterClauses.push({ [key]: { $eq: currentUserUnit } });
+        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin) {
+            filterClauses.push({ [key]: { $in: currentUserUnit } });
         }
 
         if (prop.filters) {
@@ -95,21 +98,29 @@ const TemplateTablesViewResults = forwardRef<
     }, [visibleTemplatesCount]);
 
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId, currentUser?.unit);
+            filters[template._id] = getDefaultFilterFromTemplate(
+                template,
+                isChildTemplate(template),
+                currentUserKartoffelId,
+                currentUser?.units?.[workspace._id] ?? [],
+                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+            );
         });
         return filters;
-    }, [templates, currentUserKartoffelId]);
+    }, [templates, currentUser, currentUserKartoffelId, workspace._id]);
 
     return (
-        <Grid container direction="column" spacing={1}>
+        <Grid direction="column" spacing={1} width="100%">
             {templates.slice(0, visibleTemplatesCount).map((template) => {
                 return (
-                    <Grid item key={template._id}>
+                    <Grid key={template._id}>
                         <TemplateTable
                             ref={(el) => {
                                 if (el) {
@@ -129,7 +140,7 @@ const TemplateTablesViewResults = forwardRef<
                 );
             })}
             {visibleTemplatesCount < templates.length && (
-                <Grid item container justifyContent="center" ref={loaderRef}>
+                <Grid container justifyContent="center" ref={loaderRef}>
                     <CircularProgress />
                 </Grid>
             )}
@@ -147,7 +158,12 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 
     templates.forEach((template) => (isChildTemplate(template) ? countRequestChildTemplateIds : countRequestTemplateIds).add(template._id));
 
-    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(Array.from(countRequestTemplateIds),Array.from(countRequestChildTemplateIds), searchInput, semanticSearch);
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
+        Array.from(countRequestTemplateIds),
+        Array.from(countRequestChildTemplateIds),
+        searchInput,
+        semanticSearch,
+    );
 
     return templates.flatMap((template) => {
         const countTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;

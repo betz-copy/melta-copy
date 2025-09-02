@@ -28,7 +28,7 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
                     {datePast ? i18next.t('dateAboutToExpireNotification.datePast') : i18next.t('dateAboutToExpireNotification.dateAboutToExpire')}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography display="inline">{`${i18next.t('dateAboutToExpireNotification.propertyValue')} `}</Typography>
                 <Typography display="inline" fontWeight="bold">
                     {new Date(datePropertyValue).toLocaleDateString('he-IL')}

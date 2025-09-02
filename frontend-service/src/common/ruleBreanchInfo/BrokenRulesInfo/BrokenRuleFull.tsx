@@ -71,7 +71,7 @@ export const BrokenRuleFull: React.FC<{
 
                             return (
                                 <Grid key={i}>
-                                    <Grid item>
+                                    <Grid>
                                         {causesWithoutMainEntity.length === 0 && (
                                             <>
                                                 <Grid paddingBottom="10px">
@@ -90,7 +90,7 @@ export const BrokenRuleFull: React.FC<{
                                             </>
                                         )}
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         {causesWithoutMainEntity.length > 0 && (
                                             <>
                                                 {causesWithoutMainEntity.length > 1 && (

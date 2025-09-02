@@ -14,7 +14,7 @@ export const ViewingCard: React.FC<{
     const [open, setOpen] = useState<boolean>(false);
 
     return (
-        <Grid item>
+        <Grid>
             <Card
                 onMouseEnter={() => (onHover ? onHover(true) : '')}
                 onMouseLeave={() => (onHover ? onHover(false) : '')}
@@ -49,9 +49,9 @@ export const ViewingCard: React.FC<{
                         }}
                     >
                         {open && (
-                            <Grid item container direction="column">
-                                <Grid item>{title}</Grid>
-                                {expendedCard && <Grid item>{expendedCard}</Grid>}
+                            <Grid container direction="column">
+                                <Grid>{title}</Grid>
+                                {expendedCard && <Grid>{expendedCard}</Grid>}
                             </Grid>
                         )}
                     </CardContent>

@@ -87,11 +87,11 @@ const GanttPage: React.FC = () => {
                     />
 
                     <Grid container wrap="nowrap" position="relative" alignItems="stretch" height="94vh">
-                        <Grid item container>
+                        <Grid sx={{ flex: 1, minWidth: 0 }}>
                             <Gantt gantt={gantt} />
                         </Grid>
 
-                        <Grid item>
+                        <Grid sx={{ flexShrink: 0 }}>
                             <GanttSideBar
                                 gantt={gantt}
                                 open={sideBarOpen}

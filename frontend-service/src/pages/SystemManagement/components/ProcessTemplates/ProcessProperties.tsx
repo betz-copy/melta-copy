@@ -16,7 +16,7 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
 
     return (
         <Grid>
-            <Grid item>
+            <Grid>
                 <Button
                     onClick={(event) => {
                         event.preventDefault();
@@ -30,9 +30,9 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                 </Button>
             </Grid>
             {isOpen && (
-                <Grid item container direction="column" marginLeft="20px">
+                <Grid container direction="column" marginLeft="20px">
                     {Object.entries(properties).map(([key, value]) => (
-                        <Grid item container key={key} direction="row" wrap="nowrap" alignItems="center">
+                        <Grid container key={key} direction="row" wrap="nowrap" alignItems="center">
                             <Typography
                                 style={{
                                     fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,

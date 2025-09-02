@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import React, { useState, useMemo } from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { useWorkspaceStore, defaultMetadata } from '../../../stores/workspace';
-import { Field } from './Field';
-import { deepClone, setNestedValue, getDefaultValue, getValueByPath } from '../../../utils/configs/configsUtils';
+import React, { useMemo, useState } from 'react';
 import SearchInput from '../../../common/inputs/SearchInput';
+import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
+import { deepClone, getDefaultValue, getValueByPath, setNestedValue } from '../../../utils/configs/configsUtils';
+import { Field } from './Field';
 
 const ConfigurationManagement: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -61,15 +61,15 @@ const ConfigurationManagement: React.FC = () => {
 
     return (
         <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchConfig')} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
                 <Grid container spacing={3}>
                     {filteredFields.length > 0 ? (
                         filteredFields
                     ) : (
-                        <Grid item>
+                        <Grid>
                             <Typography>{i18next.t('noSearchResults')}</Typography>
                         </Grid>
                     )}

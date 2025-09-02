@@ -1,55 +1,57 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
-import { render } from 'react-dom';
+import { CircularProgress, Grid } from '@mui/material';
+import { L10n, loadCldr } from '@syncfusion/ej2-base'; // eslint-disable-line import/no-extraneous-dependencies
 import {
     Day,
+    EventRenderedArgs,
     Inject,
     Month,
+    NavigatingEventArgs,
     ResourceDirective,
     ResourcesDirective,
     ScheduleComponent,
     TimelineMonth,
     TimelineViews,
+    View,
     ViewDirective,
     ViewsDirective,
     Week,
-    View,
-    NavigatingEventArgs,
-    EventRenderedArgs,
 } from '@syncfusion/ej2-react-schedule';
-import { L10n, loadCldr } from '@syncfusion/ej2-base'; // eslint-disable-line import/no-extraneous-dependencies
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import flatten from 'lodash.flatten';
-import { CircularProgress, Grid } from '@mui/material';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
+import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
+import numbers from '../../CLDR/hebrew/numbers.json';
+import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
+import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
+import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
+import '../../css/syncfusion/schedule.css';
+import { environment } from '../../globals';
+import hebrew from '../../i18n/hebrew';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IGantt } from '../../interfaces/gantts';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import {
     getEntitiesSearchBody,
     getScheduleComponentData,
     getScheduleComponentEntityTemplateResourceData,
     getScheduleComponentGroupByEntityResourceData,
 } from '../../utils/gantts';
+import { useDynamicStyleSheet } from '../../utils/hooks/useDynamicStyleSheet';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { GanttEvent } from './GanttEvent';
 import { GanttQuickInfo } from './GanttQuickInfo';
-import hebrew from '../../i18n/hebrew';
-import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
-import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
-import numbers from '../../CLDR/hebrew/numbers.json';
-import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
-import { useDynamicStyleSheet } from '../../utils/hooks/useDynamicStyleSheet';
-import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
-import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
-import { IGantt } from '../../interfaces/gantts';
-import '../../css/syncfusion/schedule.css';
-import { environment } from '../../globals';
 import { Heatmap } from './Heatmap';
 import { ScheduleToolbar } from './ScheduleToolbar';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { useDarkModeStore } from '../../stores/darkMode';
 
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
 L10n.load({ 'he-IL': hebrew.schedule });
+
+const { date, time } = environment.formats;
 
 const {
     refetchInterval,
@@ -142,7 +144,8 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
         if (!toolbarContainer?.parentNode) return;
         toolbarContainer.parentNode.insertBefore(toolbar, toolbarContainer.parentNode.firstChild);
 
-        render(<ScheduleToolbar scheduleRef={scheduleRef} darkMode={darkMode} />, toolbar);
+        const root = createRoot(toolbar);
+        root.render(<ScheduleToolbar scheduleRef={scheduleRef} darkMode={darkMode} />);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,8 +176,8 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
                     width="100%"
                     height="100%"
                     timezone="Asia/Jerusalem"
-                    timeFormat="HH:mm"
-                    dateFormat="dd/MM/yyyy"
+                    timeFormat={time}
+                    dateFormat={date}
                     workDays={[0, 1, 2, 3, 4, 5]}
                     locale="he-IL"
                     selectedDate={new Date(selectedDate)}

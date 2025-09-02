@@ -52,7 +52,6 @@ export const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProp
 
     return (
         <Grid
-            item
             style={{
                 opacity,
                 alignSelf: 'stretch',
@@ -119,7 +118,6 @@ export const Field = ({
 
     return (
         <Grid
-            item
             style={{
                 opacity,
                 alignSelf: 'stretch',
@@ -127,7 +125,7 @@ export const Field = ({
                 cursor: 'grab',
             }}
         >
-            <Grid item ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity }}>
+            <Grid ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity }}>
                 <MemoFieldEditCard
                     {...buildProps}
                     key={field.id}
@@ -234,7 +232,6 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
             ref={isExpanded ? ref : undefined}
         >
             <Grid
-                item
                 style={{
                     opacity,
                     alignSelf: 'stretch',
@@ -274,7 +271,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             },
                         }}
                     >
-                        <Grid container wrap="nowrap">
+                        <Grid container wrap="nowrap" width="100%">
                             <Box style={{ display: 'flex', alignItems: 'center' }}>
                                 <DragHandleIcon fontSize="large" />
                             </Box>
@@ -320,6 +317,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             >
                                 <Grid>
                                     <IconButton
+                                        component="span"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             remove(index);
@@ -333,8 +331,12 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                         </Grid>
                     </AccordionSummary>
 
-                    <AccordionDetails ref={drop}>
-                        <Grid item marginBottom={3}>
+                    <AccordionDetails
+                        ref={(node) => {
+                            drop(node as any);
+                        }}
+                    >
+                        <Grid marginBottom={3}>
                             <Divider />
                         </Grid>
 

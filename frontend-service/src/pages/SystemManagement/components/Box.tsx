@@ -1,5 +1,5 @@
+import { Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
-import { Grid, Card, CardContent } from '@mui/material';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface BoxProps {
@@ -28,7 +28,7 @@ export const Box: React.FC<BoxProps> = ({ children, header, addingIcon, onHover 
             <Grid container direction="column">
                 {header}
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container gap="15px" direction="column">
+                    <Grid container gap="15px" direction="column">
                         {children}
                     </Grid>
                 </CardContent>

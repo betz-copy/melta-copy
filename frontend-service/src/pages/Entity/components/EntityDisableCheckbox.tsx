@@ -5,7 +5,7 @@ import i18next from 'i18next';
 
 const EntityDisableCheckbox: React.FC<{ isEntityDisabled: boolean }> = ({ isEntityDisabled }) => {
     return (
-        <Grid item fontSize="5px">
+        <Grid fontSize="5px">
             <FormControlLabel
                 control={
                     <Checkbox

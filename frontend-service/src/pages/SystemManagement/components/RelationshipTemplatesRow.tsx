@@ -12,32 +12,32 @@ import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
+import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
+import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
+import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import {
     convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../../utils/permissions/templatePermissions';
 import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
-import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { environment } from '../../../globals';
-import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
-import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
-import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { useUserStore } from '../../../stores/user';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { getAllAllowedEntities, getAllAllowedRelationships } from '../../../utils/permissions/templatePermissions';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -118,10 +118,10 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                     paddingLeft="20px"
                     flexWrap="nowrap"
                 >
-                    <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                    <Grid container alignItems="center" gap="10px" flexBasis="90%">
                         <RelationshipTitle relationshipTemplate={relationshipTemplate} />
                     </Grid>
-                    <Grid item container flexBasis="10%" width="25px">
+                    <Grid container flexBasis="10%" width="25px">
                         {isHoverOnCard && !isProperty && (
                             <CardMenu
                                 onOptionsIconClick={async () => {
@@ -322,10 +322,10 @@ const RelationshipTemplatesRow: React.FC = () => {
     const theme = useTheme();
 
     return (
-        <Grid item container marginBottom="30px">
-            <Grid container alignItems="center" flexWrap="nowrap" flexDirection="row" justifyContent="space-between">
-                <Grid item container spacing={1} alignItems="center">
-                    <Grid item>
+        <Grid container marginBottom="30px">
+            <Grid container alignItems="center" flexWrap="nowrap" flexDirection="row" justifyContent="space-between" width="100%">
+                <Grid container spacing={1} alignItems="center">
+                    <Grid>
                         <SearchInput
                             value={searchText}
                             onChange={setSearchText}
@@ -333,7 +333,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             placeholder={i18next.t('globalSearch.searchRelations')}
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.sourceTemplates')}
                             templates={allowedEntityTemplates}
@@ -344,7 +344,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             isDraggableDisabled
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.destinationTemplates')}
                             templates={allowedEntityTemplates}
@@ -355,7 +355,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             isDraggableDisabled
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <FilterButton
                             onClick={() => {
                                 setSearchText('');
@@ -366,16 +366,16 @@ const RelationshipTemplatesRow: React.FC = () => {
                             text={i18next.t('entitiesTableOfTemplate.resetFilters')}
                         />
                     </Grid>
-                    <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                    <Grid sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         <CreateButton
                             onClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate: null })}
                             text={i18next.t('systemManagement.newRelationshipTemplate')}
                         />
                     </Grid>
                 </Grid>
-                <Grid item>
+                <Grid>
                     {isSrcRelationChecked ? (
-                        <Grid item container flexWrap="nowrap">
+                        <Grid container flexWrap="nowrap">
                             <IconButton style={{ borderRadius: '5px' }}>
                                 <img src="/icons/checked-src-relation.svg" />
                             </IconButton>
@@ -384,7 +384,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             </IconButton>
                         </Grid>
                     ) : (
-                        <Grid item container flexWrap="nowrap">
+                        <Grid container flexWrap="nowrap">
                             <IconButton style={{ borderRadius: '5px' }} onClick={() => setIsSrcRelationChecked(true)}>
                                 <img src="/icons/unchecked-src-relation.svg" />
                             </IconButton>
@@ -439,7 +439,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                         <Box
                             header={
                                 <Grid
-                                    item
                                     container
                                     direction={isSrcRelationChecked ? 'row' : 'row-reverse'}
                                     justifyContent="flex-start"
