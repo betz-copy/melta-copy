@@ -1,8 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Close, FilterList } from '@mui/icons-material';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
+import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
@@ -34,6 +36,7 @@ type Props = {
     onClear: () => void;
     darkMode: boolean;
     clearAutocompleteSearch: () => void;
+    sourceTemplate?: IMongoEntityTemplatePopulated;
 };
 
 const MapFilters = ({
@@ -44,12 +47,17 @@ const MapFilters = ({
     onClear,
     darkMode,
     clearAutocompleteSearch,
+    sourceTemplate,
 }: Props) => {
     const [openFilter, setOpenFilter] = React.useState(false);
     const theme = useTheme();
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
+
+    const sourceListsFields = sourceTemplate
+        ? Object.values(sourceTemplate.properties.properties).filter(({ enum: propEnum, items }) => propEnum || items?.enum)
+        : [];
 
     useEffect(() => {
         setSelectedTemplates(templatesWithLocationField);
@@ -65,9 +73,7 @@ const MapFilters = ({
                         onClick: () => setOpenFilter(!openFilter),
                     }}
                     style={{
-                        // background: '#fcfeff',
                         borderRadius: '7px',
-                        border: `1px solid ${theme.palette.primary.main}`,
                         width: '100px',
                         height: '35px',
                         background: darkMode ? '#121212' : '#FFFFFF',
@@ -79,31 +85,70 @@ const MapFilters = ({
                     <FilterList htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
                 </IconButtonWithPopover>
             </Grid>
-            {/* <Grid item>
-                <TemplatesSelectCheckbox
-                    title={i18next.t('entityTemplatesCheckboxLabel')}
-                    templates={templatesWithLocationField}
-                    selectedTemplates={selectedTemplates}
-                    setSelectedTemplates={setSelectedTemplates}
-                    isDraggableDisabled
-                    size="small"
-                    categories={categories}
-                    overrideSx={{ background: darkMode ? '#121212' : '#FFFFFF' }}
-                />
-            </Grid> */}
-            <Grid item>
-                <SearchAutoComplete
-                    selectedTemplates={selectedTemplates}
-                    handleEntityClick={moveToEntityLocations}
-                    onClear={clearAutocompleteSearch}
-                />
-            </Grid>
 
-            <Grid item>
-                <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
-            </Grid>
+            {openFilter && (
+                <Grid
+                    container
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        top: '3rem',
+                        position: 'absolute',
+                        gap: 12,
+                        borderRadius: '7px',
+                        width: '264px',
+                        padding: '15px',
+                    }}
+                    bgcolor={darkMode ? '#121212' : '#FFFFFF'}
+                >
+                    <Grid item container justifyContent="space-between" alignItems="center">
+                        <Typography color={theme.palette.primary.main} fontSize="12px">
+                            מציג 12 מתוך 15 יישויות
+                        </Typography>
 
-            {openFilter && <h1>hii</h1>}
+                        <Button
+                            sx={{
+                                color: '#4752B6',
+                                fontWeight: 400,
+                                fontSize: '12px',
+                                textDecoration: 'underline',
+                                ':hover': { textDecoration: 'underline' },
+                            }}
+                        >
+                            נקה סינון
+                        </Button>
+                    </Grid>
+                    <Divider />
+
+                    <SearchAutoComplete
+                        selectedTemplates={selectedTemplates}
+                        handleEntityClick={moveToEntityLocations}
+                        onClear={clearAutocompleteSearch}
+                    />
+
+                    <Divider />
+                    <Box maxHeight={350} overflow="auto" display="flex" flexDirection="column" gap={2} paddingTop={1}>
+                        {sourceListsFields.length > 0 &&
+                            sourceListsFields.map((field) => (
+                                <Autocomplete
+                                    multiple
+                                    options={field.enum ?? field.items?.enum ?? []}
+                                    renderTags={(selected) =>
+                                        selected.map((option) => (
+                                            <ColoredEnumChip
+                                                key={option}
+                                                label={option}
+                                                style={{ backgroundColor: darkMode ? '#53566E' : '#EBEFFA', margin: '3px', borderRadius: '10px' }}
+                                            />
+                                        ))
+                                    }
+                                    renderInput={(params) => <TextField {...params} fullWidth label={field.title} />}
+                                    popupIcon={<IoIosArrowDown fontSize="Medium" color={'#CCCFE5'} />}
+                                />
+                            ))}
+                    </Box>
+                </Grid>
+            )}
         </Grid>
     );
 };

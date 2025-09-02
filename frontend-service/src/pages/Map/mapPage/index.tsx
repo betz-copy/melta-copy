@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Circle, LinearScale, Polyline } from '@mui/icons-material';
+import { CircleTwoTone, LinearScaleTwoTone, PolylineTwoTone } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
@@ -24,7 +24,7 @@ import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/conve
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import MapPageEntityDialog from './EntityMapDialog';
-import MapFilters from './MapFilters';
+import MapFilters, { DeleteMapDataBtn } from './MapFilters';
 
 const { maxRadius } = environment.map;
 
@@ -487,6 +487,7 @@ const MapPage = () => {
                                 onClear={onClear}
                                 darkMode={darkMode}
                                 clearAutocompleteSearch={clearAutocompleteSearch}
+                                sourceTemplate={sourceTemplate}
                             />
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}
@@ -499,20 +500,42 @@ const MapPage = () => {
                             >
                                 <MeltaTooltip title={i18next.t('location.circle')}>
                                     <ToggleButton value="circle">
-                                        <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                        <CircleTwoTone
+                                            sx={{
+                                                width: '20px',
+                                                height: '20px',
+                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                                '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
+                                            }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.polygon')}>
                                     <ToggleButton value="polygon">
-                                        <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                        <PolylineTwoTone
+                                            sx={{
+                                                width: '20px',
+                                                height: '20px',
+                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                                '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
+                                            }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.line')}>
                                     <ToggleButton value="line">
-                                        <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                        <LinearScaleTwoTone
+                                            sx={{
+                                                width: '20px',
+                                                height: '20px',
+                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                                '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
+                                            }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                             </ToggleButtonGroup>
+                            <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
                         </div>
                         {selectedEntity && (
                             <MapPageEntityDialog
