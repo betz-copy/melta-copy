@@ -3,6 +3,7 @@ import { Clear } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 export interface IUnitAutocomplete {
     value?: string[];
@@ -23,7 +24,6 @@ export interface IUnitAutocomplete {
     autoFocus?: any;
     textFieldProps?: any;
     overrideSx?: Object;
-    darkMode?: boolean;
 }
 
 const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
@@ -45,8 +45,9 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
     autoFocus,
     textFieldProps,
     overrideSx,
-    darkMode,
 }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <MeltaTooltip title={value?.join(', ') ?? ''} sx={{ maxWidth: 'none' }}>
             <Autocomplete

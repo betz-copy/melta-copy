@@ -14,6 +14,7 @@ import { isChildTemplate } from '../../utils/templates';
 import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -99,13 +100,6 @@ const TemplateTablesViewResults = forwardRef<
     const currentUser = useUserStore((state) => state.user);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
-    const isUserWorkspaceAdmin = () => {
-        if (!currentUser || !workspace || !workspace._id) return false;
-
-        const workspacePermissions = currentUser.permissions?.[workspace._id];
-        return workspacePermissions?.admin?.scope === 'write';
-    };
-
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
@@ -116,7 +110,7 @@ const TemplateTablesViewResults = forwardRef<
                 isChildTemplate(template),
                 currentUserKartoffelId,
                 currentUser?.units?.[workspace._id] ?? [],
-                isUserWorkspaceAdmin(),
+                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             );
         });
         return filters;
