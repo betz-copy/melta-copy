@@ -1,4 +1,4 @@
-import { isValid as isValidDate } from 'date-fns';
+import { formatDate, isValid as isValidDate, parse } from 'date-fns';
 import { FormikErrors } from 'formik';
 import { isEqual } from 'lodash';
 import React from 'react';
@@ -14,8 +14,10 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
+import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 
 const { relativeDateFilters } = environment;
+const { loggingDate, loggingDateTime } = environment.formats;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -36,9 +38,9 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
             return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
         case 'date':
             if (!filter.dateFrom) return false;
-            if (relativeDateFilters.includes(filter.type) && relativeDateFilters.includes(filter.dateFrom)) return true;
+            if (relativeDateFilters.includes(filter.type) || filter.dateFrom === ByCurrentDefaultValue.byCurrentDate) return true;
 
-            const isDateFromValid = isValidDate(filter.dateFrom);
+            const isDateFromValid = isValidDate(parse(filter.dateFrom, loggingDate, new Date()));
 
             return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         case 'set':
@@ -225,12 +227,15 @@ export const renderFilterInput = (
                 filterField={field?.filterType === 'date' ? (field as IAGGridDateFilter) : undefined}
                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(filters, 'date', index, newType, field, onChange)}
                 handleDateChange={(newValue, isStartDate) => {
+                    const dateFormat = format === 'date-time' ? loggingDateTime : loggingDate;
+                    const dateString = newValue ? (typeof newValue === 'string' ? newValue : formatDate(newValue, dateFormat)) : null;
+
                     handleFilterFieldChange(
                         filters,
                         index,
                         {
                             ...field,
-                            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
+                            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
                         } as IAGGridDateFilter,
                         onChange,
                     );

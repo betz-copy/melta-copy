@@ -11,6 +11,7 @@ export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], 
     switch (filter?.filterType) {
         case 'date':
             if (relativeDateFilters.includes(filter.type)) return `${i18next.t(`filters.date.${filter.type}`)}`;
+
             return `${i18next.t(`filters.${filter.filterType}.${filter.type}`)} ${
                 filter.dateFrom ? new Date(filter.dateFrom).toLocaleDateString('he-IL') : ''
             } ${filter.dateTo ? ` ${i18next.t('dashboard.to')}  ${new Date(filter.dateTo).toLocaleDateString('he-IL')}` : ''}`;

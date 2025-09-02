@@ -5,7 +5,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
-import { ByCurrentDefaultValue, ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
+import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
@@ -76,13 +76,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
         const dateFormat = fieldSchema.format === 'date-time' ? loggingDateTime : loggingDate;
 
-        const dateString = newValue
-            ? newValue === ByCurrentDefaultValue.byCurrentDate
-                ? ByCurrentDefaultValue.byCurrentDate
-                : typeof newValue === 'string'
-                  ? newValue
-                  : format(newValue, dateFormat)
-            : null;
+        const dateString = newValue ? (typeof newValue === 'string' ? newValue : format(newValue, dateFormat)) : null;
 
         setLocalFilterField({
             ...localFilterField,

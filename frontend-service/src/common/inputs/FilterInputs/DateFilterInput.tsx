@@ -38,7 +38,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === 'inRange';
-    const isFixedType = relativeDateFilters.includes(filterField?.type ?? '');
+    const isRelativeType = relativeDateFilters.includes(filterField?.type ?? '');
 
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') {
@@ -50,7 +50,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
         if (!filterField) return;
         const { type, dateFrom, dateTo } = filterField;
 
-        if (isFixedType) {
+        if (isRelativeType) {
             handleDateChange(type as RelativeDateFilters, true);
             return;
         }
@@ -81,10 +81,16 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                 justifyContent="start"
                 direction={isInRangeType || !entityFilter ? 'column' : 'row'}
                 spacing={1}
-                sx={{ boxSizing: 'content-box', height: 'fit-content', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
+                sx={{
+                    boxSizing: 'content-box',
+                    height: 'fit-content',
+                    display: 'flex',
+                    flexDirection: isInRangeType ? 'column' : 'row',
+                    flexWrap: 'nowrap',
+                }}
             >
                 {!hideFilterType && (
-                    <Grid size={{ xs: isInRangeType || isFixedType ? 12 : 5 }}>
+                    <Grid size={{ xs: isInRangeType || isRelativeType ? 12 : 5 }}>
                         <TypeSelectFilter
                             filterField={filterField as IAGGridDateFilter}
                             handleFilterTypeChange={handleFilterTypeChange}
@@ -93,15 +99,20 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                         />
                     </Grid>
                 )}
-                {!isFixedType && (
-                    <Grid size={{ xs: hideFilterType || isInRangeType ? 12 : 7 }} boxSizing="border-box" width="86%">
+                {!isRelativeType && (
+                    <Grid
+                        size={{ xs: hideFilterType || isInRangeType ? 12 : 7 }}
+                        sx={{ width: isInRangeType ? '100%' : 'auto', mt: isInRangeType ? '0.5em' : 0 }}
+                        boxSizing="border-box"
+                        width="86%"
+                    >
                         {isInRangeType && !forceEqualsType ? (
                             <DateRange
                                 onStartDateChange={(newValue) => handleDateChange(newValue, true)}
                                 onEndDateChange={(newValue) => handleDateChange(newValue, false)}
                                 startDateInput={filterField?.dateFrom ?? null}
                                 endDateInput={filterField?.dateTo ?? null}
-                                directionIsRow={entityFilter}
+                                directionIsRow={true}
                                 overrideSx={inputStyle}
                                 readOnly={readOnly || filterField?.dateFrom === ByCurrentDefaultValue.byCurrentDate}
                             />

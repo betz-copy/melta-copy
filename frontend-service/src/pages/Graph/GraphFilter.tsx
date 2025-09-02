@@ -20,6 +20,9 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfa
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../utils/agGrid/interfaces';
+import { environment } from '../../globals';
+
+const { relativeDateFilters } = environment;
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -166,7 +169,16 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const handleFilterTypeChange = (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition: boolean = true,
-    ) => handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+    ) => {
+        if (filterField?.filterType === 'date') {
+            if (relativeDateFilters.includes(filterField.type) && !relativeDateFilters.includes(newTypeFilter)) {
+                setFilterField({ ...filterField, type: newTypeFilter, dateFrom: null, dateTo: null } as IAGGridDateFilter);
+                return;
+            }
+        }
+
+        handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+    };
 
     const handleFilterErasion = () => {
         removeFilterFromFilterList(filterKey);
