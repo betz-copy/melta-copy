@@ -13,6 +13,8 @@ import { useUserStore } from '../../stores/user';
 import { isChildTemplate } from '../../utils/templates';
 import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -24,7 +26,8 @@ export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
     currentUserKartoffelId?: string,
-    currentUserUnit?: string,
+    currentUserUnit?: string[],
+    isUserAdmin?: boolean,
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
@@ -35,8 +38,8 @@ export const getDefaultFilterFromTemplate = (
             filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
         }
 
-        if (prop.isFilterByUserUnit && currentUserUnit) {
-            filterClauses.push({ [key]: { $eq: currentUserUnit } });
+        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin) {
+            filterClauses.push({ [key]: { $in: currentUserUnit } });
         }
 
         if (prop.filters) {
@@ -95,15 +98,23 @@ const TemplateTablesViewResults = forwardRef<
     }, [visibleTemplatesCount]);
 
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};
         templates.forEach((template) => {
-            filters[template._id] = getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId, currentUser?.unit);
+            filters[template._id] = getDefaultFilterFromTemplate(
+                template,
+                isChildTemplate(template),
+                currentUserKartoffelId,
+                currentUser?.units?.[workspace._id] ?? [],
+                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+            );
         });
         return filters;
-    }, [templates, currentUserKartoffelId]);
+    }, [templates, currentUser, currentUserKartoffelId, workspace._id]);
 
     return (
         <Grid direction="column" spacing={1} width="100%">

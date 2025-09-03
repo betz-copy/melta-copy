@@ -1,6 +1,6 @@
 import i18next from 'i18next';
-import { ILabelIcon } from './utils/graph/helperTypes';
 import { NotificationType } from './interfaces/notifications';
+import { ILabelIcon } from './utils/graph/helperTypes';
 
 export const environment = {
     api: {
@@ -279,8 +279,20 @@ export const environment = {
         string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
         text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
         number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
-        date: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
+        date: [
+            'equals',
+            'notEqual',
+            'greaterThan',
+            'greaterThanOrEqual',
+            'lessThan',
+            'lessThanOrEqual',
+            'inRange',
+            'thisWeek',
+            'thisMonth',
+            'thisYear',
+        ],
     },
+    relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear'] as readonly string[],
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
@@ -322,6 +334,7 @@ export const environment = {
     avatarIconPath: '/icons/profileAvatar/',
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
+    dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
     maxPrintLevel: 5,
     formats: {
         date: 'dd/MM/yyyy',

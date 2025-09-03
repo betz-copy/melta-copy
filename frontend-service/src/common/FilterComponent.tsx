@@ -1,7 +1,12 @@
+import { formatDate, isValid as isValidDate, parse } from 'date-fns';
 import { FormikErrors } from 'formik';
+import { isEqual } from 'lodash';
 import React from 'react';
+import { environment } from '../globals';
+import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 import { ViewMode } from '../interfaces/dashboard';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
+import { IUser } from '../interfaces/users';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { DateFilterInput } from './inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from './inputs/FilterInputs/MultipleSelectFilterInput';
@@ -10,8 +15,11 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
-import { IUser } from '../interfaces/users';
-import { isEqual } from 'lodash';
+
+const {
+    relativeDateFilters,
+    formats: { loggingDate, loggingDateTime },
+} = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -31,7 +39,12 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
         case 'number':
             return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
         case 'date':
-            return filter.dateFrom !== null && (filter.type !== 'inRange' || filter.dateTo !== null);
+            if (!filter.dateFrom) return false;
+            if (relativeDateFilters.includes(filter.type) || filter.dateFrom === ByCurrentDefaultValue.byCurrentDate) return true;
+
+            const isDateFromValid = isValidDate(parse(filter.dateFrom, loggingDate, new Date()));
+
+            return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         case 'set':
             return Array.isArray(filter.values) && filter.values.length > 0;
         default:
@@ -203,8 +216,8 @@ export const renderFilterInput = (
                         ? typeof filterErrors === 'string'
                             ? filterErrors
                             : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
-                            ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
-                            : ''
+                              ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
+                              : ''
                         : ''
                 }
             />
@@ -216,12 +229,15 @@ export const renderFilterInput = (
                 filterField={field?.filterType === 'date' ? (field as IAGGridDateFilter) : undefined}
                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(filters, 'date', index, newType, field, onChange)}
                 handleDateChange={(newValue, isStartDate) => {
+                    const dateFormat = format === 'date-time' ? loggingDateTime : loggingDate;
+                    const dateString = newValue ? (typeof newValue === 'string' ? newValue : formatDate(newValue, dateFormat)) : null;
+
                     handleFilterFieldChange(
                         filters,
                         index,
                         {
                             ...field,
-                            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
+                            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
                         } as IAGGridDateFilter,
                         onChange,
                     );
@@ -263,8 +279,8 @@ export const renderFilterInput = (
                         ? typeof filterErrors === 'string'
                             ? filterErrors
                             : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
-                            ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
-                            : ''
+                              ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
+                              : ''
                         : ''
                 }
             />

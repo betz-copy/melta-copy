@@ -508,10 +508,9 @@ export const userColDef = <Data extends any = IUser>(
     values: Array<string>,
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
+    darkMode: boolean,
     hideColumn = false,
 ): ColDef => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],

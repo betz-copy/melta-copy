@@ -160,7 +160,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         }}
                         sx={{
                             ...(readOnly
-                                ? {
+                                 ? {
                                       '& .MuiOutlinedInput-root.Mui-focused': {
                                           '& > fieldset': {
                                               borderColor: 'rgba(0, 0, 0, 0.23)',

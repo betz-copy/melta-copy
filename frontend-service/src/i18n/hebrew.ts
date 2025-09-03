@@ -429,6 +429,13 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
     },
+    unitAutocomplete: {
+        label: 'משוייך ליחידה',
+        searchLabel: 'חיפוש יחידות',
+        failedToSearchRoles: 'נכשל לחפש יחידות',
+        loading: 'טוען...',
+        noOptions: 'אין תוצאות',
+    },
     notifications: {
         notificationType: 'התראות למייל',
         title: 'התראות',
@@ -1672,6 +1679,9 @@ export default {
             greaterThanOrEqual: 'אחרי או שווה ל',
             greaterThan: 'אחרי ה',
             inRange: 'בין',
+            thisWeek: 'השבוע',
+            thisMonth: 'החודש',
+            thisYear: 'השנה',
         },
         text: {
             equals: 'שווה',
@@ -1732,6 +1742,7 @@ export default {
             sourceTemplateId: 'עמוד מפה-ID תבנית מקור',
             sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
+        unitsArray: 'רשימת יחידות',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

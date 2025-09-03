@@ -1,26 +1,34 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Grid } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { useQuery } from 'react-query';
 import { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
+import { isValid } from 'date-fns';
+import { FormikProps } from 'formik';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
-import { FormikProps } from 'formik';
-import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
-import { EntityTemplateWizardValues } from './index';
-import { StepComponentHelpers, StepComponentProps } from '../index';
+import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
+import * as Yup from 'yup';
+import { environment } from '../../../globals';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
+import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
-import { environment } from '../../../globals';
-import { FieldBlockDND } from './fieldBlock/FieldBlock';
+import { StepComponentHelpers, StepComponentProps } from '../index';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
-import { getFieldData } from './fieldBlock/propertiesTypes';
+import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
+import { getFieldData } from './fieldBlock/propertiesTypes';
+import { EntityTemplateWizardValues } from './index';
 
-const { mapSearchPropertiesLimit } = environment.map;
+const {
+    relativeDateFilters,
+    filterOptions,
+    dateRegex,
+    dateTimeRegex,
+    map: { mapSearchPropertiesLimit },
+} = environment;
+
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
@@ -73,10 +81,17 @@ const agGridNumberFilterSchema = Yup.object({
 
 const agGridDateFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['date']).required(),
-    type: Yup.string()
-        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
+    type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
+    dateFrom: Yup.string()
+        .when('type', {
+            is: (type: string) => relativeDateFilters.includes(type),
+            then: (schema) => schema.oneOf([...relativeDateFilters]),
+            otherwise: (schema) =>
+                schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
+                    return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
+                }),
+        })
         .required(i18next.t('validation.required')),
-    dateFrom: Yup.string().required(i18next.t('validation.required')),
     dateTo: Yup.string().when('type', {
         is: 'inRange',
         then: (schema) => schema.required(i18next.t('validation.required')),
@@ -774,4 +789,4 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         </DndProvider>
     );
 };
-export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };
+export { AddFields, addFieldsSchema, dateNotificationTypes, validPropertyTypes };

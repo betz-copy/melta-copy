@@ -35,7 +35,7 @@ import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { IGetExpandedEntityBody } from './interface';
 
-const { neo4j, ajvCustomFormats } = config;
+const { neo4j, ajvCustomFormats, timezone } = config;
 
 const ajv = new Ajv();
 
@@ -227,6 +227,8 @@ export class EntityValidator extends DefaultController {
     }
 
     private strictIsValidDateString(dateString: string, expectedFormat: string) {
+        if (neo4j.relativeDateFilters.includes(dateString)) return true;
+
         const parsedDate = parse(dateString, expectedFormat, new Date());
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);
     }
@@ -491,7 +493,7 @@ export class EntityValidator extends DefaultController {
 
 // same format as dates shown in UI
 const formatDateTimeForFullTextSearch = (date: Date) => {
-    return formatFnsInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
+    return formatFnsInTimeZone(date, timezone, 'dd/MM/yyyy, HH:mm:ss');
 };
 
 const formatDateForFullTextSearch = (date: Date) => {

@@ -11,6 +11,7 @@ const {
     map: {
         polygon: { polygonPrefix, polygonSuffix },
     },
+    timezone,
 } = config;
 
 export const handleChartPropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
@@ -142,7 +143,7 @@ export const manipulateReturnedChart = async (
 
             if (items?.format === 'fileId') return { x: getFilesName(x), y };
 
-            if (x instanceof neo4j.types.LocalDateTime) return { x: fromZonedTime(new Date(x.toString()), 'Asia/Jerusalem').toISOString(), y };
+            if (x instanceof neo4j.types.LocalDateTime) return { x: fromZonedTime(new Date(x.toString()), timezone).toISOString(), y };
 
             if (x instanceof neo4j.types.Date) return { x: formatDate(x.toString()), y };
 

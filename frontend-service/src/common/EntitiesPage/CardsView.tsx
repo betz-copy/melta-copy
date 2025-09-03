@@ -16,6 +16,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -40,8 +41,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
-    const currentUserUnit = currentUser?.unit;
+    const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];
 
     return (
         <Grid container direction="column" spacing={4}>

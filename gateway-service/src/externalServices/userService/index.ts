@@ -52,7 +52,10 @@ class UserService {
     }
 
     static async updateUser(userId: string, updates: DeepPartial<IBaseUser>): Promise<IUser> {
-        const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, { ...updates, roleIds: updates.roleIds ?? null });
+        const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, {
+            ...updates,
+            roleIds: updates.roleIds ?? null,
+        });
         return data;
     }
 

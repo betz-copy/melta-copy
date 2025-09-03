@@ -1,20 +1,22 @@
+import {
+    FilterLogicalOperator,
+    IEntitySingleProperty,
+    IFilterGroup,
+    IFilterOfField,
+    IFilterOfTemplate,
+    IMongoEntityTemplate,
+    ISearchBatchBody,
+} from '@microservices/shared';
+import { fromZonedTime } from 'date-fns-tz';
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
-import {
-    IMongoEntityTemplate,
-    IEntitySingleProperty,
-    ISearchBatchBody,
-    IFilterOfField,
-    IFilterGroup,
-    FilterLogicalOperator,
-    IFilterOfTemplate,
-} from '@microservices/shared';
-import { getNeo4jDate, getNeo4jDateTime } from './lib';
 import config from '../../config';
 import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';
+import { getNeo4jDate, getNeo4jDateTime } from './lib';
 
 const {
     neo4j: { specialCharsToEscapeNeo4jQuery },
+    timezone,
 } = config;
 
 export const escapeRegExp = (text: string) => {
@@ -28,6 +30,54 @@ export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
 };
 
 export type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
+
+const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
+    // fromZonedTime is used because for all non-relative date filters are in UTC, but new Date() is in Israel time
+    const today: Date = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const setToEndOfDay = (date: Date) => {
+        if (isDateTime) date.setHours(23, 59, 59, 999);
+
+        return convertToTimeZone(date);
+    };
+
+    const convertToTimeZone = (date: Date) => {
+        if (isDateTime) return fromZonedTime(date, timezone);
+
+        return date;
+    };
+
+    switch (rhs) {
+        case 'thisWeek': {
+            const dayOfWeek = today.getDay();
+            const firstDay = new Date(today);
+            firstDay.setDate(today.getDate() - dayOfWeek);
+            const lastDay = new Date(firstDay);
+            lastDay.setDate(firstDay.getDate() + 6);
+
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        case 'thisMonth': {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        case 'thisYear': {
+            const firstDay = new Date(today.getFullYear(), 0, 1);
+            const lastDay = new Date(today.getFullYear(), 11, 31);
+
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        default: {
+            return new Date(rhs as string);
+        }
+    }
+};
 
 const simplePartFilterOfFieldToNeoQuery = (
     field: string,
@@ -48,9 +98,9 @@ const simplePartFilterOfFieldToNeoQuery = (
 
     let rhsParamValue: boolean | string | number | Neo4jDate<number> | Neo4jDateTime<number> | null;
     if (rhs && fieldTemplate.format === 'date') {
-        rhsParamValue = getNeo4jDate(new Date(rhs as string));
+        rhsParamValue = getNeo4jDate(convertRhsToRelativeDate(operator, rhs));
     } else if (rhs && fieldTemplate.format === 'date-time') {
-        rhsParamValue = getNeo4jDateTime(new Date(rhs as string));
+        rhsParamValue = getNeo4jDateTime(convertRhsToRelativeDate(operator, rhs, true));
     } else {
         rhsParamValue = rhs;
     }
