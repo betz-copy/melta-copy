@@ -15,7 +15,7 @@ export interface IRule {
     entityTemplateId: string;
     formula: IFormula;
     disabled: boolean;
-    fieldColor?: { field: string; color: string };
+    fieldColor?: { display: boolean; field: string; color: string };
 }
 
 export interface IMongoRule extends IRule {

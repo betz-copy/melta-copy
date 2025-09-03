@@ -20,7 +20,7 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
             .exec();
     }
 
-    async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
+    async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description' | 'fieldColor'>) {
         return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
