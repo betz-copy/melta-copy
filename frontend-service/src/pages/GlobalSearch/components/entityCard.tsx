@@ -331,6 +331,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             }}
                             viewFirstLineOfLongText
                             searchedText={searchedText}
+                            coloredFields={entity.coloredFields}
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
@@ -450,6 +451,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 }}
                                 innerStyle={{ flexBasis: '33.33%' }}
                                 mode="normal"
+                                coloredFields={entity.coloredFields}
                             />
                             <Grid container marginTop="40px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />

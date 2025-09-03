@@ -300,7 +300,12 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
             </Grid>
             {!isCompact && entityTemplate && (
                 <Grid alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
-                    <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} mode="normal" />
+                    <EntityPropertiesInternal
+                        properties={entity.properties}
+                        coloredFields={entity.coloredFields}
+                        entityTemplate={entityTemplate}
+                        mode="normal"
+                    />
                 </Grid>
             )}
         </Grid>

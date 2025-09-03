@@ -92,6 +92,7 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                                                 updatedAt: new Date().toISOString(),
                                                 disabled: false,
                                             }}
+                                            coloredFields={{}}
                                             entityTemplate={entityTemplates.get(relationship?.sourceEntity._id)!}
                                             style={{
                                                 flexDirection: 'row',
@@ -120,6 +121,7 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                                             updatedAt: new Date().toISOString(),
                                             disabled: false,
                                         }}
+                                        coloredFields={{}}
                                         entityTemplate={entityTemplates.get(relationship?.destinationEntity._id)!}
                                         style={{
                                             flexDirection: 'row',

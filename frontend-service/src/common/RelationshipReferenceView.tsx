@@ -20,8 +20,15 @@ interface RelationshipReferenceViewProps {
     relatedTemplateField: string;
     style?: CSSProperties;
     searchValue?: string;
+    color?: string;
 }
-const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField, searchValue }) => {
+const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
+    entity,
+    relatedTemplateId,
+    relatedTemplateField,
+    searchValue,
+    color,
+}) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
@@ -65,7 +72,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                 <ColoredEnumChip
                     key={entity}
                     label={entity}
-                    color={entityTemplateColor}
+                    color={color ?? entityTemplateColor}
                     icon={
                         relatedEntityTemplate.iconFileId ? (
                             <CustomIcon iconUrl={relatedEntityTemplate.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
@@ -141,6 +148,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                     ) : (
                         <EntityPropertiesInternal
                             properties={entity.properties}
+                            coloredFields={entity.coloredFields}
                             entityTemplate={relatedEntityTemplate}
                             showPreviewPropertiesOnly
                             mode="normal"

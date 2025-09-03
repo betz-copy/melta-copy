@@ -35,9 +35,11 @@ import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
 
-const hasErrors = (data: any): data is IFailedEntity => {
-    return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
-};
+const getColor = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
+    (props.data as { coloredFields: IEntity['coloredFields'] })?.coloredFields?.[field];
+
+const hasErrors = (data: any): data is IFailedEntity =>
+    data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
 
 const isPropertyInvalid = <Data extends any = EntityData>(
     props: ICellRendererParams<Data, any | undefined>,
@@ -143,7 +145,16 @@ export const numberColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
-            return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField={!ignoreType} searchValue={searchValue} />;
+
+            return (
+                <Value
+                    hideValue={hideValue}
+                    color={getColor(props, field)}
+                    value={props.value?.toString() ?? ''}
+                    isNumberField={!ignoreType}
+                    searchValue={searchValue}
+                />
+            );
         },
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
@@ -176,7 +187,7 @@ export const regexColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
-            return <Value hideValue={hideValue} value={props.value ?? ''} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value ?? ''} searchValue={searchValue} />;
         },
         valueGetter,
         filter: 'agTextColumnFilter',
@@ -206,7 +217,7 @@ export const stringColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
-            return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
         },
         valueGetter,
         filter: 'agTextColumnFilter',
@@ -239,7 +250,12 @@ export const fileColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) =>
             props.value?.toString() ? (
-                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityFileIdsWithTexts={entityFileIdsWithTexts} />
+                <OpenPreview
+                    fileId={props.value?.toString()}
+                    searchValue={searchValue}
+                    entityFileIdsWithTexts={entityFileIdsWithTexts}
+                    color={getColor(props, field)}
+                />
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
@@ -267,7 +283,6 @@ export const locationColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
-
             if (error) return errorColDef(props, error, value);
             return (
                 <OpenMap
@@ -276,6 +291,7 @@ export const locationColDef = <Data extends any = EntityData>(
                     entityTemplate={template}
                     searchValue={searchValue}
                     disableOpenMap={ignoreType}
+                    color={getColor(props, field)}
                 />
             );
         },
@@ -311,6 +327,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
                     relatedTemplateId={relatedTemplateId}
                     relatedTemplateField={relatedTemplateField}
                     searchValue={searchValue}
+                    color={getColor(props, field)}
                 />
             ) : null,
         filter: 'agTextColumnFilter',
@@ -359,7 +376,7 @@ export const booleanColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
-            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={formatValue(props.value)} searchValue={searchValue} />;
         },
         filter: 'agSetColumnFilter',
         filterParams,
@@ -402,7 +419,7 @@ export const enumColDef = <Data extends any = EntityData>(
                     searchValue={searchValue}
                     hideValue={hideValue}
                     value={props.value ?? ''}
-                    color={props.value && enumColorOptions?.[props.value]}
+                    color={getColor(props, field) ?? (props.value && enumColorOptions?.[props.value])}
                 />
             );
         },
@@ -457,7 +474,12 @@ export const enumArrayColDef = <Data extends any = EntityData>(
                     items={props.value}
                     getItemKey={(item) => item}
                     renderItem={(item) => (
-                        <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} searchValue={searchValue} />
+                        <Value
+                            hideValue={hideValue}
+                            value={item}
+                            color={getColor(props, field) ?? (enumColorOptions?.[item] || 'default')}
+                            searchValue={searchValue}
+                        />
                     )}
                     containerStyle={{ height: `${rowHeight}px` }}
                 />
@@ -505,7 +527,10 @@ export const userColDef = <Data extends any = IUser>(
                         <Grid>
                             <Chip
                                 avatar={<UserAvatar user={JSON.parse(props.value)} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                sx={{
+                                    background: darkMode ? '#1E1F2B' : '#EBEFFA',
+                                    color: (getColor(props, field) ?? darkMode) ? '#D3D6E0' : '#53566E',
+                                }}
                                 label={JSON.parse(props.value).fullName}
                             />
                         </Grid>
@@ -560,7 +585,10 @@ export const userArrayColDef = <Data extends any = IEntity>(
                             <Grid>
                                 <Chip
                                     avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                    sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                    sx={{
+                                        background: darkMode ? '#1E1F2B' : '#EBEFFA',
+                                        color: (getColor(props, field) ?? darkMode) ? '#D3D6E0' : '#53566E',
+                                    }}
                                     label={item.fullName}
                                 />
                             </Grid>
@@ -609,7 +637,14 @@ export const enumFilesColDef = <Data extends any = EntityData>(
                         searchValue={searchValue}
                         items={enumArray}
                         getItemKey={(item) => item}
-                        renderItem={(item) => <OpenPreview fileId={item} entityFileIdsWithTexts={entityFileIdsWithTexts} searchValue={searchValue} />}
+                        renderItem={(item) => (
+                            <OpenPreview
+                                fileId={item}
+                                entityFileIdsWithTexts={entityFileIdsWithTexts}
+                                searchValue={searchValue}
+                                color={getColor(props, field)}
+                            />
+                        )}
                         containerStyle={{ height: `${rowHeight}px` }}
                         files={items}
                     />
@@ -678,6 +713,7 @@ export const dateColDef = <Data extends any = EntityData>(
                     hideValue={hideValue}
                     value={formatDate(props.value?.toString())}
                     calculateTime={ignoreType ? false : calculateTime}
+                    color={getColor(props, field)}
                 />
             );
         },
@@ -733,7 +769,7 @@ export const translatedEnumColDef = <Data extends any = EntityData>({
         headerName: title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
-            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} color={getColor(props, field)} />;
         },
         filter: 'agSetColumnFilter',
         filterParams,

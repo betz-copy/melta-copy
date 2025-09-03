@@ -69,6 +69,7 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
                         width: '100%',
                     }}
                     viewFirstLineOfLongText
+                    coloredFields={entityWithMatchingField.node.coloredFields}
                 />
             </Grid>
         </Dialog>

@@ -247,6 +247,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                                 updatedAt: '',
                                 _id: '',
                             }}
+                            coloredFields={{}}
                             mode="normal"
                             darkMode={darkMode}
                             overridePropertiesToShow={[

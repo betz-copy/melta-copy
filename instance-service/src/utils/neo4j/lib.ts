@@ -34,8 +34,9 @@ export const formatDate = (date: string) => {
  * Fix the values of an entity that is saved in neo4j to its original values.
  * For example dates and fixing the user fields to be without the suffix.
  */
-export const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
+export const normalizeFields = (properties: Record<string, any>): { properties: Record<string, any>; coloredFields: Record<string, string> } => {
     const props = {};
+    const coloredFields = {};
 
     const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set<string>();
@@ -46,9 +47,10 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
             key.endsWith(config.neo4j.booleanPropertySuffix) ||
             key.endsWith(config.neo4j.filePropertySuffix) ||
             key.endsWith(config.neo4j.locationCoordinateSystemSuffix)
-        ) {
+        )
             return;
-        }
+
+        if (key.endsWith(config.neo4j.colorPropertySuffix)) coloredFields[key.slice(0, -config.neo4j.colorPropertySuffix.length)] = value;
 
         if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
             // Find the user field of the key (everything before the suffix)
@@ -131,7 +133,7 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
         });
     }
 
-    return props;
+    return { properties: props, coloredFields };
 };
 
 type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleResponses';
@@ -144,9 +146,11 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         : never;
 
 const nodeToEntity = (node: Node): IEntity => {
+    const { properties, coloredFields } = normalizeFields(node.properties);
     return {
         templateId: node.labels[0],
-        properties: EntityManager.fixReturnedEntityReferencesFields(normalizeFields(node.properties)),
+        properties: EntityManager.fixReturnedEntityReferencesFields(properties),
+        coloredFields,
     };
 };
 
@@ -204,7 +208,7 @@ export const normalizeReturnedRelationship =
 
             return {
                 templateId: type,
-                properties: normalizeFields(properties),
+                properties: normalizeFields(properties).properties,
                 sourceEntityId: sourceEntityProps._id,
                 destinationEntityId: destEntityProps._id,
             };
@@ -231,7 +235,7 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
 
     return {
         templateId: relationshipType,
-        properties: normalizeFields(relationshipProperties),
+        properties: normalizeFields(relationshipProperties).properties,
         sourceEntityId: sourceEntityProps._id,
         destinationEntityId: destEntityProps._id,
     };
@@ -276,7 +280,7 @@ export const normalizeReturnedRelAndEntities =
                 sourceEntity: nodeToEntity(sourceEntity),
                 relationship: {
                     templateId: relationship.type,
-                    properties: normalizeFields(relationship.properties),
+                    properties: normalizeFields(relationship.properties).properties,
                 },
                 destinationEntity: nodeToEntity(destinationEntity),
             };
@@ -293,7 +297,7 @@ const formatUndirectedRelationship = (relationship: Relationship, node1: Node, n
 
     return {
         templateId: relationship.type,
-        properties: normalizeFields(relationship.properties),
+        properties: normalizeFields(relationship.properties).properties,
         sourceEntityId: sourceNode.properties._id,
         destinationEntityId: destinationNode.properties._id,
     };

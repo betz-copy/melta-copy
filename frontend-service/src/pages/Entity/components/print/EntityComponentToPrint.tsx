@@ -67,6 +67,7 @@ const EntityComponentToPrint: React.FC<{
             <Box padding="0.2rem">
                 <EntityPropertiesInternal
                     properties={entity.properties}
+                    coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={false}
                     showPreviewPropertiesOnly={showPreviewPropertiesOnly}

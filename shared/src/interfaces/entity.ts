@@ -9,6 +9,7 @@ import { IAgGridTextFilter, IAgGridNumberFilter, IAgGridDateFilter, IAgGridSetFi
 export interface IEntity {
     templateId: string;
     properties: Record<string, any>;
+    coloredFields?: Record<string, string>;
 }
 
 export type IConnection = {

@@ -41,6 +41,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                 ) : (
                     <EntityPropertiesInternal
                         properties={entity.properties}
+                        coloredFields={entity.coloredFields}
                         entityTemplate={entityTemplate}
                         darkMode={darkMode}
                         showPreviewPropertiesOnly

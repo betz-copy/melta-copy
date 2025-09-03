@@ -47,6 +47,7 @@ export const formatToString = (
     property: IEntitySingleProperty,
     key?: string,
     preview?: boolean,
+    color?: string,
     options: FormatOptions = {},
     hideProps: string[] = [],
 ) => {
@@ -81,6 +82,7 @@ export const formatToString = (
                     download={isPrintingMode}
                     defaultFileName={format === 'signature' ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
                     disabled={preview}
+                    color={color}
                 />
             );
         }
@@ -92,6 +94,7 @@ export const formatToString = (
                     entity={value}
                     relatedTemplateId={property.relationshipReference!.relatedTemplateId}
                     relatedTemplateField={property.relationshipReference!.relatedTemplateField}
+                    color={color}
                 />
             );
         }
@@ -103,7 +106,7 @@ export const formatToString = (
                         <Grid>
                             <Chip
                                 avatar={<UserAvatar user={userObject} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') }}
                                 label={userObject.fullName}
                             />
                         </Grid>
@@ -124,11 +127,11 @@ export const formatToString = (
         }
         return convertLocation(value);
     }
-    if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
+    if (keyEnumColors?.[value] && valueType === 'string')
+        return pureString ? value : <ColoredEnumChip label={value} color={color ?? keyEnumColors[value]} />;
     if (valueType === 'array') {
-        if (property.items?.format === 'fileId') {
-            return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
-        }
+        if (property.items?.format === 'fileId') return value.map((val: string) => <OpenPreview fileId={val} key={val} color={color} />);
+
         if (property.items?.format === 'user') {
             return (
                 <Grid container>
@@ -141,7 +144,7 @@ export const formatToString = (
                                     <Grid>
                                         <Chip
                                             avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') }}
                                             label={item.fullName}
                                         />
                                     </Grid>
@@ -157,7 +160,7 @@ export const formatToString = (
         return pureString
             ? value.join(', ')
             : value.map((val: string) => (
-                  <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+                  <ColoredEnumChip key={val} label={val} color={color ?? (keyEnumColors?.[val] || 'default')} style={{ margin: '5px 0px 0px 5px' }} />
               ));
     }
     return value;
@@ -168,6 +171,7 @@ type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOr
 interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
+    coloredFields: IEntity['coloredFields'];
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
@@ -194,7 +198,9 @@ export const getPropertyColor = (
     highlightColor: Property.Color | undefined,
     mode: 'normal' | 'white',
     normalColor: Property.Color,
+    coloredFields: IEntity['coloredFields'],
 ) => {
+    if (coloredFields?.[propertyKey]) return coloredFields?.[propertyKey];
     if (propertiesToHighlight?.includes(propertyKey)) {
         return highlightColor;
     }
@@ -205,6 +211,7 @@ export const getPropertyColor = (
 type PropertiesDetailsProps = {
     propertiesOrderedToShow: string[];
     properties: IEntity['properties'];
+    coloredFields: IEntity['coloredFields'];
     entityTemplate: Template;
     entityTemplates?: IEntityTemplateMap;
     mode: 'normal' | 'white';
@@ -223,6 +230,7 @@ type PropertiesDetailsProps = {
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     propertiesOrderedToShow,
     properties,
+    coloredFields,
     entityTemplate,
     entityTemplates,
     isPrintingMode,
@@ -238,6 +246,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     preview,
 }) => {
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
+
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -257,6 +266,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     propertySchema,
                     propertyKey,
                     preview,
+                    coloredFields?.[propertyKey],
                     {
                         keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                         isPrintingMode,
@@ -273,9 +283,10 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     propertiesToHighlightColor,
                     mode,
                     darkMode ? '#dcdde2' : '#53566E',
+                    coloredFields,
                 );
 
-                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
+                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
@@ -407,6 +418,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean; showByGroups?: boolean }> = ({
     entityTemplate,
     properties,
+    coloredFields,
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
@@ -492,6 +504,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 key={group.name}
                                                 propertiesOrderedToShow={orderedGroupFields}
                                                 properties={properties}
+                                                coloredFields={coloredFields}
                                                 entityTemplate={entityTemplate}
                                                 entityTemplates={entityTemplates}
                                                 isPrintingMode={isPrintingMode}
@@ -518,6 +531,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     key={propertyKey}
                                     propertiesOrderedToShow={[propertyKey]}
                                     properties={properties}
+                                    coloredFields={coloredFields}
                                     entityTemplate={entityTemplate}
                                     entityTemplates={entityTemplates}
                                     isPrintingMode={isPrintingMode}
@@ -540,6 +554,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 ) : (
                     <PropertiesDetails
                         propertiesOrderedToShow={propertiesOrderedToShow}
+                        coloredFields={coloredFields}
                         properties={properties}
                         entityTemplate={entityTemplate}
                         entityTemplates={entityTemplates}

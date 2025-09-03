@@ -268,6 +268,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                         ) : (
                                             <EntityPropertiesInternal
                                                 properties={option.properties}
+                                                coloredFields={option.coloredFields}
                                                 entityTemplate={template}
                                                 showPreviewPropertiesOnly
                                                 mode="white"
