@@ -175,6 +175,7 @@ const config = {
             maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
         },
     },
+    timezone: 'Asia/Jerusalem',
 };
 
 export default config;

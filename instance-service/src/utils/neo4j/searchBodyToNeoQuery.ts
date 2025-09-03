@@ -7,15 +7,16 @@ import {
     IMongoEntityTemplate,
     ISearchBatchBody,
 } from '@microservices/shared';
+import { fromZonedTime } from 'date-fns-tz';
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 import config from '../../config';
 import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';
 import { getNeo4jDate, getNeo4jDateTime } from './lib';
-import { fromZonedTime } from 'date-fns-tz';
 
 const {
     neo4j: { specialCharsToEscapeNeo4jQuery },
+    timezone,
 } = config;
 
 export const escapeRegExp = (text: string) => {
@@ -33,12 +34,15 @@ export type CypherQueryWithParameters = { cypherQuery: string; parameters: Recor
 const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
     // fromZonedTime is used because for all non-relative date filters are in UTC, but new Date() is in Israel time
     const today: Date = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const setToEndOfDay = (date: Date) => {
         if (isDateTime) date.setHours(23, 59, 59, 999);
 
-        return fromZonedTime(date, 'Asia/Jerusalem');
+        return date;
     };
+
+    let relative: Date;
 
     switch (rhs) {
         case 'thisWeek': {
@@ -48,27 +52,32 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
             const lastDay = new Date(firstDay);
             lastDay.setDate(firstDay.getDate() + 6);
 
-            return operator === '$gte' ? fromZonedTime(firstDay, 'Asia/Jerusalem') : setToEndOfDay(lastDay);
+            relative = operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
+            break;
         }
 
         case 'thisMonth': {
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
             const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-            return operator === '$gte' ? fromZonedTime(firstDay, 'Asia/Jerusalem') : setToEndOfDay(lastDay);
+            relative = operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
+            break;
         }
 
         case 'thisYear': {
-            const firstDay = new Date(today.getFullYear(), 1, 1);
+            const firstDay = new Date(today.getFullYear(), 0, 1);
             const lastDay = new Date(today.getFullYear(), 11, 31);
 
-            return operator === '$gte' ? fromZonedTime(firstDay, 'Asia/Jerusalem') : setToEndOfDay(lastDay);
+            relative = operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
+            break;
         }
 
         default: {
             return new Date(rhs as string);
         }
     }
+
+    return isDateTime ? fromZonedTime(relative, timezone) : relative;
 };
 
 const simplePartFilterOfFieldToNeoQuery = (

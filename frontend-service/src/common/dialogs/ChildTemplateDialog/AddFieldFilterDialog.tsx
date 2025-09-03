@@ -5,6 +5,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
+import { environment } from '../../../globals';
 import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -19,7 +20,6 @@ import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
-import { environment } from '../../../globals';
 
 const { loggingDate, loggingDateTime } = environment.formats;
 

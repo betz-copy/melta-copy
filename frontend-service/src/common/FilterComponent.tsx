@@ -3,6 +3,7 @@ import { FormikErrors } from 'formik';
 import { isEqual } from 'lodash';
 import React from 'react';
 import { environment } from '../globals';
+import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 import { ViewMode } from '../interfaces/dashboard';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
 import { IUser } from '../interfaces/users';
@@ -14,10 +15,11 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
-import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 
-const { relativeDateFilters } = environment;
-const { loggingDate, loggingDateTime } = environment.formats;
+const {
+    relativeDateFilters,
+    formats: { loggingDate, loggingDateTime },
+} = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },

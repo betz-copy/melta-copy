@@ -1,5 +1,6 @@
 import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
+import { isValid } from 'date-fns';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -19,10 +20,14 @@ import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
 import { EntityTemplateWizardValues } from './index';
-import { isValid } from 'date-fns';
 
-const { mapSearchPropertiesLimit } = environment.map;
-const { relativeDateFilters, filterOptions, dateRegex, dateTimeRegex } = environment;
+const {
+    relativeDateFilters,
+    filterOptions,
+    dateRegex,
+    dateTimeRegex,
+    map: { mapSearchPropertiesLimit },
+} = environment;
 
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
