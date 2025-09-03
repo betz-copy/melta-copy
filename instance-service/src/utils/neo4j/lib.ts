@@ -15,9 +15,12 @@ import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    polygon: { polygonPrefix, polygonSuffix },
-    srid,
-} = config.map;
+    map: {
+        polygon: { polygonPrefix, polygonSuffix },
+        srid,
+    },
+    timezone,
+} = config;
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -68,7 +71,7 @@ export const normalizeFields = (properties: Record<string, any>): Record<string,
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
-            props[key] = fromZonedTime(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
+            props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
 
             return;
         }
@@ -348,7 +351,7 @@ export const getNeo4jDateTime = (date = new Date()) => {
     keep date in DB in israel timezone. it's needed in rules formula "toDate" function to get date of datetime field, but in israel.
     for example, if event happened at 01:00, UTC will save it the day before, so "toDate" will bring the wrong date.
     */
-    const adjustedDate = toZonedTime(date, 'Asia/Jerusalem');
+    const adjustedDate = toZonedTime(date, timezone);
     return neo4j.types.LocalDateTime.fromStandardDate(adjustedDate);
 };
 export const getNeo4jDate = (date = new Date()) => neo4j.types.Date.fromStandardDate(date);
