@@ -149,7 +149,7 @@ export const RuleCard: React.FC<{
                             <Grid container alignItems="center" direction="row" flexWrap="nowrap" gap="5px" justifyContent="space-between">
                                 <Grid container direction="row" gap={2}>
                                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '18px' }} />
-                                    <Typography color="#101440" fontSize="12px">
+                                    <Typography color={darkMode ? 'white' : '#101440'} fontSize="12px">
                                         {entityTemplate?.displayName}
                                     </Typography>
                                 </Grid>
