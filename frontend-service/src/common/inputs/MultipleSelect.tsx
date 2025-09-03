@@ -4,6 +4,10 @@ import React from 'react';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
+import { RJSFSchema } from '@rjsf/utils';
+import { useUserStore } from '../../stores/user';
+import { IUser } from '../../interfaces/users';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 export interface ISelectOption {
     label: string;
@@ -14,6 +18,7 @@ export interface ISelectOption {
 const MultipleSelect: React.FC<{
     id: string;
     items: ISelectOption[];
+    schema?: RJSFSchema;
     selectedValue: ISelectOption | ISelectOption[] | null;
     onChange: (event: React.SyntheticEvent, newVal: ISelectOption | ISelectOption[] | null) => void;
     onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -33,6 +38,7 @@ const MultipleSelect: React.FC<{
 }> = ({
     id,
     items,
+    schema,
     selectedValue,
     onChange,
     onBlur,
@@ -49,6 +55,15 @@ const MultipleSelect: React.FC<{
     color,
     placeholder,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore<IUser>((state) => state.user);
+
+    if (schema?.format === 'unitField') {
+        items = workspace.metadata.unitsArray.map((unit) => ({ label: unit, value: unit }));
+
+        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.units?.[workspace._id]?.includes(unit.label));
+    }
+
     return (
         <Autocomplete<ISelectOption, boolean, false, false>
             id={id}

@@ -16,7 +16,6 @@ export interface BackendConfigState {
     meltaUpdates: Record<string, string>;
     meltaUpdatesDescription: string;
     isOutsideDevelopment: boolean;
-    units: string[];
 }
 
 export const getBackendConfigRequest = async () => {

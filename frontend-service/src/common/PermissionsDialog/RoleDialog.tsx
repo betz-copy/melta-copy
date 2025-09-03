@@ -17,7 +17,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { createDialogCategories, didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
 
@@ -188,7 +188,7 @@ const RoleDialog: React.FC<{
                                             type="submit"
                                             disabled={
                                                 isSubmitting ||
-                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) ||
                                                 userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"

@@ -55,6 +55,7 @@ export interface IMetadata {
         destTemplateId: string;
         sourceFieldForColor: string;
     };
+    unitsArray: string[];
 }
 export interface IWorkspace {
     _id: string;
