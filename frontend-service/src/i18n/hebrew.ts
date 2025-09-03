@@ -878,8 +878,8 @@ export default {
             ruleMetadata: 'פרטי החוק',
             name: 'שם',
             description: 'תיאור',
-            actionOnFail: 'טיפול בחריגה',
-            primaryEntityTemplate: 'תבנית ישות ראשית',
+            actionOnFail: 'סוג חוק',
+            primaryEntityTemplate: 'יישות ראשית',
             formula: 'נוסחת החוק',
             invalidFormula: 'נוסחה לא תקינה',
             countAggregationCantHaveSubFormulas: 'לא ניתן להוסיף תנאים לאגריגציה מסוג סכימת ישויות',
@@ -891,6 +891,7 @@ export default {
             atLeastOne: 'יש לבחור אפשרות אחת לפחות',
             fieldColor: 'צביעת שדה',
             fieldToColor: 'שדה לצביעה',
+            color: 'צבע'
         },
         processInstance: {
             saveBth: 'שמירה',
