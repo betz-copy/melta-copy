@@ -39,10 +39,14 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
     const setToEndOfDay = (date: Date) => {
         if (isDateTime) date.setHours(23, 59, 59, 999);
 
-        return date;
+        return convertToTimeZone(date);
     };
 
-    let relative: Date;
+    const convertToTimeZone = (date: Date) => {
+        if (isDateTime) return fromZonedTime(date, timezone);
+
+        return date;
+    };
 
     switch (rhs) {
         case 'thisWeek': {
@@ -52,32 +56,27 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
             const lastDay = new Date(firstDay);
             lastDay.setDate(firstDay.getDate() + 6);
 
-            relative = operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
-            break;
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
         }
 
         case 'thisMonth': {
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
             const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-            relative = operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
-            break;
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
         }
 
         case 'thisYear': {
             const firstDay = new Date(today.getFullYear(), 0, 1);
             const lastDay = new Date(today.getFullYear(), 11, 31);
 
-            relative = operator === '$gte' ? firstDay : setToEndOfDay(lastDay);
-            break;
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
         }
 
         default: {
             return new Date(rhs as string);
         }
     }
-
-    return isDateTime ? fromZonedTime(relative, timezone) : relative;
 };
 
 const simplePartFilterOfFieldToNeoQuery = (
