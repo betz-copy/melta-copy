@@ -128,7 +128,7 @@ export const formatToString = (
         return convertLocation(value);
     }
     if (keyEnumColors?.[value] && valueType === 'string')
-        return pureString ? value : <ColoredEnumChip label={value} color={color ?? keyEnumColors[value]} />;
+        return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value] || 'default'} textOverrideColor={color} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') return value.map((val: string) => <OpenPreview fileId={val} key={val} color={color} />);
 
@@ -160,7 +160,13 @@ export const formatToString = (
         return pureString
             ? value.join(', ')
             : value.map((val: string) => (
-                  <ColoredEnumChip key={val} label={val} color={color ?? (keyEnumColors?.[val] || 'default')} style={{ margin: '5px 0px 0px 5px' }} />
+                  <ColoredEnumChip
+                      key={val}
+                      label={val}
+                      color={keyEnumColors?.[val] || 'default'}
+                      style={{ margin: '5px 0px 0px 5px' }}
+                      textOverrideColor={color}
+                  />
               ));
     }
     return value;

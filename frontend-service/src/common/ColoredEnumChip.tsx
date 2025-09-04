@@ -11,15 +11,25 @@ interface ColoredEnumChipProps {
     searchValue?: string;
     onDelete?: (event: any) => void;
     deleteIcon?: React.ReactElement;
+    textOverrideColor?: string;
 }
 
-export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style, icon, searchValue, onDelete, deleteIcon }) => {
+export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({
+    label,
+    color,
+    style,
+    icon,
+    searchValue,
+    onDelete,
+    deleteIcon,
+    textOverrideColor,
+}) => {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
     const shouldHighlight = Boolean(searchValue && label?.toString().includes(searchValue));
     // eslint-disable-next-line no-nested-ternary
-    const textColor = color === 'default' ? (isDarkMode ? '#fff' : '#000') : color;
+    const textColor = textOverrideColor ?? (color === 'default' ? (isDarkMode ? '#fff' : '#000') : color);
 
     let backgroundColor: string;
     if (color !== 'default' && color) {

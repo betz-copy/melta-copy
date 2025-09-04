@@ -418,7 +418,7 @@ export const enumColDef = <Data extends any = EntityData>(
                     searchValue={searchValue}
                     hideValue={hideValue}
                     value={props.value ?? ''}
-                    enumColor={(props.value && enumColorOptions?.[props.value]) ?? undefined}
+                    enumColor={(props.value && enumColorOptions?.[props.value]) ?? 'default'}
                     color={getColor(props, field)}
                 />
             );

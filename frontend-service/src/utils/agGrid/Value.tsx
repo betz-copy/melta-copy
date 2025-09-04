@@ -41,7 +41,8 @@ const Value: React.FC<{
     let innerContent: string | React.JSX.Element | undefined;
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (enumColor || enumColor === 'default') innerContent = <ColoredEnumChip label={value} color={enumColor} searchValue={searchValue} />;
+    else if (enumColor || enumColor === 'default')
+        innerContent = <ColoredEnumChip label={value} color={enumColor} searchValue={searchValue} textOverrideColor={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} searchValue={searchValue} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
