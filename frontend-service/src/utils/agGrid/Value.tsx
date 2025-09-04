@@ -19,9 +19,9 @@ const Value: React.FC<{
     searchValue?: string;
 }> = ({ hideValue, value, enumColor, color, calculateTime, isNumberField, searchValue }) => {
     const containsHtmlTags = containsHTMLTags(value);
-    const [hideField, setHideField] = useState(true);
+    const [hideField, setHideField] = useState<boolean>(true);
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | HTMLButtonElement | null>(null);
-    const [numLines, setNumLines] = useState(0);
+    const [numLines, setNumLines] = useState<number>(0);
 
     useEffect(() => {
         if (containsHtmlTags) {
@@ -30,17 +30,11 @@ const Value: React.FC<{
         }
     }, [containsHtmlTags, value]);
 
-    const handleClick = () => {
-        setHideField((curr) => !curr);
-    };
+    const handleClick = () => setHideField((curr) => !curr);
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const handleClose = () => setAnchorEl(null);
 
     const open = Boolean(anchorEl);
 

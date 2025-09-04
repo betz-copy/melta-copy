@@ -302,6 +302,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 rowHeight,
                 isLastColumn,
                 hideColumn,
+                darkMode,
             );
         }
         return stringColDef(

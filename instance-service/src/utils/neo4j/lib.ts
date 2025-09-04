@@ -45,13 +45,14 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
     const userKeys: Set<string> = new Set<string>();
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (
-            key.endsWith(config.neo4j.stringPropertySuffix) ||
-            key.endsWith(config.neo4j.booleanPropertySuffix) ||
-            key.endsWith(config.neo4j.filePropertySuffix) ||
-            key.endsWith(config.neo4j.locationCoordinateSystemSuffix)
-        )
-            return;
+        const suffixes = [
+            config.neo4j.stringPropertySuffix,
+            config.neo4j.booleanPropertySuffix,
+            config.neo4j.filePropertySuffix,
+            config.neo4j.locationCoordinateSystemSuffix,
+        ];
+
+        if (suffixes.some((suffix) => key.endsWith(suffix))) return;
 
         if (key.endsWith(config.neo4j.colorPropertySuffix)) coloredFields[key.slice(0, -config.neo4j.colorPropertySuffix.length)] = value;
 

@@ -181,6 +181,7 @@ export const RuleCard: React.FC<{
                 </Grid>
             }
             onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            isDisabled={rule.disabled}
         />
     );
 };

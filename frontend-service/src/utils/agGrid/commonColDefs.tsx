@@ -24,7 +24,6 @@ import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IUser } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
-import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -530,7 +529,7 @@ export const userColDef = <Data extends any = IUser>(
                                 avatar={<UserAvatar user={JSON.parse(props.value)} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
                                 sx={{
                                     background: darkMode ? '#1E1F2B' : '#EBEFFA',
-                                    color: (getColor(props, field) ?? darkMode) ? '#D3D6E0' : '#53566E',
+                                    color: getColor(props, field) ?? (darkMode ? '#D3D6E0' : '#53566E'),
                                 }}
                                 label={JSON.parse(props.value).fullName}
                             />
@@ -557,9 +556,8 @@ export const userArrayColDef = <Data extends any = IEntity>(
     rowHeight: number,
     isLastColumn: boolean,
     hideColumn = false,
+    darkMode = false,
 ): ColDef => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -588,7 +586,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
                                     avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
                                     sx={{
                                         background: darkMode ? '#1E1F2B' : '#EBEFFA',
-                                        color: (getColor(props, field) ?? darkMode) ? '#D3D6E0' : '#53566E',
+                                        color: getColor(props, field) ?? (darkMode ? '#D3D6E0' : '#53566E'),
                                     }}
                                     label={item.fullName}
                                 />

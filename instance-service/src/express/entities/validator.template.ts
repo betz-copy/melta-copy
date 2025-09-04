@@ -121,6 +121,13 @@ export class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
+    // private validateColoredFields(coloredFields: Record<string, string> | undefined, properties: Record<string, any>) {
+    //     if (!coloredFields) return;
+    //     const keyError = Object.keys(coloredFields).find((key) => !Object.keys(properties).includes(key));
+    //     if (keyError) throw new ValidationError(`colored field "${keyError}" do not exist in properties`);
+    // }
+    // TODO: use it / delete it
+
     validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(properties);
