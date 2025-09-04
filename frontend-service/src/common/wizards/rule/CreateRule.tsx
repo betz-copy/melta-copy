@@ -1,7 +1,7 @@
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
 import i18next from 'i18next';
 import { omit } from 'lodash';
-import React from 'react';
+import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { RuleWizardValues } from '.';
@@ -12,6 +12,7 @@ import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { StepComponentProps } from '../index';
+import TextArea from '../../inputs/TextArea';
 
 const createRuleSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
@@ -39,6 +40,16 @@ const createRuleSchema = {
                 }),
             otherwise: (schema) => schema.strip().nullable(),
         }), // TODO: after adding mail do required to one of them if it's INDICATOR
+    mail: Yup.object({
+        title: Yup.string(),
+        body: Yup.string(),
+    })
+        .nullable()
+        .when('actionOnFail', {
+            is: ActionOnFail.INDICATOR,
+            then: (schema) => schema,
+            otherwise: (schema) => schema.test('forbidden-mail', i18next.t('validation.forbidden'), (value) => value == null),
+        }),
 };
 
 const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> = ({
@@ -71,6 +82,9 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
         handleChange(event);
     };
+    const [mailNotification, setMailNotification] = useState<boolean>(values.actionOnFail === ActionOnFail.INDICATOR);
+    const [permissionUsersChecked, setPermissionUsersChecked] = useState<boolean>(false);
+    const [associatedUsersChecked, setAssociatedUsersChecked] = useState<boolean>(false);
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -121,7 +135,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                         <FormControlLabel value={ActionOnFail.ENFORCEMENT} control={<Radio />} label={i18next.t('wizard.rule.actions.enforcement')} />
                         <FormControlLabel value={ActionOnFail.INDICATOR} control={<Radio />} label={i18next.t('wizard.rule.actions.indicator')} />
                     </RadioGroup>
-                    <FormHelperText>{touched.actionOnFail && errors.actionOnFail}</FormHelperText>{' '}
+                    <FormHelperText>{touched.actionOnFail && errors.actionOnFail}</FormHelperText>
                 </FormControl>
 
                 {values.actionOnFail === ActionOnFail.INDICATOR && (
@@ -165,6 +179,66 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                         )}
                         <Grid>
                             <Divider sx={{ color: '#CCCFE580' }} />
+                        </Grid>
+
+                        <Grid container direction="column">
+                            <FormControlLabel
+                                control={<MeltaCheckbox checked={mailNotification} onChange={(e) => setMailNotification(e.target.checked)} />}
+                                label={i18next.t('wizard.rule.mailNotification')}
+                            />
+
+                            {!!mailNotification && (
+                                <Grid container direction="column" gap={2}>
+                                    <FormHelperText sx={{ color: '#9398C2', fontSize: '14px', margin: 0 }}>
+                                        {i18next.t('wizard.rule.mailFormatHelper')}
+                                    </FormHelperText>
+                                    <TextField
+                                        name="mailTitle"
+                                        label={i18next.t('wizard.rule.mailTitle')}
+                                        value={values.mail?.title}
+                                        onChange={handleChange}
+                                        error={touched.mail && Boolean(errors.mail)}
+                                        helperText={touched.mail && errors.mail}
+                                        sx={{ width: '100%' }}
+                                    />
+                                    <TextArea
+                                        id="mailBody"
+                                        label={i18next.t('wizard.rule.mailBody')}
+                                        // value={values.name}
+                                        onChange={() => console.log()}
+                                        // error={touched.name && Boolean(errors.name)}
+                                        // helperText={touched.name && errors.name}
+                                    />
+                                    <Grid container direction="column">
+                                        <Grid container gap={2}>
+                                            <FormControl sx={{ fontSize: '16px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>
+                                            <FormHelperText sx={{ color: '#9398C2', fontSize: '16px', margin: 0 }}>
+                                                {i18next.t('wizard.rule.sendMailToChooseOne')}
+                                            </FormHelperText>
+                                        </Grid>
+                                        <FormControlLabel
+                                            control={
+                                                <MeltaCheckbox
+                                                    checked={permissionUsersChecked}
+                                                    onChange={(e) => setPermissionUsersChecked(e.target.checked)}
+                                                />
+                                            }
+                                            label={i18next.t('wizard.rule.sendToUsersWithPerms')}
+                                            sx={{ marginLeft: 0 }}
+                                        />
+                                        <FormControlLabel
+                                            control={
+                                                <MeltaCheckbox
+                                                    checked={associatedUsersChecked}
+                                                    onChange={(e) => setAssociatedUsersChecked(e.target.checked)}
+                                                />
+                                            }
+                                            label={i18next.t('wizard.rule.sendToAssociatedUsers')}
+                                            sx={{ marginLeft: 0 }}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            )}
                         </Grid>
                     </Grid>
                 )}

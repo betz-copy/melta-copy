@@ -898,7 +898,15 @@ export default {
             atLeastOne: 'יש לבחור אפשרות אחת לפחות',
             fieldColor: 'צביעת שדה',
             fieldToColor: 'שדה לצביעה',
-            color: 'צבע'
+            color: 'צבע',
+            mailNotification: 'התראה למייל',
+            mailFormatHelper: '·   להצגת ערכים מהיישות יש לציין את שם השדה באנגלית בתוך {{}}, לדוגמה: {{creation_date}}',
+            mailTitle: 'כותרת המייל *',
+            mailBody: 'גוף המייל *',
+            sendMailTo: 'שליחת ההתראה למייל ל *',
+            sendMailToChooseOne: 'יש לבחור סוג נמען אחד לפחות',
+            sendToUsersWithPerms: 'משתמשים בעלי הרשאה ליישות',
+            sendToAssociatedUsers: 'משתמשים משוייכים ליישות (שדה מסוג משתמש)',
         },
         processInstance: {
             saveBth: 'שמירה',
