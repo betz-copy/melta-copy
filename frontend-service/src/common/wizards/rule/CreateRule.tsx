@@ -1,4 +1,5 @@
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
+import { getIn } from 'formik';
 import i18next from 'i18next';
 import { omit } from 'lodash';
 import React, { useState } from 'react';
@@ -23,21 +24,12 @@ const createRuleSchema = {
     entityTemplateId: Yup.string().required(i18next.t('validation.required')),
     fieldColor: Yup.object({
         display: Yup.boolean(),
-        field: Yup.string(),
-        color: Yup.string(),
+        field: Yup.string().when('display', { is: true, then: (schema) => schema.required(i18next.t('validation.required')) }),
+        color: Yup.string().when('display', { is: true, then: (schema) => schema.required(i18next.t('validation.required')) }),
     })
         .nullable()
         .when('actionOnFail', {
             is: ActionOnFail.INDICATOR,
-            then: (schema) =>
-                schema.when('display', {
-                    is: true,
-                    then: (subSchema) =>
-                        subSchema.shape({
-                            field: Yup.string().required(i18next.t('validation.required')),
-                            color: Yup.string().required(i18next.t('validation.required')),
-                        }),
-                }),
             otherwise: (schema) => schema.strip().nullable(),
         }), // TODO: after adding mail do required to one of them if it's INDICATOR
     mail: Yup.object({
@@ -163,8 +155,8 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
-                                            error={Boolean(touched.fieldColor && errors.fieldColor)}
-                                            helperText={touched.fieldColor ? errors.fieldColor?.toString() : ''}
+                                            error={Boolean(touched.fieldColor && getIn(errors.fieldColor, 'field'))}
+                                            helperText={touched.fieldColor ? getIn(errors.fieldColor, 'field') : ''}
                                             variant="outlined"
                                             label={i18next.t('wizard.rule.fieldToColor')}
                                         />
@@ -173,7 +165,9 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                                 <MinimizedColorPicker
                                     color={values.fieldColor?.color}
                                     onColorChange={(newColor) => setFieldValue('fieldColor.color', newColor)}
-                                    circleSize="2rem"
+                                    circleSize="2rem                                                                                                    "
+                                    error={Boolean(touched.fieldColor && getIn(errors.fieldColor, 'color'))}
+                                    helperText={touched.fieldColor ? getIn(errors.fieldColor, 'color') : ''}
                                 />
                             </Grid>
                         )}

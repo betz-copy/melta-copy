@@ -1680,7 +1680,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     template,
                     transaction,
                     userId,
-                    this.getColoredFields(ruleFailuresBeforeAction.map(({ rule }) => rule)),
+                    { ...entity.coloredFields, ...this.getColoredFields(ruleFailuresBeforeAction.map(({ rule }) => rule)) },
                     convertToRelationshipField,
                 );
 

@@ -19,9 +19,9 @@ const Value: React.FC<{
     searchValue?: string;
 }> = ({ hideValue, value, enumColor, color, calculateTime, isNumberField, searchValue }) => {
     const containsHtmlTags = containsHTMLTags(value);
-    const [hideField, setHideField] = useState(true);
+    const [hideField, setHideField] = useState<boolean>(true);
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | HTMLButtonElement | null>(null);
-    const [numLines, setNumLines] = useState(0);
+    const [numLines, setNumLines] = useState<number>(0);
 
     useEffect(() => {
         if (containsHtmlTags) {
@@ -30,24 +30,19 @@ const Value: React.FC<{
         }
     }, [containsHtmlTags, value]);
 
-    const handleClick = () => {
-        setHideField((curr) => !curr);
-    };
+    const handleClick = () => setHideField((curr) => !curr);
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const handleClose = () => setAnchorEl(null);
 
     const open = Boolean(anchorEl);
 
     let innerContent: string | React.JSX.Element | undefined;
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (enumColor || enumColor === 'default') innerContent = <ColoredEnumChip label={value} color={enumColor} searchValue={searchValue} />;
+    else if (enumColor || enumColor === 'default')
+        innerContent = <ColoredEnumChip label={value} color={enumColor} searchValue={searchValue} textOverrideColor={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} searchValue={searchValue} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));

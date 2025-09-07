@@ -1,5 +1,5 @@
-import Joi from 'joi';
 import { ActionOnFail, MongoIdSchema } from '@microservices/shared';
+import Joi from 'joi';
 
 export const fieldColorSchema = Joi.object({
     display: Joi.boolean(),
@@ -52,12 +52,12 @@ export const updateRuleByIdRequestSchema = Joi.object({
         name: Joi.string(),
         description: Joi.string(),
         fieldColor: fieldColorSchema,
-        // todo: (extra feature) allow update stuff that could break, only if no alerts/requests created yet
         actionOnFail: Joi.string()
             .valid(...Object.values(ActionOnFail))
             .required(),
-        entityTemplateId: MongoIdSchema,
-        formula: Joi.object(),
+        // todo: (extra feature) allow update stuff that could break, only if no alerts/requests created yet
+        // entityTemplateId: MongoIdSchema,
+        // formula: Joi.object(),
     },
     query: {},
     params: {
