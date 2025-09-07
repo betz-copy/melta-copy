@@ -1,5 +1,5 @@
 import { Brush, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { FormControlLabel, Grid, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -11,7 +11,10 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { MinimizedColorPicker } from '../../../common/inputs/MinimizedColorPicker';
 import SearchInput from '../../../common/inputs/SearchInput';
+import MeltaCheckbox from '../../../common/MeltaDesigns/MeltaCheckbox';
+import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../common/wizards/rule';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { ActionOnFail, IMongoRule, IRuleMap } from '../../../interfaces/rules';
@@ -61,6 +64,26 @@ const showProperty = (key: string, value: string, darkMode: boolean, isColor?: b
         </Grid>
     );
 };
+
+const typeRuleCheckbox = (
+    ruleType: ActionOnFail,
+    actionOnFailFilter: ActionOnFail[],
+    setActionOnFailFilter: React.Dispatch<React.SetStateAction<ActionOnFail[]>>,
+) => (
+    <FormControlLabel
+        sx={{ margin: '0' }}
+        label={i18next.t(`wizard.rule.actions.${ruleType.toLowerCase()}`) as string}
+        control={
+            <MeltaCheckbox
+                checked={actionOnFailFilter.includes(ruleType)}
+                onChange={(e) => setActionOnFailFilter((prev) => (e.target.checked ? [...prev, ruleType] : prev.filter((a) => a !== ruleType)))}
+            />
+        }
+        slotProps={{
+            typography: { sx: { fontSize: '14px' } },
+        }}
+    />
+);
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -172,7 +195,7 @@ export const RuleCard: React.FC<{
                         <>
                             {showProperty(
                                 i18next.t('wizard.rule.fieldToColor'),
-                                entityTemplate.properties.properties[rule.fieldColor.field].title,
+                                entityTemplate.properties.properties[rule.fieldColor.field]?.title,
                                 darkMode,
                             )}
                             {showProperty(i18next.t('wizard.rule.color'), rule.fieldColor.color, darkMode, true)}
@@ -190,17 +213,21 @@ const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
 
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const rulesArray = Array.from(rules.values());
+    const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
-    const allowedRulesAndEntities = getAllAllowedRulesAndWriteEntities(rulesArray, entityTemplatesArray, currentUser);
+    const { allowedRules, allowedEntityTemplates } = getAllAllowedRulesAndWriteEntities(rulesArray, entityTemplatesArray, currentUser);
 
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { bulk } = workspace.metadata.searchLimits;
 
-    const [searchText, setSearchText] = useState('');
+    const [searchText, setSearchText] = useState<string>('');
+    const [actionOnFailFilter, setActionOnFailFilter] = useState<ActionOnFail[]>(Object.values(ActionOnFail));
+    const [entityTemplateFilter, setEntityTemplateFilter] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
 
     const [ruleWizardDialogState, setRuleWizardDialogState] = useState<{
         isWizardOpen: boolean;
@@ -249,6 +276,22 @@ const RulesRow: React.FC = () => {
                     <SearchInput borderRadius="7px" onChange={setSearchText} placeholder={i18next.t('globalSearch.searchRules')} />
                 </Grid>
                 <Grid>
+                    <TemplatesSelectCheckbox
+                        title={i18next.t('wizard.rule.primaryEntityTemplate')}
+                        templates={entityTemplatesArray}
+                        selectedTemplates={entityTemplateFilter}
+                        setSelectedTemplates={setEntityTemplateFilter}
+                        categories={categoriesArray}
+                        size="small"
+                        isDraggableDisabled
+                    />
+                </Grid>
+                <Grid>
+                    {typeRuleCheckbox(ActionOnFail.WARNING, actionOnFailFilter, setActionOnFailFilter)}
+                    {typeRuleCheckbox(ActionOnFail.ENFORCEMENT, actionOnFailFilter, setActionOnFailFilter)}
+                    {typeRuleCheckbox(ActionOnFail.INDICATOR, actionOnFailFilter, setActionOnFailFilter)}
+                </Grid>
+                <Grid>
                     <CreateButton
                         onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}
                         text={i18next.t('systemManagement.newRuleTemplate')}
@@ -256,19 +299,24 @@ const RulesRow: React.FC = () => {
                 </Grid>
             </Grid>
             <InfiniteScroll<IMongoRule>
-                queryKey={['searchRulesTemplates', searchText, allowedRulesAndEntities]}
+                queryKey={['searchRulesTemplates', searchText, allowedRules, actionOnFailFilter, entityTemplateFilter]}
                 queryFunction={({ pageParam }) =>
-                    allowedRulesAndEntities.allowedRules.filter(({ name }) => searchText === '' || name.includes(searchText)).splice(pageParam, bulk)
+                    allowedRules
+                        .filter((rule) => {
+                            const matchesSearch = searchText === '' || rule.name.toLowerCase().includes(searchText.toLowerCase());
+                            const matchesActionOnFail = actionOnFailFilter.includes(rule.actionOnFail);
+                            const matchesEntityTemplate = entityTemplateFilter.some((et) => et._id === rule.entityTemplateId);
+
+                            return matchesSearch && matchesActionOnFail && matchesEntityTemplate;
+                        })
+                        .splice(pageParam, bulk)
                 }
                 onQueryError={(error) => {
                     console.error('failed to search process templates error:', error);
                     toast.error(i18next.t('failedToLoadResults'));
                 }}
                 getItemId={(rule) => rule._id}
-                getNextPageParam={(lastPage, allPages) => {
-                    const nextPage = allPages.length * bulk;
-                    return lastPage.length ? nextPage : undefined;
-                }}
+                getNextPageParam={(lastPage, allPages) => (lastPage.length ? allPages.length * bulk : undefined)}
                 endText={i18next.t('noSearchLeft')}
                 emptyText={i18next.t('failedToGetTemplates')}
                 useContainer={false}
@@ -276,7 +324,7 @@ const RulesRow: React.FC = () => {
                 {(rule) => (
                     <RuleCard
                         key={rule._id}
-                        entityTemplates={allowedRulesAndEntities.allowedEntityTemplates}
+                        entityTemplates={allowedEntityTemplates}
                         rule={rule}
                         setDeleteRuleWizardState={setDeleteRuleWizardState}
                         setRuleWizardDialogState={setRuleWizardDialogState}
