@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { CircleTwoTone as CircleIcon, PentagonTwoTone as PolygonIcon, StraightenTwoTone as DistanceIcon } from '@mui/icons-material';
+import { CircleTwoTone as CircleIcon, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
@@ -12,7 +12,7 @@ import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { environment } from '../../../globals';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, ISearchEntitiesByLocationBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
@@ -35,10 +35,9 @@ enum ShapeType {
 }
 
 enum CameraFocusType {
-    Search = 'search',
     Circle = 'circle',
     Polygon = 'polygon',
-    None = 'none',
+    Search = 'search',
 }
 
 const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
@@ -50,7 +49,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const viewerRef = useRef<any>(null);
 
-    const [drawingMode, setDrawingMode] = useState<'circle' | 'line' | 'polygon' | null>(null);
+    const [drawingMode, setDrawingMode] = useState<ShapeType | null>(null);
     const [drawingCircle, setDrawingCircle] = useState(false);
     const [circleData, setCircleData] = useState<{ center: Cartesian3 | null; radius: number | null; mouseRadius: number | null }>({
         center: null,
@@ -72,7 +71,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
 
-    const [cameraFocus, setCameraFocus] = useState<'search' | 'circle' | 'polygon' | 'none'>('none');
+    const [cameraFocus, setCameraFocus] = useState<CameraFocusType | null>(null);
 
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
@@ -99,43 +98,47 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
             const { camera } = viewer;
 
-            if (cameraFocus === 'none') {
-                if (!circleData.center && !circleData.radius && polygonData.length === 0) {
-                    camera.flyTo({
-                        destination: jerusalemCoordinates,
-                        duration: 1.5,
-                    });
+            const flyToBoundingSphere = (boundingSphere: Cesium.BoundingSphere) => {
+                const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5);
+                camera.flyToBoundingSphere(boundingSphere, { duration: 1.5, offset });
+            };
+
+            switch (cameraFocus) {
+                case CameraFocusType.Circle: {
+                    if (circleData.center && circleData.radius) {
+                        const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
+                        flyToBoundingSphere(boundingSphere);
+                    }
+                    break;
                 }
-            }
 
-            if (cameraFocus === 'search') {
-                if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
-                    if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
+                case CameraFocusType.Polygon: {
+                    if (polygonData.length > 0 && polygonComplete) {
+                        const boundingSphere = Cesium.BoundingSphere.fromPoints(polygonData);
+                        flyToBoundingSphere(boundingSphere);
+                    }
+                    break;
+                }
+
+                case CameraFocusType.Search: {
+                    if (
+                        (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) &&
+                        searchedEntityBounds?.center &&
+                        searchedEntityBounds?.radius
+                    ) {
                         const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
+                        flyToBoundingSphere(boundingSphere);
+                    }
+                    break;
+                }
 
-                        camera.flyToBoundingSphere(boundingSphere, {
+                default: {
+                    if (!circleData.center && !circleData.radius && polygonData.length === 0) {
+                        camera.flyTo({
+                            destination: jerusalemCoordinates,
                             duration: 1.5,
-                            offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds.radius * 5),
                         });
                     }
-                }
-            } else if (cameraFocus === 'circle') {
-                if (circleData.center && circleData.radius) {
-                    const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
-
-                    camera.flyToBoundingSphere(boundingSphere, {
-                        duration: 1.5,
-                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
-                    });
-                }
-            } else if (cameraFocus === 'polygon') {
-                if (polygonData.length > 0 && polygonComplete) {
-                    const boundingSphere = Cesium.BoundingSphere.fromPoints(polygonData);
-
-                    camera.flyToBoundingSphere(boundingSphere, {
-                        duration: 1.5,
-                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5),
-                    });
                 }
             }
         };
@@ -160,13 +163,11 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
             if (!cartesian) return;
 
-            if (drawingMode === 'line') {
-                setLineData((prev) => [...prev, cartesian]);
-            }
+            if (drawingMode === ShapeType.Line) setLineData((prev) => [...prev, cartesian]);
 
-            if (drawingMode === 'polygon') {
+            if (drawingMode === ShapeType.Polygon) {
                 if (!drawingPolygon) {
-                    setCameraFocus('polygon');
+                    setCameraFocus(CameraFocusType.Polygon);
 
                     setDrawingPolygon(true);
                     setPolygonComplete(false);
@@ -181,7 +182,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const handleMouseDown = useCallback(
         (clickEvent) => {
-            if (drawingMode !== 'circle' || !clickEvent.position) return;
+            if (drawingMode !== ShapeType.Circle || !clickEvent.position) return;
             setSearchedMarkers([]);
             setSearchedPolygons([]);
 
@@ -196,16 +197,14 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             setDrawingCircle(true);
 
             scene.screenSpaceCameraController.enableRotate = false;
-            setCameraFocus('circle');
+            setCameraFocus(CameraFocusType.Circle);
         },
         [drawingMode, viewerRef, setCircleData, setDrawingCircle],
     );
 
     const handleMouseMove = useCallback(
         (moveEvent: CesiumMovementEvent) => {
-            if (!drawingCircle || drawingMode !== 'circle' || circleData.center === null || circleData.radius !== null) {
-                return;
-            }
+            if (!drawingCircle || drawingMode !== ShapeType.Circle || circleData.center === null || circleData.radius !== null) return;
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -227,7 +226,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const handleMouseUp = useCallback(
         (clickEvent) => {
-            if (drawingMode !== 'circle' || circleData.center === null || circleData.radius !== null) return;
+            if (drawingMode !== ShapeType.Circle || circleData.center === null || circleData.radius !== null) return;
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -251,8 +250,9 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         },
         [drawingMode, viewerRef, circleData, setDrawingCircle, setCircleData],
     );
+
     const handleViewerDoubleClick = useCallback(() => {
-        if (drawingMode === 'polygon' && drawingPolygon && polygonData.length >= 3) {
+        if (drawingMode === ShapeType.Polygon && drawingPolygon && polygonData.length >= 3) {
             setDrawingPolygon(false);
             setPolygonComplete(true);
             setDrawingMode(null);
@@ -291,37 +291,25 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (polygonComplete && polygonData) {
-                const polygonDataWGS84: [number, number][] = polygonData.map((point) => {
+            const templatesPayload = filteredTemplatesIds.reduce((acc, id) => {
+                acc[id] = {};
+                return acc;
+            }, {} as Record<string, {}>);
+
+            const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };
+
+            if (polygonComplete && polygonData.length > 0)
+                payload.polygon = polygonData.map((point) => {
                     const { latitude, longitude } = convertECEFToWGS84(point);
                     return [longitude, latitude];
                 });
 
-                const templatesPayload = filteredTemplatesIds.reduce((acc, id) => {
-                    acc[id] = {};
-                    return acc;
-                }, {} as Record<string, {}>);
-
-                await mutateAsync({
-                    textSearch: '',
-                    templates: templatesPayload,
-                    polygon: polygonDataWGS84,
-                });
-            }
             if (circleData.center && circleData.radius) {
                 const { longitude, latitude } = convertECEFToWGS84(circleData.center) as LatLng;
-
-                const templatesPayload = filteredTemplatesIds.reduce((acc, id) => {
-                    acc[id] = {};
-                    return acc;
-                }, {} as Record<string, {}>);
-
-                await mutateAsync({
-                    textSearch: '',
-                    templates: templatesPayload,
-                    circle: { coordinate: [latitude, longitude], radius: circleData.radius! },
-                });
+                payload.circle = { coordinate: [latitude, longitude], radius: circleData.radius };
             }
+
+            if (payload.polygon || payload.circle) await mutateAsync(payload);
         };
 
         fetchData();
@@ -349,14 +337,15 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const onClear = () => {
         resetDrawing();
         setDrawingMode(null);
-        setCameraFocus('none');
+        setCameraFocus(null);
     };
 
-    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | 'polygon' | null) => {
+    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: ShapeType | null) => {
         resetDrawing();
         setDrawingMode(newShape);
 
-        if (newShape === 'circle' || newShape === 'polygon') setCameraFocus(newShape);
+        if (newShape === ShapeType.Circle) setCameraFocus(CameraFocusType.Circle);
+        else if (newShape === ShapeType.Polygon) setCameraFocus(CameraFocusType.Polygon);
     };
 
     return (
@@ -398,6 +387,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                             </Entity>
                         )}
+
                         <MeltaPolygon polygon={polygonData} name="polygon" outlineColor={Color.RED} fill={false} showCenteredPoint={false} />
 
                         {lineData.length && (
@@ -480,7 +470,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 setSelectedTemplates={setSelectedTemplates}
                                 moveToEntityLocations={(entity: IEntity) => {
                                     setSearchedEntity(entity);
-                                    setCameraFocus('search');
+                                    setCameraFocus(CameraFocusType.Search);
                                 }}
                                 entityTemplateMap={entityTemplateMap!}
                                 onClear={onClear}
