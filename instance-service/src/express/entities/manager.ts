@@ -1006,6 +1006,25 @@ class EntityManager extends DefaultManagerNeo4j {
 
         let query: string | null = null;
 
+        const templatesFilter = Object.fromEntries(
+            Object.entries(templates).map(([id, element]) => [
+                id,
+                {
+                    ...element,
+                    showRelationships: false as const,
+                },
+            ]),
+        );
+
+        const templateIds = Object.keys(templates);
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        if (entityTemplates.length < templateIds.length) {
+            throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+        }
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+
+        const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
+
         if (circle) query = this.buildCircleQuery();
 
         if (polygon) query = this.buildPolygonQuery();

@@ -411,6 +411,7 @@ export class EntityValidator extends DefaultController {
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
+    // todo: also for location search
     async validateSearchByTemplatesBody(req: Request) {
         const { searchConfigs }: ISearchEntitiesByTemplatesBody = req.body;
         const templateIds = Object.keys(searchConfigs);
