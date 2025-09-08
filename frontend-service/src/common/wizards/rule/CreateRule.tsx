@@ -2,7 +2,7 @@ import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, G
 import { getIn } from 'formik';
 import i18next from 'i18next';
 import { omit } from 'lodash';
-import React, { useState } from 'react';
+import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { RuleWizardValues } from '.';
@@ -12,37 +12,71 @@ import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
-import { StepComponentProps } from '../index';
 import TextArea from '../../inputs/TextArea';
+import { StepComponentProps } from '../index';
 
-const createRuleSchema = {
+const mailSchema = Yup.object({
+    display: Yup.boolean(),
+    title: Yup.string().when('display', {
+        is: true,
+        then: (schema) => schema.required(i18next.t('validation.required')),
+    }),
+    body: Yup.string().when('display', {
+        is: true,
+        then: (schema) => schema.required(i18next.t('validation.required')),
+    }),
+    sendPermissionUsers: Yup.boolean().when('display', {
+        is: true,
+        then: (schema) =>
+            schema.when('sendAssociatedUsers', {
+                is: true,
+                then: (subSchema) => subSchema,
+                otherwise: (subSchema) => subSchema.required(i18next.t('validation.required')).oneOf([true]),
+            }),
+    }),
+    sendAssociatedUsers: Yup.boolean().when('display', {
+        is: true,
+        then: (schema) =>
+            schema.when('sendPermissionUsers', {
+                is: true,
+                then: (subSchema) => subSchema,
+                otherwise: (subSchema) => subSchema.required(i18next.t('validation.required')).oneOf([true]),
+            }),
+    }),
+});
+
+const fieldColorSchema = Yup.object({
+    display: Yup.boolean(),
+    field: Yup.string().when('display', {
+        is: true,
+        then: (schema) => schema.required(i18next.t('validation.required')),
+    }),
+    color: Yup.string().when('display', {
+        is: true,
+        then: (schema) => schema.required(i18next.t('validation.required')),
+    }),
+});
+
+const createRuleSchema = Yup.object({
     name: Yup.string().required(i18next.t('validation.required')),
     description: Yup.string().required(i18next.t('validation.required')),
     actionOnFail: Yup.string()
         .oneOf([ActionOnFail.WARNING, ActionOnFail.ENFORCEMENT, ActionOnFail.INDICATOR])
         .required(i18next.t('validation.required')),
     entityTemplateId: Yup.string().required(i18next.t('validation.required')),
-    fieldColor: Yup.object({
-        display: Yup.boolean(),
-        field: Yup.string().when('display', { is: true, then: (schema) => schema.required(i18next.t('validation.required')) }),
-        color: Yup.string().when('display', { is: true, then: (schema) => schema.required(i18next.t('validation.required')) }),
-    })
-        .nullable()
-        .when('actionOnFail', {
-            is: ActionOnFail.INDICATOR,
-            otherwise: (schema) => schema.strip().nullable(),
-        }), // TODO: after adding mail do required to one of them if it's INDICATOR
-    mail: Yup.object({
-        title: Yup.string(),
-        body: Yup.string(),
-    })
-        .nullable()
-        .when('actionOnFail', {
-            is: ActionOnFail.INDICATOR,
-            then: (schema) => schema,
-            otherwise: (schema) => schema.test('forbidden-mail', i18next.t('validation.forbidden'), (value) => value == null),
-        }),
-};
+    fieldColor: fieldColorSchema.nullable().when('actionOnFail', {
+        is: ActionOnFail.INDICATOR,
+        otherwise: (schema) => schema.strip().nullable(),
+    }),
+    mail: mailSchema.nullable().when('actionOnFail', {
+        is: ActionOnFail.INDICATOR,
+        otherwise: (schema) => schema.strip().nullable(),
+    }),
+}).test('at-least-one-indicator-config', i18next.t('wizard.rule.mustSelectOneIndicatorConfig'), (values) => {
+    if (values.actionOnFail !== ActionOnFail.INDICATOR) return true;
+
+    return values.fieldColor?.display === true || values.mail?.display === true;
+});
 
 const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> = ({
     values,
@@ -69,14 +103,15 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
         .map(([key, { title }]) => ({ key, title }));
 
     const onRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.value !== ActionOnFail.INDICATOR && !!values.fieldColor)
+        if (event.target.value !== ActionOnFail.INDICATOR && !!values.fieldColor) {
             setValues((prevValues: RuleWizardValues) => omit(prevValues, 'fieldColor'));
+            setValues((prevValues: RuleWizardValues) => omit(prevValues, 'mail'));
+        }
 
         handleChange(event);
     };
-    const [mailNotification, setMailNotification] = useState<boolean>(values.actionOnFail === ActionOnFail.INDICATOR);
-    const [permissionUsersChecked, setPermissionUsersChecked] = useState<boolean>(false);
-    const [associatedUsersChecked, setAssociatedUsersChecked] = useState<boolean>(false);
+
+    const oneOrMoreMailChecks = !!touched.mail && (!!getIn(errors.mail, 'sendAssociatedUsers') || !!getIn(errors.mail, 'sendPermissionUsers'));
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -177,58 +212,66 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
                         <Grid container direction="column">
                             <FormControlLabel
-                                control={<MeltaCheckbox checked={mailNotification} onChange={(e) => setMailNotification(e.target.checked)} />}
+                                control={
+                                    <MeltaCheckbox checked={values.mail?.display} onChange={(e) => setFieldValue('mail.display', e.target.checked)} />
+                                }
                                 label={i18next.t('wizard.rule.mailNotification')}
                             />
 
-                            {!!mailNotification && (
+                            {!!values.mail?.display && (
                                 <Grid container direction="column" gap={2}>
                                     <FormHelperText sx={{ color: '#9398C2', fontSize: '14px', margin: 0 }}>
                                         {i18next.t('wizard.rule.mailFormatHelper')}
                                     </FormHelperText>
                                     <TextField
                                         name="mailTitle"
-                                        label={i18next.t('wizard.rule.mailTitle')}
+                                        label={`${i18next.t('wizard.rule.mailTitle')} *`}
                                         value={values.mail?.title}
-                                        onChange={handleChange}
-                                        error={touched.mail && Boolean(errors.mail)}
-                                        helperText={touched.mail && errors.mail}
+                                        onChange={(event) => setFieldValue('mail.title', event.target.value)}
+                                        error={touched.mail && Boolean(getIn(errors.mail, 'title'))}
+                                        helperText={touched.mail && getIn(errors.mail, 'title')}
                                         sx={{ width: '100%' }}
                                     />
                                     <TextArea
                                         id="mailBody"
-                                        label={i18next.t('wizard.rule.mailBody')}
-                                        // value={values.name}
-                                        onChange={() => console.log()}
-                                        // error={touched.name && Boolean(errors.name)}
-                                        // helperText={touched.name && errors.name}
+                                        label={`${i18next.t('wizard.rule.mailBody')} *`}
+                                        value={values.mail?.body}
+                                        onChange={(value) => setFieldValue('mail.body', value)}
+                                        error={touched.mail && Boolean(getIn(errors.mail, 'body'))}
                                     />
                                     <Grid container direction="column">
                                         <Grid container gap={2}>
-                                            <FormControl sx={{ fontSize: '16px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>
-                                            <FormHelperText sx={{ color: '#9398C2', fontSize: '16px', margin: 0 }}>
+                                            <FormControl sx={{ fontSize: '14px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>
+                                            <FormHelperText
+                                                sx={{
+                                                    color: oneOrMoreMailChecks ? '#FF0000' : '#9398C2',
+                                                    fontSize: '14px',
+                                                    margin: 0,
+                                                }}
+                                            >
                                                 {i18next.t('wizard.rule.sendMailToChooseOne')}
                                             </FormHelperText>
                                         </Grid>
+
                                         <FormControlLabel
                                             control={
                                                 <MeltaCheckbox
-                                                    checked={permissionUsersChecked}
-                                                    onChange={(e) => setPermissionUsersChecked(e.target.checked)}
+                                                    checked={values.mail.sendPermissionUsers}
+                                                    onChange={(e) => setFieldValue('mail.sendPermissionUsers', e.target.checked)}
                                                 />
                                             }
                                             label={i18next.t('wizard.rule.sendToUsersWithPerms')}
-                                            sx={{ marginLeft: 0 }}
+                                            sx={{ marginLeft: 0, color: oneOrMoreMailChecks ? '#ff0000' : 'auto', fontSize: '14px' }}
                                         />
                                         <FormControlLabel
                                             control={
                                                 <MeltaCheckbox
-                                                    checked={associatedUsersChecked}
-                                                    onChange={(e) => setAssociatedUsersChecked(e.target.checked)}
+                                                    checked={values.mail.sendAssociatedUsers}
+                                                    onChange={(e) => setFieldValue('mail.sendAssociatedUsers', e.target.checked)}
                                                 />
                                             }
-                                            label={i18next.t('wizard.rule.sendToAssociatedUsers')}
-                                            sx={{ marginLeft: 0 }}
+                                            label={`${i18next.t('wizard.rule.sendToAssociatedUsers')} (שדה מסוג משתמש)`}
+                                            sx={{ marginLeft: 0, color: oneOrMoreMailChecks ? '#ff0000' : 'auto', fontSize: '14px' }}
                                         />
                                     </Grid>
                                 </Grid>

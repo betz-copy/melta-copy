@@ -1,4 +1,4 @@
-import { Brush, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
+import { Brush, Email, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
 import { FormControlLabel, Grid, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -28,6 +28,7 @@ import { getAllAllowedRulesAndWriteEntities } from '../../../utils/permissions/t
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 
 const getRuleIcon = (rule: IMongoRule) => {
     switch (rule.actionOnFail) {
@@ -36,15 +37,57 @@ const getRuleIcon = (rule: IMongoRule) => {
         case ActionOnFail.ENFORCEMENT:
             return <WarningRounded sx={{ color: '#DD3500' }} />;
         case ActionOnFail.INDICATOR: {
-            if (!!rule.fieldColor) return <Brush sx={{ color: '#166BD4' }} />;
-            return null;
+            const icons = [
+                rule.mail?.display && <Email key="email" sx={{ color: '#166BD4' }} />,
+                rule.fieldColor?.display && <Brush key="brush" sx={{ color: '#166BD4' }} />,
+            ].filter(Boolean);
+
+            return icons.length > 0 ? (
+                <Grid container direction="row" gap={0.5}>
+                    {icons}
+                </Grid>
+            ) : null;
         }
         default:
             return null;
     }
 };
 
-const showProperty = (key: string, value: string, darkMode: boolean, isColor?: boolean) => {
+const htmlToString = (html: string): string => {
+    if (!html) return '';
+    let text = html.replace(/<br\s*\/?>/gi, '\n');
+    text = text.replace(/<\/p>/gi, '\n');
+    text = text.replace(/<[^>]+>/g, '');
+
+    return text.replace(/\n+/g, '\n').trim();
+};
+
+const mailRecipientsToString = (sendAssociatedUsers: boolean, sendPermissionUsers: boolean): string => {
+    const valuesToDisplay: string[] = [];
+    if (sendPermissionUsers) valuesToDisplay.push(i18next.t('wizard.rule.sendToUsersWithPerms'));
+    if (sendAssociatedUsers) valuesToDisplay.push(i18next.t('wizard.rule.sendToAssociatedUsers'));
+
+    return valuesToDisplay.join(', ');
+};
+
+const showProperty = (key: string, value: string, darkMode: boolean, isColor?: boolean, isMail?: boolean) => {
+    const typography = (
+        <Typography
+            color={darkMode ? '#A5A8C7' : '#53566E'}
+            fontSize="12px"
+            style={{
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 3,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'normal',
+                maxWidth: '200px',
+            }}
+        >
+            {value}
+        </Typography>
+    );
     return (
         <Grid container justifyContent="space-between" alignItems="center">
             <Grid flexBasis="27%">
@@ -55,10 +98,10 @@ const showProperty = (key: string, value: string, darkMode: boolean, isColor?: b
             <Grid flexBasis="70%">
                 {isColor ? (
                     <MinimizedColorPicker color={value} onColorChange={() => {}} circleSize="20px" />
+                ) : isMail ? (
+                    <MeltaTooltip title={value}>{typography}</MeltaTooltip>
                 ) : (
-                    <Typography color={darkMode ? '#A5A8C7' : '#53566E'} fontSize="12px">
-                        {value}
-                    </Typography>
+                    typography
                 )}
             </Grid>
         </Grid>
@@ -191,7 +234,7 @@ export const RuleCard: React.FC<{
                         darkMode,
                     )}
                     {showProperty(i18next.t('wizard.rule.primaryEntityTemplate'), entityTemplate?.displayName, darkMode)}
-                    {rule.actionOnFail === ActionOnFail.INDICATOR && rule.fieldColor && (
+                    {rule.actionOnFail === ActionOnFail.INDICATOR && rule.fieldColor?.display && (
                         <>
                             {showProperty(
                                 i18next.t('wizard.rule.fieldToColor'),
@@ -199,6 +242,17 @@ export const RuleCard: React.FC<{
                                 darkMode,
                             )}
                             {showProperty(i18next.t('wizard.rule.color'), rule.fieldColor.color, darkMode, true)}
+                        </>
+                    )}
+                    {rule.actionOnFail === ActionOnFail.INDICATOR && rule.mail?.display && (
+                        <>
+                            {showProperty(i18next.t('wizard.rule.mailTitle'), rule.mail.title, darkMode)}
+                            {showProperty(i18next.t('wizard.rule.mailBody'), htmlToString(rule.mail.body), darkMode, false, true)}
+                            {showProperty(
+                                i18next.t('wizard.rule.recipients'),
+                                mailRecipientsToString(rule.mail.sendAssociatedUsers, rule.mail.sendPermissionUsers),
+                                darkMode,
+                            )}
                         </>
                     )}
                 </Grid>
@@ -236,6 +290,7 @@ const RulesRow: React.FC = () => {
         isWizardOpen: false,
         rule: null,
     });
+
     const [deleteRuleWizardState, setDeleteRuleWizardState] = useState<{
         isWizardOpen: boolean;
         ruleId: string | null;

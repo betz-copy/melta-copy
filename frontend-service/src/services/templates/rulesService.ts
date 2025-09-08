@@ -39,8 +39,8 @@ const createRuleRequest = async (newRule: RuleWizardValues) => {
     return data;
 };
 
-const updateRuleRequest = async (ruleId: string, { name, description, actionOnFail, fieldColor }: RuleWizardValues) => {
-    const { data } = await axios.put<IMongoRule>(`${rules}/${ruleId}`, { name, description, actionOnFail, fieldColor });
+const updateRuleRequest = async (ruleId: string, { name, description, actionOnFail, fieldColor, mail }: RuleWizardValues) => {
+    const { data } = await axios.put<IMongoRule>(`${rules}/${ruleId}`, { name, description, actionOnFail, fieldColor, mail });
     return data;
 };
 
@@ -50,4 +50,3 @@ const deleteRuleRequest = async (ruleId: string) => {
 };
 
 export { createRuleRequest, deleteRuleRequest, ruleObjectToRuleForm, searchRulesRequest, updateDisabledRuleRequest, updateRuleRequest };
-
