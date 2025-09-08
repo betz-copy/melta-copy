@@ -32,6 +32,7 @@ const RuleTemplateSchema = new mongoose.Schema(
             required: true,
         },
         fieldColor: { type: Object },
+        mail: { type: Object },
     },
     {
         timestamps: true,

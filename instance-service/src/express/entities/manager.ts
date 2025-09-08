@@ -731,14 +731,13 @@ class EntityManager extends DefaultManagerNeo4j {
             return { createdEntity, actions: fixedActions };
         }
 
+        const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: [entityTemplate._id],
+        });
+        const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entityTemplate._id, Object.keys(properties));
+
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
-                    entityTemplateIds: [entityTemplate._id],
-                });
-
-                const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entityTemplate._id, Object.keys(properties));
-
                 const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
                     transaction,
                     properties,
