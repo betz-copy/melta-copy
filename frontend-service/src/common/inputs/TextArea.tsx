@@ -30,7 +30,7 @@ const TextArea = ({
 
     const handleChange = (_content: string, _delta: DeltaStatic, _source: EmitterSource, editor: ReactQuill.UnprivilegedEditor) => {
         const editorContentAsHtml = editor.getHTML();
-        onChange(editorContentAsHtml);
+        onChange(editorContentAsHtml === '<p><br></p>' || editorContentAsHtml === '<p><br/></p>' ? '' : editorContentAsHtml);
     };
 
     const handleFocus = () => setShowLabel(true);
@@ -48,7 +48,7 @@ const TextArea = ({
 
     const formats = ['header', 'font', 'size', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'list', 'indent', 'direction', 'align'];
 
-    const editorStyle = {
+    const editorStyle: React.CSSProperties = {
         border: readonly ? 'none' : error ? '1px solid #FF0000' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
         borderBottom: readonly ? '1px solid gray' : error ? '1px solid #FF0000' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
         transition: 'border-color 0.3s',
@@ -72,7 +72,7 @@ const TextArea = ({
                         transition: 'top 0.3s',
                         transform: 'translate(-14px,-9px) scale(0.75)',
                         transformOrigin: 'top-right',
-                        color: showLabel ? '#1E2775' : '#9398C2',
+                        color: error ? '#FF0000' : showLabel ? '#1E2775' : '#9398C2',
                     }}
                     shrink={readonly || undefined}
                 >
@@ -84,7 +84,7 @@ const TextArea = ({
                 value={value}
                 readOnly={readonly}
                 onChange={handleChange}
-                modules={readonly ? { toolbar: [{}] } : modules}
+                modules={readonly ? { toolbar: false } : modules}
                 formats={formats}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
@@ -96,7 +96,7 @@ const TextArea = ({
                 <div
                     className="ql-editor-placeholder"
                     style={{
-                        color: '#9398C2',
+                        color: error ? '#FF0000' : '#9398C2',
                         padding: '8.5px 14px',
                         position: 'absolute',
                         right: 0,
