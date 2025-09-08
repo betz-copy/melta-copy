@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { CircleTwoTone, LinearScaleTwoTone, PolylineTwoTone } from '@mui/icons-material';
+import { CircleTwoTone as CircleIcon, PentagonTwoTone as PolygonIcon, StraightenTwoTone as DistanceIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
@@ -7,7 +7,7 @@ import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolygonGraphics, PolylineGraphics, Viewer } from 'resium';
+import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
@@ -28,7 +28,20 @@ import MapFilters, { DeleteMapDataBtn } from './MapFilters';
 
 const { maxRadius } = environment.map;
 
-const MapPage = () => {
+enum ShapeType {
+    Circle = 'circle',
+    Polygon = 'polygon',
+    Line = 'line',
+}
+
+enum CameraFocusType {
+    Search = 'search',
+    Circle = 'circle',
+    Polygon = 'polygon',
+    None = 'none',
+}
+
+const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
@@ -59,7 +72,7 @@ const MapPage = () => {
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
 
-    const [cameraFocus, setCameraFocus] = useState<'search' | 'circle'>();
+    const [cameraFocus, setCameraFocus] = useState<'search' | 'circle' | 'polygon' | 'none'>('none');
 
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
@@ -86,11 +99,13 @@ const MapPage = () => {
             if (!viewer) return;
             const { camera } = viewer;
 
-            if (!circleData.center && !circleData.radius) {
-                camera.flyTo({
-                    destination: jerusalemCoordinates,
-                    duration: 1.5,
-                });
+            if (cameraFocus === 'none') {
+                if (!circleData.center && !circleData.radius && polygonData.length === 0) {
+                    camera.flyTo({
+                        destination: jerusalemCoordinates,
+                        duration: 1.5,
+                    });
+                }
             }
 
             if (cameraFocus === 'search') {
@@ -104,8 +119,7 @@ const MapPage = () => {
                         });
                     }
                 }
-            } else {
-                // eslint-disable-next-line no-lonely-if
+            } else if (cameraFocus === 'circle') {
                 if (circleData.center && circleData.radius) {
                     const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
 
@@ -114,19 +128,25 @@ const MapPage = () => {
                         offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
                     });
                 }
+            } else if (cameraFocus === 'polygon') {
+                if (polygonData.length > 0 && polygonComplete) {
+                    const boundingSphere = Cesium.BoundingSphere.fromPoints(polygonData);
+
+                    camera.flyToBoundingSphere(boundingSphere, {
+                        duration: 1.5,
+                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5),
+                    });
+                }
             }
         };
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [circleData, searchedEntityPolygons, searchedEntityMarkers]);
+    }, [circleData, polygonComplete, searchedEntityPolygons, searchedEntityMarkers]);
 
     useEffect(() => {
-        if (searchedEntity && entityTemplateMap) {
-            setSearchedEntityTemplate(entityTemplateMap.get(searchedEntity.templateId)!);
-        }
+        if (searchedEntity && entityTemplateMap) setSearchedEntityTemplate(entityTemplateMap.get(searchedEntity.templateId)!);
     }, [searchedEntity, entityTemplateMap]);
-    console.log({ polygonData, circleData });
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
@@ -140,24 +160,20 @@ const MapPage = () => {
 
             if (!cartesian) return;
 
-            // Handle line drawing (your existing code)
             if (drawingMode === 'line') {
                 setLineData((prev) => [...prev, cartesian]);
             }
 
-            // Handle polygon drawing (new code)
             if (drawingMode === 'polygon') {
                 if (!drawingPolygon) {
-                    // Start drawing polygon
+                    setCameraFocus('polygon');
+
                     setDrawingPolygon(true);
                     setPolygonComplete(false);
                     setPolygonData([cartesian]);
                     setSearchedMarkers([]);
                     setSearchedPolygons([]);
-                } else {
-                    // Add point to polygon
-                    setPolygonData((prev) => [...prev, cartesian]);
-                }
+                } else setPolygonData((prev) => [...prev, cartesian]);
             }
         },
         [drawingMode, drawingPolygon, viewerRef, setLineData, setPolygonData],
@@ -180,6 +196,7 @@ const MapPage = () => {
             setDrawingCircle(true);
 
             scene.screenSpaceCameraController.enableRotate = false;
+            setCameraFocus('circle');
         },
         [drawingMode, viewerRef, setCircleData, setDrawingCircle],
     );
@@ -234,25 +251,17 @@ const MapPage = () => {
         },
         [drawingMode, viewerRef, circleData, setDrawingCircle, setCircleData],
     );
-    const handleViewerDoubleClick = useCallback(
-        (clickEvent: CesiumMovementEvent) => {
-            if (drawingMode === 'polygon' && drawingPolygon && polygonData.length >= 3) {
-                // Finish polygon drawing
-                setDrawingPolygon(false);
-                setPolygonComplete(true);
-                setDrawingMode(null);
-                // Perform search here if needed
-                // performPolygonSearch(polygonData);
-                console.log('here');
-            }
-        },
-        [drawingMode, drawingPolygon, polygonData],
-    );
+    const handleViewerDoubleClick = useCallback(() => {
+        if (drawingMode === 'polygon' && drawingPolygon && polygonData.length >= 3) {
+            setDrawingPolygon(false);
+            setPolygonComplete(true);
+            setDrawingMode(null);
+        }
+    }, [drawingMode, drawingPolygon, polygonData]);
 
     const { mutateAsync } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
-            response.forEach((item) => {
-                const { matchingFields, node } = item;
+            response.forEach(({ matchingFields, node }) => {
                 const entityTemplate = entityTemplateMap!.get(node.templateId)!;
 
                 matchingFields.forEach((matchingField) => {
@@ -283,8 +292,6 @@ const MapPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (polygonComplete && polygonData) {
-                console.log('Polygon complete:', polygonData);
-
                 const polygonDataWGS84: [number, number][] = polygonData.map((point) => {
                     const { latitude, longitude } = convertECEFToWGS84(point);
                     return [longitude, latitude];
@@ -300,8 +307,6 @@ const MapPage = () => {
                     templates: templatesPayload,
                     polygon: polygonDataWGS84,
                 });
-
-                console.log('Polygon WGS84:', polygonDataWGS84);
             }
             if (circleData.center && circleData.radius) {
                 const { longitude, latitude } = convertECEFToWGS84(circleData.center) as LatLng;
@@ -327,15 +332,32 @@ const MapPage = () => {
         setSearchedEntityTemplate(undefined);
     };
 
-    const onClear = () => {
+    const resetDrawing = () => {
         setCircleData({ center: null, radius: null, mouseRadius: null });
+        setDrawingCircle(false);
+
+        setPolygonData([]);
+        setDrawingPolygon(false);
+        setPolygonComplete(false);
+
         setLineData([]);
-        setDrawingMode(null);
+
         setSearchedMarkers([]);
         setSearchedPolygons([]);
     };
 
-    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | 'polygon' | null) => setDrawingMode(newShape);
+    const onClear = () => {
+        resetDrawing();
+        setDrawingMode(null);
+        setCameraFocus('none');
+    };
+
+    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | 'polygon' | null) => {
+        resetDrawing();
+        setDrawingMode(newShape);
+
+        if (newShape === 'circle' || newShape === 'polygon') setCameraFocus(newShape);
+    };
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
@@ -344,13 +366,11 @@ const MapPage = () => {
                     <Viewer
                         full
                         ref={viewerRef}
-                        //for line
                         onClick={handleViewerClick}
-                        //for circle
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
-                        onDoubleClick={handleViewerDoubleClick} // Add this for polygon finishing
+                        onDoubleClick={handleViewerDoubleClick}
                         baseLayerPicker={false}
                         animation={false}
                         timeline={false}
@@ -378,39 +398,9 @@ const MapPage = () => {
                                 {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                             </Entity>
                         )}
+                        <MeltaPolygon polygon={polygonData} name="polygon" outlineColor={Color.RED} fill={false} showCenteredPoint={false} />
 
-                        {polygonData.length >= 2 && (
-                            <Entity name={i18next.t('location.polygon')}>
-                                {polygonData.length >= 3 && (
-                                    <PolygonGraphics
-                                        hierarchy={new Cesium.PolygonHierarchy(polygonData)}
-                                        // material={polygonComplete ? Color.fromAlpha(Color.BLUE, 0.3) : Color.fromAlpha(Color.YELLOW, 0.3)}
-                                        // outline={true}
-                                        // outlineColor={polygonComplete ? Color.BLUE : Color.YELLOW}
-                                        // outlineWidth={3}
-                                        fill={false}
-                                        outline
-                                        outlineColor={Color.fromAlpha(Color.RED, 0.7)}
-                                        outlineWidth={5}
-                                    />
-                                )}
-                                {/* Show polygon points */}
-                                {/* {polygonData.map((position, index) => (
-                                    <Entity key={`polygon-point-${index}`} position={position}>
-                                        <PointGraphics
-                                            //  color={Color.WHITE} outlineColor={Color.BLUE}
-                                            outlineColor={Color.fromAlpha(Color.RED, 0.7)}
-                                            pixelSize={8}
-                                            outlineWidth={2}
-                                        />
-                                    </Entity>
-                                ))} */}
-                                {/* Show lines between points while drawing */}
-                                {polygonData.length >= 2 && !polygonComplete && <PolylineGraphics positions={polygonData} width={2} />}
-                            </Entity>
-                        )}
-
-                        {lineData.length > 1 && (
+                        {lineData.length && (
                             <Entity
                                 name={i18next.t('location.line')}
                                 description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}
@@ -475,7 +465,16 @@ const MapPage = () => {
                             />
                         ))}
 
-                        <div style={{ position: 'absolute', top: '10px', right: '5%', display: 'flex', gap: '15px' }}>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '10px',
+                                right: isSideBarOpen ? '14%' : '5%',
+                                display: 'flex',
+                                gap: '15px',
+                                transition: 'right 0.3s ease-in-out',
+                            }}
+                        >
                             <MapFilters
                                 selectedTemplates={selectedTemplates}
                                 setSelectedTemplates={setSelectedTemplates}
@@ -500,38 +499,17 @@ const MapPage = () => {
                             >
                                 <MeltaTooltip title={i18next.t('location.circle')}>
                                     <ToggleButton value="circle">
-                                        <CircleTwoTone
-                                            sx={{
-                                                width: '20px',
-                                                height: '20px',
-                                                color: darkMode ? '#9398c2' : '#1E2775',
-                                                '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
-                                            }}
-                                        />
+                                        <CircleIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.polygon')}>
                                     <ToggleButton value="polygon">
-                                        <PolylineTwoTone
-                                            sx={{
-                                                width: '20px',
-                                                height: '20px',
-                                                color: darkMode ? '#9398c2' : '#1E2775',
-                                                '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
-                                            }}
-                                        />
+                                        <PolygonIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.line')}>
                                     <ToggleButton value="line">
-                                        <LinearScaleTwoTone
-                                            sx={{
-                                                width: '20px',
-                                                height: '20px',
-                                                color: darkMode ? '#9398c2' : '#1E2775',
-                                                '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
-                                            }}
-                                        />
+                                        <DistanceIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
                             </ToggleButtonGroup>
