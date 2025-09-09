@@ -114,6 +114,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
                 case CameraFocusType.Polygon: {
                     if (polygonData.length > 0 && polygonComplete) {
+                        viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
                         const boundingSphere = Cesium.BoundingSphere.fromPoints(polygonData);
                         flyToBoundingSphere(boundingSphere);
                     }
@@ -490,7 +492,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                         <CircleIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
-                                <MeltaTooltip title={i18next.t('location.searchByPolygon')}>
+                                <MeltaTooltip title={i18next.t('location.polygon')}>
                                     <ToggleButton value="polygon">
                                         <PolygonIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
