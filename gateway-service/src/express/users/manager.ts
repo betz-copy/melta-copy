@@ -139,8 +139,6 @@ class UsersManager {
         } = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
-        // eslint-disable-next-line no-console
-        console.log('🚀 ~ UsersManager ~ createUser ~ unitsObject:', units);
 
         return UserService.createUser({
             ...(digitalIdentity as IUser),

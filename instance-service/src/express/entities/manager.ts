@@ -47,6 +47,7 @@ import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
+import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import config from '../../config';
@@ -258,12 +259,12 @@ class EntityManager extends DefaultManagerNeo4j {
         }
     };
 
-    getColoredFields(rules: IMongoRule[]) {
+    getColoredFields(rules: IMongoRule[], changedProperties: string[]) {
         const indicatorColorRules = rules.filter((r) => r.actionOnFail === ActionOnFail.INDICATOR && r.fieldColor);
 
         const coloredFields: Record<string, string> = {};
         indicatorColorRules.forEach(({ fieldColor }) => {
-            coloredFields[fieldColor!.field] = fieldColor!.color;
+            if (!changedProperties.includes(fieldColor!.field)) coloredFields[fieldColor!.field] = fieldColor!.color;
         });
 
         return coloredFields;
@@ -275,7 +276,6 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         userId?: string,
         duplicatedFromId?: string,
-        coloredFields?: Record<string, string>,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
         const relatedEntitiesByIds: Record<string, IEntity> = {};
@@ -302,12 +302,7 @@ class EntityManager extends DefaultManagerNeo4j {
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...(await addStringFieldsAndNormalizeSpecialStringValues(
-                        fixedProperties,
-                        entityTemplate,
-                        this.entityTemplateManagerService,
-                        coloredFields,
-                    )),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
                 },
             },
         );
@@ -393,7 +388,7 @@ class EntityManager extends DefaultManagerNeo4j {
             relatedEntity.properties,
             relatedEntityTemplate,
             this.entityTemplateManagerService,
-            undefined, // TODO: check if coloredFields relevant here
+            undefined,
             true,
         );
 
@@ -472,11 +467,10 @@ class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
-        coloredFields?: Record<string, string>,
     ) {
         const { properties, templateId } = metadata;
         const entityTemplate = entitiesTemplatesByIds.get(templateId)!;
-        const { createdEntity } = await this.createEntityInTransaction(transaction, properties, entityTemplate, userId, undefined, coloredFields);
+        const { createdEntity } = await this.createEntityInTransaction(transaction, properties, entityTemplate, userId);
         return createdEntity;
     }
 
@@ -485,7 +479,6 @@ class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
-        coloredFields?: Record<string, string>,
     ) {
         const { entityId } = metadata;
         const entity = await this.getEntityByIdInTransaction(entityId, transaction);
@@ -493,7 +486,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const bulkManager = new BulkActionManager(this.workspaceId);
 
         const fixedFields = bulkManager.fixUpdatedFields(metadata, entityTemplate, entity);
-        return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId, coloredFields);
+        return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
     }
 
     async executeEntityTemplateActionOnInstanceCrud(
@@ -502,7 +495,6 @@ class EntityManager extends DefaultManagerNeo4j {
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId?: string,
         childTemplate?: IChildTemplatePopulated,
-        coloredFields?: Record<string, string>,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -512,28 +504,15 @@ class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(
-                            actionMetadata as ICreateEntityMetadata,
-                            transaction,
-                            entitiesTemplatesByIds,
-                            userId,
-                            coloredFields,
-                        ),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds),
                     [ActionTypes.DuplicateEntity]: async () =>
-                        this.createOrDuplicateAction(
-                            actionMetadata as ICreateEntityMetadata,
-                            transaction,
-                            entitiesTemplatesByIds,
-                            userId,
-                            coloredFields,
-                        ),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.UpdateEntity]: async () => {
                         const { updatedEntity } = await this.updateAction(
                             actionMetadata as IUpdateEntityMetadata,
                             transaction,
                             entitiesTemplatesByIds,
                             userId,
-                            coloredFields,
                         );
                         return updatedEntity;
                     },
@@ -656,7 +635,6 @@ class EntityManager extends DefaultManagerNeo4j {
             userId,
             childTemplate,
         );
-
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate, entitiesTemplatesByIds);
 
         return [mainAction, ...actionsOfUpdatedEntities];
@@ -694,6 +672,48 @@ class EntityManager extends DefaultManagerNeo4j {
 
             return action;
         });
+
+    // async updateColoredFieldsOfEntityInTransaction(
+    //     entity: IEntity,
+    //     indicatorRules?: IRuleFailure[],
+    //     transaction: Transaction,
+    //     entityTemplate: IMongoEntityTemplate,
+    // ) {
+    //     const updatedColoredFields = this.getColoredFields(indicatorRules?.map(({ rule }) => rule) || [], []);
+    //     const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
+    //         entity,
+    //         entityTemplate,
+    //         entity.properties,
+    //         Object.keys(entity.properties),
+    //         transaction,
+    //         '',
+    //         false,
+    //     );
+
+    //     const updatedEntity = await runInTransactionAndNormalize(
+    //         transaction,
+    //         `MATCH (e {_id: '${entity.properties._id}'})
+    //              WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
+    //              SET e = $props
+    //              SET e.createdAt = createdAt
+    //              SET e.disabled = disabled
+    //              RETURN e`,
+    //         normalizeReturnedEntity('singleResponseNotNullable'),
+    //         {
+    //             props: {
+    //                 ...(await addStringFieldsAndNormalizeSpecialStringValues(
+    //                     fixedProperties,
+    //                     entityTemplate,
+    //                     this.entityTemplateManagerService,
+    //                     updatedColoredFields,
+    //                 )),
+    //                 updatedAt: getNeo4jDateTime(),
+    //                 _id: entity.properties._id,
+    //             },
+    //         },
+    //     );
+    //     return updatedEntity;
+    // }
 
     async createEntity(
         properties: IEntity['properties'],
@@ -744,15 +764,35 @@ class EntityManager extends DefaultManagerNeo4j {
                     template,
                     userId,
                     duplicatedFromId,
-                    this.getColoredFields(relevantRulesOfEntity),
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
+
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                    ruleFailuresAfterAction,
+                    (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
+                );
+
+                // const entityWithUpdatedColors = await this.updateColoredFieldsOfEntityInTransaction(
+                //     createdEntity,
+                //     indicatorRules,
+                //     transaction,
+                //     entityTemplate,
+                // );
+
+                const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
+                    createdEntity.properties._id,
+                    createdEntity.properties,
+                    template,
+                    transaction,
+                    userId,
+                    indicatorRules,
+                );
 
                 throwIfActionCausedRuleFailures(
                     ignoredRules,
                     [],
-                    ruleFailuresAfterAction,
-                    [{ createdEntityId: createdEntity.properties._id }],
+                    rulesToThrowError,
+                    [{ createdEntityId: entityWithUpdatedColors.properties._id }],
                     [{ actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: entityTemplate._id, properties } }],
                 );
 
@@ -762,7 +802,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { createdEntity };
+                return { createdEntity: entityWithUpdatedColors };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
@@ -1303,7 +1343,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}], []);
 
             return updatedEntity;
         });
@@ -1524,7 +1564,7 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         transaction: Transaction,
         userId?: string,
-        coloredFields?: Record<string, string>,
+        indicatorRules?: IRuleFailure[],
         convertToRelationshipField = false,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
@@ -1538,6 +1578,12 @@ class EntityManager extends DefaultManagerNeo4j {
         }
 
         const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
+        const updatedColoredFields = indicatorRules
+            ? this.getColoredFields(
+                  indicatorRules.map(({ rule }) => rule),
+                  [],
+              )
+            : undefined;
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
             entity,
@@ -1564,7 +1610,7 @@ class EntityManager extends DefaultManagerNeo4j {
                         fixedProperties,
                         entityTemplate,
                         this.entityTemplateManagerService,
-                        coloredFields,
+                        updatedColoredFields,
                     )),
                     updatedAt: getNeo4jDateTime(),
                     _id: id,
@@ -1679,15 +1725,37 @@ class EntityManager extends DefaultManagerNeo4j {
                     template,
                     transaction,
                     userId,
-                    { ...entity.coloredFields, ...this.getColoredFields(ruleFailuresBeforeAction.map(({ rule }) => rule)) },
+                    undefined,
                     convertToRelationshipField,
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                    ruleFailuresAfterAction,
+                    ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
+                );
+
+                // const entityWithUpdatedColors = await this.updateColoredFieldsOfEntityInTransaction(
+                //     updatedEntity,
+                //     indicatorRules,
+                //     transaction,
+                //     entityTemplate,
+                // );
+
+                const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
+                    id,
+                    updatedEntity.properties,
+                    template,
+                    transaction,
+                    userId,
+                    indicatorRules,
+                );
+
                 throwIfActionCausedRuleFailures(
                     ignoredRules,
                     ruleFailuresBeforeAction,
-                    ruleFailuresAfterAction,
+                    rulesToThrowError,
                     [{}],
                     [
                         {
@@ -1703,7 +1771,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { updatedEntity };
+                return { updatedEntity: entityWithUpdatedColors };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
