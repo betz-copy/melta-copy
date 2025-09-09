@@ -13,6 +13,7 @@ const Stepper = <T extends object>({
     setBlock,
     isEditMode,
     showPrevSteps,
+    alignItems,
 }: {
     activeStep: number;
     steps: StepType<T>[];
@@ -21,6 +22,7 @@ const Stepper = <T extends object>({
     setBlock: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;
     showPrevSteps: boolean;
+    alignItems: 'start' | 'center';
 }): JSX.Element | null => {
     if (direction === 'column')
         return (
@@ -95,7 +97,7 @@ const Stepper = <T extends object>({
                 container
                 direction="column"
                 justifyContent="space-between"
-                alignItems="center"
+                alignItems={alignItems}
                 height="100%"
                 marginBottom="0.5rem"
                 marginTop="2rem"

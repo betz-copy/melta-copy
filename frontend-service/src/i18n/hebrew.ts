@@ -733,8 +733,8 @@ export default {
                 hierarchy: 'היררכיה',
             },
             walletTransfer: {
-                destination: 'מקור',
-                source: 'יעד',
+                destination: 'יעד',
+                source: 'מקור',
                 amount: 'ערך העברה',
                 description: 'תיאור העברה',
                 exportDocuments: 'פורמטים לייצוא',
@@ -1046,6 +1046,7 @@ export default {
         matchFilter: 'בשדה {{fieldName}} הערך ברירת מחדל לא תואם את הגדרות הסינון',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
         invalidProperty: 'שדה לא תקין',
+        differentDestinations: 'מקור ויעד לא יכולים להיות זהים',
     },
     propertyTypes: {
         string: 'טקסט',

@@ -1,27 +1,74 @@
-import React, { useState } from 'react';
-import { Box, Grid, TextField, Typography } from '@mui/material';
+import { InfoOutlined } from '@mui/icons-material';
+import { Autocomplete, Box, Grid, TextField, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React from 'react';
+import * as Yup from 'yup';
 import { EntityTemplateWizardValues } from '.';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import { StepComponentProps } from '../index';
-import i18next from 'i18next';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
-import { InfoOutlined } from '@mui/icons-material';
+import { StepComponentProps } from '../index';
+import { getIn } from 'formik';
+import { CommonFormInputProperties } from './commonInterfaces';
+import { IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
+
+export const walletTransferSettingsSchema = () => {
+    return Yup.object({
+        walletTransfer: Yup.object({
+            from: Yup.mixed<CommonFormInputProperties>()
+                .required(i18next.t('validation.required'))
+                .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (fromValue) {
+                    const { to } = this.parent as { to?: CommonFormInputProperties };
+                    if (!fromValue || !to) return true;
+                    return fromValue.name !== to.name;
+                }),
+
+            to: Yup.mixed<CommonFormInputProperties>()
+                .required(i18next.t('validation.required'))
+                .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (toValue: any) {
+                    const { from } = this.parent as { from?: CommonFormInputProperties };
+                    if (!toValue || !from) return true;
+                    return toValue.name !== from.name;
+                }),
+
+            description: Yup.string().required(i18next.t('validation.required')),
+
+            amount: Yup.string().required(i18next.t('validation.required')),
+        }).test('at-least-one-relationshipReference', 'Either From or To must be relationshipReference', (values) => {
+            if (!values) return false;
+
+            const { from, to } = values as IWalletTransferPopulated;
+            return from.type === 'relationshipReference' || to.type === 'relationshipReference';
+        }),
+    });
+};
 
 export const WalletTransferSettings: React.FC<
     StepComponentProps<EntityTemplateWizardValues> & {
         showAccountDisplay: boolean;
+        walletTransfer: { value: boolean; set: (val: boolean) => void };
     }
-> = ({ values, errors, showAccountDisplay, ...props }) => {
-    const [walletTransfer, setWalletTransfer] = useState(false); // useState(values.walletTransfer ?? false);
-    console.log({ props, values });
+> = ({ values, errors, showAccountDisplay, touched, setFieldValue, walletTransfer, setFieldTouched }) => {
+    const allFields = values.properties.flatMap((property) => {
+        if (property.type === 'field') {
+            return [property.data];
+        }
+        if (property.type === 'group') {
+            return property.fields;
+        }
+        return [];
+    });
+
+    const transferDestAndSourceFields = allFields.filter(({ type, required }) => ['relationshipReference', 'enum', 'string'].includes(type) && required);
+    const allTextFields = allFields.filter(({ type }) => type === 'string');
+    const allNumFields = allFields.filter(({ type, required }) => type === 'number' && required);
 
     return (
-        <Grid>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Grid container direction="column">
+            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
                 <MeltaCheckbox
-                    checked={walletTransfer}
+                    checked={walletTransfer.value}
                     onChange={(e) => {
-                        setWalletTransfer(e.target.checked);
+                        walletTransfer.set(e.target.checked);
                     }}
                     disabled={showAccountDisplay}
                 />
@@ -37,61 +84,113 @@ export const WalletTransferSettings: React.FC<
                     />
                 </MeltaTooltip>
             </Box>
-            <Grid container width="100%">
-                <Grid container spacing={3} direction="row">
-                    <Grid size={{xs:6}}>
-                        <TextField
-                            select
-                            type="text"
-                            label={i18next.t('wizard.entityTemplate.walletTransfer.destination')}
-                            onChange={(e) => {}}
-                            // error={touchedType && Boolean(errorType)}
-                            // helperText={touchedType && errorType}
-                            sx={{ marginRight: '5px' }}
-                            fullWidth
-                            disabled={!walletTransfer}
-                        ></TextField>
+            <Grid paddingLeft={3}>
+                <Grid container direction="row" spacing={3} marginBottom={5}>
+                    <Grid container direction="row">
+                        <Autocomplete
+                            options={transferDestAndSourceFields}
+                            onChange={(_e, value) => setFieldValue('walletTransfer.from', value || '')}
+                            value={transferDestAndSourceFields.find((option) => option.name === values.walletTransfer?.from?.name) ?? null}
+                            getOptionLabel={(option) => option.title}
+                            onBlur={() => setFieldTouched('walletTransfer.from')}
+                            sx={{ width: '250px' }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    error={Boolean(touched.walletTransfer && getIn(errors.walletTransfer, 'from'))}
+                                    helperText={touched.walletTransfer ? getIn(errors.walletTransfer, 'from') : ''}
+                                    variant="outlined"
+                                    label={i18next.t('wizard.entityTemplate.walletTransfer.source')}
+                                />
+                            )}
+                            disabled={walletTransfer.value === false}
+                        />
+                        {walletTransfer.value && values.walletTransfer?.to?.type === 'relationshipReference' && (
+                            <MeltaTooltip title="ערך ההעברה ירד מהיתרה של יישות הארנק המקושרת">
+                                <InfoOutlined
+                                    sx={{
+                                        fontSize: 16,
+                                        opacity: 0.7,
+                                        cursor: 'help',
+                                        ml: 1,
+                                    }}
+                                />
+                            </MeltaTooltip>
+                        )}
                     </Grid>
-                    <Grid size={{xs:6}}>
-                        <TextField
-                            select
-                            type="text"
-                            label={i18next.t('wizard.entityTemplate.walletTransfer.source')}
-                            onChange={(e) => {}}
-                            // error={touchedType && Boolean(errorType)}
-                            // helperText={touchedType && errorType}
-                            sx={{ marginRight: '5px' }}
-                            fullWidth
-                            disabled={!walletTransfer}
-                        ></TextField>
+                    <Grid container direction="row">
+                        <Autocomplete
+                            options={transferDestAndSourceFields}
+                            onChange={(_e, value) => setFieldValue('walletTransfer.to', value || '')}
+                            value={transferDestAndSourceFields.find((option) => option.name === values.walletTransfer?.to?.name) ?? null}
+                            getOptionLabel={(option) => option.title}
+                            onBlur={() => setFieldTouched('walletTransfer.to')}
+                            sx={{ width: '250px' }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    error={Boolean(touched.walletTransfer && getIn(errors.walletTransfer, 'to'))}
+                                    helperText={touched.walletTransfer ? getIn(errors.walletTransfer, 'to') : ''}
+                                    variant="outlined"
+                                    label={i18next.t('wizard.entityTemplate.walletTransfer.destination')}
+                                />
+                            )}
+                            disabled={!walletTransfer.value}
+                        />
+                        {walletTransfer.value && values.walletTransfer?.from?.type === 'relationshipReference' && (
+                            <MeltaTooltip title="ערך ההעברה יתווסף ליתרה של יישות הארנק המקושרת">
+                                <InfoOutlined
+                                    sx={{
+                                        fontSize: 16,
+                                        opacity: 0.7,
+                                        cursor: 'help',
+                                        ml: 1,
+                                    }}
+                                />
+                            </MeltaTooltip>
+                        )}
                     </Grid>
                 </Grid>
-                <Grid container  spacing={3} direction="row">
-                    <Grid size={{xs:6}}>
-                        <TextField
-                            select
-                            type="text"
-                            label={i18next.t('wizard.entityTemplate.walletTransfer.amount')}
-                            onChange={(e) => {}}
-                            // error={touchedType && Boolean(errorType)}
-                            // helperText={touchedType && errorType}
-                            sx={{ marginRight: '5px' }}
-                            fullWidth
-                            disabled={!walletTransfer}
-                        ></TextField>
+                <Grid container spacing={3} direction="row" marginBottom={3}>
+                    <Grid>
+                        <Autocomplete
+                            options={allNumFields}
+                            onChange={(_e, value) => setFieldValue('walletTransfer.amount', value?.name || '')}
+                            value={allNumFields.find((option) => option.name === values.walletTransfer?.amount) ?? null}
+                            getOptionLabel={(option) => option.title}
+                            onBlur={() => setFieldTouched('walletTransfer.amount')}
+                            sx={{ width: '250px' }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    error={Boolean(touched.walletTransfer && getIn(errors.walletTransfer, 'amount'))}
+                                    helperText={touched.walletTransfer ? getIn(errors.walletTransfer, 'amount') : ''}
+                                    variant="outlined"
+                                    label={i18next.t('wizard.entityTemplate.walletTransfer.amount')}
+                                />
+                            )}
+                            disabled={!walletTransfer.value}
+                        />
                     </Grid>
-                    <Grid size={{xs:6}}>
-                        <TextField
-                            select
-                            type="text"
-                            label={i18next.t('wizard.entityTemplate.walletTransfer.description')}
-                            onChange={(e) => {}}
-                            // error={touchedType && Boolean(errorType)}
-                            // helperText={touchedType && errorType}
-                            sx={{ marginRight: '5px' }}
-                            fullWidth
-                            disabled={!walletTransfer}
-                        ></TextField>
+                    <Grid>
+                        <Autocomplete
+                            options={allTextFields}
+                            onChange={(_e, value) => setFieldValue('walletTransfer.description', value?.name || '')}
+                            value={allTextFields.find((option) => option.name === values.walletTransfer?.description) ?? null}
+                            getOptionLabel={(option) => option.title}
+                            onBlur={() => setFieldTouched('walletTransfer.description')}
+                            sx={{ width: '250px' }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    error={Boolean(touched.walletTransfer && getIn(errors.walletTransfer, 'description'))}
+                                    helperText={touched.walletTransfer ? getIn(errors.walletTransfer, 'description') : ''}
+                                    variant="outlined"
+                                    label={i18next.t('wizard.entityTemplate.walletTransfer.description')}
+                                />
+                            )}
+                            disabled={!walletTransfer.value}
+                        />
                     </Grid>
                 </Grid>
             </Grid>

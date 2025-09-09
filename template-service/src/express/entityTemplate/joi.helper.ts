@@ -208,6 +208,14 @@ export const innerFieldGroupsSchema = Joi.array().items(
         fields: Joi.array().items(Joi.string()).unique().required(),
     }),
 );
+
+export const innerWalletTransferSchema = Joi.object({
+    from: Joi.string().required(),
+    to: Joi.string().required(),
+    amount: Joi.string().required(),
+    description: Joi.string().required(),
+});
+
 const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: string[], helpers) => {
     const { properties } = helpers.state.ancestors[0].properties;
     const propertiesKeys = Object.keys(properties);

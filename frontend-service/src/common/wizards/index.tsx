@@ -50,6 +50,7 @@ const Wizard = <T extends object>({
     direction = 'row',
     showPrevSteps = false,
     checkForChanges = true,
+    alignItems,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -60,6 +61,7 @@ const Wizard = <T extends object>({
         direction?: 'row' | 'column';
         showPrevSteps?: boolean;
         checkForChanges?: boolean;
+        alignItems?: 'start';
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
@@ -108,11 +110,11 @@ const Wizard = <T extends object>({
                 <Formik
                     initialValues={initialValues}
                     validationSchema={
-                        steps[activeStep].validationSchema instanceof Yup.ObjectSchema
+                        steps[activeStep]?.validationSchema instanceof Yup.ObjectSchema
                             ? steps[activeStep].validationSchema
-                            : Yup.object(steps[activeStep].validationSchema)
+                            : Yup.object(steps[activeStep]?.validationSchema)
                     }
-                    validate={steps[activeStep].validate}
+                    validate={steps[activeStep]?.validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
                             await submitFunction(values);
@@ -134,6 +136,7 @@ const Wizard = <T extends object>({
                                 isEditMode={!!isEditMode}
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
+                                alignItems={alignItems ?? 'center'}
                             />
                             {steps[activeStep].stepperActions?.hide !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>

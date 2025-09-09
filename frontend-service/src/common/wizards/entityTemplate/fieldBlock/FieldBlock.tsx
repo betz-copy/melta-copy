@@ -83,7 +83,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     userPropertiesInTemplate,
     showAccountDisplay = false,
     hasAccountBalanceField,
-    setTransferTemplate,
+    setIsTransferTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -109,14 +109,13 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
 
-
     // shirel - dont run when edit template already as a relationship tpo wallet
     useEffect(() => {
         const templateHasAccountBalance = (template: any) => {
             return Object.values(template?.properties?.properties ?? {}).some((property: any) => property.accountBalance);
         };
 
-        setTransferTemplate?.(
+        setIsTransferTemplate?.(
             orderedItems.some((property: any) => {
                 if (property.type === 'field' && property.data?.relationshipReference) {
                     const relatedId = property.data.relationshipReference.relatedTemplateId;
@@ -138,7 +137,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 return false;
             }),
         );
-    }, [orderedItems, templates, setTransferTemplate, values[propertiesType]]);
+    }, [orderedItems, templates, setIsTransferTemplate, values[propertiesType]]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(

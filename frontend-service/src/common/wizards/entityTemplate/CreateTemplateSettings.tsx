@@ -61,13 +61,13 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
     const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
     return (
-        <Grid container direction="column" alignItems="center" spacing={4}>
-            <Grid container direction="row" alignItems="center">
+        <Grid container direction="column" spacing={4}>
+            <Grid container direction="row">
                 <ChooseCategory {...props} />
             </Grid>
-            <CreateTemplateName {...props} gridProps={{ direction: 'row', alignItems: 'center', spacing: 2 }} />
+            <CreateTemplateName {...props} gridProps={{ direction: 'row' }} />
             <Grid container direction="column" alignItems="flex-start" spacing={1}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }} marginBottom={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }} marginBottom={1}>
                     <MeltaCheckbox
                         checked={props.showAccountDisplay.value}
                         onChange={(e) => {

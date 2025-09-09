@@ -35,7 +35,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
     gridProps,
 }: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & { gridProps?: object }) => {
     return (
-        <Grid container direction="column" alignItems="center" spacing={1}>
+        <Grid container sx={gridProps ? {...gridProps} :{direction:'column', alignItems:'center'}} spacing={2}>
             <Grid>
                 <TextField
                     name="name"

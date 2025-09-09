@@ -1,4 +1,4 @@
-import { FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
+import { CommonFormInputProperties, FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
 import { IFieldsGroup, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
@@ -58,6 +58,18 @@ export interface IProperties {
     hide: string[];
 }
 
+interface IWalletTransfer {
+    from: string;
+    to: string;
+    description: string;
+    amount: string;
+}
+
+export interface IWalletTransferPopulated extends Omit<IWalletTransfer, 'from' | 'to'> {
+    from: CommonFormInputProperties;
+    to: CommonFormInputProperties;
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -74,6 +86,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
+    walletTransfer?: IWalletTransfer;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

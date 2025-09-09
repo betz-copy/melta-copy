@@ -16,6 +16,7 @@ import {
     IEntityTemplateMap,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplateQuery,
+    IWalletTransferPopulated,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 
@@ -196,7 +197,7 @@ const entityTemplateObjectToEntityTemplateForm = (
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
-    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId }) as File);
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
@@ -297,8 +298,16 @@ export const extractGroups = (
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
-    const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
-        values;
+    const {
+        properties,
+        attachmentProperties,
+        archiveProperties,
+        propertiesTypeOrder,
+        documentTemplatesIds,
+        fieldGroups,
+        walletTransfer,
+        ...restOfProperties
+    } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
@@ -600,6 +609,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         uniqueConstraints: restOfProperties.uniqueConstraints || [],
         mapSearchProperties,
         fieldGroups: updatedFieldsGroups,
+        walletTransfer: walletTransfer
+            ? {
+                  from: walletTransfer?.from.name,
+                  to: walletTransfer?.to.name,
+                  description: walletTransfer?.description,
+                  amount: walletTransfer.amount,
+              }
+            : undefined,
     };
 };
 
@@ -655,6 +672,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
+    entityTemplate.walletTransfer && formData.append('walletTransfer', JSON.stringify(entityTemplate.walletTransfer));
+    console.log(...formData);
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
@@ -673,11 +692,20 @@ const updateEntityTemplateRequest = async (
     queryClient: QueryClient,
 ) => {
     const formData = new FormData();
+    console.log({ updatedEntityTemplate });
+
+    console.log({ x: updatedEntityTemplate.walletTransfer });
+
+    let walletTransfer;
+    if (updatedEntityTemplate.walletTransfer) {
+        const { from, to, amount, description } = (updatedEntityTemplate as EntityTemplateWizardValues).walletTransfer!;
+        walletTransfer = { from: from.name, to: to.name, amount, description };
+    }
 
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true, queryClient)
-            : updatedEntityTemplate;
+            : { ...updatedEntityTemplate, walletTransfer };
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
@@ -712,6 +740,7 @@ const updateEntityTemplateRequest = async (
     if (entityTemplate.mapSearchProperties) {
         formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
     }
+    console.log({ entityTemplate });
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -722,6 +751,7 @@ const updateEntityTemplateRequest = async (
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
+    formData.append('walletTransfer', JSON.stringify(entityTemplate.walletTransfer));
 
     const { data } = await axios.put<{ template: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
         `${entityTemplates}/${entityTemplateId}`,

@@ -231,7 +231,7 @@ type AddFieldsDNDProps = Pick<
     FormikProps<EntityTemplateWizardValues>,
     'values' | 'setValues' | 'touched' | 'errors' | 'setFieldValue' | 'initialValues'
 > &
-    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { showAccountDisplay?: boolean; setTransferTemplate?: (val: boolean) => void };
+    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { showAccountDisplay?: boolean; setIsTransferTemplate?: (val: boolean) => void };
 
 export enum PropertiesTypes {
     properties = 'properties',
@@ -253,7 +253,7 @@ export const FieldBlockWrapper = ({
     isEditMode,
     setBlock,
     showAccountDisplay,
-    setTransferTemplate,
+    setIsTransferTemplate,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
 
@@ -715,7 +715,7 @@ export const FieldBlockWrapper = ({
                     onDeleteSure={onDeleteSure}
                     showAccountDisplay={showAccountDisplay}
                     hasAccountBalanceField={hasAccountBalanceField}
-                    setTransferTemplate={setTransferTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
                 />
             </div>
         </Grid>
@@ -732,7 +732,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     isEditMode,
     setBlock,
     showAccountDisplay,
-    setTransferTemplate,
+    setIsTransferTemplate,
 }) => {
     const moveItem = useCallback(
         (dragIndex, hoverIndex) => {
@@ -762,7 +762,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
                     isEditMode={isEditMode}
                     setBlock={setBlock}
                     showAccountDisplay={showAccountDisplay}
-                    setTransferTemplate={setTransferTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
                 />
             ))}
         </Grid>
@@ -772,9 +772,20 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
 const AddFields: React.FC<
     StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'> & {
         showAccountDisplay?: boolean;
-        setTransferTemplate?: (val: boolean) => void;
+        setIsTransferTemplate?: (val: boolean) => void;
     }
-> = ({ values, setValues, touched, errors, setFieldValue, initialValues, isEditMode, setBlock, showAccountDisplay = false, setTransferTemplate }) => {
+> = ({
+    values,
+    setValues,
+    touched,
+    errors,
+    setFieldValue,
+    initialValues,
+    isEditMode,
+    setBlock,
+    showAccountDisplay = false,
+    setIsTransferTemplate,
+}) => {
     return (
         <DndProvider backend={HTML5Backend}>
             <AddFieldsDND
@@ -787,7 +798,7 @@ const AddFields: React.FC<
                 isEditMode={isEditMode}
                 setBlock={setBlock}
                 showAccountDisplay={showAccountDisplay}
-                setTransferTemplate={setTransferTemplate}
+                setIsTransferTemplate={setIsTransferTemplate}
             />
         </DndProvider>
     );

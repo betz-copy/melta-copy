@@ -9,7 +9,7 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -28,7 +28,7 @@ import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterface
 import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { CreateTemplateSettings } from './CreateTemplateSettings';
 import { UploadExportFormats } from './UploadExportFormats';
-import { WalletTransferSettings } from './WalletTransferSettings';
+import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
 
@@ -79,7 +79,14 @@ type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInp
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
+        | 'properties'
+        | 'iconFileId'
+        | 'propertiesOrder'
+        | 'propertiesPreview'
+        | 'enumPropertiesColors'
+        | 'uniqueConstraints'
+        | 'documentTemplatesIds'
+        | 'walletTransfer'
     > {
     properties: PropertyItem[];
     attachmentProperties: EntityTemplatePropertyByType[];
@@ -87,6 +94,7 @@ export interface EntityTemplateWizardValues
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
+    walletTransfer?: IWalletTransferPopulated;
 }
 
 const EntityTemplateWizard: React.FC<
@@ -118,7 +126,8 @@ const EntityTemplateWizard: React.FC<
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const [exportFormats, setExportFormats] = useState(false);
     const [showAccountDisplay, setShowAccountDisplay] = useState<boolean>(false);
-    const [transferTemplate, setTransferTemplate] = useState<boolean>(false);
+    const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false); // for open the step of transfer
+    const [walletTransfer, setWalletTransfer] = useState(false); // for checkbox of if transfer or regular template
 
     useEffect(() => {
         setExportFormats(false);
@@ -130,14 +139,21 @@ const EntityTemplateWizard: React.FC<
                 return property.fields.some((f) => !!f.accountBalance);
             }
         });
+
         setShowAccountDisplay(hasAccountBalanceKey ?? false);
+
+        setWalletTransfer(!!initialValues.walletTransfer || false);
+
+        setIsTransferTemplate(!!initialValues.walletTransfer || false);
     }, [initialValues.properties, open]);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const walletTransferSchema = walletTransferSettingsSchema();
 
+    // shirel submit function
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {
             if (isEditMode) {
@@ -276,7 +292,7 @@ const EntityTemplateWizard: React.FC<
                     isEditMode={isEditMode}
                     setBlock={setBlock}
                     showAccountDisplay={showAccountDisplay}
-                    setTransferTemplate={setTransferTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
                 />
             ),
             validationSchema: addFieldsSchema,
@@ -289,13 +305,19 @@ const EntityTemplateWizard: React.FC<
                   } satisfies StepType<EntityTemplateWizardValues>,
               ]
             : []),
-        ...(transferTemplate
+        ...(isTransferTemplate
             ? [
                   {
                       label: i18next.t('wizard.entityTemplate.walletTransfer.walletTransferSettings'),
-                      component: (props) => <WalletTransferSettings {...props} showAccountDisplay={showAccountDisplay} />,
+                      component: (props) => (
+                          <WalletTransferSettings
+                              {...props}
+                              showAccountDisplay={showAccountDisplay}
+                              walletTransfer={{ value: walletTransfer, set: setWalletTransfer }}
+                          />
+                      ),
+                      validationSchema: walletTransfer ? walletTransferSchema : undefined,
                   },
-                  // satisfies StepType<EntityTemplateWizardValues>,
               ]
             : []),
     ];
@@ -315,6 +337,7 @@ const EntityTemplateWizard: React.FC<
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
+            alignItems="start"
         />
     );
 };
