@@ -86,6 +86,7 @@ import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
+import closePolygon from '../../utils/neo4j/location';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
@@ -875,9 +876,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     private buildCircleQuery() {
-        let query = this.buildBaseQuery();
-
-        query += `
+        return `
             AND templateData.circle IS NOT NULL
 
             WITH n, templateData,
@@ -906,32 +905,27 @@ class EntityManager extends DefaultManagerNeo4j {
 
             RETURN n, matchingFields
         `;
-
-        return query;
     }
 
     private buildPolygonQuery() {
-        let query = this.buildBaseQuery();
-
-        query += `
+        // filter entities that their bounding box is intersecting the search polygon bounding box
+        return `
             AND templateData.polygon IS NOT NULL
 
-            // Build template polygon points
             WITH n, templateData,
-             [p IN templateData.polygon | point({longitude: p[0], latitude: p[1], crs:'wgs-84'})] AS templatePolygon
+             [p IN templateData.polygon | point({longitude: p[0], latitude: p[1], crs:'wgs-84'})] AS searchPolygon
 
-            // Compute template polygon bounding box
-            WITH n, templateData, templatePolygon,
-             reduce(minLon =  180.0,  p IN templatePolygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS polyMinLon,
-             reduce(maxLon = -180.0,  p IN templatePolygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS polyMaxLon,
-             reduce(minLat =   90.0,  p IN templatePolygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS polyMinLat,
-             reduce(maxLat =  -90.0,  p IN templatePolygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS polyMaxLat
+            // Compute search polygon bounding box
+            WITH n, templateData, searchPolygon,
+             reduce(minLon =  180.0,  p IN searchPolygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS polyMinLon,
+             reduce(maxLon = -180.0,  p IN searchPolygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS polyMaxLon,
+             reduce(minLat =   90.0,  p IN searchPolygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS polyMinLat,
+             reduce(maxLat =  -90.0,  p IN searchPolygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS polyMaxLat
 
             WITH n, templateData, polyMinLon, polyMaxLon, polyMinLat, polyMaxLat,
              point({longitude: polyMinLon, latitude: polyMinLat, crs:'wgs-84'}) AS lowerLeft,
              point({longitude: polyMaxLon, latitude: polyMaxLat, crs:'wgs-84'}) AS upperRight
 
-            // Safe branching: list vsל single point
             WITH n, templateData, lowerLeft, upperRight,
              [ field IN templateData.locationFields
                WHERE n[field] IS NOT NULL AND (
@@ -952,94 +946,50 @@ class EntityManager extends DefaultManagerNeo4j {
             WHERE size(matchingFields) > 0
             RETURN n, matchingFields
         `;
-
-        return query;
     }
 
-    private closePolygon(coords: [number, number][]): [number, number][] {
-        if (coords.length === 0) return coords;
-        const first = coords[0];
-        const last = coords[coords.length - 1];
-        if (first[0] !== last[0] || first[1] !== last[1]) return [...coords, first];
-
-        return coords;
-    }
-
-    private filterIntersectingEntities(
-        searchResult: {
-            node: IEntity;
-            matchingFields: string[];
-        }[],
-        polygon: Polygon,
-    ) {
-        const polygonCoords = this.closePolygon(polygon);
+    private filterIntersectingEntities(searchResults: { node: IEntity; matchingFields: string[] }[], polygon: Polygon) {
+        const polygonCoords = closePolygon(polygon);
         const searchPolygon = turfPolygon([polygonCoords]);
 
-        const finalResults = searchResult
-            .map(({ node, matchingFields }) => {
-                const filteredFields = matchingFields.filter((field) => {
-                    const nodeFieldValue = node.properties[field].location;
-                    const neo4jLocation = getNeo4jLocation(nodeFieldValue, node.properties, field);
+        return searchResults.flatMap(({ node, matchingFields }) => {
+            const filteredFields = matchingFields.filter((field) => {
+                const nodeFieldValue = node.properties[field].location;
+                const neo4jLocation = getNeo4jLocation(nodeFieldValue, node.properties, field);
 
-                    if (Array.isArray(neo4jLocation)) {
-                        const coords = neo4jLocation.map((p): [number, number] => [p.x, p.y]);
-                        const closedPolygon = this.closePolygon(coords);
-                        const pointAsTurf = turfPolygon([closedPolygon]);
-                        return Boolean(intersect(featureCollection([searchPolygon, pointAsTurf])));
-                    }
+                if (Array.isArray(neo4jLocation)) {
+                    const coords = neo4jLocation.map((p): [number, number] => [p.x, p.y]);
+                    const closedPolygon = closePolygon(coords);
+                    const entityPolygon = turfPolygon([closedPolygon]);
+                    return Boolean(intersect(featureCollection([searchPolygon, entityPolygon])));
+                }
 
-                    const pointAsTurf = turfPoint([neo4jLocation.x, neo4jLocation.y]);
-                    return booleanPointInPolygon(pointAsTurf, searchPolygon);
-                });
+                const entityPoint = turfPoint([neo4jLocation.x, neo4jLocation.y]);
+                return booleanPointInPolygon(entityPoint, searchPolygon);
+            });
 
-                if (filteredFields.length > 0) return { node, matchingFields: filteredFields };
-
-                return null;
-            })
-            .filter((r) => r !== null) as { node: IEntity; matchingFields: string[] }[];
-
-        return finalResults;
+            return filteredFields.length > 0 ? [{ node, matchingFields: filteredFields }] : [];
+        });
     }
 
     async searchEntitiesByLocation(requestBody: ISearchEntitiesByLocationBody) {
         const { circle, polygon, templates } = requestBody;
 
-        let query: string | null = null;
+        if (!circle && !polygon) throw new ValidationError('Payload must include either circle or polygon.');
 
-        const templatesFilter = Object.fromEntries(
-            Object.entries(templates).map(([id, element]) => [
-                id,
-                {
-                    ...element,
-                    showRelationships: false as const,
-                },
-            ]),
-        );
+        let query: string = this.buildBaseQuery();
 
-        const templateIds = Object.keys(templates);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
-        if (entityTemplates.length < templateIds.length) {
-            throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
-        }
-        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
-
-        const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
-
-        if (circle) query = this.buildCircleQuery();
-
-        if (polygon) query = this.buildPolygonQuery();
-
-        if (!query) throw new Error('Payload must include either circle or polygon.');
+        query += circle ? this.buildCircleQuery() : this.buildPolygonQuery();
 
         const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
 
-        const searchResult = await this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), {
+        const searchResults = await this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), {
             templates: updatedTemplates,
         });
 
-        if (!polygon) return searchResult;
+        if (!polygon) return searchResults;
 
-        return this.filterIntersectingEntities(searchResult, polygon);
+        return this.filterIntersectingEntities(searchResults, polygon);
     }
 
     async getEntityById(id: string) {
