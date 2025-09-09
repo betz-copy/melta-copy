@@ -22,7 +22,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const entitiesTableRef = React.useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const currentUser = useUserStore((state) => state.user);
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = metadata.agGrid;

@@ -47,10 +47,7 @@ export const useUserStore = create<UserState>((set) => ({
         mail: '',
         profile: '',
         preferences: {},
-        externalMetadata: {
-            kartoffelId: '',
-            digitalIdentitySource: '',
-        },
+        kartoffelId: '',
         permissions: {},
         currentWorkspacePermissions: {},
     },

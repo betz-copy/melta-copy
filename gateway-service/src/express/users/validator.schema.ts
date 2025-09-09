@@ -13,11 +13,6 @@ export const partialSchema = (schema: joi.ObjectSchema) => {
     );
 };
 
-const UserExternalMetadataSchema = joi.object({
-    kartoffelId: joi.string().required(),
-    digitalIdentitySource: joi.string().required(),
-});
-
 const UserRoleIdsSchema = joi.object({
     permissions: joi.object(),
     roleIds: joi.array().items(joi.string()),
@@ -126,12 +121,15 @@ export const updateUserUnitsRequestSchema = joi.object({
 // POST /api/users
 export const createUserRequestSchema = joi.object({
     query: {},
-    body: UserExternalMetadataSchema.keys({
-        permissions: joi.object(),
-        workspaceId: joi.string(),
-        roleIds: joi.array().items(joi.string()),
-        units: unitsSchema,
-    }).required(),
+    body: joi
+        .object({
+            permissions: joi.object(),
+            workspaceId: joi.string(),
+            roleIds: joi.array().items(joi.string()),
+            units: unitsSchema,
+            kartoffelId: joi.string().required(),
+        })
+        .required(),
     params: {},
 });
 
@@ -143,15 +141,6 @@ export const updateUserPreferencesMetadataRequestSchema = joi.object({
         userId: MongoIdSchema.required(),
     },
     file: iconFileSchema,
-});
-
-// PATCH /api/users/:userId/external
-export const updateUserExternalMetadataRequestSchema = joi.object({
-    query: {},
-    body: UserExternalMetadataSchema.required(),
-    params: {
-        userId: joi.string().required(),
-    },
 });
 
 // POST /api/users/:relatedId/permissions/sync

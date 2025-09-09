@@ -14,10 +14,7 @@ export interface IBaseUser {
         mailsNotificationsTypes?: NotificationType[];
         profilePath?: string;
     };
-    externalMetadata: {
-        kartoffelId: string;
-        digitalIdentitySource: string;
-    };
+    kartoffelId: string;
     roleIds?: string[];
     units?: Record<string, string[]>;
 }
@@ -73,9 +70,7 @@ export interface ICurrentUser extends IUser {
 }
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
-    Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>> & {
-        existingDigitalIdentitySource?: string;
-    };
+    Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;
 
 export interface IKartoffelUserRole {
     roleId?: string;

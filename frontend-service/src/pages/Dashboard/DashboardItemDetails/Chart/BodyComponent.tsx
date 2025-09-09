@@ -32,7 +32,7 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     const currentUser = useUserStore((state) => state.user);
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(
         () => getDefaultFilterFromTemplate(template, !!values.childTemplateId, currentUserKartoffelId),
