@@ -95,7 +95,7 @@ const showProperty = (key: string, value: string, darkMode: boolean, isColor?: b
                     {key}
                 </Typography>
             </Grid>
-            <Grid flexBasis="70%">
+            <Grid container flexBasis="70%" justifyContent="start">
                 {isColor ? (
                     <MinimizedColorPicker color={value} onColorChange={() => {}} circleSize="20px" />
                 ) : isMail ? (
