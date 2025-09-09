@@ -463,13 +463,6 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 if ('sourceEntityId' in instance || 'sourceEntity' in instance) return instance;
                 const entity = instance as IEntity;
 
-                // return this.entityManager.updateColoredFieldsOfEntityInTransaction(
-                //     entity,
-                //     indicatorRules.filter(({ entityId }) => entityId === entity.properties._id),
-                //     transaction,
-                //     entitiesTemplatesByIds.get(entity.templateId)!,
-                // );
-
                 const { updatedEntity: entityWithUpdatedColors } = await this.entityManager.updateEntityByIdInnerTransaction(
                     entity.properties._id,
                     entity.properties,
