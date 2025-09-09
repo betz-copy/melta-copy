@@ -730,13 +730,6 @@ class EntityManager extends DefaultManagerNeo4j {
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
 
-                // const entityWithUpdatedColors = await this.updateColoredFieldsOfEntityInTransaction(
-                //     createdEntity,
-                //     indicatorRules,
-                //     transaction,
-                //     entityTemplate,
-                // );
-
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     createdEntity.properties._id,
                     createdEntity.properties,
@@ -1693,13 +1686,6 @@ class EntityManager extends DefaultManagerNeo4j {
                     ruleFailuresAfterAction,
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
-
-                // const entityWithUpdatedColors = await this.updateColoredFieldsOfEntityInTransaction(
-                //     updatedEntity,
-                //     indicatorRules,
-                //     transaction,
-                //     entityTemplate,
-                // );
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     id,
