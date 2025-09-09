@@ -249,10 +249,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 });
 
                 return (
-                    <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
+                    <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null} key={option.properties._id}>
                         <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
                             {displayOptionValues.map((displayOptionValue, index) => (
-                                <Grid key={displayOptionValue} size={{ xs: 4 }} overflow="hidden">
+                                <Grid key={`${displayOptionValue}${index}`} size={{ xs: 4 }} overflow="hidden">
                                     <MeltaTooltip placement="right" title={template.properties.properties[displayKeys[index]].title}>
                                         <Typography color={'#53566E'} overflow="hidden" fontSize="14px">
                                             {displayOptionValue}

@@ -528,7 +528,8 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
 
     await Promise.all(
         Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
-            if (Object.keys(coloredFields ?? {}).includes(key)) normalizedEntity[`${key}${neo4j.colorPropertySuffix}`] = coloredFields?.[key];
+            if (Object.keys(coloredFields ?? {}).includes(key) && entityProperties[key] !== undefined)
+                normalizedEntity[`${key}${neo4j.colorPropertySuffix}`] = coloredFields?.[key];
 
             if (!(key in entityProperties)) {
                 if (value.type === 'boolean') {

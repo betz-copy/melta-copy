@@ -54,7 +54,8 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
 
         if (suffixes.some((suffix) => key.endsWith(suffix))) return;
 
-        if (key.endsWith(config.neo4j.colorPropertySuffix)) coloredFields[key.slice(0, -config.neo4j.colorPropertySuffix.length)] = value;
+        if (key.endsWith(config.neo4j.colorPropertySuffix) && properties[key] !== undefined)
+            coloredFields[key.slice(0, -config.neo4j.colorPropertySuffix.length)] = value;
 
         if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
             // Find the user field of the key (everything before the suffix)
