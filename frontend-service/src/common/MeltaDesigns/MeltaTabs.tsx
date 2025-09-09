@@ -37,7 +37,7 @@ const MeltaTabs: React.FC<{
         >
             <TabContext value={tabValue}>
                 <Grid container direction="column">
-                    <Grid item>
+                    <Grid>
                         <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
                             {allowedTabs.map((tabName) => (
                                 <Tab
@@ -55,7 +55,7 @@ const MeltaTabs: React.FC<{
                             ))}
                         </TabList>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                             return (
                                 <TabPanel key={tabName} value={tabName}>

@@ -24,6 +24,7 @@ import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IUser } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -97,19 +98,21 @@ const errorColDef = <Data extends any = EntityData>(
                 title={message}
                 placement="top"
                 arrow
-                PopperProps={{
-                    sx: {
-                        [`& .${tooltipClasses.tooltip}`]: {
-                            fontSize: '1rem',
-                            backgroundColor: 'white',
-                            borderRadius: '10px',
-                            marginLeft: '5px',
-                            color: '#A40000',
-                            fontWeight: 400,
-                            boxShadow: '0px 2.05px 6.16px 0px #00000040',
-                        },
-                        '& .MuiTooltip-arrow': {
-                            color: 'white',
+                slotProps={{
+                    popper: {
+                        sx: {
+                            [`& .${tooltipClasses.tooltip}`]: {
+                                fontSize: '1rem',
+                                backgroundColor: 'white',
+                                borderRadius: '10px',
+                                marginLeft: '5px',
+                                color: '#A40000',
+                                fontWeight: 400,
+                                boxShadow: '0px 2.05px 6.16px 0px #00000040',
+                            },
+                            '& .MuiTooltip-arrow': {
+                                color: 'white',
+                            },
                         },
                     },
                 }}
@@ -481,6 +484,7 @@ export const userColDef = <Data extends any = IUser>(
     values: Array<string>,
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
+    darkMode: boolean,
     hideColumn = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
@@ -492,15 +496,15 @@ export const userColDef = <Data extends any = IUser>(
         field,
         headerName: value.title,
         valueGetter,
-
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             if (!props.value) return '';
             return (
                 <Grid container gap={1}>
                     <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
-                        <Grid item>
+                        <Grid>
                             <Chip
-                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}
+                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
                                 label={JSON.parse(props.value).fullName}
                             />
                         </Grid>
@@ -527,6 +531,8 @@ export const userArrayColDef = <Data extends any = IEntity>(
     isLastColumn: boolean,
     hideColumn = false,
 ): ColDef => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -536,7 +542,6 @@ export const userArrayColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
             if (!props.value) return '';
             return (
@@ -551,8 +556,12 @@ export const userArrayColDef = <Data extends any = IEntity>(
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                            <Grid item>
-                                <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                            <Grid>
+                                <Chip
+                                    avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                    sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                    label={item.fullName}
+                                />
                             </Grid>
                         </MeltaTooltip>
                     )}

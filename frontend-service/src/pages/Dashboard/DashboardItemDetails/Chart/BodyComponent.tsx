@@ -32,7 +32,7 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
     const currentUser = useUserStore((state) => state.user);
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(
         () => getDefaultFilterFromTemplate(template, !!values.childTemplateId, currentUserKartoffelId),
@@ -45,10 +45,10 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
 
     return (
         <Grid container direction="column" height="100%" alignContent="center">
-            <Grid container item flexGrow={1} alignItems="center" justifyContent="center">
+            <Grid container flexGrow={1} alignItems="center" justifyContent="center">
                 <ChartGenerator formikValues={values} template={template} />
             </Grid>
-            <Grid item width="98%" sx={{ mx: 'auto' }}>
+            <Grid width="98%" sx={{ mx: 'auto' }}>
                 <EntitiesTable
                     rowModelType="infinite"
                     template={template}

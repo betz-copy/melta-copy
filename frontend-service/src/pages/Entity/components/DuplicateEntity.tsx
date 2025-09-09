@@ -25,6 +25,7 @@ import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -68,7 +69,7 @@ const DuplicateEntity: React.FC<{}> = () => {
             },
             onError: (err: AxiosError) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                     const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
@@ -154,11 +155,11 @@ const DuplicateEntity: React.FC<{}> = () => {
                         <DuplicateTopBar entityTemplate={entityTemplate} />
                         <Form>
                             <Grid className="pageMargin">
-                                <Grid item marginTop="20px">
+                                <Grid marginTop="20px">
                                     <Card style={{ marginTop: '20px' }}>
                                         <CardContent>
                                             <Grid container justifyContent="center">
-                                                <Grid item xs={12}>
+                                                <Grid size={{ xs: 12 }}>
                                                     <Grid container flexDirection="row">
                                                         <Box sx={{ marginRight: '50px' }}>
                                                             <BlueTitle
@@ -204,7 +205,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 </div>
                                                                 <>
                                                                     {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                                                                        <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                        <Grid key={key} marginTop={index > 0 ? 5 : 0}>
                                                                             {value.items === undefined ? (
                                                                                 <InstanceSingleFileInput
                                                                                     key={key}
@@ -237,12 +238,12 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                         )}
                                                     </Grid>
                                                 </Grid>
-                                                <Grid item xs={12} marginTop="50px">
+                                                <Grid size={{ xs: 12 }} marginTop="50px">
                                                     <Divider />
                                                 </Grid>
-                                                <Grid item marginTop="20px">
+                                                <Grid marginTop="20px">
                                                     <Grid container spacing={4}>
-                                                        <Grid item>
+                                                        <Grid>
                                                             <Button
                                                                 type="submit"
                                                                 variant="contained"
@@ -257,7 +258,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 {i18next.t('entityPage.duplicate')}
                                                             </Button>
                                                         </Grid>
-                                                        <Grid item>
+                                                        <Grid>
                                                             <Button
                                                                 variant="outlined"
                                                                 startIcon={<ClearIcon />}

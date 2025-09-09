@@ -17,6 +17,7 @@ import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
 import { isChildTemplate } from '../../../../utils/templates';
+import { IErrorResponse } from '../../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -42,7 +43,7 @@ const useMutationHandler = (
         newEntityData?: EntityWizardValues | undefined,
     ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-        const errorMetadata = err.response?.data?.metadata;
+        const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
         switch (errorMetadata?.errorCode) {
             case errorCodes.failedConstraintsValidation: {

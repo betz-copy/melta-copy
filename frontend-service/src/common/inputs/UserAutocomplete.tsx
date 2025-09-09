@@ -7,6 +7,7 @@ import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../UserAvatar';
@@ -57,6 +58,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     overrideSx,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
@@ -84,12 +87,12 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     const isValueExist = value && value.fullName != '';
 
     return (
-        <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.displayName ? '' : value?.fullName ?? ''} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={(_e, newValue, reason) => {
-                    if (newValue) setInputValue(newValue.displayName);
+                    if (newValue) setInputValue(newValue.displayName || newValue?.fullName);
                     onChange?.(_e, newValue, reason);
                 }}
                 popupIcon={<ExpandMore />}
@@ -102,7 +105,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 }}
                 disabled={disabled}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
-                getOptionLabel={({ displayName }) => displayName}
+                getOptionLabel={({ displayName, fullName }) => displayName || fullName}
                 getOptionDisabled={isOptionDisabled}
                 isOptionEqualToValue={(option, currValue) => option._id === currValue?._id}
                 options={
@@ -126,32 +129,38 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        InputProps={{
-                            ...params.InputProps,
-                            required,
-                            readOnly,
-                            endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
-                            startAdornment: isValueExist ? (
-                                <Chip avatar={<UserAvatar user={value} size={25} bgColor="1E2775" />} label={value.fullName} />
-                            ) : undefined,
-                            inputProps: {
-                                ...params.inputProps,
-                                style: isValueExist ? { display: 'none' } : {},
-                            },
-                        }}
-                        InputLabelProps={{
-                            ...(params.InputLabelProps,
-                            readOnly && {
-                                sx: {
-                                    '&.Mui-focused': {
-                                        color: 'rgba(0, 0, 0, 0.6)',
-                                    },
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                required,
+                                readOnly,
+                                endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
+                                startAdornment: isValueExist ? (
+                                    <Chip
+                                        avatar={<UserAvatar user={value} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                        label={value.fullName}
+                                        sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                    />
+                                ) : undefined,
+                                inputProps: {
+                                    ...params.inputProps,
+                                    style: isValueExist ? { display: 'none' } : {},
                                 },
-                            }),
+                            },
+                            inputLabel: {
+                                ...(params.InputLabelProps,
+                                readOnly && {
+                                    sx: {
+                                        '&.Mui-focused': {
+                                            color: 'rgba(0, 0, 0, 0.6)',
+                                        },
+                                    },
+                                }),
+                            },
                         }}
                         sx={{
                             ...(readOnly
-                                ? {
+                                 ? {
                                       '& .MuiOutlinedInput-root.Mui-focused': {
                                           '& > fieldset': {
                                               borderColor: 'rgba(0, 0, 0, 0.23)',

@@ -81,13 +81,13 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
 
                 {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
                     currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
-                    <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
+                    <Grid container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                         <Swap
                             condition={edit}
                             isFalse={
                                 <Grid container width="fit-content" wrap="nowrap">
                                     {isGroupBy && (
-                                        <Grid item>
+                                        <Grid>
                                             <ToggleButtonGroup
                                                 value={heatmapMode}
                                                 exclusive
@@ -144,7 +144,7 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                             }
                             isTrue={
                                 <Grid container justifyContent="space-between" alignItems="center" width="fit-content" wrap="nowrap">
-                                    <Grid item>
+                                    <Grid>
                                         <Button
                                             onClick={onAddGroupBy}
                                             variant="outlined"
@@ -166,12 +166,12 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                         padding="0.1rem"
                                     >
                                         {isLoading ? (
-                                            <Grid item container alignItems="center" justifyContent="space-around" width="8rem">
+                                            <Grid container alignItems="center" justifyContent="space-around" width="8rem">
                                                 <CircularProgress size={30} />
                                             </Grid>
                                         ) : (
                                             <>
-                                                <Grid item container wrap="nowrap">
+                                                <Grid container wrap="nowrap">
                                                     <MeltaTooltip title={i18next.t('gantts.actions.delete')}>
                                                         <IconButton onClick={() => setDeleteDialogOpen(true)}>
                                                             <DeleteIcon />
@@ -180,7 +180,6 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                                 </Grid>
 
                                                 <Grid
-                                                    item
                                                     container
                                                     wrap="nowrap"
                                                     bgcolor={`rgb(220, 220, 220, ${darkMode ? 0.12 : 0.7})`}

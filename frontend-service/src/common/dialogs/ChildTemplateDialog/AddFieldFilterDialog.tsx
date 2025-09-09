@@ -5,11 +5,12 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
-import { ByCurrentDefaultValue, ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
+import { environment } from '../../../globals';
+import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';
@@ -19,6 +20,8 @@ import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+
+const { loggingDate, loggingDateTime } = environment.formats;
 
 interface IAddFilterFieldDialogProps {
     addFilterField?: { dialogType: ChipType; fieldName: string };
@@ -66,18 +69,14 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         setLocalFilterField(value);
     };
 
-    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
+    const handleDateChange = (newValue: IFilterDateType, isStartDate: boolean) => {
         setCurrentFieldError(undefined);
 
         const fieldSchema = entityTemplate.properties.properties[fieldName];
 
-        const dateFormat = fieldSchema.format === 'date-time' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd';
+        const dateFormat = fieldSchema.format === 'date-time' ? loggingDateTime : loggingDate;
 
-        const dateString = newValue
-            ? newValue === ByCurrentDefaultValue.byCurrentDate
-                ? ByCurrentDefaultValue.byCurrentDate
-                : format(newValue, dateFormat)
-            : null;
+        const dateString = newValue ? (typeof newValue === 'string' ? newValue : format(newValue, dateFormat)) : null;
 
         setLocalFilterField({
             ...localFilterField,
@@ -262,19 +261,17 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
             <DialogContent>
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <TextField fullWidth disabled value={property?.title || fieldName} InputLabelProps={{ shrink: false }} />
+                    <Grid size={{ xs: 12 }}>
+                        <TextField fullWidth disabled value={property?.title || fieldName} slotProps={{ inputLabel: { shrink: false } }} />
                     </Grid>
 
-                    <Grid item xs={12}>
-                        {renderFilterInput()}
-                    </Grid>
+                    <Grid size={{ xs: 12 }}>{renderFilterInput()}</Grid>
                 </Grid>
             </DialogContent>
 
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} display="flex" justifyContent="center">
+                    <Grid size={{ xs: 12 }} display="flex" justifyContent="center">
                         <Button
                             variant="contained"
                             color="primary"

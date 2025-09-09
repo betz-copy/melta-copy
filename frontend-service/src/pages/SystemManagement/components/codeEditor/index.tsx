@@ -167,7 +167,7 @@ const CodeEditorDialog: React.FC<{
                     />
                 </DialogContent>
                 <DialogActions sx={{ padding: '16px' }}>
-                    <Grid item>
+                    <Grid>
                         <Button
                             type="submit"
                             variant="contained"

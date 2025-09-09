@@ -1,15 +1,15 @@
 import { AddCircle } from '@mui/icons-material';
 import { Grid, IconButton } from '@mui/material';
+import _debounce from 'lodash.debounce';
 import React, { useCallback, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import _debounce from 'lodash.debounce';
+import SearchInput from '../../../common/inputs/SearchInput';
 import PermissionsDialog from '../../../common/PermissionsDialog';
 import '../../../css/pages.css';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { IUser, IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IRole } from '../../../interfaces/roles';
+import { IUser, IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import DeletePermissionsDialog from './deleteDialog';
-import SearchInput from '../../../common/inputs/SearchInput';
 import PermissionsTable, { PermissionsTableRef } from './table';
 
 const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchPlaceholder: string }> = ({ permissionType, searchPlaceholder }) => {
@@ -50,10 +50,10 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
 
     return (
         <Grid container spacing={3}>
-            <Grid item container xs={12} spacing={1}>
-                <Grid item xs={12} container justifyContent="space-between" alignItems="center">
-                    <Grid item flex={1} />
-                    <Grid item flex={1}>
+            <Grid container size={{ xs: 12 }} spacing={1}>
+                <Grid size={{ xs: 12 }} container justifyContent="space-between" alignItems="center">
+                    <Grid flex={1} />
+                    <Grid flex={1}>
                         <SearchInput
                             value={search}
                             onChange={(value) => {
@@ -67,13 +67,13 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
                             height="40px"
                         />
                     </Grid>
-                    <Grid item container flex={1} justifyContent="flex-end">
+                    <Grid container flex={1} justifyContent="flex-end">
                         <IconButton onClick={() => setIsCreateDialogOpen(true)}>
                             <AddCircle color="primary" fontSize="large" />
                         </IconButton>
                     </Grid>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     {Boolean(categories) && (
                         <PermissionsTable
                             ref={permissionsTableRef}

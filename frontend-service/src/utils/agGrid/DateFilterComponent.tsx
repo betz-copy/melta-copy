@@ -1,11 +1,14 @@
 import { TextField } from '@mui/material';
-import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, MobileDatePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import heLocale from 'date-fns/locale/he';
+import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
+import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
+
+const { date: dateFormat } = environment.formats;
 
 const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -15,25 +18,29 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
         <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
-                adapterLocale={heLocale}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                adapterLocale={he}
+                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
             >
                 <MobileDatePicker
-                    inputFormat="dd/MM/yyyy"
                     value={date}
                     onChange={onDateChange}
-                    showToolbar
-                    componentsProps={{ actionBar: { actions: ['cancel', 'accept'] } }}
+                    format={dateFormat}
+                    enableAccessibleFieldDOMStructure={false}
                     label={i18next.t('wizard.date')}
-                    renderInput={(params) => <TextField {...params} />}
-                    toolbarFormat="dd/MM"
-                    ToolbarComponent={CustomDateTimePickerToolbar}
-                    DialogProps={{
-                        PaperProps: {
-                            sx: {
-                                backgroundColor: darkMode ? '#040404' : 'white',
+                    slots={{
+                        toolbar: CustomDateTimePickerToolbar,
+                        textField: (params) => <TextField {...params} />,
+                    }}
+                    slotProps={{
+                        textField: { fullWidth: true },
+                        dialog: {
+                            PaperProps: {
+                                sx: {
+                                    backgroundColor: darkMode ? '#040404' : '#fff',
+                                },
                             },
                         },
+                        actionBar: { actions: ['cancel', 'accept'] },
                     }}
                 />
             </LocalizationProvider>

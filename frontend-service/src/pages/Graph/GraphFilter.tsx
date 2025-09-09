@@ -1,8 +1,7 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import ClearIcon from '@mui/icons-material/Clear';
-import CloseIcon from '@mui/icons-material/Close';
+import { Clear, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Autocomplete, Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import { isEqual } from 'lodash';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
@@ -16,13 +15,14 @@ import { ReadOnlyFilterInput } from '../../common/inputs/FilterInputs/ReadonlyFi
 import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
 import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
+import { environment } from '../../globals';
 import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
-import { ByCurrentDefaultValue } from '../../interfaces/childTemplates';
-import { isEqual } from 'lodash';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../utils/agGrid/interfaces';
+
+const { relativeDateFilters } = environment;
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -129,7 +129,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         handleSetFilterRecord(value, condition);
     };
 
-    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
+    const handleDateChange = (newValue: IFilterDateType, isStartDate: boolean) => {
         if (!newValue && filterField?.filterType === 'date') {
             const isRemovingStart = isStartDate && !filterField.dateTo;
             const isRemovingEnd = !isStartDate && !filterField.dateFrom;
@@ -169,7 +169,16 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const handleFilterTypeChange = (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition: boolean = true,
-    ) => handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+    ) => {
+        if (filterField?.filterType === 'date') {
+            if (relativeDateFilters.includes(filterField.type) && !relativeDateFilters.includes(newTypeFilter)) {
+                setFilterField({ ...filterField, type: newTypeFilter, dateFrom: null, dateTo: null } as IAGGridDateFilter);
+                return;
+            }
+        }
+
+        handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+    };
 
     const handleFilterErasion = () => {
         removeFilterFromFilterList(filterKey);
@@ -262,8 +271,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 }}
             >
                 {!entityFilter && (
-                    <Grid item sx={{ position: 'relative' }}>
-                        <Grid item sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '40px' }}>
+                    <Grid sx={{ position: 'relative' }}>
+                        <Grid sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '40px' }}>
                             <Typography
                                 style={{
                                     fontWeight: '500',
@@ -283,7 +292,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                 </IconButton>
 
                                 <IconButton onClick={handleFilterErasion} sx={{ color: theme.palette.primary.main }}>
-                                    <CloseIcon fontSize="small" />
+                                    <Close fontSize="small" />
                                 </IconButton>
                             </Grid>
                         </Grid>
@@ -302,7 +311,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             )}
                             {selectedTemplate && (
                                 <Grid container justifyContent="space-around" alignItems="center">
-                                    <Grid item>
+                                    <Grid>
                                         {selectedTemplate.iconFileId && (
                                             <CustomIcon
                                                 iconUrl={selectedTemplate.iconFileId}
@@ -312,7 +321,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                             />
                                         )}
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <Typography
                                             style={{
                                                 fontWeight: '400',
@@ -323,9 +332,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                             {selectedTemplate.displayName}
                                         </Typography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <IconButton onClick={() => handleSelectTemplate(null)}>
-                                            <ClearIcon sx={{ fontSize: '1.1rem' }} />
+                                            <Clear sx={{ fontSize: '1.1rem' }} />
                                         </IconButton>
                                     </Grid>
                                 </Grid>
@@ -336,7 +345,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 <Grid display={fullView ? undefined : 'none'}>
                     {selectedTemplate && !readOnly && (
                         <Grid
-                            item
                             sx={{
                                 height: '90px',
                                 display: 'flex',
@@ -348,7 +356,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             {!readOnly && (
                                 <Autocomplete
                                     popupIcon={<IoIosArrowDown size="15px" />}
-                                    clearIcon={<CloseIcon sx={{ fontSize: '16px' }} />}
+                                    clearIcon={<Close sx={{ fontSize: '16px' }} />}
                                     size="small"
                                     sx={{
                                         width: '90%',
@@ -381,17 +389,15 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             )}
                             {entityFilter && !readOnly && (
                                 <IconButton onClick={handleFilterErasion}>
-                                    <CloseIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
+                                    <Close fontSize="small" sx={{ color: theme.palette.primary.main }} />
                                 </IconButton>
                             )}
                         </Grid>
                     )}
 
                     {selectedProperty && (
-                        <Grid item container justifyContent="center">
-                            <Grid item style={{ width: '90%', paddingBottom: '10px' }}>
-                                {renderFilterInput()}
-                            </Grid>
+                        <Grid container justifyContent="center">
+                            <Grid style={{ width: '90%', paddingBottom: '10px' }}>{renderFilterInput()}</Grid>
                         </Grid>
                     )}
                 </Grid>

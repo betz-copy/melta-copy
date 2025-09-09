@@ -2,7 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
@@ -50,6 +50,8 @@ export const formatToString = (
     options: FormatOptions = {},
     hideProps: string[] = [],
 ) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
@@ -98,8 +100,12 @@ export const formatToString = (
             return (
                 <Grid container gap={1}>
                     <MeltaTooltip title={userObject.fullName}>
-                        <Grid item>
-                            <Chip avatar={<UserAvatar user={userObject} size={25} bgColor="1E2775" />} label={userObject.fullName} />
+                        <Grid>
+                            <Chip
+                                avatar={<UserAvatar user={userObject} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                label={userObject.fullName}
+                            />
                         </Grid>
                     </MeltaTooltip>
                 </Grid>
@@ -125,15 +131,19 @@ export const formatToString = (
         }
         if (property.items?.format === 'user') {
             return (
-                <Grid container item>
+                <Grid container>
                     <OverflowWrapper
                         items={value.map((val) => JSON.parse(val))}
                         getItemKey={(item: any) => item._id}
                         renderItem={(item) => (
-                            <Grid item>
+                            <Grid>
                                 <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                                    <Grid item>
-                                        <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                                    <Grid>
+                                        <Chip
+                                            avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
+                                            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+                                            label={item.fullName}
+                                        />
                                     </Grid>
                                 </MeltaTooltip>
                             </Grid>
@@ -304,7 +314,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 return (
                     <Grid
                         key={propertyKey}
-                        item
                         container
                         flexDirection="row"
                         style={{
@@ -312,12 +321,11 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             marginBottom: '10px',
                         }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
-                        xs={comment ? 12 : undefined}
+                        size={{ xs: 12 }}
                     >
-                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                        <Grid container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
                             {!comment && (
                                 <Grid
-                                    item
                                     style={{
                                         width: overrideStyleInLongText ? '10%' : '30%',
                                     }}
@@ -340,7 +348,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 </Grid>
                             )}
                             <Grid
-                                item
                                 container
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
@@ -371,7 +378,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         <HighlightText text={innerContent} searchedText={searchedText} isLink />
                                     </Typography>
                                 </MeltaTooltip>
-                                <Grid item>
+                                <Grid>
                                     {hideField && (
                                         <IconButton
                                             onClick={(event) => {
@@ -461,7 +468,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             return (
                                 <Grid
                                     container
-                                    item
                                     sx={{
                                         width: '100%',
                                         borderRadius: '10px',

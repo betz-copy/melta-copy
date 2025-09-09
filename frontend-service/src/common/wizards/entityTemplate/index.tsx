@@ -27,6 +27,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -176,7 +177,7 @@ const EntityTemplateWizard: React.FC<
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {
-                const errorMetadata = error.response?.data?.metadata;
+                const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
                     const { type, property, relatedTemplateName } = errorMetadata;

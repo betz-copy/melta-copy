@@ -68,6 +68,7 @@ import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
 import { useUserStore } from '../../stores/user';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -440,6 +441,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             currentUser,
             currentClientSideUser: clientSideUserEntity,
             actionsColumnWidth,
+            darkMode,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -460,6 +462,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
             '.ag-cell-inline-editing input': {
                 border: 'none !important',
+            },
+            '.ag-theme-material .ag-header-cell-text': {
+                fontSize: '14px !important',
             },
         };
 
@@ -598,7 +603,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                    const errorMetadata = err.response?.data?.metadata;
+                    const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
                     switch (errorMetadata?.errorCode) {
                         case errorCodes.failedConstraintsValidation:
@@ -754,6 +759,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     }}
                     ref={tableRef}
+                    width="100%"
                 >
                     <AgGridReact<Data>
                         ref={gridRef}

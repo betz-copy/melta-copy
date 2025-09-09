@@ -46,8 +46,8 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
     }, []);
 
     return (
-        <Grid item zIndex={1000} top={10} container wrap="nowrap" gap="15px">
-            <Grid item>
+        <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
+            <Grid>
                 <SearchAutoComplete
                     selectedTemplates={selectedTemplates}
                     handleEntityClick={moveToEntityLocations}

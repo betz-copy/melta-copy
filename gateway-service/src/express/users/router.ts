@@ -12,7 +12,6 @@ import {
     searchExternalUsersRequestSchema,
     searchUsersByPermissionsSchema,
     searchUsersRequestSchema,
-    updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
     getKartoffelUserProfileRequestSchema,
     getKartoffelUserByIdSchema,
@@ -25,6 +24,7 @@ import {
     updateUserRoleIdsRequestSchema,
     userRoleWorkspaceRequestSchema,
     getAllWorkspaceRolesSchema,
+    updateUserUnitsRequestSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -66,6 +66,8 @@ usersRouter.patch(
     wrapController(UsersController.updateUserRoleIds),
 );
 
+usersRouter.patch('/:userId/units', ValidateRequest(updateUserUnitsRequestSchema), wrapController(UsersController.updateUserUnits));
+
 usersRouter.post(
     '/',
     AuthorizerControllerMiddleware.userCanWritePermissions,
@@ -78,13 +80,6 @@ usersRouter.patch(
     busboyMiddleware,
     ValidateRequest(updateUserPreferencesMetadataRequestSchema),
     wrapController(UsersController.updateUserPreferencesMetadata),
-);
-
-usersRouter.patch(
-    '/:userId/external',
-    AuthorizerControllerMiddleware.userCanWritePermissions,
-    ValidateRequest(updateUserExternalMetadataRequestSchema),
-    wrapController(UsersController.updateUserExternalMetadata),
 );
 
 usersRouter.post(

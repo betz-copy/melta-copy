@@ -1,13 +1,14 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import { Grid } from '@mui/material';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizeTable.css';
-import { Grid } from '@mui/material';
 
 interface ResizeBoxProps {
     initialHeight: number;
     setHeight: React.Dispatch<React.SetStateAction<number>>;
     minHeight: number;
     templateId: string;
+    children?: ReactNode;
 }
 
 const ResizeBox: React.FC<ResizeBoxProps> = ({ initialHeight, setHeight, minHeight, templateId, children }) => {

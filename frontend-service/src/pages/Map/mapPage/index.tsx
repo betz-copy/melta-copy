@@ -352,8 +352,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-            <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
-                <Grid height="100%" item alignSelf="flex-start">
+            <Grid container flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
+                <Grid height="100%" alignSelf="flex-start">
                     <Viewer
                         full
                         ref={viewerRef}
@@ -517,7 +517,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 </Grid>
 
                 {sourceSearchResults.length > 0 && (
-                    <Grid item width="98%">
+                    <Grid width="98%">
                         <EntitiesTable
                             rowData={sourceSearchResults}
                             rowModelType="clientSide"

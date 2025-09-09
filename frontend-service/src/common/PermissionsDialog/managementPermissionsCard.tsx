@@ -39,7 +39,7 @@ const ManagementCheckbox: React.FC<ManagementCheckboxProps> = ({ type, onChange,
                     />
                 )
             }
-            componentsProps={{
+            slotProps={{
                 typography: { sx: { fontSize: '14px' } },
             }}
         />

@@ -70,7 +70,7 @@ interface StatusButtonProps extends StatusDisplayProps {
 const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, handleClick, Icon, IconOutlined, text }) => {
     const color = getColor(status);
     return (
-        <Grid item>
+        <Grid>
             <Grid container direction="column" alignItems="center">
                 <IconButton onClick={handleClick}>
                     {currentStatus === status ? <Icon sx={{ color }} style={{ fontSize: 40 }} /> : <IconOutlined sx={{ fontSize: 40, color }} />}
@@ -95,15 +95,13 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, text, font
             style={{ backgroundColor, borderRadius: '15px', height: '30px', width: displayIcon ? '110px' : '45px' }}
         >
             {displayIcon && (
-                <Grid item alignItems="center" height="100%">
+                <Grid alignItems="center" height="100%">
                     <img style={{ height: '100%', width: fontSize }} src={`/icons/process-status-${status}.svg`} />
                 </Grid>
             )}
-            <Grid item>
-                <Typography width="60px" fontWeight="500" fontSize={displayIcon ? '16px' : '12px'} style={{ textAlign: 'center', color: fontColor }}>
-                    {text}
-                </Typography>
-            </Grid>
+            <Typography width="60px" fontWeight="500" fontSize={displayIcon ? '16px' : '12px'} style={{ textAlign: 'center', color: fontColor }}>
+                {text}
+            </Typography>
         </Grid>
     );
 };
@@ -117,15 +115,15 @@ export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance:
     if (!instance.reviewedAt) return null;
 
     return (
-        <Grid item container justifyContent="center">
-            <Grid item>
+        <Grid container justifyContent="center">
+            <Grid>
                 <Typography fontSize="12px" style={{ textAlign: 'center' }}>
                     {`${i18next.t('wizard.processInstance.summary.statusChangedBy')} ${i18next.t('wizard.processInstance.summary.onDate')}:`}
                 </Typography>
                 <Typography fontSize="12px">{getLongDate(instance.reviewedAt!)} </Typography>
             </Grid>
             {(instance as IMongoStepInstancePopulated).reviewer && (
-                <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
+                <Grid container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
                     <span style={{ fontWeight: 'bold', fontSize: isPrinting ? '14px' : '12px' }}>
                         {` ${
                             currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!._id
@@ -159,9 +157,9 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
     return (
         <Grid container width="fit-content" height="fit-content" alignItems="center" spacing="15px">
             {title && (
-                <Grid item container flexDirection="row" width="fit-content" alignItems="center">
-                    <Grid item container flexDirection="column" alignItems="center">
-                        <Grid item>
+                <Grid container flexDirection="row" width="fit-content" alignItems="center">
+                    <Grid container flexDirection="column" alignItems="center">
+                        <Grid>
                             <BlueTitle
                                 title={`${title}: `}
                                 component="h6"
@@ -171,7 +169,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                         </Grid>
 
                         {isPrinting && (
-                            <Grid item>
+                            <Grid>
                                 <BlueTitle
                                     title={'name' in instance ? instance.name : ''}
                                     component="h4"
@@ -184,7 +182,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                 </Grid>
             )}
 
-            <Grid item container alignItems="center" justifyContent="center" width="fit-content">
+            <Grid container alignItems="center" justifyContent="center" width="fit-content">
                 {editStatus?.isEditMode ? (
                     <>
                         <StatusButton

@@ -222,7 +222,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         <Form>
                             <Card>
                                 <CardContent>
-                                    <Grid container justifyContent="center">
+                                    <Grid justifyContent="center">
                                         <EditProps
                                             setFieldValue={setFieldValue}
                                             values={values}
@@ -253,7 +253,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                         <Grid
                                             container
-                                            item
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
@@ -272,7 +271,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     templateId={values.template._id}
                                                 />
                                             ) : (
-                                                <Grid item xs={6}>
+                                                <Grid size={{ xs: 6 }}>
                                                     <Button
                                                         style={{ borderRadius: '7px' }}
                                                         variant="outlined"
@@ -283,23 +282,21 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     </Button>
                                                 </Grid>
                                             )}
-                                            <Grid item xs={6} container justifyContent="space-between">
-                                                <Grid item container flexDirection="row" justifyContent="right">
-                                                    <Button
-                                                        style={{ borderRadius: '7px' }}
-                                                        type="submit"
-                                                        variant="contained"
-                                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                        onClick={() =>
-                                                            Object.keys(errors).length > 0
-                                                                ? ''
-                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                        }
-                                                        disabled={!dirty || isLoading}
-                                                    >
-                                                        {i18next.t('entityPage.save')}
-                                                    </Button>
-                                                </Grid>
+                                            <Grid size={{ xs: 6 }} container justifyContent="end">
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    type="submit"
+                                                    variant="contained"
+                                                    startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                                    onClick={() =>
+                                                        Object.keys(errors).length > 0
+                                                            ? ''
+                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
+                                                    }
+                                                    disabled={!dirty || isLoading}
+                                                >
+                                                    {i18next.t('entityPage.save')}
+                                                </Button>
                                             </Grid>
                                         </Grid>
                                     </Grid>

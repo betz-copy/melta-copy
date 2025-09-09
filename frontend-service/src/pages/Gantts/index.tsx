@@ -36,7 +36,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
     return (
         <>
             <Grid container direction="column" padding="0 4rem">
-                <Grid container item justifyContent="space-between" padding="0.5rem">
+                <Grid container justifyContent="space-between" padding="0.5rem">
                     <Box>
                         <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue || undefined)} />
                     </Box>

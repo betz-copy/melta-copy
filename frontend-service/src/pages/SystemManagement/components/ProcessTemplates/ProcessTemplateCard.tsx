@@ -51,7 +51,6 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
             title={
                 <Grid direction="column" container gap="10px">
                     <Grid
-                        item
                         container
                         direction="row"
                         justifyContent="space-between"
@@ -60,7 +59,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         flexWrap="nowrap"
                         height="20px"
                     >
-                        <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid container alignItems="center" gap="10px" flexBasis="90%">
                             <MeltaTooltip title={processTemplate.displayName}>
                                 <Typography
                                     style={{
@@ -77,7 +76,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>
-                        <Grid item container flexBasis="10%">
+                        <Grid container flexBasis="10%">
                             {isHoverOnCard && (
                                 <CardMenu
                                     onOptionsIconClose={() => setIsHoverOnCard(false)}
@@ -109,9 +108,9 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                             )}
                         </Grid>
                     </Grid>
-                    <Grid item container flexDirection="row" gap="20px">
+                    <Grid container flexDirection="row" gap="20px">
                         {processTemplate.steps.map((step) => (
-                            <Grid key={step._id} item container alignItems="center" gap="10px" width="fit-content">
+                            <Grid key={step._id} container alignItems="center" gap="10px" width="fit-content">
                                 {step.iconFileId ? (
                                     <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />
                                 ) : (

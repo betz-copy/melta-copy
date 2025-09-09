@@ -17,9 +17,9 @@ const SideBarDetails: React.FC<StepComponentProps<IFrameWizardValues> & { viewMo
 }) => {
     return (
         <Grid container direction="column" spacing={4}>
-            <Grid item container direction="column" spacing={4}>
-                <Grid item container direction="column" spacing={2.5}>
-                    <Grid item>
+            <Grid container direction="column" spacing={4}>
+                <Grid container direction="column" spacing={2.5}>
+                    <Grid>
                         <ViewModeTextField
                             name="name"
                             label={i18next.t('wizard.name')}
@@ -33,7 +33,7 @@ const SideBarDetails: React.FC<StepComponentProps<IFrameWizardValues> & { viewMo
                         />
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                         <ViewModeTextField
                             name="url"
                             label={i18next.t('dashboard.iframes.url')}
@@ -50,7 +50,7 @@ const SideBarDetails: React.FC<StepComponentProps<IFrameWizardValues> & { viewMo
                     </Grid>
                 </Grid>
 
-                <Grid item>
+                <Grid>
                     <InfoTypography text={i18next.t('dashboard.iframes.permissionWarning')} />
                 </Grid>
             </Grid>

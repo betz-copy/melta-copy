@@ -1,16 +1,17 @@
 import { Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import semanticRouter from './semantics/router';
 
 const appRouter = Router();
 
 appRouter.use('/api/semantic', semanticRouter);
 
-appRouter.use('/isAlive', (_req, res) => {
-    res.status(200).send('alive');
+appRouter.get('/isAlive', (_req, res) => {
+    res.status(StatusCodes.OK).send('alive');
 });
 
-appRouter.use('*', (_req, res) => {
-    res.status(404).send('Invalid Route');
+appRouter.all(/(.*)/, (_req, res) => {
+    res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 
 export default appRouter;

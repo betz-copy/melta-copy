@@ -48,6 +48,7 @@ export const defaultMetadata = {
         destTemplateId: '',
         sourceFieldForColor: '',
     },
+    unitsArray: [] as string[],
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

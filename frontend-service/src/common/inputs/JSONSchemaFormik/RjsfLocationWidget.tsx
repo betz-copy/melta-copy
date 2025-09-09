@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
-import MapIcon from '@mui/icons-material/Map';
+import { Map } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
@@ -138,8 +138,8 @@ const RjsfLocationWidget = ({
 
     return (
         <Box width="100%">
-            <Grid container justifyContent="space-between" alignItems="center" width="100%">
-                <Grid item xs={8.25}>
+            <Grid container justifyContent="space-between" alignContent="center" width="100%">
+                <Grid size={{ xs: 8.25 }}>
                     <MeltaTooltip title={newLocationValue}>
                         <TextField
                             {...textFieldProps}
@@ -152,15 +152,21 @@ const RjsfLocationWidget = ({
                             autoFocus={autofocus}
                             required={required}
                             disabled={disabled}
-                            InputLabelProps={{
-                                shrink: readonly || undefined,
-                            }}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start" onClick={() => (error ? '' : setMapOpen(true))} style={{ cursor: 'pointer' }}>
-                                        <MapIcon color={readonly || error ? 'disabled' : 'action'} />
-                                    </InputAdornment>
-                                ),
+                            slotProps={{
+                                inputLabel: {
+                                    shrink: readonly || undefined,
+                                },
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment
+                                            position="start"
+                                            onClick={() => (error ? '' : setMapOpen(true))}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <Map color={readonly || error ? 'disabled' : 'action'} />
+                                        </InputAdornment>
+                                    ),
+                                },
                             }}
                             type={(options.inputType ?? inputType) as string}
                             value={newLocationValue ?? ''}
@@ -175,7 +181,7 @@ const RjsfLocationWidget = ({
                         />
                     </MeltaTooltip>
                 </Grid>
-                <Grid item xs={3.5}>
+                <Grid size={{ xs: 3.5 }}>
                     <Autocomplete
                         value={coordinateSystem}
                         onChange={(_, newValue: CoordinateSystem) => {

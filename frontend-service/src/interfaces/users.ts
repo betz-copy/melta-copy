@@ -15,15 +15,14 @@ export interface IBaseUser {
         mailsNotificationsTypes?: NotificationType[];
         profilePath?: string;
     };
-    externalMetadata: {
-        kartoffelId: string;
-        digitalIdentitySource: string;
-    };
+    kartoffelId: string;
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
     roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
+    units?: Record<string, string[]>;
+    isRoot?: boolean;
 }
 
 export interface IUserPopulated extends Omit<IUser, 'roleIds'> {

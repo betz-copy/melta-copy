@@ -61,7 +61,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
             {isDashboardPage && (
-                <Grid item>
+                <Grid>
                     <FormikAutoComplete
                         formik={props}
                         formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
@@ -91,7 +91,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
             {values.templateId && (
                 <>
                     {isDashboardPage && viewMode === ViewMode.Add && (
-                        <Grid item>
+                        <Grid>
                             <FormControl sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                 <Typography fontSize="14px" fontWeight="14px" color={theme.palette.text.primary}>
                                     {i18next.t('dashboard.charts.createChart')}
@@ -138,14 +138,14 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                     )}
 
                     {chartMode === 'new' || viewMode !== ViewMode.Add ? (
-                        <Grid item container direction="column" spacing={4}>
+                        <Grid container direction="column" spacing={4}>
                             {isDashboardPage && viewMode === ViewMode.Add && (
-                                <Grid item>
+                                <Grid>
                                     <Divider />
                                 </Grid>
                             )}
-                            <Grid item container direction="column" spacing={2}>
-                                <Grid item>
+                            <Grid container direction="column" spacing={2}>
+                                <Grid>
                                     <ViewModeTextField
                                         id="name"
                                         name="name"
@@ -159,7 +159,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                         readOnly={viewMode === ViewMode.ReadOnly}
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <ViewModeTextField
                                         id="description"
                                         name="description"
@@ -176,17 +176,17 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                     />
                                 </Grid>
 
-                                <Grid item marginTop={2}>
+                                <Grid marginTop={2}>
                                     <ChartTypesEdit formik={props} entityTemplate={template} disabled={viewMode === ViewMode.ReadOnly} />
                                 </Grid>
 
-                                <Grid item container direction="column" spacing={2}>
-                                    <Grid item>
+                                <Grid container direction="column" spacing={2}>
+                                    <Grid>
                                         <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
                                             {i18next.t('charts.permissions')}
                                         </Typography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <ToggleButtonGroup
                                             exclusive
                                             id="permissions"
@@ -227,14 +227,14 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                     </Grid>
                                 </Grid>
                                 {values.permission === IPermission.Protected && (
-                                    <Grid item>
+                                    <Grid>
                                         <InfoTypography text={i18next.t('dashboard.charts.permissionWarning')} />
                                     </Grid>
                                 )}
                             </Grid>
                         </Grid>
                     ) : (
-                        <Grid item>
+                        <Grid>
                             <ChartAutoComplete formikProps={props} />
                         </Grid>
                     )}

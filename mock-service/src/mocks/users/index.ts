@@ -13,10 +13,7 @@ const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, cate
             preferences: {
                 darkMode: false,
             },
-            externalMetadata: {
-                kartoffelId,
-                digitalIdentitySource: 'es_name', // must match kartoffel mock source
-            },
+            kartoffelId,
             permissions: getPermissionsToCreate(rootWorkspaceId, mainWorkspaceId, categories),
         };
     });

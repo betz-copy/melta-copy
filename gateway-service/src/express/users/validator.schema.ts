@@ -13,11 +13,6 @@ export const partialSchema = (schema: joi.ObjectSchema) => {
     );
 };
 
-const UserExternalMetadataSchema = joi.object({
-    kartoffelId: joi.string().required(),
-    digitalIdentitySource: joi.string().required(),
-});
-
 const UserRoleIdsSchema = joi.object({
     permissions: joi.object(),
     roleIds: joi.array().items(joi.string()),
@@ -34,6 +29,8 @@ const UserPreferencesMetadataSchema = joi.object({
 const RoleSchema = joi.object({
     name: joi.string().required(),
 });
+
+const unitsSchema = joi.object().pattern(joi.string(), joi.array().items(joi.string()));
 
 // GET /api/users/my
 export const getMyUserRequestSchema = joi.object({
@@ -109,14 +106,30 @@ export const updateUserRoleIdsRequestSchema = joi.object({
     },
 });
 
+// PATCH /api/users/:userId/units
+export const updateUserUnitsRequestSchema = joi.object({
+    query: {},
+    body: {
+        units: unitsSchema,
+        workspaceId: joi.string(),
+    },
+    params: {
+        userId: joi.string().required(),
+    },
+});
+
 // POST /api/users
 export const createUserRequestSchema = joi.object({
     query: {},
-    body: UserExternalMetadataSchema.keys({
-        permissions: joi.object(),
-        workspaceId: joi.string(),
-        roleIds: joi.array().items(joi.string()),
-    }).required(),
+    body: joi
+        .object({
+            permissions: joi.object(),
+            workspaceId: joi.string(),
+            roleIds: joi.array().items(joi.string()),
+            units: unitsSchema,
+            kartoffelId: joi.string().required(),
+        })
+        .required(),
     params: {},
 });
 
@@ -128,15 +141,6 @@ export const updateUserPreferencesMetadataRequestSchema = joi.object({
         userId: MongoIdSchema.required(),
     },
     file: iconFileSchema,
-});
-
-// PATCH /api/users/:userId/external
-export const updateUserExternalMetadataRequestSchema = joi.object({
-    query: {},
-    body: UserExternalMetadataSchema.required(),
-    params: {
-        userId: joi.string().required(),
-    },
 });
 
 // POST /api/users/:relatedId/permissions/sync

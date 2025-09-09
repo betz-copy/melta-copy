@@ -14,7 +14,7 @@ appRouter.use('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');
 });
 
-appRouter.use('*', (_req, res) => {
+appRouter.all(/(.*)/, (_req, res) => {
     res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 

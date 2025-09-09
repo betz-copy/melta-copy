@@ -11,7 +11,7 @@ const BodyComponent: React.FC<StepComponentProps<IFrameWizardValues>> = ({ value
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
 
     return (
-        <Grid item container width="100%" height="100%" alignItems="center" justifyContent="center">
+        <Grid container width="100%" height="100%" alignItems="center" justifyContent="center">
             {name && url && !errors.url && (
                 <Card
                     sx={{

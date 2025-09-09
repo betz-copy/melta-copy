@@ -28,6 +28,10 @@ const UserSchema = new mongoose.Schema(
             type: String,
         },
         roleIds: { type: [String], index: true },
+        units: {
+            type: Map,
+            of: [String],
+        },
         preferences: {
             darkMode: {
                 type: Boolean,
@@ -41,18 +45,11 @@ const UserSchema = new mongoose.Schema(
                 type: String,
             },
         },
-        externalMetadata: {
-            kartoffelId: {
-                type: String,
-                required: true,
-                unique: true,
-                index: true,
-            },
-            digitalIdentitySource: {
-                type: String,
-                required: true,
-                index: true,
-            },
+        kartoffelId: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
         },
     },
     { timestamps: true, versionKey: false },

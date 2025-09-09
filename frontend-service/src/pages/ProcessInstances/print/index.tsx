@@ -4,7 +4,7 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
-import { useReactToPrint } from 'react-to-print';
+import { useReactToPrint, UseReactToPrintOptions } from 'react-to-print';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { MenuButton } from '../../../common/MenuButton';
 import PrintOptionsDialog, { PrintType } from '../../../common/print/PrintOptionsDialog';
@@ -40,10 +40,10 @@ const Print: React.FC<{
     const handleClose = () => setOpenModal(false);
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
-    });
+    } as UseReactToPrintOptions);
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes

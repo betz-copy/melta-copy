@@ -115,16 +115,16 @@ const ClientSideEntityPage: React.FC = () => {
 
     return (
         <Grid padding="40px">
-            <Grid item marginTop="20px" data-tour="entity-details">
+            <Grid marginTop="20px" data-tour="entity-details">
                 <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
             </Grid>
             {categoriesWithConnectionsTemplates.length > 0 && (
                 <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                    <Grid item container xs={5} alignItems="center" gap="20px">
-                        <Grid item alignContent="center">
+                    <Grid container size={{ xs: 5 }} alignItems="center" gap="20px">
+                        <Grid alignContent="center">
                             <RelationshipIcon />
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <BlueTitle
                                 title={i18next.t('entityPage.relationshipTitle')}
                                 component="h5"
@@ -133,7 +133,7 @@ const ClientSideEntityPage: React.FC = () => {
                             />
                         </Grid>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>

@@ -115,7 +115,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                         zIndex: 1000,
                     }}
                 >
-                    <Grid item>
+                    <Grid>
                         <Typography variant="subtitle1">{i18next.t('location.layers.map')}</Typography>
                         <RadioGroup value={activeMapLayer} onChange={(e) => setActiveMapLayer(e.target.value)}>
                             {providers
@@ -131,7 +131,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                         </RadioGroup>
                     </Grid>
                     <Divider />
-                    <Grid item>
+                    <Grid>
                         <Typography variant="subtitle1">{i18next.t('location.layers.overlay')}</Typography>
                         {providers
                             .filter((provider) => provider.type === 'text')

@@ -20,7 +20,7 @@ export const NewProcessNotification: React.FC<{ notificationMetadata: INewProces
                     {i18next.t('newProcessNotification.newProcess')}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography display="inline">{`${i18next.t('newProcessNotification.processName')} `}</Typography>
                 <ProcessName process={process} />
             </Grid>

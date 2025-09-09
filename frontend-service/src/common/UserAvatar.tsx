@@ -1,11 +1,11 @@
-import React from 'react';
-import Avatar from '@mui/material/Avatar';
-import { useQuery } from 'react-query';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import Avatar from '@mui/material/Avatar';
+import React from 'react';
+import { useQuery } from 'react-query';
 import { IUser } from '../interfaces/users';
+import { getUserProfileRequest } from '../services/userService';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getNameInitials } from '../utils/userProfile';
-import { getUserProfileRequest } from '../services/userService';
 
 interface UserAvatarProps {
     user: Partial<IUser>;
@@ -14,9 +14,18 @@ interface UserAvatarProps {
     isDefaultProfile?: boolean;
     userProfileImage?: string;
     addBorder?: boolean;
+    overrideSx?: object;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userProfileImage, isDefaultProfile = false , addBorder = false}) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({
+    user,
+    size = 48,
+    bgColor,
+    userProfileImage,
+    overrideSx,
+    isDefaultProfile = false,
+    addBorder = false,
+}) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
@@ -41,6 +50,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userP
                 fontSize: Math.round(size / 2),
                 fontWeight: 500,
                 border: addBorder ? '3px solid #FF006B' : null,
+                ...overrideSx,
             }}
             onClick={() => {
                 trackEvent({

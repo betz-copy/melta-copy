@@ -80,7 +80,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                                 return (
                                     isSelected && (
                                         <Grid container spacing={1.5} paddingLeft={3} paddingTop={1}>
-                                            <Grid item>
+                                            <Grid>
                                                 {currentCategory.iconFileId ? (
                                                     <CustomIcon
                                                         iconUrl={currentCategory.iconFileId}
@@ -99,7 +99,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                                                 )}
                                             </Grid>
 
-                                            <Grid item>
+                                            <Grid>
                                                 <Typography key={currentCategory._id}>{currentCategory.displayName}</Typography>
                                             </Grid>
                                         </Grid>

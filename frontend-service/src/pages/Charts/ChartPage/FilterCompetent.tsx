@@ -61,7 +61,6 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                         <Grid key={fieldBase}>
                             <Grid sx={{ borderRadius: '10px', backgroundColor }}>
                                 <Grid
-                                    item
                                     sx={{
                                         height: !readonly ? '90px' : undefined,
                                         display: 'flex',
@@ -130,8 +129,8 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                 </Grid>
 
                                 {filterType && (
-                                    <Grid item container justifyContent="center">
-                                        <Grid item style={{ width: '90%', paddingBottom: '10px' }}>
+                                    <Grid container justifyContent="center">
+                                        <Grid style={{ width: '90%', paddingBottom: '10px' }}>
                                             {renderFilterInput(
                                                 filters,
                                                 filter,

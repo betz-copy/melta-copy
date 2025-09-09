@@ -110,19 +110,17 @@ export const childTemplateSchema = (existingNames: string[], existingDisplayName
         isFilterByUserUnit: Yup.boolean(),
         filterByCurrentUserField: Yup.mixed().when('isFilterByCurrentUser', {
             is: true,
-            then: Yup.string().required(i18next.t('validation.required')),
-            otherwise: Yup.string().nullable().notRequired(),
+            then: () => Yup.string().required(i18next.t('validation.required')),
         }),
         filterByUnitUserField: Yup.mixed().when('isFilterByUserUnit', {
             is: true,
-            then: Yup.string().required(i18next.t('validation.required')),
-            otherwise: Yup.string().nullable().notRequired(),
+            then: () => Yup.string().required(i18next.t('validation.required')),
         }),
         properties: Yup.object({
             properties: Yup.object()
                 .test('at-least-one-property-display', i18next.t('childTemplate.fieldFilterTableNoChecks'), (value) => {
                     if (!value || typeof value !== 'object') return false;
-                    return Object.values(value).some((prop: IChildTemplateFormProperty) => prop?.display === true);
+                    return Object.values(value).some((prop) => (prop as IChildTemplateFormProperty)?.display === true);
                 })
                 .test('validate-each-field-schema', i18next.t('validation.invalidProperty'), function (value) {
                     if (!value || typeof value !== 'object') return false;

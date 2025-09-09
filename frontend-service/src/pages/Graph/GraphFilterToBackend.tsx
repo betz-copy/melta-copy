@@ -1,7 +1,10 @@
+import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+
+const { relativeDateFilters } = environment;
 
 export interface IGraphFilterToBackendBody {
     [templateId: string]: { filter: ISearchFilter } | {};
@@ -76,11 +79,20 @@ export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilt
     if (filterKeys.length === 2) {
         const [dateFrom, dateTo] = filterKeys;
 
+        if (relativeDateFilters.includes(fieldFilter[dateFrom] as string)) {
+            return {
+                filterType: 'date',
+                type: fieldFilter[dateFrom],
+                dateFrom: fieldFilter[dateFrom],
+                dateTo: fieldFilter[dateTo],
+            } as IAGGridDateFilter;
+        }
+
         return {
             filterType: 'date',
             type: 'inRange',
-            dateFrom: fieldFilter[dateFrom] as string,
-            dateTo: fieldFilter[dateTo] as string,
+            dateFrom: fieldFilter[dateFrom],
+            dateTo: fieldFilter[dateTo],
         } as IAGGridDateFilter;
     }
 
