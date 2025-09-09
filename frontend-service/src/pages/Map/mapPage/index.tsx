@@ -318,7 +318,7 @@ const MapPage = () => {
                             </Entity>
                         )}
 
-                        {lineData.length > 1 && (
+                        {lineData.length && (
                             <Entity
                                 name={i18next.t('location.line')}
                                 description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}

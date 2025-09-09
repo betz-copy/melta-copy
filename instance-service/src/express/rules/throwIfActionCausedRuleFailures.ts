@@ -1,5 +1,4 @@
-import { ActionOnFail, BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
-import _ from 'lodash';
+import { BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
 import _groupBy from 'lodash.groupby';
 import _sortBy from 'lodash.sortby';
 import config from '../../config';
@@ -106,9 +105,7 @@ export const throwIfActionCausedRuleFailures = (
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
     actions?: IAction[],
 ) => {
-    const relevantRules = ruleFailuresAfterAction.filter((rule) => rule.rule.actionOnFail !== ActionOnFail.INDICATOR);
-
-    const ruleFailuresWithNewCauses = filteredMap(relevantRules, (ruleFailureAfterAction) => {
+    const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
             return rule._id === ruleFailureAfterAction.rule._id && entityId === ruleFailureAfterAction.entityId;
         });
