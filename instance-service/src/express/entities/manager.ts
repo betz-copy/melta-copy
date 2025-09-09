@@ -673,48 +673,6 @@ class EntityManager extends DefaultManagerNeo4j {
             return action;
         });
 
-    // async updateColoredFieldsOfEntityInTransaction(
-    //     entity: IEntity,
-    //     indicatorRules?: IRuleFailure[],
-    //     transaction: Transaction,
-    //     entityTemplate: IMongoEntityTemplate,
-    // ) {
-    //     const updatedColoredFields = this.getColoredFields(indicatorRules?.map(({ rule }) => rule) || [], []);
-    //     const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
-    //         entity,
-    //         entityTemplate,
-    //         entity.properties,
-    //         Object.keys(entity.properties),
-    //         transaction,
-    //         '',
-    //         false,
-    //     );
-
-    //     const updatedEntity = await runInTransactionAndNormalize(
-    //         transaction,
-    //         `MATCH (e {_id: '${entity.properties._id}'})
-    //              WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
-    //              SET e = $props
-    //              SET e.createdAt = createdAt
-    //              SET e.disabled = disabled
-    //              RETURN e`,
-    //         normalizeReturnedEntity('singleResponseNotNullable'),
-    //         {
-    //             props: {
-    //                 ...(await addStringFieldsAndNormalizeSpecialStringValues(
-    //                     fixedProperties,
-    //                     entityTemplate,
-    //                     this.entityTemplateManagerService,
-    //                     updatedColoredFields,
-    //                 )),
-    //                 updatedAt: getNeo4jDateTime(),
-    //                 _id: entity.properties._id,
-    //             },
-    //         },
-    //     );
-    //     return updatedEntity;
-    // }
-
     async createEntity(
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
