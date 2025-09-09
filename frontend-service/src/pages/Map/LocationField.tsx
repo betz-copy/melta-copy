@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Place, Polyline } from '@mui/icons-material';
+import { Pentagon, Place } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
@@ -166,7 +166,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                             </MeltaTooltip>
                             <MeltaTooltip title={i18next.t('location.polygon')}>
                                 <ToggleButton value="polygon" disabled={markerPosition !== null}>
-                                    <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    <Pentagon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
                                 </ToggleButton>
                             </MeltaTooltip>
                         </ToggleButtonGroup>

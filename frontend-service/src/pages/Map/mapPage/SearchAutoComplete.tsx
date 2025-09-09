@@ -2,8 +2,8 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { _debounce } from '@ag-grid-community/core';
-import { InfoOutlined, Search } from '@mui/icons-material';
-import { Autocomplete, Divider, Grid, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
+import { InfoOutlined } from '@mui/icons-material';
+import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery } from 'react-query';
@@ -164,7 +164,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
             sx={{
                 '.MuiAutocomplete-inputRoot': {
                     maxHeight: '34px',
-                    // boxShadow: '-2px 2px 6px 0px #1E27754D',
+                    boxShadow: '-2px 2px 6px 0px #1E27754D',
                 },
                 '& .MuiInputLabel-root': {
                     fontFamily: 'Rubik',
@@ -184,34 +184,11 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                     sx={{
                         backgroundColor: theme.palette.background.default,
                         borderRadius: '7px',
+                        width: 400,
                     }}
                     placeholder={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
-                    // InputProps={{
-                    //     endAdornment: (
-                    //         <InputAdornment
-                    //             position="end"
-                    //             sx={{
-                    //                 fontWeight: '400',
-                    //                 letterSpacing: '0em',
-                    //                 lineHeight: '16px',
-                    //                 gap: '10px',
-                    //             }}
-                    //         >
-                    //             <Divider
-                    //                 orientation="vertical"
-                    //                 style={{
-                    //                     width: '1px',
-                    //                     height: '20px',
-                    //                     borderRadius: '1.5px',
-                    //                     backgroundColor: theme.palette.primary.main,
-                    //                 }}
-                    //             />
-                    //             <Search fontSize="small" />{' '}
-                    //         </InputAdornment>
-                    //     ),
-                    // }}
                 />
             )}
             renderOption={(props, option) => {

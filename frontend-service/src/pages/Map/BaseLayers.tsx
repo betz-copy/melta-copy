@@ -1,4 +1,4 @@
-import { Layers, LayersOutlined, LayersTwoTone } from '@mui/icons-material';
+import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';

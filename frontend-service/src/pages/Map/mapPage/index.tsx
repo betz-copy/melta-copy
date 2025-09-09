@@ -473,10 +473,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                     setCameraFocus(CameraFocusType.Search);
                                 }}
                                 entityTemplateMap={entityTemplateMap!}
-                                onClear={onClear}
                                 darkMode={darkMode}
                                 clearAutocompleteSearch={clearAutocompleteSearch}
-                                sourceTemplate={sourceTemplate}
                             />
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}
@@ -492,7 +490,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                         <CircleIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
-                                <MeltaTooltip title={i18next.t('location.polygon')}>
+                                <MeltaTooltip title={i18next.t('location.searchByPolygon')}>
                                     <ToggleButton value="polygon">
                                         <PolygonIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
                                     </ToggleButton>
