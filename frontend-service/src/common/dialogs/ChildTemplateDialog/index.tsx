@@ -341,7 +341,7 @@ const ChildTemplateDialog: React.FC<{
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
-                                        <Grid size={{ xs: 5.5 }} container direction="row" justifyContent="space-between">
+                                        <Grid container direction="row" justifyContent="space-between">
                                             {checkboxesFields.map(({ mode, fields, checked, value }) => {
                                                 if (fields.length === 0) return null;
 

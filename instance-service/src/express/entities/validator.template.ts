@@ -591,7 +591,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             }
 
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, any> = propertyValue;
+                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
@@ -611,7 +611,8 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
 
                 normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
                 Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
-                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                    if (innerKey !== 'coloredProperties')
+                        normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });
 
                 return;

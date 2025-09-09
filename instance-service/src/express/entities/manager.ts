@@ -46,6 +46,7 @@ import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
+import isEqual from 'lodash.isequal';
 import mapValues from 'lodash.mapvalues';
 import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
@@ -1369,13 +1370,13 @@ class EntityManager extends DefaultManagerNeo4j {
     ) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
-            disabled: { title: 'doesntMatter', type: 'boolean' },
-            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
-            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            disabled: { title: `doesn'tMatter`, type: 'boolean' },
+            createdAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
+            updatedAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
         };
         const templateUpdatedProperties = pickBy(
             propertiesWithGeneratedProperties,
-            (_propertyTemplate, key) => newEntityProperties[key] !== oldEntityProperties[key],
+            (_propertyTemplate, key) => !isEqual(newEntityProperties[key], oldEntityProperties[key]),
         );
 
         const updatedProperties = Object.keys(templateUpdatedProperties);
