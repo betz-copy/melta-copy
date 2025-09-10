@@ -1,5 +1,5 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -144,12 +144,17 @@ const TemplateEntitiesAutocomplete: React.FC<{
         [isLoading, loadMore],
     );
 
-    const displayKeys = [
-        showField,
-        (template.propertiesPreview[0] === showField
-            ? (template.propertiesPreview[1] ?? template.propertiesOrder[0])
-            : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
+    const displayKeys: string[] = [showField];
+
+    const orderedProperties = [
+        ...template.propertiesPreview,
+        ...template.propertiesOrder.filter((prop) => !template.propertiesPreview.includes(prop)),
     ];
+
+    orderedProperties
+        .filter((prop) => prop !== showField && !displayKeys.includes(prop))
+        .slice(0, 3)
+        .forEach((prop) => displayKeys.push(prop));
 
     const convertPropertyToString = (property: any): string | undefined => {
         if (typeof property === 'object') {
@@ -244,42 +249,48 @@ const TemplateEntitiesAutocomplete: React.FC<{
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
-
                     return convertPropertyToString(property);
                 });
 
                 return (
-                    <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
-                        <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
-                            {displayOptionValues.map((displayOptionValue, index) => (
-                                <Grid key={displayOptionValue} size={{ xs: 4 }} overflow="hidden">
-                                    <MeltaTooltip placement="right" title={template.properties.properties[displayKeys[index]].title}>
-                                        <Typography color={'#53566E'} overflow="hidden" fontSize="14px">
-                                            {displayOptionValue}
-                                        </Typography>
-                                    </MeltaTooltip>
-                                </Grid>
-                            ))}
-                            <Grid size={{ xs: 0 }}>
-                                <MeltaTooltip
-                                    title={
-                                        template.propertiesPreview.length === 0 ? (
-                                            i18next.t('templateEntitiesAutocomplete.noPreviewFields')
-                                        ) : (
-                                            <EntityPropertiesInternal
-                                                properties={option.properties}
-                                                entityTemplate={template}
-                                                showPreviewPropertiesOnly
-                                                mode="white"
-                                                textWrap
-                                            />
-                                        )
-                                    }
+                    <li
+                        {...props}
+                        ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
+                    >
+                        {displayOptionValues.map((displayOptionValue, index) => (
+                            <MeltaTooltip key={displayOptionValue} placement="top" title={template.properties.properties[displayKeys[index]].title}>
+                                <Typography
+                                    color="#53566E"
+                                    fontSize="14px"
+                                    style={{
+                                        textOverflow: 'ellipsis',
+                                        overflow: 'hidden',
+                                        maxWidth: 100,
+                                    }}
                                 >
-                                    <InfoOutlined sx={{ color: '#9398C2' }} />
-                                </MeltaTooltip>
-                            </Grid>
-                        </Grid>
+                                    {displayOptionValue}
+                                </Typography>
+                            </MeltaTooltip>
+                        ))}
+
+                        <MeltaTooltip
+                            title={
+                                template.propertiesPreview.length === 0 ? (
+                                    i18next.t('templateEntitiesAutocomplete.noPreviewFields')
+                                ) : (
+                                    <EntityPropertiesInternal
+                                        properties={option.properties}
+                                        entityTemplate={template}
+                                        showPreviewPropertiesOnly
+                                        mode="white"
+                                        textWrap
+                                    />
+                                )
+                            }
+                        >
+                            <InfoOutlined sx={{ color: '#9398C2', marginLeft: 'auto' }} />
+                        </MeltaTooltip>
                     </li>
                 );
             }}
