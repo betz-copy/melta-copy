@@ -42,7 +42,7 @@ import {
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
-import { Dictionary, mapValues, omit, property } from 'lodash';
+import { Dictionary, mapValues, omit } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
@@ -580,23 +580,28 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
-        // after create the instance i want to check if its transfer and if so - to call new route that
+        // after create the instance i want to check if its transfer and if so - to call new route that update the wallet amount
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         if (entityTemplate.walletTransfer) {
             const sourceProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.from];
-            // const destinatioProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.to];
+            // const destinationProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.to];
             if (sourceProperty.format === 'relationshipReference') {
                 // sourceProperty.relationshipReference?.relatedT
                 // bug- the readonly field is not in properties!!!!
                 const sourceWalletTemplateId = sourceProperty.relationshipReference!.relatedTemplateId;
                 const sourceWalletTemplate = await this.entityTemplateService.getEntityTemplateById(sourceWalletTemplateId);
-                const acoountBalanceField = Object.values(sourceWalletTemplate.properties.properties).find((p) => p.accountBalance);
 
                 const sourceWalletProperties = createdEntity.properties[entityTemplate.walletTransfer.from].properties;
-                const amount = createdEntity.properties[entityTemplate.walletTransfer.amount];
+                const accountBalancePropertyKey = Object.entries(sourceWalletTemplate.properties.properties).find(
+                    ([_key, prop]) => prop.accountBalance,
+                )?.[0];
 
-                sourceWalletProperties.acoountBalanceField -= amount;
-                console.log({ sourceWalletProperties });
+                const amount = createdEntity.properties[entityTemplate.walletTransfer.amount];
+                console.log({ sourceWalletProperties, accountBalancePropertyKey });
+
+                sourceWalletProperties.acoountBalancePropertyKey = (sourceWalletProperties.acoountBalancePropertyKey || 0) - amount;
+
+                // await this.updateAccountBalance(sourceWalletProperties._id, accountBalancePropertyKey , amount, );
             }
         }
         return createdEntity;
