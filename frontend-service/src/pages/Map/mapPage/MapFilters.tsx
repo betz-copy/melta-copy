@@ -2,11 +2,10 @@
 import { Close } from '@mui/icons-material';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect } from 'react';
+import React from 'react';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import SearchAutoComplete from './SearchAutoComplete';
 
 export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; darkMode: boolean }) => (
@@ -27,29 +26,22 @@ export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; d
 );
 
 type Props = {
-    selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>>;
     moveToEntityLocations: (entity: IEntity) => void;
     entityTemplateMap: IEntityTemplateMap;
     darkMode: boolean;
     clearAutocompleteSearch: () => void;
 };
 
-const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocations, entityTemplateMap, clearAutocompleteSearch }: Props) => {
+const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocompleteSearch }: Props) => {
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
-
-    useEffect(() => {
-        setSelectedTemplates(templatesWithLocationField);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
         <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
             <Grid>
                 <SearchAutoComplete
-                    selectedTemplates={selectedTemplates}
+                    selectedTemplates={templatesWithLocationField}
                     handleEntityClick={moveToEntityLocations}
                     onClear={clearAutocompleteSearch}
                 />

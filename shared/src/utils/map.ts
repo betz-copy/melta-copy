@@ -34,8 +34,13 @@ export type Cartesian3 = {
     y: number;
 };
 
+export enum MapItemType {
+    Polygon = 'polygon',
+    Coordinate = 'coordinate',
+}
+
 export type CoordinatesResult = {
-    type: 'polygon' | 'marker';
+    type: MapItemType;
     value: Cartesian3 | Cartesian3[];
 };
 
@@ -131,10 +136,10 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
 
 export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     const polygon = parsePolygon(strCoords);
-    if (polygon) return { type: 'polygon', value: polygon };
+    if (polygon) return { type: MapItemType.Polygon, value: polygon };
 
     const formatted = strCoords.includes(',') ? strCoords.split(',').map(Number) : strCoords.split(' ').map(Number);
-    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
+    return { type: MapItemType.Coordinate, value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
 
     // TODO: add validation to format
 };

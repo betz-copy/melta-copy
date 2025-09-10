@@ -1,11 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { CircleTwoTone as CircleIcon, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { area, polygon } from '@turf/turf';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
@@ -41,29 +40,30 @@ enum CameraFocusType {
     Search = 'search',
 }
 
-const MAX_AREA = 10000000000;
+const emptyCircle = { center: null, radius: null, mouseRadius: null };
 
 const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates'])!;
     const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates'])!;
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
 
-    const [drawingMode, setDrawingMode] = useState<ShapeType | null>(null);
-    const [drawingCircle, setDrawingCircle] = useState(false);
-    const [circleData, setCircleData] = useState<{ center: Cartesian3 | null; radius: number | null; mouseRadius: number | null }>({
-        center: null,
-        radius: null,
-        mouseRadius: null,
-    });
-    const [polygonData, setPolygonData] = useState<Cartesian3[]>([]);
-    const [drawingPolygon, setDrawingPolygon] = useState(false);
-    const [polygonComplete, setPolygonComplete] = useState(false);
+    const [shapeType, setShapeType] = useState<ShapeType | null>(null);
+    const [drawingMode, setDrawingMode] = useState<ShapeType.Circle | ShapeType.Polygon | null>(null);
 
-    const [lineData, setLineData] = useState<Cartesian3[]>([]);
+    const [{ circle, polygon, line }, setSearchShape] = useState<{
+        circle: { center: Cartesian3 | null; radius: number | null; mouseRadius: number | null };
+        polygon: Cartesian3[];
+        line: Cartesian3[];
+    }>({
+        circle: emptyCircle,
+        polygon: [],
+        line: [],
+    });
 
     const [{ entity, template }, setAutoCompleteSearch] = useState<{ entity?: IEntity; template?: IMongoEntityTemplatePopulated }>({
         entity: undefined,
@@ -93,7 +93,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         polygons: searchedEntityPolygons,
         propertyDefinitions: searchedPropertyDefinitions,
     } = useEntityWithLocationFields({ entityTemplate: template, entityProperties: entity?.properties });
-    console.log({ entity, template });
 
     useEffect(() => {
         const animateCamera = () => {
@@ -105,22 +104,21 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5);
                 camera.flyToBoundingSphere(boundingSphere, { duration: 1.5, offset });
             };
-            console.log({ cameraFocus });
 
             switch (cameraFocus) {
                 case CameraFocusType.Circle: {
-                    if (circleData.center && circleData.radius) {
-                        const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
+                    if (circle.center && circle.radius) {
+                        const boundingSphere = new Cesium.BoundingSphere(circle.center, circle.radius);
                         flyToBoundingSphere(boundingSphere);
                     }
                     break;
                 }
 
                 case CameraFocusType.Polygon: {
-                    if (polygonData.length && polygonComplete) {
+                    if (polygon.length && polygon && !drawingMode) {
                         viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-                        const boundingSphere = Cesium.BoundingSphere.fromPoints(polygonData);
+                        const boundingSphere = Cesium.BoundingSphere.fromPoints(polygon);
                         flyToBoundingSphere(boundingSphere);
                     }
                     break;
@@ -139,7 +137,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 }
 
                 default: {
-                    if (!circleData.center && !circleData.radius && !polygonData.length) {
+                    if (!circle.center && !circle.radius && !polygon.length) {
                         camera.flyTo({
                             destination: jerusalemCoordinates,
                             duration: 1.5,
@@ -151,7 +149,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [circleData, polygonComplete, searchedEntityPolygons, searchedEntityMarkers]);
+    }, [circle, drawingMode, searchedEntityPolygons, searchedEntityMarkers]);
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
@@ -165,45 +163,24 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
             if (!cartesian) return;
 
-            if (drawingMode === ShapeType.Line) setLineData((prev) => [...prev, cartesian]);
+            if (shapeType === ShapeType.Line) setSearchShape((prev) => ({ ...prev, line: [...prev.line, cartesian] }));
 
-            if (drawingMode === ShapeType.Polygon) {
-                if (!drawingPolygon) {
+            if (shapeType === ShapeType.Polygon) {
+                if (drawingMode !== ShapeType.Polygon) {
                     setCameraFocus(CameraFocusType.Polygon);
 
-                    setDrawingPolygon(true);
-                    setPolygonComplete(false);
-                    setPolygonData([cartesian]);
+                    setDrawingMode(ShapeType.Polygon);
+                    setSearchShape((prev) => ({ ...prev, polygon: [cartesian], circle: emptyCircle }));
                     setSearchResults({ coordinates: [], polygons: [] });
-                } else
-                    setPolygonData((prev) => {
-                        const coords = [...prev, cartesian].map((c) => {
-                            const carto = Cesium.Cartographic.fromCartesian(c);
-                            return [Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude)];
-                        });
-
-                        // close the polygon for turf
-                        if (coords.length > 2) {
-                            const closed = [...coords, coords[0]];
-                            const poly = polygon([closed]);
-                            const polyArea = area(poly);
-
-                            if (polyArea > MAX_AREA) {
-                                console.warn('Polygon too large!');
-                                return prev; // don’t add
-                            }
-                        }
-
-                        return [...prev, cartesian];
-                    });
+                } else setSearchShape((prev) => ({ ...prev, polygon: [...prev.polygon, cartesian], circle: emptyCircle }));
             }
         },
-        [drawingMode, drawingPolygon, viewerRef, setLineData, setPolygonData],
+        [shapeType, drawingMode, viewerRef, setSearchShape],
     );
 
     const handleMouseDown = useCallback(
         (clickEvent: CesiumMovementEvent) => {
-            if (drawingMode !== ShapeType.Circle || !clickEvent.position) return;
+            if (shapeType !== ShapeType.Circle || !clickEvent.position) return;
             setSearchResults({ coordinates: [], polygons: [] });
 
             const viewer = viewerRef.current?.cesiumElement;
@@ -213,18 +190,18 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
-            setCircleData({ center: cartesian, radius: null, mouseRadius: null });
-            setDrawingCircle(true);
+            setSearchShape((prev) => ({ ...prev, polygon: [], circle: { ...emptyCircle, center: cartesian } }));
+            setDrawingMode(ShapeType.Circle);
 
             scene.screenSpaceCameraController.enableRotate = false;
             setCameraFocus(CameraFocusType.Circle);
         },
-        [drawingMode, viewerRef, setCircleData, setDrawingCircle],
+        [shapeType, viewerRef, setDrawingMode],
     );
 
     const handleMouseMove = useCallback(
         (moveEvent: CesiumMovementEvent) => {
-            if (!drawingCircle || drawingMode !== ShapeType.Circle || circleData.center === null || circleData.radius !== null) return;
+            if (drawingMode !== ShapeType.Circle || shapeType !== ShapeType.Circle || circle.center === null || circle.radius !== null) return;
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -234,19 +211,20 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
             if (!cartesian) return;
 
-            const radius = Cartesian3.distance(circleData.center, cartesian);
+            const radius = Cartesian3.distance(circle.center, cartesian);
             if (radius > maxRadius) return;
-            setCircleData((prev) => ({
+            setSearchShape((prev) => ({
                 ...prev,
-                mouseRadius: radius,
+                polygon: [],
+                circle: { ...prev.circle, mouseRadius: radius },
             }));
         },
-        [drawingMode, drawingCircle, circleData, viewerRef, setCircleData],
+        [shapeType, drawingMode, circle, viewerRef, setSearchShape],
     );
 
     const handleMouseUp = useCallback(
         (clickEvent: CesiumMovementEvent) => {
-            if (drawingMode !== ShapeType.Circle || circleData.center === null || circleData.radius !== null) return;
+            if (shapeType !== ShapeType.Circle || circle.center === null || circle.radius !== null) return;
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -255,29 +233,28 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
-            const radius = Cartesian3.distance(circleData.center, cartesian);
+            const radius = Cartesian3.distance(circle.center, cartesian);
             if (radius > maxRadius) toast.warn(i18next.t('location.radiusMaxLimit'));
 
-            setDrawingCircle(false);
-            setCircleData({
-                center: circleData.center,
-                radius: radius > maxRadius ? maxRadius : radius,
-                mouseRadius: null,
-            });
+            setDrawingMode(null);
+            setSearchShape((prev) => ({
+                ...prev,
+                polygon: [],
+                circle: { center: circle.center, radius: radius > maxRadius ? maxRadius : radius, mouseRadius: null },
+            }));
 
             viewer.scene.screenSpaceCameraController.enableRotate = true;
-            setDrawingMode(null);
+            setShapeType(null);
         },
-        [drawingMode, viewerRef, circleData, setDrawingCircle, setCircleData],
+        [shapeType, viewerRef, circle, setDrawingMode, setSearchShape],
     );
 
     const handleViewerDoubleClick = useCallback(() => {
-        if (drawingMode === ShapeType.Polygon && drawingPolygon && polygonData.length >= 3) {
-            setDrawingPolygon(false);
-            setPolygonComplete(true);
-            setDrawingMode(null);
-        }
-    }, [drawingMode, drawingPolygon, polygonData]);
+        if (shapeType !== ShapeType.Polygon || drawingMode !== ShapeType.Polygon || polygon.length < 3) return;
+
+        setDrawingMode(null);
+        setShapeType(null);
+    }, [shapeType, drawingMode, polygon]);
 
     const { mutateAsync } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
@@ -322,48 +299,42 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
             const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };
 
-            if (polygonComplete && polygonData.length > 0)
-                payload.polygon = polygonData.map((point) => {
+            if (polygon && !drawingMode && polygon.length)
+                payload.polygon = polygon.map((point) => {
                     const { latitude, longitude } = convertECEFToWGS84(point);
                     return [longitude, latitude];
                 });
 
-            if (circleData.center && circleData.radius) {
-                const { longitude, latitude } = convertECEFToWGS84(circleData.center) as LatLng;
-                payload.circle = { coordinate: [latitude, longitude], radius: circleData.radius };
+            if (circle.center && circle.radius) {
+                const { longitude, latitude } = convertECEFToWGS84(circle.center) as LatLng;
+                payload.circle = { coordinate: [latitude, longitude], radius: circle.radius };
             }
 
             if (payload.polygon || payload.circle) await mutateAsync(payload);
         };
 
         fetchData();
-    }, [circleData, polygonComplete, polygonData]);
+    }, [circle, drawingMode, polygon]);
 
     const resetDrawing = () => {
-        setCircleData({ center: null, radius: null, mouseRadius: null });
-        setDrawingCircle(false);
-
-        setPolygonData([]);
-        setDrawingPolygon(false);
-        setPolygonComplete(false);
-
-        setLineData([]);
+        setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
+        setDrawingMode(null);
 
         setSearchResults({ coordinates: [], polygons: [] });
     };
 
     const onClear = () => {
         resetDrawing();
-        setDrawingMode(null);
+        setShapeType(null);
         setCameraFocus(null);
     };
 
-    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: ShapeType | null) => {
-        resetDrawing();
-        setDrawingMode(newShape);
+    const isDrawingShape = (shape: ShapeType | null) => shape === ShapeType.Circle || shape === ShapeType.Polygon;
 
-        if (newShape === ShapeType.Circle) setCameraFocus(CameraFocusType.Circle);
-        else if (newShape === ShapeType.Polygon) setCameraFocus(CameraFocusType.Polygon);
+    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: ShapeType | null) => {
+        if (isDrawingShape(newShape) && isDrawingShape(shapeType) && shapeType !== newShape) resetDrawing();
+
+        setShapeType(newShape);
     };
 
     return (
@@ -388,33 +359,30 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         fullscreenButton={false}
                         navigationHelpButton={false}
                     >
-                        {circleData.center && (circleData.radius || circleData.mouseRadius) && (
+                        {circle.center && (circle.radius || circle.mouseRadius) && (
                             <Entity
                                 name={i18next.t('location.circle')}
-                                description={`${locationToWGS84String(circleData.center)}, ${circleData.radius}`}
-                                position={circleData.center}
+                                description={`${locationToWGS84String(circle.center)}, ${circle.radius}`}
+                                position={circle.center}
                             >
                                 <EllipseGraphics
-                                    semiMajorAxis={circleData.radius ?? circleData.mouseRadius!}
-                                    semiMinorAxis={circleData.radius ?? circleData.mouseRadius!}
+                                    semiMajorAxis={circle.radius ?? circle.mouseRadius!}
+                                    semiMinorAxis={circle.radius ?? circle.mouseRadius!}
                                     fill={false}
                                     outline
                                     outlineColor={Color.fromAlpha(Color.RED, 0.7)}
                                     outlineWidth={15}
                                 />
-                                {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
+                                {circle.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                             </Entity>
                         )}
 
-                        <MeltaPolygon polygon={polygonData} name="polygon" outlineColor={Color.RED} fill={false} showCenteredPoint={false} />
+                        <MeltaPolygon polygon={polygon} name="polygon" outlineColor={Color.RED} fill={false} showCenteredPoint={false} />
 
-                        {lineData.length && (
-                            <Entity
-                                name={i18next.t('location.line')}
-                                description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}
-                            >
-                                <PolylineGraphics positions={lineData} material={Color.fromCssColorString('#11695a')} width={3} />
-                                {lineData.map((position) => (
+                        {line.length && (
+                            <Entity name={i18next.t('location.line')} description={`${Cartesian3.distance(line[0], line[line.length - 1])} km`}>
+                                <PolylineGraphics positions={line} material={Color.fromCssColorString('#11695a')} width={3} />
+                                {line.map((position) => (
                                     <Entity key={`${position.x}, ${position.y}`} position={position}>
                                         <PointGraphics
                                             color={Color.BLACK}
@@ -432,9 +400,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={searchedPropertyDefinitions[key].title}
                                 polygon={polygon}
-                                onClick={() => {
-                                    setSelectedEntityDialog({ matchingField: `${key}-${entity!.properties._id}`, node: entity! });
-                                }}
+                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${entity!.properties._id}`, node: entity! })}
                             />
                         ))}
 
@@ -489,7 +455,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}
                             <ToggleButtonGroup
-                                value={drawingMode}
+                                value={shapeType}
                                 exclusive
                                 onChange={handleDrawType}
                                 size="small"

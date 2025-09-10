@@ -16,6 +16,7 @@ import {
     isValidPolygonPoint,
     jerusalemCoordinates,
     locationToWGS84String,
+    MapItemType,
     stringToCoordinates,
 } from '../../utils/map';
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
@@ -44,12 +45,12 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
 
-        if (initialCoordinates?.type === 'marker') {
+        if (initialCoordinates?.type === MapItemType.Coordinate) {
             const { value } = initialCoordinates;
             setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
         }
 
-        if (initialCoordinates?.type === 'polygon') {
+        if (initialCoordinates?.type === MapItemType.Polygon) {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
                 isValidWGS84(position) ? (convertWGS94ToECEF(position) as Cartesian3) : position,
             );
