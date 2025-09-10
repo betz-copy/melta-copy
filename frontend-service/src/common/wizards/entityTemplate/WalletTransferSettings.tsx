@@ -58,9 +58,16 @@ export const WalletTransferSettings: React.FC<
         return [];
     });
 
-    const transferDestAndSourceFields = allFields.filter(({ type, required }) => ['relationshipReference', 'enum', 'string'].includes(type) && required);
+    const transferDestAndSourceFields = allFields.filter(
+        ({ type, required }) => ['relationshipReference', 'enum', 'string'].includes(type) && required,
+    );
     const allTextFields = allFields.filter(({ type }) => type === 'string');
     const allNumFields = allFields.filter(({ type, required }) => type === 'number' && required);
+    console.log('herreee', values.walletTransfer);
+    const from = values.walletTransfer?.from;
+    const to = values.walletTransfer?.to;
+    const fromKeyName = typeof from === 'string' ? from : from?.name;
+    const toKeyName = typeof to === 'string' ? to : to?.name;
 
     return (
         <Grid container direction="column">
@@ -90,7 +97,7 @@ export const WalletTransferSettings: React.FC<
                         <Autocomplete
                             options={transferDestAndSourceFields}
                             onChange={(_e, value) => setFieldValue('walletTransfer.from', value || '')}
-                            value={transferDestAndSourceFields.find((option) => option.name === values.walletTransfer?.from?.name) ?? null}
+                            value={transferDestAndSourceFields.find((option) => option.name === fromKeyName) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.from')}
                             sx={{ width: '250px' }}
@@ -122,7 +129,7 @@ export const WalletTransferSettings: React.FC<
                         <Autocomplete
                             options={transferDestAndSourceFields}
                             onChange={(_e, value) => setFieldValue('walletTransfer.to', value || '')}
-                            value={transferDestAndSourceFields.find((option) => option.name === values.walletTransfer?.to?.name) ?? null}
+                            value={transferDestAndSourceFields.find((option) => option.name === toKeyName) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.to')}
                             sx={{ width: '250px' }}

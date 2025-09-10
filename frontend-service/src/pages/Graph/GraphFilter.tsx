@@ -1,4 +1,4 @@
-import { KeyboardArrowDown, KeyboardArrowUp, Clear, Close } from '@mui/icons-material';
+import { Clear, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Autocomplete, Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
@@ -15,12 +15,14 @@ import { ReadOnlyFilterInput } from '../../common/inputs/FilterInputs/ReadonlyFi
 import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
 import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
-import { ByCurrentDefaultValue } from '../../interfaces/childTemplates';
+import { environment } from '../../globals';
 import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../utils/agGrid/interfaces';
+
+const { relativeDateFilters } = environment;
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -127,7 +129,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         handleSetFilterRecord(value, condition);
     };
 
-    const handleDateChange = (newValue: Date | null | ByCurrentDefaultValue.byCurrentDate, isStartDate: boolean) => {
+    const handleDateChange = (newValue: IFilterDateType, isStartDate: boolean) => {
         if (!newValue && filterField?.filterType === 'date') {
             const isRemovingStart = isStartDate && !filterField.dateTo;
             const isRemovingEnd = !isStartDate && !filterField.dateFrom;
@@ -167,7 +169,16 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const handleFilterTypeChange = (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition: boolean = true,
-    ) => handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+    ) => {
+        if (filterField?.filterType === 'date') {
+            if (relativeDateFilters.includes(filterField.type) && !relativeDateFilters.includes(newTypeFilter)) {
+                setFilterField({ ...filterField, type: newTypeFilter, dateFrom: null, dateTo: null } as IAGGridDateFilter);
+                return;
+            }
+        }
+
+        handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+    };
 
     const handleFilterErasion = () => {
         removeFilterFromFilterList(filterKey);

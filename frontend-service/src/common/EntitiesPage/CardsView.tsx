@@ -42,7 +42,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     const currentUser = useUserStore((state) => state.user);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserKartoffelId = currentUser?.kartoffelId;
     const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];
 
     return (

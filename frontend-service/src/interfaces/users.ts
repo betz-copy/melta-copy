@@ -15,10 +15,7 @@ export interface IBaseUser {
         mailsNotificationsTypes?: NotificationType[];
         profilePath?: string;
     };
-    externalMetadata: {
-        kartoffelId: string;
-        digitalIdentitySource: string;
-    };
+    kartoffelId: string;
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;

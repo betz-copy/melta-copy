@@ -20,6 +20,6 @@ export const useMatomoInstance = () => {
     return createInstance({
         urlBase: matomoConfig.matomoUrl,
         siteId: matomoConfig.matomoSiteId,
-        userId: `${currentUser.fullName} - ${currentUser.externalMetadata.kartoffelId}`,
+        userId: `${currentUser.fullName} - ${currentUser.kartoffelId}`,
     });
 };

@@ -1686,6 +1686,9 @@ export default {
             greaterThanOrEqual: 'אחרי או שווה ל',
             greaterThan: 'אחרי ה',
             inRange: 'בין',
+            thisWeek: 'השבוע',
+            thisMonth: 'החודש',
+            thisYear: 'השנה',
         },
         text: {
             equals: 'שווה',

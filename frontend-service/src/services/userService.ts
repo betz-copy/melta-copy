@@ -41,13 +41,12 @@ export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
 
 export const createUserRequest = async (
     kartoffelId: string,
-    digitalIdentitySource: string,
     permissions: ICompactPermissions,
     workspaceId: string,
     roleIds?: string[],
     units?: Record<string, string[]>,
 ) => {
-    const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions, workspaceId, roleIds, units });
+    const { data } = await axios.post<IUser>(users, { kartoffelId, permissions, workspaceId, roleIds, units });
     return data;
 };
 
@@ -69,11 +68,6 @@ export const updateUserPreferencesMetadataRequest = async (
     if (darkMode !== undefined) formData.append('darkMode', JSON.stringify(darkMode));
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
-    return data;
-};
-
-export const updateUserExternalMetadataRequest = async (userId: string, kartoffelId: string, digitalIdentitySource: string) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/externalMetadata`, { kartoffelId, digitalIdentitySource });
     return data;
 };
 

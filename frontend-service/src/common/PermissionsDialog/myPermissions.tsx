@@ -42,10 +42,7 @@ export const defaultEmptyUser = {
     preferences: {
         darkMode: false,
     },
-    externalMetadata: {
-        kartoffelId: '',
-        digitalIdentitySource: '',
-    },
+    kartoffelId: '',
     permissions: {},
     displayName: '',
     units: {},
@@ -61,10 +58,7 @@ export const getDefaultEmptyUser = (workspaceId: string) => ({
     preferences: {
         darkMode: false,
     },
-    externalMetadata: {
-        kartoffelId: '',
-        digitalIdentitySource: '',
-    },
+    kartoffelId: '',
     permissions: {},
     displayName: '',
     units: {
@@ -93,15 +87,7 @@ const MyPermissions: React.FC<{
     const { unitsArray } = workspace.metadata;
 
     const { mutate: createUser } = useMutation(
-        (formUser: IUser) =>
-            createUserRequest(
-                formUser.externalMetadata.kartoffelId,
-                formUser.externalMetadata.digitalIdentitySource,
-                formUser.permissions,
-                workspace._id,
-                formUser.roleIds,
-                formUser.units,
-            ),
+        (formUser: IUser) => createUserRequest(formUser.kartoffelId, formUser.permissions, workspace._id, formUser.roleIds, formUser.units),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);

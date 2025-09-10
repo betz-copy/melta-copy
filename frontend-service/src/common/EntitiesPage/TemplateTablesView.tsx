@@ -100,7 +100,7 @@ const TemplateTablesViewResults = forwardRef<
     const currentUser = useUserStore((state) => state.user);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
         const filters: Record<string, any> = {};

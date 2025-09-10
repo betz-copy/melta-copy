@@ -12,7 +12,6 @@ import {
     searchExternalUsersRequestSchema,
     searchUsersByPermissionsSchema,
     searchUsersRequestSchema,
-    updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
     getKartoffelUserProfileRequestSchema,
     getKartoffelUserByIdSchema,
@@ -81,13 +80,6 @@ usersRouter.patch(
     busboyMiddleware,
     ValidateRequest(updateUserPreferencesMetadataRequestSchema),
     wrapController(UsersController.updateUserPreferencesMetadata),
-);
-
-usersRouter.patch(
-    '/:userId/external',
-    AuthorizerControllerMiddleware.userCanWritePermissions,
-    ValidateRequest(updateUserExternalMetadataRequestSchema),
-    wrapController(UsersController.updateUserExternalMetadata),
 );
 
 usersRouter.post(
