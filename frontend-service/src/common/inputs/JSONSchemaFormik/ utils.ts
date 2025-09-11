@@ -59,7 +59,7 @@ const getFieldUiSchema = (
     if (propertySchema.readOnly)
         return {
             'ui:options': {
-                disabled: true,
+                disabled: !(propertySchema.accountBalance && !isEditMode),
                 defaultValue,
             },
         };

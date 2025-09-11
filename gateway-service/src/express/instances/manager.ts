@@ -586,22 +586,35 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const sourceProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.from];
             // const destinationProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.to];
             if (sourceProperty.format === 'relationshipReference') {
-                // sourceProperty.relationshipReference?.relatedT
-                // bug- the readonly field is not in properties!!!!
                 const sourceWalletTemplateId = sourceProperty.relationshipReference!.relatedTemplateId;
                 const sourceWalletTemplate = await this.entityTemplateService.getEntityTemplateById(sourceWalletTemplateId);
 
-                const sourceWalletProperties = createdEntity.properties[entityTemplate.walletTransfer.from].properties;
                 const accountBalancePropertyKey = Object.entries(sourceWalletTemplate.properties.properties).find(
                     ([_key, prop]) => prop.accountBalance,
                 )?.[0];
 
+                if (!accountBalancePropertyKey) throw new Error('the destination of the transfer is not an wallet');
+
+                const sourceWalletProperties = createdEntity.properties[entityTemplate.walletTransfer.from].properties;
                 const amount = createdEntity.properties[entityTemplate.walletTransfer.amount];
-                console.log({ sourceWalletProperties, accountBalancePropertyKey });
+                const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...restWalletProperties } = sourceWalletProperties;
 
-                sourceWalletProperties.acoountBalancePropertyKey = (sourceWalletProperties.acoountBalancePropertyKey || 0) - amount;
+                const updatedAccountBalance = (sourceWalletProperties[accountBalancePropertyKey] || 0) - amount;
 
-                // await this.updateAccountBalance(sourceWalletProperties._id, accountBalancePropertyKey , amount, );
+                await this.updateEntityInstance(
+                    _id,
+                    {
+                        templateId: sourceWalletTemplateId,
+                        properties: {
+                            ...restWalletProperties,
+                            [accountBalancePropertyKey]: updatedAccountBalance,
+                        },
+                    },
+                    [],
+                    ignoredRules,
+                    userId,
+                    childTemplateId,
+                );
             }
         }
         return createdEntity;
