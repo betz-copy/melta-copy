@@ -383,6 +383,8 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
+        console.dir({ entityId: relatedEntityId }, { depth: null });
+
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = await addStringFieldsAndNormalizeSpecialStringValues(
@@ -1374,6 +1376,8 @@ class EntityManager extends DefaultManagerNeo4j {
             createdAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
             updatedAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
         };
+        console.dir({ newEntityProperties, oldEntityProperties }, { depth: null });
+
         const templateUpdatedProperties = pickBy(
             propertiesWithGeneratedProperties,
             (_propertyTemplate, key) => !isEqual(newEntityProperties[key], oldEntityProperties[key]),
@@ -1416,11 +1420,15 @@ class EntityManager extends DefaultManagerNeo4j {
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
 
+        console.dir({ updatedProperties }, { depth: null });
+
         await Promise.all(
             updatedProperties.map(async (updatedProperty) => {
                 const property = entityTemplate.properties.properties[updatedProperty];
                 if (property?.format === 'relationshipReference') {
                     if (entity.properties[updatedProperty]) {
+                        console.log('delete');
+
                         const relatedEntityId = entity.properties[updatedProperty].properties._id;
                         const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
                             relationshipReference: property.relationshipReference!,
@@ -1432,7 +1440,10 @@ class EntityManager extends DefaultManagerNeo4j {
                         deletedRelationships.push(deletedRelationship);
                     }
 
-                    const relatedEntityId = entityProperties[updatedProperty];
+                    const relatedEntityId =
+                        typeof entityProperties[updatedProperty] === 'string'
+                            ? entityProperties[updatedProperty]
+                            : entityProperties[updatedProperty].properties._id;
 
                     if (relatedEntityId) {
                         const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
