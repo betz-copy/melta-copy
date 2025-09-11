@@ -60,14 +60,13 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
 
-    const { externalMetadata } = useUserStore((state) => state.user);
-    const currentUserKartoffelId = externalMetadata?.kartoffelId;
+    const { kartoffelId } = useUserStore((state) => state.user);
 
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
     const childTemplateFilter = useMemo(
-        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, currentUserKartoffelId),
-        [metaData.templateId, metaData.childTemplateId, currentUserKartoffelId],
+        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, kartoffelId),
+        [metaData.templateId, metaData.childTemplateId, kartoffelId],
     );
     const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 

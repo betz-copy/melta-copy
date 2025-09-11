@@ -58,8 +58,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
     const { mutate: giveUserPermissionsToWorkspace } = useMutation({
         mutationFn: () =>
             createUserRequest(
-                searchedUser!.externalMetadata.kartoffelId,
-                searchedUser!.externalMetadata.digitalIdentitySource,
+                searchedUser!.kartoffelId,
                 {
                     [workspace._id]: { admin: { scope: PermissionScope.write } },
                 },
