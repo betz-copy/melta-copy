@@ -12,14 +12,13 @@ import { calculateCenterOfPolygon, jerusalemCoordinates, locationToWGS84String }
 import { convertWGS94ToECEF } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
 import { getColoredLocationIcon } from '../../utils/icons/coloredLocationIcon';
-
-const POLYGON_DEFAULT_COLOR = '#11695a';
+import { environment } from '../../globals';
 
 export const MeltaPolygon = ({
     name,
     polygon,
     onClick,
-    color = POLYGON_DEFAULT_COLOR,
+    color = environment.map.polygonDefaultColor,
     outlineColor = Color.WHITE,
     fill = true,
     showCenteredPoint = true,
