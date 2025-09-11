@@ -42,6 +42,7 @@ import {
     ServiceError,
     ValidationError,
 } from '@microservices/shared';
+import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
@@ -49,7 +50,6 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import { intersect, polygon as turfPolygon, featureCollection, point as turfPoint, booleanPointInPolygon } from '@turf/turf';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
@@ -75,6 +75,7 @@ import {
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
+import closePolygon from '../../utils/neo4j/location';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
@@ -86,9 +87,14 @@ import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
-import closePolygon from '../../utils/neo4j/location';
 
-const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
+const {
+    brokenRulesFakeEntityIdPrefix,
+    deleteEntitiesMaxLimit,
+    map: {
+        wgs84: { maxLatitude, maxLongitude, minLatitude, minLongitude },
+    },
+} = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
@@ -907,21 +913,26 @@ class EntityManager extends DefaultManagerNeo4j {
         `;
     }
 
+    private buildBoundingBox(coordFields: { lon: string; lat: string } = { lon: 'longitude', lat: 'latitude' }): string {
+        return `
+        reduce(minLon = ${maxLongitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lon} < minLon THEN p.${coordFields.lon} ELSE minLon END) AS polyMinLon,
+        reduce(maxLon = ${minLongitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lon} > maxLon THEN p.${coordFields.lon} ELSE maxLon END) AS polyMaxLon,
+        reduce(minLat = ${maxLatitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lat} < minLat THEN p.${coordFields.lat} ELSE minLat END) AS polyMinLat,
+        reduce(maxLat = ${minLatitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lat} > maxLat THEN p.${coordFields.lat} ELSE maxLat END) AS polyMaxLat
+    `;
+    }
+
     private buildPolygonQuery() {
         // filter entities that their bounding box is intersecting the search polygon bounding box
         return `
             AND templateData.polygon IS NOT NULL
 
             WITH n, templateData,
-             [p IN templateData.polygon | point({longitude: p[0], latitude: p[1], crs:'wgs-84'})] AS searchPolygon
+            [p IN templateData.polygon | point({longitude: p[0], latitude: p[1], crs:'wgs-84'})] AS searchPolygon
 
             // Compute search polygon bounding box
             WITH n, templateData, searchPolygon,
-             reduce(minLon =  180.0,  p IN searchPolygon | CASE WHEN p.longitude < minLon THEN p.longitude ELSE minLon END) AS polyMinLon,
-             reduce(maxLon = -180.0,  p IN searchPolygon | CASE WHEN p.longitude > maxLon THEN p.longitude ELSE maxLon END) AS polyMaxLon,
-             reduce(minLat =   90.0,  p IN searchPolygon | CASE WHEN p.latitude < minLat THEN p.latitude ELSE minLat END) AS polyMinLat,
-             reduce(maxLat =  -90.0,  p IN searchPolygon | CASE WHEN p.latitude > maxLat THEN p.latitude ELSE maxLat END) AS polyMaxLat
-
+            ${this.buildBoundingBox()}
             WITH n, templateData, polyMinLon, polyMaxLon, polyMinLat, polyMaxLat,
              point({longitude: polyMinLon, latitude: polyMinLat, crs:'wgs-84'}) AS lowerLeft,
              point({longitude: polyMaxLon, latitude: polyMaxLat, crs:'wgs-84'}) AS upperRight
@@ -931,10 +942,10 @@ class EntityManager extends DefaultManagerNeo4j {
                WHERE n[field] IS NOT NULL AND (
                  // Case 1: polygon (list of points → build its bounding box)
                  (n[field][0] IS NOT NULL AND
-                reduce(minLon = 180.0, pt IN n[field] | CASE WHEN pt.x < minLon THEN pt.x ELSE minLon END) <= polyMaxLon AND
-                reduce(maxLon = -180.0, pt IN n[field] | CASE WHEN pt.x > maxLon THEN pt.x ELSE maxLon END) >= polyMinLon AND
-                reduce(minLat = 90.0, pt IN n[field] | CASE WHEN pt.y < minLat THEN pt.y ELSE minLat END) <= polyMaxLat AND
-                reduce(maxLat = -90.0, pt IN n[field] | CASE WHEN pt.y > maxLat THEN pt.y ELSE maxLat END) >= polyMinLat
+                reduce(minLon = ${maxLongitude}, pt IN n[field] | CASE WHEN pt.x < minLon THEN pt.x ELSE minLon END) <= polyMaxLon AND
+                reduce(maxLon = ${minLongitude}, pt IN n[field] | CASE WHEN pt.x > maxLon THEN pt.x ELSE maxLon END) >= polyMinLon AND
+                reduce(minLat = ${maxLatitude}, pt IN n[field] | CASE WHEN pt.y < minLat THEN pt.y ELSE minLat END) <= polyMaxLat AND
+                reduce(maxLat = ${minLatitude}, pt IN n[field] | CASE WHEN pt.y > maxLat THEN pt.y ELSE maxLat END) >= polyMinLat
                  )
                  OR
                  // Case 2: single point
@@ -968,7 +979,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 return booleanPointInPolygon(entityPoint, searchPolygon);
             });
 
-            return filteredFields.length > 0 ? [{ node, matchingFields: filteredFields }] : [];
+            return filteredFields.length ? [{ node, matchingFields: filteredFields }] : [];
         });
     }
 

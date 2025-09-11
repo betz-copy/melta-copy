@@ -22,9 +22,9 @@ import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
 import { jerusalemCoordinates, LatLng, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
-import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import MapPageEntityDialog from './EntityMapDialog';
 import MapFilters, { DeleteMapDataBtn } from './MapFilters';
+import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
 
 const { maxRadius } = environment.map;
 
@@ -100,6 +100,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
             const { camera } = viewer;
 
+            viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
             const flyToBoundingSphere = (boundingSphere: Cesium.BoundingSphere) => {
                 const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5);
                 camera.flyToBoundingSphere(boundingSphere, { duration: 1.5, offset });
@@ -116,8 +118,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
                 case CameraFocusType.Polygon: {
                     if (polygon.length && polygon && !drawingMode) {
-                        viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
-
                         const boundingSphere = Cesium.BoundingSphere.fromPoints(polygon);
                         flyToBoundingSphere(boundingSphere);
                     }
@@ -136,20 +136,14 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                     break;
                 }
 
-                default: {
-                    if (!circle.center && !circle.radius && !polygon.length) {
-                        camera.flyTo({
-                            destination: jerusalemCoordinates,
-                            duration: 1.5,
-                        });
-                    }
-                }
+                default:
+                    if (!circle.center && !circle.radius && !polygon.length) camera.flyTo({ destination: jerusalemCoordinates, duration: 1.5 });
             }
         };
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [circle, drawingMode, searchedEntityPolygons, searchedEntityMarkers]);
+    }, [circle, polygon, line, drawingMode, searchedEntityPolygons, searchedEntityMarkers]);
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
@@ -327,6 +321,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         resetDrawing();
         setShapeType(null);
         setCameraFocus(null);
+        setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
     };
 
     const isDrawingShape = (shape: ShapeType | null) => shape === ShapeType.Circle || shape === ShapeType.Polygon;
@@ -459,21 +454,27 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 exclusive
                                 onChange={handleDrawType}
                                 size="small"
-                                style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
+                                style={{ background: darkMode ? '#121212' : 'white', height: '35px', borderRadius: 7 }}
                             >
                                 <MeltaTooltip title={i18next.t('location.circle')}>
                                     <ToggleButton value="circle">
-                                        <CircleIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
+                                        <CircleIcon
+                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.searchByPolygon')}>
                                     <ToggleButton value="polygon">
-                                        <PolygonIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
+                                        <PolygonIcon
+                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.line')}>
                                     <ToggleButton value="line">
-                                        <DistanceIcon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775' }} />
+                                        <DistanceIcon
+                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                             </ToggleButtonGroup>

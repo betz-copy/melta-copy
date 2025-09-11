@@ -79,7 +79,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                 alignItems: 'center',
                 justifyContent: 'center',
                 minWidth: 35,
-                minHeight: 35,
+                minHeight: 34,
                 borderRadius: 1,
                 bgcolor: 'background.paper',
             }}
@@ -88,8 +88,9 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                 <IconButton size="small" onClick={() => setIsOpen((prev) => !prev)} sx={{ zIndex: 1001 }}>
                     <LayersTwoTone
                         sx={{
+                            height: 20,
+                            borderRadius: 7,
                             color: darkMode ? '#9398c2' : '#1E2775',
-                            '--CircleTwoToneIcon-secondary-color': darkMode ? '#787c9e' : '#CCCFE6',
                         }}
                     />
                 </IconButton>

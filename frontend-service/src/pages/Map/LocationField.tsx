@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Pentagon, Place } from '@mui/icons-material';
+import { PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
@@ -21,7 +21,7 @@ import {
 } from '../../utils/map';
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
-import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
+import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
 
 type Props = {
@@ -158,16 +158,30 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                             value={drawingMode}
                             exclusive
                             onChange={handleDrawType}
-                            style={{ background: darkMode ? '#121212' : 'white', height: '34px' }}
+                            style={{ background: darkMode ? '#121212' : 'white', height: '34px', borderRadius: '7px' }}
                         >
                             <MeltaTooltip title={i18next.t('location.coordinate')}>
                                 <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
-                                    <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    <PlaceTwoTone
+                                        sx={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '7px',
+                                            color: darkMode ? '#9398c2' : '#1E2775',
+                                        }}
+                                    />
                                 </ToggleButton>
                             </MeltaTooltip>
                             <MeltaTooltip title={i18next.t('location.polygon')}>
                                 <ToggleButton value="polygon" disabled={markerPosition !== null}>
-                                    <Pentagon sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    <PentagonTwoTone
+                                        sx={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '7px',
+                                            color: darkMode ? '#9398c2' : '#1E2775',
+                                        }}
+                                    />
                                 </ToggleButton>
                             </MeltaTooltip>
                         </ToggleButtonGroup>

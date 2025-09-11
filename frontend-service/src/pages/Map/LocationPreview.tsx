@@ -1,68 +1,17 @@
 import * as Cesium from 'cesium';
-import { Cartesian3, Color } from 'cesium';
+import { Cartesian3 } from 'cesium';
 import React, { useEffect, useRef } from 'react';
 import { useQueryClient } from 'react-query';
-import { BillboardGraphics, Entity, PointGraphics, PolygonGraphics, PolylineGraphics, Viewer } from 'resium';
+import { Viewer } from 'resium';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { calculateCenterOfPolygon, jerusalemCoordinates, locationToWGS84String } from '../../utils/map';
+import { jerusalemCoordinates } from '../../utils/map';
 import { convertWGS94ToECEF } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
-import { getColoredLocationIcon } from '../../utils/icons/coloredLocationIcon';
-import { environment } from '../../globals';
-
-export const MeltaPolygon = ({
-    name,
-    polygon,
-    onClick,
-    color = environment.map.polygonDefaultColor,
-    outlineColor = Color.WHITE,
-    fill = true,
-    showCenteredPoint = true,
-}: {
-    name: string;
-    polygon: Cartesian3[];
-    onClick?: () => void;
-    color?: string;
-    fill?: boolean;
-    outlineColor?: Cesium.Color;
-    showCenteredPoint?: boolean;
-}) => {
-    const centroid = calculateCenterOfPolygon(polygon);
-
-    return (
-        <>
-            <Entity name={name}>
-                <PolylineGraphics positions={[...polygon, polygon[0]]} material={outlineColor} width={2} />
-                <PolygonGraphics
-                    hierarchy={polygon}
-                    fill={fill}
-                    material={fill ? Color.fromAlpha(Color.fromCssColorString(color), 0.3) : undefined}
-                />
-                {polygon.map((position, index) => (
-                    <Entity key={`${position.x}, ${position.y} - ${index}`} position={position}>
-                        <PointGraphics color={Color.WHITE} outlineColor={outlineColor} pixelSize={2} outlineWidth={2} />
-                    </Entity>
-                ))}
-            </Entity>
-
-            {showCenteredPoint && (
-                <Entity name={name} description={locationToWGS84String(polygon)} position={centroid} onClick={onClick}>
-                    <PointGraphics color={Color.fromCssColorString(color)} outlineColor={outlineColor} pixelSize={12} outlineWidth={2} />
-                </Entity>
-            )}
-        </>
-    );
-};
-
-export const MeltaCoordinate = ({ name, position, onClick, color }: { name: string; position: Cartesian3; onClick?: () => void; color?: string }) => (
-    <Entity name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
-        <BillboardGraphics image={getColoredLocationIcon(color)} scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
-    </Entity>
-);
+import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
 
 type Props = {
     entityProperties: IEntity['properties'];
