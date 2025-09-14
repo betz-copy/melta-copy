@@ -548,11 +548,6 @@ const entityTemplates: IEntityTemplateMock[] = [
                     color: '#4752B6',
                     comment: '<p>שלומות!!!</p>',
                 },
-                textArea: {
-                    title: 'טקסט ארוך',
-                    type: 'string',
-                    format: 'text-area',
-                },
                 user: {
                     title: 'משתמש',
                     type: 'string',
@@ -600,7 +595,6 @@ const entityTemplates: IEntityTemplateMock[] = [
             'regex',
             'signature',
             'comment',
-            'textArea',
             'user',
             'users',
             'file',

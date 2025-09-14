@@ -147,7 +147,6 @@ const RulesRow: React.FC = () => {
                 getItemId={(rule) => rule._id}
                 getNextPageParam={(lastPage, allPages) => {
                     const nextPage = allPages.length * bulk;
-                    console.log({ length: lastPage, nextPage });
                     return lastPage.length ? nextPage : undefined;
                 }}
                 endText={i18next.t('noSearchLeft')}
