@@ -1,24 +1,27 @@
 /* eslint-disable no-await-in-loop */
-import groupBy from 'lodash.groupby';
-import { Transaction } from 'neo4j-driver';
-import pickBy from 'lodash.pickby';
 import {
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    ActionTypes,
     ActionErrors,
+    ActionOnFail,
+    ActionTypes,
+    BadRequestError,
+    IAction,
+    IActivityLog,
+    IBrokenRule,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IAction,
-    IBrokenRule,
-    IRequiredConstraint,
     IEntity,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IRelationship,
-    IActivityLog,
-    BadRequestError,
+    IRequiredConstraint,
+    IUpdateEntityMetadata,
 } from '@microservices/shared';
+import groupBy from 'lodash.groupby';
+import _partition from 'lodash.partition';
+import pickBy from 'lodash.pickby';
+import { Transaction } from 'neo4j-driver';
+import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -26,8 +29,8 @@ import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import EntityManager from '../entities/manager';
 import RelationshipManager from '../relationships/manager';
+import { IRuleFailure } from '../rules/interfaces';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -449,6 +452,30 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         });
     }
 
+    async runUpdateColoredFieldsBulkInTransaction(
+        transaction: Transaction,
+        instances: (IEntity | IRelationship)[],
+        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        indicatorRules: IRuleFailure[],
+    ): Promise<(IEntity | IRelationship)[]> {
+        return Promise.all(
+            instances.map(async (instance) => {
+                if ('sourceEntityId' in instance || 'sourceEntity' in instance) return instance;
+
+                return (
+                    await this.entityManager.updateEntityByIdInnerTransaction(
+                        instance.properties._id,
+                        instance.properties,
+                        entitiesTemplatesByIds.get(instance.templateId)!,
+                        transaction,
+                        '',
+                        indicatorRules,
+                    )
+                ).updatedEntity;
+            }),
+        );
+    }
+
     async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId?: string) {
         return this.neo4jClient
             .performComplexTransaction(
@@ -505,10 +532,22 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         rulesByEntityTemplateIds,
                     );
 
+                    const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                        ruleFailuresAfterAll,
+                        ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
+                    );
+
+                    const entitiesWithUpdatedColors = await this.runUpdateColoredFieldsBulkInTransaction(
+                        transaction,
+                        results,
+                        entitiesTemplatesByIds,
+                        indicatorRules,
+                    );
+
                     throwIfActionCausedRuleFailures(
                         ignoredRules,
                         ruleFailuresBeforeAll,
-                        ruleFailuresAfterAll,
+                        rulesToThrowError,
                         actions.map((action, index) => {
                             if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity)
                                 return { createdEntityId: results[index].properties._id };
@@ -526,19 +565,15 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         await Promise.all(activityLogsPromises);
                     }
 
-                    return results;
+                    return entitiesWithUpdatedColors;
                 },
                 dryRun,
             )
-            .catch((err) => {
-                return this.entityManager.throwServiceErrorIfFailedConstraintsValidation(err);
-            });
+            .catch((err) => this.entityManager.throwServiceErrorIfFailedConstraintsValidation(err));
     }
 
     async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
-        const transactionsPromises = actionsGroups.map((actionsGroup) => {
-            return this.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId);
-        });
+        const transactionsPromises = actionsGroups.map((actionsGroup) => this.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId));
 
         return Promise.allSettled(transactionsPromises);
     }

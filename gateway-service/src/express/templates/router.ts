@@ -1,8 +1,9 @@
+import { createController, ValidateRequest } from '@microservices/shared';
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import TemplatesController from './controller';
 import TemplatesValidator from './middlewares';
 import {
@@ -13,17 +14,18 @@ import {
     createPrintingTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
+    deleteChildTemplateSchema,
     deleteEntityTemplateSchema,
     deleteFieldValueSchema,
     deletePrintingTemplateSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     getAllChildTemplatesSchema,
-    getCategoriesSchema,
-    searchChildTemplatesSchema,
     getAllConfigsSchema,
+    getCategoriesSchema,
     getConfigByTypeSchema,
     getPrintingTemplateByIdSchema,
+    searchChildTemplatesSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchPrintingTemplatesSchema,
@@ -31,17 +33,15 @@ import {
     searchTemplatesRequestSchema,
     updateCategorySchema,
     updateCategoryTempOrderSchema,
+    updateChildTemplateSchema,
+    updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
     updatePrintingTemplateSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
-    updateChildTemplateSchema,
-    deleteChildTemplateSchema,
-    updateEntityTemplateActionSchema,
 } from './validator.schema';
-import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const {
     templateService: { url, requestTimeout, baseRoute },

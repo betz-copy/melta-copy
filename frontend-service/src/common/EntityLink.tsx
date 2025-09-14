@@ -44,6 +44,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
             <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
                 <EntityPropertiesInternal
                     properties={entity.properties}
+                    coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
                     showPreviewPropertiesOnly

@@ -262,7 +262,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
                     >
                         {displayOptionValues.map((displayOptionValue, index) => (
-                            <MeltaTooltip key={displayOptionValue} placement="top" title={template.properties.properties[displayKeys[index]].title}>
+                            <MeltaTooltip
+                                key={`${displayOptionValue}${index}`}
+                                placement="top"
+                                title={template.properties.properties[displayKeys[index]].title}
+                            >
                                 <Typography
                                     color="#53566E"
                                     fontSize="14px"
@@ -285,6 +289,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                     <EntityPropertiesInternal
                                         properties={option.properties}
                                         entityTemplate={template}
+                                        coloredFields={option.coloredFields}
                                         showPreviewPropertiesOnly
                                         mode="white"
                                         textWrap

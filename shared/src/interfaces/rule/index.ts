@@ -2,19 +2,25 @@ import { IEntityTemplatePopulated } from '../entityTemplate';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate';
 import { IFormula } from './formula';
 
+export enum ActionOnFail {
+    WARNING = 'WARNING',
+    ENFORCEMENT = 'ENFORCEMENT',
+    INDICATOR = 'INDICATOR',
+}
+
 export interface IRule {
     name: string;
     description: string;
-    actionOnFail: 'WARNING' | 'ENFORCEMENT';
+    actionOnFail: ActionOnFail;
     entityTemplateId: string;
     formula: IFormula;
     disabled: boolean;
+    fieldColor?: { display: boolean; field: string; color: string };
 }
 
 export interface IMongoRule extends IRule {
     _id: string;
 }
-
 export type IRuleMap = Map<string, IMongoRule>;
 
 export interface ISearchRulesBody {

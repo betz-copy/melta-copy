@@ -208,6 +208,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                                 ) : (
                                                     <EntityPropertiesInternal
                                                         properties={option.properties}
+                                                        coloredFields={option.coloredFields}
                                                         entityTemplate={template}
                                                         mode="white"
                                                         textWrap

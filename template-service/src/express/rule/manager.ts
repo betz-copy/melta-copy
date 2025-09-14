@@ -1,5 +1,5 @@
-import { FilterQuery } from 'mongoose';
 import { DefaultManagerMongo, IMongoRule, IRule, NotFoundError } from '@microservices/shared';
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import RuleTemplateSchema from './model';
@@ -20,7 +20,7 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
             .exec();
     }
 
-    async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
+    async updateRuleById(ruleId: string, updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled'>) {
         return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 

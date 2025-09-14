@@ -1,4 +1,5 @@
 import {
+    ActionOnFail,
     ForbiddenError,
     IAction,
     IBrokenRule,
@@ -290,7 +291,7 @@ class InstancesValidator extends DefaultController {
             ignoredRules.map((ignoredRule) => this.relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
         );
 
-        if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
+        if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== ActionOnFail.WARNING)) {
             throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
     }

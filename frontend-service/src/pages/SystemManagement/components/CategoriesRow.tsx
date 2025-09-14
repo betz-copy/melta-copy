@@ -328,4 +328,4 @@ const CategoriesRow: React.FC = () => {
     );
 };
 
-export { CategoriesRow };
+export default CategoriesRow;

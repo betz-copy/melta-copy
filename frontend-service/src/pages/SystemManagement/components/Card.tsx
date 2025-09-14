@@ -1,5 +1,5 @@
+import { Card, CardContent, Collapse, Grid } from '@mui/material';
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, Collapse } from '@mui/material';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const ViewingCard: React.FC<{
@@ -20,6 +20,7 @@ export const ViewingCard: React.FC<{
                 onMouseLeave={() => (onHover ? onHover(false) : '')}
                 sx={{
                     bgcolor: darkMode ? '#111111' : '#fff',
+                    opacity: isDisabled ? 0.6 : 1,
                     ':hover': { transform: 'scale(1.01)' },
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',

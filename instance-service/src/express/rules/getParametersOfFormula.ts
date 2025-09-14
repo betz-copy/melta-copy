@@ -1,14 +1,15 @@
 import {
-    IMongoRule,
-    IFormula,
+    ActionOnFail,
     IArgument,
+    IFormula,
+    IMongoRule,
     IVariable,
-    isPropertyOfVariable,
-    isCountAggFunction,
-    isRegularFunction,
-    isEquation,
     isAggregationGroup,
+    isCountAggFunction,
+    isEquation,
     isGroup,
+    isPropertyOfVariable,
+    isRegularFunction,
 } from '@microservices/shared';
 
 interface IParameterOfFormula {
@@ -100,6 +101,5 @@ const isRuleDependentOnEntity = (rule: IMongoRule, entityTemplateId: string, upd
     });
 };
 
-export const filterDependentRulesOnEntity = (rules: IMongoRule[], entityTemplateId: string, updatedProperties?: string[]) => {
-    return rules.filter((rule) => isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties));
-};
+export const filterDependentRulesOnEntity = (rules: IMongoRule[], entityTemplateId: string, updatedProperties?: string[]) =>
+    rules.filter((rule) => rule.actionOnFail === ActionOnFail.INDICATOR || isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties));

@@ -301,6 +301,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     innerStyle={{ width: '32%' }}
                                     textWrap
                                     mode="normal"
+                                    coloredFields={entity.coloredFields}
                                 />
                                 {displayArchiveProperties && (
                                     <EntityProperties
@@ -320,6 +321,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         displayArchiveProperties
                                         showDivider
                                         dividerTitle={i18next.t('entityPage.archiveTitle')}
+                                        coloredFields={entity.coloredFields}
                                     />
                                 )}
                             </Grid>
