@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Place, Polyline } from '@mui/icons-material';
+import { PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
@@ -16,11 +16,12 @@ import {
     isValidPolygonPoint,
     jerusalemCoordinates,
     locationToWGS84String,
+    MapItemType,
     stringToCoordinates,
 } from '../../utils/map';
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
-import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
+import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
 
 type Props = {
@@ -44,12 +45,12 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
 
-        if (initialCoordinates?.type === 'marker') {
+        if (initialCoordinates?.type === MapItemType.Coordinate) {
             const { value } = initialCoordinates;
             setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
         }
 
-        if (initialCoordinates?.type === 'polygon') {
+        if (initialCoordinates?.type === MapItemType.Polygon) {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
                 isValidWGS84(position) ? (convertWGS94ToECEF(position) as Cartesian3) : position,
             );
@@ -62,6 +63,8 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
             const { camera } = viewer;
+
+            viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
             if (markerPosition !== null) {
                 const radius = 30000;
@@ -157,16 +160,30 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                             value={drawingMode}
                             exclusive
                             onChange={handleDrawType}
-                            style={{ background: darkMode ? '#121212' : 'white', height: '34px' }}
+                            style={{ background: darkMode ? '#121212' : 'white', height: '34px', borderRadius: '7px' }}
                         >
                             <MeltaTooltip title={i18next.t('location.coordinate')}>
                                 <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
-                                    <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    <PlaceTwoTone
+                                        sx={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '7px',
+                                            color: darkMode ? '#9398c2' : '#1E2775',
+                                        }}
+                                    />
                                 </ToggleButton>
                             </MeltaTooltip>
                             <MeltaTooltip title={i18next.t('location.polygon')}>
                                 <ToggleButton value="polygon" disabled={markerPosition !== null}>
-                                    <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                    <PentagonTwoTone
+                                        sx={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '7px',
+                                            color: darkMode ? '#9398c2' : '#1E2775',
+                                        }}
+                                    />
                                 </ToggleButton>
                             </MeltaTooltip>
                         </ToggleButtonGroup>

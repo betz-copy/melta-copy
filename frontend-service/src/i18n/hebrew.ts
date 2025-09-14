@@ -1651,6 +1651,7 @@ export default {
     },
     location: {
         polygon: 'פוליגון',
+        searchByPolygon: ' חיפוש בעזרת פוליגון',
         coordinate: 'נקודת ציון',
         circle: 'חיפוש בעזרת מעגל',
         line: 'קו למדידת מרחק',
