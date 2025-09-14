@@ -29,6 +29,7 @@ import {
     IRelationship,
     IRelationshipReference,
     IRequiredConstraint,
+    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
@@ -44,6 +45,7 @@ import {
 } from '@microservices/shared';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
+import { injectValuesToString } from 'instance-service/src/utils/handlebars';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import isEqual from 'lodash.isequal';
@@ -713,11 +715,6 @@ class EntityManager extends DefaultManagerNeo4j {
             return { createdEntity, actions: fixedActions };
         }
 
-        const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
-            entityTemplateIds: [entityTemplate._id],
-        });
-        const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entityTemplate._id, Object.keys(properties));
-
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
                 const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
@@ -733,6 +730,21 @@ class EntityManager extends DefaultManagerNeo4j {
                     ruleFailuresAfterAction,
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
+
+                const emails: IRuleMail[] = [];
+
+                indicatorRules.forEach((rule) => {
+                    if (rule.rule.mail?.display) {
+                        const mailTemplate = rule.rule.mail;
+                        const newMail: IRuleMail = {
+                            ...mailTemplate,
+                            title: injectValuesToString(mailTemplate.title, createdEntity.properties, entityTemplate),
+                            body: injectValuesToString(mailTemplate.body, createdEntity.properties, entityTemplate),
+                        };
+
+                        emails.push(newMail);
+                    }
+                });
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     createdEntity.properties._id,
@@ -757,7 +769,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { createdEntity: entityWithUpdatedColors };
+                return { createdEntity: entityWithUpdatedColors, emails: emails ?? undefined };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }

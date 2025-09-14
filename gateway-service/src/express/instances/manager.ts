@@ -556,7 +556,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
         logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
-        const { createdEntity, actions } = await this.service
+        const { createdEntity, actions, emails } = await this.service
             .createEntityInstance({ properties, templateId }, ignoredRules, userId, undefined, childTemplateId)
             .catch((err) => this.handleBrokenRulesError(err));
 
@@ -578,6 +578,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         } else {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
+        }
+
+        if (emails) {
+            await this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, createdEntity, userId);
         }
 
         return createdEntity;

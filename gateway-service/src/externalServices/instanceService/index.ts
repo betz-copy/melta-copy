@@ -19,6 +19,7 @@ import {
     IMultipleSelect,
     IEntityWithDirectRelationships,
     IEntityExpanded,
+    IRuleMail,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -69,7 +70,7 @@ class InstancesService extends DefaultExternalServiceApi {
     }
 
     async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
-        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
+        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
