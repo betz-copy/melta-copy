@@ -336,7 +336,7 @@ const EntityTemplatesRow: React.FC = () => {
     }, [categories]);
 
     return (
-        <Grid container>
+        <Grid container direction="column">
             <Grid container spacing={1} alignItems="center">
                 <Grid>
                     <SearchInput placeholder={i18next.t('globalSearch.searchLabel')} borderRadius="7px" onChange={setSearchText} value={searchText} />

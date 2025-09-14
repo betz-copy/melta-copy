@@ -80,7 +80,7 @@ const MultipleSelect: React.FC<{
             renderOption={(props, option) => (
                 <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
                     {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
-                    <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
+                    <ColoredEnumChip {...props} key={option.value} label={option.label} color={option.color || 'default'} />
                 </MenuItem>
             )}
             renderValue={(tagValue, getTagProps) => (

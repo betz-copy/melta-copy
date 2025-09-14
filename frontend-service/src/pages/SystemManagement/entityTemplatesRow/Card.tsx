@@ -123,7 +123,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups, enumPropertiesColors } =
+        entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
@@ -263,6 +264,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                       propertiesTypeOrder,
                                                       uniqueConstraints,
                                                       fieldGroups,
+                                                      enumPropertiesColors,
                                                   },
                                               });
                                               setIsHoverOnCard(false);
