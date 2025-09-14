@@ -11,6 +11,7 @@ import {
     IAction,
     IBrokenRule,
     IBrokenRuleEntity,
+    IBulkOfActions,
     ICountSearchResult,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -26,6 +27,7 @@ import {
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
     IRelationship,
+    IBulkRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
@@ -38,6 +40,7 @@ import {
     matchValueAgainstFilter,
     TemplateItem,
     UploadedFile,
+    IRuleMail,
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
@@ -580,9 +583,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
-        if (emails) {
-            await this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, createdEntity, userId);
-        }
+        if (emails) await this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, createdEntity, userId);
 
         return createdEntity;
     }
@@ -858,7 +859,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
-        const { updatedEntity, actions } = await this.service
+        const { updatedEntity, actions, emails } = await this.service
             .updateEntityInstance(
                 id,
                 {
@@ -922,6 +923,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         } else {
             await this.rabbitManager.indexFiles(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
+
+        if (emails) await this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, updatedEntity, userId);
 
         return updatedEntity;
     }
@@ -1132,7 +1135,39 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }),
         );
 
-        return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+        const bulkResults: PromiseSettledResult<IBulkOfActions>[] = await this.service.runBulkOfActions(
+            newActionsGroups,
+            dryRun,
+            userId,
+            ignoredRules,
+        );
+        const emailsByInstance: Record<string, IBulkRuleMail[]> = {};
+        const bulkResultsMapped = bulkResults.map((result) => {
+            if (result.status === 'fulfilled') {
+                const emails = result.value.emails;
+                emails.forEach((email) => {
+                    const entityId = email.entity.properties._id;
+                    emailsByInstance[entityId] = [email, ...(emailsByInstance[entityId] ?? [])];
+                });
+
+                return {
+                    status: 'fulfilled',
+                    value: result.value.instances,
+                };
+            } else {
+                return {
+                    status: 'rejected',
+                    reason: result.reason,
+                };
+            }
+        });
+
+        Object.values(emailsByInstance).forEach((emails) => {
+            const entity = emails[0]?.entity;
+            if (entity) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails as IRuleMail[], emails[0].entity, userId);
+        });
+
+        return bulkResultsMapped;
     }
 
     async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody, userId: string) {

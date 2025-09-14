@@ -16,6 +16,7 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachRequestPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
+    IRuleMail,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
     IUser,
@@ -253,8 +254,7 @@ class MailManager {
 
         return (
             <p>
-                {hebrew.updateEntityActionInfo.updatingEntity}{' '}
-                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
+                {hebrew.updateEntityActionInfo.updatingEntity} <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
             </p>
         );
     }
@@ -471,6 +471,17 @@ class MailManager {
             to: viewersMail,
             title,
             html,
+        };
+    }
+
+    async createIndicatorMail({ viewers }: IMailNotification, emailTemplate: IRuleMail) {
+        const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
+
+        return {
+            from: mailerService.mailUser,
+            to: viewersMail,
+            title: emailTemplate.title,
+            html: emailTemplate.body,
         };
     }
 }

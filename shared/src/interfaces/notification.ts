@@ -1,12 +1,14 @@
 import { IEntity } from './entity';
 import { IMongoStepInstancePopulated } from './process';
 import { IMongoProcessInstanceReviewerPopulated, Status } from './process/instances/process';
+import { IRuleMail } from './rule';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from './ruleBreach';
 
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
+    ruleIndicatorAlert = 'ruleIndicatorAlert',
 
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
@@ -26,6 +28,11 @@ export interface IRuleBreachRequestNotificationMetadata {
 }
 export interface IRuleBreachResponseNotificationMetadata {
     requestId: string;
+}
+
+export interface IRuleIndicatorAlertNotificationMetadata {
+    entityId: string;
+    email: IRuleMail;
 }
 
 export interface IProcessReviewerUpdateNotificationMetadata {
@@ -59,6 +66,7 @@ export type INotificationMetadata =
     | IRuleBreachAlertNotificationMetadata
     | IRuleBreachRequestNotificationMetadata
     | IRuleBreachResponseNotificationMetadata
+    | IRuleIndicatorAlertNotificationMetadata
     | IProcessReviewerUpdateNotificationMetadata
     | IProcessStatusUpdateNotificationMetadata
     | INewProcessNotificationMetadata
@@ -99,6 +107,11 @@ export interface IRuleBreachResponseNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
 }
 
+export interface IRuleIndicatorAlertNotificationMetadataPopulated {
+    entity: IEntity;
+    email: IRuleMail;
+}
+
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
     process: IMongoProcessInstanceReviewerPopulated | null;
     addedSteps: (IMongoStepInstancePopulated | null)[];
@@ -129,6 +142,7 @@ export type INotificationMetadataPopulated =
     | IRuleBreachAlertNotificationMetadataPopulated
     | IRuleBreachRequestNotificationMetadataPopulated
     | IRuleBreachResponseNotificationMetadataPopulated
+    | IRuleIndicatorAlertNotificationMetadataPopulated
     | IProcessReviewerUpdateNotificationMetadataPopulated
     | IProcessStatusUpdateNotificationMetadataPopulated
     | INewProcessNotificationMetadataPopulated

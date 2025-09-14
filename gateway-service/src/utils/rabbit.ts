@@ -1,5 +1,5 @@
 import { menash } from 'menashmq';
-import { IUser, INotificationMetadata, NotificationType, logger } from '@microservices/shared';
+import { IUser, INotificationMetadata, NotificationType, logger, IRuleIndicatorAlertNotificationMetadata } from '@microservices/shared';
 import config from '../config';
 // eslint-disable-next-line import/extensions
 import MailManager from './mailNotifications';
@@ -14,8 +14,11 @@ const {
 class RabbitManager {
     private workspaceId: string;
 
+    private mailManager: MailManager;
+
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
+        this.mailManager = new MailManager(workspaceId);
     }
 
     async createNotification<
@@ -29,7 +32,15 @@ class RabbitManager {
         const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
 
         if (filteredViewers.length > 0) {
-            const mailData = await new MailManager(this.workspaceId).createMail({ viewers: filteredViewers, type, populatedMetaData });
+            const mailData =
+                type === NotificationType.ruleIndicatorAlert
+                    ? await this.mailManager.createIndicatorMail(
+                          { viewers: filteredViewers, type, populatedMetaData },
+                          (metadata as IRuleIndicatorAlertNotificationMetadata).email,
+                      )
+                    : await this.mailManager.createMail({ viewers: filteredViewers, type, populatedMetaData });
+
+            console.dir(mailData, { depth: Infinity });
             await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
         }
     }

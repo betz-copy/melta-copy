@@ -909,6 +909,7 @@ export default {
             sendToAssociatedUsers: 'משתמשים משוייכים ליישות',
             mustSelectOneIndicatorConfig: 'חובה לבחור אפשרות אחת לפחות',
             recipients: 'נמענים',
+            invalidMailFormat: 'פורמט לא תקין (סוגריים לא תקינות)',
         },
         processInstance: {
             saveBth: 'שמירה',

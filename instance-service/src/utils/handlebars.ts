@@ -30,6 +30,10 @@ export const formatEntityProperties = (entityTemplate: IMongoEntityTemplate, pro
                 const parsed = JSON.parse(value);
 
                 return [key, `${parsed.fullName} - ${parsed.hierarchy}`];
+            case 'date':
+                return [key, new Date(value).toLocaleDateString('he-IL')];
+            case 'date-time':
+                return [key, new Date(value).toLocaleString('he-IL')];
             default:
                 if (type === 'boolean') return [key, value ? 'כן' : 'לא'];
                 if (type === 'array') return [key, value.join(', ')];

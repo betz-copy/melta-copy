@@ -7,6 +7,7 @@ import {
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
+    IBulkOfActions,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
@@ -89,7 +90,7 @@ class InstancesService extends DefaultExternalServiceApi {
         childTemplateId?: string,
         convertToRelationshipField = false,
     ) {
-        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
+        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
@@ -267,8 +268,8 @@ class InstancesService extends DefaultExternalServiceApi {
         dryRun: boolean,
         userId: string,
         ignoredRules: IBrokenRule[] = [],
-    ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
-        const { data } = await this.api.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
+    ): Promise<PromiseSettledResult<IBulkOfActions>[]> {
+        const { data } = await this.api.post<PromiseSettledResult<IBulkOfActions>[]>(
             `${baseBulkActionsRoute}/bulk`,
             { actionsGroups, ignoredRules, userId },
             { params: { dryRun } },

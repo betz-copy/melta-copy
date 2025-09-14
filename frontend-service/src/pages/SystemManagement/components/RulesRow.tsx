@@ -403,4 +403,4 @@ const RulesRow: React.FC = () => {
     );
 };
 
-export { RulesRow };
+export default RulesRow;

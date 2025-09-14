@@ -48,6 +48,8 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
     UploadedFile,
+    IRuleMail,
+    InstancesSubclassesPermissions,
 } from '@microservices/shared';
 import { trycatch } from '../../utils';
 import InstancesManager from '../instances/manager';
@@ -293,6 +295,89 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         }
 
         return ruleBreachRequestPopulated;
+    }
+
+    private async getIndicatorEmailRecipients(
+        entity: IEntity,
+        userId: string,
+        sendPermissionUsers: boolean,
+        sendAssociatedUsers: boolean,
+    ): Promise<Set<string>> {
+        const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
+        const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+        const recipients = new Set<string>([userId]);
+
+        if (sendPermissionUsers) {
+            const [templateUsers, categoryUsers, admins] = await Promise.all([
+                await UsersManager.searchUserIds({
+                    workspaceIds,
+                    permissions: {
+                        [PermissionType.instances]: {
+                            categories: {
+                                [entityTemplate.category._id]: {
+                                    [InstancesSubclassesPermissions.entityTemplates]: {
+                                        [entityTemplate._id]: {
+                                            fields: {},
+                                            scope: PermissionScope.write,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    limit: config.instanceService.searchEntitiesFlowMaxLimit,
+                }),
+
+                await UsersManager.searchUserIds({
+                    workspaceIds,
+                    permissions: {
+                        [PermissionType.instances]: {
+                            categories: {
+                                [entityTemplate.category._id]: {
+                                    [InstancesSubclassesPermissions.entityTemplates]: {},
+                                    scope: PermissionScope.write,
+                                },
+                            },
+                        },
+                    },
+                    limit: config.instanceService.searchEntitiesFlowMaxLimit,
+                }),
+
+                await UsersManager.searchUserIds({
+                    workspaceIds,
+                    permissions: {
+                        [PermissionType.admin]: {
+                            scope: PermissionScope.write,
+                        },
+                    },
+                    limit: config.instanceService.searchEntitiesFlowMaxLimit,
+                }),
+            ]);
+            [templateUsers, categoryUsers, admins].forEach((users) => users.forEach((u) => recipients.add(u)));
+        }
+
+        if (sendAssociatedUsers) {
+            // TODO: figure out how to fetch those (I think it will require recieving the instance itself...)
+        }
+
+        return recipients;
+    }
+
+    async sendIndicatorEmailNotifications(emails: IRuleMail[], entity: IEntity, userId: string) {
+        await Promise.all(
+            emails.map(async (email) => {
+                const viewers = await this.getIndicatorEmailRecipients(entity, userId, email.sendPermissionUsers, email.sendPermissionUsers);
+                return this.rabbitManager.createNotification(
+                    Array.from(viewers),
+                    NotificationType.ruleIndicatorAlert,
+                    {
+                        entityId: entity.properties._id,
+                        email,
+                    },
+                    { entity, email },
+                );
+            }),
+        );
     }
 
     private async sendNotification<

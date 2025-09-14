@@ -14,17 +14,38 @@ import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import TextArea from '../../inputs/TextArea';
 import { StepComponentProps } from '../index';
+import Handlebars from 'handlebars';
+
+const validMailField = (value: string): boolean => {
+    try {
+        Handlebars.parse(value);
+        console.log('aaaa', value);
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 const mailSchema = Yup.object({
     display: Yup.boolean(),
-    title: Yup.string().when('display', {
-        is: true,
-        then: (schema) => schema.required(i18next.t('validation.required')),
-    }),
-    body: Yup.string().when('display', {
-        is: true,
-        then: (schema) => schema.required(i18next.t('validation.required')),
-    }),
+    title: Yup.string()
+        .when('display', {
+            is: true,
+            then: (schema) => schema.required(i18next.t('validation.required')),
+        })
+        .test('invalid-format', i18next.t('wizard.rule.invalidMailFormat'), function (this, value) {
+            if (this.parent.display === false) return true;
+            return validMailField(value ?? '');
+        }),
+    body: Yup.string()
+        .when('display', {
+            is: true,
+            then: (schema) => schema.required(i18next.t('validation.required')),
+        })
+        .test('invalid-format', i18next.t('wizard.rule.invalidMailFormat'), function (this, value) {
+            if (this.parent.display === false) return true;
+            return validMailField(value ?? '');
+        }),
     sendPermissionUsers: Yup.boolean().when('display', {
         is: true,
         then: (schema) =>
@@ -88,6 +109,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
     isEditMode,
     setValues,
 }) => {
+    console.log(errors);
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -237,13 +259,20 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                                         helperText={touched.mail && getIn(errors.mail, 'title')}
                                         sx={{ width: '100%' }}
                                     />
-                                    <TextArea
-                                        id="mailBody"
-                                        label={`${i18next.t('wizard.rule.mailBody')} *`}
-                                        value={values.mail?.body}
-                                        onChange={(value) => setFieldValue('mail.body', value)}
-                                        error={touched.mail && Boolean(getIn(errors.mail, 'body'))}
-                                    />
+                                    <Grid container direction="column">
+                                        <TextArea
+                                            id="mailBody"
+                                            label={`${i18next.t('wizard.rule.mailBody')} *`}
+                                            value={values.mail?.body}
+                                            onChange={(value) => setFieldValue('mail.body', value)}
+                                            error={touched.mail && Boolean(getIn(errors.mail, 'body'))}
+                                        />
+                                        {touched.mail && Boolean(getIn(errors.mail, 'body')) && (
+                                            <FormHelperText sx={{ color: '#FF0000', fontSize: '12px', marginLeft: 2 }}>
+                                                {getIn(errors.mail, 'body')}
+                                            </FormHelperText>
+                                        )}
+                                    </Grid>
                                     <Grid container direction="column">
                                         <Grid container gap={2}>
                                             <FormControl sx={{ fontSize: '14px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>

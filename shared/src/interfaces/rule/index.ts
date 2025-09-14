@@ -1,3 +1,4 @@
+import { IEntity } from '../entity';
 import { IEntityTemplatePopulated } from '../entityTemplate';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate';
 import { IFormula } from './formula';
@@ -15,6 +16,11 @@ export interface IRuleMail {
     sendPermissionUsers: boolean;
     sendAssociatedUsers: boolean;
 }
+
+export interface IBulkRuleMail extends IRuleMail {
+    entity: IEntity;
+}
+
 export interface IRule {
     name: string;
     description: string;
@@ -25,7 +31,6 @@ export interface IRule {
     fieldColor?: { display: boolean; field: string; color: string };
     mail?: IRuleMail;
 }
-
 export interface IMongoRule extends IRule {
     _id: string;
 }

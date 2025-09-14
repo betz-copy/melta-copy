@@ -45,7 +45,6 @@ import {
 } from '@microservices/shared';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
-import { injectValuesToString } from 'instance-service/src/utils/handlebars';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import isEqual from 'lodash.isequal';
@@ -60,6 +59,7 @@ import EntityTemplateManagerService from '../../externalServices/templates/entit
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
+import { injectValuesToString } from '../../utils/handlebars';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -710,7 +710,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const createdEntity = await this.getEntityById(results[0].properties._id);
-            const fixedActions = this.fixActions(actions, results);
+            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
             return { createdEntity, actions: fixedActions };
         }
@@ -1677,7 +1677,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const updatedEntity = await this.getEntityById(results[0].properties._id);
-            const fixedActions = this.fixActions(actions, results);
+            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
             return { updatedEntity, actions: fixedActions };
         }
@@ -1703,6 +1703,21 @@ class EntityManager extends DefaultManagerNeo4j {
                     ruleFailuresAfterAction,
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
+
+                const emails: IRuleMail[] = [];
+
+                indicatorRules.forEach((rule) => {
+                    if (rule.rule.mail?.display) {
+                        const mailTemplate = rule.rule.mail;
+                        const newMail: IRuleMail = {
+                            ...mailTemplate,
+                            title: injectValuesToString(mailTemplate.title, updatedEntity.properties, entityTemplate),
+                            body: injectValuesToString(mailTemplate.body, updatedEntity.properties, entityTemplate),
+                        };
+
+                        emails.push(newMail);
+                    }
+                });
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     id,
@@ -1732,7 +1747,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { updatedEntity: entityWithUpdatedColors };
+                return { updatedEntity: entityWithUpdatedColors, emails };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
