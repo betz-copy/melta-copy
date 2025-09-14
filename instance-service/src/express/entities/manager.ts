@@ -39,9 +39,11 @@ import {
     IUpdatedFields,
     IUpdateEntityMetadata,
     NotFoundError,
+    Polygon,
     ServiceError,
     ValidationError,
 } from '@microservices/shared';
+import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
@@ -63,6 +65,7 @@ import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
+    getNeo4jLocation,
     normalizeChartResponse,
     normalizeFields,
     normalizeGetDbConstraints,
@@ -75,6 +78,7 @@ import {
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
+import closePolygon from '../../utils/neo4j/location';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
@@ -87,7 +91,13 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
-const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
+const {
+    brokenRulesFakeEntityIdPrefix,
+    deleteEntitiesMaxLimit,
+    map: {
+        wgs84: { maxLatitude, maxLongitude, minLatitude, minLongitude },
+    },
+} = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
@@ -903,9 +913,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     private buildCircleQuery() {
-        let query = this.buildBaseQuery();
-
-        query += `
+        return `
             AND templateData.circle IS NOT NULL
 
             WITH n, templateData,
@@ -934,22 +942,96 @@ class EntityManager extends DefaultManagerNeo4j {
 
             RETURN n, matchingFields
         `;
+    }
 
-        return query;
+    private buildBoundingBox(coordFields: { lon: string; lat: string } = { lon: 'longitude', lat: 'latitude' }): string {
+        return `
+        reduce(minLon = ${maxLongitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lon} < minLon THEN p.${coordFields.lon} ELSE minLon END) AS polyMinLon,
+        reduce(maxLon = ${minLongitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lon} > maxLon THEN p.${coordFields.lon} ELSE maxLon END) AS polyMaxLon,
+        reduce(minLat = ${maxLatitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lat} < minLat THEN p.${coordFields.lat} ELSE minLat END) AS polyMinLat,
+        reduce(maxLat = ${minLatitude}, p IN searchPolygon | CASE WHEN p.${coordFields.lat} > maxLat THEN p.${coordFields.lat} ELSE maxLat END) AS polyMaxLat
+    `;
+    }
+
+    private buildPolygonQuery() {
+        // filter entities that their bounding box is intersecting the search polygon bounding box
+        return `
+            AND templateData.polygon IS NOT NULL
+
+            WITH n, templateData,
+            [p IN templateData.polygon | point({longitude: p[0], latitude: p[1], crs:'wgs-84'})] AS searchPolygon
+
+            // Compute search polygon bounding box
+            WITH n, templateData, searchPolygon,
+            ${this.buildBoundingBox()}
+            WITH n, templateData, polyMinLon, polyMaxLon, polyMinLat, polyMaxLat,
+             point({longitude: polyMinLon, latitude: polyMinLat, crs:'wgs-84'}) AS lowerLeft,
+             point({longitude: polyMaxLon, latitude: polyMaxLat, crs:'wgs-84'}) AS upperRight
+
+            WITH n, templateData, lowerLeft, upperRight,
+             [ field IN templateData.locationFields
+               WHERE n[field] IS NOT NULL AND (
+                 // Case 1: polygon (list of points → build its bounding box)
+                 (n[field][0] IS NOT NULL AND
+                reduce(minLon = ${maxLongitude}, pt IN n[field] | CASE WHEN pt.x < minLon THEN pt.x ELSE minLon END) <= polyMaxLon AND
+                reduce(maxLon = ${minLongitude}, pt IN n[field] | CASE WHEN pt.x > maxLon THEN pt.x ELSE maxLon END) >= polyMinLon AND
+                reduce(minLat = ${maxLatitude}, pt IN n[field] | CASE WHEN pt.y < minLat THEN pt.y ELSE minLat END) <= polyMaxLat AND
+                reduce(maxLat = ${minLatitude}, pt IN n[field] | CASE WHEN pt.y > maxLat THEN pt.y ELSE maxLat END) >= polyMinLat
+                 )
+                 OR
+                 // Case 2: single point
+                 (point.withinBBox(n[field], lowerLeft, upperRight))
+               )
+             | field ] AS matchingFields
+
+            WITH n, matchingFields
+            WHERE size(matchingFields) > 0
+            RETURN n, matchingFields
+        `;
+    }
+
+    private filterIntersectingEntities(searchResults: { node: IEntity; matchingFields: string[] }[], polygon: Polygon) {
+        const polygonCoords = closePolygon(polygon);
+        const searchPolygon = turfPolygon([polygonCoords]);
+
+        return searchResults.flatMap(({ node, matchingFields }) => {
+            const filteredFields = matchingFields.filter((field) => {
+                const nodeFieldValue = node.properties[field].location;
+                const neo4jLocation = getNeo4jLocation(nodeFieldValue, node.properties, field);
+
+                if (Array.isArray(neo4jLocation)) {
+                    const coords = neo4jLocation.map((p): [number, number] => [p.x, p.y]);
+                    const closedPolygon = closePolygon(coords);
+                    const entityPolygon = turfPolygon([closedPolygon]);
+                    return Boolean(intersect(featureCollection([searchPolygon, entityPolygon])));
+                }
+
+                const entityPoint = turfPoint([neo4jLocation.x, neo4jLocation.y]);
+                return booleanPointInPolygon(entityPoint, searchPolygon);
+            });
+
+            return filteredFields.length ? [{ node, matchingFields: filteredFields }] : [];
+        });
     }
 
     async searchEntitiesByLocation(requestBody: ISearchEntitiesByLocationBody) {
         const { circle, polygon, templates } = requestBody;
 
-        let query: string | null = null;
+        if (!circle && !polygon) throw new ValidationError('Payload must include either circle or polygon.');
 
-        if (circle) query = this.buildCircleQuery();
+        let query: string = this.buildBaseQuery();
 
-        if (!query) throw new Error('Payload must include either circle or polygon.');
+        query += circle ? this.buildCircleQuery() : this.buildPolygonQuery();
 
         const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
 
-        return this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), { templates: updatedTemplates });
+        const searchResults = await this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), {
+            templates: updatedTemplates,
+        });
+
+        if (!polygon) return searchResults;
+
+        return this.filterIntersectingEntities(searchResults, polygon);
     }
 
     async getEntityById(id: string) {
