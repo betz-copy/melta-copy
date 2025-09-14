@@ -8,7 +8,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { IEntity } from '../../../interfaces/entities';
 import { ActionTypes, IUpdateEntityStatusMetadata, IUpdateEntityStatusMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
+import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { IErrorResponse } from '../../../interfaces/error';
 
@@ -65,10 +65,7 @@ const UpdateStatusWithRuleBreachDialog: React.FC<{
             isSubmitting={isLoadingUpdateEntity || isLoadingCreateRuleBreachRequest}
             onCancel={handleClose}
             onSubmit={async () => {
-                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-                    const rule = rules.get(ruleId)!;
-                    return rule.actionOnFail === 'ENFORCEMENT';
-                });
+                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT);
 
                 if (someBrokenRuleIsEnforcement) {
                     await createRuleBreachRequest();

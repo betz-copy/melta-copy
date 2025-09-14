@@ -39,7 +39,7 @@ class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             if (query.$or) {
@@ -156,7 +156,7 @@ class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             query.$or = searchQuery;

@@ -419,7 +419,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 searchText,
                             }),
                         )
-                            .filter((group) => group.relationships.length > 0)
+                            .filter((group) => group.relationships.length)
                             .splice(pageParam, infiniteScrollPageCount);
                     }}
                     onQueryError={(error) => {
@@ -538,4 +538,4 @@ const RelationshipTemplatesRow: React.FC = () => {
     );
 };
 
-export { RelationshipTemplatesRow };
+export default RelationshipTemplatesRow;

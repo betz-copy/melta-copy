@@ -106,13 +106,13 @@ const EntityTemplateCheckboxPermission: React.FC<{
                                         />
                                         <Typography fontSize={14.5}>{childTemplate.name}</Typography>
                                         {childTemplate.viewType === ViewType.userPage && (
-                                            <ColoredEnumChip color="#CF9030" label={i18next.t('childTemplate.permissionsPage.userPage')} />
+                                            <ColoredEnumChip enumColor="#CF9030" label={i18next.t('childTemplate.permissionsPage.userPage')} />
                                         )}
                                         {childTemplate.isFilterByCurrentUser && (
-                                            <ColoredEnumChip color="#0072C6" label={i18next.t('childTemplate.permissionsPage.user')} />
+                                            <ColoredEnumChip enumColor="#0072C6" label={i18next.t('childTemplate.permissionsPage.user')} />
                                         )}
                                         {childTemplate.isFilterByUserUnit && (
-                                            <ColoredEnumChip color="#2CB93A" label={i18next.t('childTemplate.permissionsPage.unit')} />
+                                            <ColoredEnumChip enumColor="#2CB93A" label={i18next.t('childTemplate.permissionsPage.unit')} />
                                         )}
                                     </Grid>
                                 </Grid>

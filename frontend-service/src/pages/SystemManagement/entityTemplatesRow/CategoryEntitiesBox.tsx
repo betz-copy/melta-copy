@@ -132,9 +132,11 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     return (
         <Droppable
+            direction="vertical"
             droppableId={entityTemplatesWithCategory.category._id}
             isDropDisabled={false}
             isCombineEnabled={false}
+            direction="vertical"
             ignoreContainerClipping={false}
         >
             {(provided) => (

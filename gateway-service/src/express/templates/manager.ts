@@ -28,6 +28,7 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoPrintingTemplate,
     IMongoRelationshipTemplate,
     IMongoRule,
     INUmberMetaData,
@@ -52,7 +53,6 @@ import {
     TableItem,
     UploadedFile,
     ValidationError,
-    IMongoPrintingTemplate,
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -69,8 +69,8 @@ import ProcessService from '../../externalServices/processService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import PrintingTemplateService from '../../externalServices/templates/printingTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';

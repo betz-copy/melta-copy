@@ -1,5 +1,15 @@
+import { ActionOnFail, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
-import { MongoIdSchema } from '@microservices/shared';
+
+export const fieldColorSchema = Joi.object({
+    display: Joi.boolean(),
+    field: Joi.string().when('display', { is: true, then: Joi.required() }),
+    color: Joi.string().when('display', { is: true, then: Joi.required() }),
+}).when('actionOnFail', {
+    is: ActionOnFail.INDICATOR,
+    then: Joi.required(),
+    otherwise: Joi.forbidden(),
+}); // TODO: after adding mail do required to one of them if it's INDICATOR
 
 // GET /api/templates/rules/:ruleId
 export const getRuleByIdRequestSchema = Joi.object({
@@ -24,10 +34,13 @@ export const createRuleRequestSchema = Joi.object({
     body: {
         name: Joi.string().required(),
         description: Joi.string().required(),
-        actionOnFail: Joi.string().valid('WARNING', 'ENFORCEMENT').required(),
+        actionOnFail: Joi.string()
+            .valid(...Object.values(ActionOnFail))
+            .required(),
         entityTemplateId: MongoIdSchema.required(),
         formula: Joi.object().required(),
         disabled: Joi.boolean().default(false),
+        fieldColor: fieldColorSchema,
     },
     query: {},
     params: {},
@@ -38,8 +51,11 @@ export const updateRuleByIdRequestSchema = Joi.object({
     body: {
         name: Joi.string(),
         description: Joi.string(),
+        fieldColor: fieldColorSchema,
+        actionOnFail: Joi.string()
+            .valid(...Object.values(ActionOnFail))
+            .required(),
         // todo: (extra feature) allow update stuff that could break, only if no alerts/requests created yet
-        // actionOnFail: Joi.string().valid('WARNING', 'ENFORCEMENT'),
         // entityTemplateId: MongoIdSchema,
         // formula: Joi.object(),
     },

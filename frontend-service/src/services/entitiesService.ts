@@ -49,11 +49,10 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
+
     formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (isChildTemplate(template)) {
-        formData.append('childTemplateId', template._id);
-    }
+    if (isChildTemplate(template)) formData.append('childTemplateId', template._id);
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
@@ -366,13 +365,9 @@ const getBodyForUpdateRequest = async (
 
     formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (isChildTemplate(template)) {
-        formData.append('childTemplateId', template._id);
-    }
+    if (isChildTemplate(template)) formData.append('childTemplateId', template._id);
 
-    if (ignoredRules) {
-        formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    }
+    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
 
     return formData;
 };

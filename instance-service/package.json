@@ -34,6 +34,7 @@
         "lodash.isequalwith": "^4.4.0",
         "lodash.isobject": "^3.0.2",
         "lodash.mapvalues": "^4.6.0",
+        "lodash.partition": "^4.6.0",
         "lodash.pickby": "^4.6.0",
         "lodash.sortby": "^4.7.0",
         "menashmq": "^0.1.6",
@@ -50,6 +51,7 @@
         "@types/lodash.isequalwith": "^4.4.9",
         "@types/lodash.isobject": "^3.0.9",
         "@types/lodash.mapvalues": "^4.6.9",
+        "@types/lodash.partition": "^4.6.9",
         "@types/lodash.pickby": "^4.6.9",
         "@types/lodash.sortby": "^4.7.9",
         "axios-mock-adapter": "^2.0.0"

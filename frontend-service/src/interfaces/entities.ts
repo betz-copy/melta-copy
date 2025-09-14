@@ -16,6 +16,7 @@ export interface IEntity {
         updatedAt: string;
         disabled: boolean;
     } & Record<string, any>;
+    coloredFields?: Record<string, string>;
 }
 
 export type IConnection = {

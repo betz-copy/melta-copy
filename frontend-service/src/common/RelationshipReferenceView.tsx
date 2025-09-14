@@ -5,7 +5,7 @@ import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link } from 'wouter';
 import { IEntity } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../stores/workspace';
 import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
@@ -20,8 +20,15 @@ interface RelationshipReferenceViewProps {
     relatedTemplateField: string;
     style?: CSSProperties;
     searchValue?: string;
+    color?: string;
 }
-const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField, searchValue }) => {
+const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
+    entity,
+    relatedTemplateId,
+    relatedTemplateField,
+    searchValue,
+    color,
+}) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
@@ -29,7 +36,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const relatedEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId!)!;
+    const relatedEntityTemplate = entityTemplates.get(relatedTemplateId!)!;
     const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
 
     if (!relatedEntityTemplate) {
@@ -65,7 +72,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                 <ColoredEnumChip
                     key={entity}
                     label={entity}
-                    color={entityTemplateColor}
+                    enumColor={color ?? entityTemplateColor}
                     icon={
                         relatedEntityTemplate.iconFileId ? (
                             <CustomIcon iconUrl={relatedEntityTemplate.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
@@ -79,6 +86,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                             />
                         )
                     }
+                    color={color}
                 />
             </Grid>
         );
@@ -141,6 +149,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                     ) : (
                         <EntityPropertiesInternal
                             properties={entity.properties}
+                            coloredFields={entity.coloredFields}
                             entityTemplate={relatedEntityTemplate}
                             showPreviewPropertiesOnly
                             mode="normal"
@@ -157,7 +166,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                         <ColoredEnumChip
                             key={field}
                             label={field}
-                            color={entityTemplateColor}
+                            enumColor={entityTemplateColor}
                             icon={
                                 relatedEntityTemplate.iconFileId ? (
                                     <CustomIcon
@@ -176,6 +185,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                                     />
                                 )
                             }
+                            color={color}
                             searchValue={searchValue}
                         />
                     </Grid>

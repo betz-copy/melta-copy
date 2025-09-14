@@ -46,6 +46,7 @@ export const createInstances = async (
 
     JSONSchemaFaker.format('signature', (_value) => 'This is a fake comment');
     JSONSchemaFaker.format('comment', () => 'This is a fake comment');
+    JSONSchemaFaker.format('text-area', () => 'Itay hamelech');
 
     JSONSchemaFaker.format('user', (_value) => {
         return JSON.stringify({

@@ -80,7 +80,7 @@ const MultipleSelect: React.FC<{
             renderOption={(props, option) => (
                 <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
                     {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
-                    <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
+                    <ColoredEnumChip {...props} key={option.value} label={option.label} enumColor={option.color || 'default'} />
                 </MenuItem>
             )}
             renderValue={(tagValue, getTagProps) => (
@@ -95,7 +95,7 @@ const MultipleSelect: React.FC<{
                             return (
                                 <ColoredEnumChip
                                     label={item.label}
-                                    color={item.color || 'default'}
+                                    enumColor={item.color || 'default'}
                                     onDelete={onDelete}
                                     deleteIcon={<Close />}
                                     {...restTagProps}
@@ -124,7 +124,11 @@ const MultipleSelect: React.FC<{
                             input: {
                                 ...params.InputProps,
                                 startAdornment: isMultiple ? (
-                                    <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} style={{ marginLeft: 1 }} />
+                                    <ColoredEnumChip
+                                        label={selectedValue.label}
+                                        enumColor={selectedValue.color || 'default'}
+                                        style={{ marginLeft: 1 }}
+                                    />
                                 ) : (
                                     params.InputProps.startAdornment
                                 ),

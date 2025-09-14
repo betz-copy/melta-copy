@@ -1,10 +1,11 @@
+import { ActionOnFail } from '@microservices/shared';
 import MockAdapter from 'axios-mock-adapter';
-import { v4 as uuidv4 } from 'uuid';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/interfaces/entityTemplates';
-import { IMongoRule } from '../templates/interfaces/rules';
+import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../templates/interfaces/relationshipTemplates';
+import { IMongoRule } from '../templates/interfaces/rules';
 
 const { url, relationships, entities } = config.templateService;
 const { OK: okStatus } = StatusCodes;
@@ -227,7 +228,7 @@ export const generateTemplates = () => {
         _id: generateMongoId(),
         name: 'One travel agent per flight',
         description: 'One travel agent per flight',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: flightEntityTemplate._id,
         disabled: false,
         formula: {
@@ -293,7 +294,7 @@ export const generateTemplates = () => {
         _id: generateMongoId(),
         name: 'טיסה אחת ביום לטיול',
         description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: tripEntityTemplate._id,
         disabled: false,
         formula: {
@@ -404,7 +405,7 @@ export const generateTemplates = () => {
         _id: generateMongoId(),
         name: 'התראה על טיסות בטיול פעיל',
         description: 'התראה על כל טיסה חדשה שמחוברת לטיול פעיל',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: airportEntityTemplate._id,
         disabled: false,
         formula: {
@@ -512,7 +513,7 @@ export const generateTemplates = () => {
         _id: generateMongoId(),
         name: 'תאריך התחלה לפני תאריך סיום של טיול',
         description: 'תאריך התחלה לפני תאריך סיום של טיול',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: tripEntityTemplate._id,
         disabled: false,
         formula: {
