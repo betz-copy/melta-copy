@@ -225,8 +225,8 @@ const CategoriesRow: React.FC = () => {
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
-                droppableId={workspace._id}
                 direction="vertical"
+                droppableId={workspace._id}
                 isDropDisabled={false}
                 isCombineEnabled={false}
                 ignoreContainerClipping={false}

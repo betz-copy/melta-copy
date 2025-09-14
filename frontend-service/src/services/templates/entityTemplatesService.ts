@@ -194,7 +194,7 @@ const entityTemplateObjectToEntityTemplateForm = (
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
-    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId }) as File);
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
