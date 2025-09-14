@@ -61,6 +61,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
         if (event.target.value !== ActionOnFail.INDICATOR && !!values.fieldColor)
             setValues((prevValues: RuleWizardValues) => omit(prevValues, 'fieldColor'));
 
+        if (event.target.value === ActionOnFail.INDICATOR) setFieldValue('fieldColor.display', true); //TODO: remove after adding mail - Uri
         handleChange(event);
     };
 
@@ -129,6 +130,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                                 <MeltaCheckbox
                                     checked={values.fieldColor?.display}
                                     onChange={(e) => setFieldValue('fieldColor.display', e.target.checked)}
+                                    disabled //TODO: remove after adding mail - Uri
                                 />
                             }
                             label={i18next.t('wizard.rule.fieldColor')}
