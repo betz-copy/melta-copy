@@ -314,6 +314,7 @@ export const environment = {
         maxRadius: 30000,
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        polygonDefaultColor: '#11695a',
         mapSearchPropertiesLimit: 2,
         epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
         utm: {

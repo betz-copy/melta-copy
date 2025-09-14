@@ -533,6 +533,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Grid>
                     </>
                 )}
+                <Grid container direction="row" justifyContent="center" gap={isDrawerOpen ? 3 : 1} mb={1}>
+                    <img src="/icons/sapir.svg" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
+                    <img src="/icons/yesodot.svg" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
+                </Grid>
                 <Grid>
                     <IconButton
                         onClick={() => {

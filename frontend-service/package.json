@@ -61,6 +61,7 @@
     "@syncfusion/ej2-react-schedule": "github:MeltaTeam/not-stolen",
     "@szhsin/react-menu": "^4.4.1",
     "@testing-library/jest-dom": "^6.7.0",
+    "@turf/turf": "^7.2.0",
     "@types/lodash.flatten": "^4.4.9",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.2.1",
