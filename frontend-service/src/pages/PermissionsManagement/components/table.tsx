@@ -65,12 +65,6 @@ const columnDefs = (
               } as ColDef,
           ]
         : []),
-    {
-        field: 'externalMetadata.digitalIdentitySource',
-        headerName: i18next.t('permissions.sourceHeaderName'),
-        filter: 'agTextColumnFilter',
-        hide: true,
-    },
     translatedEnumColDef<PermissionData>({
         field: 'permissionsManagement',
         valueGetter: (params) =>

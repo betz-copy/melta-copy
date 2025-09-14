@@ -85,6 +85,7 @@ export interface EntityTemplateWizardValues
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
+    enumPropertiesColors?: string[];
 }
 
 const EntityTemplateWizard: React.FC<

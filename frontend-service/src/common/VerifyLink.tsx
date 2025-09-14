@@ -29,7 +29,9 @@ const VerifyLink: React.FC<{ children?: ReactNode; color?: string }> = ({ childr
 
     return (
         <span style={{ color }}>
-            <Linkify componentDecorator={componentDecorator}>{children}</Linkify>
+            <Linkify componentDecorator={componentDecorator} color={color}>
+                {children}
+            </Linkify>
         </span>
     );
 };

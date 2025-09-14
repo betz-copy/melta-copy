@@ -341,7 +341,7 @@ const ChildTemplateDialog: React.FC<{
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
-                                        <Grid size={{ xs: 5.5 }} container direction="row" justifyContent="space-between">
+                                        <Grid container direction="row" justifyContent="space-between">
                                             {checkboxesFields.map(({ mode, fields, checked, value }) => {
                                                 if (fields.length === 0) return null;
 
@@ -407,7 +407,7 @@ const ChildTemplateDialog: React.FC<{
                                                     )}
                                                     renderOption={(props, category) => (
                                                         <li {...props} key={category._id}>
-                                                            <ColoredEnumChip label={category.displayName} color="default" />
+                                                            <ColoredEnumChip label={category.displayName} enumColor="default" />
                                                         </li>
                                                     )}
                                                 />

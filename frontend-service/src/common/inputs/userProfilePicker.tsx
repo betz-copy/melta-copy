@@ -67,7 +67,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const kartoffelProfileImage = await getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId);
+                const kartoffelProfileImage = await getKartoffelUserProfileRequest(user?.kartoffelId);
                 setKartoffelUserProfile(kartoffelProfileImage);
             } catch (error) {
                 console.error('Failed to fetch Kartoffel user profile:', error);

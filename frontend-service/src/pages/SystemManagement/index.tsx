@@ -5,13 +5,12 @@ import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
 import '../../css/pages.css';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useUserStore } from '../../stores/user';
-import { CategoriesRow } from './components/CategoriesRow';
-import { ConfigurationManagement } from './components/ConfigurationManagement';
-import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
-import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
-import { RulesRow } from './components/RulesRow';
-import '../../css/pages.css';
-import { PrintingTemplatesRow } from './components/PrintingTemplatesRow';
+import CategoriesRow from './components/CategoriesRow';
+import ConfigurationManagement from './components/ConfigurationManagement';
+import PrintingTemplatesRow from './components/PrintingTemplatesRow';
+import ProcessTemplatesRow from './components/ProcessTemplates/ProcessTemplatesRow';
+import RelationshipTemplatesRow from './components/RelationshipTemplatesRow';
+import RulesRow from './components/RulesRow';
 import EntityTemplatesRow from './entityTemplatesRow';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {

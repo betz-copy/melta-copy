@@ -15,7 +15,7 @@ class UsersManager {
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
-        const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
+        const baseUser = await UsersModel.findOne({ kartoffelId: id }).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 
@@ -39,7 +39,7 @@ class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             if (query.$or) {
@@ -156,7 +156,7 @@ class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             query.$or = searchQuery;

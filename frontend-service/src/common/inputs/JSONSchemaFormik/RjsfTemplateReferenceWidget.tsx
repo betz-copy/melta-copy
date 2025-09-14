@@ -67,6 +67,7 @@ const RjsfTemplateReferenceWidget = ({
             onBlur={handleBlur}
             disabled={disabled}
             relationFilters={schema.relationshipReference.filters}
+            required={required}
         />
     );
 };

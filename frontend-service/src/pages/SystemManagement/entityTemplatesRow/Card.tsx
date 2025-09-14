@@ -123,7 +123,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints, fieldGroups, enumPropertiesColors } =
+        entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
@@ -263,6 +264,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                       propertiesTypeOrder,
                                                       uniqueConstraints,
                                                       fieldGroups,
+                                                      enumPropertiesColors,
                                                   },
                                               });
                                               setIsHoverOnCard(false);
@@ -329,7 +331,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                 <Grid container spacing={1} sx={{ mt: 1 }}>
                                                     {getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
                                                         <Grid key={index}>
-                                                            <ColoredEnumChip color={chip.color} label={chip.label} />
+                                                            <ColoredEnumChip enumColor={chip.color} label={chip.label} />
                                                         </Grid>
                                                     ))}
                                                 </Grid>

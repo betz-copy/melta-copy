@@ -15,10 +15,7 @@ export const baseUserSchema = joi.object({
         mailsNotificationsTypes: joi.array().items(joi.string()),
         profilePath: joi.string().allow(null),
     }),
-    externalMetadata: joi.object({
-        kartoffelId: joi.string().required(),
-        digitalIdentitySource: joi.string().required(),
-    }),
+    kartoffelId: joi.string().required(),
 });
 export const partialBaseUserSchema = partialSchema(baseUserSchema);
 

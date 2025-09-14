@@ -128,7 +128,8 @@ export const formatToString = (
         return convertLocation(value);
     }
     if (keyEnumColors?.[value] && valueType === 'string')
-        return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value] || 'default'} textOverrideColor={color} />;
+        return pureString ? value : <ColoredEnumChip label={value} enumColor={keyEnumColors[value] || 'default'} color={color} />;
+
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') return value.map((val: string) => <OpenPreview fileId={val} key={val} color={color} />);
 
@@ -157,15 +158,16 @@ export const formatToString = (
                 </Grid>
             );
         }
+
         return pureString
             ? value.join(', ')
             : value.map((val: string) => (
                   <ColoredEnumChip
                       key={val}
                       label={val}
-                      color={keyEnumColors?.[val] || 'default'}
+                      enumColor={keyEnumColors?.[val] || 'default'}
                       style={{ margin: '5px 0px 0px 5px' }}
-                      textOverrideColor={color}
+                      color={color}
                   />
               ));
     }
@@ -177,7 +179,7 @@ type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOr
 interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
-    coloredFields: IEntity['coloredFields'];
+    coloredFields?: IEntity['coloredFields'];
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
@@ -236,7 +238,7 @@ type PropertiesDetailsProps = {
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     propertiesOrderedToShow,
     properties,
-    coloredFields,
+    coloredFields = {},
     entityTemplate,
     entityTemplates,
     isPrintingMode,
@@ -424,7 +426,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean; showByGroups?: boolean }> = ({
     entityTemplate,
     properties,
-    coloredFields,
+    coloredFields = {},
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,

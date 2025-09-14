@@ -461,18 +461,17 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         return Promise.all(
             instances.map(async (instance) => {
                 if ('sourceEntityId' in instance || 'sourceEntity' in instance) return instance;
-                const entity = instance as IEntity;
 
-                const { updatedEntity: entityWithUpdatedColors } = await this.entityManager.updateEntityByIdInnerTransaction(
-                    entity.properties._id,
-                    entity.properties,
-                    entitiesTemplatesByIds.get(entity.templateId)!,
-                    transaction,
-                    '',
-                    indicatorRules,
-                );
-
-                return entityWithUpdatedColors;
+                return (
+                    await this.entityManager.updateEntityByIdInnerTransaction(
+                        instance.properties._id,
+                        instance.properties,
+                        entitiesTemplatesByIds.get(instance.templateId)!,
+                        transaction,
+                        '',
+                        indicatorRules,
+                    )
+                ).updatedEntity;
             }),
         );
     }

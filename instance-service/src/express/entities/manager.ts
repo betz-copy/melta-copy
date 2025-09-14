@@ -46,6 +46,7 @@ import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
+import isEqual from 'lodash.isequal';
 import mapValues from 'lodash.mapvalues';
 import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
@@ -260,14 +261,17 @@ class EntityManager extends DefaultManagerNeo4j {
     };
 
     getColoredFields(rules: IMongoRule[], changedProperties: string[]) {
-        const indicatorColorRules = rules.filter((r) => r.actionOnFail === ActionOnFail.INDICATOR && r.fieldColor);
+        return rules.reduce(
+            (acc, rule) => {
+                if (rule.actionOnFail !== ActionOnFail.INDICATOR || !rule.fieldColor) return acc;
 
-        const coloredFields: Record<string, string> = {};
-        indicatorColorRules.forEach(({ fieldColor }) => {
-            if (!changedProperties.includes(fieldColor!.field)) coloredFields[fieldColor!.field] = fieldColor!.color;
-        });
+                if (changedProperties.includes(rule.fieldColor!.field)) return acc;
 
-        return coloredFields;
+                acc[rule.fieldColor!.field] = rule.fieldColor!.color;
+                return acc;
+            },
+            {} as Record<string, string>,
+        );
     }
 
     async createEntityInTransaction(
@@ -504,7 +508,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.DuplicateEntity]: async () =>
                         this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.UpdateEntity]: async () => {
@@ -1374,17 +1378,17 @@ class EntityManager extends DefaultManagerNeo4j {
     ) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
-            disabled: { title: 'doesntMatter', type: 'boolean' },
-            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
-            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            disabled: { title: `doesn'tMatter`, type: 'boolean' },
+            createdAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
+            updatedAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
         };
+
         const templateUpdatedProperties = pickBy(
             propertiesWithGeneratedProperties,
-            (_propertyTemplate, key) => newEntityProperties[key] !== oldEntityProperties[key],
+            (_propertyTemplate, key) => !isEqual(newEntityProperties[key], oldEntityProperties[key]),
         );
 
-        const updatedProperties = Object.keys(templateUpdatedProperties);
-        return updatedProperties;
+        return Object.keys(templateUpdatedProperties);
     }
 
     private removeBasicProperties(properties: Record<string, any>) {
@@ -1436,7 +1440,10 @@ class EntityManager extends DefaultManagerNeo4j {
                         deletedRelationships.push(deletedRelationship);
                     }
 
-                    const relatedEntityId = entityProperties[updatedProperty];
+                    const relatedEntityId =
+                        typeof entityProperties[updatedProperty] === 'string'
+                            ? entityProperties[updatedProperty]
+                            : entityProperties[updatedProperty].properties._id;
 
                     if (relatedEntityId) {
                         const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
@@ -1524,9 +1531,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
-        if (entity.properties.disabled) {
-            throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
-        }
+        if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
         const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
         const updatedColoredFields = indicatorRules

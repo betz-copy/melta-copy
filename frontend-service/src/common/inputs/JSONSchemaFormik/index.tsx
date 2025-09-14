@@ -290,7 +290,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     useEffect(() => {
         // define 100% width to text-area field
-        const containerDiv = document.querySelectorAll('.muirtl-yqiqnf-MuiGrid-root');
+        const containerDiv = document.querySelectorAll(
+            '#json-schema > .rjsf-field.rjsf-field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
+        );
         containerDiv.forEach((innerDiv) => {
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
             const classesToAdd: string[] = [];

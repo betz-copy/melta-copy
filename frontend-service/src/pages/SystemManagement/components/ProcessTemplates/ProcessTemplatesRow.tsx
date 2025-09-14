@@ -123,4 +123,4 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 };
 
-export { ProcessTemplatesRow };
+export default ProcessTemplatesRow;

@@ -79,4 +79,4 @@ const ConfigurationManagement: React.FC = () => {
     );
 };
 
-export { ConfigurationManagement };
+export default ConfigurationManagement;
