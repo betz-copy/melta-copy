@@ -337,39 +337,27 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                             }));
                         }
                     }}
-                    isOptionEqualToValue={(option, inputValue) => {
-                        return option.trim() === inputValue.trim() || option.trim().length === 0;
-                    }}
-                    renderTags={(tagValue, getTagProps) =>
+                    isOptionEqualToValue={(option, inputValue) => option.trim() === inputValue.trim() || option.trim().length === 0}
+                    renderValue={(tagValue, getTagProps) =>
                         tagValue.map((option, tagIndex) => {
                             const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
                             return (
                                 <Box position="relative" key={option}>
                                     <>
-                                        {chipDisabled ? (
-                                            <Chip
-                                                variant="outlined"
-                                                label={option}
-                                                {...getTagProps({ index: tagIndex })}
-                                                onDelete={undefined}
-                                                icon={value.optionColors && <Box width="1.3rem" />}
-                                                sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
-                                                ref={(ref) => {
-                                                    chipRefs.current[tagIndex] = ref;
-                                                }}
-                                            />
-                                        ) : (
-                                            <Chip
-                                                variant="outlined"
-                                                label={option}
-                                                {...getTagProps({ index: tagIndex })}
-                                                icon={value.optionColors && <Box width="1.3rem" />}
-                                                sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
-                                                ref={(ref) => {
-                                                    chipRefs.current[tagIndex] = ref;
-                                                }}
-                                            />
-                                        )}
+                                        <Chip
+                                            variant="outlined"
+                                            label={option}
+                                            {...getTagProps({ index: tagIndex })}
+                                            onDelete={chipDisabled ? undefined : getTagProps({ index: tagIndex }).onDelete}
+                                            icon={value.optionColors && <Box width="1.3rem" />}
+                                            sx={{
+                                                position: 'relative',
+                                                pr: supportEditEnum ? (chipDisabled ? '22px' : '32px') : '3px',
+                                            }}
+                                            ref={(ref) => {
+                                                chipRefs.current[tagIndex] = ref;
+                                            }}
+                                        />
                                         {value.optionColors && (
                                             <MinimizedColorPicker
                                                 color={value.optionColors[option]}

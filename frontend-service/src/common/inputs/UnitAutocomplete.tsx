@@ -54,7 +54,8 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                 multiple
                 value={value}
                 onChange={(_e, newValue, reason) => {
-                    onChange?.(_e, reason === 'clear' ? [] : newValue, reason);
+                    const uniqueValues = Array.from(new Set(newValue.map((val) => val.trim())));
+                    onChange?.(_e, reason === 'clear' ? [] : uniqueValues, reason);
                 }}
                 disabled={disabled}
                 getOptionLabel={(option) => option}
@@ -64,7 +65,7 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                 loading={isLoading}
                 loadingText={i18next.t('unitAutocomplete.loading')}
                 noOptionsText={i18next.t('unitAutocomplete.noOptions')}
-                renderTags={(selected, getTagProps) =>
+                renderValue={(selected, getTagProps) =>
                     selected.map((option, index) => (
                         <Chip
                             {...getTagProps({ index })}
@@ -74,23 +75,14 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                             sx={{
                                 fontFamily: 'Rubik, sans-serif',
                                 fontWeight: 400,
-                                fontStyle: 'normal',
                                 fontSize: '14px',
-                                lineHeight: '100%',
-                                letterSpacing: 0,
-                                textAlign: 'right',
-
                                 borderRadius: '10px',
                                 padding: '12px 4px',
-                                gap: '3px',
-
-                                borderColor: 'transparent',
                                 backgroundColor: darkMode ? '#53566E' : '#EBEFFA',
                                 color: darkMode ? '#EBEFFA' : '#53566E',
                                 '& .MuiChip-deleteIcon': {
                                     color: darkMode ? '#EBEFFA' : '#9398C2',
                                 },
-
                                 height: '22px',
                                 minWidth: '74px',
                             }}
@@ -109,11 +101,13 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        InputProps={{
-                            ...params.InputProps,
-                            required,
-                            readOnly,
-                            endAdornment: enableClear ? params.InputProps.endAdornment : undefined,
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                required,
+                                readOnly,
+                                endAdornment: enableClear ? params.InputProps.endAdornment : undefined,
+                            },
                         }}
                         sx={overrideSx}
                     />
