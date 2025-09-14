@@ -20,6 +20,17 @@ const {
         srid,
     },
     timezone,
+    neo4j: {
+        stringPropertySuffix,
+        colorPropertySuffix,
+        booleanPropertySuffix,
+        filePropertySuffix,
+        locationCoordinateSystemSuffix,
+        usersFieldsPropertySuffix,
+        usersArrayOriginalAndSuffixFieldsMap,
+        userFieldPropertySuffix,
+        userOriginalAndSuffixFieldsMap,
+    },
 } = config;
 
 type Node = Neo4jNode<number>;
@@ -45,31 +56,23 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
     const userKeys: Set<string> = new Set<string>();
 
     Object.entries(properties).forEach(([key, value]) => {
-        const suffixes = [
-            config.neo4j.stringPropertySuffix,
-            config.neo4j.booleanPropertySuffix,
-            config.neo4j.filePropertySuffix,
-            config.neo4j.locationCoordinateSystemSuffix,
-        ];
+        const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
 
         if (suffixes.some((suffix) => key.endsWith(suffix))) return;
 
-        if (key.endsWith(config.neo4j.colorPropertySuffix) && properties[key] !== undefined)
-            coloredFields[key.slice(0, -config.neo4j.colorPropertySuffix.length)] = value;
+        if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
 
-        if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+        if (key.includes('.') && key.endsWith(`${usersFieldsPropertySuffix}`)) {
             // Find the user field of the key (everything before the suffix)
-            const currentUserField = config.neo4j.usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+            const currentUserField = usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
                 key.includes(suffixFieldName),
             )!.suffixFieldName;
             usersArrayKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
-        if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-            const currentUserField = config.neo4j.userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
-                key.includes(suffixFieldName),
-            )!.suffixFieldName;
+        if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
+            const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
             userKeys.add(key.split(currentUserField)[0]);
             return;
         }
@@ -87,7 +90,7 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
         }
 
         if (value instanceof neo4j.types.Point) {
-            props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`] };
+            props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`] };
 
             return;
         }
@@ -95,7 +98,7 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
             const points = value.map((point) => `${point.x} ${point.y}`);
             props[key] = {
                 location: `${polygonPrefix}${points.join(',')}${polygonSuffix}`,
-                coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`],
+                coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`],
             };
 
             return;
@@ -106,20 +109,20 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
 
     if (usersArrayKeys.size) {
         usersArrayKeys.forEach((userKey) => {
-            props[userKey] = properties[
-                `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
-            ].map((_id: string, index: string | number) => {
-                const objToReturn: any = {};
+            props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
+                (_id: string, index: string | number) => {
+                    const objToReturn: any = {};
 
-                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
-                    objToReturn[userField.originalFieldName] =
-                        properties[`${userKey}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`][index];
-                });
+                    usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                        objToReturn[userField.originalFieldName] =
+                            properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
+                    });
 
-                return JSON.stringify({
-                    ...objToReturn,
-                });
-            });
+                    return JSON.stringify({
+                        ...objToReturn,
+                    });
+                },
+            );
         });
     }
 
@@ -127,9 +130,8 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
         userKeys.forEach((userKey) => {
             const objToReturn: any = {};
 
-            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
-                objToReturn[userField.originalFieldName] =
-                    properties[`${userKey}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`];
+            userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
             });
 
             props[userKey] = JSON.stringify({

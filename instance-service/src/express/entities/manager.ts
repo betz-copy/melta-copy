@@ -261,14 +261,17 @@ class EntityManager extends DefaultManagerNeo4j {
     };
 
     getColoredFields(rules: IMongoRule[], changedProperties: string[]) {
-        const indicatorColorRules = rules.filter((r) => r.actionOnFail === ActionOnFail.INDICATOR && r.fieldColor);
+        return rules.reduce(
+            (acc, rule) => {
+                if (rule.actionOnFail !== ActionOnFail.INDICATOR || !rule.fieldColor) return acc;
 
-        const coloredFields: Record<string, string> = {};
-        indicatorColorRules.forEach(({ fieldColor }) => {
-            if (!changedProperties.includes(fieldColor!.field)) coloredFields[fieldColor!.field] = fieldColor!.color;
-        });
+                if (changedProperties.includes(rule.fieldColor!.field)) return acc;
 
-        return coloredFields;
+                acc[rule.fieldColor!.field] = rule.fieldColor!.color;
+                return acc;
+            },
+            {} as Record<string, string>,
+        );
     }
 
     async createEntityInTransaction(
@@ -505,7 +508,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.DuplicateEntity]: async () =>
                         this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.UpdateEntity]: async () => {
@@ -1380,8 +1383,7 @@ class EntityManager extends DefaultManagerNeo4j {
             (_propertyTemplate, key) => !isEqual(newEntityProperties[key], oldEntityProperties[key]),
         );
 
-        const updatedProperties = Object.keys(templateUpdatedProperties);
-        return updatedProperties;
+        return Object.keys(templateUpdatedProperties);
     }
 
     private removeBasicProperties(properties: Record<string, any>) {
@@ -1524,9 +1526,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
-        if (entity.properties.disabled) {
-            throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
-        }
+        if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
         const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
         const updatedColoredFields = indicatorRules

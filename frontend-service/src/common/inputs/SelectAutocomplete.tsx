@@ -66,7 +66,7 @@ const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
                                 }
                             />
                         )}
-                        <ColoredEnumChip label={option.label} color={colorsOptions?.[option.label] || 'default'} style={{ marginLeft: '8px' }} />
+                        <ColoredEnumChip label={option.label} enumColor={colorsOptions?.[option.label] || 'default'} style={{ marginLeft: '8px' }} />
                     </Box>
                 )}
                 renderTags={(tagValue, getTagProps) =>
@@ -76,7 +76,7 @@ const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
                             <ColoredEnumChip
                                 key={key}
                                 label={option.label}
-                                color={colorsOptions?.[option.label] || 'default'}
+                                enumColor={colorsOptions?.[option.label] || 'default'}
                                 onDelete={onDelete}
                                 deleteIcon={<Close />}
                                 {...restTagProps}

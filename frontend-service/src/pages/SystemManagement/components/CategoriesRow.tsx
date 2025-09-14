@@ -224,7 +224,13 @@ const CategoriesRow: React.FC = () => {
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={workspace._id} isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
+            <Droppable
+                droppableId={workspace._id}
+                direction="vertical"
+                isDropDisabled={false}
+                isCombineEnabled={false}
+                ignoreContainerClipping={false}
+            >
                 {(provided) => (
                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                         <Grid container gap="10px">
@@ -322,4 +328,4 @@ const CategoriesRow: React.FC = () => {
     );
 };
 
-export { CategoriesRow };
+export default CategoriesRow;

@@ -329,7 +329,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                 <Grid container spacing={1} sx={{ mt: 1 }}>
                                                     {getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
                                                         <Grid key={index}>
-                                                            <ColoredEnumChip color={chip.color} label={chip.label} />
+                                                            <ColoredEnumChip enumColor={chip.color} label={chip.label} />
                                                         </Grid>
                                                     ))}
                                                 </Grid>

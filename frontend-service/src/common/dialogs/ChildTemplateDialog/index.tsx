@@ -407,7 +407,7 @@ const ChildTemplateDialog: React.FC<{
                                                     )}
                                                     renderOption={(props, category) => (
                                                         <li {...props} key={category._id}>
-                                                            <ColoredEnumChip label={category.displayName} color="default" />
+                                                            <ColoredEnumChip label={category.displayName} enumColor="default" />
                                                         </li>
                                                     )}
                                                 />

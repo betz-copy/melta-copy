@@ -893,12 +893,12 @@ export default {
             actions: {
                 warning: 'אזהרה',
                 enforcement: 'אכיפה',
-                indicator: 'חיוי',
+                indicator: 'חיווי',
             },
             atLeastOne: 'יש לבחור אפשרות אחת לפחות',
             fieldColor: 'צביעת שדה',
             fieldToColor: 'שדה לצביעה',
-            color: 'צבע'
+            color: 'צבע',
         },
         processInstance: {
             saveBth: 'שמירה',

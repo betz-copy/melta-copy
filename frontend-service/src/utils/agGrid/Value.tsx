@@ -42,7 +42,7 @@ const Value: React.FC<{
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if ((enumColor || enumColor === 'default') && value.length)
-        innerContent = <ColoredEnumChip label={value} color={enumColor} searchValue={searchValue} textOverrideColor={color} />;
+        innerContent = <ColoredEnumChip label={value} enumColor={enumColor} searchValue={searchValue} color={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} searchValue={searchValue} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));

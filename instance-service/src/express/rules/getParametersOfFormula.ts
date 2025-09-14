@@ -102,6 +102,4 @@ const isRuleDependentOnEntity = (rule: IMongoRule, entityTemplateId: string, upd
 };
 
 export const filterDependentRulesOnEntity = (rules: IMongoRule[], entityTemplateId: string, updatedProperties?: string[]) =>
-    rules.filter((rule) =>
-        rule.actionOnFail === ActionOnFail.INDICATOR ? true : isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties),
-    );
+    rules.filter((rule) => rule.actionOnFail === ActionOnFail.INDICATOR || isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties));

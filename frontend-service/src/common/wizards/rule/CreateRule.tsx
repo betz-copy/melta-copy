@@ -104,16 +104,21 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                             label={i18next.t('wizard.rule.primaryEntityTemplate')}
                         />
                     )}
+                    disabled={isEditMode}
                 />
             </Grid>
             <Grid>
                 <FormControl disabled={isEditMode} sx={{ width: '100%' }}>
                     <RadioGroup row name="actionOnFail" onChange={onRadioChange} value={values.actionOnFail}>
-                        <FormControlLabel value={ActionOnFail.WARNING} control={<Radio />} label={i18next.t('wizard.rule.actions.warning')} />
-                        <FormControlLabel value={ActionOnFail.ENFORCEMENT} control={<Radio />} label={i18next.t('wizard.rule.actions.enforcement')} />
-                        <FormControlLabel value={ActionOnFail.INDICATOR} control={<Radio />} label={i18next.t('wizard.rule.actions.indicator')} />
+                        {[ActionOnFail.WARNING, ActionOnFail.ENFORCEMENT, ActionOnFail.INDICATOR].map((actionOnFail) => (
+                            <FormControlLabel
+                                value={actionOnFail}
+                                control={<Radio />}
+                                label={i18next.t(`wizard.rule.actions.${actionOnFail.toLowerCase()}`)}
+                            />
+                        ))}
                     </RadioGroup>
-                    <FormHelperText>{touched.actionOnFail && errors.actionOnFail}</FormHelperText>{' '}
+                    <FormHelperText>{touched.actionOnFail && errors.actionOnFail}</FormHelperText>
                 </FormControl>
 
                 {values.actionOnFail === ActionOnFail.INDICATOR && (

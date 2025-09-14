@@ -40,7 +40,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
             renderOption={(props, option) => (
                 <Box component="li" {...props} key={option} style={{ height: '40px' }}>
                     {multiple && <MeltaCheckbox checked={Array.isArray(selectedValues) && selectedValues.includes(option)} />}
-                    <ColoredEnumChip label={option} color={colorsOptions?.[option] || 'default'} style={{ marginLeft: '8px' }} />
+                    <ColoredEnumChip label={option} enumColor={colorsOptions?.[option] || 'default'} style={{ marginLeft: '8px' }} />
                 </Box>
             )}
             renderTags={(tagValue, getTagProps) => (
@@ -53,7 +53,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
                         return (
                             <ColoredEnumChip
                                 label={item}
-                                color={colorsOptions?.[item] || 'default'}
+                                enumColor={colorsOptions?.[item] || 'default'}
                                 onDelete={onDelete}
                                 deleteIcon={<Close />}
                                 {...restTagProps}
@@ -74,7 +74,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
                             ...params.inputProps,
                             startAdornment:
                                 value && !Array.isArray(value) ? (
-                                    <ColoredEnumChip label={value} color={colorsOptions?.[value] || 'default'} />
+                                    <ColoredEnumChip label={value} enumColor={colorsOptions?.[value] || 'default'} />
                                 ) : undefined,
                             inputProps: {
                                 ...params.inputProps,

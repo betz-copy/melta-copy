@@ -34,6 +34,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     size?: 'small' | 'medium';
     style?: React.CSSProperties;
     relationFilters?: string;
+    required?: boolean;
 }> = ({
     template,
     showField,
@@ -50,6 +51,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     size,
     style,
     relationFilters,
+    required,
 }) => {
     const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -225,6 +227,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 return (
                     <TextField
                         {...params}
+                        required={required}
                         error={isError}
                         fullWidth
                         helperText={helperText}
