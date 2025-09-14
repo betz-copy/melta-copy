@@ -64,6 +64,8 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
             if (!viewer) return;
             const { camera } = viewer;
 
+            viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
             if (markerPosition !== null) {
                 const radius = 30000;
                 const boundingSphere = new Cesium.BoundingSphere(markerPosition, radius);

@@ -445,7 +445,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 }}
                                 entityTemplateMap={entityTemplateMap}
                                 darkMode={darkMode}
-                                clearAutocompleteSearch={() => setAutoCompleteSearch({ entity: undefined, template: undefined })}
+                                clearAutocompleteSearch={() => {
+                                    setCameraFocus(null);
+                                    setAutoCompleteSearch({ entity: undefined, template: undefined });
+                                }}
                             />
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}

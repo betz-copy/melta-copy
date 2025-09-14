@@ -77,7 +77,6 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
         const updatedTemplatesObject = selectedTemplates.map(({ _id }) => _id).reduce((acc, template) => ({ ...acc, [template]: {} }), {});
         setTemplatesObject(updatedTemplatesObject);
     }, [selectedTemplates]);
-    console.log({ inputValue, templatesObject });
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplates', inputValue],
@@ -194,10 +193,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                 if (!template) return false;
 
                 return (
-                    <li
-                        {...props}
-                        ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}
-                    >
+                    <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
                         <Grid container direction="row" alignItems="center">
                             <Grid container direction="column">
                                 <Grid container alignSelf="center" direction="row" spacing={1}>
