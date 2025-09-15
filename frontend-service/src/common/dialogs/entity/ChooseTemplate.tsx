@@ -82,11 +82,14 @@ const ChooseTemplate: React.FC<{
             onChange={(_e, value) => {
                 const newTemplate = value || emptyEntityTemplate;
 
-                const baseProps = getInitialValuesWithDefaults({
-                    attachmentsProperties: {},
-                    properties: values.properties,
-                    template: newTemplate,
-                }).properties;
+                const baseProps = getInitialValuesWithDefaults(
+                    {
+                        attachmentsProperties: {},
+                        properties: values.properties,
+                        template: newTemplate,
+                    },
+                    currentUser,
+                ).properties;
 
                 const additionalProps = getInitialProperties?.(newTemplate) ?? {};
 
