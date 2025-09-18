@@ -33,14 +33,23 @@ const { MuiTextWidget } = MuiWidgets;
 
 export const formulaValidation: StepType<RuleWizardValues>[][number]['validate'] = (values) => {
     try {
-        RuleParser.jsonTreeToFormula(Utils.getTree(values.formula) as JsonItem);
+        console.log({ formula: Utils.getTree(values.formula) });
+        RuleParser.jsonTreeToFormula(Utils.getTree(values.formula) as JsonItem, []);
     } catch (err) {
-        return {
-            formula:
-                (err as Error).message === 'count aggregation doesn`t support subFormulas'
-                    ? i18next.t('wizard.rule.countAggregationCantHaveSubFormulas')
-                    : i18next.t('wizard.rule.invalidFormula'),
-        };
+        let formulaErr: string;
+        switch ((err as Error).message) {
+            case 'count aggregation doesn`t support subFormulas':
+                formulaErr = i18next.t('wizard.rule.countAggregationCantHaveSubFormulas');
+                break;
+            case '!TODAY_VAR is not allowed inside aggregation group (for performance)':
+                formulaErr = i18next.t('wizard.rule.aggregationsCantHaveGetTodayFunc');
+                break;
+
+            default:
+                formulaErr = i18next.t('wizard.rule.invalidFormula');
+                break;
+        }
+        return { formula: formulaErr };
     }
 
     return {};
@@ -75,10 +84,10 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const { entityTemplateId, formula } = values;
+    const { entityTemplateId, formula, actionOnFail } = values;
 
     const config = useMemo((): Config => {
-        const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula, currentUser);
+        const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula, actionOnFail, currentUser);
 
         return {
             ...MuiConfig,
@@ -149,6 +158,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 addToDateTime: getAddOrSubDateTimeFunc(true),
                 subFromDate: getAddOrSubDateFunc(false),
                 subFromDateTime: getAddOrSubDateTimeFunc(false),
+                // getToday -- TODO: currently getToday function is as variable in fieldsConfig (because raqb doesnt support rhs functions)
             },
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps

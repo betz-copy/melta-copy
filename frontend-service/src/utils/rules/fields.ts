@@ -13,6 +13,8 @@ import {
     populateRelationshipTemplate,
 } from '../templates';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
+import i18next from 'i18next';
+import { ActionOnFail } from '../../interfaces/rules';
 
 const formatField = (
     key: string,
@@ -191,6 +193,7 @@ export const getFieldsConfigOfRule = (
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
     formula: ImmutableTree,
+    actionOnFail: ActionOnFail,
     currentUser: ICurrentUser,
 ): Fields => {
     const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
@@ -229,5 +232,13 @@ export const getFieldsConfigOfRule = (
     return {
         ...fieldsOfEntityTemplate,
         ...relationshipFields,
+        // getToday() function is shown as variable. in order to be allowed in lhs of equations (https://github.com/ukrbublik/react-awesome-query-builder/issues/287)
+        // dont allow getToday() to use in relationshipfields (in aggregation functions).
+        // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
+        // '!' at start to not intersect with other variables
+        ...(actionOnFail === ActionOnFail.ENFORCEMENT
+            ? {}
+            : // todo: add to tooltip of rule. can add html to it?
+              { '!TODAY_VAR': { type: 'date', label: 'TODAY( )', tooltip: i18next.t('wizard.rule.todayVariableInfo') } }),
     };
 };

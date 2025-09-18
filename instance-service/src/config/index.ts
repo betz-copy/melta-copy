@@ -55,6 +55,7 @@ const config = {
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
         relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear').asArray(),
+        updateColorsForRulesWithTodayFuncParallelLimit: env.get('UPDATE_COLORS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(20).asIntPositive(),
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
@@ -64,6 +65,10 @@ const config = {
             factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
         },
         activityLogQueue: env.get('ACTIVITY_LOG_QUEUE_NAME').default('activity-log-queue').asString(),
+        createAlertForRuleWithTodayFuncQueue: env
+            .get('CREATE_ALERT_FOR_RULE_WITH_TODAY_FUNC_FAILURE_QUEUE_NAME')
+            .default('create-alert-for-rule-with-today-func-failure-queue')
+            .asString(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),

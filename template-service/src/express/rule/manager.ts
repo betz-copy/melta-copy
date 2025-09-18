@@ -20,7 +20,7 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
             .exec();
     }
 
-    async updateRuleById(ruleId: string, updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled'>) {
+    async updateRuleById(ruleId: string, updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | '_doesFormulaHaveTodayFunc'>) {
         return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
@@ -41,12 +41,24 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
         return this.model.create({ ...rule, disabled: false });
     }
 
-    async searchRules(searchBody: { search?: string; entityTemplateIds?: string[]; disabled?: boolean; limit: number; skip: number }) {
-        const { search, entityTemplateIds, disabled, limit, skip } = searchBody;
+    async searchRules(searchBody: {
+        search?: string;
+        entityTemplateIds?: string[];
+        _doesFormulaHaveTodayFunc?: boolean;
+        disabled?: boolean;
+        limit: number;
+        skip: number;
+    }) {
+        const { search, entityTemplateIds, _doesFormulaHaveTodayFunc, disabled, limit, skip } = searchBody;
         const query: FilterQuery<IMongoRule> = {};
 
         if (disabled !== undefined) {
             query.disabled = disabled;
+        }
+
+        if (_doesFormulaHaveTodayFunc) {
+            // eslint-disable-next-line no-underscore-dangle
+            query._doesFormulaHaveTodayFunc = _doesFormulaHaveTodayFunc;
         }
 
         if (search) {

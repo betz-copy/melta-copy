@@ -4,6 +4,7 @@ import axios from 'axios';
 import { logger } from '@microservices/shared';
 import Server from './express/server';
 import config from './config';
+import { createRuleBreachAlertQueue, runRulesWithTodayFunc } from './express/templates/rules/runRulesWithTodayFuncConsumer';
 
 const { service, rabbit } = config;
 
@@ -14,15 +15,21 @@ const initializeRabbit = async () => {
 
     logger.info('Rabbit connected');
 
-    await menash.declareQueue(rabbit.notificationQueue);
-
-    await menash.declareQueue(rabbit.mailNotificationQueue);
-
-    await menash.declareQueue(rabbit.deleteUnusedFilesQueue);
-
-    await menash.declareQueue(rabbit.insertDocsSemanticQueue);
-
-    await menash.declareQueue(rabbit.deleteDocsSemanticQueue);
+    await menash.declareTopology({
+        queues: [
+            { name: rabbit.notificationQueue },
+            { name: rabbit.mailNotificationQueue },
+            { name: rabbit.deleteUnusedFilesQueue },
+            { name: rabbit.insertDocsSemanticQueue },
+            { name: rabbit.deleteDocsSemanticQueue },
+            { name: rabbit.runRulesWithTodayFuncQueue, options: { maxLength: 1 } },
+            { name: rabbit.createAlertForRuleWithTodayFuncQueue },
+        ],
+        consumers: [
+            { queueName: rabbit.runRulesWithTodayFuncQueue, onMessage: runRulesWithTodayFunc },
+            { queueName: rabbit.createAlertForRuleWithTodayFuncQueue, onMessage: createRuleBreachAlertQueue },
+        ],
+    });
 
     logger.info('Rabbit initialized');
 };

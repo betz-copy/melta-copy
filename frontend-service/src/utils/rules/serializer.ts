@@ -121,6 +121,12 @@ export class RuleSerializer {
         }
 
         if (isRegularFunction(rhsArgument)) {
+            if (rhsArgument.functionType === 'getToday') {
+                return {
+                    value: ['!TODAY_VAR'],
+                    valueSrc: ['field'],
+                };
+            }
             if (rhsArgument.functionType === 'toDate') {
                 return {
                     value: [
@@ -172,22 +178,20 @@ export class RuleSerializer {
             return RuleSerializer.countSerializer(eq as IEquation & { lhsArgument: ICountAggFunction; rhsArgument: IConstant }, aggregationsContext);
         }
 
-        let rulePropertiesFromLhs: Pick<RuleProperties, 'field' | 'valueType' | 'operator'>;
+        let lhsField: RuleProperties['field'];
+        let valueType: RuleProperties['valueType'];
 
         if (isRegularFunction(eq.lhsArgument) && eq.lhsArgument.functionType === 'toDate') {
             const argument = eq.lhsArgument.arguments[0] as IPropertyOfVariable;
 
-            rulePropertiesFromLhs = {
-                field: `${RuleSerializer.propertyOfVariableSerializer(argument, aggregationsContext)}-ignoreHour`,
-                valueType: ['date'],
-                operator: RuleSerializer.operatorSerializer(eq.operatorBool),
-            };
+            lhsField = `${RuleSerializer.propertyOfVariableSerializer(argument, aggregationsContext)}-ignoreHour`;
+            valueType = ['date'];
+        } else if (isRegularFunction(eq.lhsArgument) && eq.lhsArgument.functionType === 'getToday') {
+            lhsField = `!TODAY_VAR`;
+            valueType = ['date'];
         } else if (isPropertyOfVariable(eq.lhsArgument)) {
-            rulePropertiesFromLhs = {
-                field: RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument, aggregationsContext),
-                valueType: [RuleSerializer.getEquationValueType(eq.lhsArgument)],
-                operator: RuleSerializer.operatorSerializer(eq.operatorBool),
-            };
+            lhsField = RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument, aggregationsContext);
+            valueType = [RuleSerializer.getEquationValueType(eq.lhsArgument)];
         } else {
             throw new Error('lhsArgument must be propertyOfVariable or toDate function of propertyOfVariable');
         }
@@ -196,7 +200,9 @@ export class RuleSerializer {
             id: uuid(),
             type: 'rule',
             properties: {
-                ...rulePropertiesFromLhs,
+                field: lhsField,
+                valueType,
+                operator: RuleSerializer.operatorSerializer(eq.operatorBool),
                 ...RuleSerializer.rhsArgumentSerializer(eq.rhsArgument, aggregationsContext),
             },
         };

@@ -12,6 +12,7 @@ import {
     IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
+    ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
@@ -378,8 +379,22 @@ const UpdateEntityStatusActionInfo: React.FC<{
     );
 };
 
+const CronjobActionInfo: React.FC<{ actionMetadata: ICronjobRunMetadataPopulated }> = ({ actionMetadata: { entity } }) => {
+    const queryClient = useQueryClient();
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId);
+
+    return (
+        <Typography component="p" variant="body1">
+            <Box component="span">{i18next.t('ruleBreachInfo.cronjobActionInfo.inEntity')}</Box>{' '}
+            <EntityInstanceLink entity={entity} entityTemplate={entityTemplate || null} linkable={!!entity?.properties._id} />
+        </Typography>
+    );
+};
+
 export const ActionInfo: React.FC<{
-    originUser?: IUser;
+    originUser?: IUser | null;
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
     isCompact: boolean;
@@ -420,6 +435,7 @@ export const ActionInfo: React.FC<{
                         failedProperties={failedProperties}
                     />
                 )}
+                {actionType === ActionTypes.CronjobRun && <CronjobActionInfo actionMetadata={actionMetadata as ICronjobRunMetadataPopulated} />}
             </Grid>
             {originUser && (
                 <Grid marginLeft="4px">

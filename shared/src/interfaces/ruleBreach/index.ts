@@ -5,9 +5,13 @@ import { ActionErrors, ActionTypes, IActionMetadataPopulated, ICreateEntityMetad
 import { IAction, IBrokenRule, IBrokenRulePopulated, IRuleBreach, IRuleBreachPopulated } from './ruleBreach';
 
 // Rule Breach Alerts
-export interface IRuleBreachAlert extends IRuleBreach {}
+export interface IRuleBreachAlert extends Omit<IRuleBreach, 'originUserId'> {
+    originUserId: string | null; // allow null for Cronjob rules (i.e. with getToday function)
+}
 
-export interface IRuleBreachAlertPopulated extends IRuleBreachPopulated {}
+export interface IRuleBreachAlertPopulated extends Omit<IRuleBreachPopulated, 'originUser'> {
+    originUser: IUser | null;
+}
 
 // Rule Breach Requests
 export enum RuleBreachRequestStatus {

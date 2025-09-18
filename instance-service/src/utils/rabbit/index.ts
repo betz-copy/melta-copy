@@ -13,7 +13,7 @@ const initializeRabbit = async () => {
 
     logger.info('Rabbit connected');
 
-    await menash.declareQueue(rabbit.activityLogQueue);
+    await menash.declareTopology({ queues: [{ name: rabbit.activityLogQueue }, { name: rabbit.createAlertForRuleWithTodayFuncQueue }] });
 
     logger.info('Rabbit initialized');
 };

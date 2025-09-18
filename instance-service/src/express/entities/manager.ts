@@ -11,6 +11,7 @@ import {
     IAction,
     IActivityLog,
     IBrokenRule,
+    ICausesOfInstance,
     IChartBody,
     IChildTemplatePopulated,
     IConstraint,
@@ -53,6 +54,9 @@ import mapValues from 'lodash.mapvalues';
 import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
+import pLimit from 'p-limit';
+import GatewayServiceProducer from '../../externalServices/gateway/producer';
+import filteredMap from '../../utils/filteredMap';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
@@ -86,10 +90,11 @@ import BulkActionManager from '../bulkActions/manager';
 import RelationshipManager from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IRuleFailure } from '../rules/interfaces';
-import { runRulesOnEntity } from '../rules/runRulesOnEntity';
+import { runRuleOnEntitiesOfTemplate, runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
+import { getCausesOfRuleFailure } from '../rules/calcNewCausesOfRuleFailure';
 
 const {
     brokenRulesFakeEntityIdPrefix,
@@ -112,6 +117,8 @@ class EntityManager extends DefaultManagerNeo4j {
 
     private activityLogProducer: ActivityLogProducer;
 
+    private gatewayServiceProducer: GatewayServiceProducer;
+
     constructor(workspaceId: string) {
         super(workspaceId);
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
@@ -119,6 +126,7 @@ class EntityManager extends DefaultManagerNeo4j {
         this.relationshipManager = new RelationshipManager(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
         this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
+        this.gatewayServiceProducer = new GatewayServiceProducer(workspaceId);
     }
 
     private getRelevantRulesOfEntities = (
@@ -514,7 +522,10 @@ class EntityManager extends DefaultManagerNeo4j {
             'writeTransaction',
             async (transaction) => {
                 const actionHandlers: Record<
-                    Exclude<ActionTypes, ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship>,
+                    Exclude<
+                        ActionTypes,
+                        ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship | ActionTypes.CronjobRun
+                    >,
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
@@ -2302,6 +2313,128 @@ class EntityManager extends DefaultManagerNeo4j {
         });
 
         return Promise.all(chartPromises);
+    }
+
+    private updateColorsForIndicatorRulesWithTodayFunc(rulesWithTodayFuncRecord: Map<string, IMongoRule>, brokenRules: IBrokenRule[]) {
+        const indicatorRulesOfEntityIds: Map<string, IMongoRule[]> = new Map();
+        brokenRules.forEach((brokenRule) => {
+            const rule = rulesWithTodayFuncRecord.get(brokenRule.ruleId)!;
+            if (rule.actionOnFail !== ActionOnFail.INDICATOR) return;
+
+            brokenRule.failures.forEach((ruleFailure) => {
+                if (!indicatorRulesOfEntityIds.has(ruleFailure.entityId)) {
+                    indicatorRulesOfEntityIds.set(ruleFailure.entityId, [rule]);
+                } else {
+                    indicatorRulesOfEntityIds.get(ruleFailure.entityId)!.push(rule);
+                }
+            });
+        });
+
+        const parallelLimit = pLimit(config.neo4j.updateColorsForRulesWithTodayFuncParallelLimit);
+
+        return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const updateEntitiesPromises = Array.from(indicatorRulesOfEntityIds.entries()).map(async ([entityId, indicatorRules]) => {
+                const updatedColoredFields = this.getColoredFields(indicatorRules, []);
+                const updatedColorsNormalizedFields: Record<string, string> = {};
+                Object.entries(updatedColoredFields).forEach(([field, color]) => {
+                    updatedColorsNormalizedFields[`${field}${config.neo4j.colorPropertySuffix}`] = color;
+                });
+
+                await parallelLimit(() =>
+                    runInTransactionAndNormalize(
+                        transaction,
+                        `MATCH (e {_id: '${entityId}'})
+                         SET e += $props
+                         RETURN e`,
+                        normalizeReturnedEntity('singleResponseNotNullable'),
+                        {
+                            props: {
+                                ...updatedColorsNormalizedFields,
+                                updatedAt: getNeo4jDateTime(),
+                            },
+                        },
+                    ),
+                );
+            });
+
+            return Promise.all(updateEntitiesPromises);
+        });
+    }
+
+    async runRulesWithTodayFunc() {
+        const rulesWithTodayFunc = await this.relationshipsTemplateManagerService.searchRules({
+            _doesFormulaHaveTodayFunc: true,
+        });
+        const rulesWithTodayFuncRecord = new Map(rulesWithTodayFunc.map((rule) => [rule._id, rule]));
+
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({
+            ids: rulesWithTodayFunc.map((rule) => rule.entityTemplateId),
+        });
+        const entityTemplatesRecord = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+
+        const brokenRules: IBrokenRule[] = [];
+        for (let i = 0; i < rulesWithTodayFunc.length; i++) {
+            const rule = rulesWithTodayFunc[i];
+            const entityTemplate = entityTemplatesRecord.get(rule.entityTemplateId)!;
+
+            const brokenRule = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction): Promise<IBrokenRule> => {
+                const today = new Date();
+                const yesterday = new Date();
+                yesterday.setDate(today.getDate() - 1);
+
+                const [ruleFailuresYesterday, ruleFailuresToday] = await Promise.all([
+                    runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, yesterday, true),
+                    runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, today, true),
+                ]);
+
+                const ruleFailuresYesterdayRecord = Object.fromEntries(
+                    ruleFailuresYesterday.map((ruleFailure) => [ruleFailure.entityId, ruleFailure]),
+                );
+
+                const ruleFailuresTodayWithCauses = filteredMap(ruleFailuresToday, (ruleFailure) => {
+                    const ruleFailureYesterday = ruleFailuresYesterdayRecord[ruleFailure.entityId];
+
+                    const causes = getCausesOfRuleFailure(
+                        { rule, entityId: ruleFailure.entityId, formulaCauses: ruleFailure.formulaCauses },
+                        { rule, entityId: ruleFailure.entityId, formulaCauses: ruleFailureYesterday.formulaCauses },
+                        rule.formula,
+                    );
+
+                    if (causes.length === 0) return undefined;
+
+                    return {
+                        include: true,
+                        // TODO: dont filter out cause of getTodayFunc (currently UI doesnt show it anyway)
+                        value: { entityId: ruleFailure.entityId, causes: causes.filter<ICausesOfInstance>((cause) => 'instance' in cause) },
+                    };
+                });
+
+                return { ruleId: rule._id, failures: ruleFailuresTodayWithCauses };
+            });
+
+            if (brokenRule.failures.length > 0) {
+                brokenRules.push(brokenRule);
+            }
+        }
+
+        await this.updateColorsForIndicatorRulesWithTodayFunc(rulesWithTodayFuncRecord, brokenRules);
+
+        const brokenRulesOfWarningOnFail = brokenRules.filter(
+            ({ ruleId }) => rulesWithTodayFuncRecord.get(ruleId)!.actionOnFail === ActionOnFail.WARNING,
+        );
+
+        for (let i = 0; i < brokenRulesOfWarningOnFail.length; i++) {
+            const brokenRule = brokenRulesOfWarningOnFail[i];
+
+            const createAlertsPromises = brokenRule.failures.map((failure) => {
+                return this.gatewayServiceProducer.createAlertForRuleWithTodayFunc({
+                    ruleId: brokenRule.ruleId,
+                    failures: [failure],
+                });
+            });
+
+            await Promise.all(createAlertsPromises);
+        }
     }
 }
 

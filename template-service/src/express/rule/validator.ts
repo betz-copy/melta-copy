@@ -90,7 +90,7 @@ const sumAggFunctionSchema = Joi.object({
 
 const regularFunctionSchema = Joi.object({
     isRegularFunction: Joi.boolean().valid(true).required(),
-    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime').required(),
+    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime', 'getToday').required(),
     arguments: Joi.array().items(Joi.object()).required(),
 });
 
@@ -311,7 +311,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         regularFunctionData: any,
         relevantTemplates: IRelevantTemplates,
         aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
-    ): IConstant['type'] {
+    ): { valueType: IConstant['type']; doesHaveTodayFunc: boolean } {
         const {
             arguments: funcArguments,
             functionType,
@@ -328,7 +328,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         switch (functionType) {
             case 'toDate': {
                 assert(funcArguments.length === 1, 'toDate must contain exactly 1 argument');
-                return 'date';
+                return { valueType: 'date', doesHaveTodayFunc: false };
             }
 
             case 'addToDate':
@@ -341,7 +341,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
                     'add/subToDate function second argument be of type dateDuration',
                 );
 
-                return 'date';
+                return { valueType: 'date', doesHaveTodayFunc: false };
             }
 
             case 'addToDateTime':
@@ -354,7 +354,12 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
                     'add/subToDate function second argument be of type dateTimeDuration',
                 );
 
-                return 'dateTime';
+                return { valueType: 'dateTime', doesHaveTodayFunc: false };
+            }
+
+            case 'getToday': {
+                assert(funcArguments.length === 0, 'getToday function mustnt contain arguments');
+                return { valueType: 'date', doesHaveTodayFunc: true };
             }
 
             default:
@@ -366,18 +371,22 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         argumentData: any,
         relevantTemplates: IRelevantTemplates,
         aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
-    ): IConstant['type'] {
+    ): { valueType: IConstant['type']; doesHaveTodayFunc: boolean } {
         this.joiValidateNoConvert(argumentSchema, argumentData);
 
-        if (argumentData.isConstant) return this.validateConstant(argumentData);
-        if (argumentData.isPropertyOfVariable) return this.validatePropertyOfVariable(argumentData, relevantTemplates, aggregationGroupsContext);
+        if (argumentData.isConstant) return { valueType: this.validateConstant(argumentData), doesHaveTodayFunc: false };
+        if (argumentData.isPropertyOfVariable)
+            return {
+                valueType: this.validatePropertyOfVariable(argumentData, relevantTemplates, aggregationGroupsContext),
+                doesHaveTodayFunc: false,
+            };
         if (argumentData.isCountAggFunction) {
             this.validateCountAggFunction(argumentData, relevantTemplates, aggregationGroupsContext);
-            return 'number';
+            return { valueType: 'number', doesHaveTodayFunc: false };
         }
         if (argumentData.isSumAggFunction) {
             this.validateSumAggFunction(argumentData, relevantTemplates, aggregationGroupsContext);
-            return 'number';
+            return { valueType: 'number', doesHaveTodayFunc: false };
         }
         if (argumentData.isRegularFunction) return this.validateRegularFunction(argumentData, relevantTemplates, aggregationGroupsContext);
 
@@ -388,36 +397,52 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         equationData: any,
         relevantTemplates: IRelevantTemplates,
         aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
-    ) {
+    ): { doesHaveTodayFunc: boolean } {
         this.joiValidateNoConvert(equationSchema, equationData);
 
-        const lhsArgumentType = this.validateArgument(equationData.lhsArgument, relevantTemplates, aggregationGroupsContext);
-        const rhsArgumentType = this.validateArgument(equationData.rhsArgument, relevantTemplates, aggregationGroupsContext);
+        const { valueType: lhsValueType, doesHaveTodayFunc: lhsDoesHaveTodayFunc } = this.validateArgument(
+            equationData.lhsArgument,
+            relevantTemplates,
+            aggregationGroupsContext,
+        );
+        const { valueType: rhsValueType, doesHaveTodayFunc: rhsDoesHaveTodayFunc } = this.validateArgument(
+            equationData.rhsArgument,
+            relevantTemplates,
+            aggregationGroupsContext,
+        );
 
         assert(
-            lhsArgumentType === rhsArgumentType,
-            `both sides of equation must be of same type. found "${lhsArgumentType}" (left), "${rhsArgumentType}" (right)`,
+            lhsValueType === rhsValueType,
+            `both sides of equation must be of same type. found "${lhsValueType}" (left), "${rhsValueType}" (right)`,
         );
+
+        return { doesHaveTodayFunc: lhsDoesHaveTodayFunc || rhsDoesHaveTodayFunc };
     }
 
     private validateGroup(
         groupData: any,
         relevantTemplates: IRelevantTemplates,
         aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
-    ) {
+    ): { doesHaveTodayFunc: boolean } {
         this.joiValidateNoConvert(groupSchema, groupData);
+
+        let doesHaveTodayFunc = false;
 
         (groupData.subFormulas as Array<any>).forEach((subFormula) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions
-            return this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
+            const subFormulaValidateResult = this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
+
+            if (subFormulaValidateResult.doesHaveTodayFunc) doesHaveTodayFunc = true;
         });
+
+        return { doesHaveTodayFunc };
     }
 
     private validateAggregationGroup(
         aggregationGroupData: any,
         relevantTemplates: IRelevantTemplates,
         aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
-    ) {
+    ): { doesHaveTodayFunc: boolean } {
         const aggregationGroup: Omit<IAggregationGroup, 'subFormulas'> & { subFormulas: unknown[] } = this.joiValidateNoConvert(
             aggregationGroupSchema,
             aggregationGroupData,
@@ -425,25 +450,36 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
 
         this.validateVariableOfAggregation(aggregationGroup.variableOfAggregation, relevantTemplates, false, aggregationGroupsContext);
 
+        let doesHaveTodayFunc = false;
+
         (aggregationGroup.subFormulas as Array<any>).forEach((subFormula) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
-            this.validateFormula(subFormula, relevantTemplates, [...aggregationGroupsContext, aggregationGroup.variableOfAggregation]);
+            const subFormulaValidateResult = this.validateFormula(subFormula, relevantTemplates, [
+                ...aggregationGroupsContext,
+                aggregationGroup.variableOfAggregation,
+            ]);
+
+            if (subFormulaValidateResult.doesHaveTodayFunc) doesHaveTodayFunc = true;
         });
+
+        return { doesHaveTodayFunc };
     }
 
     private validateFormula(
         formulaData: any,
         relevantTemplates: IRelevantTemplates,
         aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
-    ) {
+    ): { doesHaveTodayFunc: boolean } {
         this.joiValidateNoConvert(formulaSchema, formulaData);
 
-        if (formulaData.isEquation) this.validateEquation(formulaData, relevantTemplates, aggregationGroupsContext);
-        if (formulaData.isGroup) this.validateGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        if (formulaData.isAggregationGroup) this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
+        if (formulaData.isEquation) return this.validateEquation(formulaData, relevantTemplates, aggregationGroupsContext);
+        if (formulaData.isGroup) return this.validateGroup(formulaData, relevantTemplates, aggregationGroupsContext);
+        if (formulaData.isAggregationGroup) return this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
+
+        throw new Error('Shouldnt reach here. formula must be one of allowed options');
     }
 
-    private async validateAndGetRelevantTemplates(rule: IRule): Promise<IRelevantTemplates> {
+    private async validateAndGetRelevantTemplates(rule: Omit<IRule, 'disabled' | '_doesFormulaHaveTodayFunc'>): Promise<IRelevantTemplates> {
         const entityTemplate = await this.entityTemplateManager.getTemplateById(rule.entityTemplateId);
 
         const relationshipTemplatesOfEntityAsSource = (await this.manager.searchTemplates({
@@ -475,14 +511,17 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         return { entityTemplate, connectionsTemplatesOfEntityTemplate };
     }
 
-    async validateRuleFormula(rule: IRule) {
+    async validateRuleFormula(rule: Omit<IRule, 'disabled' | '_doesFormulaHaveTodayFunc'>) {
         const relevantTemplates = await this.validateAndGetRelevantTemplates(rule);
 
-        this.validateFormula(rule.formula, relevantTemplates, []);
+        return this.validateFormula(rule.formula, relevantTemplates, []);
     }
 
     async validateRuleFormulaMiddleware(req: Request) {
-        await this.validateRuleFormula(req.body);
+        const { doesHaveTodayFunc } = await this.validateRuleFormula(req.body);
+
+        // eslint-disable-next-line no-underscore-dangle
+        req.body._doesFormulaHaveTodayFunc = doesHaveTodayFunc;
     }
 }
 

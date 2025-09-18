@@ -91,7 +91,7 @@ const getColumnDefs = (
         {
             field: 'originUser',
             headerName: i18next.t('ruleManagement.originUser'),
-            valueFormatter: (params) => params.value.displayName,
+            valueFormatter: (params) => params.value?.displayName,
             menuTabs: [],
             sortable: false,
         },

@@ -891,6 +891,9 @@ export default {
             formula: 'נוסחת החוק',
             invalidFormula: 'נוסחה לא תקינה',
             countAggregationCantHaveSubFormulas: 'לא ניתן להוסיף תנאים לאגריגציה מסוג סכימת ישויות',
+            aggregationsCantHaveGetTodayFunc: 'לא ניתן להשתמש בTODAY בלולאה של קשרים (ALL/SOME)',
+            todayVariableInfo:
+                'כלומר הנוסחא תרוץ על הישות כל לילה(כדי לראות אם נכשל), לדוגמא חוק mathTest.date<TODAY( )-14 שיכשל כאשר התאריך 14 יום לפני המבחן.\n\n שים לב! לטבלאות עם הרבה ישויות יש להשתמש רק בחוקים עם נוסחא ללא לולאות קשר (ALL/SOME).',
             actions: {
                 warning: 'אזהרה',
                 enforcement: 'אכיפה',
@@ -1144,6 +1147,9 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        cronjobActionInfo: {
+            inEntity: 'בישות',
+        },
         deletedEntity: 'הישות נמחקה',
         brokenRules: 'חריגות',
         actionsOrder: 'סדר פעולות',
@@ -1250,6 +1256,9 @@ export default {
         'duplicate-entity': 'שכפול ישות',
         'update-entity': 'עריכת ישות',
         'update-status': 'עריכת סטטוס',
+        // 'update-multiple-entities', // todo
+        // 'create-client-side-entity', // todo
+        'cronjob-run': 'בדיקת חוק יומית (פעם ביום)',
         approveRequest: 'אשר בקשה',
         denyRequest: 'דחה בקשה',
         cancelRequest: 'ביטול בקשה',

@@ -14,6 +14,7 @@ export interface IRule {
     formula: IFormula;
     disabled: boolean;
     fieldColor?: { display: boolean; field: string; color: string };
+    _doesFormulaHaveTodayFunc: boolean;
 }
 
 export interface IMongoRule extends IRule {
