@@ -30,14 +30,14 @@ const UserAvatar: React.FC<IUserAvatarProps> = ({
 
     const [{ data: meltaUserProfile, isError: isErrorMelta }, { data: kartoffelUser, isError: isErrorKartoffel }] = useQueries([
         {
-            queryKey: ['userProfile', user._id, user?.preferences, userIcon?.profileImage],
+            queryKey: ['userProfile', user._id, user?.preferences, userIcon],
             queryFn: () => getUserProfileRequest(user),
             enabled: !shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
         },
         {
-            queryKey: ['kartoffelImage', user._id],
-            queryFn: () => getKartoffelUserProfileRequest(user._id!),
-            enabled: shouldGetKartoffelImage,
+            queryKey: ['kartoffelImage', user.kartoffelId],
+            queryFn: () => getKartoffelUserProfileRequest(user.kartoffelId!),
+            enabled: shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
         },
     ]);
 
