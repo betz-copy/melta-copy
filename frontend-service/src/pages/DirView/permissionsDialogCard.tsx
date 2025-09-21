@@ -63,7 +63,7 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                 <Grid container id="user-info" alignItems="center" width="35%" flexWrap="nowrap">
                     <Grid padding="10px" id="profile-photo">
                         <UserAvatar
-                            user={{ ...user, _id: user.kartoffelId }} // When UserAvatar requests kartoffelImage it does it by _id of user
+                            user={user}
                             userIcon={{ size: 50 }}
                             shouldRenderChip={false}
                             shouldRenderTooltip={false}
