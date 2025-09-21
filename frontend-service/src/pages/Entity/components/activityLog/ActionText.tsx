@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Chip, Grid, styled, Typography, useTheme } from '@mui/material';
+import { Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
@@ -8,17 +8,16 @@ import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSc
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
-import UserAvatar from '../../../../common/UserAvatar';
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getFilesName } from '../../../../utils/getFileName';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { locationConverterToString } from '../../../../utils/map/convert';
+import UserAvatar from '../../../../common/UserAvatar';
 
 const logColors = {
     ACTIVATE_ENTITY: '#C5FF7B',
@@ -184,8 +183,6 @@ const UpdateTextValue: React.FC<{
     fieldName: string;
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ value, old, fieldName, entityTemplateProperties }) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
     let innerContent: React.ReactNode;
     if (isLocationData(value))
         innerContent =
@@ -234,16 +231,11 @@ const UpdateTextValue: React.FC<{
 
     const contentDisplayNameByTemplate = (content: string, inTooltip = false) => {
         if (isUserField()) {
-            if (inTooltip) return JSON.parse(value).fullName;
+            const user = JSON.parse(value);
 
-            return (
-                <Chip
-                    size="small"
-                    avatar={<UserAvatar user={JSON.parse(value)} size={23} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                    sx={{ marginLeft: '5px', background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
-                    label={JSON.parse(value).fullName}
-                />
-            );
+            if (inTooltip) return user.fullName;
+
+            return <UserAvatar user={user} userIcon={{ size: 23 }} chip={{ size: 'small' }} shouldRenderTooltip={inTooltip} />;
         }
         if (isFileIdFormat()) {
             return getFilesName(content);

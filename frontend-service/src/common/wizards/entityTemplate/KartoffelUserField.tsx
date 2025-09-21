@@ -47,6 +47,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
         'sex',
         'directGroup',
         'hierarchy',
+        'image',
     ];
 
     const relatedUserField = `properties[${index}].relatedUserField`;

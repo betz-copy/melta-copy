@@ -14,20 +14,19 @@ interface ApproverCard {
 }
 const CreateUserCard: React.FC<ApproverCard> = ({ user, remove, userIndex, readOnly = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const chipSx = { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' };
 
     return (
         <Grid margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
             {typeof user === 'string' ? (
-                <Chip label={user} variant="outlined" onDelete={readOnly ? undefined : () => remove(userIndex)} key={user} sx={chipSx} />
-            ) : user ? (
                 <Chip
-                    avatar={<UserAvatar user={user} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                    sx={chipSx}
-                    label={user.fullName}
+                    label={user}
+                    variant="outlined"
                     onDelete={readOnly ? undefined : () => remove(userIndex)}
-                    key={user._id}
+                    key={user}
+                    sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
                 />
+            ) : user ? (
+                <UserAvatar user={user} chip={{ onDelete: readOnly ? undefined : () => remove(userIndex) }} key={user._id} />
             ) : null}
         </Grid>
     );

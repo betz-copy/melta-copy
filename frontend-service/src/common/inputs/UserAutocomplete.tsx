@@ -1,5 +1,5 @@
 import { ExpandMore } from '@mui/icons-material';
-import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
@@ -7,7 +7,6 @@ import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
-import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../UserAvatar';
@@ -58,7 +57,6 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     overrideSx,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
@@ -87,7 +85,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     const isValueExist = value && value.fullName != '';
 
     return (
-        <MeltaTooltip title={value?.displayName ? '' : value?.fullName ?? ''} sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.displayName ? '' : (value?.fullName ?? '')} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
@@ -136,11 +134,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 readOnly,
                                 endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
                                 startAdornment: isValueExist ? (
-                                    <Chip
-                                        avatar={<UserAvatar user={value} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                        label={value.fullName}
-                                        sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
-                                    />
+                                    <UserAvatar user={{ ...value, _id: value._id ?? (value as any).id }} tooltip={undefined} />
                                 ) : undefined,
                                 inputProps: {
                                     ...params.inputProps,
@@ -160,7 +154,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         }}
                         sx={{
                             ...(readOnly
-                                 ? {
+                                ? {
                                       '& .MuiOutlinedInput-root.Mui-focused': {
                                           '& > fieldset': {
                                               borderColor: 'rgba(0, 0, 0, 0.23)',

@@ -9,13 +9,10 @@ import {
 } from '@ag-grid-community/core';
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
-import Chip from '@mui/material/Chip';
 import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
-import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
-import UserAvatar from '../../common/UserAvatar';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -33,6 +30,7 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
+import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 
 const getColor = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
     (props.data as { coloredFields: IEntity['coloredFields'] })?.coloredFields?.[field];
@@ -509,6 +507,7 @@ export const userColDef = <Data extends any = IUser>(
     isLastColumn: boolean,
     darkMode: boolean,
     hideColumn = false,
+    userAvatarProps?: Partial<Omit<IUserAvatarProps, 'user'>>,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -521,20 +520,21 @@ export const userColDef = <Data extends any = IUser>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             if (!props.value) return '';
+
+            const user = JSON.parse(props.value);
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
-                        <Grid>
-                            <Chip
-                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                sx={{
-                                    background: darkMode ? '#1E1F2B' : '#EBEFFA',
-                                    color: getColor(props, field) ?? (darkMode ? '#D3D6E0' : '#53566E'),
-                                }}
-                                label={JSON.parse(props.value).fullName}
-                            />
-                        </Grid>
-                    </MeltaTooltip>
+                    <UserAvatar
+                        user={user}
+                        tooltip={{ title: `${user.fullName} - ${user.hierarchy}` }}
+                        chip={{
+                            sx: {
+                                background: darkMode ? '#1E1F2B' : '#EBEFFA',
+                                color: getColor(props, field) ?? (darkMode ? '#D3D6E0' : '#53566E'),
+                            },
+                        }}
+                        {...userAvatarProps}
+                    />
                 </Grid>
             );
         },
@@ -580,18 +580,16 @@ export const userArrayColDef = <Data extends any = IEntity>(
                     })}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
-                        <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                            <Grid>
-                                <Chip
-                                    avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                    sx={{
-                                        background: darkMode ? '#1E1F2B' : '#EBEFFA',
-                                        color: getColor(props, field) ?? (darkMode ? '#D3D6E0' : '#53566E'),
-                                    }}
-                                    label={item.fullName}
-                                />
-                            </Grid>
-                        </MeltaTooltip>
+                        <UserAvatar
+                            user={item}
+                            tooltip={{ title: `${item.fullName} - ${item.hierarchy}` }}
+                            chip={{
+                                sx: {
+                                    background: darkMode ? '#1E1F2B' : '#EBEFFA',
+                                    color: getColor(props, field) ?? (darkMode ? '#D3D6E0' : '#53566E'),
+                                },
+                            }}
+                        />
                     )}
                     propertyToDisplayInTooltip="fullName"
                     containerStyle={{ height: `${rowHeight}px` }}

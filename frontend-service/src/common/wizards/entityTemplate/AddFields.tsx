@@ -163,6 +163,7 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
         is: 'comment',
         then: () => Yup.string().required(),
     }),
+    isProfilePicture: Yup.boolean(),
 });
 
 const fieldSchema = Yup.object({

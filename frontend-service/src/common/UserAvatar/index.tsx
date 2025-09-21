@@ -1,0 +1,87 @@
+import React from 'react';
+import { ChipProps, TooltipProps, Chip, Grid, Box, Typography } from '@mui/material';
+import UserIcon, { UserIconProps } from './UserIcon';
+import { IUser } from '../../interfaces/users';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';
+import { useQueries } from 'react-query';
+
+export interface IUserAvatarProps {
+    user: Partial<IUser>;
+    tooltip?: (Omit<TooltipProps, 'children' | 'title'> & { displayUserImage?: boolean; title?: TooltipProps['title'] }) | undefined;
+    chip?: ChipProps;
+    userIcon?: Omit<UserIconProps, 'user'>;
+    shouldRenderChip?: boolean;
+    shouldRenderTooltip?: boolean;
+    shouldGetKartoffelImage?: boolean;
+}
+
+const UserAvatar: React.FC<IUserAvatarProps> = ({
+    user,
+    chip,
+    tooltip,
+    userIcon,
+    shouldRenderChip = true,
+    shouldRenderTooltip = true,
+    shouldGetKartoffelImage = !user.preferences,
+}) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const [{ data: meltaUserProfile, isError: isErrorMelta }, { data: kartoffelUser, isError: isErrorKartoffel }] = useQueries([
+        {
+            queryKey: ['userProfile', user._id, user?.preferences, userIcon?.profileImage],
+            queryFn: () => getUserProfileRequest(user),
+            enabled: !shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
+        },
+        {
+            queryKey: ['kartoffelImage', user._id],
+            queryFn: () => getKartoffelUserProfileRequest(user._id!),
+            enabled: shouldGetKartoffelImage,
+        },
+    ]);
+
+    const profileImage = meltaUserProfile ?? kartoffelUser;
+
+    const hasMeltaError = user.preferences && isErrorMelta;
+    const hasKartoffelError = !user.preferences && isErrorKartoffel;
+    const defaultUserIcon = {
+        overrideSx: { border: '1.3px solid #FF006B' },
+        size: 25,
+        user,
+        isError: hasMeltaError || hasKartoffelError,
+        ...userIcon,
+        profileImage: userIcon?.profileImage ?? profileImage,
+    };
+
+    const avatar = <UserIcon {...defaultUserIcon} />;
+
+    const content = shouldRenderChip ? (
+        <Chip
+            label={user.fullName}
+            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
+            avatar={avatar}
+            {...chip}
+        />
+    ) : (
+        avatar
+    );
+
+    return shouldRenderTooltip ? (
+        <MeltaTooltip
+            {...tooltip}
+            title={
+                <Box display="flex" alignItems="center" gap={1}>
+                    {(tooltip?.displayUserImage ?? true) && <UserIcon {...defaultUserIcon} size={48} />}
+                    {tooltip?.title || <Typography variant="body2">{user.fullName}</Typography>}
+                </Box>
+            }
+        >
+            <Grid>{content}</Grid>
+        </MeltaTooltip>
+    ) : (
+        content
+    );
+};
+
+export default UserAvatar;

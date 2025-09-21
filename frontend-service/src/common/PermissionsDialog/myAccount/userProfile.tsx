@@ -3,9 +3,8 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { IUser } from '../../../interfaces/users';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
-import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
-import UserAvatar from '../../UserAvatar';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
+import UserAvatar from '../../UserAvatar';
 
 const UserProfile: React.FC<{
     existingUser: IUser;
@@ -21,21 +20,22 @@ const UserProfile: React.FC<{
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
             <Grid width="100%" display="flex" justifyItems="start">
-                <MeltaTooltip title={i18next.t(`user.${editProfile ? 'close' : 'edit'}`)} placement="left">
-                    <IconButton
-                        onClick={() => {
-                            setEditProfile(!editProfile);
+                <IconButton
+                    onClick={() => {
+                        setEditProfile(!editProfile);
+                    }}
+                >
+                    <UserAvatar
+                        userIcon={{ size: 100, profileImage: userProfileImage, isDefaultProfile: isDefaultProfile }}
+                        shouldRenderChip={false}
+                        tooltip={{
+                            title: i18next.t(`user.${editProfile ? 'close' : 'edit'}`),
+                            placement: 'left',
+                            displayUserImage: false,
                         }}
-                    >
-                        <UserAvatar
-                            user={existingUser}
-                            size={100}
-                            userProfileImage={userProfileImage}
-                            isDefaultProfile={isDefaultProfile}
-                            addBorder
-                        />
-                    </IconButton>
-                </MeltaTooltip>
+                        user={existingUser}
+                    />
+                </IconButton>
             </Grid>
 
             {editProfile && (

@@ -127,7 +127,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
 
         const hideField = template.properties.hide.includes(property);
 
-        const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
+        // Pass propertyToGet to extract a different property from the object
+        const valueGetter = ({ data }, propertyToGet = property) => (data ? getEntityPropertiesData(data)[propertyToGet] : undefined);
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const isPreviewEmpty = template.propertiesPreview.length === 0;
@@ -280,18 +281,31 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 hideColumn,
             );
         }
-        if (propertyTemplate.format === 'user') {
+
+        const isKartoffelImageRef = propertyTemplate.expandedUserField?.kartoffelField === 'image';
+        if (propertyTemplate.format === 'user' || isKartoffelImageRef) {
             return userColDef(
                 property,
-                valueGetter,
+                isKartoffelImageRef
+                    ? (prop) => {
+                          // TODO: use this method to get the properties of all related field?
+                          const userField = propertyTemplate.expandedUserField?.relatedUserField;
+                          return valueGetter(prop, userField);
+                      }
+                    : valueGetter,
                 { title: propertyTemplate.title },
                 [],
                 defaultColumnWidths[property],
                 isLastColumn,
                 darkMode,
                 hideColumn,
+                {
+                    shouldRenderChip: !isKartoffelImageRef,
+                    ...(isKartoffelImageRef && { userIcon: { size: 34, overrideSx: { marginTop: '0.5rem' } } }),
+                },
             );
         }
+
         if (propertyTemplate.items?.format === 'user') {
             return userArrayColDef(
                 property,
@@ -305,6 +319,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 darkMode,
             );
         }
+
         return stringColDef(
             property,
             valueGetter,
