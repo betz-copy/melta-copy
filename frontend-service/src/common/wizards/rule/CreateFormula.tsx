@@ -35,7 +35,6 @@ const { MuiTextWidget } = MuiWidgets;
 
 export const formulaValidation: StepType<RuleWizardValues>[][number]['validate'] = (values) => {
     try {
-        console.log({ formula: Utils.getTree(values.formula) });
         RuleParser.jsonTreeToFormula(Utils.getTree(values.formula) as JsonItem, []);
     } catch (err) {
         let formulaErr: string;
