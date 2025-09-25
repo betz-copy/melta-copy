@@ -238,7 +238,6 @@ export const getFieldsConfigOfRule = (
         // '!' at start to not intersect with other variables
         ...(actionOnFail === ActionOnFail.ENFORCEMENT
             ? {}
-            : // todo: add to tooltip of rule. can add html to it?
-              { '!TODAY_VAR': { type: 'date', label: 'TODAY( )', tooltip: i18next.t('wizard.rule.todayVariableInfo') } }),
+            : { '!TODAY_VAR': { type: 'date', label: 'TODAY( )', tooltip: i18next.t('wizard.rule.todayVariableInfo') } }),
     };
 };
