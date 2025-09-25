@@ -192,6 +192,7 @@ const getTodayFuncVariables = (actionOnFail: ActionOnFail) => {
     // getToday() function is shown as variable. in order to be allowed in lhs of equations (https://github.com/ukrbublik/react-awesome-query-builder/issues/287)
     // dont allow getToday() to use in relationshipfields (in aggregation functions).
     // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
+    // DB indexes optimization for rule w/ getToday not yet implemented, but to have the option in the future
     // '!' at start to not intersect with other variables
     if (actionOnFail === ActionOnFail.ENFORCEMENT) return {};
 

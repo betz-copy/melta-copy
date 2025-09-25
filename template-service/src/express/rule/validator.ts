@@ -359,6 +359,12 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
 
             case 'getToday': {
                 assert(funcArguments.length === 0, 'getToday function mustnt contain arguments');
+
+                // dont allow getToday() to use in relationshipfields (in aggregation functions).
+                // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
+                // DB indexes optimization for rule w/ getToday not yet implemented, but to have the option in the future
+                assert(aggregationGroupsContext.length === 0, 'getToday function is not allowed inside aggregation, because of performance issues');
+
                 return { valueType: 'date', doesHaveTodayFunc: true };
             }
 
