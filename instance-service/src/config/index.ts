@@ -175,6 +175,7 @@ const config = {
             minNorthing: env.get('MIN_NORTHING').default(0).asInt(),
             maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
         },
+        wgs84: { maxLongitude: 180, maxLatitude: 90, minLongitude: -180, minLatitude: -90 },
     },
     timezone: 'Asia/Jerusalem',
 };

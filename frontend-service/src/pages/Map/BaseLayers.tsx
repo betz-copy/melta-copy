@@ -1,4 +1,4 @@
-import { Layers } from '@mui/icons-material';
+import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
@@ -79,14 +79,20 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                 alignItems: 'center',
                 justifyContent: 'center',
                 minWidth: 35,
-                minHeight: 35,
+                minHeight: 34,
                 borderRadius: 1,
                 bgcolor: 'background.paper',
             }}
         >
             <MeltaTooltip title={i18next.t('location.layers.map')}>
                 <IconButton size="small" onClick={() => setIsOpen((prev) => !prev)} sx={{ zIndex: 1001 }}>
-                    <Layers fontSize="small" sx={{ color: darkMode ? '#9398c2' : '#787c9e' }} />
+                    <LayersTwoTone
+                        sx={{
+                            height: 20,
+                            borderRadius: 7,
+                            color: darkMode ? '#9398c2' : '#1E2775',
+                        }}
+                    />
                 </IconButton>
             </MeltaTooltip>
 

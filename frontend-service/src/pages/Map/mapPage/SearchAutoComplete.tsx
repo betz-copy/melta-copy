@@ -101,15 +101,11 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     );
 
     useEffect(() => {
-        if (!inputValue && Object.keys(templatesObject).length > 0) {
-            setInputValue(' ');
-        }
+        if (!inputValue && Object.keys(templatesObject).length) setInputValue(' ');
     }, [templatesObject, inputValue]);
 
     useEffect(() => {
-        if (data) {
-            setSearchResults(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
-        }
+        if (data) setSearchResults(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
     }, [data]);
 
     const debouncedSearch = useCallback(
@@ -141,7 +137,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     );
 
     useEffect(() => {
-        if (data) {
+        if (data)
             setSearchResults(
                 data.pages
                     .flatMap(({ entities }) => entities.map(({ entity }) => entity))
@@ -149,8 +145,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                         Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined),
                     ),
             );
-        }
-    }, [data, selectedTemplates]);
+    }, [data]);
 
     return (
         <Autocomplete
@@ -171,26 +166,28 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                     fontSize: '14px',
                 },
             }}
-            onInputChange={(event, _newInputValue, reason) => {
-                if (reason === 'reset') {
-                    setInputValue('');
-                } else if (reason === 'clear') {
+            onInputChange={(_event, newInputValue, reason) => {
+                if (reason === 'clear') {
+                    setInputValue(' ');
                     onClear();
-                } else debouncedSearch((event.target as HTMLInputElement).value);
+                } else debouncedSearch(newInputValue);
             }}
             renderInput={(params) => (
                 <TextField
                     {...params}
                     sx={{
                         backgroundColor: theme.palette.background.default,
+                        borderRadius: '7px',
                         width: 400,
-                        borderRadius: '10px',
                     }}
                     placeholder={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
                 />
             )}
+            onChange={(_event, newValue) => {
+                if (newValue) handleEntityClick(newValue);
+            }}
             renderOption={(props, option) => {
                 const { template, locationTemplateProperties, locationProperties } = getLocationProperties(option, selectedTemplates);
                 if (!template) return false;
@@ -198,7 +195,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
                         <Grid container direction="row" alignItems="center">
-                            <Grid container direction="column" onClick={() => handleEntityClick(option)}>
+                            <Grid container direction="column">
                                 <Grid container alignSelf="center" direction="row" spacing={1}>
                                     <Grid>
                                         <MeltaTooltip

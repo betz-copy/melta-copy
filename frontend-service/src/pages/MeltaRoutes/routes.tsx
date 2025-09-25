@@ -207,7 +207,7 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/map">
-                                <Map />
+                                <Map isSideBarOpen={open} />
                             </Route>
 
                             <Route path="/charts/:templateId?/:chartId?/chart">

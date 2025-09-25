@@ -14,8 +14,13 @@ export type LatLng = {
     longitude: number;
 };
 
+export enum MapItemType {
+    Polygon = 'polygon',
+    Coordinate = 'coordinate',
+}
+
 type CoordinatesResult = {
-    type: 'polygon' | 'marker';
+    type: MapItemType;
     value: Cartesian3 | Cartesian3[];
 };
 
@@ -51,10 +56,10 @@ export const parsePolygon = (polygonStr: string, toECEF: boolean = true): Cartes
 
 export const stringToCoordinates = (strCoords: string, toECEF?: boolean): CoordinatesResult => {
     const polygon = parsePolygon(strCoords, toECEF);
-    if (polygon) return { type: 'polygon', value: polygon };
+    if (polygon) return { type: MapItemType.Polygon, value: polygon };
 
     const formatted = strCoords.includes(SplitBy.comma) ? strCoords.split(SplitBy.comma).map(Number) : strCoords.split(SplitBy.space).map(Number);
-    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
+    return { type: MapItemType.Coordinate, value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
 
     // TODO: add validation to format
 };
@@ -132,17 +137,23 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
 
     const locationTemplateProperties = Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.format === 'location')
-        .reduce((acc, [key, value]) => {
-            acc[key] = value;
-            return acc;
-        }, {} as { [x: string]: IEntitySingleProperty });
+        .reduce(
+            (acc, [key, value]) => {
+                acc[key] = value;
+                return acc;
+            },
+            {} as { [x: string]: IEntitySingleProperty },
+        );
 
     const locationProperties = Object.entries(entity.properties)
         .filter(([key, _value]) => key in locationTemplateProperties)
-        .reduce((acc, [key, value]) => {
-            acc[key] = value;
-            return acc;
-        }, {} as { [x: string]: any });
+        .reduce(
+            (acc, [key, value]) => {
+                acc[key] = value;
+                return acc;
+            },
+            {} as { [x: string]: any },
+        );
 
     return { template, locationTemplateProperties, locationProperties };
 };

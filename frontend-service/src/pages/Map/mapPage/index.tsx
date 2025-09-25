@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Circle, LinearScale } from '@mui/icons-material';
+import { CircleTwoTone as CircleIcon, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
@@ -12,7 +12,7 @@ import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { environment } from '../../../globals';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, ISearchEntitiesByLocationBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
@@ -22,50 +22,68 @@ import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
 import { jerusalemCoordinates, LatLng, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
-import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import MapPageEntityDialog from './EntityMapDialog';
-import MapFilters from './MapFilters';
+import MapFilters, { DeleteMapDataBtn } from './MapFilters';
+import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
 
 const { maxRadius } = environment.map;
 
-const MapPage = () => {
+enum ShapeType {
+    Circle = 'circle',
+    Polygon = 'polygon',
+    Line = 'line',
+}
+
+enum CameraFocusType {
+    Circle = 'circle',
+    Polygon = 'polygon',
+    Search = 'search',
+}
+
+const emptyCircle = { center: null, radius: null, mouseRadius: null };
+
+const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const queryClient = useQueryClient();
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
-    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates']);
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
+    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates'])!;
+    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates'])!;
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
 
-    const [drawingMode, setDrawingMode] = useState<'circle' | 'line' | null>(null);
-    const [drawingCircle, setDrawingCircle] = useState(false);
-    const [circleData, setCircleData] = useState<{ center: Cartesian3 | null; radius: number | null; mouseRadius: number | null }>({
-        center: null,
-        radius: null,
-        mouseRadius: null,
+    const [shapeType, setShapeType] = useState<ShapeType | null>(null);
+    const [drawingMode, setDrawingMode] = useState<ShapeType.Circle | ShapeType.Polygon | null>(null);
+
+    const [{ circle, polygon, line }, setSearchShape] = useState<{
+        circle: { center: Cartesian3 | null; radius: number | null; mouseRadius: number | null };
+        polygon: Cartesian3[];
+        line: Cartesian3[];
+    }>({
+        circle: emptyCircle,
+        polygon: [],
+        line: [],
     });
-    const [lineData, setLineData] = useState<Cartesian3[]>([]);
 
-    const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
+    const [{ entity, template }, setAutoCompleteSearch] = useState<{ entity?: IEntity; template?: IMongoEntityTemplatePopulated }>({
+        entity: undefined,
+        template: undefined,
+    });
 
-    const [searchedEntity, setSearchedEntity] = useState<IEntity | undefined>(undefined);
-    const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated | undefined>(undefined);
-    const [selectedEntity, setSelectedEntity] = useState<{ matchingField: string; node: IEntity } | null>(null);
+    const [selectedEntityDialog, setSelectedEntityDialog] = useState<{ matchingField: string; node: IEntity } | null>(null);
 
-    const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
-    const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
+    const [{ polygons, coordinates }, setSearchResults] = useState<{
+        coordinates: { key: string; name: string; node: IEntity; position: Cartesian3 }[];
+        polygons: { key: string; name: string; node: IEntity; position: Cartesian3[] }[];
+    }>({ coordinates: [], polygons: [] });
 
-    const [cameraFocus, setCameraFocus] = useState<'search' | 'circle'>();
-
-    const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
+    const [cameraFocus, setCameraFocus] = useState<CameraFocusType | null>(null);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
-    const sourceSearchResults = [...searchedMarkers, ...searchedPolygons]
-        .filter(({ node }) => node.templateId === sourceTemplate?._id)
-        .map(({ node }) => node);
+    const sourceSearchResults = [...coordinates, ...polygons].filter(({ node }) => node.templateId === sourceTemplate?._id).map(({ node }) => node);
 
     const sourceTemplateColors = sourceTemplate?.enumPropertiesColors?.[sourceFieldForColor];
 
@@ -74,7 +92,7 @@ const MapPage = () => {
         markers: searchedEntityMarkers,
         polygons: searchedEntityPolygons,
         propertyDefinitions: searchedPropertyDefinitions,
-    } = useEntityWithLocationFields({ entityTemplate: searchedEntityTemplate, entityProperties: searchedEntity?.properties });
+    } = useEntityWithLocationFields({ entityTemplate: template, entityProperties: entity?.properties });
 
     useEffect(() => {
         const animateCamera = () => {
@@ -82,68 +100,82 @@ const MapPage = () => {
             if (!viewer) return;
             const { camera } = viewer;
 
-            if (!circleData.center && !circleData.radius) {
-                camera.flyTo({
-                    destination: jerusalemCoordinates,
-                    duration: 1.5,
-                });
-            }
+            viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-            if (cameraFocus === 'search') {
-                if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
-                    if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
-                        const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
+            const flyToBoundingSphere = (boundingSphere: Cesium.BoundingSphere) => {
+                const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5);
+                camera.flyToBoundingSphere(boundingSphere, { duration: 1.5, offset });
+            };
 
-                        camera.flyToBoundingSphere(boundingSphere, {
-                            duration: 1.5,
-                            offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds.radius * 5),
-                        });
+            switch (cameraFocus) {
+                case CameraFocusType.Circle: {
+                    if (circle.center && circle.radius) {
+                        const boundingSphere = new Cesium.BoundingSphere(circle.center, circle.radius);
+                        flyToBoundingSphere(boundingSphere);
                     }
+                    break;
                 }
-            } else {
-                // eslint-disable-next-line no-lonely-if
-                if (circleData.center && circleData.radius) {
-                    const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
 
-                    camera.flyToBoundingSphere(boundingSphere, {
-                        duration: 1.5,
-                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
-                    });
+                case CameraFocusType.Polygon: {
+                    if (polygon.length && polygon && !drawingMode) {
+                        const boundingSphere = Cesium.BoundingSphere.fromPoints(polygon);
+                        flyToBoundingSphere(boundingSphere);
+                    }
+                    break;
                 }
+
+                case CameraFocusType.Search: {
+                    if (
+                        (searchedEntityPolygons.length || searchedEntityMarkers.length) &&
+                        searchedEntityBounds?.center &&
+                        searchedEntityBounds?.radius
+                    ) {
+                        const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
+                        flyToBoundingSphere(boundingSphere);
+                    }
+                    break;
+                }
+
+                default:
+                    if (!circle.center && !circle.radius && !polygon.length) camera.flyTo({ destination: jerusalemCoordinates, duration: 1.5 });
             }
         };
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [circleData, searchedEntityPolygons, searchedEntityMarkers]);
-
-    useEffect(() => {
-        if (searchedEntity && entityTemplateMap) {
-            setSearchedEntityTemplate(entityTemplateMap.get(searchedEntity.templateId)!);
-        }
-    }, [searchedEntity, entityTemplateMap]);
+    }, [circle, polygon, line, drawingMode, searchedEntityPolygons, searchedEntityMarkers]);
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
-            if (drawingMode !== 'line' || !clickEvent.position) return;
+            if (!clickEvent.position) return;
 
             const viewer = viewerRef.current?.cesiumElement;
-
             if (!viewer) return;
+
             const { scene } = viewer;
             const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
-            setLineData((prev) => [...prev, cartesian]);
+
+            if (shapeType === ShapeType.Line) setSearchShape((prev) => ({ ...prev, line: [...prev.line, cartesian] }));
+
+            if (shapeType === ShapeType.Polygon) {
+                if (drawingMode !== ShapeType.Polygon) {
+                    setCameraFocus(CameraFocusType.Polygon);
+
+                    setDrawingMode(ShapeType.Polygon);
+                    setSearchShape((prev) => ({ ...prev, polygon: [cartesian], circle: emptyCircle }));
+                    setSearchResults({ coordinates: [], polygons: [] });
+                } else setSearchShape((prev) => ({ ...prev, polygon: [...prev.polygon, cartesian], circle: emptyCircle }));
+            }
         },
-        [drawingMode, viewerRef, setLineData],
+        [shapeType, drawingMode, viewerRef, setSearchShape],
     );
 
     const handleMouseDown = useCallback(
-        (clickEvent) => {
-            if (drawingMode !== 'circle' || !clickEvent.position) return;
-            setSearchedMarkers([]);
-            setSearchedPolygons([]);
+        (clickEvent: CesiumMovementEvent) => {
+            if (shapeType !== ShapeType.Circle || !clickEvent.position) return;
+            setSearchResults({ coordinates: [], polygons: [] });
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -152,19 +184,18 @@ const MapPage = () => {
             const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
-            setCircleData({ center: cartesian, radius: null, mouseRadius: null });
-            setDrawingCircle(true);
+            setSearchShape((prev) => ({ ...prev, polygon: [], circle: { ...emptyCircle, center: cartesian } }));
+            setDrawingMode(ShapeType.Circle);
 
             scene.screenSpaceCameraController.enableRotate = false;
+            setCameraFocus(CameraFocusType.Circle);
         },
-        [drawingMode, viewerRef, setCircleData, setDrawingCircle],
+        [shapeType, viewerRef, setDrawingMode],
     );
 
     const handleMouseMove = useCallback(
         (moveEvent: CesiumMovementEvent) => {
-            if (!drawingCircle || drawingMode !== 'circle' || circleData.center === null || circleData.radius !== null) {
-                return;
-            }
+            if (drawingMode !== ShapeType.Circle || shapeType !== ShapeType.Circle || circle.center === null || circle.radius !== null) return;
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -174,19 +205,20 @@ const MapPage = () => {
 
             if (!cartesian) return;
 
-            const radius = Cartesian3.distance(circleData.center, cartesian);
+            const radius = Cartesian3.distance(circle.center, cartesian);
             if (radius > maxRadius) return;
-            setCircleData((prev) => ({
+            setSearchShape((prev) => ({
                 ...prev,
-                mouseRadius: radius,
+                polygon: [],
+                circle: { ...prev.circle, mouseRadius: radius },
             }));
         },
-        [drawingMode, drawingCircle, circleData, viewerRef, setCircleData],
+        [shapeType, drawingMode, circle, viewerRef, setSearchShape],
     );
 
     const handleMouseUp = useCallback(
-        (clickEvent) => {
-            if (drawingMode !== 'circle' || circleData.center === null || circleData.radius !== null) return;
+        (clickEvent: CesiumMovementEvent) => {
+            if (shapeType !== ShapeType.Circle || circle.center === null || circle.radius !== null) return;
 
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
@@ -195,45 +227,50 @@ const MapPage = () => {
             const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
-            const radius = Cartesian3.distance(circleData.center, cartesian);
+            const radius = Cartesian3.distance(circle.center, cartesian);
             if (radius > maxRadius) toast.warn(i18next.t('location.radiusMaxLimit'));
 
-            setDrawingCircle(false);
-            setCircleData({
-                center: circleData.center,
-                radius: radius > maxRadius ? maxRadius : radius,
-                mouseRadius: null,
-            });
+            setDrawingMode(null);
+            setSearchShape((prev) => ({
+                ...prev,
+                polygon: [],
+                circle: { center: circle.center, radius: radius > maxRadius ? maxRadius : radius, mouseRadius: null },
+            }));
 
             viewer.scene.screenSpaceCameraController.enableRotate = true;
-            setDrawingMode(null);
+            setShapeType(null);
         },
-        [drawingMode, viewerRef, circleData, setDrawingCircle, setCircleData],
+        [shapeType, viewerRef, circle, setDrawingMode, setSearchShape],
     );
+
+    const handleViewerDoubleClick = useCallback(() => {
+        if (shapeType !== ShapeType.Polygon || drawingMode !== ShapeType.Polygon || polygon.length < 3) return;
+
+        setDrawingMode(null);
+        setShapeType(null);
+    }, [shapeType, drawingMode, polygon]);
 
     const { mutateAsync } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
-            response.forEach((item) => {
-                const { matchingFields, node } = item;
-                const entityTemplate = entityTemplateMap!.get(node.templateId)!;
+            response.forEach(({ matchingFields, node }) => {
+                const entityTemplate = entityTemplateMap.get(node.templateId)!;
 
                 matchingFields.forEach((matchingField) => {
                     const { type, value } = stringToCoordinates(node.properties[matchingField].location);
                     const name = entityTemplate.properties.properties[matchingField].title;
 
-                    if (type === 'polygon') {
-                        setSearchedPolygons((prev) => [
-                            ...prev,
+                    setSearchResults((prev) => ({
+                        ...prev,
+                        [`${type}s`]: [
+                            ...prev[`${type}s`],
                             {
                                 key: matchingField,
                                 name,
                                 node,
-                                position: value as Cartesian3[],
+                                position: value,
                             },
-                        ]);
-                        return;
-                    }
-                    setSearchedMarkers((prev) => [...prev, { key: matchingField, name, node, position: value as Cartesian3 }]);
+                        ],
+                    }));
                 });
             });
         },
@@ -244,39 +281,55 @@ const MapPage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (circleData.center && circleData.radius) {
-                const { longitude, latitude } = convertECEFToWGS84(circleData.center) as LatLng;
-
-                await Promise.all(
-                    filteredTemplatesIds.map(async (templateId) =>
-                        mutateAsync({
-                            textSearch: '',
-                            templates: { [templateId]: {} },
-                            circle: { coordinate: [latitude, longitude], radius: circleData.radius! },
-                        }),
-                    ),
+            const templatesPayload = Array.from(entityTemplateMap.entries())
+                .filter(([_, value]) => Object.values(value.properties.properties).some((obj) => obj.format === 'location'))
+                .reduce(
+                    (acc, [key]) => {
+                        acc[key] = {};
+                        return acc;
+                    },
+                    {} as Record<string, {}>,
                 );
+
+            const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };
+
+            if (polygon && !drawingMode && polygon.length)
+                payload.polygon = polygon.map((point) => {
+                    const { latitude, longitude } = convertECEFToWGS84(point);
+                    return [longitude, latitude];
+                });
+
+            if (circle.center && circle.radius) {
+                const { longitude, latitude } = convertECEFToWGS84(circle.center) as LatLng;
+                payload.circle = { coordinate: [latitude, longitude], radius: circle.radius };
             }
+
+            if (payload.polygon || payload.circle) await mutateAsync(payload);
         };
 
         fetchData();
-    }, [filteredTemplatesIds, circleData]);
+    }, [circle, drawingMode, polygon]);
 
-    const clearAutocompleteSearch = () => {
-        setSearchedEntity(undefined);
-        setSearchedEntityTemplate(undefined);
+    const resetDrawing = () => {
+        setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
+        setDrawingMode(null);
+
+        setSearchResults({ coordinates: [], polygons: [] });
     };
 
     const onClear = () => {
-        setCircleData({ center: null, radius: null, mouseRadius: null });
-        setLineData([]);
-        setDrawingMode(null);
-        setSearchedMarkers([]);
-        setSearchedPolygons([]);
+        resetDrawing();
+        setShapeType(null);
+        setCameraFocus(null);
+        setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
     };
 
-    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | null) => {
-        setDrawingMode(newShape);
+    const isDrawingShape = (shape: ShapeType | null) => shape === ShapeType.Circle || shape === ShapeType.Polygon;
+
+    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: ShapeType | null) => {
+        if (isDrawingShape(newShape) && isDrawingShape(shapeType) && shapeType !== newShape) resetDrawing();
+
+        setShapeType(newShape);
     };
 
     return (
@@ -290,6 +343,7 @@ const MapPage = () => {
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
+                        onDoubleClick={handleViewerDoubleClick}
                         baseLayerPicker={false}
                         animation={false}
                         timeline={false}
@@ -300,31 +354,30 @@ const MapPage = () => {
                         fullscreenButton={false}
                         navigationHelpButton={false}
                     >
-                        {circleData.center && (circleData.radius || circleData.mouseRadius) && (
+                        {circle.center && (circle.radius || circle.mouseRadius) && (
                             <Entity
                                 name={i18next.t('location.circle')}
-                                description={`${locationToWGS84String(circleData.center)}, ${circleData.radius}`}
-                                position={circleData.center}
+                                description={`${locationToWGS84String(circle.center)}, ${circle.radius}`}
+                                position={circle.center}
                             >
                                 <EllipseGraphics
-                                    semiMajorAxis={circleData.radius ?? circleData.mouseRadius!}
-                                    semiMinorAxis={circleData.radius ?? circleData.mouseRadius!}
+                                    semiMajorAxis={circle.radius ?? circle.mouseRadius!}
+                                    semiMinorAxis={circle.radius ?? circle.mouseRadius!}
                                     fill={false}
                                     outline
                                     outlineColor={Color.fromAlpha(Color.RED, 0.7)}
                                     outlineWidth={15}
                                 />
-                                {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
+                                {circle.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                             </Entity>
                         )}
 
-                        {lineData.length && (
-                            <Entity
-                                name={i18next.t('location.line')}
-                                description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}
-                            >
-                                <PolylineGraphics positions={lineData} material={Color.fromCssColorString('#11695a')} width={3} />
-                                {lineData.map((position) => (
+                        <MeltaPolygon polygon={polygon} name="polygon" outlineColor={Color.RED} fill={false} showCenteredPoint={false} />
+
+                        {line.length && (
+                            <Entity name={i18next.t('location.line')} description={`${Cartesian3.distance(line[0], line[line.length - 1])} km`}>
+                                <PolylineGraphics positions={line} material={Color.fromCssColorString('#11695a')} width={3} />
+                                {line.map((position) => (
                                     <Entity key={`${position.x}, ${position.y}`} position={position}>
                                         <PointGraphics
                                             color={Color.BLACK}
@@ -342,9 +395,7 @@ const MapPage = () => {
                                 key={key}
                                 name={searchedPropertyDefinitions[key].title}
                                 polygon={polygon}
-                                onClick={() => {
-                                    setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
-                                }}
+                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${entity!.properties._id}`, node: entity! })}
                             />
                         ))}
 
@@ -353,77 +404,91 @@ const MapPage = () => {
                                 key={key}
                                 name={searchedPropertyDefinitions[key].title}
                                 position={convertWGS94ToECEF(position) as Cartesian3}
-                                onClick={() => {
-                                    setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
-                                }}
+                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${entity!.properties._id}`, node: entity! })}
                             />
                         ))}
 
-                        {searchedPolygons.map(({ key, name, position: polygon, node }) => (
+                        {polygons.map(({ key, name, position: polygon, node }) => (
                             <MeltaPolygon
                                 key={key}
                                 name={name}
                                 polygon={polygon}
-                                onClick={() => {
-                                    setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
-                                }}
+                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${node.properties._id}`, node })}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
-                        {searchedMarkers.map(({ key, name, position, node }) => (
+                        {coordinates.map(({ key, name, position, node }) => (
                             <MeltaCoordinate
                                 key={key}
                                 name={name}
                                 position={convertWGS94ToECEF(position) as Cartesian3}
-                                onClick={() => {
-                                    setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
-                                }}
+                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${node.properties._id}`, node })}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                             />
                         ))}
 
-                        <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '10px',
+                                right: isSideBarOpen ? '14%' : '5%',
+                                display: 'flex',
+                                gap: '15px',
+                                transition: 'right 0.3s ease-in-out',
+                            }}
+                        >
                             <MapFilters
-                                selectedTemplates={selectedTemplates}
-                                setSelectedTemplates={setSelectedTemplates}
                                 moveToEntityLocations={(entity: IEntity) => {
-                                    setSearchedEntity(entity);
-                                    setCameraFocus('search');
+                                    setAutoCompleteSearch({ entity, template: entityTemplateMap.get(entity.templateId)! });
+                                    setCameraFocus(CameraFocusType.Search);
                                 }}
-                                entityTemplateMap={entityTemplateMap!}
-                                onClear={onClear}
+                                entityTemplateMap={entityTemplateMap}
                                 darkMode={darkMode}
-                                clearAutocompleteSearch={clearAutocompleteSearch}
+                                clearAutocompleteSearch={() => {
+                                    setCameraFocus(null);
+                                    setAutoCompleteSearch({ entity: undefined, template: undefined });
+                                }}
                             />
 
+                            {config && <BaseLayers viewerRef={viewerRef} config={config} />}
                             <ToggleButtonGroup
-                                value={drawingMode}
+                                value={shapeType}
                                 exclusive
                                 onChange={handleDrawType}
                                 size="small"
-                                style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
+                                style={{ background: darkMode ? '#121212' : 'white', height: '35px', borderRadius: 7 }}
                             >
                                 <MeltaTooltip title={i18next.t('location.circle')}>
                                     <ToggleButton value="circle">
-                                        <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                        <CircleIcon
+                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
+                                        />
+                                    </ToggleButton>
+                                </MeltaTooltip>
+                                <MeltaTooltip title={i18next.t('location.searchByPolygon')}>
+                                    <ToggleButton value="polygon">
+                                        <PolygonIcon
+                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.line')}>
                                     <ToggleButton value="line">
-                                        <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                        <DistanceIcon
+                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
+                                        />
                                     </ToggleButton>
                                 </MeltaTooltip>
                             </ToggleButtonGroup>
-
-                            {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                            <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
                         </div>
-                        {selectedEntity && (
+                        {selectedEntityDialog && (
                             <MapPageEntityDialog
-                                open={!!selectedEntity}
-                                entityWithMatchingField={selectedEntity}
-                                onClose={() => setSelectedEntity(null)}
-                                key={selectedEntity.matchingField}
+                                open={!!selectedEntityDialog}
+                                entityWithMatchingField={selectedEntityDialog}
+                                onClose={() => setSelectedEntityDialog(null)}
+                                key={selectedEntityDialog.matchingField}
                             />
                         )}
                     </Viewer>
