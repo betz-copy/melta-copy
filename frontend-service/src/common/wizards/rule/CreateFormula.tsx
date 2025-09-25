@@ -159,7 +159,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 addToDateTime: getAddOrSubDateTimeFunc(true),
                 subFromDate: getAddOrSubDateFunc(false),
                 subFromDateTime: getAddOrSubDateTimeFunc(false),
-                // getToday -- TODO: currently getToday function is as variable in fieldsConfig (because raqb doesnt support rhs functions)
+                // getToday -- TODO: currently getToday function is as variable in fieldsConfig (because raqb doesnt support lhs functions see raqb issue #287. need to upgrade version)
             },
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
