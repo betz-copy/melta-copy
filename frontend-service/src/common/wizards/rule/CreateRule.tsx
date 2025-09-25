@@ -1,5 +1,5 @@
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
-import { getIn } from 'formik';
+import Handlebars from 'handlebars';
 import i18next from 'i18next';
 import { omit } from 'lodash';
 import React from 'react';
@@ -10,16 +10,12 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { ActionOnFail } from '../../../interfaces/rules';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
-import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
-import TextArea from '../../inputs/TextArea';
 import { StepComponentProps } from '../index';
-import Handlebars from 'handlebars';
+import { CreateRuleColorField, CreateRuleEmailNotification } from './CreateIndicatorRuleControls';
 
 const validMailField = (value: string): boolean => {
     try {
         Handlebars.parse(value);
-        console.log('aaaa', value);
         return true;
     } catch {
         return false;
@@ -34,8 +30,9 @@ const mailSchema = Yup.object({
             then: (schema) => schema.required(i18next.t('validation.required')),
         })
         .test('invalid-format', i18next.t('wizard.rule.invalidMailFormat'), function (this, value) {
-            if (this.parent.display === false) return true;
-            return validMailField(value ?? '');
+            // if (this.parent.display === false) return true;
+            // return validMailField(value ?? '');
+            return !this.parent.display || validMailField(value ?? '');
         }),
     body: Yup.string()
         .when('display', {
@@ -43,8 +40,7 @@ const mailSchema = Yup.object({
             then: (schema) => schema.required(i18next.t('validation.required')),
         })
         .test('invalid-format', i18next.t('wizard.rule.invalidMailFormat'), function (this, value) {
-            if (this.parent.display === false) return true;
-            return validMailField(value ?? '');
+            return !this.parent.display || validMailField(value ?? '');
         }),
     sendPermissionUsers: Yup.boolean().when('display', {
         is: true,
@@ -109,7 +105,6 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
     isEditMode,
     setValues,
 }) => {
-    console.log(errors);
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -126,14 +121,13 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
     const onRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.value !== ActionOnFail.INDICATOR && !!values.fieldColor) {
-            setValues((prevValues: RuleWizardValues) => omit(prevValues, 'fieldColor'));
-            setValues((prevValues: RuleWizardValues) => omit(prevValues, 'mail'));
+            // setValues((prevValues: RuleWizardValues) => omit(prevValues, 'fieldColor'));
+            // setValues((prevValues: RuleWizardValues) => omit(prevValues, 'mail'));
+            setValues((prevValues: RuleWizardValues) => omit(prevValues, ['fieldColor', 'mail']));
         }
 
         handleChange(event);
     };
-
-    const oneOrMoreMailChecks = !!touched.mail && (!!getIn(errors.mail, 'sendAssociatedUsers') || !!getIn(errors.mail, 'sendPermissionUsers'));
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -194,123 +188,18 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
                 {values.actionOnFail === ActionOnFail.INDICATOR && (
                     <Grid container direction="column" gap={2}>
-                        <FormHelperText sx={{ color: '#9398C2', fontSize: '14px' }}>{i18next.t('wizard.rule.atLeastOne')}</FormHelperText>
-                        <FormControlLabel
-                            control={
-                                <MeltaCheckbox
-                                    checked={values.fieldColor?.display}
-                                    onChange={(e) => setFieldValue('fieldColor.display', e.target.checked)}
-                                />
-                            }
-                            label={i18next.t('wizard.rule.fieldColor')}
-                            sx={{ display: 'flex', alignItems: 'center' }}
+                        <CreateRuleColorField
+                            fieldColor={values.fieldColor}
+                            touched={touched.fieldColor}
+                            errors={errors.fieldColor}
+                            templateKeys={templateKeys}
+                            setFieldValue={setFieldValue}
+                            setFieldTouched={setFieldTouched}
                         />
-                        {!!values.fieldColor?.display && (
-                            <Grid container direction="row" gap={2}>
-                                <Autocomplete
-                                    options={templateKeys}
-                                    onChange={(_e, value) => setFieldValue('fieldColor.field', value?.key || '')}
-                                    value={templateKeys.find((option) => option.key === values.fieldColor?.field) ?? null}
-                                    getOptionLabel={(option) => option.title}
-                                    onBlur={() => setFieldTouched('fieldColor.field')}
-                                    sx={{ width: '250px' }}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            error={Boolean(touched.fieldColor && getIn(errors.fieldColor, 'field'))}
-                                            helperText={touched.fieldColor ? getIn(errors.fieldColor, 'field') : ''}
-                                            variant="outlined"
-                                            label={i18next.t('wizard.rule.fieldToColor')}
-                                        />
-                                    )}
-                                />
-                                <MinimizedColorPicker
-                                    color={values.fieldColor?.color}
-                                    onColorChange={(newColor) => setFieldValue('fieldColor.color', newColor)}
-                                    circleSize="2rem                                                                                                    "
-                                    error={Boolean(touched.fieldColor && getIn(errors.fieldColor, 'color'))}
-                                    helperText={touched.fieldColor ? getIn(errors.fieldColor, 'color') : ''}
-                                />
-                            </Grid>
-                        )}
                         <Grid>
                             <Divider sx={{ color: '#CCCFE580' }} />
                         </Grid>
-
-                        <Grid container direction="column">
-                            <FormControlLabel
-                                control={
-                                    <MeltaCheckbox checked={values.mail?.display} onChange={(e) => setFieldValue('mail.display', e.target.checked)} />
-                                }
-                                label={i18next.t('wizard.rule.mailNotification')}
-                            />
-
-                            {!!values.mail?.display && (
-                                <Grid container direction="column" gap={2}>
-                                    <FormHelperText sx={{ color: '#9398C2', fontSize: '14px', margin: 0 }}>
-                                        {i18next.t('wizard.rule.mailFormatHelper')}
-                                    </FormHelperText>
-                                    <TextField
-                                        name="mailTitle"
-                                        label={`${i18next.t('wizard.rule.mailTitle')} *`}
-                                        value={values.mail?.title}
-                                        onChange={(event) => setFieldValue('mail.title', event.target.value)}
-                                        error={touched.mail && Boolean(getIn(errors.mail, 'title'))}
-                                        helperText={touched.mail && getIn(errors.mail, 'title')}
-                                        sx={{ width: '100%' }}
-                                    />
-                                    <Grid container direction="column">
-                                        <TextArea
-                                            id="mailBody"
-                                            label={`${i18next.t('wizard.rule.mailBody')} *`}
-                                            value={values.mail?.body}
-                                            onChange={(value) => setFieldValue('mail.body', value)}
-                                            error={touched.mail && Boolean(getIn(errors.mail, 'body'))}
-                                        />
-                                        {touched.mail && Boolean(getIn(errors.mail, 'body')) && (
-                                            <FormHelperText sx={{ color: '#FF0000', fontSize: '12px', marginLeft: 2 }}>
-                                                {getIn(errors.mail, 'body')}
-                                            </FormHelperText>
-                                        )}
-                                    </Grid>
-                                    <Grid container direction="column">
-                                        <Grid container gap={2}>
-                                            <FormControl sx={{ fontSize: '14px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>
-                                            <FormHelperText
-                                                sx={{
-                                                    color: oneOrMoreMailChecks ? '#FF0000' : '#9398C2',
-                                                    fontSize: '14px',
-                                                    margin: 0,
-                                                }}
-                                            >
-                                                {i18next.t('wizard.rule.sendMailToChooseOne')}
-                                            </FormHelperText>
-                                        </Grid>
-
-                                        <FormControlLabel
-                                            control={
-                                                <MeltaCheckbox
-                                                    checked={values.mail.sendPermissionUsers}
-                                                    onChange={(e) => setFieldValue('mail.sendPermissionUsers', e.target.checked)}
-                                                />
-                                            }
-                                            label={i18next.t('wizard.rule.sendToUsersWithPerms')}
-                                            sx={{ marginLeft: 0, color: oneOrMoreMailChecks ? '#ff0000' : 'auto', fontSize: '14px' }}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <MeltaCheckbox
-                                                    checked={values.mail.sendAssociatedUsers}
-                                                    onChange={(e) => setFieldValue('mail.sendAssociatedUsers', e.target.checked)}
-                                                />
-                                            }
-                                            label={`${i18next.t('wizard.rule.sendToAssociatedUsers')} (שדה מסוג משתמש)`}
-                                            sx={{ marginLeft: 0, color: oneOrMoreMailChecks ? '#ff0000' : 'auto', fontSize: '14px' }}
-                                        />
-                                    </Grid>
-                                </Grid>
-                            )}
-                        </Grid>
+                        <CreateRuleEmailNotification mail={values.mail} touched={touched.mail} errors={errors.mail} setFieldValue={setFieldValue} />
                     </Grid>
                 )}
             </Grid>

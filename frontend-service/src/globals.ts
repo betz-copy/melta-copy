@@ -1375,6 +1375,8 @@ export const environment = {
             'prw',
         ],
     },
+    emptyHtmlStringValues: ['<p><br/></p>', '<p><br></p>'] as string[],
+    errorColor: '#d32f2f',
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

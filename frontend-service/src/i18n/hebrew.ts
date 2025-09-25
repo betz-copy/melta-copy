@@ -907,6 +907,7 @@ export default {
             sendMailToChooseOne: 'יש לבחור סוג נמען אחד לפחות',
             sendToUsersWithPerms: 'משתמשים בעלי הרשאה ליישות',
             sendToAssociatedUsers: 'משתמשים משוייכים ליישות',
+            sendToAssociatedUsersHelper: '(שדה מסוג משתמש)',
             mustSelectOneIndicatorConfig: 'חובה לבחור אפשרות אחת לפחות',
             recipients: 'נמענים',
             invalidMailFormat: 'פורמט לא תקין (סוגריים לא תקינות)',
