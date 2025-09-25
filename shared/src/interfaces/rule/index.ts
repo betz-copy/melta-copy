@@ -16,7 +16,7 @@ export interface IRule {
     formula: IFormula;
     disabled: boolean;
     fieldColor?: { display: boolean; field: string; color: string };
-    _doesFormulaHaveTodayFunc: boolean;
+    doesFormulaHaveTodayFunc: boolean;
 }
 
 export interface IMongoRule extends IRule {
@@ -27,7 +27,7 @@ export type IRuleMap = Map<string, IMongoRule>;
 export interface ISearchRulesBody {
     search?: string;
     entityTemplateIds?: string[];
-    _doesFormulaHaveTodayFunc?: boolean;
+    doesFormulaHaveTodayFunc?: boolean;
     disabled?: boolean;
     limit?: number;
     skip?: number;

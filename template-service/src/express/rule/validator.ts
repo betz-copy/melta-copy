@@ -479,7 +479,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         throw new Error('Shouldnt reach here. formula must be one of allowed options');
     }
 
-    private async validateAndGetRelevantTemplates(rule: Omit<IRule, 'disabled' | '_doesFormulaHaveTodayFunc'>): Promise<IRelevantTemplates> {
+    private async validateAndGetRelevantTemplates(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>): Promise<IRelevantTemplates> {
         const entityTemplate = await this.entityTemplateManager.getTemplateById(rule.entityTemplateId);
 
         const relationshipTemplatesOfEntityAsSource = (await this.manager.searchTemplates({
@@ -511,7 +511,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         return { entityTemplate, connectionsTemplatesOfEntityTemplate };
     }
 
-    async validateRuleFormula(rule: Omit<IRule, 'disabled' | '_doesFormulaHaveTodayFunc'>) {
+    async validateRuleFormula(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>) {
         const relevantTemplates = await this.validateAndGetRelevantTemplates(rule);
 
         return this.validateFormula(rule.formula, relevantTemplates, []);
@@ -521,7 +521,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         const { doesHaveTodayFunc } = await this.validateRuleFormula(req.body);
 
         // eslint-disable-next-line no-underscore-dangle
-        req.body._doesFormulaHaveTodayFunc = doesHaveTodayFunc;
+        req.body.doesFormulaHaveTodayFunc = doesHaveTodayFunc;
     }
 }
 

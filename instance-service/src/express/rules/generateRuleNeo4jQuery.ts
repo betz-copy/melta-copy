@@ -577,7 +577,7 @@ export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: strin
             entityId,
             ...formulaQuery.parameters,
             // eslint-disable-next-line no-underscore-dangle
-            getTodayFuncValue: rule._doesFormulaHaveTodayFunc ? getNeo4jDate(new Date()) : undefined,
+            getTodayFuncValue: rule.doesFormulaHaveTodayFunc ? getNeo4jDate(new Date()) : undefined,
         },
     };
 };

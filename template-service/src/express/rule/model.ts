@@ -32,7 +32,7 @@ const RuleTemplateSchema = new mongoose.Schema(
             required: true,
         },
         fieldColor: { type: Object },
-        _doesFormulaHaveTodayFunc: {
+        doesFormulaHaveTodayFunc: {
             type: Boolean,
             require: true,
         },

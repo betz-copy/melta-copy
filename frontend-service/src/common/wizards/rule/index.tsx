@@ -11,7 +11,7 @@ import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateFormula, formulaValidation } from './CreateFormula';
 import { CreateRule, createRuleSchema } from './CreateRule';
 
-export interface RuleWizardValues extends Omit<IRule, 'formula' | '_doesFormulaHaveTodayFunc'> {
+export interface RuleWizardValues extends Omit<IRule, 'formula' | 'doesFormulaHaveTodayFunc'> {
     formula: ImmutableTree;
 }
 

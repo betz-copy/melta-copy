@@ -90,7 +90,7 @@ export const searchRulesRequestSchema = Joi.object({
     body: {
         search: Joi.string(),
         entityTemplateIds: Joi.array().items(MongoIdSchema),
-        _doesFormulaHaveTodayFunc: Joi.boolean(),
+        doesFormulaHaveTodayFunc: Joi.boolean(),
         disabled: Joi.boolean(),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),

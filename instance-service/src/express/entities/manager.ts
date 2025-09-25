@@ -2363,7 +2363,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
     async runRulesWithTodayFunc() {
         const rulesWithTodayFunc = await this.relationshipsTemplateManagerService.searchRules({
-            _doesFormulaHaveTodayFunc: true,
+            doesFormulaHaveTodayFunc: true,
         });
         const rulesWithTodayFuncRecord = new Map(rulesWithTodayFunc.map((rule) => [rule._id, rule]));
 
