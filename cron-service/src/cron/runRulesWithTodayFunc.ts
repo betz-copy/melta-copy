@@ -1,4 +1,4 @@
-import * as schedule from 'node-schedule';
+import schedule from 'node-schedule';
 import { logger, WorkspaceTypes } from '@microservices/shared';
 import config from '../config';
 import WorkspaceManager from '../workspaces/manager';
