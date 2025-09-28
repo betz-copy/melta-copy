@@ -994,7 +994,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         populatedBrokenRules: IBrokenRulePopulated[],
     ): Promise<ICronjobRunMetadataPopulated> {
         // the main entity of failure, is the same in actionMetadata.
-        // because cronjob run (rule with getToday function), cant trigger neighbours
+        // because this type of rule (rule with getToday function) is triggered on per entity and actionMetadata is set to that entity
+        // it cant trigger neighbours, meaning cronjob triggered on actionMetadata=entity1, but ran the formula on entity2
         return { entity: populatedBrokenRules[0].failures[0].entity as IEntity | null };
     }
 
