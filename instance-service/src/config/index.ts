@@ -56,6 +56,7 @@ const config = {
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
         relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear').asArray(),
         updateColorsForRulesWithTodayFuncParallelLimit: env.get('UPDATE_COLORS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(20).asIntPositive(),
+        sendAlertForRulesWithTodayFuncParallelLimit: env.get('SEND_ALERTS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(100).asIntPositive(),
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),

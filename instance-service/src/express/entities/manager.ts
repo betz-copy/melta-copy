@@ -39,6 +39,7 @@ import {
     IUniqueConstraintOfTemplate,
     IUpdatedFields,
     IUpdateEntityMetadata,
+    logger,
     NotFoundError,
     Polygon,
     ServiceError,
@@ -54,6 +55,7 @@ import mapValues from 'lodash.mapvalues';
 import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
+import pLimit from 'p-limit';
 import GatewayServiceProducer from '../../externalServices/gateway/producer';
 import filteredMap from '../../utils/filteredMap';
 import config from '../../config';
@@ -2351,16 +2353,30 @@ class EntityManager extends DefaultManagerNeo4j {
             ({ ruleId }) => rulesWithTodayFuncRecord.get(ruleId)!.actionOnFail === ActionOnFail.WARNING,
         );
 
-        for (const brokenRule of brokenRulesOfWarningOnFail) {
-            const createAlertsPromises = brokenRule.failures.map((failure) => {
-                return this.gatewayServiceProducer.createAlertForRuleWithTodayFunc({
-                    ruleId: brokenRule.ruleId,
-                    failures: [failure],
-                });
+        const parallelLimit = pLimit(config.neo4j.sendAlertForRulesWithTodayFuncParallelLimit);
+
+        const createAlertsPerRulePromises = brokenRulesOfWarningOnFail.map(async (brokenRule) => {
+            const createAlertsPerFailuresPromises = brokenRule.failures.map((failure) => {
+                return parallelLimit(() =>
+                    this.gatewayServiceProducer
+                        .createAlertForRuleWithTodayFunc({
+                            ruleId: brokenRule.ruleId,
+                            failures: [failure],
+                        })
+                        .catch((error) => {
+                            logger.error(`failed to rabbitmq send to create alert for broken rule's failure`, {
+                                ruleId: brokenRule.ruleId,
+                                failure,
+                                error,
+                            });
+                        }),
+                );
             });
 
-            await Promise.all(createAlertsPromises);
-        }
+            return Promise.all(createAlertsPerFailuresPromises);
+        });
+
+        return Promise.all(createAlertsPerRulePromises);
     }
 
     async runRulesWithTodayFunc() {
@@ -2382,7 +2398,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         await updateColorsForIndicatorRulesWithTodayFunc(this.neo4jClient, rulesWithTodayFuncRecord, brokenRules);
 
-        await this.createAlertsForRulesWithTodayFunc(brokenRules, rulesWithTodayFuncRecord);
+        this.createAlertsForRulesWithTodayFunc(brokenRules, rulesWithTodayFuncRecord);
     }
 }
 
