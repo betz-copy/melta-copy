@@ -2303,6 +2303,66 @@ class EntityManager extends DefaultManagerNeo4j {
         return Promise.all(chartPromises);
     }
 
+    async runAndGetBrokenRuleWithTodayFunc(rule: IMongoRule, entityTemplatesRecord: Map<string, IMongoEntityTemplate>) {
+        const entityTemplate = entityTemplatesRecord.get(rule.entityTemplateId)!;
+
+        const brokenRule = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction): Promise<IBrokenRule> => {
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+
+            const [ruleFailuresYesterday, ruleFailuresToday] = await Promise.all([
+                runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, yesterday, true),
+                runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, today, true),
+            ]);
+
+            const ruleFailuresYesterdayRecord = Object.fromEntries(ruleFailuresYesterday.map((ruleFailure) => [ruleFailure.entityId, ruleFailure]));
+
+            const ruleFailuresTodayWithCauses = filteredMap(ruleFailuresToday, (ruleFailure) => {
+                const ruleFailureYesterday = ruleFailuresYesterdayRecord[ruleFailure.entityId];
+
+                const causes = getCausesOfRuleFailure(
+                    { rule, entityId: ruleFailure.entityId, formulaCauses: ruleFailure.formulaCauses },
+                    { rule, entityId: ruleFailure.entityId, formulaCauses: ruleFailureYesterday.formulaCauses },
+                    rule.formula,
+                );
+
+                if (causes.length === 0) return undefined;
+
+                return {
+                    include: true,
+                    // TODO: dont filter out cause of getTodayFunc (currently UI doesnt show it anyway)
+                    value: { entityId: ruleFailure.entityId, causes: causes.filter<ICausesOfInstance>((cause) => 'instance' in cause) },
+                };
+            });
+
+            return { ruleId: rule._id, failures: ruleFailuresTodayWithCauses };
+        });
+
+        if (brokenRule.failures.length > 0) {
+            return brokenRule;
+        }
+
+        return undefined;
+    }
+
+    async createAlertsForRulesWithTodayFunc(brokenRules: IBrokenRule[], rulesWithTodayFuncRecord: Map<string, IMongoRule>) {
+        const brokenRulesOfWarningOnFail = brokenRules.filter(
+            ({ ruleId }) => rulesWithTodayFuncRecord.get(ruleId)!.actionOnFail === ActionOnFail.WARNING,
+        );
+
+        for (const brokenRule of brokenRulesOfWarningOnFail) {
+            const createAlertsPromises = brokenRule.failures.map((failure) => {
+                return this.gatewayServiceProducer.createAlertForRuleWithTodayFunc({
+                    ruleId: brokenRule.ruleId,
+                    failures: [failure],
+                });
+            });
+
+            await Promise.all(createAlertsPromises);
+        }
+    }
+
     async runRulesWithTodayFunc() {
         const rulesWithTodayFunc = await this.relationshipsTemplateManagerService.searchRules({
             doesFormulaHaveTodayFunc: true,
@@ -2315,68 +2375,14 @@ class EntityManager extends DefaultManagerNeo4j {
         const entityTemplatesRecord = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         const brokenRules: IBrokenRule[] = [];
-        for (let i = 0; i < rulesWithTodayFunc.length; i++) {
-            const rule = rulesWithTodayFunc[i];
-            const entityTemplate = entityTemplatesRecord.get(rule.entityTemplateId)!;
-
-            const brokenRule = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction): Promise<IBrokenRule> => {
-                const today = new Date();
-                const yesterday = new Date();
-                yesterday.setDate(today.getDate() - 1);
-
-                const [ruleFailuresYesterday, ruleFailuresToday] = await Promise.all([
-                    runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, yesterday, true),
-                    runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, today, true),
-                ]);
-
-                const ruleFailuresYesterdayRecord = Object.fromEntries(
-                    ruleFailuresYesterday.map((ruleFailure) => [ruleFailure.entityId, ruleFailure]),
-                );
-
-                const ruleFailuresTodayWithCauses = filteredMap(ruleFailuresToday, (ruleFailure) => {
-                    const ruleFailureYesterday = ruleFailuresYesterdayRecord[ruleFailure.entityId];
-
-                    const causes = getCausesOfRuleFailure(
-                        { rule, entityId: ruleFailure.entityId, formulaCauses: ruleFailure.formulaCauses },
-                        { rule, entityId: ruleFailure.entityId, formulaCauses: ruleFailureYesterday.formulaCauses },
-                        rule.formula,
-                    );
-
-                    if (causes.length === 0) return undefined;
-
-                    return {
-                        include: true,
-                        // TODO: dont filter out cause of getTodayFunc (currently UI doesnt show it anyway)
-                        value: { entityId: ruleFailure.entityId, causes: causes.filter<ICausesOfInstance>((cause) => 'instance' in cause) },
-                    };
-                });
-
-                return { ruleId: rule._id, failures: ruleFailuresTodayWithCauses };
-            });
-
-            if (brokenRule.failures.length > 0) {
-                brokenRules.push(brokenRule);
-            }
+        for (const rule of rulesWithTodayFunc) {
+            const brokenRule = await this.runAndGetBrokenRuleWithTodayFunc(rule, entityTemplatesRecord);
+            if (brokenRule) brokenRules.push(brokenRule);
         }
 
         await updateColorsForIndicatorRulesWithTodayFunc(this.neo4jClient, rulesWithTodayFuncRecord, brokenRules);
 
-        const brokenRulesOfWarningOnFail = brokenRules.filter(
-            ({ ruleId }) => rulesWithTodayFuncRecord.get(ruleId)!.actionOnFail === ActionOnFail.WARNING,
-        );
-
-        for (let i = 0; i < brokenRulesOfWarningOnFail.length; i++) {
-            const brokenRule = brokenRulesOfWarningOnFail[i];
-
-            const createAlertsPromises = brokenRule.failures.map((failure) => {
-                return this.gatewayServiceProducer.createAlertForRuleWithTodayFunc({
-                    ruleId: brokenRule.ruleId,
-                    failures: [failure],
-                });
-            });
-
-            await Promise.all(createAlertsPromises);
-        }
+        await this.createAlertsForRulesWithTodayFunc(brokenRules, rulesWithTodayFuncRecord);
     }
 }
 
