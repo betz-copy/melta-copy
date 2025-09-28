@@ -1746,6 +1746,7 @@ export default {
             sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
         unitsArray: 'רשימת יחידות',
+        numOfRelationshipReferenceFields: 'מספר שדות לתצוגת שדה שיוך ליישות',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

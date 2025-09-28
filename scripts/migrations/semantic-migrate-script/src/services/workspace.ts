@@ -56,6 +56,7 @@ export interface IMetadata {
         sourceFieldForColor: string;
     };
     unitsArray: string[];
+    numOfRelationshipReferenceFields: number;
 }
 export interface IWorkspace {
     _id: string;

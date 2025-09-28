@@ -16,6 +16,7 @@ import { EntityPropertiesInternal } from '../EntityProperties';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -59,6 +60,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
+
+    const { metadata } = useWorkspaceStore((state) => state.workspace);
 
     const parseAndAddDisabled = (filters: string) => {
         const jsonFilters = JSON.parse(filters);
@@ -155,7 +158,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     orderedProperties
         .filter((prop) => prop !== showField && !displayKeys.includes(prop))
-        .slice(0, 3)
+        .slice(0, metadata.numOfRelationshipReferenceFields - 1)
         .forEach((prop) => displayKeys.push(prop));
 
     const convertPropertyToString = (property: any): string | undefined => {

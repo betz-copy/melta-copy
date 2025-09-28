@@ -49,6 +49,7 @@ export const defaultMetadata = {
         sourceFieldForColor: '',
     },
     unitsArray: [] as string[],
+    numOfRelationshipReferenceFields: 2,
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
