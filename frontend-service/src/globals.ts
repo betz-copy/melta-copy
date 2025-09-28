@@ -1382,4 +1382,5 @@ export const environment = {
             noTypeGivenErrorCodeTs: '7044',
         },
     },
+    formulaGetTodayVarName: '!TODAY_VAR', // '!' at start to not intersect with other variables
 } as const;

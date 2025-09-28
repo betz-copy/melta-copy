@@ -7,6 +7,9 @@ import { IArgument, IConstant, IPropertyOfVariable, IVariable, isConstant, isPro
 import { IEquation, IOperatorBool, isEquation } from '../../interfaces/rules/formula/equation';
 import { ICountAggFunction, IRegularFunction, isCountAggFunction, isRegularFunction } from '../../interfaces/rules/formula/function';
 import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../interfaces/rules/formula/group';
+import { environment } from '../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 export class RuleSerializer {
     private static entityTemplates: IEntityTemplateMap = new Map();
@@ -123,7 +126,7 @@ export class RuleSerializer {
         if (isRegularFunction(rhsArgument)) {
             if (rhsArgument.functionType === 'getToday') {
                 return {
-                    value: ['!TODAY_VAR'],
+                    value: [formulaGetTodayVarName],
                     valueSrc: ['field'],
                 };
             }
@@ -187,7 +190,7 @@ export class RuleSerializer {
             lhsField = `${RuleSerializer.propertyOfVariableSerializer(argument, aggregationsContext)}-ignoreHour`;
             valueType = ['date'];
         } else if (isRegularFunction(eq.lhsArgument) && eq.lhsArgument.functionType === 'getToday') {
-            lhsField = `!TODAY_VAR`;
+            lhsField = formulaGetTodayVarName;
             valueType = ['date'];
         } else if (isPropertyOfVariable(eq.lhsArgument)) {
             lhsField = RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument, aggregationsContext);

@@ -1,9 +1,12 @@
 import { JsonGroup, JsonItem, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { FunctionObject } from './interfaces';
+import { environment } from '../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 const functionHasTodayVar = ({ args }: FunctionObject): boolean => {
     return Object.values(args).some((arg) => {
-        if (arg.valueSrc === 'field' && arg.value === '!TODAY_VAR') return true;
+        if (arg.valueSrc === 'field' && arg.value === formulaGetTodayVarName) return true;
         if (arg.valueSrc === 'func') return functionHasTodayVar(arg.value);
 
         return false;
@@ -11,12 +14,11 @@ const functionHasTodayVar = ({ args }: FunctionObject): boolean => {
 };
 
 const equationHasTodayVar = (properties: RuleProperties): boolean => {
-    console.log('eq', { properties });
-    if (properties.field === '!TODAY_VAR') return true;
+    if (properties.field === formulaGetTodayVarName) return true;
 
     const [rhsArgumentValueSrc] = properties.valueSrc!;
 
-    if (rhsArgumentValueSrc === 'field' && properties.value[0] === '!TODAY_VAR') return true;
+    if (rhsArgumentValueSrc === 'field' && properties.value[0] === formulaGetTodayVarName) return true;
 
     if (rhsArgumentValueSrc === 'func') return functionHasTodayVar(properties.value[0]);
 

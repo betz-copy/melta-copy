@@ -5,6 +5,9 @@ import { IRegularFunction } from '../../interfaces/rules/formula/function';
 import { IArgument, IConstant, IPropertyOfVariable, IVariable } from '../../interfaces/rules/formula/argument';
 import { IEquation, IOperatorBool } from '../../interfaces/rules/formula/equation';
 import { IAggregationGroup, IGroup } from '../../interfaces/rules/formula/group';
+import { environment } from '../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 export class RuleParser {
     static variableParser = (variableNameFromField: string): IVariable => {
@@ -43,8 +46,8 @@ export class RuleParser {
             return RuleParser.toDateFunctionParser(field, ruleGroupsContext);
         }
 
-        if (field === '!TODAY_VAR') {
-            if (ruleGroupsContext.length > 0) throw new Error('!TODAY_VAR is not allowed inside aggregation group (for performance)');
+        if (field === formulaGetTodayVarName) {
+            if (ruleGroupsContext.length > 0) throw new Error(`${formulaGetTodayVarName} is not allowed inside aggregation group (for performance)`);
 
             return { isRegularFunction: true, functionType: 'getToday', arguments: [] };
         }

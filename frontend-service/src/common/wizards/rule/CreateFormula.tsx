@@ -30,6 +30,9 @@ import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth'
 import { lightTheme } from '../../../theme';
 import { useUserStore } from '../../../stores/user';
 import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
+import { environment } from '../../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 const { MuiTextWidget } = MuiWidgets;
 
@@ -42,7 +45,7 @@ export const formulaValidation: StepType<RuleWizardValues>[][number]['validate']
             case 'count aggregation doesn`t support subFormulas':
                 formulaErr = i18next.t('wizard.rule.countAggregationCantHaveSubFormulas');
                 break;
-            case '!TODAY_VAR is not allowed inside aggregation group (for performance)':
+            case `${formulaGetTodayVarName} is not allowed inside aggregation group (for performance)`:
                 formulaErr = i18next.t('wizard.rule.aggregationsCantHaveGetTodayFunc');
                 break;
 

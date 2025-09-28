@@ -15,6 +15,9 @@ import {
 import { getAggVariablesInTree } from './getAggVariablesInTree';
 import i18next from 'i18next';
 import { ActionOnFail } from '../../interfaces/rules';
+import { environment } from '../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 const formatField = (
     key: string,
@@ -193,10 +196,9 @@ const getTodayFuncVariables = (actionOnFail: ActionOnFail) => {
     // dont allow getToday() to use in relationshipfields (in aggregation functions).
     // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
     // DB indexes optimization for rule w/ getToday not yet implemented, but to have the option in the future
-    // '!' at start to not intersect with other variables
     if (actionOnFail === ActionOnFail.ENFORCEMENT) return {};
 
-    return { '!TODAY_VAR': { type: 'date', label: 'TODAY( )', tooltip: i18next.t('wizard.rule.todayVariableInfo') } };
+    return { [formulaGetTodayVarName]: { type: 'date', label: 'TODAY( )', tooltip: i18next.t('wizard.rule.todayVariableInfo') } };
 };
 
 export const getFieldsConfigOfRule = (
