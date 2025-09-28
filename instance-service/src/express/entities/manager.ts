@@ -61,7 +61,7 @@ import EntityTemplateManagerService from '../../externalServices/templates/entit
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
-import { injectValuesToString } from '../../utils/handlebars';
+import { extractEmailsFromRules } from '../../utils/emails';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -722,7 +722,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const createdEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
-            return { createdEntity, actions: fixedActions };
+            return { createdEntity, actions: fixedActions, emails: results.emails };
         }
 
         return this.neo4jClient
@@ -741,20 +741,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
 
-                const emails: IRuleMail[] = [];
-
-                indicatorRules.forEach((rule) => {
-                    if (rule.rule.mail?.display) {
-                        const mailTemplate = rule.rule.mail;
-                        const newMail: IRuleMail = {
-                            ...mailTemplate,
-                            title: injectValuesToString(mailTemplate.title, createdEntity.properties, entityTemplate),
-                            body: injectValuesToString(mailTemplate.body, createdEntity.properties, entityTemplate),
-                        };
-
-                        emails.push(newMail);
-                    }
-                });
+                const emails: IRuleMail[] = extractEmailsFromRules(indicatorRules, createdEntity, entityTemplate);
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     createdEntity.properties._id,
@@ -779,7 +766,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { createdEntity: entityWithUpdatedColors, emails: emails ?? undefined };
+                return { createdEntity: entityWithUpdatedColors, emails: emails };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
@@ -1761,7 +1748,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const updatedEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
-            return { updatedEntity, actions: fixedActions };
+            return { updatedEntity, actions: fixedActions, emails: results.emails };
         }
 
         return this.neo4jClient
@@ -1786,20 +1773,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
 
-                const emails: IRuleMail[] = [];
-
-                indicatorRules.forEach((rule) => {
-                    if (rule.rule.mail?.display) {
-                        const mailTemplate = rule.rule.mail;
-                        const newMail: IRuleMail = {
-                            ...mailTemplate,
-                            title: injectValuesToString(mailTemplate.title, updatedEntity.properties, entityTemplate),
-                            body: injectValuesToString(mailTemplate.body, updatedEntity.properties, entityTemplate),
-                        };
-
-                        emails.push(newMail);
-                    }
-                });
+                const emails: IRuleMail[] = extractEmailsFromRules(indicatorRules, updatedEntity, entityTemplate);
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     id,

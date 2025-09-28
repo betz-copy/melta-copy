@@ -27,7 +27,7 @@ import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
-import { injectValuesToString } from '../../utils/handlebars';
+import { extractEmailsFromRules } from '../../utils/emails';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import EntityManager from '../entities/manager';
@@ -484,22 +484,12 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         indicatorRules: IRuleFailure[],
     ) {
-        const emails: IBulkRuleMail[] = [];
-        instances.map((instance) => {
-            if ('sourceEntityId' in instance || 'sourceEntity' in instance) return;
+        const emails: IBulkRuleMail[] = instances.flatMap((instance) => {
+            if ('sourceEntityId' in instance || 'sourceEntity' in instance) return [];
 
-            indicatorRules.forEach((rule) => {
-                if (rule.rule.mail?.display) {
-                    const mailTemplate = rule.rule.mail;
-                    const newMail: IBulkRuleMail = {
-                        ...mailTemplate,
-                        title: injectValuesToString(mailTemplate.title, instance.properties, entitiesTemplatesByIds.get(instance.properties._id)!),
-                        body: injectValuesToString(mailTemplate.body, instance.properties, entitiesTemplatesByIds.get(instance.properties._id)!),
-                        entity: instance,
-                    };
-
-                    emails.push(newMail);
-                }
+            const entityTemplate = entitiesTemplatesByIds.get(instance.properties._id)!;
+            return extractEmailsFromRules(indicatorRules, instance, entityTemplate).map((email) => {
+                return { ...email, entity: instance } as IBulkRuleMail;
             });
         });
 

@@ -1,5 +1,12 @@
 import { menash } from 'menashmq';
-import { IUser, INotificationMetadata, NotificationType, logger, IRuleIndicatorAlertNotificationMetadata } from '@microservices/shared';
+import {
+    IUser,
+    INotificationMetadata,
+    NotificationType,
+    logger,
+    IRuleIndicatorAlertNotificationMetadata,
+    IKartoffelUser,
+} from '@microservices/shared';
 import config from '../config';
 // eslint-disable-next-line import/extensions
 import MailManager from './mailNotifications';
@@ -24,23 +31,26 @@ class RabbitManager {
     async createNotification<
         NotificationMetadata extends INotificationMetadata,
         NotificationMetadataPopulated extends IMailNotificationMetadataPopulated,
-    >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated) {
+    >(
+        viewers: string[],
+        type: NotificationType,
+        metadata: NotificationMetadata,
+        populatedMetaData: NotificationMetadataPopulated,
+        externalViewers?: IKartoffelUser[],
+    ) {
         if (!viewers.length) return;
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
 
         const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
 
-        if (filteredViewers.length > 0) {
-            const mailData =
-                type === NotificationType.ruleIndicatorAlert
-                    ? await this.mailManager.createIndicatorMail(
-                          { viewers: filteredViewers, type, populatedMetaData },
-                          (metadata as IRuleIndicatorAlertNotificationMetadata).email,
-                      )
-                    : await this.mailManager.createMail({ viewers: filteredViewers, type, populatedMetaData });
+        if (filteredViewers.length > 0 || externalViewers) {
+            const mailData = await this.mailManager.createMail(
+                { viewers: filteredViewers, type, populatedMetaData },
+                type === NotificationType.ruleIndicatorAlert ? (metadata as IRuleIndicatorAlertNotificationMetadata).email : undefined,
+                externalViewers,
+            );
 
-            console.dir(mailData, { depth: Infinity });
             await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
         }
     }

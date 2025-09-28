@@ -1,56 +1,57 @@
 /* eslint-disable no-plusplus */
-import pickBy from 'lodash.pickby';
 import {
-    IMongoEntityTemplatePopulated,
-    IRuleBreachAlert,
-    IRuleBreachRequest,
-    RuleBreachRequestStatus,
     ActionTypes,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-    IAction,
-    IBrokenRule,
-    IRuleBreach,
-    PermissionScope,
-    PermissionType,
-    INotificationMetadata,
-    IRuleBreachAlertNotificationMetadata,
-    IRuleBreachRequestNotificationMetadata,
-    IRuleBreachResponseNotificationMetadata,
-    NotificationType,
-    IEntity,
-    IRelationship,
-    IAgGridRequest,
-    basicFilterOperationTypes,
-    INotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
     BadRequestError,
     ForbiddenError,
+    IAction,
     IActionMetadataPopulated,
+    IAgGridRequest,
+    IBrokenRule,
     IBrokenRulePopulated,
     ICauseInstancePopulated,
     ICausesOfInstancePopulated,
+    ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
+    ICreateRelationshipMetadata,
     ICreateRelationshipMetadataPopulated,
+    IDeleteRelationshipMetadata,
     IDeleteRelationshipMetadataPopulated,
+    IDuplicateEntityMetadata,
     IDuplicateEntityMetadataPopulated,
+    IEntity,
     IEntityForBrokenRules,
+    IKartoffelUser,
+    IMongoEntityTemplatePopulated,
+    INotificationMetadata,
+    INotificationMetadataPopulated,
+    IRelationship,
     IRelationshipForBrokenRules,
+    IRuleBreach,
+    IRuleBreachAlert,
+    IRuleBreachAlertNotificationMetadata,
+    IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachAlertPopulated,
     IRuleBreachPopulated,
+    IRuleBreachRequest,
+    IRuleBreachRequestNotificationMetadata,
+    IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachRequestPopulated,
-    IUpdateEntityMetadataPopulated,
-    IUpdateEntityStatusMetadataPopulated,
-    UploadedFile,
+    IRuleBreachResponseNotificationMetadata,
+    IRuleBreachResponseNotificationMetadataPopulated,
     IRuleMail,
+    IUpdateEntityMetadata,
+    IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadata,
+    IUpdateEntityStatusMetadataPopulated,
     InstancesSubclassesPermissions,
+    NotificationType,
+    PermissionScope,
+    PermissionType,
+    RuleBreachRequestStatus,
+    UploadedFile,
+    basicFilterOperationTypes,
 } from '@microservices/shared';
+import pickBy from 'lodash.pickby';
 import { trycatch } from '../../utils';
 import InstancesManager from '../instances/manager';
 
@@ -63,9 +64,9 @@ import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import RabbitManager from '../../utils/rabbit';
+import TemplatesManager from '../templates/manager';
 import UsersManager from '../users/manager';
 import WorkspaceManager from '../workspaces/manager';
-import TemplatesManager from '../templates/manager';
 
 const { errorCodes, ruleBreachService } = config;
 
@@ -297,67 +298,84 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return ruleBreachRequestPopulated;
     }
 
-    private async getIndicatorEmailRecipients(
-        entity: IEntity,
-        userId: string,
-        sendPermissionUsers: boolean,
-        sendAssociatedUsers: boolean,
-    ): Promise<Set<string>> {
+    private async getAssociatedUsers(entity: IEntity): Promise<IKartoffelUser[]> {
+        const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+        const userIds: IKartoffelUser[] = [];
+        Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+            if (value.format === 'user' && entity.properties[key]) {
+                const user = JSON.parse(entity.properties[key]);
+                userIds.push(user);
+            }
+
+            if (value.items?.format === 'user' && entity.properties[key]) {
+                const userArray = entity.properties[key].map((user) => JSON.parse(user));
+                userIds.push(...userArray);
+            }
+        });
+
+        return userIds;
+    }
+
+    private async getPermissionUsers(entity: IEntity): Promise<string[]> {
         const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
         const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
-        const recipients = new Set<string>([userId]);
 
-        if (sendPermissionUsers) {
-            const [templateUsers, categoryUsers, admins] = await Promise.all([
-                await UsersManager.searchUserIds({
-                    workspaceIds,
-                    permissions: {
-                        [PermissionType.instances]: {
-                            categories: {
-                                [entityTemplate.category._id]: {
-                                    [InstancesSubclassesPermissions.entityTemplates]: {
-                                        [entityTemplate._id]: {
-                                            fields: {},
-                                            scope: PermissionScope.write,
-                                        },
+        const permissionUsers = await Promise.all([
+            await UsersManager.searchUserIds({
+                workspaceIds,
+                permissions: {
+                    [PermissionType.instances]: {
+                        categories: {
+                            [entityTemplate.category._id]: {
+                                [InstancesSubclassesPermissions.entityTemplates]: {
+                                    [entityTemplate._id]: {
+                                        fields: {},
+                                        scope: PermissionScope.write,
                                     },
                                 },
                             },
                         },
                     },
-                    limit: config.instanceService.searchEntitiesFlowMaxLimit,
-                }),
+                },
+                limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            }),
 
-                await UsersManager.searchUserIds({
-                    workspaceIds,
-                    permissions: {
-                        [PermissionType.instances]: {
-                            categories: {
-                                [entityTemplate.category._id]: {
-                                    [InstancesSubclassesPermissions.entityTemplates]: {},
-                                    scope: PermissionScope.write,
-                                },
+            await UsersManager.searchUserIds({
+                workspaceIds,
+                permissions: {
+                    [PermissionType.instances]: {
+                        categories: {
+                            [entityTemplate.category._id]: {
+                                [InstancesSubclassesPermissions.entityTemplates]: {},
+                                scope: PermissionScope.write,
                             },
                         },
                     },
-                    limit: config.instanceService.searchEntitiesFlowMaxLimit,
-                }),
+                },
+                limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            }),
 
-                await UsersManager.searchUserIds({
-                    workspaceIds,
-                    permissions: {
-                        [PermissionType.admin]: {
-                            scope: PermissionScope.write,
-                        },
+            await UsersManager.searchUserIds({
+                workspaceIds,
+                permissions: {
+                    [PermissionType.admin]: {
+                        scope: PermissionScope.write,
                     },
-                    limit: config.instanceService.searchEntitiesFlowMaxLimit,
-                }),
-            ]);
-            [templateUsers, categoryUsers, admins].forEach((users) => users.forEach((u) => recipients.add(u)));
-        }
+                },
+                limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            }),
+        ]).catch(() => []);
 
-        if (sendAssociatedUsers) {
-            // TODO: figure out how to fetch those (I think it will require recieving the instance itself...)
+        return permissionUsers.flat();
+    }
+
+    private async getIndicatorEmailRecipients(entity: IEntity, userId: string, sendPermissionUsers: boolean): Promise<Set<string>> {
+        let recipients = new Set<string>([userId]);
+
+        if (sendPermissionUsers) {
+            const permissionUsers = await this.getPermissionUsers(entity);
+
+            recipients = new Set([...permissionUsers, ...recipients]);
         }
 
         return recipients;
@@ -366,7 +384,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async sendIndicatorEmailNotifications(emails: IRuleMail[], entity: IEntity, userId: string) {
         await Promise.all(
             emails.map(async (email) => {
-                const viewers = await this.getIndicatorEmailRecipients(entity, userId, email.sendPermissionUsers, email.sendPermissionUsers);
+                const viewers = await this.getIndicatorEmailRecipients(entity, userId, email.sendPermissionUsers);
+                const externalViewers = email.sendAssociatedUsers ? await this.getAssociatedUsers(entity) : undefined;
+
                 return this.rabbitManager.createNotification(
                     Array.from(viewers),
                     NotificationType.ruleIndicatorAlert,
@@ -375,6 +395,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         email,
                     },
                     { entity, email },
+                    externalViewers,
                 );
             }),
         );

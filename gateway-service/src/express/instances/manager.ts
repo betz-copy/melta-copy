@@ -583,7 +583,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
-        if (emails) await this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, createdEntity, userId);
+        if (emails) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, createdEntity, userId);
 
         return createdEntity;
     }
@@ -924,7 +924,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
-        if (emails) await this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, updatedEntity, userId);
+        if (emails) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, updatedEntity, userId);
 
         return updatedEntity;
     }
@@ -1142,32 +1142,35 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             ignoredRules,
         );
         const emailsByInstance: Record<string, IBulkRuleMail[]> = {};
-        const bulkResultsMapped = bulkResults.map((result) => {
-            if (result.status === 'fulfilled') {
-                const emails = result.value.emails;
+
+        const reducedBulk = bulkResults.reduce<PromiseSettledResult<IEntity | IRelationship[]>[]>((acc, curr) => {
+            if (curr.status === 'fulfilled') {
+                const emails = curr.value.emails;
                 emails.forEach((email) => {
                     const entityId = email.entity.properties._id;
                     emailsByInstance[entityId] = [email, ...(emailsByInstance[entityId] ?? [])];
                 });
 
-                return {
+                acc.push({
                     status: 'fulfilled',
-                    value: result.value.instances,
-                };
+                    value: curr.value.instances,
+                });
             } else {
-                return {
+                acc.push({
                     status: 'rejected',
-                    reason: result.reason,
-                };
+                    reason: curr.reason,
+                });
             }
-        });
+
+            return acc;
+        }, []);
 
         Object.values(emailsByInstance).forEach((emails) => {
             const entity = emails[0]?.entity;
             if (entity) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails as IRuleMail[], emails[0].entity, userId);
         });
 
-        return bulkResultsMapped;
+        return reducedBulk;
     }
 
     async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody, userId: string) {

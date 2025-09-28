@@ -7,6 +7,7 @@ import {
     IDeleteProcessNotificationMetadata,
     IDeleteRelationshipMetadataPopulated,
     IEntity,
+    IKartoffelUser,
     IMongoEntityTemplatePopulated,
     IMongoStepTemplate,
     INewProcessNotificationMetadataPopulated,
@@ -461,11 +462,29 @@ class MailManager {
         }
     }
 
-    async createMail({ viewers, type, populatedMetaData }: IMailNotification) {
-        const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
-        const title = mailTitle[type];
+    async createMail({ viewers, type, populatedMetaData }: IMailNotification, emailTemplate?: IRuleMail, externalViewers?: IKartoffelUser[]) {
+        const viewersMail = [...viewers.map((viewer: IUser) => viewer.mail)];
+        if (externalViewers)
+            viewersMail.push(
+                ...externalViewers.flatMap((user) => {
+                    if (user.mail) return [user.mail];
 
+                    return [];
+                }),
+            );
+
+        if (type === NotificationType.ruleIndicatorAlert) {
+            return {
+                from: mailerService.mailUser,
+                to: viewersMail,
+                title: emailTemplate!.title,
+                html: emailTemplate!.body,
+            };
+        }
+
+        const title = mailTitle[type];
         const html = renderToString((await this.getMailHtml(type, populatedMetaData)) || <></>);
+
         return {
             from: mailerService.mailUser,
             to: viewersMail,
