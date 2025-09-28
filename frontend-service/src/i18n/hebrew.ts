@@ -459,6 +459,7 @@ export default {
         displayNames: {
             ruleBreachRequest: 'בקשה לחריגת חוקה',
             ruleBreachAlert: 'התראת חוקה',
+            ruleIndicatorAlert: 'חוקי חיווי',
             archivedProcess: 'תהליך ארכיון',
             dateAboutToExpire: 'תאריך מתקרב',
             deleteProcess: 'מחיקת תהליך',

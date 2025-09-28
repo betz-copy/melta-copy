@@ -14,11 +14,14 @@ interface CreateRuleEmailNotificationProps {
     mail: RuleWizardValues['mail'];
     touched: FormikTouched<RuleWizardValues>['mail'];
     errors: FormikErrors<RuleWizardValues>['mail'];
+    hasUserFields: boolean;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => Promise<void | FormikErrors<RuleWizardValues>>;
 }
 
-export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationProps> = ({ mail, touched, errors, setFieldValue }) => {
+export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationProps> = ({ mail, touched, errors, hasUserFields, setFieldValue }) => {
+    if (mail && !hasUserFields) mail.sendPermissionUsers = true;
     const mailCheckError = !!touched && (!!getIn(errors, 'sendAssociatedUsers') || !!getIn(errors, 'sendPermissionUsers'));
+
     return (
         <Grid container direction="column">
             <FormControlLabel
@@ -73,19 +76,22 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                                     onChange={(e) => setFieldValue('mail.sendPermissionUsers', e.target.checked)}
                                 />
                             }
+                            disabled={!hasUserFields}
                             label={i18next.t('wizard.rule.sendToUsersWithPerms')}
                             sx={{ marginLeft: 0, color: mailCheckError ? errorColor : 'auto', fontSize: '14px' }}
                         />
-                        <FormControlLabel
-                            control={
-                                <MeltaCheckbox
-                                    checked={mail.sendAssociatedUsers}
-                                    onChange={(e) => setFieldValue('mail.sendAssociatedUsers', e.target.checked)}
-                                />
-                            }
-                            label={`${i18next.t('wizard.rule.sendToAssociatedUsers')} ${i18next.t('wizard.rule.sendToAssociatedUsersHelper')}`}
-                            sx={{ marginLeft: 0, color: mailCheckError ? errorColor : 'auto', fontSize: '14px' }}
-                        />
+                        {hasUserFields && (
+                            <FormControlLabel
+                                control={
+                                    <MeltaCheckbox
+                                        checked={mail.sendAssociatedUsers}
+                                        onChange={(e) => setFieldValue('mail.sendAssociatedUsers', e.target.checked)}
+                                    />
+                                }
+                                label={`${i18next.t('wizard.rule.sendToAssociatedUsers')} ${i18next.t('wizard.rule.sendToAssociatedUsersHelper')}`}
+                                sx={{ marginLeft: 0, color: mailCheckError ? errorColor : 'auto', fontSize: '14px' }}
+                            />
+                        )}
                     </Grid>
                 </Grid>
             )}

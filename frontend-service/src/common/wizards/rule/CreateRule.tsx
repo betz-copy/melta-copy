@@ -6,7 +6,7 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { RuleWizardValues } from '.';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionOnFail } from '../../../interfaces/rules';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
@@ -30,8 +30,6 @@ const mailSchema = Yup.object({
             then: (schema) => schema.required(i18next.t('validation.required')),
         })
         .test('invalid-format', i18next.t('wizard.rule.invalidMailFormat'), function (this, value) {
-            // if (this.parent.display === false) return true;
-            // return validMailField(value ?? '');
             return !this.parent.display || validMailField(value ?? '');
         }),
     body: Yup.string()
@@ -95,6 +93,12 @@ const createRuleSchema = Yup.object({
     return values.fieldColor?.display === true || values.mail?.display === true;
 });
 
+const hasUserFields = (entityTemplate: IMongoEntityTemplatePopulated | null) => {
+    if (!entityTemplate) return false;
+
+    return Object.values(entityTemplate.properties.properties).some((value) => value.format === 'user' || value.items?.format === 'user');
+};
+
 const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> = ({
     values,
     touched,
@@ -121,8 +125,6 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
     const onRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.value !== ActionOnFail.INDICATOR && !!values.fieldColor) {
-            // setValues((prevValues: RuleWizardValues) => omit(prevValues, 'fieldColor'));
-            // setValues((prevValues: RuleWizardValues) => omit(prevValues, 'mail'));
             setValues((prevValues: RuleWizardValues) => omit(prevValues, ['fieldColor', 'mail']));
         }
 
@@ -199,7 +201,13 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                         <Grid>
                             <Divider sx={{ color: '#CCCFE580' }} />
                         </Grid>
-                        <CreateRuleEmailNotification mail={values.mail} touched={touched.mail} errors={errors.mail} setFieldValue={setFieldValue} />
+                        <CreateRuleEmailNotification
+                            mail={values.mail}
+                            touched={touched.mail}
+                            errors={errors.mail}
+                            hasUserFields={hasUserFields(entityTemplate)}
+                            setFieldValue={setFieldValue}
+                        />
                     </Grid>
                 )}
             </Grid>
