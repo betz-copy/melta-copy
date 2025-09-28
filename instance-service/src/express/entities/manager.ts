@@ -54,7 +54,6 @@ import mapValues from 'lodash.mapvalues';
 import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import pLimit from 'p-limit';
 import GatewayServiceProducer from '../../externalServices/gateway/producer';
 import filteredMap from '../../utils/filteredMap';
 import config from '../../config';
@@ -95,6 +94,7 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 import { getCausesOfRuleFailure } from '../rules/calcNewCausesOfRuleFailure';
+import { updateColorsForIndicatorRulesWithTodayFunc } from './updateColorsForBrokenRulesWithIndicator';
 
 const {
     brokenRulesFakeEntityIdPrefix,
@@ -278,18 +278,11 @@ class EntityManager extends DefaultManagerNeo4j {
         }
     };
 
-    getColoredFields(rules: IMongoRule[], changedProperties: string[]) {
-        return rules.reduce(
-            (acc, rule) => {
-                if (rule.actionOnFail !== ActionOnFail.INDICATOR || !rule.fieldColor) return acc;
-
-                if (changedProperties.includes(rule.fieldColor!.field)) return acc;
-
-                acc[rule.fieldColor!.field] = rule.fieldColor!.color;
-                return acc;
-            },
-            {} as Record<string, string>,
-        );
+    getColoredFields(rules: IMongoRule[]) {
+        return rules.reduce<Record<string, string>>((acc, rule) => {
+            acc[rule.fieldColor!.field] = rule.fieldColor!.color;
+            return acc;
+        }, {});
     }
 
     async createEntityInTransaction(
@@ -1622,12 +1615,7 @@ class EntityManager extends DefaultManagerNeo4j {
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
         const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
-        const updatedColoredFields = indicatorRules
-            ? this.getColoredFields(
-                  indicatorRules.map(({ rule }) => rule),
-                  [],
-              )
-            : undefined;
+        const updatedColoredFields = indicatorRules ? this.getColoredFields(indicatorRules.map(({ rule }) => rule)) : undefined;
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
             entity,
@@ -2315,52 +2303,6 @@ class EntityManager extends DefaultManagerNeo4j {
         return Promise.all(chartPromises);
     }
 
-    private updateColorsForIndicatorRulesWithTodayFunc(rulesWithTodayFuncRecord: Map<string, IMongoRule>, brokenRules: IBrokenRule[]) {
-        const indicatorRulesOfEntityIds: Map<string, IMongoRule[]> = new Map();
-        brokenRules.forEach((brokenRule) => {
-            const rule = rulesWithTodayFuncRecord.get(brokenRule.ruleId)!;
-            if (rule.actionOnFail !== ActionOnFail.INDICATOR) return;
-
-            brokenRule.failures.forEach((ruleFailure) => {
-                if (!indicatorRulesOfEntityIds.has(ruleFailure.entityId)) {
-                    indicatorRulesOfEntityIds.set(ruleFailure.entityId, [rule]);
-                } else {
-                    indicatorRulesOfEntityIds.get(ruleFailure.entityId)!.push(rule);
-                }
-            });
-        });
-
-        const parallelLimit = pLimit(config.neo4j.updateColorsForRulesWithTodayFuncParallelLimit);
-
-        return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const updateEntitiesPromises = Array.from(indicatorRulesOfEntityIds.entries()).map(async ([entityId, indicatorRules]) => {
-                const updatedColoredFields = this.getColoredFields(indicatorRules, []);
-                const updatedColorsNormalizedFields: Record<string, string> = {};
-                Object.entries(updatedColoredFields).forEach(([field, color]) => {
-                    updatedColorsNormalizedFields[`${field}${config.neo4j.colorPropertySuffix}`] = color;
-                });
-
-                await parallelLimit(() =>
-                    runInTransactionAndNormalize(
-                        transaction,
-                        `MATCH (e {_id: '${entityId}'})
-                         SET e += $props
-                         RETURN e`,
-                        normalizeReturnedEntity('singleResponseNotNullable'),
-                        {
-                            props: {
-                                ...updatedColorsNormalizedFields,
-                                updatedAt: getNeo4jDateTime(),
-                            },
-                        },
-                    ),
-                );
-            });
-
-            return Promise.all(updateEntitiesPromises);
-        });
-    }
-
     async runRulesWithTodayFunc() {
         const rulesWithTodayFunc = await this.relationshipsTemplateManagerService.searchRules({
             doesFormulaHaveTodayFunc: true,
@@ -2417,7 +2359,7 @@ class EntityManager extends DefaultManagerNeo4j {
             }
         }
 
-        await this.updateColorsForIndicatorRulesWithTodayFunc(rulesWithTodayFuncRecord, brokenRules);
+        await updateColorsForIndicatorRulesWithTodayFunc(this.neo4jClient, rulesWithTodayFuncRecord, brokenRules);
 
         const brokenRulesOfWarningOnFail = brokenRules.filter(
             ({ ruleId }) => rulesWithTodayFuncRecord.get(ruleId)!.actionOnFail === ActionOnFail.WARNING,
