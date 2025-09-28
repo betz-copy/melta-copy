@@ -17,6 +17,7 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
                       jobTitle: user?.jobTitle,
                       hierarchy: user?.hierarchy,
                       mail: user?.mail,
+                      userType: user?.entityType,
                   })
                 : undefined;
         }
@@ -63,13 +64,32 @@ const getFieldUiSchema = (
             'ui:widget': 'SignatureWidget',
             'ui:classNames': 'fullWidth',
         };
-    if (propertySchema.readOnly)
+    if (propertySchema.readOnly) {
+        const kartoffelPersonalDataFields: string[] = [
+            'identityCard',
+            'personalNumber',
+            'serviceType',
+            'address',
+            'sex',
+            'employeeNumber',
+            'dischargeDay',
+            'rank',
+            'birthDate',
+        ];
+        console.log('🚀 ~ getFieldUiSchema ~ values:', values);
+        const isGoalUser =
+            propertySchema.format === 'kartoffelUserField' &&
+            values.properties[propertySchema?.expandedUserField?.relatedUserField!] &&
+            values.properties[propertySchema?.expandedUserField?.relatedUserField!].userType === 'GoalUser' &&
+            kartoffelPersonalDataFields.includes(propertySchema.expandedUserField?.kartoffelField!);
+
         return {
             'ui:options': {
-                disabled: true,
+                disabled: !isGoalUser,
                 defaultValue,
             },
         };
+    }
     if (propertySchema.serialCurrent !== undefined)
         return {
             'ui:options': {

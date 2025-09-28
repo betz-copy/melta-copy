@@ -16,6 +16,7 @@ export interface IBaseUser {
         profilePath?: string;
     };
     kartoffelId: string;
+    userType?: string;
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
@@ -72,7 +73,7 @@ export interface ICurrentUser extends IUser {
     currentWorkspacePermissions: ISubCompactPermissions;
 }
 
-export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
+export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail' | 'entityType'> &
     Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;
 
 export interface IKartoffelUserRole {
