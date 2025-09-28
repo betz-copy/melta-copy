@@ -222,8 +222,8 @@ const EditProps: React.FC<{
     );
 
     return (
-        <Grid container size={{ xs: 12 }}>
-            <Grid container flexDirection="column">
+        <Grid container width="100%">
+            <Grid container flexDirection="column" width="100%">
                 <Box width="100%">
                     <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
                         {showTitle && (
@@ -274,7 +274,7 @@ const EditProps: React.FC<{
                         </Grid>
                     )}
                 </Box>
-                <Box width="95%" maxWidth="95%" paddingLeft="20px">
+                <Box>
                     <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                     </Grid>
