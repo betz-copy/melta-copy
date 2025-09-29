@@ -404,12 +404,12 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
     ) {
         this.joiValidateNoConvert(equationSchema, equationData);
 
-        const lhsValueType = this.validateArgument(equationData.lhsArgument, relevantTemplates, aggregationGroupsContext);
-        const rhsValueType = this.validateArgument(equationData.rhsArgument, relevantTemplates, aggregationGroupsContext);
+        const lhsArgumentType = this.validateArgument(equationData.lhsArgument, relevantTemplates, aggregationGroupsContext);
+        const rhsArgumentType = this.validateArgument(equationData.rhsArgument, relevantTemplates, aggregationGroupsContext);
 
         assert(
-            lhsValueType === rhsValueType,
-            `both sides of equation must be of same type. found "${lhsValueType}" (left), "${rhsValueType}" (right)`,
+            lhsArgumentType === rhsArgumentType,
+            `both sides of equation must be of same type. found "${lhsArgumentType}" (left), "${rhsArgumentType}" (right)`,
         );
     }
 
