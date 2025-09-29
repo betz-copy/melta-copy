@@ -364,7 +364,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 },
                 limit: config.instanceService.searchEntitiesFlowMaxLimit,
             }),
-        ]).catch(() => []);
+        ]);
 
         return permissionUsers.flat();
     }
