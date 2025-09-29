@@ -59,7 +59,6 @@ export * from './utils/childTemplate';
 export * from './utils/filters';
 export * from './utils/map';
 export * from './utils/joi';
-export * from './utils/formatEntityProperties';
 export { default as ValidateRequest } from './utils/joi';
 export * from './utils/map';
 export { searchFilterSchema } from './utils/validationSchema/searchFilterSchema';

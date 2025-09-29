@@ -52,18 +52,18 @@ import {
     basicFilterOperationTypes,
 } from '@microservices/shared';
 import pickBy from 'lodash.pickby';
-import { trycatch } from '../../utils';
-import InstancesManager from '../instances/manager';
-
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import { trycatch } from '../../utils';
 import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { injectValuesToEmails } from '../../utils/mailNotifications/handlebars';
 import RabbitManager from '../../utils/rabbit';
+import InstancesManager from '../instances/manager';
 import TemplatesManager from '../templates/manager';
 import UsersManager from '../users/manager';
 import WorkspaceManager from '../workspaces/manager';
@@ -369,22 +369,21 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return permissionUsers.flat();
     }
 
-    private async getIndicatorEmailRecipients(entity: IEntity, userId: string, sendPermissionUsers: boolean): Promise<Set<string>> {
-        let recipients = new Set<string>([userId]);
+    async sendIndicatorEmailNotifications(
+        emails: IRuleMail[],
+        entity: IEntity,
+        userId: string,
+        entityTemplate: IMongoEntityTemplatePopulated,
+        relatedTemplates: Map<string, IMongoEntityTemplatePopulated>,
+        baseUrl: string,
+    ) {
+        let permissionUsers: string[] = [];
+        if (emails.some((email) => email.sendPermissionUsers)) permissionUsers = await this.getPermissionUsers(entity);
+        const injectedEmails: IRuleMail[] = injectValuesToEmails(emails, entity, entityTemplate, relatedTemplates, baseUrl);
 
-        if (sendPermissionUsers) {
-            const permissionUsers = await this.getPermissionUsers(entity);
-
-            recipients = new Set([...permissionUsers, ...recipients]);
-        }
-
-        return recipients;
-    }
-
-    async sendIndicatorEmailNotifications(emails: IRuleMail[], entity: IEntity, userId: string) {
         await Promise.all(
-            emails.map(async (email) => {
-                const viewers = await this.getIndicatorEmailRecipients(entity, userId, email.sendPermissionUsers);
+            injectedEmails.map(async (email) => {
+                const viewers = new Set<string>([userId, ...permissionUsers]);
                 const externalViewers = email.sendAssociatedUsers ? await this.getAssociatedUsers(entity) : undefined;
 
                 return this.rabbitManager.createNotification(

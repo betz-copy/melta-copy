@@ -1,5 +1,13 @@
+import {
+    BadRequestError,
+    IConstraintsOfTemplate,
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    IMongoRule,
+    IRelationship,
+    ServiceError,
+} from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import { IConstraintsOfTemplate, ServiceError, IRelationship, BadRequestError, IMongoRule, IEntitySingleProperty } from '@microservices/shared';
 import config from '../../config';
 
 const { relationshipTemplateHasRules, moreThenOneRelationshipInstanceExist } = config.errorCodes;
@@ -52,4 +60,13 @@ const buildNewRelationshipField = (
     };
 };
 
-export { validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships, buildNewRelationshipField };
+const getRelatedTemplateIds = (template: IMongoEntityTemplatePopulated) => {
+    const templateIds: string[] = [];
+    Object.values(template.properties.properties).forEach(({ relationshipReference }) => {
+        if (relationshipReference) templateIds.push(relationshipReference.relatedTemplateId);
+    });
+
+    return templateIds;
+};
+
+export { buildNewRelationshipField, getRelatedTemplateIds, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships };

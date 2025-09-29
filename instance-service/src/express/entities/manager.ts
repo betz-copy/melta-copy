@@ -61,7 +61,6 @@ import EntityTemplateManagerService from '../../externalServices/templates/entit
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
-import { extractEmailsFromRules } from '../../utils/emails';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -741,7 +740,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
 
-                const emails: IRuleMail[] = extractEmailsFromRules(indicatorRules, createdEntity, entityTemplate);
+                const emails: IRuleMail[] = indicatorRules.flatMap((rule) => {
+                    if (!rule.rule.mail?.display) return [];
+
+                    return rule.rule.mail;
+                });
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     createdEntity.properties._id,
@@ -1773,7 +1776,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
 
-                const emails: IRuleMail[] = extractEmailsFromRules(indicatorRules, updatedEntity, entityTemplate);
+                const emails: IRuleMail[] = indicatorRules.flatMap((rule) => {
+                    if (!rule.rule.mail?.display) return [];
+
+                    return rule.rule.mail;
+                });
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     id,

@@ -27,7 +27,6 @@ import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
-import { extractEmailsFromRules } from '../../utils/emails';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import EntityManager from '../entities/manager';
@@ -479,17 +478,14 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         );
     }
 
-    createEmailsForBulk(
-        instances: (IEntity | IRelationship)[],
-        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
-        indicatorRules: IRuleFailure[],
-    ) {
+    createEmailsForBulk(instances: (IEntity | IRelationship)[], indicatorRules: IRuleFailure[]) {
         const emails: IBulkRuleMail[] = instances.flatMap((instance) => {
             if ('sourceEntityId' in instance || 'sourceEntity' in instance) return [];
 
-            const entityTemplate = entitiesTemplatesByIds.get(instance.properties._id)!;
-            return extractEmailsFromRules(indicatorRules, instance, entityTemplate).map((email) => {
-                return { ...email, entity: instance } as IBulkRuleMail;
+            return indicatorRules.flatMap(({ rule }) => {
+                if (!rule.mail?.display) return [];
+
+                return { ...rule.mail, entity: instance };
             });
         });
 
@@ -557,7 +553,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                     );
 
-                    const emails: IRuleMail[] = this.createEmailsForBulk(results, entitiesTemplatesByIds, indicatorRules);
+                    const emails: IRuleMail[] = this.createEmailsForBulk(results, indicatorRules);
 
                     const entitiesWithUpdatedColors = await this.runUpdateColoredFieldsBulkInTransaction(
                         transaction,

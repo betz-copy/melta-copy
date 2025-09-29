@@ -12,6 +12,7 @@ import {
     IBrokenRule,
     IBrokenRuleEntity,
     IBulkOfActions,
+    IBulkRuleMail,
     ICountSearchResult,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -27,7 +28,7 @@ import {
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
     IRelationship,
-    IBulkRuleMail,
+    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
@@ -40,13 +41,11 @@ import {
     matchValueAgainstFilter,
     TemplateItem,
     UploadedFile,
-    IRuleMail,
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
-import { Dictionary, mapValues, omit } from 'lodash';
-import groupBy from 'lodash.groupby';
+import { mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
@@ -64,7 +63,9 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import { objectFilter } from '../../utils/object';
 import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
+import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
+import WorkspaceManager from '../workspaces/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 
@@ -547,6 +548,29 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
     }
 
+    async sendIndicatorRuleEmailForEntity(entity: IEntity, entityTemplate: IMongoEntityTemplatePopulated, userId: string, emails: IRuleMail[]) {
+        const relatedTemplateIds = getRelatedTemplateIds(entityTemplate);
+        const relatedTemplates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: relatedTemplateIds });
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
+        this.ruleBreachesManager.sendIndicatorEmailNotifications(
+            emails,
+            entity,
+            userId,
+            entityTemplate,
+            new Map(relatedTemplates.map((relatedTemplate) => [relatedTemplate._id, relatedTemplate])),
+            baseUrl,
+        );
+    }
+
+    async sendIndicatorRuleEmailForCreation(createdEntity: IEntity, userId: string, emails: IRuleMail[]) {
+        try {
+            const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(createdEntity.templateId);
+            await this.sendIndicatorRuleEmailForEntity(createdEntity, entityTemplate, userId, emails);
+        } catch (error) {
+            logger.error("Failed to send indicator rule's email for entity creation", { error });
+        }
+    }
+
     async createEntityInstance(
         instanceData: IEntity,
         files: UploadedFile[],
@@ -583,7 +607,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
-        if (emails) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, createdEntity, userId);
+        if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
         return createdEntity;
     }
@@ -840,6 +864,19 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     }
 
+    async sendIndicatorRuleEmailForUpdate(
+        updatedEntity: IEntity,
+        entityTemplate: IMongoEntityTemplatePopulated,
+        userId: string,
+        emails: IRuleMail[],
+    ) {
+        try {
+            await this.sendIndicatorRuleEmailForEntity(updatedEntity, entityTemplate, userId, emails);
+        } catch (error) {
+            logger.error("Failed to send indicator rule's email for entity update", { error });
+        }
+    }
+
     async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
@@ -924,7 +961,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
-        if (emails) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails, updatedEntity, userId);
+        if (emails) this.sendIndicatorRuleEmailForUpdate(updatedEntity, entityTemplate, userId, emails);
 
         return updatedEntity;
     }
@@ -1067,9 +1104,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
     }
 
-    async getManyEntitiesNewPropertiesToUpdate(entitiesToUpdate: IEntity[], templatesByIds: Dictionary<IMongoEntityTemplatePopulated[]>) {
+    async getManyEntitiesNewPropertiesToUpdate(entitiesToUpdate: IEntity[], templatesByIds: Map<string, IMongoEntityTemplatePopulated>) {
         const entitiesNewPropertiesPromises = entitiesToUpdate.map(async (entityToUpdate) => {
-            const [entityTemplate] = templatesByIds[entityToUpdate.templateId];
+            const entityTemplate = templatesByIds.get(entityToUpdate.templateId)!;
 
             return this.setSerialPropertiesAndUpdateTemplate(entityToUpdate.properties, entityTemplate).then((properties) => {
                 return {
@@ -1090,15 +1127,42 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         entities.forEach((entity) => templateIds.add(entity.templateId));
 
         const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: [...templateIds] });
+        const relatedTemplateIds = new Set<string>(templates.flatMap((template) => getRelatedTemplateIds(template)));
+        const relatedTemplates =
+            relatedTemplateIds.size === 0
+                ? []
+                : await this.entityTemplateService.searchEntityTemplates(userId, { ids: Array.from(relatedTemplateIds) });
 
         return {
-            templatesByIds: groupBy(templates, (template) => template._id),
-            entitiesByIds: groupBy(entities, (entity) => entity.properties._id),
+            templatesByIds: new Map(templates.map((template) => [template._id, template])),
+            entitiesByIds: new Map(entities.map((entity) => [entity.properties._id, entity])),
+            relatedTemplatesByIds: new Map(relatedTemplates.map((relatedTemplate) => [relatedTemplate._id, relatedTemplate])),
         };
     }
 
+    async sendBulkEmails(
+        emailsByInstance: Record<string, IBulkRuleMail[]>,
+        userId: string,
+        templatesByIds: Map<string, IMongoEntityTemplatePopulated>,
+        relatedTemplatesByIds: Map<string, IMongoEntityTemplatePopulated>,
+    ) {
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
+        Object.values(emailsByInstance).forEach((emails) => {
+            const entity = emails[0]?.entity;
+            if (entity)
+                this.ruleBreachesManager.sendIndicatorEmailNotifications(
+                    emails as IRuleMail[],
+                    emails[0].entity,
+                    userId,
+                    templatesByIds.get(entity.templateId)!,
+                    relatedTemplatesByIds,
+                    baseUrl,
+                );
+        });
+    }
+
     async runBulkOfActions(actionsGroups: IAction[][], dryRun: boolean, userId: string, ignoredRules: IBrokenRule[] = []) {
-        const { templatesByIds, entitiesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups, userId);
+        const { templatesByIds, entitiesByIds, relatedTemplatesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups, userId);
         const entitiesToCreate: IEntity[] = [];
 
         actionsGroups.forEach((actionGroup) =>
@@ -1110,8 +1174,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     entitiesToCreate.push(instanceData);
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                    const entity = entitiesByIds[actionMetadata.entityId][0];
-                    const templateOfEntity = templatesByIds[entity.templateId][0];
+                    const entity = entitiesByIds.get(actionMetadata.entityId)!;
+                    const templateOfEntity = templatesByIds.get(entity.templateId)!;
 
                     this.checkSerialFieldWasUpdated(templateOfEntity, actionMetadata.updatedFields, entity);
                 }
@@ -1165,10 +1229,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return acc;
         }, []);
 
-        Object.values(emailsByInstance).forEach((emails) => {
-            const entity = emails[0]?.entity;
-            if (entity) this.ruleBreachesManager.sendIndicatorEmailNotifications(emails as IRuleMail[], emails[0].entity, userId);
-        });
+        this.sendBulkEmails(emailsByInstance, userId, templatesByIds, relatedTemplatesByIds);
 
         return reducedBulk;
     }
