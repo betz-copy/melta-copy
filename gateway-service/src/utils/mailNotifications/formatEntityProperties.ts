@@ -1,5 +1,6 @@
 import { CoordinateSystem, IEntitySingleProperty, IMongoEntityTemplatePopulated, locationConverterToString } from '@microservices/shared';
 import Handlebars from 'handlebars';
+import mapValues from 'lodash';
 
 const entityLink = (content: string, baseUrl: string, entityId: string) => {
     return `<a href="${baseUrl}/entity/${entityId}" target="_blank" style="color:#225AA7;font-weight:bold">${Handlebars.escapeExpression(content)}</a>`;
@@ -70,16 +71,14 @@ const formatEntityPropertiesToString = (
     baseUrl?: string,
     allowLink: boolean = false,
 ): Record<string, any> => {
-    const a = Object.entries(properties).map(([key, value]) => {
+    return mapValues(properties).map((value, key) => {
         const property = entityTemplate.properties.properties[key];
-        if (!property) return [key, value];
+        if (!property) return value;
 
         const formattedValue = extractStringFromProperty(property, value, relatedTemplates, baseUrl, allowLink);
         const escapedValue = property.format === 'relationshipReference' ? formattedValue : Handlebars.escapeExpression(formattedValue);
-        return [key, escapedValue];
+        return escapedValue;
     });
-
-    return Object.fromEntries(a);
 };
 
 export default formatEntityPropertiesToString;
