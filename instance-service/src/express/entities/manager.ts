@@ -2333,7 +2333,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 return {
                     include: true,
-                    // TODO: dont filter out cause of getTodayFunc (currently UI doesnt show it anyway)
+                    // filter out cause of getTodayFunc (UI doesnt show it anyway)
                     value: { entityId: ruleFailure.entityId, causes: causes.filter<ICausesOfInstance>((cause) => 'instance' in cause) },
                 };
             });

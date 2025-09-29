@@ -119,7 +119,7 @@ export const throwIfActionCausedRuleFailures = (
             value: {
                 ruleId: ruleFailureAfterAction.rule._id,
                 entityId: ruleFailureAfterAction.entityId,
-                // todo: dont filter out cause of getTodayFunc (currently UI doesnt show it anyway)
+                // filter out cause of getTodayFunc (UI doesnt show it anyway)
                 causes: causes.filter<ICausesOfInstance>((cause) => 'instance' in cause),
             },
         };
