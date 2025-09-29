@@ -585,7 +585,7 @@ export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: strin
 export const generateNeo4jRuleQueryOnEntitiesOfTemplate = (
     rule: IMongoRule,
     entityTemplate: IMongoEntityTemplate,
-    getTodayFuncValue: Date = new Date(),
+    getTodayFuncValue: Date,
     returnOnlyFailedResults: boolean = true,
 ): CypherQuery => {
     const { entityTemplateId, formula } = rule;
@@ -609,7 +609,7 @@ export const generateNeo4jRuleQueryOnEntitiesOfTemplate = (
         resultCausesVariableName: formulaQuery.resultCausesVariableName,
         parameters: {
             ...formulaQuery.parameters,
-            getTodayFuncValue: getNeo4jDate(new Date(getTodayFuncValue)),
+            getTodayFuncValue: getNeo4jDate(getTodayFuncValue),
         },
     };
 };

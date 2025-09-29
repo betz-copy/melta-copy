@@ -18,7 +18,7 @@ export const runRuleOnEntitiesOfTemplate = async (
     transaction: Transaction,
     rule: IMongoRule,
     entityTemplate: IMongoEntityTemplate,
-    getTodayFuncValue: Date = new Date(),
+    getTodayFuncValue: Date,
     returnOnlyFailedResults: boolean = true,
 ) => {
     const ruleQuery = generateNeo4jRuleQueryOnEntitiesOfTemplate(rule, entityTemplate, getTodayFuncValue, returnOnlyFailedResults);
