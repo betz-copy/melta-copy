@@ -134,7 +134,11 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 readOnly,
                                 endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
                                 startAdornment: isValueExist ? (
-                                    <UserAvatar user={{ ...value, _id: value._id ?? (value as any).id }} tooltip={undefined} />
+                                    <UserAvatar
+                                        user={{ ...value, _id: value.kartoffelId ?? value._id ?? (value as any).id }}
+                                        tooltip={undefined}
+                                        shouldGetKartoffelImage
+                                    />
                                 ) : undefined,
                                 inputProps: {
                                     ...params.inputProps,

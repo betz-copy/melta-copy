@@ -15,7 +15,7 @@ const UserProfile: React.FC<{
     setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
 }> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
     const [userProfileImage, setUserProfileImage] = useState<string>();
-    const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(false);
+    const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(!existingUser.preferences.profilePath);
 
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
