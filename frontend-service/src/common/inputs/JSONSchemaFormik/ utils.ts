@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import { FormikHelpers } from 'formik';
 import { IKartoffelUser } from '../../../interfaces/users';
 import { flatten } from 'flat';
+import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {
@@ -65,18 +66,6 @@ const getFieldUiSchema = (
             'ui:classNames': 'fullWidth',
         };
     if (propertySchema.readOnly) {
-        const kartoffelPersonalDataFields: string[] = [
-            'identityCard',
-            'personalNumber',
-            'serviceType',
-            'address',
-            'sex',
-            'employeeNumber',
-            'dischargeDay',
-            'rank',
-            'birthDate',
-        ];
-        console.log('🚀 ~ getFieldUiSchema ~ values:', values);
         const isGoalUser =
             propertySchema.format === 'kartoffelUserField' &&
             values.properties[propertySchema?.expandedUserField?.relatedUserField!] &&
