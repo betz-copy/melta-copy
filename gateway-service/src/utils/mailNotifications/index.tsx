@@ -7,7 +7,6 @@ import {
     IDeleteProcessNotificationMetadata,
     IDeleteRelationshipMetadataPopulated,
     IEntity,
-    IKartoffelUser,
     IMongoEntityTemplatePopulated,
     IMongoStepTemplate,
     INewProcessNotificationMetadataPopulated,
@@ -20,7 +19,6 @@ import {
     IRuleMail,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-    IUser,
     NotificationType,
     RuleBreachRequestStatus,
 } from '@microservices/shared';
@@ -461,17 +459,7 @@ class MailManager {
         }
     }
 
-    async createMail({ viewers, type, populatedMetaData }: IMailNotification, emailTemplate?: IRuleMail, externalViewers?: IKartoffelUser[]) {
-        const viewersMail = [...viewers.map((viewer: IUser) => viewer.mail)];
-        if (externalViewers)
-            viewersMail.push(
-                ...externalViewers.flatMap((user) => {
-                    if (user.mail) return [user.mail];
-
-                    return [];
-                }),
-            );
-
+    async createMail({ viewersMail, type, populatedMetaData }: IMailNotification, emailTemplate?: IRuleMail) {
         if (type === NotificationType.ruleIndicatorAlert) {
             return {
                 from: mailerService.mailUser,

@@ -44,11 +44,16 @@ class RabbitManager {
 
         const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
 
-        if (filteredViewers.length > 0 || externalViewers) {
+        const viewersMail = [...filteredViewers.map((user) => user.mail)];
+        if (externalViewers) {
+            const externalViewersMails = externalViewers.map((user) => user.mail).filter((mail) => typeof mail === 'string');
+            viewersMail.push(...externalViewersMails);
+        }
+
+        if (viewersMail) {
             const mailData = await this.mailManager.createMail(
-                { viewers: filteredViewers, type, populatedMetaData },
+                { viewersMail, type, populatedMetaData },
                 type === NotificationType.ruleIndicatorAlert ? (metadata as IRuleIndicatorAlertNotificationMetadata).email : undefined,
-                externalViewers,
             );
 
             await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });

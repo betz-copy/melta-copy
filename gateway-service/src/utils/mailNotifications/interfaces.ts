@@ -5,7 +5,6 @@ import {
     IMongoStepTemplate,
     IMongoProcessInstancePopulated,
     NotificationType,
-    IUser,
 } from '@microservices/shared';
 
 export interface IProcessReviewerUpdateMailNotificationMetadataPopulated {
@@ -25,7 +24,7 @@ export type IMailNotificationMetadataPopulated =
     | IProcessStatusUpdateMailNotificationMetadataPopulated;
 
 export interface IMailNotification {
-    viewers: IUser[];
+    viewersMail: string[];
     type: NotificationType;
     populatedMetaData: IMailNotificationMetadataPopulated;
 }
