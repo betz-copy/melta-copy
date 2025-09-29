@@ -730,6 +730,7 @@ export default {
                 sex: 'מגדר',
                 directGroup: 'קבוצה ישירה',
                 hierarchy: 'היררכיה',
+                image: 'תמונה',
             },
         },
         relationshipTemplate: {
@@ -1054,6 +1055,7 @@ export default {
         matchFilter: 'בשדה {{fieldName}} הערך ברירת מחדל לא תואם את הגדרות הסינון',
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
         invalidProperty: 'שדה לא תקין',
+        isProfileImage: 'תמונת פרופיל',
     },
     propertyTypes: {
         string: 'טקסט',

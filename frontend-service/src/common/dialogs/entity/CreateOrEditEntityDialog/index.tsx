@@ -76,7 +76,8 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
                         (formatProperty === 'user' && currentUser && defaultValue === ByCurrentDefaultValue.byCurrentUser) ||
                         ('filterByCurrentUserField' in template && template.filterByCurrentUserField === key)
                     )
-                        properties[key] = JSON.stringify(currentUser);
+                        // When preselecting a user - its _id shouldn't be the melta user id, but the kartoffelId should
+                        properties[key] = JSON.stringify({ ...currentUser, _id: currentUser?.kartoffelId });
 
                     if ((formatProperty === 'date' || formatProperty === 'date-time') && defaultValue === ByCurrentDefaultValue.byCurrentDate) {
                         const currentDate = new Date();

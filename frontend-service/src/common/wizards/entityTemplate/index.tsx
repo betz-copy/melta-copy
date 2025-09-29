@@ -70,6 +70,7 @@ export interface EntityTemplateFormInputProperties {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    isProfileImage?: boolean;
 }
 
 type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };

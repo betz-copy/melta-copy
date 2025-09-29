@@ -69,6 +69,10 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'number',
 });
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
+});
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });

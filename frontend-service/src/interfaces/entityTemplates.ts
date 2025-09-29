@@ -48,6 +48,7 @@ export interface IEntitySingleProperty {
     default?: any; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
     isFilterByCurrentUser?: boolean;
     isFilterByUserUnit?: boolean;
+    isProfileImage?: boolean;
     display?: boolean;
 }
 

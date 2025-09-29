@@ -1,40 +1,36 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import Avatar from '@mui/material/Avatar';
 import React from 'react';
-import { useQuery } from 'react-query';
-import { IUser } from '../interfaces/users';
-import { getUserProfileRequest } from '../services/userService';
-import { useDarkModeStore } from '../stores/darkMode';
-import { getNameInitials } from '../utils/userProfile';
+import { IUser } from '../../interfaces/users';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { getNameInitials } from '../../utils/userProfile';
 
-interface UserAvatarProps {
+export interface UserIconProps {
     user: Partial<IUser>;
     size?: number;
     bgColor?: string;
     isDefaultProfile?: boolean;
-    userProfileImage?: string;
+    profileImage?: string;
     addBorder?: boolean;
     overrideSx?: object;
+    isError?: boolean;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({
+const UserIcon: React.FC<UserIconProps> = ({
     user,
     size = 48,
     bgColor,
-    userProfileImage,
+    profileImage,
     overrideSx,
     isDefaultProfile = false,
     addBorder = false,
+    isError = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
     // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
-
-    const { data: profile, isError } = useQuery(['userProfile', user?.preferences?.profilePath], async () => {
-        return user?.preferences?.profilePath ? getUserProfileRequest(user) : '';
-    });
 
     return (
         <Avatar
@@ -59,9 +55,9 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
                 });
             }}
         >
-            {userProfileImage || (profile && !isError && !isDefaultProfile) ? (
+            {(profileImage || !isDefaultProfile) && !isError ? (
                 <img
-                    src={userProfileImage ?? profile}
+                    src={profileImage}
                     style={{
                         width: '100%',
                         height: '100%',
@@ -75,4 +71,4 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     );
 };
 
-export default UserAvatar;
+export default UserIcon;

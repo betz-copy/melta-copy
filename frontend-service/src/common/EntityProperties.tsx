@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties, JSX, useState } from 'react';
@@ -21,6 +21,7 @@ import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import UserAvatar from './UserAvatar';
+import _ from 'lodash';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -42,6 +43,30 @@ interface FormatOptions {
     pureString?: boolean;
 }
 
+const getUserAvatar = (
+    entityTemplate: Template,
+    imageKey: string,
+    properties: IEntityPropertiesProps['properties'],
+    iconProps: { size: number; border: number },
+) => {
+    const relatedUserField = entityTemplate?.properties?.properties?.[imageKey]?.expandedUserField?.relatedUserField;
+    const user = relatedUserField && properties?.[relatedUserField] ? JSON.parse(properties?.[relatedUserField]) : undefined;
+
+    return (
+        user && (
+            <div style={{ marginLeft: '3rem' }}>
+                <UserAvatar
+                    user={user}
+                    shouldRenderChip={false}
+                    tooltip={{ displayUserImage: false }}
+                    shouldGetKartoffelImage
+                    userIcon={{ size: iconProps.size, overrideSx: { border: `${iconProps.border}px solid #FF006B`, boxShadow: '0px' } }}
+                />
+            </div>
+        )
+    );
+};
+
 export const formatToString = (
     value: any,
     property: IEntitySingleProperty,
@@ -50,11 +75,17 @@ export const formatToString = (
     color?: string,
     options: FormatOptions = {},
     hideProps: string[] = [],
+    entityTemplate?: Template,
+    properties?: IEntityPropertiesProps['properties'],
 ) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
+
+    // If displaying an image from a kartoffel user
+    if (format === 'kartoffelUserField' && expandedUserField?.kartoffelField === 'image' && entityTemplate && properties && key)
+        return getUserAvatar(entityTemplate, key, properties, { size: 32, border: 1 });
 
     if (value === null || value === undefined) return '-';
 
@@ -102,15 +133,10 @@ export const formatToString = (
             const userObject = typeof value === 'string' ? JSON.parse(value) : value;
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={userObject.fullName}>
-                        <Grid>
-                            <Chip
-                                avatar={<UserAvatar user={userObject} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') }}
-                                label={userObject.fullName}
-                            />
-                        </Grid>
-                    </MeltaTooltip>
+                    <UserAvatar
+                        user={userObject}
+                        chip={{ sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') } }}
+                    />
                 </Grid>
             );
         }
@@ -141,15 +167,14 @@ export const formatToString = (
                         getItemKey={(item: any) => item._id}
                         renderItem={(item) => (
                             <Grid>
-                                <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                                    <Grid>
-                                        <Chip
-                                            avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') }}
-                                            label={item.fullName}
-                                        />
-                                    </Grid>
-                                </MeltaTooltip>
+                                <UserAvatar
+                                    key={item.id}
+                                    user={item}
+                                    tooltip={{ title: `${item.fullName} - ${item.hierarchy}` }}
+                                    chip={{
+                                        sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') },
+                                    }}
+                                />
                             </Grid>
                         )}
                         propertyToDisplayInTooltip="fullName"
@@ -206,7 +231,7 @@ export const getPropertyColor = (
     highlightColor: Property.Color | undefined,
     mode: 'normal' | 'white',
     normalColor: Property.Color,
-    coloredFields: IEntity['coloredFields'],
+    coloredFields?: IEntity['coloredFields'],
 ) => {
     if (coloredFields?.[propertyKey]) return coloredFields?.[propertyKey];
     if (propertiesToHighlight?.includes(propertyKey)) {
@@ -281,6 +306,8 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                         pureString,
                     },
                     entityTemplate.properties.hide,
+                    entityTemplate,
+                    properties,
                 );
 
                 if (stringFormatValue === null || stringFormatValue === undefined) return undefined;
@@ -471,8 +498,15 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     const alreadyRenderedGroups = new Set<string>();
 
+    const imageOfKartoffelKeys = _.remove(propertiesOrderedToShow, (propertyKey) => {
+        const propertyValue = entityTemplate.properties.properties[propertyKey];
+        return propertyValue?.expandedUserField?.kartoffelField === 'image' && propertyValue.isProfileImage;
+    });
+
     return (
-        <>
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            {/* Profile image */}
+            {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
@@ -580,7 +614,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     />
                 )}
             </Grid>
-        </>
+        </Box>
     );
 };
 
