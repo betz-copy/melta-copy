@@ -7,5 +7,6 @@ module.exports = {
                 packageDir: [__dirname, `${__dirname}/..`],
             },
         ],
+        'import/prefer-default-export': 'off',
     },
 };
