@@ -28,6 +28,7 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
+import RjsfUserAvatarWidget from './RjsfUserAvarWidget';
 
 const { dateRegex } = environment;
 
@@ -129,6 +130,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'isFilterByCurrentUser',
         'isFilterByUserUnit',
         'display',
+        'isProfileImage',
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({
@@ -330,6 +332,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
             CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
             SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
+            UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
         }),
         [],
     );

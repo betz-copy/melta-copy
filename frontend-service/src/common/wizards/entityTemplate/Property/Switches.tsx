@@ -48,6 +48,7 @@ export const Switches: React.FC<SwitchesProps> = ({
 
     const isText = value.type === 'string' || value.type === 'text-area';
     const isComment = value.type === 'comment';
+    const isKartoffelImage = value.type === 'kartoffelUserField' && value?.expandedUserField?.kartoffelField === 'image';
     const isNewProperty = !initialValue;
     const type = `properties[${index}].type`;
 
@@ -312,6 +313,26 @@ export const Switches: React.FC<SwitchesProps> = ({
                             }));
                         }}
                         circleSize="1.6rem"
+                    />
+                </>
+            )}
+            {isKartoffelImage && (
+                <>
+                    <FormControlLabel
+                        control={
+                            <MeltaSwitch
+                                id={`properties[${index}].isProfileImage`}
+                                name={`properties[${index}].isProfileImage`}
+                                onChange={(_e, checked) => {
+                                    setValues?.((prev) => ({
+                                        ...prev,
+                                        isProfileImage: checked,
+                                    }));
+                                }}
+                                checked={value.isProfileImage ?? false}
+                            />
+                        }
+                        label={i18next.t('validation.isProfileImage')}
                     />
                 </>
             )}

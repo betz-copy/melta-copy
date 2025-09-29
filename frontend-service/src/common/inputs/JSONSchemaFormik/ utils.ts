@@ -7,23 +7,23 @@ import { FormikHelpers } from 'formik';
 import { IKartoffelUser } from '../../../interfaces/users';
 import { flatten } from 'flat';
 
-const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, selectedUser: IKartoffelUser | null) => {
+const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {
         if (changedUserKey === key) {
-            acc[key] = selectedUser
+            acc[key] = user
                 ? JSON.stringify({
-                      _id: selectedUser?._id || selectedUser?.id,
-                      fullName: selectedUser?.fullName,
-                      jobTitle: selectedUser?.jobTitle,
-                      hierarchy: selectedUser?.hierarchy,
-                      mail: selectedUser?.mail,
+                      _id: user?._id || user?.id,
+                      fullName: user?.fullName,
+                      jobTitle: user?.jobTitle,
+                      hierarchy: user?.hierarchy,
+                      mail: user?.mail,
                   })
                 : undefined;
         }
         if (value.properties) {
-            acc[key] = changeRelatedUserFields(value.properties, changedUserKey, selectedUser);
+            acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
         } else if (value.expandedUserField?.relatedUserField === changedUserKey) {
-            acc[key] = selectedUser?.[value.expandedUserField.kartoffelField];
+            acc[key] = user?.[value.expandedUserField.kartoffelField];
         }
 
         return acc;
@@ -43,6 +43,13 @@ const getFieldUiSchema = (
     const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue ?? undefined;
     const enumPropertiesColors = values.template?.enumPropertiesColors;
     if (propertySchema.archive) return {};
+
+    if (propertySchema.format === 'kartoffelUserField' && propertySchema?.expandedUserField?.kartoffelField === 'image') {
+        const userProperty = propertySchema?.expandedUserField?.relatedUserField;
+        const user = userProperty && values.properties?.[userProperty] ? JSON.parse(values.properties?.[userProperty]) : undefined;
+        return { 'ui:widget': 'UserAvatarWidget', 'ui:options': { user } };
+    }
+
     if (propertySchema.format === 'comment')
         return {
             'ui:options': {
@@ -118,16 +125,16 @@ const getFieldUiSchema = (
                     // in order to set the values in the backend, we need to send the updated fields flatten
                     const flattenChangedPropertiesOfUser: Object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
 
-                    const updatedFlattenFileds = {};
+                    const updatedFlattenFields = {};
 
                     Object.keys(flattenChangedPropertiesOfUser).forEach((key) => {
-                        updatedFlattenFileds[key.split('.').pop() || key] = flattenChangedPropertiesOfUser[key];
+                        updatedFlattenFields[key.split('.').pop() || key] = flattenChangedPropertiesOfUser[key];
                     });
 
                     setValues({
                         ...curValues.properties,
                         ...changedPropertiesOfUser,
-                        ...updatedFlattenFileds,
+                        ...updatedFlattenFields,
                     });
                 },
             },
@@ -147,6 +154,7 @@ const getFieldUiSchema = (
         return {
             'ui:widget': 'LocationWidget',
         };
+
     return {
         'ui:options': { defaultValue },
     };

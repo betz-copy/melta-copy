@@ -3,7 +3,6 @@ import { Typography, Grid, Divider } from '@mui/material';
 import i18next from 'i18next';
 import { CustomImage } from '../../../common/CustomIcon';
 import { IKartoffelUser } from '../../../interfaces/users';
-import UserAvatar from '../../../common/UserAvatar';
 import { NotificationsButton } from '../../../common/sideBar/notifications/NotificationsButton';
 import { NotificationsScreen } from '../../../common/sideBar/notifications/NotificationsScreen';
 import { useQuery } from 'react-query';
@@ -15,6 +14,7 @@ import {
     getMyNotificationsClientSideRequest,
 } from '../../../services/clientSideService';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import UserAvatar from '../../../common/UserAvatar';
 
 const { notifications } = environment;
 
@@ -87,7 +87,7 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
                             />
                         </Grid>
                         <Grid>
-                            <UserAvatar user={currentUser} />
+                            <UserAvatar user={currentUser} shouldRenderChip={false} shouldRenderTooltip={false} userIcon={{ size: 48 }} />
                         </Grid>
                     </Grid>
                 </Grid>

@@ -1,17 +1,16 @@
 import { Delete } from '@mui/icons-material';
 import { Divider, Grid, IconButton, Paper, Typography } from '@mui/material';
 import i18next from 'i18next';
-import randomColor from 'randomcolor';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
-import UserAvatar from '../../common/UserAvatar';
 import { ICompactPermissions } from '../../interfaces/permissions/permissions';
 import { IMongoUser, RelatedPermission } from '../../interfaces/users';
 import { syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';
+import UserAvatar from '../../common/UserAvatar';
 
 interface IPermissionsDialogCardProps {
     user: IMongoUser;
@@ -63,7 +62,13 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
             <Grid container alignItems="center" gap="0.8rem" flexWrap="nowrap">
                 <Grid container id="user-info" alignItems="center" width="35%" flexWrap="nowrap">
                     <Grid padding="10px" id="profile-photo">
-                        <UserAvatar user={user} size={50} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
+                        <UserAvatar
+                            user={{ ...user, _id: user.kartoffelId }} // When UserAvatar requests kartoffelImage it does it by _id of user
+                            userIcon={{ size: 50 }}
+                            shouldRenderChip={false}
+                            shouldRenderTooltip={false}
+                            shouldGetKartoffelImage
+                        />
                     </Grid>
                     <Grid container id="display-name" flexDirection="column" overflow="hidden" width="100px">
                         <Grid>
