@@ -56,6 +56,7 @@ import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
+import { startOfToday, startOfYesterday } from 'date-fns';
 import GatewayServiceProducer from '../../externalServices/gateway/producer';
 import filteredMap from '../../utils/filteredMap';
 import config from '../../config';
@@ -2309,9 +2310,8 @@ class EntityManager extends DefaultManagerNeo4j {
         const entityTemplate = entityTemplatesRecord.get(rule.entityTemplateId)!;
 
         const brokenRule = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction): Promise<IBrokenRule> => {
-            const today = new Date();
-            const yesterday = new Date();
-            yesterday.setDate(today.getDate() - 1);
+            const today = startOfToday();
+            const yesterday = startOfYesterday();
 
             const [ruleFailuresYesterday, ruleFailuresToday] = await Promise.all([
                 runRuleOnEntitiesOfTemplate(transaction, rule, entityTemplate, yesterday, true),
