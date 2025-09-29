@@ -300,20 +300,20 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private async getAssociatedUsers(entity: IEntity): Promise<IKartoffelUser[]> {
         const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
-        const userIds: IKartoffelUser[] = [];
+        const users: IKartoffelUser[] = [];
         Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
             if (value.format === 'user' && entity.properties[key]) {
                 const user = JSON.parse(entity.properties[key]);
-                userIds.push(user);
+                users.push(user);
             }
 
             if (value.items?.format === 'user' && entity.properties[key]) {
                 const userArray = entity.properties[key].map((user) => JSON.parse(user));
-                userIds.push(...userArray);
+                users.push(...userArray);
             }
         });
 
-        return userIds;
+        return users;
     }
 
     private async getPermissionUsers(entity: IEntity): Promise<string[]> {
@@ -330,7 +330,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                                 [InstancesSubclassesPermissions.entityTemplates]: {
                                     [entityTemplate._id]: {
                                         fields: {},
-                                        scope: PermissionScope.write,
+                                        scope: PermissionScope.read,
                                     },
                                 },
                             },
@@ -347,7 +347,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         categories: {
                             [entityTemplate.category._id]: {
                                 [InstancesSubclassesPermissions.entityTemplates]: {},
-                                scope: PermissionScope.write,
+                                scope: PermissionScope.read,
                             },
                         },
                     },

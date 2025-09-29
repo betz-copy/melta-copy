@@ -769,7 +769,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { createdEntity: entityWithUpdatedColors, emails: emails };
+                return { createdEntity: entityWithUpdatedColors, emails };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }

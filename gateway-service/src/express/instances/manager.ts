@@ -1127,16 +1127,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         entities.forEach((entity) => templateIds.add(entity.templateId));
 
         const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: [...templateIds] });
-        const relatedTemplateIds = new Set<string>(templates.flatMap((template) => getRelatedTemplateIds(template)));
-        const relatedTemplates =
-            relatedTemplateIds.size === 0
-                ? []
-                : await this.entityTemplateService.searchEntityTemplates(userId, { ids: Array.from(relatedTemplateIds) });
 
         return {
             templatesByIds: new Map(templates.map((template) => [template._id, template])),
             entitiesByIds: new Map(entities.map((entity) => [entity.properties._id, entity])),
-            relatedTemplatesByIds: new Map(relatedTemplates.map((relatedTemplate) => [relatedTemplate._id, relatedTemplate])),
         };
     }
 
@@ -1144,8 +1138,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         emailsByInstance: Record<string, IBulkRuleMail[]>,
         userId: string,
         templatesByIds: Map<string, IMongoEntityTemplatePopulated>,
-        relatedTemplatesByIds: Map<string, IMongoEntityTemplatePopulated>,
     ) {
+        const relatedTemplateIds = new Set<string>(Array.from(templatesByIds.values()).flatMap((template) => getRelatedTemplateIds(template)));
+        const relatedTemplates =
+            relatedTemplateIds.size === 0
+                ? []
+                : await this.entityTemplateService.searchEntityTemplates(userId, { ids: Array.from(relatedTemplateIds) });
+        const relatedTemplatesByIds = new Map(relatedTemplates.map((relatedTemplate) => [relatedTemplate._id, relatedTemplate]));
+
         const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
         Object.values(emailsByInstance).forEach((emails) => {
             const entity = emails[0]?.entity;
@@ -1162,7 +1162,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async runBulkOfActions(actionsGroups: IAction[][], dryRun: boolean, userId: string, ignoredRules: IBrokenRule[] = []) {
-        const { templatesByIds, entitiesByIds, relatedTemplatesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups, userId);
+        const { templatesByIds, entitiesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups, userId);
         const entitiesToCreate: IEntity[] = [];
 
         actionsGroups.forEach((actionGroup) =>
@@ -1209,7 +1209,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const reducedBulk = bulkResults.reduce<PromiseSettledResult<IEntity | IRelationship[]>[]>((acc, curr) => {
             if (curr.status === 'fulfilled') {
-                const emails = curr.value.emails;
+                const { emails } = curr.value;
                 emails.forEach((email) => {
                     const entityId = email.entity.properties._id;
                     emailsByInstance[entityId] = [email, ...(emailsByInstance[entityId] ?? [])];
@@ -1229,7 +1229,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return acc;
         }, []);
 
-        this.sendBulkEmails(emailsByInstance, userId, templatesByIds, relatedTemplatesByIds);
+        this.sendBulkEmails(emailsByInstance, userId, templatesByIds);
 
         return reducedBulk;
     }
