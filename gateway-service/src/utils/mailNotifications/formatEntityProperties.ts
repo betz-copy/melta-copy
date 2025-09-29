@@ -9,8 +9,8 @@ const extractStringFromProperty = (
     property: IEntitySingleProperty,
     value: any,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
-    allowLink: boolean = false,
     baseUrl?: string,
+    allowLink: boolean = false,
 ): string => {
     const { format, type, ...restOfProp } = property;
     switch (format) {
@@ -63,21 +63,23 @@ const extractStringFromProperty = (
     }
 };
 
-export const formatEntityPropertiesToString = (
+const formatEntityPropertiesToString = (
     entityTemplate: IMongoEntityTemplatePopulated,
     properties: Record<string, any>,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
-    allowLink: boolean = false,
     baseUrl?: string,
+    allowLink: boolean = false,
 ): Record<string, any> => {
     const a = Object.entries(properties).map(([key, value]) => {
         const property = entityTemplate.properties.properties[key];
         if (!property) return [key, value];
 
-        const formattedValue = extractStringFromProperty(property, value, relatedTemplates, allowLink, baseUrl);
+        const formattedValue = extractStringFromProperty(property, value, relatedTemplates, baseUrl, allowLink);
         const escapedValue = property.format === 'relationshipReference' ? formattedValue : Handlebars.escapeExpression(formattedValue);
         return [key, escapedValue];
     });
 
     return Object.fromEntries(a);
 };
+
+export default formatEntityPropertiesToString;

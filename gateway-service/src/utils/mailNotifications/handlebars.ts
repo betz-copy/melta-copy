@@ -1,17 +1,17 @@
 import { IEntity, IMongoEntityTemplatePopulated, IRuleMail } from '@microservices/shared';
 import Handlebars from 'handlebars';
-import { formatEntityPropertiesToString } from './formatEntityProperties';
+import formatEntityPropertiesToString from './formatEntityProperties';
 
 export const injectValuesToString = (
     template: string,
     properties: Record<string, any>,
     entityTemplate: IMongoEntityTemplatePopulated,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
-    allowLink: boolean = false,
     baseUrl?: string,
+    allowLink: boolean = false,
 ) => {
     const compiledTemplate = Handlebars.compile(template, { noEscape: true });
-    const formatted = formatEntityPropertiesToString(entityTemplate, properties, relatedTemplates, allowLink, baseUrl);
+    const formatted = formatEntityPropertiesToString(entityTemplate, properties, relatedTemplates, baseUrl, allowLink);
     const injected = compiledTemplate(formatted);
 
     return injected;
@@ -27,6 +27,6 @@ export const injectValuesToEmails = (
     return emails.map((email) => ({
         ...email,
         title: injectValuesToString(email.title, entity.properties, entityTemplate, relatedTemplates),
-        body: injectValuesToString(email.body, entity.properties, entityTemplate, relatedTemplates, true, baseUrl),
+        body: injectValuesToString(email.body, entity.properties, entityTemplate, relatedTemplates, baseUrl, true),
     }));
 };
