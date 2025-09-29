@@ -92,10 +92,16 @@ export class RuleParser {
 
     private static constantParser = (value: any, valueType: ValueType): IConstant => {
         if (value === null || value === undefined) throw new Error('value can not be empty');
+
+        let parsedValue = value;
+
+        // RAQB library datetime gives dates with space (for example "2025-12-27 10:00:00.007Z"). make it ISO Date
+        if (valueType === 'datetime') parsedValue = (value as string).replace(' ', 'T');
+
         return {
             isConstant: true,
             type: RuleParser.valueTypeParser(valueType),
-            value,
+            value: parsedValue,
         };
     };
 

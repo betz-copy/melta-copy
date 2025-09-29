@@ -178,7 +178,13 @@ const generateNeo4jQueryFromConstant = (constant: IConstant, resultVariableNameP
     const resultValueVariableName = `${resultVariableNamePrefix}${resultValueVariableNameSuffix}`;
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
 
-    if (constant.type === 'string' || constant.type === 'date' || constant.type === 'dateTime') {
+    if (constant.type === 'date') {
+        cypherCalculationResultValue = `date($${resultValueVariableName})`;
+        parameters = { [resultValueVariableName]: constant.value };
+    } else if (constant.type === 'dateTime') {
+        cypherCalculationResultValue = `localdatetime($${resultValueVariableName})`;
+        parameters = { [resultValueVariableName]: constant.value };
+    } else if (constant.type === 'string') {
         cypherCalculationResultValue = `$${resultValueVariableName}`;
         parameters = { [resultValueVariableName]: constant.value };
     } else if (constant.type === 'number') {
