@@ -1,7 +1,7 @@
 import { Autocomplete, FormControl, FormControlLabel, FormHelperText, Grid, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RuleWizardValues } from '.';
 import { environment } from '../../../globals';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
@@ -19,7 +19,11 @@ interface CreateRuleEmailNotificationProps {
 }
 
 export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationProps> = ({ mail, touched, errors, hasUserFields, setFieldValue }) => {
-    if (mail && !hasUserFields) mail.sendPermissionUsers = true;
+    useEffect(() => {
+        // set checkboxes to default on change
+        if (mail && !hasUserFields) setFieldValue('mail.sendPermissionUsers', true);
+        if (mail && hasUserFields) setFieldValue('mail.sendPermissionUsers', false);
+    }, [hasUserFields]);
     const mailCheckError = !!touched && (!!getIn(errors, 'sendAssociatedUsers') || !!getIn(errors, 'sendPermissionUsers'));
 
     return (
