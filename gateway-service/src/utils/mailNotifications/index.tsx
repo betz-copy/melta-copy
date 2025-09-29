@@ -491,17 +491,6 @@ class MailManager {
             html,
         };
     }
-
-    async createIndicatorMail({ viewers }: IMailNotification, emailTemplate: IRuleMail) {
-        const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
-
-        return {
-            from: mailerService.mailUser,
-            to: viewersMail,
-            title: emailTemplate.title,
-            html: emailTemplate.body,
-        };
-    }
 }
 
 export default MailManager;
