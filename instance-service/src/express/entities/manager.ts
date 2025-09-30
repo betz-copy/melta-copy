@@ -283,7 +283,9 @@ class EntityManager extends DefaultManagerNeo4j {
 
     getColoredFields(rules: IMongoRule[]) {
         return rules.reduce<Record<string, string>>((acc, rule) => {
-            acc[rule.fieldColor!.field] = rule.fieldColor!.color;
+            if (!rule.fieldColor) return acc;
+
+            acc[rule.fieldColor.field] = rule.fieldColor.color;
             return acc;
         }, {});
     }
