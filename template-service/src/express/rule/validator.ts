@@ -491,9 +491,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
     doesFormulaHaveTodayFunc(formula: IFormula) {
         const flattedFormula = flatten<IFormula, Record<string, any>>(formula);
 
-        return Object.keys(flattedFormula).some((key) => {
-            return key.endsWith('functionType') && flattedFormula[key] === 'getToday';
-        });
+        return Object.keys(flattedFormula).some((key) => key.endsWith('functionType') && flattedFormula[key] === 'getToday');
     }
 
     async validateRuleFormula(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>) {
