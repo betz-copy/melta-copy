@@ -23,7 +23,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
         // set checkboxes to default on change
         if (mail && !hasUserFields) setFieldValue('mail.sendPermissionUsers', true);
         if (mail && hasUserFields) setFieldValue('mail.sendPermissionUsers', false);
-    }, [hasUserFields]);
+    }, [mail, hasUserFields]);
     const mailCheckError = !!touched && (!!getIn(errors, 'sendAssociatedUsers') || !!getIn(errors, 'sendPermissionUsers'));
 
     return (
