@@ -279,7 +279,7 @@ class MailManager {
     private async getCronjobRunActionInfo(ruleBreach: IRuleBreachAlertPopulated) {
         const entity = ruleBreach.brokenRules[0].failures[0].entity as IEntity;
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
-        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
 
         return (
             <p>
