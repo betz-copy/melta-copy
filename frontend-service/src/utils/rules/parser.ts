@@ -165,7 +165,7 @@ export class RuleParser {
         return {
             isGroup: true,
             ruleOfGroup: RuleParser.conjunctionParser(group.properties?.conjunction),
-            subFormulas: (group.children1 as JsonItem[]).map((child) => RuleParser.jsonTreeToFormula(child, ruleGroupsContext)),
+            subFormulas: (group.children1 as JsonItem[]).map((child) => RuleParser.jsonItemParser(child, ruleGroupsContext)),
         };
     };
 
@@ -179,7 +179,7 @@ export class RuleParser {
                 variableOfAggregation,
                 aggregation: RuleParser.aggregationParser(ruleGroup.properties!.operator),
                 ruleOfGroup: RuleParser.conjunctionParser(ruleGroup.properties!.conjunction),
-                subFormulas: (ruleGroup.children1 as JsonRule[]).map((child) => RuleParser.jsonTreeToFormula(child, newRuleGroupsContext)),
+                subFormulas: (ruleGroup.children1 as JsonRule[]).map((child) => RuleParser.jsonItemParser(child, newRuleGroupsContext)),
             } as IAggregationGroup;
         }
 
@@ -198,7 +198,7 @@ export class RuleParser {
         } as IEquation;
     };
 
-    static jsonTreeToFormula = (child: JsonItem, ruleGroupsContext: JsonRuleGroupExt[]): IFormula => {
+    static jsonItemParser = (child: JsonItem, ruleGroupsContext: JsonRuleGroupExt[]): IFormula => {
         const { properties, type } = child;
 
         switch (type) {
@@ -211,5 +211,9 @@ export class RuleParser {
             default:
                 throw new Error('child rule not suported');
         }
+    };
+
+    static jsonTreeToFormula = (tree: JsonItem): IFormula => {
+        return RuleParser.jsonItemParser(tree, []);
     };
 }
