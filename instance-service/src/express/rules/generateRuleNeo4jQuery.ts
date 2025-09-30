@@ -582,6 +582,7 @@ export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: strin
     };
 };
 
+// used for cronjob rules (with getToday func) that need to check all entities of template at once
 export const generateNeo4jRuleQueryOnEntitiesOfTemplate = (
     rule: IMongoRule,
     entityTemplate: IMongoEntityTemplate,

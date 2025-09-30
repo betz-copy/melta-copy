@@ -14,6 +14,7 @@ export const runRuleOnEntity = async (transaction: Transaction, entityId: string
     return runInTransactionAndNormalize(transaction, ruleQuery.cypherCalculation, normalizeRuleResultOnEntity, ruleQuery.parameters);
 };
 
+// used for cronjob rules (with getToday func) that need to check all entities of template at once
 export const runRuleOnEntitiesOfTemplate = async (
     transaction: Transaction,
     rule: IMongoRule,
