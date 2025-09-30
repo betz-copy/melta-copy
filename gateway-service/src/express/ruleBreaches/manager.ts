@@ -354,16 +354,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 },
                 limit: config.instanceService.searchEntitiesFlowMaxLimit,
             }),
-
-            await UsersManager.searchUserIds({
-                workspaceIds,
-                permissions: {
-                    [PermissionType.admin]: {
-                        scope: PermissionScope.write,
-                    },
-                },
-                limit: config.instanceService.searchEntitiesFlowMaxLimit,
-            }),
         ]);
 
         return permissionUsers.flat();
