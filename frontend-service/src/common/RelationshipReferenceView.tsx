@@ -14,10 +14,10 @@ import { locationConverterToString } from '../utils/map/convert';
 import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { CustomIcon } from './CustomIcon';
-import { isEntityFitsToChildTemplate } from './EntitiesPage/TemplateTablesView';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
+import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
     relatedTemplateId: string;

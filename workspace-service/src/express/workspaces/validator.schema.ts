@@ -44,7 +44,7 @@ const metadataSchema = Joi.object({
         sourceFieldForColor: Joi.string().allow(''),
     }).optional(),
     unitsArray: Joi.array().items(Joi.string().trim()).optional(),
-    numOfRelationshipReferenceFields: Joi.number(),
+    numOfRelationshipFieldsToShow: Joi.number(),
 }).optional();
 
 // Joi schema for Workspace

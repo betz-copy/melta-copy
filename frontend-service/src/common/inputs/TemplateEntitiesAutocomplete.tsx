@@ -95,7 +95,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
     };
 
     const parseAndAddDisabled = (filters: string | undefined): ISearchFilter => {
-
         const disabledCondition: ISearchFilter = { $and: { disabled: { $eq: false } } };
         const childTemplatesFilter = getChildTemplatesFilter();
         const filtersArray: ISearchFilter[] = [];
@@ -110,7 +109,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
         if (childTemplatesFilter) filtersArray.push(childTemplatesFilter);
 
         filtersArray.push(disabledCondition);
-        console.log({ filtersArray });
 
         return { $and: filtersArray };
     };
@@ -198,7 +196,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     orderedProperties
         .filter((prop) => prop !== showField && !displayKeys.includes(prop))
-        .slice(0, metadata.numOfRelationshipReferenceFields - 1)
+        .slice(0, metadata.numOfRelationshipFieldsToShow - 1)
         .forEach((prop) => displayKeys.push(prop));
 
     const convertPropertyToString = (property: any): string | undefined => {

@@ -306,12 +306,12 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     relatedTemplateId: string,
     relatedTemplateField: string,
-    filters: string | ISearchFilter | undefined,
     isLastColumn: boolean,
     entityTemplates: IEntityTemplateMap,
     hideColumn = false,
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
+    filters?: string | ISearchFilter,
 ): ColDef => {
     const relatedEntityTemplate = entityTemplates.get(relatedTemplateId!)!;
     return {
