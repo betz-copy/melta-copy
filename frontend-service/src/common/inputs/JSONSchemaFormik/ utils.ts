@@ -68,13 +68,14 @@ const getFieldUiSchema = (
     if (propertySchema.readOnly) {
         const isGoalUser =
             propertySchema.format === 'kartoffelUserField' &&
-            values.properties[propertySchema?.expandedUserField?.relatedUserField!] &&
-            values.properties[propertySchema?.expandedUserField?.relatedUserField!].userType === 'GoalUser' &&
-            kartoffelPersonalDataFields.includes(propertySchema.expandedUserField?.kartoffelField!);
+            !!values.properties[propertySchema?.expandedUserField?.relatedUserField!] &&
+            JSON.parse(values.properties[propertySchema?.expandedUserField?.relatedUserField!])?.userType === 'GoalUser' &&
+            kartoffelPersonalDataFields.includes((propertySchema.expandedUserField?.kartoffelField ?? '').trim());
 
         return {
             'ui:options': {
                 disabled: !isGoalUser,
+                readonly: !isGoalUser,
                 defaultValue,
             },
         };
