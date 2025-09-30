@@ -22,7 +22,7 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
 
     return (
         <UserArrayInput
-            mode="kartoffel"
+            mode="internal"
             value={null}
             label={label}
             onChange={(_e, chosenUser, reason) => {
