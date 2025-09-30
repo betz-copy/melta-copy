@@ -2355,7 +2355,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const parallelLimit = pLimit(config.neo4j.sendAlertForRulesWithTodayFuncParallelLimit);
 
-        const createAlertsPerRulePromises = brokenRulesOfWarningOnFail.map(async (brokenRule) => {
+        const createAlertsPromises = brokenRulesOfWarningOnFail.flatMap((brokenRule) => {
             const createAlertsPerFailuresPromises = brokenRule.failures.map((failure) => {
                 return parallelLimit(() =>
                     this.gatewayServiceProducer
@@ -2373,10 +2373,10 @@ class EntityManager extends DefaultManagerNeo4j {
                 );
             });
 
-            return Promise.all(createAlertsPerFailuresPromises);
+            return createAlertsPerFailuresPromises;
         });
 
-        return Promise.all(createAlertsPerRulePromises);
+        return Promise.all(createAlertsPromises);
     }
 
     async runRulesWithTodayFunc() {
