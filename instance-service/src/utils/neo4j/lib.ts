@@ -201,8 +201,12 @@ export const normalizeResponseTemplatesCount = (result: QueryResult): { template
     }));
 };
 
-export const normalizeRuleResult = (result: QueryResult) => {
+export const normalizeRuleResultOnEntity = (result: QueryResult) => {
     return result.records[0].toObject() as { value: boolean; formulaCauses: IFormulaCauses };
+};
+
+export const normalizeRuleResultsOnEntitiesOfTemplate = (result: QueryResult) => {
+    return result.records.map((ruleResult) => ruleResult.toObject() as { entityId: string; value: boolean; formulaCauses: IFormulaCauses });
 };
 
 export const normalizeReturnedRelationship =

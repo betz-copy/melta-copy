@@ -297,6 +297,12 @@ class InstancesService extends DefaultExternalServiceApi {
         });
         return data;
     }
+
+    async runRulesWithTodayFunc() {
+        const { data } = await this.api.post<{ brokenRulesOfWarningOnFail: IBrokenRule[] }>(`${baseEntitiesRoute}/runRulesWithTodayFunc`);
+
+        return data;
+    }
 }
 
 export default InstancesService;

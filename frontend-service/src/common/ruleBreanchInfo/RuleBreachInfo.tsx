@@ -5,10 +5,10 @@ import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
 import { IUser } from '../../interfaces/users';
-import { IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const RuleBreachInfo: React.FC<{
-    originUser?: IUser;
+    originUser?: IUser | null;
     brokenRules: IRuleBreachPopulated['brokenRules'];
     actions: IActionPopulated[];
     isCompact: boolean;
@@ -23,7 +23,7 @@ const RuleBreachInfo: React.FC<{
                         'ruleBreachInfo.actionsBrokeTheFollowingRules',
                     )}:`}</Typography>
                 )}
-                {actions.length === 1 && (
+                {actions.length === 1 && actions[0].actionType !== ActionTypes.CronjobRun && (
                     <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${i18next.t(
                         'ruleBreachInfo.actionBrokeTheFollowingRules',
                     )}:`}</Typography>

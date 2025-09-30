@@ -2,7 +2,7 @@ import { IArgument, IVariable } from './argument';
 
 export interface IRegularFunction {
     isRegularFunction: true; // to identify interface runtime (instead of class' instanceof)
-    functionType: 'toDate' | 'addToDate' | 'addToDateTime' | 'subFromDate' | 'subFromDateTime';
+    functionType: 'toDate' | 'addToDate' | 'addToDateTime' | 'subFromDate' | 'subFromDateTime' | 'getToday';
     arguments: IArgument[];
 }
 export const isRegularFunction = (regularFunction: any): regularFunction is IRegularFunction => {

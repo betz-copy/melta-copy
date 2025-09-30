@@ -24,14 +24,21 @@ import { ICause } from './interfaces/formulaWithCauses/cause';
 import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
 import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
 import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
-import { ICountAggFunctionCauses, IRegularFunctionCauses, ISumAggFunctionCauses } from './interfaces/formulaWithCauses/function';
+import {
+    ICountAggFunctionCauses,
+    IGetTodayFunctionCause,
+    IRegularFunctionCauses,
+    ISumAggFunctionCauses,
+} from './interfaces/formulaWithCauses/function';
 import filteredMap from '../../utils/filteredMap';
+
+type NewAndOldCauses = { newCauses: (ICause | IGetTodayFunctionCause)[]; oldCauses: (ICause | IGetTodayFunctionCause)[] };
 
 const getCausesOfPropertyOfVariable = (
     propertyOfVariableCauses: IPropertyOfVariableCauses,
     propertyOfVariableCausesBeforeAction: IPropertyOfVariableCauses | undefined,
     _propertyOfVariable: IPropertyOfVariable,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
     if (!propertyOfVariableCausesBeforeAction) {
         return { newCauses: [propertyOfVariableCauses.cause], oldCauses: [] };
     }
@@ -47,7 +54,7 @@ const getCausesOfPropertyOfVariable = (
 const getCausesOfAggFunction = (
     aggFunctionCauses: ICountAggFunctionCauses | ISumAggFunctionCauses,
     aggFunctionCausesBeforeAction: (ICountAggFunctionCauses | ISumAggFunctionCauses) | undefined,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
     if (aggFunctionCauses.resultValue !== aggFunctionCausesBeforeAction?.resultValue) {
         return { newCauses: aggFunctionCauses.causes, oldCauses: [] };
     }
@@ -60,11 +67,29 @@ const getCausesOfAggFunction = (
     return { newCauses, oldCauses };
 };
 
+const getCausesOfGetTodayFunction = (
+    getTodayFunctionCause: IGetTodayFunctionCause,
+    getTodayFunctionCauseBeforeAction: IGetTodayFunctionCause | undefined,
+) => {
+    if (isEqual(getTodayFunctionCause.resultValue, getTodayFunctionCauseBeforeAction?.resultValue)) {
+        return { newCauses: [], oldCauses: [getTodayFunctionCause] };
+    }
+
+    return { newCauses: [getTodayFunctionCause], oldCauses: [] };
+};
+
 const getCausesOfRegularFunction = (
     regularFunctionCauses: IRegularFunctionCauses,
     regularFunctionCausesBeforeAction: IRegularFunctionCauses | undefined,
     regularFunction: IRegularFunction,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
+    if (regularFunction.functionType === 'getToday') {
+        return getCausesOfGetTodayFunction(
+            regularFunctionCauses as IGetTodayFunctionCause,
+            regularFunctionCausesBeforeAction as IGetTodayFunctionCause | undefined,
+        );
+    }
+
     const argumentsNewCauses = regularFunctionCauses.arguments.map((argumentCauses, index) =>
         // eslint-disable-next-line no-use-before-define
         getNewCausesOfArgument(argumentCauses, regularFunctionCausesBeforeAction?.arguments[index], regularFunction.arguments[index]),
@@ -87,7 +112,7 @@ export const getNewCausesOfArgument = (
     argumentCauses: IArgumentCauses,
     argumentCausesBeforeAction: IArgumentCauses | undefined,
     argument: IArgument,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
     if (isConstant(argument)) {
         return { newCauses: [], oldCauses: [] };
     }
@@ -122,7 +147,7 @@ export const getCausesOfEquation = (
     equationCauses: IEquationCauses,
     equationCausesBeforeAction: IEquationCauses | undefined,
     equation: IEquation,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
     const lhsArgumentNewCauses = getNewCausesOfArgument(equationCauses.lhsArgument, equationCausesBeforeAction?.lhsArgument, equation.lhsArgument);
     const rhsArgumentNewCauses = getNewCausesOfArgument(equationCauses.rhsArgument, equationCausesBeforeAction?.rhsArgument, equation.rhsArgument);
 
@@ -145,11 +170,7 @@ export const getCausesOfEquation = (
     };
 };
 
-export const getCausesOfGroup = (
-    groupCauses: IGroupCauses,
-    groupCausesBeforeAction: IGroupCauses | undefined,
-    group: IGroup,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+export const getCausesOfGroup = (groupCauses: IGroupCauses, groupCausesBeforeAction: IGroupCauses | undefined, group: IGroup): NewAndOldCauses => {
     // already filtered in DB, but to make sure. if group is false, then all falsy subFormulas caused it. same goes to true
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
 
@@ -173,7 +194,7 @@ export const getCausesOfAggregationGroup = (
     aggGroupCauses: IAggregationGroupCauses,
     aggGroupCausesBeforeAction: IAggregationGroupCauses | undefined,
     aggGroup: IAggregationGroup,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
     // already filtered in DB, but to make sure. if agg group is false, then all falsy iterations caused it. same goes to true
     const relevantIterationsCauses = aggGroupCauses.iterations.filter(({ resultValue }) => aggGroupCauses.resultValue === resultValue);
     const iterationsNewAndOldCauses = relevantIterationsCauses.map((iteration) => {
@@ -210,7 +231,7 @@ export const getCausesOfFormula = (
     formulaCauses: IFormulaCauses,
     formulaCausesBeforeAction: IFormulaCauses | undefined,
     formula: IFormula,
-): { newCauses: ICause[]; oldCauses: ICause[] } => {
+): NewAndOldCauses => {
     if (isGroup(formula)) {
         return getCausesOfGroup(formulaCauses as IGroupCauses, formulaCausesBeforeAction as IGroupCauses | undefined, formula);
     }
@@ -230,8 +251,12 @@ export const getCausesOfFormula = (
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
 
-const buildCausesOfInstancesFromArray = (causes: ICause[]): ICausesOfInstance[] => {
-    const causesPerInstance = groupBy(causes, ({ instance: { entityId, aggregatedRelationship } }) =>
+const buildCausesOfInstancesFromArray = (causes: (ICause | IGetTodayFunctionCause)[]): (ICausesOfInstance | IGetTodayFunctionCause)[] => {
+    const { instancesCauses = [], getTodayFunctionCauses = [] } = groupBy(causes, (cause) => {
+        return 'instance' in cause ? 'instancesCauses' : 'getTodayFunctionCauses';
+    }) as { instancesCauses: ICause[]; getTodayFunctionCauses: IGetTodayFunctionCause[] };
+
+    const causesPerInstance = groupBy(instancesCauses, ({ instance: { entityId, aggregatedRelationship } }) =>
         aggregatedRelationship ? `${entityId}.${aggregatedRelationship.relationshipId}.${aggregatedRelationship.otherEntityId}` : entityId,
     );
 
@@ -243,6 +268,10 @@ const buildCausesOfInstancesFromArray = (causes: ICause[]): ICausesOfInstance[] 
         return { instance: causesArrOfInstance[0].instance, properties: propertiesUnique };
     });
 
+    if (getTodayFunctionCauses.length > 0) {
+        // all getToday causes are the same value, but different occurrences
+        return [...causesOfInstances, getTodayFunctionCauses[0]];
+    }
     return causesOfInstances;
 };
 
@@ -250,7 +279,7 @@ export const getCausesOfRuleFailure = (
     ruleFailure: IRuleFailure,
     ruleFailureBeforeAction: IRuleFailure | undefined,
     formula: IFormula,
-): ICausesOfInstance[] => {
+): (ICausesOfInstance | IGetTodayFunctionCause)[] => {
     const { newCauses } = getCausesOfFormula(ruleFailure.formulaCauses, ruleFailureBeforeAction?.formulaCauses, formula);
 
     const newCausesOfInstances = buildCausesOfInstancesFromArray(newCauses);

@@ -23,6 +23,7 @@ const config = {
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
+        runRulesWithTodayFuncQueue: env.get('RUN_RULES_WITH_TODAY_FUNC_QUEUE_NAME').default('run-rules-with-today-func-queue').asString(),
         retryOptions: {
             minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
             retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
@@ -70,6 +71,11 @@ const config = {
     userFieldsSync: {
         usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
         isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
+    },
+    rulesWithTodayFunc: {
+        runOnStart: env.get('RULES_WITH_TODAY_FUNC_RUN_ON_START').default('false').asBool(), // for development
+        cronTime: env.get('RULES_WITH_TODAY_FUNC_CRON_TIME').default('0 0 * * *').asString(),
+        runCron: env.get('RULES_WITH_TODAY_FUNC_RUN_CRON').default('true').asBool(),
     },
     kartoffel: {
         url: env.get('KARTOFFEL_BASE_URL').required().asString(),

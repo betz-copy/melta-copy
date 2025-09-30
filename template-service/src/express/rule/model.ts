@@ -32,6 +32,10 @@ const RuleTemplateSchema = new mongoose.Schema(
             required: true,
         },
         fieldColor: { type: Object },
+        doesFormulaHaveTodayFunc: {
+            type: Boolean,
+            require: true,
+        },
     },
     {
         timestamps: true,

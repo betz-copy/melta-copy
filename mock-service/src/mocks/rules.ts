@@ -9,7 +9,7 @@ const rulesCreator = (
     touristId: string,
     tripId: string,
     airportId: string,
-): IRule[] => [
+): Omit<IRule, 'doesFormulaHaveTodayFunc'>[] => [
     {
         name: 'סוכן נסיעות אחד על טיסה',
         description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',

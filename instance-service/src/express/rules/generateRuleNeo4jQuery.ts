@@ -22,6 +22,7 @@ import {
     isSumAggFunction,
     IMongoEntityTemplate,
 } from '@microservices/shared';
+import { getNeo4jDate } from '../../utils/neo4j/lib';
 import { CypherQuery } from './interfaces';
 import config from '../../config';
 
@@ -150,6 +151,17 @@ const generateNeo4jQueryFromRegularFunction = (
             resultValueVariableName,
             resultCausesVariableName,
             parameters: { ...dateArgument.parameters, ...durationArgument.parameters },
+        };
+    }
+    if (func.functionType === 'getToday') {
+        return {
+            cypherCalculation: `
+            WITH *, $getTodayFuncValue as ${resultValueVariableName}
+            WITH *, { arguments: [], resultValue: ${resultValueVariableName} } as ${resultCausesVariableName}
+            `,
+            resultValueVariableName,
+            resultCausesVariableName,
+            parameters: {},
         };
     }
 
@@ -561,6 +573,44 @@ export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: strin
         `,
         resultValueVariableName: formulaQuery.resultValueVariableName,
         resultCausesVariableName: formulaQuery.resultCausesVariableName,
-        parameters: { entityId, ...formulaQuery.parameters },
+        parameters: {
+            entityId,
+            ...formulaQuery.parameters,
+            // eslint-disable-next-line no-underscore-dangle
+            getTodayFuncValue: rule.doesFormulaHaveTodayFunc ? getNeo4jDate(new Date()) : undefined,
+        },
+    };
+};
+
+// used for cronjob rules (with getToday func) that need to check all entities of template at once
+export const generateNeo4jRuleQueryOnEntitiesOfTemplate = (
+    rule: IMongoRule,
+    entityTemplate: IMongoEntityTemplate,
+    getTodayFuncValue: Date,
+    returnOnlyFailedResults: boolean = true,
+): CypherQuery => {
+    const { entityTemplateId, formula } = rule;
+
+    const entityVariableName = `\`${entityTemplateId}\``;
+    const variablesForSubQueries = [entityVariableName];
+
+    const formulaQuery = generateNeo4jQueryFromFormula(formula, variablesForSubQueries, 'formula_', entityTemplate);
+
+    return {
+        cypherCalculation: `
+        MATCH (${entityVariableName}: \`${entityTemplateId}\`)
+        
+        ${formulaQuery.cypherCalculation}
+
+        ${returnOnlyFailedResults ? `WHERE ${formulaQuery.resultValueVariableName} = false` : ''}
+
+        return ${entityVariableName}._id as entityId, ${formulaQuery.resultValueVariableName} as value, ${formulaQuery.resultCausesVariableName} as formulaCauses
+        `,
+        resultValueVariableName: formulaQuery.resultValueVariableName,
+        resultCausesVariableName: formulaQuery.resultCausesVariableName,
+        parameters: {
+            ...formulaQuery.parameters,
+            getTodayFuncValue: getNeo4jDate(getTodayFuncValue),
+        },
     };
 };
