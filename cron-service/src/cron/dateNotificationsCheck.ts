@@ -9,7 +9,7 @@ import {
     logger,
     InstancesSubclassesPermissions,
 } from '@microservices/shared';
-import * as schedule from 'node-schedule';
+import schedule from 'node-schedule';
 import InstanceService from '../services/instance';
 import config from '../config';
 import UsersManager from '../users/manager';

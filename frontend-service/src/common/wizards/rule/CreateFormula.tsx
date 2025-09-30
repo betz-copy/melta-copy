@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import {
     Query,
@@ -14,7 +14,8 @@ import {
     TextWidgetProps,
 } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
-import { ThemeProvider } from '@mui/material';
+import { Grid, ThemeProvider } from '@mui/material';
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import { StepComponentProps, StepType } from '../index';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -28,6 +29,10 @@ import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
 import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
 import { lightTheme } from '../../../theme';
 import { useUserStore } from '../../../stores/user';
+import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
+import { environment } from '../../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 const { MuiTextWidget } = MuiWidgets;
 
@@ -35,12 +40,20 @@ export const formulaValidation: StepType<RuleWizardValues>[][number]['validate']
     try {
         RuleParser.jsonTreeToFormula(Utils.getTree(values.formula) as JsonItem);
     } catch (err) {
-        return {
-            formula:
-                (err as Error).message === 'count aggregation doesn`t support subFormulas'
-                    ? i18next.t('wizard.rule.countAggregationCantHaveSubFormulas')
-                    : i18next.t('wizard.rule.invalidFormula'),
-        };
+        let formulaErr: string;
+        switch ((err as Error).message) {
+            case 'count aggregation doesn`t support subFormulas':
+                formulaErr = i18next.t('wizard.rule.countAggregationCantHaveSubFormulas');
+                break;
+            case `${formulaGetTodayVarName} is not allowed inside aggregation group (for performance)`:
+                formulaErr = i18next.t('wizard.rule.aggregationsCantHaveGetTodayFunc');
+                break;
+
+            default:
+                formulaErr = i18next.t('wizard.rule.invalidFormula');
+                break;
+        }
+        return { formula: formulaErr };
     }
 
     return {};
@@ -75,10 +88,10 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const { entityTemplateId, formula } = values;
+    const { entityTemplateId, formula, actionOnFail } = values;
 
     const config = useMemo((): Config => {
-        const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula, currentUser);
+        const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula, actionOnFail, currentUser);
 
         return {
             ...MuiConfig,
@@ -149,13 +162,18 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 addToDateTime: getAddOrSubDateTimeFunc(true),
                 subFromDate: getAddOrSubDateFunc(false),
                 subFromDateTime: getAddOrSubDateTimeFunc(false),
+                // getToday -- TODO: currently getToday function is as variable in fieldsConfig (because raqb doesnt support lhs functions see raqb issue #287. need to upgrade version)
             },
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entityTemplateId, entityTemplates, relationshipTemplates, formula]);
 
+    const [formulaHasGetTodayFunc, setFormulaHasGetTodayFunc] = useState(jsonTreeHasTodayVar(Utils.getTree(values.formula) as JsonItem));
+
     const onChange = useCallback((immutableTree: ImmutableTree) => {
         setFieldValue('formula', immutableTree);
+
+        setFormulaHasGetTodayFunc(jsonTreeHasTodayVar(Utils.getTree(immutableTree) as JsonItem));
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderBuilder = useCallback((props: BuilderProps) => {
@@ -171,12 +189,23 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
     }, []);
 
     return (
-        <>
+        <Grid container size={{ xs: 12 }} direction="column">
             <ThemeProvider theme={(outerTheme) => ({ ...outerTheme, direction: 'ltr' })}>
                 <Query {...config} value={values.formula} onChange={onChange} renderBuilder={renderBuilder} />
             </ThemeProvider>
-            {errors.formula && <div style={{ color: '#d32f2f', fontSize: 'larger' }}>{String(errors.formula)}</div>}
-        </>
+            {errors.formula && (
+                <Grid container sx={{ color: '#d32f2f' }}>
+                    <PriorityHighIcon />
+                    <div style={{ fontSize: 'larger' }}>{String(errors.formula)}</div>
+                </Grid>
+            )}
+            {formulaHasGetTodayFunc && (
+                <Grid container wrap="nowrap" sx={{ color: '#FFAC2F' }}>
+                    <PriorityHighIcon />
+                    <div style={{ fontSize: 'larger', whiteSpace: 'pre-wrap' }}>{i18next.t('wizard.rule.todayVariableInfo')}</div>
+                </Grid>
+            )}
+        </Grid>
     );
 };
 

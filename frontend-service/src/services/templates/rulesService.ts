@@ -50,4 +50,3 @@ const deleteRuleRequest = async (ruleId: string) => {
 };
 
 export { createRuleRequest, deleteRuleRequest, ruleObjectToRuleForm, searchRulesRequest, updateDisabledRuleRequest, updateRuleRequest };
-

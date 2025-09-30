@@ -451,3 +451,9 @@ export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
         templateId: Joi.string().required(),
     },
 });
+
+export const runRulesWithTodayFuncRequestSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
+});

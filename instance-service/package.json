@@ -39,6 +39,7 @@
         "lodash.sortby": "^4.7.0",
         "menashmq": "^0.1.6",
         "neo4j-driver": "^5.23.0",
+        "p-limit": "^3.1.0",
         "ts-retry-promise": "^0.8.1",
         "typescript-actions": "npm:typescript@^5.5.4"
     },
