@@ -13,14 +13,16 @@ const functionHasTodayVar = ({ args }: FunctionObject): boolean => {
     });
 };
 
-const equationHasTodayVar = (properties: RuleProperties): boolean => {
-    if (properties.field === formulaGetTodayVarName) return true;
+const equationHasTodayVar = ({ field, valueSrc, value }: RuleProperties): boolean => {
+    if (field === formulaGetTodayVarName) return true;
 
-    const [rhsArgumentValueSrc] = properties.valueSrc!;
+    if (!valueSrc || !value[0]) return false;
 
-    if (rhsArgumentValueSrc === 'field' && properties.value[0] === formulaGetTodayVarName) return true;
+    const [rhsArgumentValueSrc] = valueSrc;
 
-    if (rhsArgumentValueSrc === 'func') return functionHasTodayVar(properties.value[0]);
+    if (rhsArgumentValueSrc === 'field' && value[0] === formulaGetTodayVarName) return true;
+
+    if (rhsArgumentValueSrc === 'func') return functionHasTodayVar(value[0]);
 
     return false;
 };
