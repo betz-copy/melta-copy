@@ -15,31 +15,32 @@ const getColoredFields = (indicatorRules: IMongoRule[]) => {
     }, {});
 };
 
-const getIndicatorRulesByEntityId = (rules: Map<string, IMongoRule>, brokenRules: IBrokenRule[]) => {
-    return brokenRules.reduce<Record<string, IMongoRule[]>>((indicatorRulesByEntityId, brokenRule) => {
+const getColorRulesByEntityId = (rules: Map<string, IMongoRule>, brokenRules: IBrokenRule[]) => {
+    return brokenRules.reduce<Record<string, IMongoRule[]>>((colorRulesByEntityId, brokenRule) => {
         const rule = rules.get(brokenRule.ruleId)!;
-        if (rule.actionOnFail !== ActionOnFail.INDICATOR) return indicatorRulesByEntityId;
+        if (rule.actionOnFail !== ActionOnFail.INDICATOR || !rule.fieldColor) return colorRulesByEntityId;
 
         brokenRule.failures.forEach((ruleFailure) => {
-            if (!indicatorRulesByEntityId[ruleFailure.entityId]) {
+            if (!colorRulesByEntityId[ruleFailure.entityId]) {
                 // eslint-disable-next-line no-param-reassign
-                indicatorRulesByEntityId[ruleFailure.entityId] = [rule];
+                colorRulesByEntityId[ruleFailure.entityId] = [rule];
+                return;
             }
 
-            indicatorRulesByEntityId[ruleFailure.entityId].push(rule);
+            colorRulesByEntityId[ruleFailure.entityId].push(rule);
         });
 
-        return indicatorRulesByEntityId;
+        return colorRulesByEntityId;
     }, {});
 };
 
 export const updateColorsForIndicatorRulesWithTodayFunc = (neo4jClient: Neo4jClient, rules: Map<string, IMongoRule>, brokenRules: IBrokenRule[]) => {
     const parallelLimit = pLimit(updateColorsForRulesWithTodayFuncParallelLimit);
 
-    const indicatorRulesByEntityId = getIndicatorRulesByEntityId(rules, brokenRules);
+    const indicatorColorRulesByEntityId = getColorRulesByEntityId(rules, brokenRules);
 
     return neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-        const updateEntitiesPromises = Object.entries(indicatorRulesByEntityId).map(async ([entityId, indicatorRules]) => {
+        const updateEntitiesPromises = Object.entries(indicatorColorRulesByEntityId).map(async ([entityId, indicatorRules]) => {
             const updatedColoredFields = getColoredFields(indicatorRules);
 
             await parallelLimit(() =>
