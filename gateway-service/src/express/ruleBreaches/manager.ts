@@ -1003,38 +1003,34 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         actions: IAction[],
         populatedBrokenRules: IBrokenRulePopulated[],
     ): Promise<{ actionType: ActionTypes; actionMetadata: IActionMetadataPopulated }[]> => {
-        const populatedActionsMetadataPromises: Promise<IActionMetadataPopulated>[] = [];
+        const populatedActionsMetadataPromises: Promise<IActionMetadataPopulated>[] = actions.map((action) => {
+            switch (action.actionType) {
+                case ActionTypes.CreateRelationship: {
+                    return this.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata);
+                }
+                case ActionTypes.DeleteRelationship: {
+                    return this.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata);
+                }
+                case ActionTypes.UpdateEntity: {
+                    return this.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata, actions);
+                }
+                case ActionTypes.UpdateStatus: {
+                    return this.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata);
+                }
+                case ActionTypes.CreateEntity: {
+                    return this.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata);
+                }
+                case ActionTypes.DuplicateEntity: {
+                    return this.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata);
+                }
+                case ActionTypes.CronjobRun: {
+                    return this.populateCronjobRunActionMetadata(action.actionMetadata as ICronjobRunMetadata, populatedBrokenRules);
+                }
 
-        if (actions) {
-            actions.forEach((action) => {
-                if (action.actionType === ActionTypes.CreateRelationship)
-                    populatedActionsMetadataPromises.push(
-                        this.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata),
-                    );
-                else if (action.actionType === ActionTypes.DeleteRelationship)
-                    populatedActionsMetadataPromises.push(
-                        this.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata),
-                    );
-                else if (action.actionType === ActionTypes.UpdateEntity) {
-                    populatedActionsMetadataPromises.push(
-                        this.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata, actions),
-                    );
-                } else if (action.actionType === ActionTypes.UpdateStatus)
-                    populatedActionsMetadataPromises.push(
-                        this.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata),
-                    );
-                else if (action.actionType === ActionTypes.CreateEntity)
-                    populatedActionsMetadataPromises.push(this.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata));
-                else if (action.actionType === ActionTypes.DuplicateEntity)
-                    populatedActionsMetadataPromises.push(
-                        this.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata),
-                    );
-                else if (action.actionType === ActionTypes.CronjobRun)
-                    populatedActionsMetadataPromises.push(
-                        this.populateCronjobRunActionMetadata(action.actionMetadata as ICronjobRunMetadata, populatedBrokenRules),
-                    );
-            });
-        }
+                default:
+                    throw new Error(`shouldnt reach here. populateActionsMetadata unknown actionType ${action.actionType}`);
+            }
+        });
 
         const actionsMetadata = await Promise.all(populatedActionsMetadataPromises!);
 
