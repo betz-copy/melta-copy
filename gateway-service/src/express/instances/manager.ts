@@ -65,7 +65,6 @@ import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
-import WorkspaceManager from '../workspaces/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 
@@ -551,14 +550,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async sendIndicatorRuleEmailForEntity(entity: IEntity, entityTemplate: IMongoEntityTemplatePopulated, userId: string, emails: IRuleMail[]) {
         const relatedTemplateIds = getRelatedTemplateIds(entityTemplate);
         const relatedTemplates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: relatedTemplateIds });
-        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
         this.ruleBreachesManager.sendIndicatorEmailNotifications(
             emails,
             entity,
             userId,
             entityTemplate,
             new Map(relatedTemplates.map((relatedTemplate) => [relatedTemplate._id, relatedTemplate])),
-            baseUrl,
         );
     }
 
@@ -1147,7 +1144,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 : await this.entityTemplateService.searchEntityTemplates(userId, { ids: Array.from(relatedTemplateIds) });
         const relatedTemplatesByIds = new Map(relatedTemplates.map((relatedTemplate) => [relatedTemplate._id, relatedTemplate]));
 
-        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
         Object.values(emailsByInstance).forEach((emails) => {
             const entity = emails[0]?.entity;
             if (entity)
@@ -1157,7 +1153,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     userId,
                     templatesByIds.get(entity.templateId)!,
                     relatedTemplatesByIds,
-                    baseUrl,
                 );
         });
     }

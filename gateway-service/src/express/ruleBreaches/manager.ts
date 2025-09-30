@@ -14,6 +14,8 @@ import {
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadata,
     ICreateRelationshipMetadataPopulated,
+    ICronjobRunMetadata,
+    ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadata,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadata,
@@ -43,6 +45,7 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadata,
     IUpdateEntityStatusMetadataPopulated,
+    IUser,
     InstancesSubclassesPermissions,
     NotificationType,
     PermissionScope,
@@ -50,9 +53,6 @@ import {
     RuleBreachRequestStatus,
     UploadedFile,
     basicFilterOperationTypes,
-    IUser,
-    ICronjobRunMetadata,
-    ICronjobRunMetadataPopulated,
 } from '@microservices/shared';
 import pickBy from 'lodash.pickby';
 import config from '../../config';
@@ -368,11 +368,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         userId: string,
         entityTemplate: IMongoEntityTemplatePopulated,
         relatedTemplates: Map<string, IMongoEntityTemplatePopulated>,
-        baseUrl: string,
     ) {
         let permissionUsers: string[] = [];
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
         if (emails.some((email) => email.sendPermissionUsers)) permissionUsers = await this.getPermissionUsers(entity);
-        const injectedEmails: IRuleMail[] = injectValuesToEmails(emails, entity, entityTemplate, relatedTemplates, baseUrl);
+        const injectedEmails: IRuleMail[] = injectValuesToEmails(emails, entity, entityTemplate, relatedTemplates, baseUrl, this.workspaceId);
 
         await Promise.all(
             injectedEmails.map(async (email) => {

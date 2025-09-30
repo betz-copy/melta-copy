@@ -23,7 +23,8 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
         // set checkboxes to default on change
         if (mail && !hasUserFields) setFieldValue('mail.sendPermissionUsers', true);
         if (mail && hasUserFields) setFieldValue('mail.sendPermissionUsers', false);
-    }, [mail, hasUserFields]);
+    }, [mail?.display, hasUserFields]);
+
     const mailCheckError = !!touched && (!!getIn(errors, 'sendAssociatedUsers') || !!getIn(errors, 'sendPermissionUsers'));
 
     return (
@@ -82,7 +83,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                             }
                             disabled={!hasUserFields}
                             label={i18next.t('wizard.rule.sendToUsersWithPerms')}
-                            sx={{ marginLeft: 0, color: mailCheckError ? errorColor : 'auto', fontSize: '14px' }}
+                            sx={{ marginLeft: 0, fontSize: '14px' }}
                         />
                         {hasUserFields && (
                             <FormControlLabel
@@ -93,7 +94,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                                     />
                                 }
                                 label={`${i18next.t('wizard.rule.sendToAssociatedUsers')} ${i18next.t('wizard.rule.sendToAssociatedUsersHelper')}`}
-                                sx={{ marginLeft: 0, color: mailCheckError ? errorColor : 'auto', fontSize: '14px' }}
+                                sx={{ marginLeft: 0, fontSize: '14px' }}
                             />
                         )}
                     </Grid>
