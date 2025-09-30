@@ -35,6 +35,7 @@ const config = {
                 { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitle' },
                 { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchy' },
                 { originalFieldName: 'mail', suffixFieldName: '.mail' },
+                { originalFieldName: 'userType', suffixFieldName: '.userType' },
             ])
             .required()
             .asJsonArray() as Array<{ originalFieldName: string; suffixFieldName: string }>,

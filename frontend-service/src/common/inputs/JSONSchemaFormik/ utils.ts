@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import { FormikHelpers } from 'formik';
 import { IKartoffelUser } from '../../../interfaces/users';
 import { flatten } from 'flat';
+import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {
@@ -17,6 +18,7 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
                       jobTitle: user?.jobTitle,
                       hierarchy: user?.hierarchy,
                       mail: user?.mail,
+                      userType: user?.entityType,
                   })
                 : undefined;
         }
@@ -63,13 +65,21 @@ const getFieldUiSchema = (
             'ui:widget': 'SignatureWidget',
             'ui:classNames': 'fullWidth',
         };
-    if (propertySchema.readOnly)
+    if (propertySchema.readOnly) {
+        const isGoalUser =
+            propertySchema.format === 'kartoffelUserField' &&
+            !!values.properties[propertySchema?.expandedUserField?.relatedUserField!] &&
+            JSON.parse(values.properties[propertySchema?.expandedUserField?.relatedUserField!])?.userType === 'GoalUser' &&
+            kartoffelPersonalDataFields.includes((propertySchema.expandedUserField?.kartoffelField ?? '').trim());
+
         return {
             'ui:options': {
-                disabled: true,
+                disabled: !isGoalUser,
+                readonly: !isGoalUser,
                 defaultValue,
             },
         };
+    }
     if (propertySchema.serialCurrent !== undefined)
         return {
             'ui:options': {
