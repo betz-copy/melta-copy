@@ -220,6 +220,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 defaultColumnWidths[property],
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
+                propertyTemplate.relationshipReference!.filters,
                 isLastColumn,
                 entityTemplates,
                 hideColumn,

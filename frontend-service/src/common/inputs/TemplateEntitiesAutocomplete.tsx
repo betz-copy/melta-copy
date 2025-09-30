@@ -3,10 +3,10 @@ import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextFie
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useInfiniteQuery } from 'react-query';
+import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IEntity, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
@@ -17,6 +17,10 @@ import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView';
+import { useUserStore } from '../../stores/user';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -36,6 +40,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     style?: React.CSSProperties;
     relationFilters?: string;
     required?: boolean;
+    isChildTemplate?: boolean;
 }> = ({
     template,
     showField,
@@ -53,6 +58,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     style,
     relationFilters,
     required,
+    isChildTemplate,
 }) => {
     const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -60,29 +66,63 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
+    const queryClient = useQueryClient();
+
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === template._id);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
 
-    const parseAndAddDisabled = (filters: string) => {
-        const jsonFilters = JSON.parse(filters);
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
-        const disabledCondition = { disabled: { $eq: false } };
+    const currentUserKartoffelId = currentUser?.kartoffelId;
 
-        if (jsonFilters.$and && Array.isArray(jsonFilters.$and)) {
-            return {
-                $and: [...jsonFilters.$and, disabledCondition],
-            };
+    const getChildTemplatesFilter = (): ISearchFilter | undefined => {
+        const childTemplatesFilters = childTemplatesOfRelatedTemplate
+            .map((childTemplate) =>
+                getDefaultFilterFromTemplate(
+                    childTemplate,
+                    true,
+                    currentUserKartoffelId,
+                    currentUser?.units?.[workspace._id] ?? [],
+                    isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+                ),
+            )
+            .filter((f): f is ISearchFilter => !!f);
+
+        return childTemplatesFilters.length > 0 && isChildTemplate ? { $or: childTemplatesFilters } : undefined;
+    };
+
+    const parseAndAddDisabled = (filters: string | undefined): ISearchFilter => {
+
+        const disabledCondition: ISearchFilter = { $and: { disabled: { $eq: false } } };
+        const childTemplatesFilter = getChildTemplatesFilter();
+        const filtersArray: ISearchFilter[] = [];
+
+        if (filters) {
+            const jsonFilters = JSON.parse(filters);
+
+            if (jsonFilters.$and && Array.isArray(jsonFilters.$and)) filtersArray.push(...jsonFilters.$and);
+            else filtersArray.push(jsonFilters);
         }
 
-        return {
-            $and: [jsonFilters, disabledCondition],
-        };
+        if (childTemplatesFilter) filtersArray.push(childTemplatesFilter);
+
+        filtersArray.push(disabledCondition);
+        console.log({ filtersArray });
+
+        return { $and: filtersArray };
     };
 
     const searchFunction = (templateId: string, clientSideUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
         clientSideUserEntity?.properties?._id
             ? searchEntitiesOfTemplateClientSideRequest(templateId, clientSideUserEntityId, searchBody)
-            : searchEntitiesOfTemplateRequest(templateId, searchBody);
+            : searchEntitiesOfTemplateRequest(
+                  templateId,
+                  searchBody,
+                  childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
+              );
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
@@ -90,7 +130,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             return searchFunction(template._id!, clientSideUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
-                filter: relationFilters ? parseAndAddDisabled(relationFilters) : { $and: { disabled: { $eq: false } } },
+                filter: parseAndAddDisabled(relationFilters),
                 textSearch: inputValue,
             });
         },

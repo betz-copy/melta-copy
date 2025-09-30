@@ -507,7 +507,7 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
     return data;
 };
 
-export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string) => {
+export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string[]) => {
     const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, { ...searchBody, childTemplateId });
     return data;
 };

@@ -15,6 +15,7 @@ import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
+import { matchValueAgainstFilter } from '../../utils/filters';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
@@ -49,6 +50,36 @@ export const getDefaultFilterFromTemplate = (
     }
 
     return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
+};
+
+export const isEntityFitsToChildTemplate = (
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    isChildTemplate: boolean,
+    entity: IEntity | string,
+    currentUserKartoffelId?: string,
+    currentUserUnit?: string[],
+    isUserAdmin?: boolean,
+): boolean | undefined => {
+    if (!isChildTemplate || typeof entity === 'string') return true;
+
+    let fits = true;
+    for (const [key, prop] of Object.entries(template.properties.properties)) {
+        const value = entity.properties[key];
+
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId && value !== currentUserKartoffelId) fits = false;
+
+        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin && !currentUserUnit.includes(value)) fits = false;
+
+        if (prop.filters) {
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+
+            if (parsed && !matchValueAgainstFilter({ [key]: value }, parsed)) {
+                fits = false;
+            }
+        }
+    }
+
+    return fits;
 };
 
 const TemplateTablesViewResults = forwardRef<

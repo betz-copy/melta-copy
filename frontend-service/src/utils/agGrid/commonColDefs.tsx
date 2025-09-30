@@ -14,7 +14,7 @@ import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
+import { EntityData, IEntity, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
@@ -306,6 +306,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     relatedTemplateId: string,
     relatedTemplateField: string,
+    filters: string | ISearchFilter | undefined,
     isLastColumn: boolean,
     entityTemplates: IEntityTemplateMap,
     hideColumn = false,
@@ -336,6 +337,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
         cellEditorParams: {
             relatedTemplateId,
             template: value,
+            filters,
         },
     };
 };
