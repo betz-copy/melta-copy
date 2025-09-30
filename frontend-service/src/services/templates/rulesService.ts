@@ -34,7 +34,7 @@ const updateDisabledRuleRequest = async (ruleId: string, disabled: boolean) => {
 const createRuleRequest = async (newRule: RuleWizardValues) => {
     const { data } = await axios.post<IMongoRule>(rules, {
         ...newRule,
-        formula: RuleParser.jsonTreeToFormula(QbUtils.getTree(newRule.formula) as JsonItem, []),
+        formula: RuleParser.jsonTreeToFormula(QbUtils.getTree(newRule.formula) as JsonItem),
     });
     return data;
 };
