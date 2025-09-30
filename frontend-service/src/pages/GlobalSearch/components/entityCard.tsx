@@ -522,7 +522,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         ))}
                 </Grid>
             </Grid>
-            <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog
+                open={editDialog.isOpen}
+                maxWidth={
+                    entityTemplate?.documentTemplatesIds?.length ? 'lg' : Object.keys(entityTemplate.properties.properties).length === 1 ? 'sm' : 'md'
+                }
+                fullWidth
+            >
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         actionType: ActionTypes.UpdateEntity,

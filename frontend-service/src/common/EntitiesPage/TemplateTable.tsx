@@ -456,7 +456,7 @@ const TemplateTable = forwardRef<
                     setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog open={editDialog.isOpen} maxWidth={Object.keys(template.properties.properties).length === 1 ? 'sm' : 'md'} fullWidth>
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         ...(editDialog.isEditMode

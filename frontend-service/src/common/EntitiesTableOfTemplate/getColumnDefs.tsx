@@ -225,6 +225,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 hideColumn,
                 searchValue,
                 editable,
+                propertyTemplate.relationshipReference!.filters,
             );
         if (propertyTemplate.enum)
             return enumColDef(

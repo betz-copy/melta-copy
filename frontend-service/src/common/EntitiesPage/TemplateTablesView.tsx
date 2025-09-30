@@ -15,6 +15,7 @@ import TemplateTable, { TemplateTableRef } from './TemplateTable';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
+import { matchValueAgainstFilter } from '../../utils/filters';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
