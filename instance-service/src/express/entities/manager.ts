@@ -30,6 +30,7 @@ import {
     IRelationship,
     IRelationshipReference,
     IRequiredConstraint,
+    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
@@ -727,9 +728,9 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const createdEntity = await this.getEntityById(results[0].properties._id);
-            const fixedActions = this.fixActions(actions, results);
+            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
-            return { createdEntity, actions: fixedActions };
+            return { createdEntity, actions: fixedActions, emails: results.emails };
         }
 
         return this.neo4jClient
@@ -747,6 +748,12 @@ class EntityManager extends DefaultManagerNeo4j {
                     ruleFailuresAfterAction,
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
+
+                const emails: IRuleMail[] = indicatorRules.flatMap((rule) => {
+                    if (!rule.rule.mail?.display) return [];
+
+                    return rule.rule.mail;
+                });
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     createdEntity.properties._id,
@@ -771,7 +778,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { createdEntity: entityWithUpdatedColors };
+                return { createdEntity: entityWithUpdatedColors, emails };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
@@ -1746,9 +1753,9 @@ class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const updatedEntity = await this.getEntityById(results[0].properties._id);
-            const fixedActions = this.fixActions(actions, results);
+            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
-            return { updatedEntity, actions: fixedActions };
+            return { updatedEntity, actions: fixedActions, emails: results.emails };
         }
 
         return this.neo4jClient
@@ -1772,6 +1779,12 @@ class EntityManager extends DefaultManagerNeo4j {
                     ruleFailuresAfterAction,
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
+
+                const emails: IRuleMail[] = indicatorRules.flatMap((rule) => {
+                    if (!rule.rule.mail?.display) return [];
+
+                    return rule.rule.mail;
+                });
 
                 const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
                     id,
@@ -1801,7 +1814,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { updatedEntity: entityWithUpdatedColors };
+                return { updatedEntity: entityWithUpdatedColors, emails };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }

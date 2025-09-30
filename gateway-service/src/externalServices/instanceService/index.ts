@@ -7,6 +7,7 @@ import {
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
+    IBulkOfActions,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
@@ -19,6 +20,7 @@ import {
     IMultipleSelect,
     IEntityWithDirectRelationships,
     IEntityExpanded,
+    IRuleMail,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -69,7 +71,7 @@ class InstancesService extends DefaultExternalServiceApi {
     }
 
     async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
-        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
+        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
@@ -88,7 +90,7 @@ class InstancesService extends DefaultExternalServiceApi {
         childTemplateId?: string,
         convertToRelationshipField = false,
     ) {
-        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
+        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
@@ -266,8 +268,8 @@ class InstancesService extends DefaultExternalServiceApi {
         dryRun: boolean,
         userId: string,
         ignoredRules: IBrokenRule[] = [],
-    ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
-        const { data } = await this.api.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
+    ): Promise<PromiseSettledResult<IBulkOfActions>[]> {
+        const { data } = await this.api.post<PromiseSettledResult<IBulkOfActions>[]>(
             `${baseBulkActionsRoute}/bulk`,
             { actionsGroups, ignoredRules, userId },
             { params: { dryRun } },

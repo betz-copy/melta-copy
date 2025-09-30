@@ -18,7 +18,8 @@
     "author": "Who",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0"
+        "@microservices/shared": "^1.0.0",
+        "lodash.mapvalues": "^4.6.0"
     },
     "devDependencies": {
         "@types/supertest": "^6.0.2"

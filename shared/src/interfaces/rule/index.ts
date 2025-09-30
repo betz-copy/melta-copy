@@ -1,3 +1,4 @@
+import { IEntity } from '../entity';
 import { IEntityTemplatePopulated } from '../entityTemplate';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate';
 import { IFormula } from './formula';
@@ -8,6 +9,18 @@ export enum ActionOnFail {
     INDICATOR = 'INDICATOR',
 }
 
+export interface IRuleMail {
+    display: boolean;
+    title: string;
+    body: string;
+    sendPermissionUsers: boolean;
+    sendAssociatedUsers: boolean;
+}
+
+export interface IBulkRuleMail extends IRuleMail {
+    entity: IEntity;
+}
+
 export interface IRule {
     name: string;
     description: string;
@@ -16,9 +29,9 @@ export interface IRule {
     formula: IFormula;
     disabled: boolean;
     fieldColor?: { display: boolean; field: string; color: string };
+    mail?: IRuleMail;
     doesFormulaHaveTodayFunc: boolean;
 }
-
 export interface IMongoRule extends IRule {
     _id: string;
 }

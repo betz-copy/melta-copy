@@ -7,6 +7,7 @@ import {
     IAction,
     IActivityLog,
     IBrokenRule,
+    IBulkRuleMail,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
@@ -15,6 +16,7 @@ import {
     IMongoRelationshipTemplate,
     IRelationship,
     IRequiredConstraint,
+    IRuleMail,
     IUpdateEntityMetadata,
 } from '@microservices/shared';
 import groupBy from 'lodash.groupby';
@@ -476,6 +478,20 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         );
     }
 
+    createEmailsForBulk(instances: (IEntity | IRelationship)[], indicatorRules: IRuleFailure[]) {
+        const emails: IBulkRuleMail[] = instances.flatMap((instance) => {
+            if ('sourceEntityId' in instance || 'sourceEntity' in instance) return [];
+
+            return indicatorRules.flatMap(({ rule }) => {
+                if (!rule.mail?.display) return [];
+
+                return { ...rule.mail, entity: instance };
+            });
+        });
+
+        return emails;
+    }
+
     async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId?: string) {
         return this.neo4jClient
             .performComplexTransaction(
@@ -537,6 +553,8 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                     );
 
+                    const emails: IRuleMail[] = this.createEmailsForBulk(results, indicatorRules);
+
                     const entitiesWithUpdatedColors = await this.runUpdateColoredFieldsBulkInTransaction(
                         transaction,
                         results,
@@ -565,7 +583,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         await Promise.all(activityLogsPromises);
                     }
 
-                    return entitiesWithUpdatedColors;
+                    return { entitiesWithUpdatedColors, emails };
                 },
                 dryRun,
             )

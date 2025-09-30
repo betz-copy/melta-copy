@@ -8,6 +8,7 @@ export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
+    ruleIndicatorAlert = 'ruleIndicatorAlert',
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
