@@ -25,7 +25,7 @@ const runRulesWithTodayFunc = async () => {
 };
 
 const runRulesWithTodayFuncCronjob = async () => {
-    if (runOnStart) await runRulesWithTodayFunc();
+    if (runOnStart) runRulesWithTodayFunc();
     schedule.scheduleJob(cronTime, runRulesWithTodayFunc);
 };
 
