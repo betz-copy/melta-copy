@@ -1063,13 +1063,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules, actions } = error.response.data.metadata;
 
+            const populatedBrokenRules = await this.ruleBreachesManager.populateBrokenRules(brokenRules);
             throw new BadRequestError(error.message, {
                 errorCode: errorCodes.ruleBlock,
-                brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
+                brokenRules: populatedBrokenRules,
                 rawBrokenRules: brokenRules,
                 // in case that entityTemplate has actions
                 ...(actions && {
-                    actions: await this.ruleBreachesManager.populateActionsMetaData(actions),
+                    actions: await this.ruleBreachesManager.populateActionsMetaData(actions, populatedBrokenRules),
                     rawActions: actions,
                 }),
             });

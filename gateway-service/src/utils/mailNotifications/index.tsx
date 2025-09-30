@@ -276,6 +276,18 @@ class MailManager {
         );
     }
 
+    private async getCronjobRunActionInfo(ruleBreach: IRuleBreachAlertPopulated) {
+        const entity = ruleBreach.brokenRules[0].failures[0].entity as IEntity;
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+        const baseUrl = await this.meltaBaseUrlByWorkspace();
+
+        return (
+            <p>
+                {hebrew.cronjobActionInfo.theEntity} <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
+            </p>
+        );
+    }
+
     private async getActionsInfoMessages(ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) {
         return Promise.all(
             ruleBreach.actions.map((action) => {
@@ -296,6 +308,9 @@ class MailManager {
                         return this.getUpdateEntityActionInfo(action.actionMetadata as IUpdateEntityMetadataPopulated);
                     case ActionTypes.UpdateStatus:
                         return this.getUpdateEntityStatusActionInfo(action.actionMetadata as IUpdateEntityStatusMetadataPopulated);
+                    case ActionTypes.CronjobRun:
+                        // if actionType is CronjobRun, then must be alert (not request)
+                        return this.getCronjobRunActionInfo(ruleBreach as IRuleBreachAlertPopulated);
                     default:
                         return null;
                 }
@@ -303,17 +318,16 @@ class MailManager {
         );
     }
 
-    private async ruleBreachBodyMassage(
-        ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | IRuleBreachRequestPopulated,
-        ruleBrokenData: IRule[],
-    ) {
+    private async ruleBreachBodyMassage(ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, ruleBrokenData: IRule[]) {
         return (
             <>
                 {await this.getActionsInfoMessages(ruleBreach)}
-                <p>
-                    {hebrew.ruleBreach.by}
-                    <strong>{ruleBreach.originUser.fullName}</strong>
-                </p>
+                {ruleBreach.originUser && (
+                    <p>
+                        {hebrew.ruleBreach.by}
+                        <strong>{ruleBreach.originUser.fullName}</strong>
+                    </p>
+                )}
                 <p>
                     <u>{hebrew.brokenRules.breakingRules}</u>
                 </p>

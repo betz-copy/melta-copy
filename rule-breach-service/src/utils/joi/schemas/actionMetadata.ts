@@ -34,4 +34,14 @@ export const updateEntityStatusMetadataSchema = joi.object({
     entityId: joi.string().required(),
     disabled: joi.boolean().required(),
 });
-export const actionMetadataSchema = joi.alternatives(createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema);
+
+export const cronjobMetadataSchema = joi.object({
+    entityId: joi.string().required(),
+});
+
+export const actionMetadataSchema = joi.alternatives(
+    createRelationshipMetadataSchema,
+    deleteRelationshipMetadataSchema,
+    updateEntityMetadataSchema,
+    cronjobMetadataSchema,
+);

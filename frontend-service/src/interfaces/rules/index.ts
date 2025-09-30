@@ -15,6 +15,7 @@ export interface IRule {
     disabled: boolean;
     fieldColor?: { display: boolean; field: string; color: string };
     mail?: { display: boolean; title: string; body: string; sendPermissionUsers: boolean; sendAssociatedUsers: boolean };
+    doesFormulaHaveTodayFunc: boolean;
 }
 
 export interface IMongoRule extends IRule {

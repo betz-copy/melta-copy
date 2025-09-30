@@ -30,6 +30,7 @@ export interface IRule {
     disabled: boolean;
     fieldColor?: { display: boolean; field: string; color: string };
     mail?: IRuleMail;
+    doesFormulaHaveTodayFunc: boolean;
 }
 export interface IMongoRule extends IRule {
     _id: string;
@@ -39,6 +40,7 @@ export type IRuleMap = Map<string, IMongoRule>;
 export interface ISearchRulesBody {
     search?: string;
     entityTemplateIds?: string[];
+    doesFormulaHaveTodayFunc?: boolean;
     disabled?: boolean;
     limit?: number;
     skip?: number;

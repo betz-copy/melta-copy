@@ -1,3 +1,4 @@
+import { Date as Neo4jDate } from 'neo4j-driver';
 import { IArgumentCauses } from './argument';
 import { ICause } from './cause';
 
@@ -5,6 +6,12 @@ export interface IRegularFunctionCauses {
     arguments: IArgumentCauses[];
     resultValue: any;
 }
+
+export interface IGetTodayFunctionCause extends IRegularFunctionCauses {
+    arguments: [];
+    resultValue: Neo4jDate<number>;
+}
+
 export interface ICountAggFunctionCauses {
     causes: ICause[];
     resultValue: number;
