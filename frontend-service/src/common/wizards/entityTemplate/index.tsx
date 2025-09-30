@@ -278,6 +278,7 @@ const EntityTemplateWizard: React.FC<
                     showAccountDisplay={{ value: showAccountDisplay, set: setShowAccountDisplay }}
                 />
             ),
+            alignItems: 'start',
             validationSchema: createTemplateSettingsSchema,
         },
         {
@@ -337,7 +338,6 @@ const EntityTemplateWizard: React.FC<
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
-            alignItems="start"
         />
     );
 };

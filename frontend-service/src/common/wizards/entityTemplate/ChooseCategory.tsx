@@ -42,7 +42,6 @@ const ChooseCategory = (props) => {
                     label={i18next.t('category')}
                 />
             )}
-            disabled={isEditMode ?? false}
         />
     );
 };

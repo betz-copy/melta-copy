@@ -35,6 +35,7 @@ export type StepType<T extends object> = {
         next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void; disabled?: boolean };
     };
     invisibleBeforeStep?: boolean;
+    alignItems?: 'start';
 };
 
 const Wizard = <T extends object>({
@@ -50,7 +51,6 @@ const Wizard = <T extends object>({
     direction = 'row',
     showPrevSteps = false,
     checkForChanges = true,
-    alignItems,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -61,7 +61,6 @@ const Wizard = <T extends object>({
         direction?: 'row' | 'column';
         showPrevSteps?: boolean;
         checkForChanges?: boolean;
-        alignItems?: 'start';
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
@@ -136,7 +135,6 @@ const Wizard = <T extends object>({
                                 isEditMode={!!isEditMode}
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
-                                alignItems={alignItems ?? 'center'}
                             />
                             {steps[activeStep].stepperActions?.hide !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>

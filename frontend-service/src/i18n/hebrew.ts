@@ -250,6 +250,16 @@ export default {
             title: 'כותרת הדפסה',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
+        walletTransfer: {
+            editDisabled: 'לא ניתן לערוך תבנית העברה',
+            deleteDisabled: 'לא ניתן למחוק תבנית העברה',
+            createdAt:'תאריך',
+            entity:'מקור\יעד',
+            description:'תיאור',
+            amount:'כמות',
+            accountBalance:'יתרת חשבון',
+            actions:'פעולות',
+        },
     },
     categoryPage: {
         disabledTemplate: 'תבנית לא פעילה',

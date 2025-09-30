@@ -466,16 +466,22 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             <Grid>
                                 <IconButtonWithPopover
                                     popoverText={
-                                        disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
+                                        disabledEntity || template.disabled
+                                            ? i18next.t('entityPage.disabledEntity')
+                                            : template.walletTransfer
+                                              ? i18next.t('entityPage.walletTransfer.editDisabled')
+                                              : editRowButtonProps.popoverText
                                     }
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}
-                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled || !!template.walletTransfer}
                                 >
                                     <ImageWithDisable
                                         srcPath="/icons/edit-icon.svg"
-                                        disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                        disabled={
+                                            editRowButtonProps.disabledButton || disabledEntity || template.disabled || !!template.walletTransfer
+                                        }
                                     />
                                 </IconButtonWithPopover>
                             </Grid>
@@ -528,6 +534,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                         isDisabled: getEntityPropertiesData(data).disabled,
                                         isEditDisabled: menuRowButtonProps,
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
+                                        isWalletTransferEntity: !!template.walletTransfer,
                                     }}
                                 />
                             </Grid>

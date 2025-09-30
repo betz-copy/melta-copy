@@ -16,6 +16,7 @@ import {
     ICreateRelationshipMetadata,
     IDeleteEntityBody,
     IEntity,
+    IEntitySingleProperty,
     IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
@@ -544,6 +545,46 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
     }
 
+    private async updateWalletBalance(
+        walletProperty: IEntitySingleProperty,
+        entityProperties: any,
+        delta: number,
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        childTemplateId?: string,
+    ) {
+        if (walletProperty.format !== 'relationshipReference') return;
+
+        const walletTemplateId = walletProperty.relationshipReference!.relatedTemplateId;
+        const walletTemplate = await this.entityTemplateService.getEntityTemplateById(walletTemplateId);
+
+        const accountBalancePropertyKey = Object.entries(walletTemplate.properties.properties).find(([_key, prop]) => prop.accountBalance)?.[0];
+
+        if (!accountBalancePropertyKey) {
+            throw new Error('The transfer target is not a wallet template');
+        }
+
+        const walletProperties = entityProperties.properties;
+        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...restWalletProperties } = walletProperties;
+
+        const updatedAccountBalance = (walletProperties[accountBalancePropertyKey] || 0) + delta;
+
+        await this.updateEntityInstance(
+            _id,
+            {
+                templateId: walletTemplateId,
+                properties: {
+                    ...restWalletProperties,
+                    [accountBalancePropertyKey]: updatedAccountBalance,
+                },
+            },
+            [],
+            ignoredRules,
+            userId,
+            childTemplateId,
+        );
+    }
+
     async createEntityInstance(
         instanceData: IEntity,
         files: UploadedFile[],
@@ -580,42 +621,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
-        // after create the instance i want to check if its transfer and if so - to call new route that update the wallet amount
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         if (entityTemplate.walletTransfer) {
-            const sourceProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.from];
-            // const destinationProperty = entityTemplate.properties.properties[entityTemplate.walletTransfer.to];
-            if (sourceProperty.format === 'relationshipReference') {
-                const sourceWalletTemplateId = sourceProperty.relationshipReference!.relatedTemplateId;
-                const sourceWalletTemplate = await this.entityTemplateService.getEntityTemplateById(sourceWalletTemplateId);
+            const { from, to, amount } = entityTemplate.walletTransfer;
+            const sourceProperty = entityTemplate.properties.properties[from];
+            const destinationProperty = entityTemplate.properties.properties[to];
+            const transferAmount = createdEntity.properties[amount];
 
-                const accountBalancePropertyKey = Object.entries(sourceWalletTemplate.properties.properties).find(
-                    ([_key, prop]) => prop.accountBalance,
-                )?.[0];
-
-                if (!accountBalancePropertyKey) throw new Error('the destination of the transfer is not an wallet');
-
-                const sourceWalletProperties = createdEntity.properties[entityTemplate.walletTransfer.from].properties;
-                const amount = createdEntity.properties[entityTemplate.walletTransfer.amount];
-                const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...restWalletProperties } = sourceWalletProperties;
-
-                const updatedAccountBalance = (sourceWalletProperties[accountBalancePropertyKey] || 0) - amount;
-
-                await this.updateEntityInstance(
-                    _id,
-                    {
-                        templateId: sourceWalletTemplateId,
-                        properties: {
-                            ...restWalletProperties,
-                            [accountBalancePropertyKey]: updatedAccountBalance,
-                        },
-                    },
-                    [],
-                    ignoredRules,
-                    userId,
-                    childTemplateId,
-                );
-            }
+            await this.updateWalletBalance(sourceProperty, createdEntity.properties[from], -transferAmount, ignoredRules, userId, childTemplateId);
+            await this.updateWalletBalance(destinationProperty, createdEntity.properties[to], transferAmount, ignoredRules, userId, childTemplateId);
         }
         return createdEntity;
     }

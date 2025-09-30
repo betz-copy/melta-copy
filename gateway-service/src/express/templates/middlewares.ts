@@ -38,9 +38,10 @@ class TemplatesValidator extends DefaultController {
         ]);
 
         if (
-            !userPermissions.admin?.scope &&
-            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
-            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId]?.scope !== PermissionScope.write
+            !!entityTemplate.walletTransfer ||
+            (!userPermissions.admin?.scope &&
+                userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+                userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId]?.scope !== PermissionScope.write)
         )
             throw new ForbiddenError('user not authorized', {
                 metadata: `user does not have write permission on entity ${entityTemplate}`,

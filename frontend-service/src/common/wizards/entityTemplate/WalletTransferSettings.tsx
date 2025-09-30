@@ -58,12 +58,21 @@ export const WalletTransferSettings: React.FC<
         return [];
     });
 
-    const transferDestAndSourceFields = allFields.filter(
-        ({ type, required }) => ['relationshipReference', 'enum', 'string'].includes(type) && required,
-    );
+    const filterFieldsByDirection = (direction) =>
+        allFields.filter(
+            (field) =>
+                field.required &&
+                (field.type === 'enum' ||
+                    field.type === 'string' ||
+                    (field.type === 'relationshipReference' && field.relationshipReference?.relationshipTemplateDirection === direction)),
+        );
+
+    const outgoingFields = filterFieldsByDirection('outgoing');
+    const incomingFields = filterFieldsByDirection('incoming');
+
     const allTextFields = allFields.filter(({ type }) => type === 'string');
     const allNumFields = allFields.filter(({ type, required }) => type === 'number' && required);
-    console.log('herreee', values.walletTransfer);
+
     const from = values.walletTransfer?.from;
     const to = values.walletTransfer?.to;
     const fromKeyName = typeof from === 'string' ? from : from?.name;
@@ -95,9 +104,9 @@ export const WalletTransferSettings: React.FC<
                 <Grid container direction="row" spacing={3} marginBottom={5}>
                     <Grid container direction="row">
                         <Autocomplete
-                            options={transferDestAndSourceFields}
+                            options={incomingFields}
                             onChange={(_e, value) => setFieldValue('walletTransfer.from', value || '')}
-                            value={transferDestAndSourceFields.find((option) => option.name === fromKeyName) ?? null}
+                            value={incomingFields.find((option) => option.name === fromKeyName) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.from')}
                             sx={{ width: '250px' }}
@@ -127,9 +136,9 @@ export const WalletTransferSettings: React.FC<
                     </Grid>
                     <Grid container direction="row">
                         <Autocomplete
-                            options={transferDestAndSourceFields}
+                            options={outgoingFields}
                             onChange={(_e, value) => setFieldValue('walletTransfer.to', value || '')}
-                            value={transferDestAndSourceFields.find((option) => option.name === toKeyName) ?? null}
+                            value={outgoingFields.find((option) => option.name === toKeyName) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.to')}
                             sx={{ width: '250px' }}

@@ -1,21 +1,18 @@
-import { AddCircle, CloseFullscreenRounded, Expand, Hive as HiveIcon, TableRowsOutlined } from '@mui/icons-material';
+import { AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined, AccountBalanceWallet } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, Grid, Tab } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
-import { CustomIcon } from '../../common/CustomIcon';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
-import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
-import { ICategoryMap } from '../../interfaces/categories';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -32,6 +29,8 @@ import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
+import { EntityConnections } from './entityConnections';
+import { WalletTransfers } from './walletTransfers';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -42,6 +41,7 @@ export const getButtonState = (
     let isEditButtonsDisabled = false;
     let disabledButtonText = '';
     const categoryPermission = permissions?.instances?.categories?.[relatedTemplate.category._id];
+
     const permissionToRelatedTemplate = categoryPermission?.entityTemplates?.[relatedTemplate._id] || categoryPermission;
 
     if (isEntityDisabled) {
@@ -345,8 +345,6 @@ export interface INestedRelationshipTemplates {
 }
 
 const Entity: React.FC = () => {
-    const theme = useTheme();
-
     const { entityId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
@@ -354,9 +352,6 @@ const Entity: React.FC = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
-    const currentUser = useUserStore((state) => state.user);
-
-    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
@@ -367,9 +362,9 @@ const Entity: React.FC = () => {
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
         getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId }),
     );
+    const currentUser = useUserStore((state) => state.user);
 
-    const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
-
+    const [selectTransfersOrConnections, setSelectTransfersOrConnections] = useState('walletTransfers');
     useEffect(() => {
         if (!expandedEntity) return;
 
@@ -377,17 +372,9 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
     const currentEntityTemplate = childTemplateId
         ? childTemplates.get(childTemplateId)
         : entityTemplates.get(expandedEntity?.entity.templateId ?? '');
-
-    const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
-        currentUser.currentWorkspacePermissions,
-        currentEntityTemplate?.category?._id ?? '',
-        currentEntityTemplate?._id ?? '',
-        PermissionScope.write,
-    );
 
     const connectionsTemplates = useMemo(() => {
         if (!currentEntityTemplate) return;
@@ -395,52 +382,29 @@ const Entity: React.FC = () => {
         return getFullRelationshipTemplates(relationshipTemplates, entityTemplates, currentEntityTemplate, 1, undefined, expandedEntity);
     }, [currentEntityTemplate, expandedEntity]);
 
-    const categoriesWithConnectionsTemplates = useMemo(() => {
-        if (!connectionsTemplates) return;
-
-        return Array.from(categories.values(), (category) => {
-            return {
-                category,
-                connectionsTemplates: connectionsTemplates
-                    .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                        const otherEntityTemplate = isExpandedEntityRelationshipSource
-                            ? relationshipTemplate.destinationEntity
-                            : relationshipTemplate.sourceEntity;
-                        return otherEntityTemplate?.category._id === category._id;
-                    })
-                    .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
-                // calculate the amount of the related connections of each entity
-                relationshipCount: expandedEntity?.connections.filter((connection) => {
-                    const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
-
-                    if (
-                        connectionRelationshipTemplate?.isProperty &&
-                        currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
-                            ?.relationshipTemplateId === connectionRelationshipTemplate._id
-                    )
-                        return false;
-
-                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
-
-                    return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
-                }).length,
-            };
-        })
-            .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
-            .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
-    }, [connectionsTemplates, expandedEntity]);
-
-    useEffect(() => {
-        if (categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
-            setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
-        }
-    }, [categoriesWithConnectionsTemplates, selectedTabId]);
-
     // Early return if data is not ready - must be after all hooks
     if (!expandedEntity || !currentEntityTemplate || !currentEntityTemplate.category) {
         return <CircularProgress />;
     }
+    const isWalletTemplate = Object.values(currentEntityTemplate.properties.properties).find((property) => property.accountBalance);
+
+    const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
+    const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        currentEntityTemplate?.category?._id ?? '',
+        currentEntityTemplate?._id ?? '',
+        PermissionScope.write,
+    );
+
+    const getButtonStateByRelatedTemplate = (relatedTemplate: IMongoEntityTemplatePopulated) => {
+        const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate } = getButtonState(
+            isEntityDisabled,
+            hasWritePermissionToCurrTemplate,
+            relatedTemplate,
+            currentUser.currentWorkspacePermissions,
+        );
+        return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate };
+    };
 
     return (
         <>
@@ -453,111 +417,46 @@ const Entity: React.FC = () => {
                 <Grid marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
-                {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
-                    <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                        <Grid container size={{ xs: 5 }} alignItems="center" gap="20px">
-                            <Grid alignContent="center">
-                                <RelationshipIcon />
-                            </Grid>
-                            <Grid>
-                                <BlueTitle
-                                    title={i18next.t('entityPage.relationshipTitle')}
-                                    component="h5"
-                                    variant="h5"
-                                    style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
+
+                <Grid>
+                    {!isWalletTemplate ? (
+                        <EntityConnections
+                            currentEntityTemplate={currentEntityTemplate}
+                            expandedEntity={expandedEntity}
+                            templateIds={templateIds}
+                            connectionsTemplates={connectionsTemplates}
+                            getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
+                        />
+                    ) : (
+                        <TabContext value={selectTransfersOrConnections}>
+                            <TabList
+                                onChange={(_event, newValue) => setSelectTransfersOrConnections(newValue)}
+                                TabIndicatorProps={{ style: { display: 'none' } }}
+                                aria-label="icon label tabs example"
+                            >
+                                <Tab icon={<RelationshipIcon />} value="walletTransfers" />
+                                <Tab icon={<AccountBalanceWallet />} value="connectionsByCategories" />
+                            </TabList>
+                            <TabPanel value="walletTransfers">
+                                <EntityConnections
+                                    currentEntityTemplate={currentEntityTemplate}
+                                    expandedEntity={expandedEntity}
+                                    templateIds={templateIds}
+                                    connectionsTemplates={connectionsTemplates}
+                                    getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
                                 />
-                            </Grid>
-                        </Grid>
-                        <Grid>
-                            <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
-                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>
-                                        {categoriesWithConnectionsTemplates.map(
-                                            ({ category: { _id, displayName, iconFileId }, relationshipCount }) => (
-                                                <Tab
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'row',
-                                                        gap: '15px',
-                                                        height: '20px',
-                                                        alignItems: 'center',
-                                                    }}
-                                                    key={_id}
-                                                    label={
-                                                        <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
-                                                            <Typography
-                                                                color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
-                                                                style={{ fontWeight: '500', fontSize: '16px' }}
-                                                            >
-                                                                {displayName}
-                                                            </Typography>
-                                                            <Typography color="#787C9E">{relationshipCount}</Typography>
-                                                        </Grid>
-                                                    }
-                                                    value={_id}
-                                                    icon={
-                                                        iconFileId ? (
-                                                            <CustomIcon
-                                                                iconUrl={iconFileId}
-                                                                height="24px"
-                                                                width="24px"
-                                                                color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
-                                                            />
-                                                        ) : (
-                                                            <HiveIcon
-                                                                fontSize="medium"
-                                                                sx={{
-                                                                    color: selectedTabId === _id ? theme.palette.primary.main : '#787C9E',
-                                                                }}
-                                                            />
-                                                        )
-                                                    }
-                                                />
-                                            ),
-                                        )}
-                                    </TabList>
-                                </Box>
-                                {categoriesWithConnectionsTemplates.map(
-                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }) => {
-                                        const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
-
-                                        return (
-                                            <TabPanel key={_id} value={_id}>
-                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
-                                                    const relationship = connectionTemplate.relationshipTemplate;
-                                                    const relatedTemplate =
-                                                        relationship.destinationEntity._id !== currentEntityTemplate?._id
-                                                            ? relationship.destinationEntity
-                                                            : relationship.sourceEntity;
-
-                                                    const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate } = getButtonState(
-                                                        isEntityDisabled,
-                                                        hasWritePermissionToCurrTemplate,
-                                                        relatedTemplate,
-                                                        currentUser.currentWorkspacePermissions,
-                                                    );
-
-                                                    return (
-                                                        <ConnectionsTable
-                                                            // eslint-disable-next-line react/no-array-index-key
-                                                            key={connectedRelationshipTemplateIndex}
-                                                            expandedEntity={expandedEntity}
-                                                            templateIds={templateIds}
-                                                            connectionTemplate={connectionTemplate}
-                                                            isEditButtonsDisabled={isEditButtonsDisabled}
-                                                            disabledButtonText={disabledButtonText}
-                                                            hasPermissionToTemplate={Boolean(permissionToRelatedTemplate) || isAdmin}
-                                                        />
-                                                    );
-                                                })}
-                                            </TabPanel>
-                                        );
-                                    },
-                                )}
-                            </TabContext>
-                        </Grid>
-                    </Grid>
-                )}
+                            </TabPanel>
+                            <TabPanel value="connectionsByCategories">
+                                <WalletTransfers
+                                    connectionsTemplates={connectionsTemplates}
+                                    templateId={currentEntityTemplate._id}
+                                    expandedEntity={expandedEntity}
+                                    getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
+                                />
+                            </TabPanel>
+                        </TabContext>
+                    )}
+                </Grid>
             </Grid>
         </>
     );
