@@ -22,7 +22,7 @@ const initializeRabbit = async () => {
             { name: rabbit.deleteUnusedFilesQueue },
             { name: rabbit.insertDocsSemanticQueue },
             { name: rabbit.deleteDocsSemanticQueue },
-            { name: rabbit.runRulesWithTodayFuncQueue, options: { maxLength: 1 } },
+            { name: rabbit.runRulesWithTodayFuncQueue, options: { prefetch: rabbit.runRulesWithTodayFuncQueuePrefetch } },
             { name: rabbit.createAlertForRuleWithTodayFuncQueue },
         ],
         consumers: [

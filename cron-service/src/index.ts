@@ -20,7 +20,6 @@ const initializeRabbit = async () => {
             { name: rabbit.notificationQueue },
             {
                 name: rabbit.runRulesWithTodayFuncQueue,
-                options: { maxLength: 1 }, // shouldnt be more than 1. only happens once at night.
             },
         ],
     });

@@ -238,6 +238,7 @@ const config = {
         insertDocsSemanticQueue: env.get('INSERT_DOCS_SEMATIC_QUEUE').default('insert_documents_queue').asString(),
         deleteDocsSemanticQueue: env.get('DELETE_DOCS_SEMATIC_QUEUE').default('delete_documents_queue').asString(),
         runRulesWithTodayFuncQueue: env.get('RUN_RULES_WITH_TODAY_FUNC_QUEUE_NAME').default('run-rules-with-today-func-queue').asString(),
+        runRulesWithTodayFuncQueuePrefetch: env.get('RUN_RULES_WITH_TODAY_FUNC_QUEUE_PREFETCH').default(1).asIntPositive(), // parallel limit shouldnt be more 1, because heavy on DB
         createAlertForRuleWithTodayFuncQueue: env
             .get('CREATE_ALERT_FOR_RULE_WITH_TODAY_FUNC_FAILURE_QUEUE_NAME')
             .default('create-alert-for-rule-with-today-func-failure-queue')
