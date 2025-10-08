@@ -448,6 +448,16 @@ class MailManager {
         );
     }
 
+    private ruleIndicatorAlertMailBody(body: string) {
+        // we can "safely" inject the html because every user input goes through escaping
+        // the template automatically by quill, and the entity values by the function that injects them
+        return (
+            <html>
+                <body dir="rtl" dangerouslySetInnerHTML={{ __html: body }}></body>
+            </html>
+        );
+    }
+
     private async getMailHtml(notificationType: string, data: IMailNotificationMetadataPopulated) {
         switch (notificationType) {
             case NotificationType.ruleBreachAlert:
@@ -479,7 +489,7 @@ class MailManager {
                 from: mailerService.mailUser,
                 to: viewersMail,
                 title: emailTemplate!.title,
-                html: emailTemplate!.body,
+                html: renderToString(this.ruleIndicatorAlertMailBody(emailTemplate!.body)) || <></>,
             };
         }
 
