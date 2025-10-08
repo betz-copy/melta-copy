@@ -169,12 +169,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 entity={expandedEntity.entity}
                 onSuccessUpdate={(data) => {
                     setIsEditMode(false);
-                    queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
-                        return {
-                            ...expandedEntity,
-                            entity: data,
-                        };
-                    });
+                    queryClient.setQueryData(
+                        ['getExpandedEntity', entity.properties._id, { [entity.properties._id]: { maxLevel: 1 } }, { templateIds }],
+                        () => {
+                            return {
+                                ...expandedEntity,
+                                entity: data,
+                            };
+                        },
+                    );
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
