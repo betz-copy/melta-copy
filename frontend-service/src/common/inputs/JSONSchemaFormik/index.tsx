@@ -374,7 +374,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     }
                     // if the value is an object without properties, we assume it's a grouped field and flatten it
                     // rjsf library does support grouped fields, but we do not save them as so in the db.
-                    if (value && typeof value === 'object' && !value.properties) {
+                    if (value && typeof value === 'object' && !value.properties && schema.properties[key]?.format !== 'location') {
                         for (const [groupedKey, groupedValue] of Object.entries(value)) {
                             formData[groupedKey] = groupedValue;
                         }
