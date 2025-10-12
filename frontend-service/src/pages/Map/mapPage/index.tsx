@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { CircleTwoTone as CircleIcon, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
-import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
+import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import i18next from 'i18next';
@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { environment } from '../../../globals';
@@ -22,9 +23,9 @@ import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
 import { jerusalemCoordinates, LatLng, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
-import MapPageEntityDialog from './EntityMapDialog';
-import MapFilters, { DeleteMapDataBtn } from './MapFilters';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
+import MapPageEntityDialog from './EntityMapDialog';
+import MapFilters from './MapFilters';
 
 const { maxRadius } = environment.map;
 
@@ -48,6 +49,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates'])!;
     const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates'])!;
 
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
@@ -481,7 +483,21 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                     </ToggleButton>
                                 </MeltaTooltip>
                             </ToggleButtonGroup>
-                            <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
+
+                            <IconButtonWithPopover
+                                popoverText={i18next.t('location.clear')}
+                                iconButtonProps={{
+                                    onClick: onClear,
+                                }}
+                                style={{
+                                    background: darkMode ? '#131313' : '#FFFFFF',
+                                    borderRadius: '7px',
+                                    height: '34px',
+                                    opacity: 1,
+                                }}
+                            >
+                                <Close htmlColor={theme.palette.primary.main} />
+                            </IconButtonWithPopover>
                         </div>
                         {selectedEntityDialog && (
                             <MapPageEntityDialog

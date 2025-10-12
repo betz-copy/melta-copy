@@ -24,7 +24,6 @@ const LabelWithToolTip = ({ children, className }) => (
     <Box
         className={className}
         sx={{
-            width: '200px',
             display: 'inline-block',
             position: 'relative',
             overflow: 'hidden',
