@@ -1,33 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Close } from '@mui/icons-material';
-import { Grid, useTheme } from '@mui/material';
-import i18next from 'i18next';
+import { Grid } from '@mui/material';
 import React from 'react';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import SearchAutoComplete from './SearchAutoComplete';
-
-export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; darkMode: boolean }) => {
-    const theme = useTheme();
-
-    return (
-        <IconButtonWithPopover
-            popoverText={i18next.t('location.clear')}
-            iconButtonProps={{
-                onClick,
-            }}
-            style={{
-                background: darkMode ? '#131313' : '#FFFFFF',
-                borderRadius: '7px',
-                height: '34px',
-                opacity: 1,
-            }}
-        >
-            <Close htmlColor={theme.palette.primary.main} />
-        </IconButtonWithPopover>
-    );
-};
 
 type Props = {
     moveToEntityLocations: (entity: IEntity) => void;

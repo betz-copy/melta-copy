@@ -50,16 +50,17 @@ export const Switches: React.FC<SwitchesProps> = ({
     const isComment = value.type === 'comment';
     const isKartoffelImage = value.type === 'kartoffelUserField' && value?.expandedUserField?.kartoffelField === 'image';
     const isNewProperty = !initialValue;
-    const type = `properties[${index}].type`;
 
-    const required = `properties[${index}].required`;
-    const preview = `properties[${index}].preview`;
-    const hide = `properties[${index}].hide`;
-    const readOnly = `properties[${index}].readOnly`;
-    const identifier = `properties[${index}].identifier`;
-    const hideFromDetailsPage = `properties[${index}].hideFromDetailsPage`;
+    const property = `properties[${index}]`;
+    const type = `${property}.type`;
+    const required = `${property}.required`;
+    const preview = `${property}.preview`;
+    const hide = `${property}.hide`;
+    const readOnly = `${property}.readOnly`;
+    const identifier = `${property}.identifier`;
+    const hideFromDetailsPage = `${property}.hideFromDetailsPage`;
 
-    const calculateTime = `properties[${index}].calculateTime`;
+    const calculateTime = `${property}.calculateTime`;
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
 
     // TODO: when upgrading the mongo version to v5, update the types and delete the (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[] type
@@ -85,7 +86,7 @@ export const Switches: React.FC<SwitchesProps> = ({
         relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
     );
 
-    const createEmptyGroup = (fieldName) => {
+    const createEmptyGroup = (fieldName: string) => {
         setUniqueConstraints!((prev) => {
             const existingGroup = prev?.find((group) => group.groupName === '' && group.properties.includes(fieldName));
 
@@ -101,7 +102,7 @@ export const Switches: React.FC<SwitchesProps> = ({
         });
     };
 
-    const deletePropFromUniqueConstraints = (groupName, fieldName) => {
+    const deletePropFromUniqueConstraints = (groupName: string | undefined, fieldName: string) => {
         setUniqueConstraints!((prev) => {
             const updatedConstraints = (prev || [])
                 .map((group) => {
@@ -224,11 +225,8 @@ export const Switches: React.FC<SwitchesProps> = ({
                                         uniqueCheckbox: false,
                                     }));
 
-                                    if (checked) {
-                                        createEmptyGroup(value.name);
-                                    } else {
-                                        deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
-                                    }
+                                    if (checked) createEmptyGroup(value.name);
+                                    else deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
                                 }}
                             />
                         }
@@ -321,8 +319,8 @@ export const Switches: React.FC<SwitchesProps> = ({
                     <FormControlLabel
                         control={
                             <MeltaSwitch
-                                id={`properties[${index}].isProfileImage`}
-                                name={`properties[${index}].isProfileImage`}
+                                id={`${property}.isProfileImage`}
+                                name={`${property}.isProfileImage`}
                                 onChange={(_e, checked) => {
                                     setValues?.((prev) => ({
                                         ...prev,

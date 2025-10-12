@@ -225,6 +225,7 @@ const RjsfLocationWidget = ({
                             setNewLocationValue(locationConverterToString(newVal, CoordinateSystem.WGS84, coordinateSystem));
                         else setNewLocationValue(newVal);
                     }}
+                    handleCloseDialog={handleCloseDialog}
                 />
             </Dialog>
         </Box>
