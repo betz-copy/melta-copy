@@ -373,7 +373,7 @@ const RulesRow: React.FC = () => {
                 getItemId={(rule) => rule._id}
                 getNextPageParam={(lastPage, allPages) => (lastPage.length ? allPages.length * bulk : undefined)}
                 endText={i18next.t('noSearchLeft')}
-                emptyText={i18next.t('failedToGetTemplates')}
+                emptyText={i18next.t('noSearchLeft')}
                 useContainer={false}
             >
                 {(rule) => (
