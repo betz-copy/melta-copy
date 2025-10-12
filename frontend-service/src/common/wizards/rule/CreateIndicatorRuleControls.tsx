@@ -30,7 +30,18 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
     return (
         <Grid container direction="column">
             <FormControlLabel
-                control={<MeltaCheckbox checked={mail?.display} onChange={(e) => setFieldValue('mail.display', e.target.checked)} />}
+                control={
+                    <MeltaCheckbox
+                        checked={mail?.display}
+                        onChange={(e) => {
+                            if (!e.target.checked) {
+                                setFieldValue('mail', undefined);
+                            } else {
+                                setFieldValue('mail.display', e.target.checked);
+                            }
+                        }}
+                    />
+                }
                 label={i18next.t('wizard.rule.mailNotification')}
             />
 
@@ -129,7 +140,18 @@ export const CreateRuleColorField: React.FC<CreateRuleColorFieldProps> = ({
         <Grid container direction="column" gap={2}>
             <FormHelperText sx={{ color: '#9398C2', fontSize: '14px' }}>{i18next.t('wizard.rule.atLeastOne')}</FormHelperText>
             <FormControlLabel
-                control={<MeltaCheckbox checked={fieldColor?.display} onChange={(e) => setFieldValue('fieldColor.display', e.target.checked)} />}
+                control={
+                    <MeltaCheckbox
+                        checked={fieldColor?.display}
+                        onChange={(e) => {
+                            if (!e.target.checked) {
+                                setFieldValue('fieldColor', undefined);
+                            } else {
+                                setFieldValue('fieldColor.display', e.target.checked);
+                            }
+                        }}
+                    />
+                }
                 label={i18next.t('wizard.rule.fieldColor')}
                 sx={{ display: 'flex', alignItems: 'center' }}
             />
