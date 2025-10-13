@@ -3,14 +3,14 @@ import Joi from 'joi';
 
 export const fieldColorSchema = Joi.object({
     display: Joi.boolean(),
-    field: Joi.string().when('display', { is: true, then: Joi.required() }),
-    color: Joi.string().when('display', { is: true, then: Joi.required() }),
+    field: Joi.string().when('display', { is: true, then: Joi.string().required(), otherwise: Joi.string().allow('') }),
+    color: Joi.string().when('display', { is: true, then: Joi.string().required(), otherwise: Joi.string().allow('') }),
 });
 
 export const mailSchema = Joi.object({
     display: Joi.boolean(),
-    title: Joi.string().when('display', { is: true, then: Joi.required() }),
-    body: Joi.string().when('display', { is: true, then: Joi.required() }),
+    title: Joi.string().when('display', { is: true, then: Joi.string().required(), otherwise: Joi.string().allow('') }),
+    body: Joi.string().when('display', { is: true, then: Joi.string().required(), otherwise: Joi.string().allow('') }),
     sendPermissionUsers: Joi.boolean().default(false),
     sendAssociatedUsers: Joi.boolean().default(false),
 }).or('sendAssociatedUsers', 'sendPermissionUsers');
@@ -47,7 +47,18 @@ export const createRuleRequestSchema = Joi.object({
         fieldColor: fieldColorSchema,
         mail: mailSchema,
     }).when(Joi.object({ actionOnFail: Joi.valid(ActionOnFail.INDICATOR) }).unknown(), {
-        then: Joi.object().or('fieldColor', 'mail'),
+        then: Joi.object()
+            .custom((value, helpers) => {
+                const fieldColorDisplay = value.fieldColor?.display === true;
+                const mailDisplay = value.fieldColor.display === true;
+
+                if (!fieldColorDisplay && !mailDisplay) {
+                    return helpers.error('indicator.custom');
+                }
+
+                return value;
+            })
+            .messages({ 'indicator.custom': 'Indicator rule must have either mail or fieldColor' }),
         otherwise: Joi.object({ fieldColor: Joi.forbidden(), mail: Joi.forbidden() }),
     }),
     query: {},
@@ -56,7 +67,7 @@ export const createRuleRequestSchema = Joi.object({
 
 // PUT /api/templates/rules/:ruleId
 export const updateRuleByIdRequestSchema = Joi.object({
-    body: {
+    body: Joi.object({
         name: Joi.string(),
         description: Joi.string(),
         // todo: (extra feature) allow update stuff that could break, only if no alerts/requests created yet
@@ -65,9 +76,18 @@ export const updateRuleByIdRequestSchema = Joi.object({
             .required(),
         fieldColor: fieldColorSchema,
         mail: mailSchema,
-        // entityTemplateId: MongoIdSchema,
-        // formula: Joi.object(),
-    },
+    }).when(Joi.object({ actionOnFail: Joi.valid(ActionOnFail.INDICATOR) }).unknown(), {
+        then: Joi.object()
+            .custom((value, helpers) => {
+                if ((value.fieldColor || value.mail) && value.fieldColor?.display !== true && value.mail?.display !== true) {
+                    return helpers.error('indicator.custom');
+                }
+
+                return value;
+            })
+            .messages({ 'indicator.custom': 'Indicator rule must have either mail or fieldColor' }),
+        otherwise: Joi.object({ fieldColor: Joi.forbidden(), mail: Joi.forbidden() }),
+    }),
     query: {},
     params: {
         ruleId: MongoIdSchema.required(),

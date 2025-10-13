@@ -35,7 +35,13 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                         checked={mail?.display}
                         onChange={(e) => {
                             if (!e.target.checked) {
-                                setFieldValue('mail', undefined);
+                                setFieldValue('mail', {
+                                    title: '',
+                                    body: '',
+                                    display: false,
+                                    sendAssociatedUsers: false,
+                                    sendPermissionUsers: false,
+                                });
                             } else {
                                 setFieldValue('mail.display', e.target.checked);
                             }
@@ -145,7 +151,7 @@ export const CreateRuleColorField: React.FC<CreateRuleColorFieldProps> = ({
                         checked={fieldColor?.display}
                         onChange={(e) => {
                             if (!e.target.checked) {
-                                setFieldValue('fieldColor', undefined);
+                                setFieldValue('fieldColor', { display: false, color: '', field: '' });
                             } else {
                                 setFieldValue('fieldColor.display', e.target.checked);
                             }

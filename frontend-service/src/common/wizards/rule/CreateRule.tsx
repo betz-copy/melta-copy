@@ -87,10 +87,15 @@ const createRuleSchema = Yup.object({
         is: ActionOnFail.INDICATOR,
         otherwise: (schema) => schema.strip().nullable(),
     }),
-}).test('at-least-one-indicator-config', i18next.t('wizard.rule.mustSelectOneIndicatorConfig'), (values) => {
+}).test('at-least-one-indicator-config', i18next.t('wizard.rule.mustSelectOneIndicatorConfig'), function (values) {
     if (values.actionOnFail !== ActionOnFail.INDICATOR) return true;
 
-    return values.fieldColor?.display === true || values.mail?.display === true;
+    if (values.fieldColor?.display === true || values.mail?.display === true) return true;
+
+    return this.createError({
+        path: 'fieldColor',
+        message: i18next.t('wizard.rule.mustSelectOneIndicatorConfig'),
+    });
 });
 
 const hasUserFields = (entityTemplate: IMongoEntityTemplatePopulated | null) => {
