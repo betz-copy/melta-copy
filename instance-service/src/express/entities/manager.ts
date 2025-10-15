@@ -1514,46 +1514,55 @@ class EntityManager extends DefaultManagerNeo4j {
     ): Promise<{ fixedProperties: Record<string, any>; createdRelationships: IRelationship[]; deletedRelationships: IRelationship[] }> {
         const entityId = entity.properties._id;
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
+        const entityPropertiesList = Object.keys(entityProperties);
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
 
         await Promise.all(
-            updatedProperties.map(async (updatedProperty) => {
-                const property = entityTemplate.properties.properties[updatedProperty];
-                if (property?.format === 'relationshipReference') {
-                    if (entity.properties[updatedProperty]) {
-                        const relatedEntityId = entity.properties[updatedProperty].properties._id;
-                        const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
-                            relationshipReference: property.relationshipReference!,
-                            relatedEntityId,
-                            originalEntityId: entityId,
-                            transaction,
-                        });
+            entityPropertiesList.map(async (entityProperty) => {
+                const property = entityTemplate.properties.properties[entityProperty];
 
-                        deletedRelationships.push(deletedRelationship);
-                    }
+                if (property?.format !== 'relationshipReference') return;
 
-                    const relatedEntityId =
-                        typeof entityProperties[updatedProperty] === 'string'
-                            ? entityProperties[updatedProperty]
-                            : entityProperties[updatedProperty].properties._id;
+                const relatedEntityId =
+                    typeof entityProperties[entityProperty] === 'string'
+                        ? entityProperties[entityProperty]
+                        : entityProperties[entityProperty].properties._id;
 
+                if (!updatedProperties.includes(entityProperty)) {
                     if (relatedEntityId) {
-                        const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+                        const { fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+                        fixedProperties[entityProperty] = fixedField;
+                    }
+                    return;
+                }
 
-                        fixedProperties[updatedProperty] = fixedField;
+                if (entity.properties[entityProperty]) {
+                    const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
+                        relationshipReference: property.relationshipReference!,
+                        relatedEntityId,
+                        originalEntityId: entityId,
+                        transaction,
+                    });
 
-                        if (!convertToRelationshipField) {
-                            const { createdRelationship } = await this.createRelationshipReference(
-                                property.relationshipReference!,
-                                relatedEntity,
-                                entityId,
-                                transaction,
-                                userId,
-                            );
+                    deletedRelationships.push(deletedRelationship);
+                }
 
-                            createdRelationships.push(createdRelationship);
-                        }
+                if (relatedEntityId) {
+                    const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+
+                    fixedProperties[entityProperty] = fixedField;
+
+                    if (!convertToRelationshipField) {
+                        const { createdRelationship } = await this.createRelationshipReference(
+                            property.relationshipReference!,
+                            relatedEntity,
+                            entityId,
+                            transaction,
+                            userId,
+                        );
+
+                        createdRelationships.push(createdRelationship);
                     }
                 }
             }),
