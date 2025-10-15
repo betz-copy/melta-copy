@@ -727,9 +727,8 @@ class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityById(results[0].properties._id);
+            const createdEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
             const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
-
             return { createdEntity, actions: fixedActions, emails: results.emails };
         }
 
@@ -1761,7 +1760,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0]?.properties?._id);
+            const updatedEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
             const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
             return { updatedEntity, actions: fixedActions, emails: results.emails };
