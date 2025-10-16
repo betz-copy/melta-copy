@@ -251,12 +251,18 @@ class MailManager {
     private async getCreatedOrDuplicateEntityActionInfo({ templateId, properties }, actionType: string) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
-        const entity = await this.instanceService.getEntityInstanceById(properties._id);
+        const entity = properties?._id?.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)
+            ? await this.instanceService.getEntityInstanceById(properties._id)
+            : null;
 
         return (
             <p>
                 {hebrew.updateEntityActionInfo[actionType === ActionTypes.CreateEntity ? 'createEntity' : 'duplicateEntity']}{' '}
-                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
+                {entity ? (
+                    <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
+                ) : (
+                    <b>{entityTemplate.displayName}</b>
+                )}
             </p>
         );
     }
@@ -366,9 +372,7 @@ class MailManager {
 
     private async ruleBreachRequestMail({ request: ruleBreachRequest }: IRuleBreachRequestNotificationMetadataPopulated) {
         const ruleBrokenData = await Promise.all(
-            ruleBreachRequest.brokenRules.map((brokenRule) => {
-                return this.relationshipsTemplateService.getRuleById(brokenRule.ruleId);
-            }),
+            ruleBreachRequest.brokenRules.map((brokenRule) => this.relationshipsTemplateService.getRuleById(brokenRule.ruleId)),
         );
 
         return (

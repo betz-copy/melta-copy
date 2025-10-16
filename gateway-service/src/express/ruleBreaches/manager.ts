@@ -53,6 +53,7 @@ import {
     RuleBreachRequestStatus,
     UploadedFile,
     basicFilterOperationTypes,
+    logger,
 } from '@microservices/shared';
 import pickBy from 'lodash.pickby';
 import config from '../../config';
@@ -108,12 +109,14 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
             const request = await this.getRuleBreachRequestById(ruleBreachRequest._id);
 
-            await this.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
+            this.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
                 NotificationType.ruleBreachRequest,
                 { requestId: ruleBreachRequest._id },
                 { request },
                 [userId],
-            );
+            ).catch((e) => {
+                logger.error('error sending rule breach request notification', e);
+            });
 
             return request;
         });
@@ -689,7 +692,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             return;
         }
 
-        throw new BadRequestError('shouldnt upload files to create rule breach request if not create/duplicate/update entity');
+        throw new BadRequestError(`shouldn't upload files to create rule breach request if not create/duplicate/update entity`);
     }
 
     private async deleteRuleBreachFiles(ruleBreach: Omit<IRuleBreachRequest | IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>) {
@@ -698,7 +701,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const instancesManager = new InstancesManager(this.workspaceId);
 
-        if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity) {
+        if ([ActionTypes.DuplicateEntity, ActionTypes.CreateEntity].includes(action.actionType)) {
             const entityTemplate = await this.entityTemplateService.getEntityTemplateById(
                 (action.actionMetadata as ICreateEntityMetadata | IDuplicateEntityMetadata).templateId,
             );
