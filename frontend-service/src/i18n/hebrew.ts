@@ -1690,6 +1690,10 @@ export default {
         coordinateSystem: 'קואורדינטות',
         searchResults: 'תוצאות חיפוש מקטלוג',
         newRequest: 'בקשה חדשה',
+        showingEntitiesCount: 'מציג {{count}} ישויות',
+        showingEntitiesOfTotal: 'מציג {{count}} ישויות מתוך {{total}}',
+        clearFilter: 'נקה סינון',
+        search: 'חיפוש',
     },
     filters: {
         contains: 'מכיל',

@@ -2,19 +2,20 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { _debounce } from '@ag-grid-community/core';
-import { InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
+import { InfoOutlined, Search } from '@mui/icons-material';
+import { Autocomplete, Divider, Grid, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, IFilterOfField } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getLocationProperties } from '../../../utils/map';
+import SearchInput from '../../../common/inputs/SearchInput';
 
 interface LocationAutoCompleteOptionProps {
     title: string;
@@ -64,6 +65,7 @@ type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     handleEntityClick: (entity: IEntity) => void;
     onClear: () => void;
+    filters: { value: Record<string, IFilterOfField['$in']>; set: React.Dispatch<React.SetStateAction<Record<string, IFilterOfField['$in']>>> };
 };
 
 const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: props) => {
@@ -74,7 +76,24 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     const [templatesObject, setTemplatesObject] = useState<Record<string, {}>>({});
 
     useEffect(() => {
-        const updatedTemplatesObject = selectedTemplates.map(({ _id }) => _id).reduce((acc, template) => ({ ...acc, [template]: {} }), {});
+        const updatedTemplatesObject = selectedTemplates
+            .map(({ _id }) => _id)
+            .reduce(
+                (acc, template) => ({
+                    ...acc,
+                    [template]: {
+                        //todo:only for source template
+                        // filter:templatesPayload[sourceTemplateId] = {
+                        //     filter: {
+                        //         [FilterLogicalOperator.AND]: Object.entries(filters).map(([field, values]) => ({
+                        //             [field]: { $in: values },
+                        //         })),
+                        //     },
+                        // };
+                    },
+                }),
+                {},
+            );
         setTemplatesObject(updatedTemplatesObject);
     }, [selectedTemplates]);
 
@@ -99,6 +118,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
             },
         },
     );
+    console.log({ data });
 
     useEffect(() => {
         if (!inputValue && Object.keys(templatesObject).length) setInputValue(' ');
@@ -148,101 +168,126 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     }, [data]);
 
     return (
-        <Autocomplete
-            options={searchResults}
-            getOptionLabel={(option) => option.properties._id}
-            loading={isLoading || isFetchingNextPage}
-            loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
-            noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
-            isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
-            filterOptions={(options) => options}
-            sx={{
-                '.MuiAutocomplete-inputRoot': {
-                    maxHeight: '34px',
-                    boxShadow: '-2px 2px 6px 0px #1E27754D',
-                },
-                '& .MuiInputLabel-root': {
-                    fontFamily: 'Rubik',
-                    fontSize: '14px',
-                },
-            }}
-            onInputChange={(_event, newInputValue, reason) => {
-                if (reason === 'clear') {
-                    setInputValue(' ');
-                    onClear();
-                } else debouncedSearch(newInputValue);
-            }}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    sx={{
-                        backgroundColor: theme.palette.background.default,
-                        borderRadius: '7px',
-                        width: 400,
-                    }}
-                    placeholder={i18next.t('globalSearch.searchInPage')}
-                    size="small"
-                    variant="outlined"
-                />
-            )}
-            onChange={(_event, newValue) => {
-                if (newValue) handleEntityClick(newValue);
-            }}
-            renderOption={(props, option) => {
-                const { template, locationTemplateProperties, locationProperties } = getLocationProperties(option, selectedTemplates);
-                if (!template) return false;
+        <>
+            <SearchInput showBorder placeholder="חיפוש בעמוד" onChange={(newSearchValue: string) => setInputValue(newSearchValue)} />
+            {/* <Autocomplete
+                options={searchResults}
+                getOptionLabel={(option) => option.properties._id}
+                loading={isLoading || isFetchingNextPage}
+                loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
+                noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
+                isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
+                filterOptions={(options) => options}
+                sx={{
+                    '.MuiAutocomplete-inputRoot': {
+                        maxHeight: '34px',
+                    },
+                    '& .MuiInputLabel-root': {
+                        fontFamily: 'Rubik',
+                        fontSize: '14px',
+                    },
+                }}
+                onInputChange={(_event, newInputValue, reason) => {
+                    if (reason === 'clear') {
+                        setInputValue(' ');
+                        onClear();
+                    } else debouncedSearch(newInputValue);
+                }}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        sx={{
+                            backgroundColor: theme.palette.background.default,
+                            borderRadius: '7px',
+                        }}
+                        placeholder={i18next.t('globalSearch.searchInPage')}
+                        size="small"
+                        variant="outlined"
+                        // InputProps={{
+                        //     endAdornment: (
+                        //         <InputAdornment
+                        //             position="end"
+                        //             sx={{
+                        //                 fontWeight: '400',
+                        //                 // letterSpacing: '0em',
+                        //                 lineHeight: '16px',
+                        //                 gap: '10px',
+                        //             }}
+                        //         >
+                        //             <Divider
+                        //                 orientation="vertical"
+                        //                 style={{
+                        //                     width: '1px',
+                        //                     height: '20px',
+                        //                     borderRadius: '1.5px',
+                        //                     backgroundColor: theme.palette.primary.main,
+                        //                 }}
+                        //             />
+                        //             <Search fontSize="small" />{' '}
+                        //         </InputAdornment>
+                        //     ),
+                        // }}
+                    />
+                )}
+                onChange={(_event, newValue) => {
+                    if (newValue) handleEntityClick(newValue);
+                }}
+                renderOption={(props, option) => {
+                    const { template, locationTemplateProperties, locationProperties } = getLocationProperties(option, selectedTemplates);
+                    if (!template) return false;
 
-                return (
-                    <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
-                        <Grid container direction="row" alignItems="center">
-                            <Grid container direction="column">
-                                <Grid container alignSelf="center" direction="row" spacing={1}>
-                                    <Grid>
-                                        <MeltaTooltip
-                                            title={
-                                                template.propertiesPreview.length === 0 ? (
-                                                    i18next.t('templateEntitiesAutocomplete.noPreviewFields')
-                                                ) : (
-                                                    <EntityPropertiesInternal
-                                                        properties={option.properties}
-                                                        coloredFields={option.coloredFields}
-                                                        entityTemplate={template}
-                                                        mode="white"
-                                                        textWrap
-                                                    />
-                                                )
-                                            }
-                                        >
-                                            <InfoOutlined sx={{ color: '#166BD4' }} />
-                                        </MeltaTooltip>
+                    return (
+                        <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
+                            <Grid container direction="row" alignItems="center">
+                                <Grid container direction="column">
+                                    <Grid container alignSelf="center" direction="row" spacing={1}>
+                                        <Grid>
+                                            <MeltaTooltip
+                                                title={
+                                                    template.propertiesPreview.length === 0 ? (
+                                                        i18next.t('templateEntitiesAutocomplete.noPreviewFields')
+                                                    ) : (
+                                                        <EntityPropertiesInternal
+                                                            properties={option.properties}
+                                                            coloredFields={option.coloredFields}
+                                                            entityTemplate={template}
+                                                            mode="white"
+                                                            textWrap
+                                                        />
+                                                    )
+                                                }
+                                            >
+                                                <InfoOutlined sx={{ color: '#166BD4' }} />
+                                            </MeltaTooltip>
+                                        </Grid>
+                                        <Grid>
+                                            <Typography fontWeight={600}>{template.displayName}</Typography>
+                                        </Grid>
                                     </Grid>
-                                    <Grid>
-                                        <Typography fontWeight={600}>{template.displayName}</Typography>
+                                    <Grid container direction="column" spacing={1}>
+                                        {template.mapSearchProperties
+                                            ? template.mapSearchProperties.map((key, index) => (
+                                                  <LocationAutoCompleteOption
+                                                      key={`${key}-${index}`}
+                                                      title={template.properties.properties[key].title}
+                                                      value={option.properties[key]}
+                                                  />
+                                              ))
+                                            : Object.entries(locationProperties).map(([key, value], index) => (
+                                                  <LocationAutoCompleteOption
+                                                      key={`${key}-${index}`}
+                                                      title={locationTemplateProperties[key].title}
+                                                      value={value}
+                                                  />
+                                              ))}
                                     </Grid>
-                                </Grid>
-                                <Grid container direction="column" spacing={1}>
-                                    {template.mapSearchProperties
-                                        ? template.mapSearchProperties.map((key, index) => (
-                                              <LocationAutoCompleteOption
-                                                  key={`${key}-${index}`}
-                                                  title={template.properties.properties[key].title}
-                                                  value={option.properties[key]}
-                                              />
-                                          ))
-                                        : Object.entries(locationProperties).map(([key, value], index) => (
-                                              <LocationAutoCompleteOption
-                                                  key={`${key}-${index}`}
-                                                  title={locationTemplateProperties[key].title}
-                                                  value={value}
-                                              />
-                                          ))}
                                 </Grid>
                             </Grid>
-                        </Grid>
-                    </li>
-                );
-            }}
-        />
+                        </li>
+                    );
+                }}
+            /> */}
+        </>
     );
 };
 
