@@ -10,12 +10,11 @@ import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../../i
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
-import { isChildTemplate } from '../../utils/templates';
-import TemplateTable, { TemplateTableRef } from './TemplateTable';
-import { TablePageType } from '../EntitiesTableOfTemplate';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { matchValueAgainstFilter } from '../../utils/filters';
+import { isChildTemplate } from '../../utils/templates';
+import { TablePageType } from '../EntitiesTableOfTemplate';
+import TemplateTable, { TemplateTableRef } from './TemplateTable';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
