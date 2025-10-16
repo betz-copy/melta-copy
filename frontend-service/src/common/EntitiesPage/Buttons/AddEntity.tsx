@@ -101,7 +101,17 @@ const AddEntityButton: React.FC<{
                 {children}
             </TableButton>
 
-            <Dialog open={addEntityWizardState.isOpen} maxWidth={template?.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog
+                open={addEntityWizardState.isOpen}
+                maxWidth={
+                    template?.documentTemplatesIds?.length
+                        ? 'lg'
+                        : Object.keys(template || emptyEntityTemplate.properties.properties).length === 1
+                          ? 'sm'
+                          : 'md'
+                }
+                fullWidth
+            >
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         actionType: ActionTypes.CreateEntity,

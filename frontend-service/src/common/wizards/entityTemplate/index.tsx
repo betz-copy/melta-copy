@@ -72,6 +72,7 @@ export interface EntityTemplateFormInputProperties {
     comment?: string;
     color?: string;
     accountBalance?: boolean;
+    isProfileImage?: boolean;
 }
 
 type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
@@ -95,6 +96,7 @@ export interface EntityTemplateWizardValues
     icon?: fileDetails;
     documentTemplatesIds?: File[];
     walletTransfer?: IWalletTransferPopulated;
+    enumPropertiesColors?: string[];
 }
 
 const EntityTemplateWizard: React.FC<

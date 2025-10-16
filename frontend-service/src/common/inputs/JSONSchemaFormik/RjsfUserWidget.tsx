@@ -31,7 +31,14 @@ const RjsfUserWidget = ({
     return (
         <UserInput
             value={
-                currentUser ? { _id: currentUser._id, displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser } : undefined
+                currentUser
+                    ? {
+                          _id: currentUser._id,
+                          displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`,
+                          userType: currentUser.entityType,
+                          ...currentUser,
+                      }
+                    : undefined
             }
             label={label}
             onBlur={({ target: { value: newValue } }) => onBlur(id, newValue)}

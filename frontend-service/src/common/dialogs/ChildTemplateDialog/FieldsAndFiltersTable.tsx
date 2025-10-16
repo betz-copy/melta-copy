@@ -74,7 +74,7 @@ const renderChips = (
 
         return (
             <Grid key={`${chip}-${mode}-${index}`} justifyItems="center">
-                <ColoredEnumChip label={label} onDelete={() => onDelete(chip, mode)} color="default" />
+                <ColoredEnumChip label={label} onDelete={() => onDelete(chip, mode)} enumColor="default" />
             </Grid>
         );
     });

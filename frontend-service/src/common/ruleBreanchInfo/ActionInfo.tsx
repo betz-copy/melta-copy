@@ -12,13 +12,14 @@ import {
     IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
+    ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../interfaces/rules';
+import { ActionOnFail, IMongoRule } from '../../interfaces/rules';
 import { IUser } from '../../interfaces/users';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
@@ -150,7 +151,9 @@ export const EntityForBrokenRules: React.FC<{
             actions={actions}
             entityPropertiesToShowTooltipOverride={entityPropertiesToShowTooltipOverride}
             entityPropertiesToHighlightTooltip={entityPropertiesToHighlightTooltip}
-            entityPropertiesToHighlightColor={ruleTemplate.actionOnFail === 'WARNING' ? theme.palette.warning.main : theme.palette.error.main}
+            entityPropertiesToHighlightColor={
+                ruleTemplate.actionOnFail === ActionOnFail.WARNING ? theme.palette.warning.main : theme.palette.error.main
+            }
         />
     );
 };
@@ -298,7 +301,12 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
             </Grid>
             {!isCompact && entityTemplate && (
                 <Grid alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
-                    <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} mode="normal" />
+                    <EntityPropertiesInternal
+                        properties={entity.properties}
+                        coloredFields={entity.coloredFields}
+                        entityTemplate={entityTemplate}
+                        mode="normal"
+                    />
                 </Grid>
             )}
         </Grid>
@@ -371,8 +379,78 @@ const UpdateEntityStatusActionInfo: React.FC<{
     );
 };
 
+const CronjobActionInfo: React.FC<{ actionMetadata: ICronjobRunMetadataPopulated }> = ({ actionMetadata: { entity } }) => {
+    const queryClient = useQueryClient();
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId);
+
+    return (
+        <Typography component="p" variant="body1">
+            <Box component="span">{i18next.t('ruleBreachInfo.cronjobActionInfo.inEntity')}</Box>{' '}
+            <EntityInstanceLink entity={entity} entityTemplate={entityTemplate || null} linkable={!!entity?.properties._id} />
+        </Typography>
+    );
+};
+
+const ActionInfoBody: React.FC<{
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
+    isCompact: boolean;
+    actionIndex: number;
+    actions: IActionPopulated[];
+    failedProperties: string[];
+}> = ({ actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties }) => {
+    switch (actionType) {
+        case ActionTypes.CreateRelationship:
+        case ActionTypes.DeleteRelationship:
+            return (
+                <CreateOrDeleteRelActionInfo
+                    actionType={actionType}
+                    actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
+                    actions={actions}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.CreateEntity:
+        case ActionTypes.DuplicateEntity:
+            return (
+                <CreateOrDuplicateEntityActionInfo
+                    actionType={actionType}
+                    actionMetadata={actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated}
+                    isCompact={isCompact}
+                    actionIndex={actionIndex}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.UpdateEntity:
+            return (
+                <UpdateEntityActionInfo
+                    actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated}
+                    isCompact={isCompact}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.UpdateStatus:
+            return (
+                <UpdateEntityStatusActionInfo
+                    actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.CronjobRun:
+            return <CronjobActionInfo actionMetadata={actionMetadata as ICronjobRunMetadataPopulated} />;
+        default:
+            throw new Error('unsupported action type to show in ActionInfo. shouldnt reach here');
+    }
+};
+
 export const ActionInfo: React.FC<{
-    originUser?: IUser;
+    originUser?: IUser | null;
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
     isCompact: boolean;
@@ -383,36 +461,14 @@ export const ActionInfo: React.FC<{
     return (
         <Grid container flexDirection="column">
             <Grid>
-                {(actionType === ActionTypes.CreateRelationship || actionType === ActionTypes.DeleteRelationship) && (
-                    <CreateOrDeleteRelActionInfo
-                        actionType={actionType}
-                        actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
-                        actions={actions}
-                        failedProperties={failedProperties}
-                    />
-                )}
-                {(actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity) && (
-                    <CreateOrDuplicateEntityActionInfo
-                        actionType={actionType}
-                        actionMetadata={actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated}
-                        isCompact={isCompact}
-                        actionIndex={actionIndex}
-                        failedProperties={failedProperties}
-                    />
-                )}
-                {actionType === ActionTypes.UpdateEntity && (
-                    <UpdateEntityActionInfo
-                        actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated}
-                        isCompact={isCompact}
-                        failedProperties={failedProperties}
-                    />
-                )}
-                {actionType === ActionTypes.UpdateStatus && (
-                    <UpdateEntityStatusActionInfo
-                        actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}
-                        failedProperties={failedProperties}
-                    />
-                )}
+                <ActionInfoBody
+                    actionType={actionType}
+                    actionMetadata={actionMetadata}
+                    isCompact={isCompact}
+                    actionIndex={actionIndex}
+                    actions={actions}
+                    failedProperties={failedProperties}
+                />
             </Grid>
             {originUser && (
                 <Grid marginLeft="4px">

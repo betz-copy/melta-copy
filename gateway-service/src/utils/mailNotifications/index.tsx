@@ -16,17 +16,16 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachRequestPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
+    IRuleMail,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-    IUser,
-    IWorkspace,
     NotificationType,
     RuleBreachRequestStatus,
 } from '@microservices/shared';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
-import WorkspaceService from '../../express/workspaces/service';
+import WorkspaceManager from '../../express/workspaces/manager';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
@@ -40,10 +39,7 @@ import {
 import mailConfig from './mailConfig';
 
 const { mailTitle } = mailConfig;
-const {
-    mailerService,
-    service: { meltaBaseUrl },
-} = config;
+const { mailerService } = config;
 
 class MailManager {
     private entityTemplateService: EntityTemplateService;
@@ -56,12 +52,6 @@ class MailManager {
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.instanceService = new InstancesService(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
-    }
-
-    private async meltaBaseUrlByWorkspace() {
-        const workspace: IWorkspace = await WorkspaceService.getById(this.workspaceId);
-
-        return `${meltaBaseUrl}${workspace.path}/${workspace.name}${workspace.type}`;
     }
 
     private async newProcessMail({ process }: INewProcessNotificationMetadataPopulated) {
@@ -234,7 +224,7 @@ class MailManager {
         const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(relationshipTemplateId);
         const sourceEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
         const destinationEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
-        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
 
         return (
             <>
@@ -249,19 +239,18 @@ class MailManager {
 
     private async getUpdateEntityActionInfo({ entity }: IUpdateEntityMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
-        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
 
         return (
             <p>
-                {hebrew.updateEntityActionInfo.updatingEntity}{' '}
-                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
+                {hebrew.updateEntityActionInfo.updatingEntity} <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
             </p>
         );
     }
 
     private async getCreatedOrDuplicateEntityActionInfo({ templateId, properties }, actionType: string) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
-        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
         const entity = await this.instanceService.getEntityInstanceById(properties._id);
 
         return (
@@ -274,7 +263,7 @@ class MailManager {
 
     private async getUpdateEntityStatusActionInfo({ entity, disabled }: IUpdateEntityStatusMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
-        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
 
         return (
             <p>
@@ -283,6 +272,18 @@ class MailManager {
                 <strong>
                     {disabled ? hebrew.ruleBreach.updateEntityStatusActionInfo.toDisabled : hebrew.ruleBreach.updateEntityStatusActionInfo.toActive}
                 </strong>
+            </p>
+        );
+    }
+
+    private async getCronjobRunActionInfo(ruleBreach: IRuleBreachAlertPopulated) {
+        const entity = ruleBreach.brokenRules[0].failures[0].entity as IEntity;
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
+
+        return (
+            <p>
+                {hebrew.cronjobActionInfo.theEntity} <this.EntityLink entity={entity} entityTemplate={entityTemplate!} baseUrl={baseUrl} />
             </p>
         );
     }
@@ -307,6 +308,9 @@ class MailManager {
                         return this.getUpdateEntityActionInfo(action.actionMetadata as IUpdateEntityMetadataPopulated);
                     case ActionTypes.UpdateStatus:
                         return this.getUpdateEntityStatusActionInfo(action.actionMetadata as IUpdateEntityStatusMetadataPopulated);
+                    case ActionTypes.CronjobRun:
+                        // if actionType is CronjobRun, then must be alert (not request)
+                        return this.getCronjobRunActionInfo(ruleBreach as IRuleBreachAlertPopulated);
                     default:
                         return null;
                 }
@@ -314,17 +318,16 @@ class MailManager {
         );
     }
 
-    private async ruleBreachBodyMassage(
-        ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | IRuleBreachRequestPopulated,
-        ruleBrokenData: IRule[],
-    ) {
+    private async ruleBreachBodyMassage(ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, ruleBrokenData: IRule[]) {
         return (
             <>
                 {await this.getActionsInfoMessages(ruleBreach)}
-                <p>
-                    {hebrew.ruleBreach.by}
-                    <strong>{ruleBreach.originUser.fullName}</strong>
-                </p>
+                {ruleBreach.originUser && (
+                    <p>
+                        {hebrew.ruleBreach.by}
+                        <strong>{ruleBreach.originUser.fullName}</strong>
+                    </p>
+                )}
                 <p>
                     <u>{hebrew.brokenRules.breakingRules}</u>
                 </p>
@@ -349,7 +352,10 @@ class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${await this.meltaBaseUrlByWorkspace()}/rule-management/alert/${ruleBreachAlert._id}`} target="_blank">
+                        <a
+                            href={`${await WorkspaceManager.getBaseUrl(this.workspaceId)}/rule-management/alert/${ruleBreachAlert._id}`}
+                            target="_blank"
+                        >
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -375,7 +381,10 @@ class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${await this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
+                        <a
+                            href={`${await WorkspaceManager.getBaseUrl(this.workspaceId)}/rule-management/request/${ruleBreachRequest._id}`}
+                            target="_blank"
+                        >
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -405,7 +414,10 @@ class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${await this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
+                        <a
+                            href={`${await WorkspaceManager.getBaseUrl(this.workspaceId)}/rule-management/request/${ruleBreachRequest._id}`}
+                            target="_blank"
+                        >
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -416,7 +428,7 @@ class MailManager {
 
     private async dateAboutToExpireMail({ entity, propertyName, datePropertyValue }: IDateAboutToExpireMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
-        const baseUrl = await this.meltaBaseUrlByWorkspace();
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
 
         return (
             <html>
@@ -432,6 +444,16 @@ class MailManager {
                         {hebrew.dateAboutToExpireNotification.aboutToExpire}
                     </p>
                 </body>
+            </html>
+        );
+    }
+
+    private ruleIndicatorAlertMailBody(body: string) {
+        // we can "safely" inject the html because every user input goes through escaping
+        // the template automatically by quill, and the entity values by the function that injects them
+        return (
+            <html>
+                <body dir="rtl" dangerouslySetInnerHTML={{ __html: body }}></body>
             </html>
         );
     }
@@ -461,11 +483,19 @@ class MailManager {
         }
     }
 
-    async createMail({ viewers, type, populatedMetaData }: IMailNotification) {
-        const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
-        const title = mailTitle[type];
+    async createMail({ viewersMail, type, populatedMetaData }: IMailNotification, emailTemplate?: IRuleMail) {
+        if (type === NotificationType.ruleIndicatorAlert) {
+            return {
+                from: mailerService.mailUser,
+                to: viewersMail,
+                title: emailTemplate!.title,
+                html: renderToString(this.ruleIndicatorAlertMailBody(emailTemplate!.body)) || <></>,
+            };
+        }
 
+        const title = mailTitle[type];
         const html = renderToString((await this.getMailHtml(type, populatedMetaData)) || <></>);
+
         return {
             from: mailerService.mailUser,
             to: viewersMail,

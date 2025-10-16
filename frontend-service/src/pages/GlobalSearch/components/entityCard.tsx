@@ -331,6 +331,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             }}
                             viewFirstLineOfLongText
                             searchedText={searchedText}
+                            coloredFields={entity.coloredFields}
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
@@ -450,6 +451,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 }}
                                 innerStyle={{ flexBasis: '33.33%' }}
                                 mode="normal"
+                                coloredFields={entity.coloredFields}
                             />
                             <Grid container marginTop="40px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
@@ -520,7 +522,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         ))}
                 </Grid>
             </Grid>
-            <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog
+                open={editDialog.isOpen}
+                maxWidth={
+                    entityTemplate?.documentTemplatesIds?.length ? 'lg' : Object.keys(entityTemplate.properties.properties).length === 1 ? 'sm' : 'md'
+                }
+                fullWidth
+            >
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         actionType: ActionTypes.UpdateEntity,

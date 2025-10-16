@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties, JSX, useState } from 'react';
@@ -21,6 +21,7 @@ import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import UserAvatar from './UserAvatar';
+import _ from 'lodash';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -42,18 +43,49 @@ interface FormatOptions {
     pureString?: boolean;
 }
 
+const getUserAvatar = (
+    entityTemplate: Template,
+    imageKey: string,
+    properties: IEntityPropertiesProps['properties'],
+    iconProps: { size: number; border: number },
+) => {
+    const relatedUserField = entityTemplate?.properties?.properties?.[imageKey]?.expandedUserField?.relatedUserField;
+    const user = relatedUserField && properties?.[relatedUserField] ? JSON.parse(properties?.[relatedUserField]) : undefined;
+
+    return (
+        user && (
+            <div style={{ marginLeft: '3rem' }}>
+                <UserAvatar
+                    user={user}
+                    shouldRenderChip={false}
+                    tooltip={{ displayUserImage: false }}
+                    shouldGetKartoffelImage
+                    userIcon={{ size: iconProps.size, overrideSx: { border: `${iconProps.border}px solid #FF006B`, boxShadow: '0px' } }}
+                />
+            </div>
+        )
+    );
+};
+
 export const formatToString = (
     value: any,
     property: IEntitySingleProperty,
     key?: string,
     preview?: boolean,
+    color?: string,
     options: FormatOptions = {},
     hideProps: string[] = [],
+    entityTemplate?: Template,
+    properties?: IEntityPropertiesProps['properties'],
 ) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
+
+    // If displaying an image from a kartoffel user
+    if (format === 'kartoffelUserField' && expandedUserField?.kartoffelField === 'image' && entityTemplate && properties && key)
+        return getUserAvatar(entityTemplate, key, properties, { size: 32, border: 1 });
 
     if (value === null || value === undefined) return '-';
 
@@ -81,6 +113,7 @@ export const formatToString = (
                     download={isPrintingMode}
                     defaultFileName={format === 'signature' ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
                     disabled={preview}
+                    color={color}
                 />
             );
         }
@@ -92,6 +125,7 @@ export const formatToString = (
                     entity={value}
                     relatedTemplateId={property.relationshipReference!.relatedTemplateId}
                     relatedTemplateField={property.relationshipReference!.relatedTemplateField}
+                    color={color}
                 />
             );
         }
@@ -99,15 +133,10 @@ export const formatToString = (
             const userObject = typeof value === 'string' ? JSON.parse(value) : value;
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={userObject.fullName}>
-                        <Grid>
-                            <Chip
-                                avatar={<UserAvatar user={userObject} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
-                                label={userObject.fullName}
-                            />
-                        </Grid>
-                    </MeltaTooltip>
+                    <UserAvatar
+                        user={userObject}
+                        chip={{ sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') } }}
+                    />
                 </Grid>
             );
         }
@@ -124,11 +153,12 @@ export const formatToString = (
         }
         return convertLocation(value);
     }
-    if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
+    if (keyEnumColors?.[value] && valueType === 'string')
+        return pureString ? value : <ColoredEnumChip label={value} enumColor={keyEnumColors[value] || 'default'} color={color} />;
+
     if (valueType === 'array') {
-        if (property.items?.format === 'fileId') {
-            return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
-        }
+        if (property.items?.format === 'fileId') return value.map((val: string) => <OpenPreview fileId={val} key={val} color={color} />);
+
         if (property.items?.format === 'user') {
             return (
                 <Grid container>
@@ -137,15 +167,14 @@ export const formatToString = (
                         getItemKey={(item: any) => item._id}
                         renderItem={(item) => (
                             <Grid>
-                                <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
-                                    <Grid>
-                                        <Chip
-                                            avatar={<UserAvatar user={item} size={25} overrideSx={{ border: '1.3px solid #FF006B' }} />}
-                                            sx={{ background: darkMode ? '#1E1F2B' : '#EBEFFA', color: darkMode ? '#D3D6E0' : '#53566E' }}
-                                            label={item.fullName}
-                                        />
-                                    </Grid>
-                                </MeltaTooltip>
+                                <UserAvatar
+                                    key={item.id}
+                                    user={item}
+                                    tooltip={{ title: `${item.fullName} - ${item.hierarchy}` }}
+                                    chip={{
+                                        sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') },
+                                    }}
+                                />
                             </Grid>
                         )}
                         propertyToDisplayInTooltip="fullName"
@@ -154,10 +183,17 @@ export const formatToString = (
                 </Grid>
             );
         }
+
         return pureString
             ? value.join(', ')
             : value.map((val: string) => (
-                  <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+                  <ColoredEnumChip
+                      key={val}
+                      label={val}
+                      enumColor={keyEnumColors?.[val] || 'default'}
+                      style={{ margin: '5px 0px 0px 5px' }}
+                      color={color}
+                  />
               ));
     }
     return value;
@@ -168,6 +204,7 @@ type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOr
 interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
+    coloredFields?: IEntity['coloredFields'];
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
@@ -194,7 +231,9 @@ export const getPropertyColor = (
     highlightColor: Property.Color | undefined,
     mode: 'normal' | 'white',
     normalColor: Property.Color,
+    coloredFields?: IEntity['coloredFields'],
 ) => {
+    if (coloredFields?.[propertyKey]) return coloredFields?.[propertyKey];
     if (propertiesToHighlight?.includes(propertyKey)) {
         return highlightColor;
     }
@@ -205,6 +244,7 @@ export const getPropertyColor = (
 type PropertiesDetailsProps = {
     propertiesOrderedToShow: string[];
     properties: IEntity['properties'];
+    coloredFields: IEntity['coloredFields'];
     entityTemplate: Template;
     entityTemplates?: IEntityTemplateMap;
     mode: 'normal' | 'white';
@@ -223,6 +263,7 @@ type PropertiesDetailsProps = {
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     propertiesOrderedToShow,
     properties,
+    coloredFields = {},
     entityTemplate,
     entityTemplates,
     isPrintingMode,
@@ -238,6 +279,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     preview,
 }) => {
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
+
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -257,12 +299,15 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     propertySchema,
                     propertyKey,
                     preview,
+                    coloredFields?.[propertyKey],
                     {
                         keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                         isPrintingMode,
                         pureString,
                     },
                     entityTemplate.properties.hide,
+                    entityTemplate,
+                    properties,
                 );
 
                 if (stringFormatValue === null || stringFormatValue === undefined) return undefined;
@@ -273,9 +318,10 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     propertiesToHighlightColor,
                     mode,
                     darkMode ? '#dcdde2' : '#53566E',
+                    coloredFields,
                 );
 
-                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
+                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
@@ -407,6 +453,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean; showByGroups?: boolean }> = ({
     entityTemplate,
     properties,
+    coloredFields = {},
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
@@ -451,8 +498,15 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     const alreadyRenderedGroups = new Set<string>();
 
+    const imageOfKartoffelKeys = _.remove(propertiesOrderedToShow, (propertyKey) => {
+        const propertyValue = entityTemplate.properties.properties[propertyKey];
+        return propertyValue?.expandedUserField?.kartoffelField === 'image' && propertyValue.isProfileImage;
+    });
+
     return (
-        <>
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            {/* Profile image */}
+            {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
@@ -492,6 +546,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 key={group.name}
                                                 propertiesOrderedToShow={orderedGroupFields}
                                                 properties={properties}
+                                                coloredFields={coloredFields}
                                                 entityTemplate={entityTemplate}
                                                 entityTemplates={entityTemplates}
                                                 isPrintingMode={isPrintingMode}
@@ -518,6 +573,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     key={propertyKey}
                                     propertiesOrderedToShow={[propertyKey]}
                                     properties={properties}
+                                    coloredFields={coloredFields}
                                     entityTemplate={entityTemplate}
                                     entityTemplates={entityTemplates}
                                     isPrintingMode={isPrintingMode}
@@ -540,6 +596,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 ) : (
                     <PropertiesDetails
                         propertiesOrderedToShow={propertiesOrderedToShow}
+                        coloredFields={coloredFields}
                         properties={properties}
                         entityTemplate={entityTemplate}
                         entityTemplates={entityTemplates}
@@ -557,7 +614,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     />
                 )}
             </Grid>
-        </>
+        </Box>
     );
 };
 

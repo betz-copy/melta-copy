@@ -18,6 +18,8 @@ interface NodeTooltipProps {
 }
 
 export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, darkMode, entityTemplates }) => {
+    const { coloredFields, ...properties } = node.data;
+
     return (
         <Grid
             container
@@ -31,7 +33,8 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
             <Grid>
                 {entityTemplate.propertiesPreview.length ? (
                     <EntityPropertiesInternal
-                        properties={node.data}
+                        properties={properties}
+                        coloredFields={coloredFields}
                         showPreviewPropertiesOnly
                         entityTemplate={entityTemplate}
                         darkMode={darkMode}

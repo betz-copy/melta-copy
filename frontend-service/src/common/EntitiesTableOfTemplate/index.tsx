@@ -145,7 +145,7 @@ export const getDatasource = <Data extends any = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
-                          childTemplateId,
+                          childTemplateId ? [childTemplateId] : [],
                       ),
             );
 

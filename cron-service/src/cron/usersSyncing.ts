@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { keyBy } from 'lodash';
-import * as schedule from 'node-schedule';
+import schedule from 'node-schedule';
 import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
 import config from '../config';
 import EntityTemplateService from '../services/entityTemplate';

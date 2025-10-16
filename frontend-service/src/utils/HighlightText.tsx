@@ -1,18 +1,27 @@
+import { Typography } from '@mui/material';
 import { escapeRegExp } from 'lodash';
 import React from 'react';
 import { VerifyLink } from '../common/VerifyLink';
 
-export const HighlightText: React.FC<{ text?: string | React.JSX.Element; searchedText?: string; isLink?: boolean }> = ({
+export const HighlightText: React.FC<{ text?: string | React.JSX.Element; searchedText?: string; color?: string; isLink?: boolean }> = ({
     text,
     searchedText,
+    color,
     isLink = false,
 }) => {
     // eslint-disable-next-line react/jsx-no-useless-fragment
-    if ((typeof text !== 'string' && typeof text !== 'number') || !searchedText) return isLink ? <VerifyLink>{text}</VerifyLink> : <>{text}</>;
+    if ((typeof text !== 'string' && typeof text !== 'number') || !searchedText)
+        return isLink ? <VerifyLink color={color}>{text}</VerifyLink> : <Typography color={color}>{text}</Typography>;
 
     const context = String(text)
         .split(new RegExp(`(${escapeRegExp(searchedText)})`, 'gi'))
         .map((part) => (part.toLowerCase() === searchedText.toLowerCase() ? <b key={part}>{part}</b> : part));
 
-    return isLink ? <VerifyLink>{context}</VerifyLink> : <span>{context}</span>;
+    return isLink ? (
+        <VerifyLink color={color}>{context}</VerifyLink>
+    ) : (
+        <Typography component="span" color={color}>
+            {context}
+        </Typography>
+    );
 };

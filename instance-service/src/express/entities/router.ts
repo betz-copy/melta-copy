@@ -28,6 +28,7 @@ import {
     convertToRelationshipFieldRequestSchema,
     countEntitiesOfTemplatesByUserEntityIdRequestSchema,
     getSelectedEntitiesRequestSchema,
+    runRulesWithTodayFuncRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -120,5 +121,7 @@ entityRouter.patch(
     ValidateRequest(deletePropertiesOfTemplateRequestSchema),
     entityController.deletePropertiesOfTemplate,
 );
+
+entityRouter.post('/runRulesWithTodayFunc', ValidateRequest(runRulesWithTodayFuncRequestSchema), entityController.runRulesWithTodayFunc);
 
 export default entityRouter;

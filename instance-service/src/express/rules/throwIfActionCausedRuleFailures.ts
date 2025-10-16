@@ -1,9 +1,6 @@
-import _difference from 'lodash.difference';
+import { BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
 import _groupBy from 'lodash.groupby';
-import _isEqual from 'lodash.isequal';
-import _mapValues from 'lodash.mapvalues';
 import _sortBy from 'lodash.sortby';
-import { IAction, IBrokenRule, ICausesOfInstance, BadRequestError } from '@microservices/shared';
 import config from '../../config';
 import filteredMap from '../../utils/filteredMap';
 import { isEqualStripUndefined } from '../../utils/lib';
@@ -119,7 +116,12 @@ export const throwIfActionCausedRuleFailures = (
 
         return {
             include: true,
-            value: { ruleId: ruleFailureAfterAction.rule._id, entityId: ruleFailureAfterAction.entityId, causes },
+            value: {
+                ruleId: ruleFailureAfterAction.rule._id,
+                entityId: ruleFailureAfterAction.entityId,
+                // filter out cause of getTodayFunc (UI doesnt show it anyway)
+                causes: causes.filter<ICausesOfInstance>((cause) => 'instance' in cause),
+            },
         };
     });
 

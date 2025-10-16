@@ -144,6 +144,10 @@ class EntityController extends DefaultController<EntityManager> {
     async countEntitiesOfTemplatesByUserEntityId(req: Request, res: Response) {
         res.json(await this.manager.countEntitiesOfTemplatesByUserEntityId(req.body.templateIds, req.body.userEntityId));
     }
+
+    async runRulesWithTodayFunc(_req: Request, res: Response) {
+        res.json(await this.manager.runRulesWithTodayFunc());
+    }
 }
 
 export default EntityController;

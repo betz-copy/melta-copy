@@ -36,6 +36,10 @@ export interface IUpdateEntityStatusMetadata {
     disabled: boolean;
 }
 
+export interface ICronjobRunMetadata {
+    entityId: string; // on whom cronjob run was initiated
+}
+
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity | string | null;
     destinationEntity: IEntity | string | null;
@@ -63,13 +67,18 @@ export interface ICreateOrDuplicateEntityMetadataPopulated {
     properties: Record<string, any>;
 }
 
+export interface ICronjobRunMetadataPopulated {
+    entity: IEntity | null;
+}
+
 export type IActionMetadata =
     | ICreateRelationshipMetadata
     | IDeleteRelationshipMetadata
     | ICreateEntityMetadata
     | IDuplicateEntityMetadata
     | IUpdateEntityMetadata
-    | IUpdateEntityStatusMetadata;
+    | IUpdateEntityStatusMetadata
+    | ICronjobRunMetadata;
 
 export type IActionMetadataPopulated =
     | ICreateRelationshipMetadataPopulated
@@ -77,7 +86,8 @@ export type IActionMetadataPopulated =
     | ICreateEntityMetadataPopulated
     | IDuplicateEntityMetadataPopulated
     | IUpdateEntityMetadataPopulated
-    | IUpdateEntityStatusMetadataPopulated;
+    | IUpdateEntityStatusMetadataPopulated
+    | ICronjobRunMetadataPopulated;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
@@ -86,6 +96,7 @@ export enum ActionTypes {
     DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
+    CronjobRun = 'cronjob-run',
 }
 
 export interface IActionPopulated {

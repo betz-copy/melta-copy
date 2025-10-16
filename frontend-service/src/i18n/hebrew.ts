@@ -469,6 +469,7 @@ export default {
         displayNames: {
             ruleBreachRequest: 'בקשה לחריגת חוקה',
             ruleBreachAlert: 'התראת חוקה',
+            ruleIndicatorAlert: 'חוקי חיווי',
             archivedProcess: 'תהליך ארכיון',
             dateAboutToExpire: 'תאריך מתקרב',
             deleteProcess: 'מחיקת תהליך',
@@ -741,6 +742,7 @@ export default {
                 sex: 'מגדר',
                 directGroup: 'קבוצה ישירה',
                 hierarchy: 'היררכיה',
+                image: 'תמונה',
             },
             walletTransfer: {
                 destination: 'יעד',
@@ -906,15 +908,35 @@ export default {
             ruleMetadata: 'פרטי החוק',
             name: 'שם',
             description: 'תיאור',
-            actionOnFail: 'טיפול בחריגה',
-            primaryEntityTemplate: 'תבנית ישות ראשית',
+            actionOnFail: 'סוג חוק',
+            primaryEntityTemplate: 'יישות ראשית',
             formula: 'נוסחת החוק',
             invalidFormula: 'נוסחה לא תקינה',
             countAggregationCantHaveSubFormulas: 'לא ניתן להוסיף תנאים לאגריגציה מסוג סכימת ישויות',
+            aggregationsCantHaveGetTodayFunc: 'לא ניתן להשתמש בTODAY בלולאה של קשרים (ALL/SOME)',
+            todayVariableInfo:
+                'השימוש בפונקציה TODAY( ) היא שהנוסחא תרוץ על הישות כל יום מחדש (בלילה) כדי לראות אם עונה על התנאי. לדוגמא חוק mathTest.date<TODAY( )-14 יבדק כל יום, והחוק ישבר כאשר התאריך בדיוק 14 יום לפני המבחן.\nשים לב! אין להשתמש בפונקציה בתוך לולאות קשר (ALL/SOME), מפני שהחוק יאט את המערכת כי רץ על כל הישויות בטבלה כל לילה לבדוק אם ישות כלשהי עוברת על החוק.',
             actions: {
                 warning: 'אזהרה',
                 enforcement: 'אכיפה',
+                indicator: 'חיווי',
             },
+            atLeastOne: 'יש לבחור אפשרות אחת לפחות',
+            fieldColor: 'צביעת שדה',
+            fieldToColor: 'שדה לצביעה',
+            color: 'צבע',
+            mailNotification: 'התראה למייל',
+            mailFormatHelper: '·   להצגת ערכים מהיישות יש לציין את שם השדה באנגלית בתוך {{}}, לדוגמה: {{creation_date}}',
+            mailTitle: 'כותרת המייל',
+            mailBody: 'תוכן המייל',
+            sendMailTo: 'שליחת ההתראה למייל ל *',
+            sendMailToChooseOne: 'יש לבחור סוג נמען אחד לפחות',
+            sendToUsersWithPerms: 'משתמשים בעלי הרשאה ליישות',
+            sendToAssociatedUsers: 'משתמשים משוייכים ליישות',
+            sendToAssociatedUsersHelper: '(שדה מסוג משתמש)',
+            mustSelectOneIndicatorConfig: 'חובה לבחור אפשרות אחת לפחות',
+            recipients: 'נמענים',
+            invalidMailFormat: 'פורמט לא תקין (סוגריים לא תקינות)',
         },
         processInstance: {
             saveBth: 'שמירה',
@@ -1006,6 +1028,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        forbidden: 'אסור',
         fieldFilterCondition: 'הערך אינו עומד בתנאי הסינון',
         url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
@@ -1057,6 +1080,7 @@ export default {
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
         invalidProperty: 'שדה לא תקין',
         differentDestinations: 'מקור ויעד לא יכולים להיות זהים',
+        isProfileImage: 'תמונת פרופיל',
     },
     propertyTypes: {
         string: 'טקסט',
@@ -1158,6 +1182,9 @@ export default {
             updatingStatus: 'עדכון סטטוס',
             toDisabled: 'למושבת',
             toActive: 'למופעל',
+        },
+        cronjobActionInfo: {
+            inEntity: 'בישות',
         },
         deletedEntity: 'הישות נמחקה',
         brokenRules: 'חריגות',
@@ -1265,6 +1292,9 @@ export default {
         'duplicate-entity': 'שכפול ישות',
         'update-entity': 'עריכת ישות',
         'update-status': 'עריכת סטטוס',
+        // 'update-multiple-entities', // todo
+        // 'create-client-side-entity', // todo
+        'cronjob-run': 'בדיקת חוק יומית (פעם ביום)',
         approveRequest: 'אשר בקשה',
         denyRequest: 'דחה בקשה',
         cancelRequest: 'ביטול בקשה',
@@ -1668,6 +1698,7 @@ export default {
     },
     location: {
         polygon: 'פוליגון',
+        searchByPolygon: ' חיפוש בעזרת פוליגון',
         coordinate: 'נקודת ציון',
         circle: 'חיפוש בעזרת מעגל',
         line: 'קו למדידת מרחק',
@@ -1760,6 +1791,7 @@ export default {
             sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
         unitsArray: 'רשימת יחידות',
+        numOfRelationshipFieldsToShow: 'מספר שדות לתצוגת שדה שיוך ליישות',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

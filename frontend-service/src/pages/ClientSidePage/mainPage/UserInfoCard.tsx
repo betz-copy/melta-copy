@@ -115,6 +115,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                                 innerStyle={{ width: '32%' }}
                                 textWrap
                                 mode="normal"
+                                coloredFields={currentUserFromClientSide.coloredFields}
                             />
                         </Grid>
                         <Grid container justifyContent="space-between" paddingTop="25px">

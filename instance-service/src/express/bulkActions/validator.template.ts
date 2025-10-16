@@ -65,6 +65,11 @@ ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
+});
+
 ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({

@@ -184,6 +184,7 @@ export const environment = {
             general: [
                 NotificationType.ruleBreachAlert,
                 NotificationType.ruleBreachResponse,
+                NotificationType.ruleIndicatorAlert,
                 NotificationType.processReviewerUpdate,
                 NotificationType.processStatusUpdate,
                 NotificationType.newProcess,
@@ -225,6 +226,11 @@ export const environment = {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachResponse,
                     displayName: () => i18next.t('notifications.displayNames.ruleBreachResponse'),
+                },
+                {
+                    color: '#FF0000',
+                    type: NotificationType.ruleIndicatorAlert,
+                    displayName: () => i18next.t('notifications.displayNames.ruleIndicatorAlert'),
                 },
                 {
                     color: '#8FBC8F',
@@ -314,6 +320,7 @@ export const environment = {
         maxRadius: 30000,
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        polygonDefaultColor: '#11695a',
         mapSearchPropertiesLimit: 2,
         epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
         utm: {
@@ -1375,10 +1382,13 @@ export const environment = {
             'prw',
         ],
     },
+    emptyHtmlStringValues: ['<p><br/></p>', '<p><br></p>'] as string[],
+    errorColor: '#d32f2f',
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',
             noTypeGivenErrorCodeTs: '7044',
         },
     },
+    formulaGetTodayVarName: '!TODAY_VAR', // '!' at start to not intersect with other variables
 } as const;

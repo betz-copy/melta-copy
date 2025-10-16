@@ -102,7 +102,7 @@ const Wizard = <T extends object>({
                         color: (theme) => theme.palette.grey[500],
                     }}
                 >
-                    <CloseIcon />
+                    <CloseIcon sx={{ color: 'primary.main' }} />
                 </IconButton>
             </DialogTitle>
             <DialogContent>

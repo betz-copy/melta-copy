@@ -2,6 +2,8 @@ version: '3.8'
 
 secrets:
   npm_token:
+    # the token has an expiration date because gitlab is annoying
+    # currently the expiration date is 25/9/26
     file: ./npm_token_secret.txt
 
 services:

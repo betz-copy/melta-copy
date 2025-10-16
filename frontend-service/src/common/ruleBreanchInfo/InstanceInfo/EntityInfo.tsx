@@ -65,6 +65,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
         ) : (
             <EntityPropertiesInternal
                 properties={entity.properties}
+                coloredFields={entity.coloredFields}
                 entityTemplate={entityTemplate}
                 style={{
                     flexDirection: 'row',

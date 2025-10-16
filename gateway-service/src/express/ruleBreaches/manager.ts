@@ -1,69 +1,75 @@
 /* eslint-disable no-plusplus */
-import pickBy from 'lodash.pickby';
 import {
-    IMongoEntityTemplatePopulated,
-    IRuleBreachAlert,
-    IRuleBreachRequest,
-    RuleBreachRequestStatus,
     ActionTypes,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-    IAction,
-    IBrokenRule,
-    IRuleBreach,
-    PermissionScope,
-    PermissionType,
-    INotificationMetadata,
-    IRuleBreachAlertNotificationMetadata,
-    IRuleBreachRequestNotificationMetadata,
-    IRuleBreachResponseNotificationMetadata,
-    NotificationType,
-    IEntity,
-    IRelationship,
-    IAgGridRequest,
-    basicFilterOperationTypes,
-    INotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
     BadRequestError,
     ForbiddenError,
+    IAction,
     IActionMetadataPopulated,
+    IAgGridRequest,
+    IBrokenRule,
     IBrokenRulePopulated,
     ICauseInstancePopulated,
     ICausesOfInstancePopulated,
+    ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
+    ICreateRelationshipMetadata,
     ICreateRelationshipMetadataPopulated,
+    ICronjobRunMetadata,
+    ICronjobRunMetadataPopulated,
+    IDeleteRelationshipMetadata,
     IDeleteRelationshipMetadataPopulated,
+    IDuplicateEntityMetadata,
     IDuplicateEntityMetadataPopulated,
+    IEntity,
     IEntityForBrokenRules,
+    IKartoffelUser,
+    IMongoEntityTemplatePopulated,
+    INotificationMetadata,
+    INotificationMetadataPopulated,
+    IRelationship,
     IRelationshipForBrokenRules,
+    IRuleBreach,
+    IRuleBreachAlert,
+    IRuleBreachAlertNotificationMetadata,
+    IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachAlertPopulated,
     IRuleBreachPopulated,
+    IRuleBreachRequest,
+    IRuleBreachRequestNotificationMetadata,
+    IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachRequestPopulated,
+    IRuleBreachResponseNotificationMetadata,
+    IRuleBreachResponseNotificationMetadataPopulated,
+    IRuleMail,
+    IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadata,
     IUpdateEntityStatusMetadataPopulated,
+    IUser,
+    InstancesSubclassesPermissions,
+    NotificationType,
+    PermissionScope,
+    PermissionType,
+    RuleBreachRequestStatus,
     UploadedFile,
+    basicFilterOperationTypes,
 } from '@microservices/shared';
-import { trycatch } from '../../utils';
-import InstancesManager from '../instances/manager';
-
+import pickBy from 'lodash.pickby';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import { trycatch } from '../../utils';
 import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { injectValuesToEmails } from '../../utils/mailNotifications/handlebars';
 import RabbitManager from '../../utils/rabbit';
+import InstancesManager from '../instances/manager';
+import TemplatesManager from '../templates/manager';
 import UsersManager from '../users/manager';
 import WorkspaceManager from '../workspaces/manager';
-import TemplatesManager from '../templates/manager';
 
 const { errorCodes, ruleBreachService } = config;
 
@@ -129,7 +135,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     async createRuleBreachAlert(
         ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
-        userId: string,
+        userId: string | null,
         files: UploadedFile[] = [],
     ): Promise<IRuleBreachAlertPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachAlertData, files);
@@ -142,7 +148,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 NotificationType.ruleBreachAlert,
                 { alertId: rulesBreachAlert._id },
                 { alert },
-                [userId],
+                userId ? [userId] : [],
             );
 
             return alert;
@@ -293,6 +299,98 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         }
 
         return ruleBreachRequestPopulated;
+    }
+
+    private async getAssociatedUsers(entity: IEntity): Promise<IKartoffelUser[]> {
+        const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+        const users: IKartoffelUser[] = [];
+        Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+            if (value.format === 'user' && entity.properties[key]) {
+                const user = JSON.parse(entity.properties[key]);
+                users.push(user);
+            }
+
+            if (value.items?.format === 'user' && entity.properties[key]) {
+                const userArray = entity.properties[key].map((user) => JSON.parse(user));
+                users.push(...userArray);
+            }
+        });
+
+        return users;
+    }
+
+    private async getPermissionUsers(entity: IEntity): Promise<string[]> {
+        const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
+        const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+
+        const permissionUsers = await Promise.all([
+            await UsersManager.searchUserIds({
+                workspaceIds,
+                permissions: {
+                    [PermissionType.instances]: {
+                        categories: {
+                            [entityTemplate.category._id]: {
+                                [InstancesSubclassesPermissions.entityTemplates]: {
+                                    [entityTemplate._id]: {
+                                        fields: {},
+                                        scope: PermissionScope.read,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            }),
+
+            await UsersManager.searchUserIds({
+                workspaceIds,
+                permissions: {
+                    [PermissionType.instances]: {
+                        categories: {
+                            [entityTemplate.category._id]: {
+                                [InstancesSubclassesPermissions.entityTemplates]: {},
+                                scope: PermissionScope.read,
+                            },
+                        },
+                    },
+                },
+                limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            }),
+        ]);
+
+        return permissionUsers.flat();
+    }
+
+    async sendIndicatorEmailNotifications(
+        emails: IRuleMail[],
+        entity: IEntity,
+        userId: string,
+        entityTemplate: IMongoEntityTemplatePopulated,
+        relatedTemplates: Map<string, IMongoEntityTemplatePopulated>,
+    ) {
+        let permissionUsers: string[] = [];
+        const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
+        if (emails.some((email) => email.sendPermissionUsers)) permissionUsers = await this.getPermissionUsers(entity);
+        const injectedEmails: IRuleMail[] = injectValuesToEmails(emails, entity, entityTemplate, relatedTemplates, baseUrl, this.workspaceId);
+
+        await Promise.all(
+            injectedEmails.map(async (email) => {
+                const viewers = new Set<string>([userId, ...permissionUsers]);
+                const externalViewers = email.sendAssociatedUsers ? await this.getAssociatedUsers(entity) : undefined;
+
+                return this.rabbitManager.createNotification(
+                    Array.from(viewers),
+                    NotificationType.ruleIndicatorAlert,
+                    {
+                        entityId: entity.properties._id,
+                        email,
+                    },
+                    { entity, email },
+                    externalViewers,
+                );
+            }),
+        );
     }
 
     private async sendNotification<
@@ -658,7 +756,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                             case ActionTypes.UpdateEntity: {
                                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                                 const entity = await this.instancesService.getEntityInstanceById(actionMetadata.entityId);
-                                entityTemplateId = entity.templateId || '-';
+                                entityTemplateId = entity.templateId;
                                 break;
                             }
                             default:
@@ -986,35 +1084,48 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
-    public populateActionsMetaData = async (actions: IAction[]): Promise<{ actionType: ActionTypes; actionMetadata: IActionMetadataPopulated }[]> => {
-        const populatedActionsMetadataPromises: Promise<IActionMetadataPopulated>[] = [];
+    public async populateCronjobRunActionMetadata(
+        _actionMetadata: ICronjobRunMetadata,
+        populatedBrokenRules: IBrokenRulePopulated[],
+    ): Promise<ICronjobRunMetadataPopulated> {
+        // the main entity of failure, is the same in actionMetadata.
+        // because this type of rule (rule with getToday function) is triggered on per entity and actionMetadata is set to that entity
+        // it cant trigger neighbours, meaning cronjob triggered on actionMetadata=entity1, but ran the formula on entity2
+        return { entity: populatedBrokenRules[0].failures[0].entity as IEntity | null };
+    }
 
-        if (actions) {
-            actions.forEach((action) => {
-                if (action.actionType === ActionTypes.CreateRelationship)
-                    populatedActionsMetadataPromises.push(
-                        this.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata),
-                    );
-                else if (action.actionType === ActionTypes.DeleteRelationship)
-                    populatedActionsMetadataPromises.push(
-                        this.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata),
-                    );
-                else if (action.actionType === ActionTypes.UpdateEntity) {
-                    populatedActionsMetadataPromises.push(
-                        this.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata, actions),
-                    );
-                } else if (action.actionType === ActionTypes.UpdateStatus)
-                    populatedActionsMetadataPromises.push(
-                        this.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata),
-                    );
-                else if (action.actionType === ActionTypes.CreateEntity)
-                    populatedActionsMetadataPromises.push(this.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata));
-                else if (action.actionType === ActionTypes.DuplicateEntity)
-                    populatedActionsMetadataPromises.push(
-                        this.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata),
-                    );
-            });
-        }
+    public populateActionsMetaData = async (
+        actions: IAction[],
+        populatedBrokenRules: IBrokenRulePopulated[],
+    ): Promise<{ actionType: ActionTypes; actionMetadata: IActionMetadataPopulated }[]> => {
+        const populatedActionsMetadataPromises: Promise<IActionMetadataPopulated>[] = actions.map((action) => {
+            switch (action.actionType) {
+                case ActionTypes.CreateRelationship: {
+                    return this.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata);
+                }
+                case ActionTypes.DeleteRelationship: {
+                    return this.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata);
+                }
+                case ActionTypes.UpdateEntity: {
+                    return this.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata, actions);
+                }
+                case ActionTypes.UpdateStatus: {
+                    return this.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata);
+                }
+                case ActionTypes.CreateEntity: {
+                    return this.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata);
+                }
+                case ActionTypes.DuplicateEntity: {
+                    return this.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata);
+                }
+                case ActionTypes.CronjobRun: {
+                    return this.populateCronjobRunActionMetadata(action.actionMetadata as ICronjobRunMetadata, populatedBrokenRules);
+                }
+
+                default:
+                    throw new Error(`shouldnt reach here. populateActionsMetadata unknown actionType ${action.actionType}`);
+            }
+        });
 
         const actionsMetadata = await Promise.all(populatedActionsMetadataPromises!);
 
@@ -1033,15 +1144,20 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return populatedActions;
     };
 
-    public async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
+    public async populateRuleBreach(
+        ruleBreach: Omit<IRuleBreach, 'originUserId'> & { originUserId: string | null },
+    ): Promise<Omit<IRuleBreachPopulated, 'originUser'> & { originUser: IUser | null }> {
         const { originUserId, actions, brokenRules, ...restOfRuleBreach } = ruleBreach;
 
-        const [populatedBrokenRules, originUser] = await Promise.all([this.populateBrokenRules(brokenRules), UsersManager.getUserById(originUserId)]);
+        const [populatedBrokenRules, originUser] = await Promise.all([
+            this.populateBrokenRules(brokenRules),
+            !originUserId ? null : UsersManager.getUserById(originUserId),
+        ]);
 
         const populatedActions: {
             actionType: ActionTypes;
             actionMetadata: IActionMetadataPopulated;
-        }[] = await this.populateActionsMetaData(actions);
+        }[] = await this.populateActionsMetaData(actions, populatedBrokenRules);
 
         return {
             ...restOfRuleBreach,
@@ -1061,6 +1177,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         return {
             ...populatedRuleBreach,
+            originUser: populatedRuleBreach.originUser!,
             status: ruleBreachRequest.status,
             reviewer,
         };

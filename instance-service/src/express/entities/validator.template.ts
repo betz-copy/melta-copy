@@ -69,6 +69,10 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'number',
 });
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
+});
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
@@ -522,12 +526,16 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
+    coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
 ): Promise<Record<string, any>> => {
     const normalizedEntity: Record<string, any> = {};
 
     await Promise.all(
         Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
+            if (Object.keys(coloredFields ?? {}).includes(key) && entityProperties[key] !== undefined)
+                normalizedEntity[`${key}${neo4j.colorPropertySuffix}`] = coloredFields?.[key];
+
             if (!(key in entityProperties)) {
                 if (value.type === 'boolean') {
                     normalizedEntity[key] = false;
@@ -588,7 +596,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             }
 
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, any> = propertyValue;
+                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
@@ -601,13 +609,15 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                         propertyValue.properties,
                         relatedEntityTemplate,
                         entityTemplateService,
+                        coloredFields,
                         hasNestedRelationship,
                     );
                 }
 
                 normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
                 Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
-                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                    if (innerKey !== 'coloredProperties')
+                        normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });
 
                 return;

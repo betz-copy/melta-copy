@@ -47,6 +47,7 @@ export interface CommonFormInputProperties {
     hideFromDetailsPage?: boolean;
     color?: string;
     accountBalance?: boolean;
+    isProfileImage?: boolean;
 }
 
 export interface FieldProperty {

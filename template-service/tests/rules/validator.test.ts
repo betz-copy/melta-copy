@@ -1,19 +1,20 @@
-import { createRuleRequestSchema } from '../../src/express/rule/validator.schema';
+import { ActionOnFail } from '@microservices/shared';
+import { EntityTemplateManagerService } from '../../src/express/externalServices/entityTemplateManager';
+import { RelationshipTemplateManager } from '../../src/express/relationshipTemplate/manager';
+import { IRelationshipTemplateRule } from '../../src/express/rule/interfaces';
 import { validateRuleFormula } from '../../src/express/rule/validator';
+import { createRuleRequestSchema } from '../../src/express/rule/validator.schema';
+import { defaultValidationOptions } from '../../src/utils/joi';
 import {
-    travelAgentEntityTemplate,
     flightEntityTemplate,
-    tripEntityTemplate,
     flightsOnRelationshipTemplate,
-    tripConnectedToFlightRelationshipTemplate,
-    oneTravelAgentPerFlight,
     noOverlappingFlightsInTrip,
+    oneTravelAgentPerFlight,
+    travelAgentEntityTemplate,
+    tripConnectedToFlightRelationshipTemplate,
+    tripEntityTemplate,
     warnOnEveryFlightOnActiveZone,
 } from './rules-examples';
-import { defaultValidationOptions } from '../../src/utils/joi';
-import { RelationshipTemplateManager } from '../../src/express/relationshipTemplate/manager';
-import { EntityTemplateManagerService } from '../../src/express/externalServices/entityTemplateManager';
-import { IRelationshipTemplateRule } from '../../src/express/rule/interfaces';
 
 const mockGetEntityTemplateByIdWithRuleExamples: typeof EntityTemplateManagerService.getEntityTemplateById = async (id) => {
     if (id === travelAgentEntityTemplate._id) {
@@ -85,7 +86,7 @@ describe('logic of validator of rules', () => {
         const ruleWithUnknownRelationship: IRelationshipTemplateRule = {
             name: 'myname',
             description: 'mydescription',
-            actionOnFail: 'WARNING',
+            actionOnFail: ActionOnFail.WARNING,
             relationshipTemplateId: flightsOnRelationshipTemplate._id,
             entityTemplateId: tripEntityTemplate._id, // trip doesnt exist in rel
             formula: {

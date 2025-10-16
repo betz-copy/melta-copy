@@ -35,6 +35,7 @@ export interface IError {
 export interface IFailedEntity {
     properties: Record<string, any>;
     errors: IError[];
+    coloredFields?: Record<string, string>;
 }
 
 export interface ITablesResults {

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+import { ActionOnFail } from '@microservices/shared';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
 const RuleTemplateSchema = new mongoose.Schema(
@@ -15,7 +16,7 @@ const RuleTemplateSchema = new mongoose.Schema(
         },
         actionOnFail: {
             type: String,
-            enum: ['WARNING', 'ENFORCEMENT'],
+            enum: ActionOnFail,
             required: true,
         },
         entityTemplateId: {
@@ -29,6 +30,12 @@ const RuleTemplateSchema = new mongoose.Schema(
         disabled: {
             type: Boolean,
             required: true,
+        },
+        fieldColor: { type: Object },
+        mail: { type: Object },
+        doesFormulaHaveTodayFunc: {
+            type: Boolean,
+            require: true,
         },
     },
     {

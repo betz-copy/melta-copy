@@ -95,7 +95,7 @@ export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTempl
     }
 
     return {
-        data: { ...entity.properties },
+        data: { ...entity.properties, coloredFields: entity.coloredFields },
         templateId: entity.templateId,
         id: entity.properties._id,
         highlighted: 0,

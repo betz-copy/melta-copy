@@ -12,6 +12,7 @@ import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
@@ -27,7 +28,7 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import RjsfUserAvatarWidget from './RjsfUserAvarWidget';
 
 const { dateRegex } = environment;
 
@@ -129,12 +130,12 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'isFilterByCurrentUser',
         'isFilterByUserUnit',
         'display',
-        'accountBalance'
+        'accountBalance',
+        'isProfileImage',
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({
         keyword: 'identifier',
-        type: 'string',
         schema: false,
         validate: (v) => v !== undefined,
         errors: false,
@@ -292,7 +293,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     useEffect(() => {
         // define 100% width to text-area field
-        const containerDiv = document.querySelectorAll('.muirtl-yqiqnf-MuiGrid-root');
+        const containerDiv = document.querySelectorAll(
+            '#json-schema > .rjsf-field.rjsf-field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
+        );
         containerDiv.forEach((innerDiv) => {
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
             const classesToAdd: string[] = [];
@@ -330,6 +333,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
             CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
             SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
+            UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
         }),
         [],
     );
@@ -371,7 +375,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     }
                     // if the value is an object without properties, we assume it's a grouped field and flatten it
                     // rjsf library does support grouped fields, but we do not save them as so in the db.
-                    if (value && typeof value === 'object' && !value.properties) {
+                    if (value && typeof value === 'object' && !value.properties && schema.properties[key]?.format !== 'location') {
                         for (const [groupedKey, groupedValue] of Object.entries(value)) {
                             formData[groupedKey] = groupedValue;
                         }

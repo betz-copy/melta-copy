@@ -3,7 +3,10 @@ import { SchemaDefinition, SchemaOptions } from 'mongoose';
 export const ruleBreachSchemaDefinition: SchemaDefinition = {
     originUserId: {
         type: String,
-        required: true,
+        validate: {
+            validator: (value) => value === null || typeof value === 'string',
+            message: 'originUserId must be a string or null',
+        },
     },
     brokenRules: {
         type: [

@@ -169,12 +169,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 entity={expandedEntity.entity}
                 onSuccessUpdate={(data) => {
                     setIsEditMode(false);
-                    queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
-                        return {
-                            ...expandedEntity,
-                            entity: data,
-                        };
-                    });
+                    queryClient.setQueryData(
+                        ['getExpandedEntity', entity.properties._id, { [entity.properties._id]: { maxLevel: 1 } }, { templateIds }],
+                        () => {
+                            return {
+                                ...expandedEntity,
+                                entity: data,
+                            };
+                        },
+                    );
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
@@ -301,6 +304,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     innerStyle={{ width: '32%' }}
                                     textWrap
                                     mode="normal"
+                                    coloredFields={entity.coloredFields}
                                 />
                                 {displayArchiveProperties && (
                                     <EntityProperties
@@ -320,6 +324,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         displayArchiveProperties
                                         showDivider
                                         dividerTitle={i18next.t('entityPage.archiveTitle')}
+                                        coloredFields={entity.coloredFields}
                                     />
                                 )}
                             </Grid>

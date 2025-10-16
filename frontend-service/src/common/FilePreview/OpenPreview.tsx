@@ -19,7 +19,8 @@ const OpenPreviewContent: React.FC<{
     showText?: boolean;
     searchValue?: string;
     highlightAll?: boolean;
-}> = ({ fileName, onClick, img, showText, searchValue, highlightAll }) => {
+    color?: string;
+}> = ({ fileName, onClick, img, showText, searchValue, highlightAll, color }) => {
     const text = useMemo(() => getFileNameWithoutExtension(fileName), [fileName]);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
@@ -35,6 +36,7 @@ const OpenPreviewContent: React.FC<{
                 {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
                 {showText && (
                     <Typography
+                        color={color}
                         sx={{
                             marginRight: '5px',
                             fontSize: workspace.metadata.agGrid.defaultFontSize,
@@ -68,7 +70,8 @@ const OpenPreview: React.FC<{
     entityFileIdsWithTexts?: ISemanticSearchResult[string][string];
     defaultFileName?: string;
     disabled?: boolean;
-}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts, defaultFileName, disabled }) => {
+    color?: string;
+}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts, defaultFileName, disabled, color }) => {
     const fileName = defaultFileName ?? (typeof fileId === 'string' ? getFileName(fileId) : fileId.name);
 
     const [open, setOpen] = useState(false);
@@ -100,6 +103,7 @@ const OpenPreview: React.FC<{
                 searchValue={searchValue}
                 onClick={onClick}
                 highlightAll={highlightAll}
+                color={color}
             />
         );
         return onClick ? (
@@ -137,6 +141,7 @@ const OpenPreview: React.FC<{
                     showText={showText}
                     searchValue={searchValue}
                     highlightAll={highlightAll}
+                    color={color}
                 />
                 {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
             </Grid>
@@ -150,6 +155,7 @@ const OpenPreview: React.FC<{
                 showText={showText}
                 searchValue={searchValue}
                 highlightAll={highlightAll}
+                color={color}
             />
             {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
         </Grid>

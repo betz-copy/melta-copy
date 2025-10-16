@@ -4,6 +4,18 @@ import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { CommonFormInputProperties } from './commonInterfaces';
 
+export const kartoffelPersonalDataFields: string[] = [
+    'identityCard',
+    'personalNumber',
+    'serviceType',
+    'address',
+    'sex',
+    'employeeNumber',
+    'dischargeDay',
+    'rank',
+    'birthDate',
+];
+
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;
     index: number;
@@ -47,6 +59,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
         'sex',
         'directGroup',
         'hierarchy',
+        'image',
     ];
 
     const relatedUserField = `properties[${index}].relatedUserField`;

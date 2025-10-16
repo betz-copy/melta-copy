@@ -113,4 +113,4 @@ const PrintingTemplatesRow: React.FC = () => {
     );
 };
 
-export { PrintingTemplatesRow };
+export default PrintingTemplatesRow;

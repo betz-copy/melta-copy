@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Place, Polyline } from '@mui/icons-material';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Close, Delete, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
+import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { CesiumMovementEvent, Viewer } from 'resium';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -16,20 +17,21 @@ import {
     isValidPolygonPoint,
     jerusalemCoordinates,
     locationToWGS84String,
+    MapItemType,
     stringToCoordinates,
 } from '../../utils/map';
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
-import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
-import { DeleteMapDataBtn } from './mapPage/MapFilters';
+import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
 
 type Props = {
     defaultLocation?: string;
     field: string;
     updateValue: (newValue: string | undefined) => void;
+    handleCloseDialog: () => void;
 };
 
-const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
+const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog }: Props) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
@@ -39,17 +41,18 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     const [polygonPosition, setPolygonPosition] = useState<Cartesian3[]>([]);
     const [markerPosition, setMarkerPosition] = useState<Cartesian3 | null>(null);
 
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
 
-        if (initialCoordinates?.type === 'marker') {
+        if (initialCoordinates?.type === MapItemType.Coordinate) {
             const { value } = initialCoordinates;
             setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
         }
 
-        if (initialCoordinates?.type === 'polygon') {
+        if (initialCoordinates?.type === MapItemType.Polygon) {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
                 isValidWGS84(position) ? (convertWGS94ToECEF(position) as Cartesian3) : position,
             );
@@ -62,6 +65,8 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
             const { camera } = viewer;
+
+            viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
             if (markerPosition !== null) {
                 const radius = 30000;
@@ -151,29 +156,80 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
 
-                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '10px' }}>
-                    {polygonPosition.length === 0 && markerPosition === null && (
-                        <ToggleButtonGroup
-                            value={drawingMode}
-                            exclusive
-                            onChange={handleDrawType}
-                            style={{ background: darkMode ? '#121212' : 'white', height: '34px' }}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        right: '10px',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    <div>
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('user.close')}
+                            iconButtonProps={{
+                                onClick: handleCloseDialog,
+                            }}
+                            style={{
+                                height: '34px',
+                            }}
                         >
-                            <MeltaTooltip title={i18next.t('location.coordinate')}>
-                                <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
-                                    <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                                </ToggleButton>
-                            </MeltaTooltip>
-                            <MeltaTooltip title={i18next.t('location.polygon')}>
-                                <ToggleButton value="polygon" disabled={markerPosition !== null}>
-                                    <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                                </ToggleButton>
-                            </MeltaTooltip>
-                        </ToggleButtonGroup>
-                    )}
-                    <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
+                            <Close htmlColor={theme.palette.primary.main} />
+                        </IconButtonWithPopover>
+                    </div>
 
-                    {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+                        {polygonPosition.length === 0 && markerPosition === null && (
+                            <ToggleButtonGroup
+                                value={drawingMode}
+                                exclusive
+                                onChange={handleDrawType}
+                                style={{ background: darkMode ? '#121212' : 'white', height: '34px', borderRadius: '7px' }}
+                            >
+                                <MeltaTooltip title={i18next.t('location.coordinate')}>
+                                    <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
+                                        <PlaceTwoTone
+                                            sx={{
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '7px',
+                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                            }}
+                                        />
+                                    </ToggleButton>
+                                </MeltaTooltip>
+                                <MeltaTooltip title={i18next.t('location.polygon')}>
+                                    <ToggleButton value="polygon" disabled={markerPosition !== null}>
+                                        <PentagonTwoTone
+                                            sx={{
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '7px',
+                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                            }}
+                                        />
+                                    </ToggleButton>
+                                </MeltaTooltip>
+                            </ToggleButtonGroup>
+                        )}
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('location.clear')}
+                            iconButtonProps={{
+                                onClick: onClear,
+                            }}
+                            style={{
+                                background: darkMode ? '#131313' : '#FFFFFF',
+                                borderRadius: '7px',
+                                height: '34px',
+                            }}
+                        >
+                            <Delete htmlColor={theme.palette.primary.main} />
+                        </IconButtonWithPopover>
+                        {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                    </div>
                 </div>
             </Viewer>
         </div>
