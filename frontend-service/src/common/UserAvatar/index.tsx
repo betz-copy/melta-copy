@@ -33,12 +33,14 @@ const UserAvatar: React.FC<IUserAvatarProps> = ({
             queryKey: ['userProfile', user._id, user?.preferences, userIcon],
             queryFn: () => getUserProfileRequest(user),
             enabled: !shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
+            retry: 1,
         },
         {
             queryKey: ['kartoffelImage', user.kartoffelId, user._id],
             // KartoffelId will usually be undefined since the users saved in neo4j will have _id (which is their kartoffelId)
             queryFn: () => getKartoffelUserProfileRequest(user.kartoffelId ?? user._id!),
             enabled: shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
+            retry: 1,
         },
     ]);
 
