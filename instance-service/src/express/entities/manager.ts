@@ -1386,7 +1386,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 { disabled },
             );
 
-            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
+            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction, entityTemplate);
 
             const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
@@ -1573,7 +1573,7 @@ class EntityManager extends DefaultManagerNeo4j {
         updatedEntity: IEntity,
         updatedProperties: string[],
         transaction: Transaction,
-        entityTemplate?: IEntityTemplate,
+        entityTemplate: IEntityTemplate,
     ) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
@@ -1609,7 +1609,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
-                            value: relatedEntitiesChangedValues,
+                            value: await addStringFieldsAndNormalizeSpecialStringValues(
+                                relatedEntitiesChangedValues,
+                                entityTemplate,
+                                this.entityTemplateManagerService,
+                            ),
                         },
                     },
                 );

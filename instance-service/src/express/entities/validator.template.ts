@@ -5,6 +5,7 @@ import {
     FilterLogicalOperator,
     getFilterFromChildTemplate,
     IEntitySingleProperty,
+    IEntityTemplate,
     IFilterGroup,
     IFilterOfField,
     IMongoEntityTemplate,
@@ -523,7 +524,7 @@ export const getFilesName = (files: string[]): string => {
  */
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
-    entityTemplate: IMongoEntityTemplate,
+    entityTemplate: IMongoEntityTemplate | IEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
@@ -596,6 +597,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
 
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
                 let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+                console.log('recursive type shit');
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
@@ -623,7 +625,11 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             }
 
             if (type === 'string' && format === 'location') {
+                console.log('location');
+                console.dir({ key, value }, { depth: null });
                 const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
+                console.dir({ location }, { depth: null });
+
                 normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
                 normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
                 normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
