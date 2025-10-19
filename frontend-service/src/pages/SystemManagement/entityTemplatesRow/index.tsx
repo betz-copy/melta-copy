@@ -232,7 +232,6 @@ const EntityTemplatesRow: React.FC = () => {
                 queryClient,
             );
         },
-
         {
             onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
