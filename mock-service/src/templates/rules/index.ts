@@ -1,9 +1,8 @@
+/* eslint-disable import/prefer-default-export */
+import { IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate, IMongoRule } from '@microservices/shared';
 import config from '../../config';
-import { rulesCreator } from '../../mocks/rules';
-import { createAxiosInstance } from '../../utils/axios';
-import { IMongoEntityTemplate } from '../entityTemplates';
-import { IMongoRelationshipTemplate } from '../relationshipTemplates';
-import { IMongoRule } from './interfaces';
+import rulesCreator from '../../mocks/rules';
+import createAxiosInstance from '../../utils/axios';
 
 const {
     url,
@@ -12,7 +11,7 @@ const {
 
 export const createRules = async (
     workspaceId: string,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     relationshipTemplates: IMongoRelationshipTemplate[],
 ) => {
     const axios = createAxiosInstance(workspaceId);

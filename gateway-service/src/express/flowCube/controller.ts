@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { FlowCubeManager } from './manager';
+import FlowCubeManager from './manager';
 
 class FlowCubeController extends DefaultController<FlowCubeManager> {
     constructor(workspaceId: string) {

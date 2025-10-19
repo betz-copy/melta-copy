@@ -8,14 +8,19 @@ import { toast } from 'react-toastify';
 import { ProcessTemplateWizardValues } from './index';
 import { searchProcessesRequest } from '../../../services/processesService';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
-import FieldBlock from '../entityTemplate/FieldBlock';
+import { FieldBlock } from '../entityTemplate/fieldBlock/FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
 import { StepComponentProps } from '..';
 
+export const fieldDetailsSchema = Yup.object({
+    type: Yup.string().oneOf(['field']).required(),
+    data: propertiesBaseSchema.required(),
+});
+
 const addDetailsFieldsSchema = Yup.object({
     detailsProperties: Yup.array()
-        .of(propertiesBaseSchema)
+        .of(fieldDetailsSchema)
         .min(1, i18next.t('validation.oneField'))
         .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
             value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
@@ -23,7 +28,14 @@ const addDetailsFieldsSchema = Yup.object({
         .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
             value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
         ),
-    detailsAttachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
+    detailsAttachmentProperties: Yup.array().of(
+        Yup.object({
+            type: Yup.string().oneOf(['field']).required(),
+            data: attachmentPropertiesBaseSchema.shape({
+                required: Yup.boolean().required(i18next.t('validation.required')),
+            }),
+        }),
+    ),
 }).test('uniqueProperties', processTemplateUniquePropertiesDetails);
 
 export const useAreThereProcessInstancesByTemplateId = (templateId: string, enabled: boolean) => {
@@ -34,9 +46,7 @@ export const useAreThereProcessInstancesByTemplateId = (templateId: string, enab
             enabled,
             initialData: [],
             onError: (error: AxiosError) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to check areThereInstancesByTemplateId. error:', error);
-
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
@@ -71,7 +81,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
-            <Grid item>
+            <Grid>
                 <FieldBlock
                     propertiesType="detailsProperties"
                     values={values}
@@ -90,14 +100,14 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
                     supportDeleteForExistingInstances
-                    supportRelationshipReference
+                    supportRelationshipReference={false}
                     supportUserType={false}
                     supportConvertingToMultipleFields={false}
                     locationSearchFields={{ show: false, disabled: false }}
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <FieldBlock
                     propertiesType="detailsAttachmentProperties"
                     values={values}

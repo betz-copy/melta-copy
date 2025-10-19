@@ -1,7 +1,10 @@
+import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+
+const { relativeDateFilters } = environment;
 
 export interface IGraphFilterToBackendBody {
     [templateId: string]: { filter: ISearchFilter } | {};
@@ -31,7 +34,7 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
     return Object.fromEntries(templateFilterRecord);
 };
 
-const filterFieldToValue: Record<keyof IFilterOfField, string> = {
+export const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eq: 'equals',
     $ne: 'notEqual',
     $gt: 'greaterThan',
@@ -44,7 +47,7 @@ const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eqi: 'equals',
 };
 
-const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTextFilter | null => {
+export const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTextFilter | null => {
     const startsWith = filterValue.startsWith('.*');
     const endsWith = filterValue.endsWith('.*');
 
@@ -72,15 +75,24 @@ const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTe
     return null;
 };
 
-const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
+export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
     if (filterKeys.length === 2) {
         const [dateFrom, dateTo] = filterKeys;
+
+        if (relativeDateFilters.includes(fieldFilter[dateFrom] as string)) {
+            return {
+                filterType: 'date',
+                type: fieldFilter[dateFrom],
+                dateFrom: fieldFilter[dateFrom],
+                dateTo: fieldFilter[dateTo],
+            } as IAGGridDateFilter;
+        }
 
         return {
             filterType: 'date',
             type: 'inRange',
-            dateFrom: fieldFilter[dateFrom] as string,
-            dateTo: fieldFilter[dateTo] as string,
+            dateFrom: fieldFilter[dateFrom],
+            dateTo: fieldFilter[dateTo],
         } as IAGGridDateFilter;
     }
 
@@ -92,7 +104,10 @@ const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFi
     } as IAGGridDateFilter;
 };
 
-const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IGraphFilterBody['filterField'] => {
+export const translateFieldFilter = (
+    fieldFilter: IFilterOfField,
+    { type, format, enum: enumValues }: IEntitySingleProperty,
+): IGraphFilterBody['filterField'] => {
     const filterKeys = Object.keys(fieldFilter) as (keyof IFilterOfField)[];
     const [filterKey] = filterKeys;
     const filterValue = fieldFilter[filterKey];
@@ -104,10 +119,17 @@ const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEn
         case 'boolean': {
             if (format === 'date-time' || format === 'date') return handleDateFilter(filterKeys, fieldFilter, filterType);
 
+            if (enumValues)
+                return {
+                    filterType: 'set',
+                    values: filterValue as (string | null)[],
+                } as IAGGridSetFilter;
+
             if (filterKey === '$rgx' && typeof filterValue === 'string') {
                 const regexFilter = handleRegexFilter(filterValue);
                 if (regexFilter) return regexFilter;
             }
+
             if (filterKey === '$not' && typeof filterValue === 'object') {
                 const notFilter = filterValue as IFilterOfField;
                 if ('$rgx' in notFilter) {

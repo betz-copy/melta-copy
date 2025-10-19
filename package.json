@@ -1,24 +1,82 @@
 {
-  "name": "melta",
-  "version": "1.0.1",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
-    "prepare": "husky install"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/melta-team/melta.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/melta-team/melta/issues"
-  },
-  "homepage": "https://github.com/melta-team/melta#readme",
-  "devDependencies": {
-    "husky": "^6.0.0"
-  }
+    "name": "melta",
+    "version": "1.0.1",
+    "description": "",
+    "private": true,
+    "workspaces": [
+        "activity-log-service",
+        "cron-service",
+        "dashboard-service",
+        "gantt-service",
+        "gateway-service",
+        "global-search-service",
+        "instance-service",
+        "notification-service",
+        "preview-service",
+        "process-service",
+        "rule-breach-service",
+        "semantic-service",
+        "shared",
+        "storage-service",
+        "template-service",
+        "user-service",
+        "workspace-service",
+        "mock-service"
+    ],
+    "scripts": {
+        "test": "jest --coverage",
+        "pre-push": "npm run lint && npm run build",
+        "build": "npm run build --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "prettier": "npm run prettier --workspaces --if-present",
+        "clean": "rimraf ./**/dist",
+        "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules ./**/package-lock.json ./package-lock.json",
+        "start-ui": "npm run -w frontend-service start:docker",
+        "migrate": "npm run clean:all && npm install && npm run build -w shared && npm run start-ui"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/melta-team/melta.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/melta-team/melta/issues"
+    },
+    "homepage": "https://github.com/melta-team/melta#readme",
+    "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "@types/node": "^24.3.0",
+        "@typescript-eslint/eslint-plugin": "^8.40.0",
+        "@typescript-eslint/parser": "^8.40.0",
+        "eslint": "^8.2.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-import": "^2.32.0",
+        "eslint-plugin-prettier": "^5.5.4",
+        "husky": "^9.1.7",
+        "jest": "^30.0.5",
+        "prettier": "^3.6.2",
+        "rimraf": "^6.0.1",
+        "ts-jest": "^29.4.1",
+        "typescript": "^5.9.2",
+        "@types/body-parser": "^1.19.6",
+        "@types/express": "^5.0.3",
+        "@types/mongoose": "^5.11.97"
+    },
+    "dependencies": {
+        "axios": "^1.11.0",
+        "dotenv": "^17.2.1",
+        "elastic-apm-node": "^4.13.0",
+        "env-var": "^7.5.0",
+        "express": "^4.19.2",
+        "helmet": "^8.1.0",
+        "http-status-codes": "^2.3.0",
+        "joi": "^18.0.1",
+        "morgan": "^1.10.1",
+        "uuid": "^11.1.0",
+        "winston": "^3.17.0",
+        "winston-daily-rotate-file": "^5.0.0",
+        "mongoose": "^8.17.2"
+    }
 }

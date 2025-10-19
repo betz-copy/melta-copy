@@ -1,11 +1,10 @@
-import http from 'http';
 import express from 'express';
 import helmet from 'helmet';
-
+import * as http from 'http';
+import { errorMiddleware } from '@microservices/shared';
 import { once } from 'events';
-import { errorMiddleware } from './error';
-import appRouter from './router';
 import config from '../config';
+import appRouter from './router';
 
 class Server {
     private app: express.Application;

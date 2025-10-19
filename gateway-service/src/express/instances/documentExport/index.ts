@@ -1,12 +1,14 @@
+/* eslint-disable import/prefer-default-export */
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { load } from 'cheerio';
-import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
+import { ImageRun, IPatch, patchDocument, PatchType, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import mammoth from 'mammoth';
 import config from '../../../config';
-import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
 
 const {
     service: { jewishDateIndicator, hebrewDateIndicator, maxPatchIterations },
+    hebrew: { yes, no },
 } = config;
 
 // ! This is commented because this code will be used in the future, it's just not ready right now. contact Rozner about continuing it.
@@ -140,10 +142,10 @@ const getHebrewDate = (dateStr: string) =>
  * @param text contains or not html tags
  * @returns true if contains html tags. Otherwise, false.
  */
-function isHTML(text: string): boolean {
+const isHTML = (text: string): boolean => {
     const $ = load(text);
     return $('body').children().length > 0;
-}
+};
 
 /**
  * Extracts text from html tag.
@@ -194,7 +196,11 @@ const isDateWithoutTime = (strDate: string): boolean => {
  * @param {IEntity} entity - The entity containing properties to be converted into patches.
  * @returns {Record<string, IPatch>} - A record of patches created from the entity's properties.
  */
-const createPatchesFromEntity = (properties: IEntity['properties']): Record<string, IPatch> => {
+const createPatchesFromEntity = async (
+    properties: IEntity['properties'],
+    entityTemplate: IMongoEntityTemplatePopulated,
+    getFilePreview: (path: string, contentType?: string) => Promise<Buffer>,
+): Promise<Record<string, IPatch>> => {
     const patches: Record<string, IPatch> = {};
 
     // Extract keys of properties that are date strings
@@ -214,20 +220,47 @@ const createPatchesFromEntity = (properties: IEntity['properties']): Record<stri
     );
 
     // Iterate over each property in the entity
-    Object.entries(propertiesWithHebrewDates).forEach(([key, value]) => {
-        const trimmedValue = isHTML(String(value)) ? extractTextFromHtml(value) : value;
-        let formattedValue = trimmedValue;
+    await Promise.all(
+        Object.entries(propertiesWithHebrewDates).map(async ([key, value]) => {
+            const trimmedValue: string = isHTML(String(value)) ? extractTextFromHtml(value) : value;
+            const templateProperty = entityTemplate.properties.properties[key];
+            if (templateProperty && templateProperty.format === 'signature') {
+                try {
+                    const imageBuffer = await getFilePreview(trimmedValue, 'image');
 
-        if (typeof trimmedValue === 'string' && isDateWithTime(trimmedValue))
-            formattedValue = `${new Date(formattedValue).toLocaleDateString('he')}, ${new Date(formattedValue).toLocaleTimeString('he')}`;
-        if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? 'כן' : 'לא';
-        if (Array.isArray(trimmedValue)) formattedValue = trimmedValue.join(', ');
+                    patches[key] = {
+                        type: PatchType.PARAGRAPH,
+                        children: [
+                            new ImageRun({
+                                data: imageBuffer,
+                                transformation: {
+                                    width: 95,
+                                    height: 70,
+                                },
+                            }),
+                        ],
+                    };
+                } catch {
+                    patches[key] = {
+                        type: PatchType.PARAGRAPH,
+                        children: [new TextRun(String(trimmedValue))],
+                    };
+                }
+            } else {
+                let formattedValue = trimmedValue;
 
-        patches[key] = {
-            type: PatchType.PARAGRAPH,
-            children: [new TextRun(String(formattedValue))],
-        };
-    });
+                if (typeof trimmedValue === 'string' && isDateWithTime(trimmedValue))
+                    formattedValue = `${new Date(formattedValue).toLocaleDateString('he')}, ${new Date(formattedValue).toLocaleTimeString('he')}`;
+                if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? yes : no;
+                if (Array.isArray(trimmedValue)) formattedValue = trimmedValue.join(', ');
+
+                patches[key] = {
+                    type: PatchType.PARAGRAPH,
+                    children: [new TextRun(String(formattedValue))],
+                };
+            }
+        }),
+    );
 
     return patches;
 };
@@ -235,8 +268,13 @@ const createPatchesFromEntity = (properties: IEntity['properties']): Record<stri
 const arePatchesEqual = (firstPatchDocument: Uint8Array, secondPatchDocument: Uint8Array) =>
     firstPatchDocument.toString() === secondPatchDocument.toString();
 
-export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties: IEntity['properties']) => {
-    const patches = createPatchesFromEntity(properties);
+export const patchDocumentAsStream = async (
+    arrayBuffer: ArrayBuffer,
+    properties: IEntity['properties'],
+    entityTemplate: IMongoEntityTemplatePopulated,
+    getFilePreview: (path: string, contentType?: string) => Promise<Buffer>,
+) => {
+    const patches = await createPatchesFromEntity(properties, entityTemplate, getFilePreview);
 
     // Due to the fact that 'patchDocument' function can patch only one instance of a string per patch,
     // we need to check if the document can no longer change with the patches
@@ -253,6 +291,8 @@ export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties
         // eslint-disable-next-line no-await-in-loop
         newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
     }
+
+    // const nodeBuffer = Buffer.from(arrayBuffer);
 
     // Extract keys to delete from the document by matching the pattern {{.*?}} in the raw text
     // ? don't ask about the buffer that gets an arrayBuffer, this lib is stupid

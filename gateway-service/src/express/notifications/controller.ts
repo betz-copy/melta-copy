@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { NotificationsManager } from './manager';
+import NotificationsManager from './manager';
 import DefaultController from '../../utils/express/controller';
 
 class NotificationsController extends DefaultController<NotificationsManager> {

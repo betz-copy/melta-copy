@@ -1,7 +1,7 @@
+import { IMongoRule, IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody, IRule, ISearchRulesBody } from '@microservices/shared';
+
 import config from '../../config';
-import { IMongoRule, IRule } from '../../express/templates/rules/interfaces';
-import { TemplatesManagerService } from '.';
-import { ISearchBody } from './entityTemplateService';
+import TemplatesManagerService from '.';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
@@ -9,32 +9,6 @@ const {
         relationships: { baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix },
     },
 } = config;
-
-export interface IRelationshipTemplate {
-    _id: string;
-    name: string;
-    displayName: string;
-    sourceEntityId: string;
-    destinationEntityId: string;
-    isProperty: boolean;
-}
-
-export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface ISearchRelationshipTemplatesBody extends ISearchBody {
-    ids?: string[];
-    sourceEntityIds?: string[];
-    destinationEntityIds?: string[];
-}
-
-export interface ISearchRulesBody extends ISearchBody {
-    entityTemplateIds?: string[];
-    disabled?: boolean;
-}
 
 export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPermissionsOfUserId {
     searchBody: ISearchRelationshipTemplatesBody;
@@ -44,18 +18,9 @@ export interface RequestWithSearchRuleTemplateBody extends RequestWithPermission
     searchBody: ISearchRulesBody;
 }
 
-export interface IConvertRelationshipToRelationshipField {
-    fieldName: string;
-    displayFieldName: string;
-    relatedTemplateField: string;
-    relationshipTemplateDirection: 'outgoing' | 'incoming';
-    sourceEntityId: string;
-    destinationEntityId: string;
-}
-
-export class RelationshipsTemplateService extends TemplatesManagerService {
+class RelationshipsTemplateService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
-        const { data } = await this.api.post<IRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
+        const { data } = await this.api.post<IMongoRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
         return data;
     }
 
@@ -65,26 +30,28 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async createRelationshipTemplate(relationship: Omit<IRelationshipTemplate, '_id'>) {
-        const { data } = await this.api.post<IRelationshipTemplate>(baseRelationshipsRoute, relationship);
+    async createRelationshipTemplate(relationship: Omit<IMongoRelationshipTemplate, '_id'>) {
+        const { data } = await this.api.post<IMongoRelationshipTemplate>(baseRelationshipsRoute, relationship);
 
         return data;
     }
 
-    async updateRelationshipTemplate(id: string, updatedRelationship: Partial<Omit<IRelationshipTemplate, '_id'>>) {
-        const { data } = await this.api.put<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`, updatedRelationship);
+    async updateRelationshipTemplate(id: string, updatedRelationship: Partial<Omit<IMongoRelationshipTemplate, '_id'>>) {
+        const { data } = await this.api.put<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`, updatedRelationship);
 
         return data;
     }
 
     async deleteRelationshipTemplate(id: string) {
-        const { data } = await this.api.delete<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
+        const { data } = await this.api.delete<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }
 
     async updateRuleStatusById(ruleId: string, disabled: boolean) {
-        const { data } = await this.api.patch<IRelationshipTemplate>(`${baseRulesRoute}/${ruleId}${updateRuleStatusByIdRouteSuffix}`, { disabled });
+        const { data } = await this.api.patch<IMongoRelationshipTemplate>(`${baseRulesRoute}/${ruleId}${updateRuleStatusByIdRouteSuffix}`, {
+            disabled,
+        });
 
         return data;
     }
@@ -113,3 +80,5 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
         return data;
     }
 }
+
+export default RelationshipsTemplateService;

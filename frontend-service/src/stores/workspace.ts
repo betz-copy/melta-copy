@@ -11,6 +11,7 @@ export const defaultMetadata = {
     shouldNavigateToEntityPage: false,
     isDrawerOpen: false,
     flowCube: false,
+    isDashboardHomePage: true,
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,
@@ -34,6 +35,21 @@ export const defaultMetadata = {
     searchLimits: {
         bulk: 5,
     },
+    unitFieldSplitDepth: 2,
+    clientSide: {
+        usersInfoChildTemplateId: '',
+        numOfPropsToShow: 9,
+        clientSideWorkspaceName: 'simba',
+        fullNameField: 'full_name',
+    },
+    mapPage: {
+        showMapPage: false,
+        sourceTemplateId: '',
+        destTemplateId: '',
+        sourceFieldForColor: '',
+    },
+    unitsArray: [] as string[],
+    numOfRelationshipFieldsToShow: 2,
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

@@ -1,15 +1,15 @@
-import React from 'react';
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import React from 'react';
+import { INestedRelationshipTemplates } from '../..';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
-import { IEntity } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
-import { EntityDates } from '../EntityDates';
-import { BlueTitle } from '../../../../common/BlueTitle';
+import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
+import { IConnection, IEntity } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
-import { ConnectionWithExtendedRelationship, IConnectionTemplateExpanded } from '.';
+import { EntityDates } from '../EntityDates';
+import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
+import { renderConnectionTree } from './ComponentToPrint';
 
 interface RelationshipPrintTitleProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -53,13 +53,13 @@ export const RelationshipPrintTitle: React.FC<RelationshipPrintTitleProps> = ({
 const EntityComponentToPrint: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    options?: { showDates?: boolean };
+    options: {
+        showEntityDates: boolean;
+        showDisabled: boolean;
+    };
     showPreviewPropertiesOnly?: boolean;
-    expandedRelationships?: { instances: ConnectionWithExtendedRelationship[]; templates: IConnectionTemplateExpanded[] };
-}> = ({ entityTemplate, entity, options = { showDates: true }, showPreviewPropertiesOnly, expandedRelationships }) => {
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
+    expandedRelationships?: { instances: IConnection[]; templates: INestedRelationshipTemplates[] };
+}> = ({ entityTemplate, entity, options, showPreviewPropertiesOnly, expandedRelationships }) => {
     const theme = useTheme();
 
     return (
@@ -67,16 +67,18 @@ const EntityComponentToPrint: React.FC<{
             <Box padding="0.2rem">
                 <EntityPropertiesInternal
                     properties={entity.properties}
+                    coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={false}
                     showPreviewPropertiesOnly={showPreviewPropertiesOnly}
                     mode="normal"
                     textWrap
                     isPrintingMode
+                    showByGroups
                 />
             </Box>
             <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
-            {options.showDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
+            {options.showEntityDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
 
             {expandedRelationships &&
                 expandedRelationships.instances.some((_outerInstance) =>
@@ -92,43 +94,7 @@ const EntityComponentToPrint: React.FC<{
                 ) && (
                     <div>
                         <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
-                        {expandedRelationships.templates.map((expandedTemplate, index) => {
-                            const expandedRelationship = expandedRelationships.instances.find(
-                                (instance) =>
-                                    (expandedTemplate.relationshipTemplate._id === instance.relationship.templateId &&
-                                        entity.properties._id === instance.sourceEntity.properties._id) ||
-                                    entity.properties._id === instance.destinationEntity.properties._id,
-                            );
-
-                            if (!expandedRelationship) return <div key={expandedTemplate.relationshipTemplate._id} />;
-
-                            const relatedEntity = expandedTemplate.isExpandedEntityRelationshipSource
-                                ? expandedRelationship.sourceEntity
-                                : expandedRelationship.destinationEntity;
-
-                            return (
-                                <div key={relatedEntity.properties._id}>
-                                    <RelationshipPrintTitle
-                                        relationshipTemplate={expandedTemplate.relationshipTemplate}
-                                        isExpandedEntityRelationshipSource={expandedTemplate.isExpandedEntityRelationshipSource}
-                                        fontSize="17px"
-                                        index={index + 1}
-                                        sxOverride={{ marginTop: '0.5rem' }}
-                                    />
-                                    <Box>
-                                        <EntityPropertiesInternal
-                                            properties={relatedEntity.properties}
-                                            entityTemplate={entityTemplates.get(relatedEntity.templateId)!}
-                                            darkMode={false}
-                                            showPreviewPropertiesOnly={showPreviewPropertiesOnly}
-                                            mode="normal"
-                                            textWrap
-                                            isPrintingMode
-                                        />
-                                    </Box>
-                                </div>
-                            );
-                        })}
+                        {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, options)}
                     </div>
                 )}
         </Box>

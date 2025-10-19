@@ -1,5 +1,6 @@
 import joi from 'joi';
-import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
+import { fileSchema, MongoIdSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 
 const causesOfInstanceSchema = joi.object({
     instance: joi
@@ -61,7 +62,7 @@ export const createRuleBreachRequestRequestSchema = joi.object({
 // POST /api/rule-breaches/requests/:id/approve
 export const approveRuleBreachRequestRequestSchema = joi.object({
     query: {},
-    body: {},
+    body: { childTemplateId: joi.string() },
     params: {
         ruleBreachRequestId: MongoIdSchema.required(),
     },

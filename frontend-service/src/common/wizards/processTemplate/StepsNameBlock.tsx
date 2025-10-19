@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable import/no-extraneous-dependencies */
 import React, { useCallback, useState } from 'react';
 import { TextField, Grid } from '@mui/material';
@@ -37,7 +38,7 @@ const StepsNameBlock: React.FC<StepsGenericBlockProps> = ({
 
     return (
         <Grid container direction="row" alignItems="center" spacing={1} style={{ justifyContent: 'center', marginBottom: '3%' }}>
-            <Grid item>
+            <Grid>
                 <TextField
                     label={i18next.t('wizard.name')}
                     disabled={isEditMode && areThereAnyInstances}
@@ -50,7 +51,7 @@ const StepsNameBlock: React.FC<StepsGenericBlockProps> = ({
                     helperText={touchedOfStep?.name && errorsOfStep?.name}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <TextField
                     label={i18next.t('wizard.displayName')}
                     value={displayName}

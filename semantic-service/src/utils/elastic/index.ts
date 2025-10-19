@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
+import { logger, ISemanticSearchResult } from '@microservices/shared';
 import config from '../../config';
-import { IElasticDoc, ISemanticSearchResult } from '../../express/semantics/interface';
-import logger from '../logger/logsLogger';
+import { IElasticDoc } from '../../express/semantics/interface';
 
 const {
     elastic: {
@@ -41,7 +41,13 @@ class ElasticClient {
 
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
-        this.createIndex();
+        this.createIndex()
+            .then(() => {
+                logger.info(`Index created successfully: ${index}-${useDevBucket ? devBucketPrefix : ''}${this.workspaceId}`);
+            })
+            .catch((error) => {
+                logger.error('Error creating index:', { error });
+            });
     }
 
     static async initialize() {
@@ -67,7 +73,7 @@ class ElasticClient {
                         type: 'dense_vector',
                         dims: vectorDims,
                         index: true,
-                        similarity: similarityAlgorithm,
+                        similarity: similarityAlgorithm as estypes.MappingDenseVectorSimilarity,
                     },
                     text: { type: 'text' },
                     title: { type: 'text' },
@@ -171,8 +177,8 @@ class ElasticClient {
         try {
             const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
             return this.formatElasticResponse(response);
-        } catch (e) {
-            logger.error('Error searching', e);
+        } catch (error) {
+            logger.error('Error searching in ElasticSearch:', { error });
             return undefined;
         }
     }

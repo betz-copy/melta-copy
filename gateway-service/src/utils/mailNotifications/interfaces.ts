@@ -1,15 +1,14 @@
-import { NotificationType } from '../../externalServices/notificationService/interfaces';
 import {
-    INotificationMetadataPopulated,
     IProcessReviewerUpdateNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
-import { IMongoProcessInstanceWithSteps } from '../../externalServices/processService/interfaces/processInstance';
-import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
-import { IUser } from '../../externalServices/userService/interfaces/users';
+    INotificationMetadataPopulated,
+    IMongoStepTemplate,
+    IMongoProcessInstancePopulated,
+    NotificationType,
+} from '@microservices/shared';
 
 export interface IProcessReviewerUpdateMailNotificationMetadataPopulated {
-    process: IMongoProcessInstanceWithSteps;
+    process: IMongoProcessInstancePopulated;
     addedSteps: (IMongoStepTemplate | null)[];
     deletedSteps: (IMongoStepTemplate | null)[];
     unchangedStepIds: (string | null)[];
@@ -25,7 +24,7 @@ export type IMailNotificationMetadataPopulated =
     | IProcessStatusUpdateMailNotificationMetadataPopulated;
 
 export interface IMailNotification {
-    viewers: IUser[];
+    viewersMail: string[];
     type: NotificationType;
     populatedMetaData: IMailNotificationMetadataPopulated;
 }

@@ -1,10 +1,8 @@
 import { isAxiosError } from 'axios';
-import { PermissionScope } from '../express/permissions/interface';
-import { ICompactPermissions, ISubCompactPermissions } from '../express/permissions/interface/permissions';
-import { config } from './config';
+import { PermissionScope, ICompactPermissions, ISubCompactPermissions, logger } from '@microservices/shared';
+import config from './config';
 import { IPermissionsOfUser } from './old_interfaces';
 import { createNewUser, getOldPermissionsOfUsers } from './requests';
-import logger from '../utils/logger/logsLogger';
 
 const oldPermissionsToNewPermissions = (
     oldPermissions: IPermissionsOfUser[],
@@ -43,10 +41,9 @@ const main = async () => {
     await Promise.all(
         oldPermissionsToNewPermissions(oldPermissionsOfUser).map(async (createUserBody) =>
             createNewUser(createUserBody).catch((err) => {
-                console.log(
-                    `failed to convert user ${createUserBody.kartoffelId} with source ${createUserBody.digitalIdentitySource} `,
-                    isAxiosError(err) ? err.response?.data : err,
-                );
+                logger.error(`failed to convert user ${createUserBody.kartoffelId} with source ${createUserBody.digitalIdentitySource} `, {
+                    error: isAxiosError(err) ? err.response?.data : err,
+                });
             }),
         ),
     );

@@ -1,36 +1,5 @@
+import { searchFilterSchema, IAggregationType, IChartPermission, IChartType, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
-import { IAggregationType, IChartType, IPermission } from './interface';
-
-// format of properties keys in entity template
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
-
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // regex syntax of Neo4j (Java Regular Expression). validated by neo itself
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
 
 const aggregationSchema = Joi.object({
     type: Joi.string()
@@ -54,7 +23,7 @@ const IPieMetaDataSchema = Joi.object({
     aggregationType: aggregationSchema.required(),
 });
 
-const INUmberMetaDataSchema = Joi.object({
+const INumberMetaDataSchema = Joi.object({
     accumulator: Joi.alternatives().try(Joi.string(), aggregationSchema).required(),
 });
 
@@ -62,6 +31,7 @@ const chartSchema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     type: Joi.string()
         .valid(...Object.values(IChartType))
         .required(),
@@ -71,7 +41,7 @@ const chartSchema = Joi.object({
                 { is: IChartType.Column, then: IColumnOrLineMetaDataSchema },
                 { is: IChartType.Line, then: IColumnOrLineMetaDataSchema },
                 { is: IChartType.Pie, then: IPieMetaDataSchema },
-                { is: IChartType.Number, then: INUmberMetaDataSchema },
+                { is: IChartType.Number, then: INumberMetaDataSchema },
             ],
         })
         .required(),
@@ -81,7 +51,7 @@ const chartSchema = Joi.object({
         return value;
     }),
     permission: Joi.string()
-        .valid(...Object.values(IPermission))
+        .valid(...Object.values(IChartPermission))
         .required(),
     createdBy: Joi.string().required(),
 });
@@ -95,10 +65,11 @@ export const getChartByIdRequestSchema = Joi.object({
     },
 });
 
-// GET /api/dashboard/charts/by-template/:templateId
+// POST /api/dashboard/charts/by-template/:templateId
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {

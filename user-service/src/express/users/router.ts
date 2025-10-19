@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { wrapController } from '../../utils/express';
-import { ValidateRequest } from '../../utils/joi';
+import { wrapController, ValidateRequest } from '@microservices/shared';
 import {
     createUserRequestSchema,
     getUserByExternalIdRequestSchema,
@@ -10,9 +9,9 @@ import {
     updateUserRequestSchema,
     updateUsersBulkRequestSchema,
 } from './validator.schema';
-import { UsersController } from './controller';
+import UsersController from './controller';
 
-export const usersRouter: Router = Router();
+const usersRouter: Router = Router();
 
 usersRouter.post('/find-by-id/:id', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 usersRouter.post(
@@ -31,3 +30,5 @@ usersRouter.patch('/:id', ValidateRequest(updateUserRequestSchema), wrapControll
 usersRouter.patch('/bulk', ValidateRequest(updateUsersBulkRequestSchema), wrapController(UsersController.updateUsersBulk));
 
 usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), wrapController(UsersController.searchUsersByPermissions));
+
+export default usersRouter;

@@ -1,5 +1,4 @@
 /* eslint-disable default-case */
-import { RuleBreachSearchFilterTypeError } from '../../express/error';
 import {
     basicFilterOperationTypes,
     filterTypes,
@@ -7,7 +6,8 @@ import {
     IAgGridSort,
     numberFilterOperationTypes,
     textFilterOperationTypes,
-} from '../interfaces/agGrid';
+} from '@microservices/shared';
+import { RuleBreachSearchFilterTypeError } from '../../express/error';
 
 const translateAgGridFilter = (
     type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,

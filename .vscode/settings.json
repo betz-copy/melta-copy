@@ -1,38 +1,59 @@
 {
-  "eslint.validate": ["javascript", "typescript"],
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
-  "editor.formatOnSave": true,
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.insertSpaces": true,
-    "editor.tabSize": 2,
-    "editor.quickSuggestions": {
-      "comments": "on",
-      "strings": "on",
-      "other": "on"
+    "eslint.validate": ["javascript", "typescript"],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.quickSuggestions": {
+            "comments": "on",
+            "strings": "on",
+            "other": "on"
+        }
+    },
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#007fff",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#3399ff",
+        "statusBarItem.remoteBackground": "#007fff",
+        "statusBarItem.remoteForeground": "#e7e7e7"
+    },
+    "cSpell.words": ["ECEF", "epsg", "hemi", "Highchart", "Highcharts", "kartoffel", "matomo", "melta", "menash", "Rjsf", "Shraga", "wouter"],
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true
+    },
+    // -- tsserver uses ≤1 GB heap
+    "typescript.tsserver.maxTsServerMemory": 1024,
+
+    // merge syntax + semantic server ➜ ~30 % less RAM
+    "typescript.tsserver.useSyntaxServer": "never",
+
+    // stop downloading @types for every JS file
+    "typescript.disableAutomaticTypeAcquisition": true,
+
+    // don't index build artefacts
+    "files.watcherExclude": {
+        "**/dist/**": true,
+        "**/coverage/**": true
     }
-  },
-  "workbench.colorCustomizations": {
-    "statusBar.background": "#007fff",
-    "statusBar.foreground": "#e7e7e7",
-    "statusBarItem.hoverBackground": "#3399ff",
-    "statusBarItem.remoteBackground": "#007fff",
-    "statusBarItem.remoteForeground": "#e7e7e7"
-  },
-  "peacock.color": "#007fff",
-  "cSpell.words": ["ECEF", "epsg", "hemi", "melta"]
 }

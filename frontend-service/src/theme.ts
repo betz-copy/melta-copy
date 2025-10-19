@@ -13,14 +13,22 @@ const basicTheme: ThemeOptions = {
             styleOverrides: {
                 root: {
                     '& .MuiInputBase-root': {
-                        borderRadius: '10px',
+                        borderRadius: '7px',
+                        fontSize: '14px',
+                        textOverflow: 'ellipsis',
+                        '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {
+                            display: 'none',
+                        },
+                        color: '#53566E',
                     },
+
                     '& fieldset': {
                         borderColor: '#CCCFE5',
                         color: '#CCCFE5',
                     },
                     '& label': {
                         color: '#9398C2',
+                        fontSize: 14,
                     },
                 },
             },
@@ -29,6 +37,16 @@ const basicTheme: ThemeOptions = {
             styleOverrides: {
                 paper: {
                     borderRadius: '20px',
+                },
+            },
+        },
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    color: '#4752B6',
+                    '&.Mui-checked': {
+                        color: '#4752B6',
+                    },
                 },
             },
         },
@@ -67,6 +85,9 @@ export const lightTheme = createTheme({
     },
 });
 
+const darkThemeTextField = basicTheme.components?.MuiTextField;
+darkThemeTextField!.styleOverrides!.root!['& .MuiInputBase-root'].color = 'white';
+
 export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
@@ -87,5 +108,7 @@ export const darkTheme = createTheme({
                 },
             },
         },
+        MuiTextField: darkThemeTextField,
+        MuiRadio: {},
     },
 });

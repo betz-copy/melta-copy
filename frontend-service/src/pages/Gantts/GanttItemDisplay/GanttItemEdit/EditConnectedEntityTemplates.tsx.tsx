@@ -3,6 +3,7 @@ import { Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
@@ -39,12 +40,12 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
     const connectedEntityTemplatesKey = `${itemKey}.connectedEntityTemplates`;
 
     return (
-        <Grid item container direction="column" alignItems="stretch">
+        <Grid container direction="column" alignItems="stretch">
             <FieldArray name={connectedEntityTemplatesKey} validateOnChange={false}>
                 {({ push, remove }) => (
                     <>
                         {Boolean(ganttItem.connectedEntityTemplates.length) && (
-                            <Grid item alignSelf="center">
+                            <Grid alignSelf="center">
                                 <ConnectionIcon />
                             </Grid>
                         )}
@@ -60,8 +61,10 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                         ? relationshipTemplate.destinationEntityId
                                         : relationshipTemplate.sourceEntityId,
                                 );
-                            const connectedEntityTemplateFields =
-                                connectedEntityTemplate && Object.keys(connectedEntityTemplate.properties.properties);
+
+                            const connectedEntityTemplateFields = Object.keys(
+                                pickBy(connectedEntityTemplate?.properties.properties, ({ format }) => format !== 'comment'),
+                            );
 
                             return (
                                 <Grid
@@ -86,7 +89,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                         onRemove={() => remove(index)}
                                     />
 
-                                    <Grid item>
+                                    <Grid>
                                         <FormikAutoComplete
                                             formik={formik}
                                             formikField={`${itemConnectedEntityTemplateKey}.relationshipTemplateId`}
@@ -107,7 +110,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                             }}
                                         />
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <FormikAutoComplete
                                             multiple
                                             hideSelectedOptions
@@ -123,7 +126,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                             );
                         })}
 
-                        <Grid item alignSelf="center">
+                        <Grid alignSelf="center">
                             <Button
                                 onClick={() =>
                                     push({

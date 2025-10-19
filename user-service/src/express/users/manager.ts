@@ -1,22 +1,21 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { IBaseUser, IUser } from './interface';
-import { UsersModel } from './model';
-import { PermissionsManager } from '../permissions/manager';
+import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest, RelatedPermission, IUserPopulated, IRole } from '@microservices/shared';
+import UsersModel from './model';
+import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
-import { ISubCompactPermissions } from '../permissions/interface/permissions';
-import { IAgGridRequest } from '../../utils/agGrid/interfaces';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
+import RolesManager from '../roles/manager';
 
-export class UsersManager {
-    static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
+class UsersManager {
+    static async getUserById(id: string, workspaceIds?: string[], withPermissions: boolean = true): Promise<IUser | Partial<IUser>> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.baseUserToUser(baseUser, workspaceIds);
+        return withPermissions ? this.baseUserToUser(baseUser, workspaceIds) : baseUser;
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
-        const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
+        const baseUser = await UsersModel.findOne({ kartoffelId: id }).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 
@@ -26,6 +25,7 @@ export class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
         { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {
@@ -39,7 +39,7 @@ export class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             if (query.$or) {
@@ -52,8 +52,13 @@ export class UsersManager {
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
-            const usersIds = new Set<string>(simplePermissions.map(({ userId }) => userId));
-            query._id = { $in: [...usersIds] };
+            const relatedIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
+            const searchByRelatedIds = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
+
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: searchByRelatedIds }];
+                delete query.$or;
+            } else query.$or = searchByRelatedIds;
         }
 
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
@@ -76,14 +81,14 @@ export class UsersManager {
         return users.map(({ _id }) => _id);
     }
 
-    static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
+    static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUserPopulated[]; count: number }> {
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
 
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
         const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
         const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
-        const permissionsToUsers = await this.appendPermissionsToUsers(users);
+        const permissionsToUsers = await this.appendPermissionsToUsers(users, true);
 
         return { users: permissionsToUsers, count };
     }
@@ -91,13 +96,23 @@ export class UsersManager {
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
         const baseUser = (await UsersModel.create(userData)).toObject();
 
-        await PermissionsManager.syncCompactPermissionsOfUser(baseUser._id, permissions);
+        if (userData.roleIds && userData.roleIds?.length > 0)
+            await RolesManager.getRoleById(userData.roleIds[0]); // Validate role exists
+        else await PermissionsManager.syncCompactPermissions(baseUser._id, RelatedPermission.User, permissions);
 
         return this.baseUserToUser(baseUser);
     }
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
-        const baseUser = await UsersModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
+        const updateQuery: any = { ...updateData };
+
+        if (updateQuery.roleIds === null) {
+            delete updateQuery.roleIds; // remove from $set
+            updateQuery.$unset = { roleIds: '' };
+        }
+
+        const baseUser = await UsersModel.findByIdAndUpdate(id, updateQuery, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
+
         return this.baseUserToUser(baseUser);
     }
 
@@ -107,30 +122,68 @@ export class UsersManager {
         );
     }
 
-    private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
-        const permissions = await PermissionsManager.getCompactPermissionsOfUser(user._id, workspaceIds);
-        return { ...user, permissions, displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}` };
+    private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[], populated?: boolean): Promise<IUser | IUserPopulated> {
+        const { roleIds, ...userWithoutRole } = user;
+
+        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
+
+        let roles: string[] | IRole[] | undefined = roleIds;
+        if (populated && roleIds && roleIds?.length > 0) roles = await RolesManager.getRolesByIds(roleIds);
+
+        return {
+            ...userWithoutRole,
+            [populated ? 'roles' : 'roleIds']: roles,
+            permissions,
+            displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}`,
+        };
     }
 
-    private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
-        return Promise.all(users.map((user) => this.baseUserToUser(user)));
+    private static async appendPermissionsToUsers(users: IBaseUser[], populated?: boolean): Promise<IUser[] | IUserPopulated[]> {
+        return Promise.all(users.map((user) => this.baseUserToUser(user, undefined, populated)));
     }
 
-    static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
+    static async searchUsersByPermissions(workspaceId: string, search?: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
         const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
 
-        const users = await UsersModel.find({ _id: { $in: permissions.map(({ userId }) => userId) } })
-            .lean()
-            .exec();
+        const query: FilterQuery<IUser> = {};
+
+        query._id = { $in: permissions.map(({ relatedId }) => relatedId) };
+
+        if (search) {
+            const searchRegex = { $regex: new RegExp(search, 'i') };
+            const searchQuery = [
+                { fullName: searchRegex },
+                { jobTitle: searchRegex },
+                { hierarchy: searchRegex },
+                { mail: searchRegex },
+                { kartoffelId: searchRegex },
+            ];
+
+            query.$or = searchQuery;
+        }
+
+        const users = await UsersModel.find(query).lean().exec();
 
         return this.appendPermissionsToUsers(users);
+    }
+
+    static async deleteUserById(userId: string) {
+        return UsersModel.findByIdAndDelete(userId).orFail(new UserDoesNotExistError(userId));
     }
 
     static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
         const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
 
-        const users = await Promise.all(permissions.map(({ userId }) => this.getUserById(userId)));
+        const users = await Promise.all(permissions.map(({ relatedId }) => this.getUserById(relatedId)));
 
-        return { users, count };
+        return { users: users as IUser[], count };
+    }
+
+    static async getUsersConnectedToRole(roleId: string) {
+        return UsersModel.find({ roleIds: { $in: [roleId] } })
+            .lean()
+            .exec();
     }
 }
+
+export default UsersManager;

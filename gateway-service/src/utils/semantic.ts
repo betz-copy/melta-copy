@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { IEntityWithDirectRelationships, ISearchResult } from '../externalServices/instanceService/interfaces/entities';
-import { IRerankResult, ISemanticSearchResult } from '../externalServices/semanticSearch/interface';
-import { excelConfig } from './excel/excelConfig';
+import { IEntityWithDirectRelationships, ISearchResult, ISemanticSearchResult, IRerankResult } from '@microservices/shared';
+import excelConfig from './excel/excelConfig';
 
 const PROPS_TO_SKIP = ['_id', 'updatedAt', 'createdAt'];
 

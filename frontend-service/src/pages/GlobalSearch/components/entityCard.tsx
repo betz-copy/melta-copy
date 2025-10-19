@@ -1,35 +1,36 @@
-import { AppRegistration as AppRegistrationIcon, AutoAwesome } from '@mui/icons-material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { AppRegistration as AppRegistrationIcon, AutoAwesome, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
-import { useLocation } from 'wouter';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../../common/BlueTitle';
+import { useLocation } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import OpenPreview from '../../../common/FilePreview/OpenPreview';
 import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
+import { HighlightText } from '../../../utils/HighlightText';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { getFirstXPropsKeys, isChildTemplate } from '../../../utils/templates';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { HighlightText } from '../../../utils/HighlightText';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -84,7 +85,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const userHasWritePermissions = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         entityTemplate._id,
         PermissionScope.write,
     );
@@ -155,17 +156,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity; wizardValues?: EntityWizardValues }>({ isOpen: false });
     const [_, navigate] = useLocation();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
-    const first5PropsKeys: string[] = [
-        ...entityTemplate.propertiesPreview,
-        ...entityTemplate.propertiesOrder
-            .filter(
-                (property) =>
-                    !entityTemplate.propertiesPreview.includes(property) &&
-                    entityTemplate.properties.properties[property].format !== 'fileId' &&
-                    entityTemplate.properties.properties[property].items?.format !== 'fileId',
-            )
-            .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
-    ];
+    const first5PropsKeys: string[] = getFirstXPropsKeys(5, entityTemplate);
 
     useMemo(() => {
         const fileIndex = files.findIndex(
@@ -188,7 +179,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
             ref={cardRef}
             sx={{
                 margin: '0.6rem',
-                width: open ? 0.987 : '547px',
+                width: open ? 0.987 : '520px',
                 borderRadius: '15px',
                 overflow: 'hidden',
                 paddingBottom: '10px',
@@ -199,7 +190,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
                     <Grid container alignItems="center" flexDirection="row" gap="15px">
-                        <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        <Grid minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon
                                     color={entityTemplateColor}
@@ -222,7 +213,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {
                                 icon: '/icons/read-more-icon.svg',
                                 action: () => {
-                                    navigate(`/entity/${entity.properties._id}`);
+                                    navigate(
+                                        `/entity/${entity.properties._id}${
+                                            isChildTemplate(entityTemplate) ? `?childTemplateId=${entityTemplate._id}` : ''
+                                        }`,
+                                    );
                                 },
                                 popoverText: i18next.t('wizard.entity.readMore'),
                             },
@@ -247,11 +242,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 },
                                 popoverText: i18next.t('actions.graph'),
                             },
-                            { icon: open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />, action: onOpen },
+                            { icon: open ? <KeyboardArrowUp /> : <KeyboardArrowDown />, action: onOpen },
                         ].map(
                             (item) =>
                                 item && (
-                                    <Grid item key={item.popoverText}>
+                                    <Grid key={item.popoverText}>
                                         <IconButtonWithPopover
                                             popoverText={(typeof item === 'object' && item.popoverText) || ''}
                                             iconButtonProps={{
@@ -318,7 +313,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         height: '206px',
                     }}
                 >
-                    <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
+                    <Grid size={{ xs: 8 }} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
                         <EntityProperties
                             entityTemplate={entityTemplate}
                             properties={entity.properties}
@@ -336,12 +331,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             }}
                             viewFirstLineOfLongText
                             searchedText={searchedText}
+                            coloredFields={entity.coloredFields}
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
-                        <Grid item xs={3.8}>
+                        <Grid size={{ xs: 3.8 }}>
                             <Grid
-                                item
                                 sx={{
                                     height: '167px',
                                     margin: '0.3rem 1rem 1rem 1rem',
@@ -366,7 +361,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <Grid item xs={9}>
+                                    <Grid size={{ xs: 9 }}>
                                         {matchedSentence ? (
                                             <MeltaTooltip
                                                 title={
@@ -408,7 +403,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             </Typography>
                                         )}
                                     </Grid>
-                                    <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                    <Grid size={{ xs: 3 }} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                         {files[previewImageIndex] && (
                                             <OpenPreview
                                                 fileId={files[previewImageIndex].id}
@@ -428,14 +423,14 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     )}
 
                     {hasSomeFileIdPropertyTemplate && files.length === 0 && (
-                        <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
+                        <Grid sx={{ display: 'flex', flexDirection: 'row' }}>
                             <NoFile />
                         </Grid>
                     )}
                 </Grid>
             )}
             <Grid container sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Grid item xs={10.5}>
+                <Grid size={{ xs: 10.5 }}>
                     {open && (
                         <CardContent
                             style={{
@@ -456,6 +451,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 }}
                                 innerStyle={{ flexBasis: '33.33%' }}
                                 mode="normal"
+                                coloredFields={entity.coloredFields}
                             />
                             <Grid container marginTop="40px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
@@ -466,7 +462,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         </CardContent>
                     )}
                 </Grid>
-                <Grid item xs={1.3}>
+                <Grid size={{ xs: 1.3 }}>
                     {open &&
                         (files.length ? (
                             <Box
@@ -494,7 +490,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <Grid item xs={9}>
+                                    <Grid size={{ xs: 9 }}>
                                         <MeltaTooltip title={files[previewImageIndex].name}>
                                             <Typography
                                                 sx={{
@@ -511,7 +507,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
-                                    <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Grid size={{ xs: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <OpenPreview
                                             fileId={files[previewImageIndex].id}
                                             img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
@@ -526,26 +522,31 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         ))}
                 </Grid>
             </Grid>
-            <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog
+                open={editDialog.isOpen}
+                maxWidth={
+                    entityTemplate?.documentTemplatesIds?.length ? 'lg' : Object.keys(entityTemplate.properties.properties).length === 1 ? 'sm' : 'md'
+                }
+                fullWidth
+            >
                 <CreateOrEditEntityDetails
-                    isEditMode
+                    mutationProps={{
+                        actionType: ActionTypes.UpdateEntity,
+                        payload: entity,
+                        onError: (currEntityValues) =>
+                            setEditDialog({
+                                isOpen: true,
+                                wizardValues: currEntityValues,
+                            }),
+                        onSuccess: () => {
+                            setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                            setExternalErrors({ files: false, unique: {}, action: '' });
+                            refetchQuery?.();
+                        },
+                    }}
                     entityTemplate={entityTemplate}
-                    entityToUpdate={entity}
                     initialCurrValues={editDialog.wizardValues}
-                    onSuccessUpdate={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                        refetchQuery?.();
-                    }}
-                    handleClose={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    }}
-                    onError={(currEntityValues) =>
-                        setEditDialog({
-                            isOpen: true,
-                            wizardValues: currEntityValues,
-                        })
-                    }
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

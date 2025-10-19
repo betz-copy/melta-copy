@@ -1,14 +1,20 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
+import {
+    addPropertyToRequest,
+    DefaultController,
+    IMongoEntityTemplate,
+    IEntitySingleProperty,
+    BadRequestError,
+    EntityTemplateType,
+    TemplateItem,
+    IMongoEntityTemplatePopulated,
+} from '@microservices/shared';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
-import { addPropertyToRequest } from '../../utils/express';
-import DefaultController from '../../utils/express/controller';
-import { BadRequestError } from '../error';
-import { IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
+import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 
-export class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
+class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
         super(new EntityTemplateManager(workspaceId));
     }
@@ -18,7 +24,9 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
         const baseTemplate = templatesMap.get(templateId)!;
         const entityPropertiesQueue = [baseTemplate.properties.properties];
-        const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
+        const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
+            [templateId, { type: EntityTemplateType.Parent, metaData: baseTemplate as IMongoEntityTemplatePopulated }],
+        ]);
 
         while (entityPropertiesQueue.length > 0) {
             const currentEntityProperties = entityPropertiesQueue.shift()!;
@@ -29,7 +37,10 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
 
                     if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
                         const relatedTemplate = templatesMap.get(relatedTemplateId)!;
-                        relationshipReferenceIdsMap.set(relatedTemplateId, relatedTemplate);
+                        relationshipReferenceIdsMap.set(relatedTemplateId, {
+                            type: EntityTemplateType.Parent,
+                            metaData: relatedTemplate as IMongoEntityTemplatePopulated,
+                        });
 
                         entityPropertiesQueue.push(relatedTemplate.properties.properties);
                     }
@@ -40,12 +51,12 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         return relationshipReferenceIdsMap;
     };
 
-    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
+    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, TemplateItem>, templateId: string) => {
         const defaultCode = [
             '/// To throw a custom error in your code, use the following syntax:',
             '// throw new CustomError("Your error message")',
             '',
-            `${generateInterfaceWithRelationships(entitiesTemplatesByIds)}`,
+            `${generateInterfaceWithRelationships(templateId, entitiesTemplatesByIds)}`,
             '',
             'function updateEntity(entityId: string, properties: Record<string, any>): void {',
             '  // updates entity in data base',
@@ -77,12 +88,35 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         // todo: ensure that the code doesn't use in global variables
         const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
 
-        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));
+        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId));
     };
+
+    private validateProperties(properties: Record<string, IEntitySingleProperty>) {
+        const relatedUserFieldsOfkartoffelFields: string[] = [];
+        const userFields: string[] = [];
+        Object.entries(properties).forEach(([key, value]) => {
+            if (value.format && value.format === 'user') {
+                userFields.push(key);
+            }
+            if (value.format && value.format === 'kartoffelUserField') {
+                relatedUserFieldsOfkartoffelFields.push(value.expandedUserField?.relatedUserField || '');
+                if (!value.expandedUserField?.relatedUserField)
+                    throw new BadRequestError('kartoffelField derived from user field that does not exist');
+
+                const relateUserField = properties[value.expandedUserField?.relatedUserField];
+
+                if (relateUserField && relateUserField.archive && !value.archive)
+                    throw new BadRequestError('Cannot archive user field that have unarchived kartoffelField');
+            }
+        });
+
+        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField)))
+            throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist');
+    }
 
     validateEntityTemplateUpdate = async (req: Request) => {
         const {
-            body: { actions },
+            body: { actions, properties },
             params: { templateId },
         } = req;
 
@@ -91,5 +125,17 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
 
             if (actions !== existingActions) throw new BadRequestError('Cannot update actions in update entityTemplate request');
         }
+
+        this.validateProperties(properties.properties);
+    };
+
+    validateCreateEntityTemplate = async (req: Request) => {
+        const {
+            body: { properties },
+        } = req;
+
+        this.validateProperties(properties.properties);
     };
 }
+
+export default EntityTemplateValidator;

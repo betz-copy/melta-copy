@@ -1,13 +1,11 @@
-import { FilterQuery } from 'mongoose';
+import { DefaultManagerMongo, IChart, IMongoChart, NotFoundError, ServiceError } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import { IChart, IMongoChart } from './interface';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import ChartSchema from './model';
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
-import { NotFoundError, ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
+import ChartSchema from './model';
 
-export class ChartManager extends DefaultManagerMongo<IMongoChart> {
+class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.chartsCollectionName, ChartSchema);
     }
@@ -16,16 +14,20 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
         return this.model.findById(chartId).orFail(new NotFoundError('Chart not found')).lean().exec();
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string) {
-        const query: FilterQuery<IMongoChart> = {
-            templateId,
-            ...(textSearch && {
-                $or: [
-                    { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },
-                    { description: { $regex: escapeRegExp(textSearch), $options: 'i' } },
-                ],
-            }),
-        };
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string) {
+        const query: FilterQuery<IMongoChart> = {};
+
+        if (childTemplateId) {
+            query.childTemplateId = childTemplateId;
+        } else {
+            query.templateId = templateId;
+            query.$or = [{ childTemplateId: { $exists: false } }, { childTemplateId: null }];
+        }
+
+        if (textSearch) {
+            const regex = { $regex: escapeRegExp(textSearch), $options: 'i' };
+            query.$or = [{ name: regex }, { description: regex }];
+        }
 
         return this.model.find(query).lean().exec();
     }
@@ -48,3 +50,5 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
             .exec();
     }
 }
+
+export default ChartManager;

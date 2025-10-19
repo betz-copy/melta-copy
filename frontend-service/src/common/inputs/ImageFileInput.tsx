@@ -1,18 +1,18 @@
-import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility, DocumentScanner } from '@mui/icons-material';
-import { Accept, useDropzone } from 'react-dropzone';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import Camera from '../dialogs/Camera';
+import { CameraAltOutlined as CameraIcon, CloseOutlined as DeleteIcon, DocumentScanner, Visibility } from '@mui/icons-material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
+import { Accept, useDropzone } from 'react-dropzone';
+import { toast } from 'react-toastify';
+import { environment } from '../../globals';
+import { getFileName } from '../../utils/getFileName';
 import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
-import { getFileName } from '../../utils/getFileName';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import Camera from '../dialogs/Camera';
 import ImageView from '../dialogs/Camera/ImageView';
-import { environment } from '../../globals';
 import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {
@@ -147,21 +147,21 @@ const FileInput: React.FC<FileInputProps> = ({
     return (
         <>
             <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
-                <Grid item>
+                <Grid>
                     <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
                 </Grid>
 
-                <Grid item container>
+                <Grid container>
                     {file?.name?.trim() ? (
-                        <Grid item container style={inputStyle} {...getRootProps()}>
+                        <Grid container style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} />
-                            <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
-                                <Grid item container xs={1} justifyContent="center" paddingTop="5px">
-                                    <Grid item>
+                            <Grid container flexDirection="row" width="100%" alignItems="center" flexWrap="nowrap">
+                                <Grid container size={{ xs: 1 }} justifyContent="center" paddingTop="5px">
+                                    <Grid>
                                         <FileIcon extension={getFileExtension(file.name!)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
-                                <Grid item xs={10}>
+                                <Grid size={{ xs: 10 }}>
                                     <Typography
                                         style={{
                                             overflow: 'hidden',
@@ -173,8 +173,8 @@ const FileInput: React.FC<FileInputProps> = ({
                                         {isFileFromInput ? file.name : getFileName(file.name!)}
                                     </Typography>
                                 </Grid>
-                                <Grid item container xs={1} justifyContent="flex-end">
-                                    <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                <Grid container size={{ xs: 1 }} justifyContent="flex-end">
+                                    <Grid container justifyContent="flex-end" alignItems="center" wrap="nowrap">
                                         {!isFileFromInput && !disablePreview && (
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}

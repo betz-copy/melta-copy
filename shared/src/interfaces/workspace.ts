@@ -1,0 +1,67 @@
+import { HexColor } from '../types';
+
+export enum Colors {
+    primary = 'primary',
+}
+
+export enum WorkspaceTypes {
+    dir = '',
+    mlt = '.mlt',
+}
+
+export interface IMetadata {
+    shouldNavigateToEntityPage: boolean;
+    isDrawerOpen: boolean;
+    flowCube: boolean;
+    isDashboardHomePage: boolean;
+    agGrid: {
+        rowCount: number;
+        defaultExpandedRowCount: number;
+        defaultRowHeight: number;
+        defaultFontSize: number;
+        defaultExpandedTableHeight: number;
+    };
+    mainFontSizes: {
+        headlineTitleFontSize: string;
+        entityTemplateTitleFontSize: string;
+        headlineSubTitleFontSize: string;
+    };
+    iconSize: {
+        width: string;
+        height: string;
+    };
+    excel: {
+        entitiesFileLimit: number;
+        filesLimit: number;
+    };
+    searchLimits: {
+        bulk: number;
+    };
+    unitFieldSplitDepth: number;
+    clientSide: {
+        usersInfoChildTemplateId: string;
+        numOfPropsToShow: number;
+        clientSideWorkspaceName: 'simba' | 'azarim';
+        fullNameField: string;
+    };
+    mapPage: {
+        showMapPage: boolean;
+        sourceTemplateId: string;
+        destTemplateId: string;
+        sourceFieldForColor: string;
+    };
+    unitsArray: string[];
+    numOfRelationshipFieldsToShow: number;
+}
+
+export interface IWorkspace {
+    _id: string;
+    name: string;
+    displayName: string;
+    path: string;
+    type: WorkspaceTypes;
+    colors: Record<Colors, HexColor>;
+    iconFileId?: string;
+    logoFileId?: string;
+    metadata?: Partial<IMetadata>;
+}

@@ -1,48 +1,10 @@
-import { Request } from 'express';
 import * as Joi from 'joi';
-import { wrapValidator } from './express';
+import { ProcessPropertyFormats, MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import config from '../config';
-import { ProcessPropertyFormats } from '../express/templates/processes/interface';
 import ajv from './ajv';
 
 const stringFormats = Object.values(ProcessPropertyFormats);
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array', 'signature'];
-
-const defaultValidationOptions: Joi.ValidationOptions = {
-    abortEarly: false,
-    allowUnknown: false,
-    convert: true,
-};
-
-const normalizeRequest = (req: any, value: any) => {
-    req.originalBody = req.body;
-    req.body = value.body;
-
-    req.originalQuery = req.query;
-    req.query = value.query;
-
-    req.originalParams = req.params;
-    req.params = value.params;
-};
-
-const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
-    const validator = async (req: Request) => {
-        const { error, value } = schema.unknown().validate(req, options);
-        if (error) {
-            throw error;
-        }
-
-        if (options.convert) {
-            normalizeRequest(req, value);
-        }
-    };
-
-    return wrapValidator(validator);
-};
-
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
-
-export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
 export const updateAndCreateStepsSchema = Joi.object().pattern(MongoIdSchema, Joi.array().items(Joi.string()));
 
@@ -143,6 +105,7 @@ const baseStepSchema = Joi.object({
     properties: innerPropertiesSchema.required(),
     propertiesOrder: orderPropertiesSchema.required(),
     reviewers: Joi.array().items(Joi.string()).required(),
+    disableAddingReviewers: Joi.boolean(),
     iconFileId: Joi.string().allow(null),
 });
 
@@ -170,5 +133,3 @@ export const updateProcessTemplateBody = Joi.object({
         .items(baseStepSchema.keys({ _id: Joi.string() }))
         .min(1),
 }).options({ abortEarly: false });
-
-export default ValidateRequest;

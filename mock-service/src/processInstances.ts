@@ -1,63 +1,15 @@
+/* eslint-disable import/prefer-default-export */
 /* eslint-disable no-plusplus */
-// @ts-ignore
-import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import { Axios } from 'axios';
+import { IMongoProcessTemplatePopulated } from '@microservices/shared';
 import config from './config';
-import { IMongoProcessTemplatePopulated } from './processTemplate';
-import { createAxiosInstance } from './utils/axios';
+import createAxiosInstance from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
 const { url, processInstanceRoute, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } = config.processService;
-
-// eslint-disable-next-line no-shadow
-export enum Status {
-    Pending = 'pending',
-    Approved = 'approved',
-    Rejected = 'rejected',
-}
-
-export interface IStepInstance {
-    templateId: string;
-    properties?: Record<string, any>;
-    status: Status;
-    reviewers: string[];
-    reviewerId?: string;
-    reviewedAt?: Date;
-}
-
-export interface IMongoStepInstance extends IStepInstance {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-export type InstanceDetails = Record<string, any>;
-
-export interface IProcessInstance {
-    templateId: string;
-    name: string;
-    details: Record<string, any>;
-    startDate: Date;
-    endDate: Date;
-    steps: string[];
-    status: Status;
-    reviewerId?: string;
-    reviewedAt?: Date;
-}
-export interface IProcessInstancePopulated extends Omit<IProcessInstance, 'steps'> {
-    steps: IMongoStepInstance[];
-}
-export interface IMongoProcessInstance extends IProcessInstance {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-export interface IMongoProcessInstancePopulated extends IProcessInstancePopulated {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 const generateName = (): string => {
     const length = Math.floor(Math.random() * (nameMaxLength - nameMinLength + 1)) + nameMinLength;
@@ -120,7 +72,6 @@ const createProcessInstance = (
             .post(url + processInstanceRoute, requestBody)
             .then((response) => response.data)
             .catch((error) => {
-                // eslint-disable-next-line no-console
                 console.error(`Error creating instance for template ${processTemplate._id}: `, error);
                 throw error;
             }),

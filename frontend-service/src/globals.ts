@@ -1,15 +1,20 @@
 import i18next from 'i18next';
-import { ILabelIcon } from './utils/graph/helperTypes';
 import { NotificationType } from './interfaces/notifications';
+import { ILabelIcon } from './utils/graph/helperTypes';
 
 export const environment = {
     api: {
         login: '/api/auth/login',
         config: '/config',
         getAllTemplates: '/templates/all',
+        getAllClientSideTemplates: '/client-side/templates/all',
         categories: '/templates/categories',
         entityTemplates: '/templates/entities',
+        childTemplates: '/templates/child',
+        clientSideRoutes: '/client-side',
+        templatesConfig: '/templates/config',
         relationshipTemplates: '/templates/relationships',
+        printingTemplates: '/templates/print',
         rules: '/templates/rules',
         entities: '/instances/entities',
         relationships: '/instances/relationships',
@@ -22,15 +27,19 @@ export const environment = {
         preview: '/preview',
         permissions: '/permissions',
         users: '/users',
+        roles: '/users/roles',
         activityLog: '/activity-log',
         notifications: '/notifications',
         ruleBreachesRequests: '/rule-breaches/requests',
         ruleBreachesAlerts: '/rule-breaches/alerts',
         workspaces: '/workspaces',
+        dashboard: '/dashboard',
     },
     unauthorizedId: 'unauthorized',
+    clientSideId: 'client-side',
     defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
+    searchPath: '/search',
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
@@ -141,6 +150,30 @@ export const environment = {
     charts: {
         defaultColumnSizes: { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 },
         chartsOrderKey: 'chartsOrder_',
+        pieChartColors: [
+            '#F098ED',
+            '#F9FB85',
+            '#FFBB6D',
+            '#86FB83',
+            '#6DCBFF',
+            '#F09898',
+            '#AF98F0',
+            '#85FBED',
+            '#C0FB85',
+            '#FFDF6D',
+            '#6D96FF',
+            '#FB8383',
+            '#D498F0',
+        ],
+        cols: 12,
+        itemWidth: 4,
+    },
+    dashboard: {
+        dashboardOrderKey: 'dashboardOrder',
+        dashboardPath: '/dashboard',
+        chartPath: '/charts',
+        tablePath: '/table',
+        iFramePath: '/iframe',
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -151,6 +184,7 @@ export const environment = {
             general: [
                 NotificationType.ruleBreachAlert,
                 NotificationType.ruleBreachResponse,
+                NotificationType.ruleIndicatorAlert,
                 NotificationType.processReviewerUpdate,
                 NotificationType.processStatusUpdate,
                 NotificationType.newProcess,
@@ -192,6 +226,11 @@ export const environment = {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachResponse,
                     displayName: () => i18next.t('notifications.displayNames.ruleBreachResponse'),
+                },
+                {
+                    color: '#FF0000',
+                    type: NotificationType.ruleIndicatorAlert,
+                    displayName: () => i18next.t('notifications.displayNames.ruleIndicatorAlert'),
                 },
                 {
                     color: '#8FBC8F',
@@ -240,12 +279,26 @@ export const environment = {
             columnsOrder: 'columnsOrder-',
             columnWidths: 'columnWidths-',
         },
+        unitFieldSplitDepth: 2,
     },
     filterOptions: {
         string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
+        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
         number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
-        date: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
+        date: [
+            'equals',
+            'notEqual',
+            'greaterThan',
+            'greaterThanOrEqual',
+            'lessThan',
+            'lessThanOrEqual',
+            'inRange',
+            'thisWeek',
+            'thisMonth',
+            'thisYear',
+        ],
     },
+    relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear'] as readonly string[],
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
@@ -267,6 +320,7 @@ export const environment = {
         maxRadius: 30000,
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        polygonDefaultColor: '#11695a',
         mapSearchPropertiesLimit: 2,
         epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
         utm: {
@@ -286,7 +340,19 @@ export const environment = {
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
+    dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
+    dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+    maxPrintLevel: 5,
+    formats: {
+        date: 'dd/MM/yyyy',
+        dateTime: 'dd/MM/yyyy HH:mm',
+        time: 'HH:mm',
+        fullTime: 'HH:mm:ss',
+        loggingDate: 'yyyy-MM-dd',
+        loggingDateTime: 'yyyy-MM-dd HH:mm:ss',
+    },
     fileExtensions: {
+        defaultImage: 'png',
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],
@@ -1316,10 +1382,13 @@ export const environment = {
             'prw',
         ],
     },
+    emptyHtmlStringValues: ['<p><br/></p>', '<p><br></p>'] as string[],
+    errorColor: '#d32f2f',
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',
             noTypeGivenErrorCodeTs: '7044',
         },
     },
+    formulaGetTodayVarName: '!TODAY_VAR', // '!' at start to not intersect with other variables
 } as const;

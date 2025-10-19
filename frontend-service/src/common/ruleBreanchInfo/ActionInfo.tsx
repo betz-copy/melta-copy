@@ -1,7 +1,8 @@
-import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useQueryClient } from 'react-query';
+import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -11,22 +12,22 @@ import {
     IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
+    ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
-import { populateRelationshipTemplate } from '../../utils/templates';
-import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
-import { IUser } from '../../interfaces/users';
-import { EntityLink, EntityLinkProps } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../interfaces/rules';
-import { EntityPropertiesInternal } from '../EntityProperties';
-import { environment } from '../../globals';
+import { ActionOnFail, IMongoRule } from '../../interfaces/rules';
+import { IUser } from '../../interfaces/users';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
-import { MeltaTooltip } from '../MeltaTooltip';
+import { populateRelationshipTemplate } from '../../utils/templates';
+import { EntityLink, EntityLinkProps } from '../EntityLink';
+import { EntityPropertiesInternal } from '../EntityProperties';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 
 interface EntityInfoProps {
     entity: IEntity | string | null;
@@ -98,18 +99,21 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         );
         linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
-        const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
-            if (
-                currentAction.actionType === ActionTypes.UpdateEntity &&
-                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-            ) {
-                return {
-                    ...previousUpdatedProperties,
-                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                };
-            }
-            return previousUpdatedProperties;
-        }, (entity as IEntity).properties);
+        const updatedProperties = actions.reduce(
+            (previousUpdatedProperties, currentAction) => {
+                if (
+                    currentAction.actionType === ActionTypes.UpdateEntity &&
+                    (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+                ) {
+                    return {
+                        ...previousUpdatedProperties,
+                        ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
+                    };
+                }
+                return previousUpdatedProperties;
+            },
+            (entity as IEntity).properties,
+        );
 
         entityForLink = {
             templateId: (entity as IEntity).templateId,
@@ -147,7 +151,9 @@ export const EntityForBrokenRules: React.FC<{
             actions={actions}
             entityPropertiesToShowTooltipOverride={entityPropertiesToShowTooltipOverride}
             entityPropertiesToHighlightTooltip={entityPropertiesToHighlightTooltip}
-            entityPropertiesToHighlightColor={ruleTemplate.actionOnFail === 'WARNING' ? theme.palette.warning.main : theme.palette.error.main}
+            entityPropertiesToHighlightColor={
+                ruleTemplate.actionOnFail === ActionOnFail.WARNING ? theme.palette.warning.main : theme.palette.error.main
+            }
         />
     );
 };
@@ -204,7 +210,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const relationshipTemplate = allowedRelationships.find((relationship) => relationship._id === relationshipTemplateId)!;
-    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates);
+    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, entityTemplates);
 
     return (
         <Typography component="p" variant="body1">
@@ -277,7 +283,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
 
     return (
         <Grid container direction="column">
-            <Grid item>
+            <Grid>
                 <Typography component="p" variant="body1">
                     <Box component="span">
                         {actionType === ActionTypes.CreateEntity && i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.creatingEntity')}
@@ -294,8 +300,13 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                 </Typography>
             </Grid>
             {!isCompact && entityTemplate && (
-                <Grid item alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
-                    <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} mode="normal" />
+                <Grid alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
+                    <EntityPropertiesInternal
+                        properties={entity.properties}
+                        coloredFields={entity.coloredFields}
+                        entityTemplate={entityTemplate}
+                        mode="normal"
+                    />
                 </Grid>
             )}
         </Grid>
@@ -319,7 +330,7 @@ const UpdateEntityActionInfo: React.FC<{
 
     return (
         <Grid container direction="column">
-            <Grid item>
+            <Grid>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
                     <EntityInstanceLink
@@ -332,7 +343,7 @@ const UpdateEntityActionInfo: React.FC<{
                 </Typography>
             </Grid>
             {!isCompact && entityTemplate && (
-                <Grid item marginTop="5px" border={1} padding="5px" borderRadius="5px">
+                <Grid marginTop="5px" border={1} padding="5px" borderRadius="5px">
                     <UpdatedFieldsDiff entityTemplate={entityTemplate} actionMetadata={actionMetadata} />
                 </Grid>
             )}
@@ -368,8 +379,78 @@ const UpdateEntityStatusActionInfo: React.FC<{
     );
 };
 
+const CronjobActionInfo: React.FC<{ actionMetadata: ICronjobRunMetadataPopulated }> = ({ actionMetadata: { entity } }) => {
+    const queryClient = useQueryClient();
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId);
+
+    return (
+        <Typography component="p" variant="body1">
+            <Box component="span">{i18next.t('ruleBreachInfo.cronjobActionInfo.inEntity')}</Box>{' '}
+            <EntityInstanceLink entity={entity} entityTemplate={entityTemplate || null} linkable={!!entity?.properties._id} />
+        </Typography>
+    );
+};
+
+const ActionInfoBody: React.FC<{
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
+    isCompact: boolean;
+    actionIndex: number;
+    actions: IActionPopulated[];
+    failedProperties: string[];
+}> = ({ actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties }) => {
+    switch (actionType) {
+        case ActionTypes.CreateRelationship:
+        case ActionTypes.DeleteRelationship:
+            return (
+                <CreateOrDeleteRelActionInfo
+                    actionType={actionType}
+                    actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
+                    actions={actions}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.CreateEntity:
+        case ActionTypes.DuplicateEntity:
+            return (
+                <CreateOrDuplicateEntityActionInfo
+                    actionType={actionType}
+                    actionMetadata={actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated}
+                    isCompact={isCompact}
+                    actionIndex={actionIndex}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.UpdateEntity:
+            return (
+                <UpdateEntityActionInfo
+                    actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated}
+                    isCompact={isCompact}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.UpdateStatus:
+            return (
+                <UpdateEntityStatusActionInfo
+                    actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}
+                    failedProperties={failedProperties}
+                />
+            );
+
+        case ActionTypes.CronjobRun:
+            return <CronjobActionInfo actionMetadata={actionMetadata as ICronjobRunMetadataPopulated} />;
+        default:
+            throw new Error('unsupported action type to show in ActionInfo. shouldnt reach here');
+    }
+};
+
 export const ActionInfo: React.FC<{
-    originUser?: IUser;
+    originUser?: IUser | null;
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
     isCompact: boolean;
@@ -379,40 +460,18 @@ export const ActionInfo: React.FC<{
 }> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties = [] }) => {
     return (
         <Grid container flexDirection="column">
-            <Grid item>
-                {(actionType === ActionTypes.CreateRelationship || actionType === ActionTypes.DeleteRelationship) && (
-                    <CreateOrDeleteRelActionInfo
-                        actionType={actionType}
-                        actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
-                        actions={actions}
-                        failedProperties={failedProperties}
-                    />
-                )}
-                {(actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity) && (
-                    <CreateOrDuplicateEntityActionInfo
-                        actionType={actionType}
-                        actionMetadata={actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated}
-                        isCompact={isCompact}
-                        actionIndex={actionIndex}
-                        failedProperties={failedProperties}
-                    />
-                )}
-                {actionType === ActionTypes.UpdateEntity && (
-                    <UpdateEntityActionInfo
-                        actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated}
-                        isCompact={isCompact}
-                        failedProperties={failedProperties}
-                    />
-                )}
-                {actionType === ActionTypes.UpdateStatus && (
-                    <UpdateEntityStatusActionInfo
-                        actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}
-                        failedProperties={failedProperties}
-                    />
-                )}
+            <Grid>
+                <ActionInfoBody
+                    actionType={actionType}
+                    actionMetadata={actionMetadata}
+                    isCompact={isCompact}
+                    actionIndex={actionIndex}
+                    actions={actions}
+                    failedProperties={failedProperties}
+                />
             </Grid>
             {originUser && (
-                <Grid item marginLeft="4px">
+                <Grid marginLeft="4px">
                     <Box component="span">{i18next.t('ruleBreachAlertNotification.by')}</Box>{' '}
                     <Box component="span" fontWeight="bold">
                         {originUser.fullName}

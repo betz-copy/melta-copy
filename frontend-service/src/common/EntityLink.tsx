@@ -5,9 +5,9 @@ import { Link } from 'wouter';
 import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
-import { EntityPropertiesInternal } from './EntityProperties';
-import { MeltaTooltip } from './MeltaTooltip';
 import { useWorkspaceStore } from '../stores/workspace';
+import { EntityPropertiesInternal } from './EntityProperties';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 export interface EntityLinkProps {
     entity: IEntity | null;
@@ -44,6 +44,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
             <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
                 <EntityPropertiesInternal
                     properties={entity.properties}
+                    coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
                     showPreviewPropertiesOnly

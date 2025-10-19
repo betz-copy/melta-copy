@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
+import { MongoIdSchema } from '@microservices/shared';
 
 const ganttItemSchema = Joi.object({
     entityTemplate: Joi.object({

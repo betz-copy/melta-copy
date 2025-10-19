@@ -1,11 +1,10 @@
-import { IGantt, IGanttItem } from '../../gantts';
-import { IMongoEntityTemplate } from '../../templates/entityTemplates';
+/* eslint-disable import/prefer-default-export */
+import { IMongoRelationshipTemplate, IGantt, IGanttItem, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from '../../utils/mock';
-import { IMongoRelationshipTemplate } from '../../templates/relationshipTemplates';
 
 const generateGanttItemEntityTemplate = (
     chance: Chance.Chance,
-    optionalEntityTemplates: IMongoEntityTemplate[],
+    optionalEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
 ): IGanttItem['entityTemplate'] | undefined => {
     while (optionalEntityTemplates.length) {
         const entityTemplate = popRandom(chance, optionalEntityTemplates)!;
@@ -34,7 +33,7 @@ const generateGanttItemEntityTemplate = (
 
 const generateGanttItemConnectedEntityTemplate = (
     chance: Chance.Chance,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     relationshipTemplates: IMongoRelationshipTemplate[],
     entityTemplateId: string,
 ): IGanttItem['connectedEntityTemplates'] => {
@@ -81,9 +80,9 @@ const generateGanttItemConnectedEntityTemplate = (
 
 const generateGanttItem = (
     chance: Chance.Chance,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     relationshipTemplates: IMongoRelationshipTemplate[],
-    optionalEntityTemplates: IMongoEntityTemplate[],
+    optionalEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
 ): IGanttItem | undefined => {
     const entityTemplate = generateGanttItemEntityTemplate(chance, optionalEntityTemplates);
     if (!entityTemplate) return undefined;
@@ -96,7 +95,7 @@ const generateGanttItem = (
 
 const generateGantt = (
     chance: Chance.Chance,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     relationshipTemplates: IMongoRelationshipTemplate[],
 ): IGantt | undefined => {
     const entityTemplatesCopy = [...entityTemplates];
@@ -119,7 +118,7 @@ const generateGantt = (
 
 export const getRandomGantts = (
     chance: Chance.Chance,
-    entityTemplates: IMongoEntityTemplate[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     relationshipTemplates: IMongoRelationshipTemplate[],
     min: number = 1,
     max: number = 40,

@@ -1,12 +1,16 @@
-import { StorageService } from '../../externalServices/storageService';
-import { UploadedFile } from '../../utils/busboy/interface';
+import { IWorkspace, UploadedFile } from '@microservices/shared';
+import config from '../../config';
+import StorageService from '../../externalServices/storageService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';
-import { UsersManager } from '../users/manager';
-import { IWorkspace } from './interface';
-import { WorkspaceService } from './service';
+import UsersManager from '../users/manager';
+import WorkspaceService from './service';
 
-export class WorkspaceManager extends DefaultManagerProxy {
+const {
+    service: { meltaBaseUrl },
+} = config;
+
+class WorkspaceManager extends DefaultManagerProxy {
     private storageService: StorageService;
 
     constructor(workspaceId: string) {
@@ -63,7 +67,7 @@ export class WorkspaceManager extends DefaultManagerProxy {
     }
 
     async createOne(workspace: Omit<IWorkspace, '_id'>, files: UploadedFile[]) {
-        const { _id, createdAt, updatedAt, ...createdWorkspace } = await WorkspaceService.createOne(workspace);
+        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...createdWorkspace } = await WorkspaceService.createOne(workspace);
 
         this.storageService = new StorageService(_id);
         const fileProperties = await this.uploadFilesWrapper(files);
@@ -75,7 +79,7 @@ export class WorkspaceManager extends DefaultManagerProxy {
         try {
             return deleteFunc();
         } catch (error) {
-            console.log(`failed to delete files of workspaceId ${id}`); // eslint-disable-line no-console
+            console.error(`failed to delete files of workspaceId ${id}`, { error }); // eslint-disable-line no-console
             return [];
         }
     }
@@ -106,4 +110,12 @@ export class WorkspaceManager extends DefaultManagerProxy {
 
         return WorkspaceService.deleteOne(id);
     }
+
+    static async getBaseUrl(workspaceId: string) {
+        const workspace: IWorkspace = await WorkspaceService.getById(workspaceId);
+
+        return `${meltaBaseUrl}${workspace.path}/${workspace.name}${workspace.type}`;
+    }
 }
+
+export default WorkspaceManager;

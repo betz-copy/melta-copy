@@ -1,11 +1,10 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
-import { config } from '../../config';
+import { ServiceError, UploadedFile } from '@microservices/shared';
+import config from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
-import { ServiceError } from '../error';
 import { generate32CharUUID, generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
-import { UploadedFile } from './interface';
 
 const {
     rabbit,
@@ -13,7 +12,7 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export class FilesManager extends DefaultManagerMinio {
+class FilesManager extends DefaultManagerMinio {
     async makeBuckets() {
         const bucketExists = await this.minioClient.bucketExists();
         if (!bucketExists) await this.minioClient.makeBucket();
@@ -23,33 +22,39 @@ export class FilesManager extends DefaultManagerMinio {
         await this.makeBuckets();
         const nameWithId = `${generate32CharUUID()}${file?.originalname}`;
         const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
-        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId?.size!, { 'content-type': file?.mimetype });
+
+        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId.size ?? undefined, {
+            'content-type': file?.mimetype,
+        });
 
         return fileWithId;
     }
 
     async uploadFiles(files?: UploadedFile[]) {
-        if (!files) throw new Error('No files to upload');
+        if (!files?.length) return [];
 
         await this.minioClient.ensureBucket();
 
-        const filesWithIds = files.map((file) => {
+        const filesWithIds = files?.map((file) => {
+            if (!file.stream) throw new Error(`Missing stream for file ${file.originalname}`);
             const nameWithId = this.buildNameWithId(file);
             return { ...file, originalname: nameWithId, path: nameWithId };
         });
+
         await Promise.allSettled(
-            filesWithIds.map((file) =>
-                this.minioClient.uploadFileStream(file.stream!, file.originalname!, file.size!, { 'content-type': file.mimetype }),
+            filesWithIds!.map((file) =>
+                this.minioClient.uploadFileStream(file.stream, file.originalname!, file.size ?? undefined, { 'content-type': file.mimetype }),
             ),
         );
 
-        const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
-        if (documentFiles?.length)
+        const documentFiles = filesWithIds.filter((file) => isFileDocument(file.originalname));
+        if (documentFiles.length > 0) {
             await menash.send(
                 rabbit.previewQueue,
                 documentFiles.map((file) => file.originalname),
                 { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
+        }
 
         return filesWithIds;
     }
@@ -119,15 +124,18 @@ export class FilesManager extends DefaultManagerMinio {
     }
 
     private buildNameWithId(file?: UploadedFile): string {
-        return `${generate32CharUUID()}${file?.originalname!}`;
+        return `${generate32CharUUID()}${file!.originalname}`;
     }
 
     private async streamToBuffer(stream: Stream): Promise<Buffer> {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = [];
+
             stream.on('data', (chunk: Buffer) => chunks.push(chunk));
             stream.on('end', () => resolve(Buffer.concat(chunks)));
             stream.on('error', reject);
         });
     }
 }
+
+export default FilesManager;

@@ -1,24 +1,57 @@
 import { Request, Response } from 'express';
 import config from '../../config';
-import { UserService } from '../../externalServices/userService';
+import UserService from '../../externalServices/userService';
+import UsersManager from '../users/manager';
 import { ShragaUser } from '../../utils/express/passport';
-import { UsersManager } from '../users/manager';
 import { AuthenticationManager } from './manager';
+import WorkspaceService from '../workspaces/service';
 
-const { accessTokenName } = config.authentication.shragaAuthentication;
+const { accessTokenName, clientSideURLPrefix, unauthorizedId } = config.authentication.shragaAuthentication;
 
 class AuthenticationController {
-    static async createTokenAndRedirect(req: Request, res: Response) {
-        const { RelayState, id } = req.user as unknown as ShragaUser;
+    static async createClientSideToken(userId: string, workspaceId) {
+        const clientSideWorkspace = await WorkspaceService.getById(workspaceId);
+        const { usersInfoChildTemplateId, clientSideWorkspaceName } = clientSideWorkspace.metadata?.clientSide || {};
 
-        const user = await UserService.getUserByExternalId(id).catch(() => {});
+        const token = AuthenticationManager.createAccessToken({
+            id: config.authentication.shragaAuthentication.clientSideId,
+            kartoffelId: userId,
+            clientSideWorkspaceId: clientSideWorkspace._id,
+            usersInfoChildTemplateId,
+            clientSideWorkspaceName,
+        });
+
+        return token;
+    }
+
+    static async createUserToken(userId: string) {
+        const user = await UserService.getUserByExternalId(userId).catch(() => {});
 
         if (user) await UsersManager.syncUser(user._id);
 
-        const token = AuthenticationManager.createAccessToken({ id: user?._id || config.authentication.shragaAuthentication.unauthorizedId });
+        const token = AuthenticationManager.createAccessToken({ id: user?._id || unauthorizedId });
+
+        return token;
+    }
+
+    static async createTokenAndRedirect(req: Request, res: Response) {
+        const { RelayState, id } = req.user as ShragaUser;
+        let redirectUrl = RelayState || '/';
+
+        let token: string;
+
+        if (RelayState?.includes(clientSideURLPrefix)) {
+            const workspaceId = redirectUrl.split('/').pop()!;
+
+            token = await AuthenticationController.createClientSideToken(id, workspaceId);
+            redirectUrl = redirectUrl.replace(workspaceId, 'main');
+        } else {
+            token = await AuthenticationController.createUserToken(id);
+        }
+
         res.cookie(accessTokenName, token);
 
-        return res.redirect(RelayState || '/');
+        return res.redirect(redirectUrl);
     }
 }
 

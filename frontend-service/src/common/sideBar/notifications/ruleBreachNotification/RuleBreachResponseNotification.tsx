@@ -21,10 +21,10 @@ export const RuleBreachResponseNotification: React.FC<{
                     {i18next.t('ruleBreachResponseNotification.theRequestOfExecutingTheAction')}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <RuleBreachInfo originUser={request.originUser} brokenRules={request.brokenRules} actions={request.actions} isCompact />
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography component="p" variant="body1">
                     <Box component="span" fontWeight="bold">
                         {request.status === RuleBreachRequestStatus.Approved

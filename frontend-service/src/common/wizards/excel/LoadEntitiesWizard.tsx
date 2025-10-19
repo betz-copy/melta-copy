@@ -11,13 +11,14 @@ import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/en
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
-import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { isChildTemplate } from '../../../utils/templates';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -80,7 +81,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onMutate() {
                 onClose();
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
@@ -90,7 +90,12 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
+                    [template!._id]: {
+                        headersOnly,
+                        insertEntities,
+                        displayColumns: template?.propertiesOrder,
+                        isChildTemplate: isChildTemplate(template!),
+                    },
                 },
             });
         },
@@ -134,14 +139,14 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 />
             ),
             validationSchema: {},
-            stepperActions: { disable: 'all' },
+            stepperActions: { hide: 'all' },
         },
         {
             label: i18next.t('wizard.entity.loadEntities.uploadFilesTitle'),
             component: (props) => <UploadExcel formikProps={props} template={template!} stepsData={stepsData} setStepsData={setStepsData} />,
             validationSchema: stepsData.status === ExcelStepStatus.uploadExcel ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
-                disable: stepsData.status === ExcelStepStatus.uploadExcel ? 'all' : undefined,
+                hide: stepsData.status === ExcelStepStatus.uploadExcel ? 'all' : undefined,
                 back: {
                     onClick: () => {
                         if (stepsData.status === ExcelStepStatus.previewExcelRows) {
@@ -179,9 +184,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
             component: (props) => {
                 return (
-                    <LoadEntitiesTables
+                    <StatusEntitiesTables
                         {...props}
-                        tablesData={stepsData.data}
+                        tablesData={{ ...stepsData.data, brokenRulesEntities: stepsData.data.brokenRulesEntities?.entities || [] }}
                         template={template!}
                         onDownload={(brokenRulesEntities?: boolean) => {
                             return exportTemplateToExcel({
@@ -199,7 +204,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 );
             },
             stepperActions: {
-                disable: 'back',
+                hide: 'back',
                 next: {
                     text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                 },

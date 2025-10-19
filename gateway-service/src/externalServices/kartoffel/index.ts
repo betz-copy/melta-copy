@@ -1,13 +1,13 @@
 import axios from 'axios';
+import { BadRequestError } from '@microservices/shared';
 import config from '../../config';
 import { IKartoffelUser } from './interface';
-import { BadRequestError } from '../../express/error';
 
 const {
     kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath },
 } = config;
 
-export class Kartoffel {
+class Kartoffel {
     private static kartoffel = axios.create({
         baseURL: `${url}${baseEntitiesRoute}`,
         timeout: requestTimeout,
@@ -38,7 +38,9 @@ export class Kartoffel {
             });
             return data;
         } catch (error) {
-            throw new BadRequestError('Kartoffel profile not found');
+            throw new BadRequestError('Kartoffel profile not found', { error });
         }
     };
 }
+
+export default Kartoffel;

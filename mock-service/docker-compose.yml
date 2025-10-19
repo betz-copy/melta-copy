@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  mock-service:
-    build: .
-    environment:
-      ENTITY_TEMPLATE_SERVICE_URL: http://entity-template-service:8000/
-      INSTANCE_SERVICE_URL: http://instance-service:8000/

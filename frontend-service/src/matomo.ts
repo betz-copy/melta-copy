@@ -13,9 +13,13 @@ export const useMatomoInstance = () => {
         return null;
     }
 
+    if (process.env.NODE_ENV === 'development') {
+        return null;
+    }
+
     return createInstance({
         urlBase: matomoConfig.matomoUrl,
         siteId: matomoConfig.matomoSiteId,
-        userId: `${currentUser.fullName} - ${currentUser.externalMetadata.kartoffelId}`,
+        userId: `${currentUser.fullName} - ${currentUser.kartoffelId}`,
     });
 };

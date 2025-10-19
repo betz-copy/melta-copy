@@ -1,8 +1,8 @@
 import Excel from 'exceljs';
+import { IEntitySingleProperty } from '@microservices/shared';
 import config from '../../config';
-import { excelConfig } from './excelConfig';
+import excelConfig from './excelConfig';
 import { indexToExcelColumn } from './createFunctions';
-import { IEntitySingleProperty } from '../../externalServices/templates/entityTemplateService';
 
 const { maxValidationRow, minValidationRow } = config.loadExcel;
 

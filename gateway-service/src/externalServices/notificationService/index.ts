@@ -1,4 +1,4 @@
-import { INotification } from './interfaces';
+import { INotification } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
@@ -6,7 +6,7 @@ const {
     notificationService: { url, baseRoute, requestTimeout },
 } = config;
 
-export class NotificationService extends DefaultExternalServiceApi {
+class NotificationService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
@@ -36,3 +36,5 @@ export class NotificationService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default NotificationService;

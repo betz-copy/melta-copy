@@ -1,6 +1,6 @@
 import { Chip, Grid } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { IUser } from '../../../../interfaces/users';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
 import { useDarkModeStore } from '../../../../stores/darkMode';
@@ -11,18 +11,26 @@ interface ReviewerSelectorProps {
     onAdd: (newReviewer: IUser, reviewers: IUser[]) => void;
     onRemove: (removedReviewer: IUser, reviewers: IUser[]) => void;
     isViewMode?: boolean;
+    disableAddingReviewers?: boolean;
 }
 
-export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReviewers = [], reviewers, onAdd, onRemove, isViewMode = false }) => {
-    const [displayValue, setDisplayValue] = React.useState('');
+export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({
+    forcedReviewers = [],
+    reviewers,
+    onAdd,
+    onRemove,
+    isViewMode = false,
+    disableAddingReviewers = false,
+}) => {
+    const [displayValue, setDisplayValue] = useState('');
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const combinedReviewers = [...forcedReviewers, ...reviewers];
 
     return (
         <Grid container direction="column" paddingBottom={2} paddingLeft={2} spacing={2}>
-            {!isViewMode && (
-                <Grid item paddingBottom="1rem" paddingRight={2}>
+            {!isViewMode && !disableAddingReviewers && (
+                <Grid paddingBottom="1rem" paddingRight={2}>
                     <UserAutocomplete
                         mode="internal"
                         value={null}
@@ -41,26 +49,25 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                 </Grid>
             )}
             <Grid
-                item
                 container
                 direction="column"
                 spacing={1}
                 flexWrap="nowrap"
                 sx={{
                     overflowY: 'auto',
-                    maxHeight: !isViewMode ? '110px' : '130px',
+                    maxHeight: isViewMode || disableAddingReviewers ? '190px' : '110px',
                     '&::-webkit-scrollbar': {
                         width: '3px',
                     },
                 }}
             >
                 {forcedReviewers?.map((reviewer) => (
-                    <Grid item key={reviewer._id}>
+                    <Grid key={reviewer._id}>
                         <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#c5c6d4' }} disabled />
                     </Grid>
                 ))}
                 {reviewers?.map((reviewer) => (
-                    <Grid item key={reviewer._id}>
+                    <Grid key={reviewer._id}>
                         {isViewMode ? (
                             <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#E0E1ED' }} />
                         ) : (

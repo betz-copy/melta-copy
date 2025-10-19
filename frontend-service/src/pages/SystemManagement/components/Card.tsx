@@ -1,5 +1,5 @@
+import { Card, CardContent, Collapse, Grid } from '@mui/material';
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, Collapse } from '@mui/material';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const ViewingCard: React.FC<{
@@ -8,17 +8,19 @@ export const ViewingCard: React.FC<{
     onHover?: (isHover: boolean) => void;
     width?: number;
     cursor?: boolean;
-}> = ({ title, expendedCard, onHover, width, cursor }) => {
+    isDisabled?: boolean;
+}> = ({ title, expendedCard, onHover, width, cursor, isDisabled = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const [open, setOpen] = useState<boolean>(false);
 
     return (
-        <Grid item>
+        <Grid>
             <Card
                 onMouseEnter={() => (onHover ? onHover(true) : '')}
                 onMouseLeave={() => (onHover ? onHover(false) : '')}
                 sx={{
                     bgcolor: darkMode ? '#111111' : '#fff',
+                    opacity: isDisabled ? 0.6 : 1,
                     ':hover': { transform: 'scale(1.01)' },
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
@@ -32,7 +34,9 @@ export const ViewingCard: React.FC<{
                 <CardContent
                     style={{ padding: '10px' }}
                     onClick={() => {
-                        setOpen(!!expendedCard);
+                        if (!isDisabled && expendedCard) {
+                            setOpen(true);
+                        }
                     }}
                 >
                     {!open && title}
@@ -46,9 +50,9 @@ export const ViewingCard: React.FC<{
                         }}
                     >
                         {open && (
-                            <Grid item container direction="column">
-                                <Grid item>{title}</Grid>
-                                {expendedCard && <Grid item>{expendedCard}</Grid>}
+                            <Grid container direction="column">
+                                <Grid>{title}</Grid>
+                                {expendedCard && <Grid>{expendedCard}</Grid>}
                             </Grid>
                         )}
                     </CardContent>

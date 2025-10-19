@@ -1,15 +1,19 @@
-import { StorageService } from '../../externalServices/storageService';
+import { ISearchIFramesBody, IFrame, IMongoIframe, UploadedFile, DashboardItemType, IframeItem } from '@microservices/shared';
+import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { IFrame, IMongoIframe, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
+import IFramesService from '../../externalServices/dashboardService/iframesService';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;
 
+    private dashboardItemService: DashboardItemService;
+
     constructor(workspaceId: string) {
         super(new IFramesService(workspaceId));
         this.storageService = new StorageService(workspaceId);
+        this.dashboardItemService = new DashboardItemService(workspaceId);
     }
 
     private filterIFramesWithPermissions(allIFrames: IMongoIframe[], allowedCategories: string[]) {
@@ -26,26 +30,45 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
 
         const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 
-        if (ids) return ids?.map((id) => filteredIFrames.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
+        const dashboardIframesItems =
+            filteredIFrames.length > 0 ? await this.dashboardItemService.getDashboardRelatedItems(filteredIFrames.map(({ _id }) => _id)) : {};
 
-        return filteredIFrames;
+        const allFilteredIframes = filteredIFrames.map((iframe) => ({
+            ...iframe,
+            usedInDashboard: (dashboardIframesItems[iframe._id] ?? []).length > 0,
+        }));
+
+        if (ids) return ids?.map((id) => allFilteredIframes.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
+
+        return allFilteredIframes;
     }
 
     async getIFrameById(iFrameId: string) {
-        return this.service.getIFrameById(iFrameId);
+        const iframe = await this.service.getIFrameById(iFrameId);
+        const dashboardIframesItems = await this.dashboardItemService.getDashboardRelatedItems([iFrameId]);
+        const usedInDashboard = (dashboardIframesItems[iFrameId] ?? []).length > 0;
+        return { ...iframe, usedInDashboard };
     }
 
-    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile) {
+    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile, toDashboard: boolean = false) {
         let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
-        return this.service.createIFrame(newIFrame);
+        const createdIframe = await this.service.createIFrame(newIFrame);
+
+        if (toDashboard)
+            await this.dashboardItemService.createDashboardItem({ type: DashboardItemType.Iframe, metaData: createdIframe._id } as IframeItem);
+
+        return createdIframe;
     }
 
-    deleteIFrame(iFrameId: string) {
+    async deleteIFrame(iFrameId: string, deleteReferenceDashboardItems: boolean = false) {
+        if (deleteReferenceDashboardItems) {
+            await this.dashboardItemService.deleteDashboardItemByRelatedItem(iFrameId);
+        }
         return this.service.deleteIFrame(iFrameId);
     }
 

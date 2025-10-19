@@ -1,17 +1,16 @@
 import { Delete } from '@mui/icons-material';
-import { Box, Divider, IconButton, Paper, Typography } from '@mui/material';
+import { Divider, Grid, IconButton, Paper, Typography } from '@mui/material';
 import i18next from 'i18next';
-import randomColor from 'randomcolor';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
-import UserAvatar from '../../common/UserAvatar';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { ICompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoUser } from '../../interfaces/users';
-import { syncUserPermissionsRequest } from '../../services/userService';
+import { IMongoUser, RelatedPermission } from '../../interfaces/users';
+import { syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';
+import UserAvatar from '../../common/UserAvatar';
 
 interface IPermissionsDialogCardProps {
     user: IMongoUser;
@@ -36,7 +35,7 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
     const queryClient = useQueryClient();
 
     const { mutate: handlePermissionsDelete } = useMutation({
-        mutationFn: () => syncUserPermissionsRequest(user._id, { [workspaceId]: { admin: null } }),
+        mutationFn: () => syncPermissionsRequest(user._id, RelatedPermission.User, { [workspaceId]: { admin: null } }),
         onSuccess: () => {
             queryClient.invalidateQueries(usersQueryKey);
         },
@@ -60,16 +59,24 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
         >
-            <Box display="flex" alignItems="center" justifyContent="start" gap="0.8rem">
-                <Box id="user-info" display="flex" alignItems="center" width="40%">
-                    <Box padding="10px" id="profile-photo">
-                        <UserAvatar user={user} size={50} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
-                    </Box>
-                    <Box id="display-name" display="flex" flexDirection="column" overflow="hidden">
-                        <Typography fontSize="16px" fontWeight="500">
-                            {user.fullName}
-                        </Typography>
-                        <Box boxSizing="border-box" width="100%">
+            <Grid container alignItems="center" gap="0.8rem" flexWrap="nowrap">
+                <Grid container id="user-info" alignItems="center" width="35%" flexWrap="nowrap">
+                    <Grid padding="10px" id="profile-photo">
+                        <UserAvatar
+                            user={{ ...user, _id: user.kartoffelId }} // When UserAvatar requests kartoffelImage it does it by _id of user
+                            userIcon={{ size: 50 }}
+                            shouldRenderChip={false}
+                            shouldRenderTooltip={false}
+                            shouldGetKartoffelImage
+                        />
+                    </Grid>
+                    <Grid container id="display-name" flexDirection="column" overflow="hidden" width="100px">
+                        <Grid>
+                            <Typography fontSize="16px" fontWeight="500">
+                                {user.fullName}
+                            </Typography>
+                        </Grid>
+                        <Grid width="100%">
                             <MeltaTooltip title={user.hierarchy} placement="bottom">
                                 <Typography
                                     fontFamily="Rubik"
@@ -82,13 +89,15 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                                     {user.hierarchy}
                                 </Typography>
                             </MeltaTooltip>
-                        </Box>
-                    </Box>
-                </Box>
+                        </Grid>
+                    </Grid>
+                </Grid>
 
-                <Divider orientation="vertical" variant="middle" flexItem />
+                <Grid width="5px" height="50px">
+                    <Divider orientation="vertical" />
+                </Grid>
 
-                <Box id="permission-scope-updated-date" marginRight="1.8rem">
+                <Grid width="40%" id="permission-scope-updated-date" marginRight="1.8rem">
                     <Typography fontSize="16px" fontWeight="500" whiteSpace="nowrap">
                         {i18next.t('permissions.dialog.permissionType')}: {getPermissionType(user.permissions)} {getPermissionScope(user.permissions)}
                     </Typography>
@@ -96,17 +105,23 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                     <Typography fontSize="14px" fontWeight="400">
                         {i18next.t('permissions.dialog.updatedAt')}: {getDateWithoutTime(user.updatedAt)}
                     </Typography>
-                </Box>
+                </Grid>
 
-                {hover && canModify && (
-                    <>
-                        <Divider orientation="vertical" variant="middle" flexItem />
-                        <IconButton>
-                            <Delete color="primary" fontSize="medium" onClick={() => handlePermissionsDelete()} />
-                        </IconButton>
-                    </>
-                )}
-            </Box>
+                <Grid container width="20%" alignItems="center" justifyContent="space-evenly">
+                    {hover && canModify && (
+                        <>
+                            <Grid width="5px" height="50px">
+                                <Divider orientation="vertical" />
+                            </Grid>
+                            <Grid>
+                                <IconButton>
+                                    <Delete color="primary" fontSize="medium" onClick={() => handlePermissionsDelete()} />
+                                </IconButton>
+                            </Grid>
+                        </>
+                    )}
+                </Grid>
+            </Grid>
         </Paper>
     );
 };

@@ -43,9 +43,15 @@ export interface IUpdateEntityMetadata {
     updatedFields: Record<string, any>;
 }
 
+export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
+
 export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
+}
+
+export interface ICronjobRunMetadata {
+    entityId: string; // on whom cronjob run was initiated
 }
 
 export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
@@ -64,13 +70,21 @@ export interface IUpdateEntityMetadataPopulated {
     updatedFields: Record<string, any>;
 }
 
+export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}
+
+export interface ICronjobRunMetadataPopulated {
+    entity: IEntity | null;
+}
+
 export type IActionMetadata =
     | ICreateRelationshipMetadata
     | IDeleteRelationshipMetadata
     | ICreateEntityMetadata
     | IDuplicateEntityMetadata
     | IUpdateEntityMetadata
-    | IUpdateEntityStatusMetadata;
+    | IUpdateEntityStatusMetadata
+    | IUpdateMultipleEntitiesMetadata
+    | ICronjobRunMetadata;
 
 export type IActionMetadataPopulated =
     | ICreateRelationshipMetadataPopulated
@@ -78,7 +92,9 @@ export type IActionMetadataPopulated =
     | ICreateEntityMetadataPopulated
     | IDuplicateEntityMetadataPopulated
     | IUpdateEntityMetadataPopulated
-    | IUpdateEntityStatusMetadataPopulated;
+    | IUpdateEntityStatusMetadataPopulated
+    | IUpdateMultipleEntitiesMetadataPopulated
+    | ICronjobRunMetadataPopulated;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
@@ -87,6 +103,9 @@ export enum ActionTypes {
     DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
+    UpdateMultipleEntities = 'update-multiple-entities',
+    CreateClientSideEntity = 'create-client-side-entity',
+    CronjobRun = 'cronjob-run',
 }
 
 export interface IAction {
@@ -103,4 +122,5 @@ export enum ActionErrors {
     validation = 'VALIDATION',
     unique = 'UNIQUE',
     required = 'REQUIRED',
+    filterValidation = 'FILTER_VALIDATION',
 }

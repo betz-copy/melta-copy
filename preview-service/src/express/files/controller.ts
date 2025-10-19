@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { FilesManager } from './manager';
+import FilesManager from './manager';
 
-export class FilesController extends DefaultController<FilesManager> {
+class FilesController extends DefaultController<FilesManager> {
     constructor(workspaceId: string) {
         super(new FilesManager(workspaceId));
     }
@@ -18,3 +18,5 @@ export class FilesController extends DefaultController<FilesManager> {
         resultStream.pipe(res);
     }
 }
+
+export default FilesController;

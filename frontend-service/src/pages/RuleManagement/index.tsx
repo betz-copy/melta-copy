@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation, useParams } from 'wouter';
-import { BlueTitle } from '../../common/BlueTitle';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import '../../css/pages.css';
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
@@ -19,7 +19,7 @@ interface RuleBreachDialogContainerProps {
     ruleBreachId: string;
     ruleBreachRequestsRef: React.RefObject<{
         refreshBreaches: () => void;
-    }>;
+    } | null>;
     rule: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | null;
 }
 export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps> = ({ ruleBreachId, ruleBreachRequestsRef, rule, breachType }) => {
@@ -45,7 +45,7 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
         initialData: rule,
         retry: false,
         onError: (err) => {
-            console.log(err);
+            console.error(err);
             navigate('/404');
         },
     });
@@ -94,7 +94,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
 
     return (
         <Grid container className="pageMargin" spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12}}>
                 <BlueTitle title={i18next.t('ruleManagement.alerts')} component="h5" variant="h5" />
                 <RuleBreachTable
                     rowHeight={defaultRowHeight}
@@ -104,7 +104,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
                     onReviewBreachClick={onReviewBreachClick}
                 />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12}}>
                 <BlueTitle title={i18next.t('ruleManagement.requests')} component="h5" variant="h5" />
                 <RuleBreachTable
                     ref={ruleBreachRequestsRef}

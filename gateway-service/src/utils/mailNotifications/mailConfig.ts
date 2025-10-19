@@ -1,6 +1,6 @@
-import { hebrew } from './hebrew';
+import hebrew from './hebrew';
 
-export const mailConfig = {
+const mailConfig = {
     mailTitle: {
         ruleBreachAlert: `${hebrew.titles.meltaNotificationTitlePrefix} ${hebrew.titles.ruleBreachAlert}`,
         ruleBreachRequest: `${hebrew.titles.meltaNotificationTitlePrefix} ${hebrew.titles.ruleBreachRequest}`,
@@ -13,3 +13,5 @@ export const mailConfig = {
         archivedProcess: `${hebrew.titles.meltaNotificationTitlePrefix} ${hebrew.titles.archivedProcess}`,
     },
 };
+
+export default mailConfig;

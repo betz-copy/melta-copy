@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { ChartController } from './controller';
+import { ValidateRequest } from '@microservices/shared';
+import ChartController from './controller';
 import { createWorkspacesController } from '../../utils/express';
-import { ChartsValidator } from './middlewares';
-import ValidateRequest from '../../utils/joi';
+import ChartsValidator from './middlewares';
 import {
     createChartRequestSchema,
     deleteChartRequestSchema,
@@ -12,7 +12,7 @@ import {
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
-export const ChartsRouter: Router = Router();
+const ChartsRouter: Router = Router();
 
 const ChartsControllerMiddleware = createWorkspacesController(ChartController);
 const ChartsValidatorMiddleware = createWorkspacesController(ChartsValidator, true);
@@ -33,6 +33,14 @@ ChartsRouter.post(
 );
 
 ChartsRouter.post(
+    '/by-user/:templateId',
+    ValidateRequest(getChartByTemplateIdRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    ChartsValidatorMiddleware.validateUserCanGetChartsByTemplate,
+    ChartsControllerMiddleware.searchChartByUserId,
+);
+
+ChartsRouter.post(
     '/',
     ValidateRequest(createChartRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
@@ -44,6 +52,7 @@ ChartsRouter.post(
 ChartsRouter.delete(
     '/:chartId',
     ValidateRequest(deleteChartRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     ChartsValidatorMiddleware.validateUserCanDeleteChart,
     ChartsControllerMiddleware.deleteChart,
 );
@@ -56,3 +65,5 @@ ChartsRouter.put(
     ChartsValidatorMiddleware.validateUserCanUpdateChartWithRelatedTemplate,
     ChartsControllerMiddleware.updateChart,
 );
+
+export default ChartsRouter;

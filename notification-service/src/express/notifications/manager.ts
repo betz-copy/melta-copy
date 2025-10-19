@@ -1,16 +1,16 @@
 import { FilterQuery } from 'mongoose';
-import config from '../../config';
-import { transaction, UPDATE_CREATED_AT } from '../../utils/mongo';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { NotificationDoesNotExistError } from '../error';
 import {
+    DefaultManagerMongo,
     IBasicNotificationQuery,
-    IDateAboutToExpireMetadata,
+    IDateAboutToExpireNotificationMetadata,
     INotification,
     INotificationCountGroups,
     INotificationGroupCountDetails,
-} from './interface';
-import { NotificationsSchema } from './model';
+} from '@microservices/shared';
+import config from '../../config';
+import { transaction, UPDATE_CREATED_AT } from '../../utils/mongo';
+import { NotificationDoesNotExistError } from '../error';
+import NotificationsSchema from './model';
 
 export class NotificationsManager extends DefaultManagerMongo<INotification> {
     constructor(workspaceId: string) {
@@ -66,9 +66,9 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
                     $and: [
                         {
                             // datePropertyValue only exists on IDateAboutToExpireMetadata.
-                            'metadata.datePropertyValue': (notificationData?.metadata as IDateAboutToExpireMetadata)?.datePropertyValue,
+                            'metadata.datePropertyValue': (notificationData?.metadata as IDateAboutToExpireNotificationMetadata)?.datePropertyValue,
                             type: notificationData.type,
-                            'metadata.entityId': (notificationData?.metadata as IDateAboutToExpireMetadata)?.entityId,
+                            'metadata.entityId': (notificationData?.metadata as IDateAboutToExpireNotificationMetadata)?.entityId,
                         },
                     ],
                 },
@@ -100,8 +100,8 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
         const updatedQuery = this.handleQuery(query);
 
         return transaction(async (session) => {
-            await this.model.updateMany(updatedQuery, { $pull: { viewers: viewerId } }, { new: true, session });
-            const notification = await this.model.find(updatedQuery, {}, { session }).lean();
+            await this.model.updateMany(updatedQuery, { $pull: { viewers: viewerId } }, { session });
+            const notification = await this.model.find(updatedQuery, {}, { new: true, session }).lean();
 
             await this.model.deleteMany({ viewers: { $size: 0 } }, { session });
 

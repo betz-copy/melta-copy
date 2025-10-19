@@ -2,7 +2,7 @@ import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { SubCompactPermissionSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
-import { config } from '../../config';
+import config from '../../config';
 import { agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema, agGridTextFilterSchema } from './agGridValidator.schema';
 
 const { maxFindLimit } = config.mongo;
@@ -90,7 +90,9 @@ export const updateUsersBulkRequestSchema = joi.object({
 
 // GET /api/users/search/:workspaceId
 export const searchUsersByPermissionsSchema = joi.object({
-    query: {},
+    query: {
+        search: joi.string(),
+    },
     body: {},
     params: {
         workspaceId: joi.string().required(),

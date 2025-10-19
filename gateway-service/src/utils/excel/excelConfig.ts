@@ -1,4 +1,4 @@
-export const excelConfig = {
+const excelConfig = {
     excelDefaultColumns: [
         { key: 'disabled', header: '?מושבת', width: 20 },
         { key: 'createdAt', header: 'תאריך יצירה', width: 20 },
@@ -25,6 +25,14 @@ export const excelConfig = {
         enum: 'רשימה',
         regex: 'תבנית (regex)',
         location: 'מיקום: x,y / POLYGON(( x y, x y....))/ zoneHemi x y / POLYGON((zoneHemi x y, zoneHemi x y))',
+        users: 'משתמשים',
+        comment: 'הערה',
+        user: 'משתמש',
+        files: 'קבצים',
+        fileId: 'קובץ',
+        signature: 'חתימה',
+        kartoffelUserField: 'שדה משתמש קרטופלי',
+        unitField: 'שדה יחידה',
     },
     formulae: {
         errorTitle: 'אופציה לא תקינה',
@@ -35,3 +43,5 @@ export const excelConfig = {
         mailError: 'נא להזין מייל חוקי',
     },
 };
+
+export default excelConfig;

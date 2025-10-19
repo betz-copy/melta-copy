@@ -1,32 +1,61 @@
 import { menash } from 'menashmq';
+import {
+    IUser,
+    INotificationMetadata,
+    NotificationType,
+    logger,
+    IRuleIndicatorAlertNotificationMetadata,
+    IKartoffelUser,
+} from '@microservices/shared';
 import config from '../config';
-import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
+// eslint-disable-next-line import/extensions
+import MailManager from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
-import { UsersManager } from '../express/users/manager';
-import { IUser } from '../externalServices/userService/interfaces/users';
-import logger from './logger/logsLogger';
-import { MailManager } from './mailNotifications';
+import UsersManager from '../express/users/manager';
 
 const {
     rabbit,
     service: { workspaceIdHeaderName },
 } = config;
 
-export class RabbitManager {
-    constructor(private workspaceId: string) {}
+class RabbitManager {
+    private workspaceId: string;
+
+    private mailManager: MailManager;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+        this.mailManager = new MailManager(workspaceId);
+    }
 
     async createNotification<
         NotificationMetadata extends INotificationMetadata,
         NotificationMetadataPopulated extends IMailNotificationMetadataPopulated,
-    >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated) {
+    >(
+        viewers: string[],
+        type: NotificationType,
+        metadata: NotificationMetadata,
+        populatedMetaData: NotificationMetadataPopulated,
+        externalViewers?: IKartoffelUser[],
+    ) {
         if (!viewers.length) return;
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
 
         const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
 
-        if (filteredViewers.length > 0) {
-            const mailData = await new MailManager(this.workspaceId).createMail({ viewers: filteredViewers, type, populatedMetaData });
+        const viewersMail = [...filteredViewers.map((user) => user.mail)];
+        if (externalViewers) {
+            const externalViewersMails = externalViewers.map((user) => user.mail).filter((mail) => typeof mail === 'string');
+            viewersMail.push(...externalViewersMails);
+        }
+
+        if (viewersMail) {
+            const mailData = await this.mailManager.createMail(
+                { viewersMail, type, populatedMetaData },
+                type === NotificationType.ruleIndicatorAlert ? (metadata as IRuleIndicatorAlertNotificationMetadata).email : undefined,
+            );
+
             await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
         }
     }
@@ -55,3 +84,5 @@ export class RabbitManager {
             });
     }
 }
+
+export default RabbitManager;

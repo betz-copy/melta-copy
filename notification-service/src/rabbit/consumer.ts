@@ -1,8 +1,7 @@
 import { ConsumerMessage } from 'menashmq';
+import { basicValidateRequest, logger } from '@microservices/shared';
 import NotificationsManager from '../express/notifications/manager';
-import { basicValidateRequest } from '../utils/joi';
 import { notificationSchema } from '../utils/joi/schemas/notification';
-import { ServiceError } from '../express/error';
 import config from '../config';
 
 const {
@@ -22,7 +21,7 @@ class NotificationsConsumer {
             msg.ack();
         } catch (err: any) {
             msg.nack(false);
-            throw new ServiceError(undefined, 'Rabbit consumer error', { error: err });
+            logger.error('Rabbit consumer error', { error: err });
         }
     }
 }

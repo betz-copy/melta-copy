@@ -8,7 +8,7 @@ import { FormikErrors } from 'formik';
 import { ProcessTemplateWizardValues } from '.';
 import { ChooseStepsIcon } from './ChooseStepIcon';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
-import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
+import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 
 const StepsIconBlock: React.FC<StepsGenericBlockProps> = ({ title, values, setFieldValue, propIndex, errors, touched }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;

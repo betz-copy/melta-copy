@@ -4,13 +4,15 @@ import { INotificationCountGroups, INotificationGroupCountDetails, INotification
 
 const { notifications } = environment.api;
 
-export const getMyNotificationsRequest = async (query: {
+export interface IGetMyNotificationsRequestQuery {
     limit: number;
     step?: number;
     types?: NotificationType[];
     startDate?: Date;
     endDate?: Date;
-}) => {
+}
+
+export const getMyNotificationsRequest = async (query: IGetMyNotificationsRequestQuery) => {
     const startDate = query.startDate && query.startDate.toDateString();
     const endDate = query.endDate && query.endDate.toDateString();
 

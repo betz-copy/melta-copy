@@ -1,31 +1,13 @@
 import Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
-import { IAggregationType, IChartType, IPermission } from '../../externalServices/dashboardService/chartService';
+import {
+    MongoIdSchema,
+    IAggregationType,
+    IChartType,
+    IChartPermission,
+    filterOfFieldSchema as filterOfFieldSchemaShared,
+} from '@microservices/shared';
 
-// format of properties keys in entity template
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
-
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // regex syntax of Neo4j (Java Regular Expression). validated by neo itself
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
-
+const filterOfFieldSchema = filterOfFieldSchemaShared.min(1).id('filterOfField');
 const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
 const searchFilterSchema = Joi.object({
     $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
@@ -62,6 +44,7 @@ const chartSchema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().allow(''),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     type: Joi.string()
         .valid(...Object.values(IChartType))
         .required(),
@@ -77,7 +60,7 @@ const chartSchema = Joi.object({
         .required(),
     filter: searchFilterSchema,
     permission: Joi.string()
-        .valid(...Object.values(IPermission))
+        .valid(...Object.values(IChartPermission))
         .required(),
     createdBy: Joi.string().required(),
 });
@@ -95,6 +78,7 @@ export const getChartByIdRequestSchema = Joi.object({
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {
@@ -105,14 +89,16 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
 // POST /api/charts
 export const createChartRequestSchema = Joi.object({
     body: chartSchema.required(),
-    query: {},
+    query: { toDashboard: Joi.bool() },
     params: {},
 });
 
 // PUT /api/charts/:chartId
 export const updateChartRequestSchema = Joi.object({
     body: chartSchema.required(),
-    query: {},
+    query: {
+        deleteReferenceDashboardItems: Joi.bool().optional().default(false),
+    },
     params: {
         chartId: MongoIdSchema.required(),
     },
@@ -121,7 +107,9 @@ export const updateChartRequestSchema = Joi.object({
 // DELETE /api/charts/:chartId
 export const deleteChartRequestSchema = Joi.object({
     body: {},
-    query: {},
+    query: {
+        deleteReferenceDashboardItems: Joi.bool().optional().default(false),
+    },
     params: {
         chartId: MongoIdSchema.required(),
     },

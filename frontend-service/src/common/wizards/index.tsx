@@ -1,12 +1,11 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Formik, Form, FormikProps, FormikConfig } from 'formik';
+import { Box, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Form, Formik, FormikConfig, FormikHelpers, FormikProps } from 'formik';
+import React, { JSX, PropsWithChildren, useEffect, useState } from 'react';
 import * as Yup from 'yup';
-import { ObjectShape } from 'yup/lib/object';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { StepperActions } from './stepper/StepperActions';
 import { Stepper } from './stepper';
+import { StepperActions } from './stepper/StepperActions';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -28,12 +27,12 @@ export type StepType<T extends object> = {
     label: string;
     description?: string;
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
-    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
+    validationSchema?: any;
     validate?: FormikConfig<T>['validate'];
     stepperActions?: {
-        disable?: 'all' | 'back' | 'next';
-        back?: { text?: string; onClick?: () => void };
-        next?: { text?: string; onClick?: () => void };
+        hide?: 'all' | 'back' | 'next';
+        back?: { text?: string; onClick?: () => void; disabled?: boolean };
+        next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void; disabled?: boolean };
     };
     invisibleBeforeStep?: boolean;
 };
@@ -50,6 +49,7 @@ const Wizard = <T extends object>({
     isEditMode,
     direction = 'row',
     showPrevSteps = false,
+    checkForChanges = true,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -59,6 +59,7 @@ const Wizard = <T extends object>({
         submitFunction: (values: T) => Promise<any>;
         direction?: 'row' | 'column';
         showPrevSteps?: boolean;
+        checkForChanges?: boolean;
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
@@ -81,12 +82,12 @@ const Wizard = <T extends object>({
             open={open}
             maxWidth="lg"
             fullWidth
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white' } } }}
             style={{ height: '100%', margin: 'auto' }}
             disableEnforceFocus
         >
             {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}
-            <DialogTitle color={(theme) => theme.palette.primary.main} fontSize="20px" fontWeight="600" fontFamily="Rubik">
+            <DialogTitle sx={{ color: 'primary.main' }} fontSize="20px" fontWeight="600" fontFamily="Rubik">
                 {title}
                 <IconButton
                     aria-label="close"
@@ -100,7 +101,7 @@ const Wizard = <T extends object>({
                         color: (theme) => theme.palette.grey[500],
                     }}
                 >
-                    <CloseIcon />
+                    <CloseIcon sx={{ color: 'primary.main' }} />
                 </IconButton>
             </DialogTitle>
             <DialogContent>
@@ -109,14 +110,14 @@ const Wizard = <T extends object>({
                     validationSchema={
                         steps[activeStep].validationSchema instanceof Yup.ObjectSchema
                             ? steps[activeStep].validationSchema
-                            : Yup.object(steps[activeStep].validationSchema as ObjectShape)
+                            : Yup.object(steps[activeStep].validationSchema)
                     }
                     validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
                             await submitFunction(values);
                         } else {
-                            steps[activeStep].stepperActions?.next?.onClick?.();
+                            await steps[activeStep].stepperActions?.next?.onClick?.(values, actions);
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);
@@ -134,7 +135,7 @@ const Wizard = <T extends object>({
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
                             />
-                            {steps[activeStep].stepperActions?.disable !== 'all' && (
+                            {steps[activeStep].stepperActions?.hide !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>
                                     <StepperActions
                                         step={steps[activeStep]}
@@ -143,6 +144,7 @@ const Wizard = <T extends object>({
                                         isFirstStep={activeStep === 0}
                                         isLoading={isLoading || block}
                                         formikProps={formikProps}
+                                        checkForChanges={checkForChanges}
                                     />
                                 </Box>
                             )}

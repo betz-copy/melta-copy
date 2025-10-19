@@ -10,16 +10,24 @@
     max-width: 100%;
 } */
 
-.has-field-child {
-    width: 50%;
-    max-width: 50% !important;
+.half-width-field {
+    width: 47%;
+    max-width: 47% !important;
 }
 
-.has-bigger-field-child {
-    width: '100%';
-    max-width: '100%';
+.full-width-field {
+    width: 100%;
+    max-width: 100%;
+}
+
+.direction-rtl {
     direction: rtl;
 }
+
+.no-padding-top {
+    padding-top: 0px !important;
+}
+
 
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
     display: flex;
@@ -36,4 +44,18 @@
 
 .MuiPickersToolbar-penIconButton {
     right: 265px !important;
+}
+
+.rjsf-text-input-override input[type='number'] {
+    direction: ltr !important;
+    text-align: right;
+}
+
+#json-schema h5 {
+    font-size: large;
+    font-weight: 600;
+}
+
+#json-schema hr {
+    display: none;
 }

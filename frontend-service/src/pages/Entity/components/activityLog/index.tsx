@@ -1,8 +1,8 @@
 import { History } from '@mui/icons-material';
-import { Button } from '@mui/material';
+import { Button, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect } from 'react';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import React, { useEffect, useState } from 'react';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -12,7 +12,8 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
     expandedEntity,
     entityTemplate,
 }) => {
-    const [openPopper, setOpenPopper] = React.useState(false);
+    const theme = useTheme();
+    const [openPopper, setOpenPopper] = useState(false);
     const entityId = expandedEntity?.entity.properties._id || '';
     useEffect(() => {
         setOpenPopper(false);
@@ -25,13 +26,22 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
                     variant="contained"
                     startIcon={<History />}
                     onClick={() => setOpenPopper((previousOpen) => !previousOpen)}
-                    sx={{ marginLeft: '1rem' }}
+                    sx={{ marginLeft: '1rem', color: 'white' }}
                 >
                     {i18next.t('entityPage.activityLog.header')}
                 </Button>
             </MeltaTooltip>
 
-            <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
+            <PopperSidebar
+                open={openPopper}
+                setOpen={setOpenPopper}
+                title={
+                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
+                        {i18next.t('entityPage.activityLog.header')}
+                    </Typography>
+                }
+                side="left"
+            >
                 <ActivitiesContent expandedEntity={expandedEntity} entityTemplate={entityTemplate} />
             </PopperSidebar>
         </>

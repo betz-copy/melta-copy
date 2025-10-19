@@ -1,6 +1,6 @@
-import logger from '../logger/logsLogger';
+import { logger } from '@microservices/shared';
 
-export const hexToARGB = (hex?: string): string => {
+const hexToARGB = (hex?: string): string => {
     if (!hex) return 'FF000000';
 
     const normalizedHex = hex.replace(/^#/, '');
@@ -21,3 +21,5 @@ export const hexToARGB = (hex?: string): string => {
     // eslint-disable-next-line no-bitwise
     return `FF${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
 };
+
+export default hexToARGB;

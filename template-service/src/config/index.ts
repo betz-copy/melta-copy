@@ -13,9 +13,12 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         relationshipTemplatesCollectionName: env.get('MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME').required().asString(),
+        printingTemplatesCollectionName: env.get('MONGO_PRINTING_TEMPLATES_COLLECTION_NAME').required().asString(),
         ruleCollectionName: env.get('MONGO_RULES_COLLECTION_NAME').required().asString(),
         entityTemplatesCollectionName: env.get('MONGO_ENTITY_TEMPLATES_COLLECTION_NAME').required().asString(),
+        childTemplatesCollectionName: env.get('MONGO_CHILD_TEMPLATES_COLLECTION_NAME').required().asString(),
         categoriesCollectionName: env.get('MONGO_CATEGORIES_COLLECTION_NAME').required().asString(),
+        configsCollectionName: env.get('MONGO_CONFIGS_COLLECTION_NAME').required().asString(),
         connectionOptions: {
             maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(), // Maximum time (in ms) that a connection can be idle before being closed
             socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(), // Maximum idle time for an active connection

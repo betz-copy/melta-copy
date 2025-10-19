@@ -1,4 +1,5 @@
 import {
+    Add,
     ControlPoint as AddIcon,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
@@ -7,14 +8,14 @@ import {
     Edit as EditIcon,
     MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import { CompareArrows } from '@mui/icons-material';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
-import React, { MouseEventHandler, useMemo } from 'react';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import React, { MouseEventHandler, useMemo, useState } from 'react';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { MenuButton } from '../../../common/MenuButton';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { MenuButton } from '../../../common/MenuButton';
 
 export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;
@@ -31,8 +32,10 @@ export const CardMenu: React.FC<{
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
+    onAddChildTemplateClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
     onOptionsIconClick?: () => Promise<void>;
+    optionsIconStyle?: React.CSSProperties;
 }> = ({
     onOptionsIconClose,
     onEditClick,
@@ -41,10 +44,12 @@ export const CardMenu: React.FC<{
     onDisableClick,
     onDuplicateClick,
     onAddActionsClick,
+    onAddChildTemplateClick,
     onConvertToRelationShipFieldClick,
     onOptionsIconClick,
+    optionsIconStyle,
 }) => {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { iconSize } = workspace.metadata;
@@ -71,7 +76,7 @@ export const CardMenu: React.FC<{
 
     return (
         <>
-            <IconButton onClick={handleClick} style={{ ...iconSize }}>
+            <IconButton onClick={handleClick} style={{ ...iconSize, ...optionsIconStyle }} size="small">
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -131,6 +136,26 @@ export const CardMenu: React.FC<{
                     </MeltaTooltip>
                 )}
 
+                {onAddChildTemplateClick && (
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onAddChildTemplateClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.addChildTemplate')}
+                                disabled={disabledProps?.isDisabled}
+                                icon={<Add color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                )}
+
                 {onDeleteClick && (
                     <MeltaTooltip
                         placement="left"
@@ -158,7 +183,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.convertToRelationShipFieldClick')}
-                                icon={<CompareArrowsIcon color="action" />}
+                                icon={<CompareArrows color="action" />}
                                 disabled={disabledProps?.isEditDisabled}
                             />
                         </Grid>

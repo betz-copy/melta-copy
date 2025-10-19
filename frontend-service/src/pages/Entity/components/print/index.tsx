@@ -1,122 +1,77 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
-import { useReactToPrint } from 'react-to-print';
-import { useQuery, useQueryClient } from 'react-query';
-import { IConnectionTemplateOfExpandedEntity } from '../..';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
-import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import React, { useEffect, useRef, useState } from 'react';
+import { useReactToPrint, UseReactToPrintOptions } from 'react-to-print';
+import { INestedRelationshipTemplates } from '../..';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
+import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
+import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
 import { lightTheme } from '../../../../theme';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
-import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { handleExpandedRelationships } from '../../../../utils/expandedRelationships';
-import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
-import { useUserStore } from '../../../../stores/user';
-
-export interface ISelectRelationshipTemplates extends IConnectionTemplateOfExpandedEntity {
-    children?: IConnectionTemplateExpanded[];
-}
-export interface ConnectionWithExtendedRelationship extends IConnection {
-    extendedRelationships?: IConnection[];
-}
-export interface IEntityExpandedWithRelatedRelationships {
-    entity: IEntity;
-    connections: ConnectionWithExtendedRelationship[];
-}
-
-export interface IConnectionExpanded extends IConnection {
-    parentRelationship: IConnection;
-}
-
-export interface IConnectionTemplateExpanded extends IConnectionTemplateOfExpandedEntity {
-    parentRelationship?: IConnectionTemplateOfExpandedEntity;
-}
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-}> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
-    const queryClient = useQueryClient();
-    const currentUser = useUserStore((state) => state.user);
+    connections: INestedRelationshipTemplates[];
+}> = ({ entityTemplate, expandedEntity, connections }) => {
+    const componentRef = useRef(null);
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
-    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const [openModal, setOpenModal] = useState<boolean>(false);
 
-    const [openModal, setOpenModal] = React.useState(false);
+    const [files, setFiles] = useState<IFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
+    const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
 
-    const componentRef = React.useRef(null);
+    const [selectedConnections, setSelectedConnections] = useState<INestedRelationshipTemplates[]>([]);
+    const [connectionsTemplates, setConnectionsTemplates] = useState<INestedRelationshipTemplates[]>(connections);
+    const [connectionsInstances, setConnectionsInstances] = useState<IConnection[]>([]);
 
-    const [files, setFiles] = React.useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = React.useState(files);
-    const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
+    const [title, setTitle] = useState<string | undefined>(undefined);
 
-    const [selectedConnections, setSelectedConnections] = React.useState<ISelectRelationshipTemplates[]>([]);
-    const [expandedRelationshipTemplates, setExpandedRelationshipTemplates] = React.useState<IConnectionTemplateExpanded[]>([]);
-    const [expandedRelationships, setExpandedRelationships] = React.useState<IConnectionExpanded[]>([]);
+    const [showDisabled, setShowDisabled] = useState<boolean>(true);
+    const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
+    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
 
-    const [showDate, setShowDate] = React.useState(true);
-    const [showDisabled, setShowDisabled] = React.useState(true);
-    const [showEntityDates, setShowEntityDates] = React.useState(true);
-    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
+    useEffect(() => {
+        setConnectionsTemplates(connections);
+    }, [connections]);
 
     const handleClose = () => {
         setSelectedConnections([]);
         setOpenModal(false);
     };
 
-    const templateIds = Object.keys(entityTemplates);
-    const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
-        () =>
-            getExpandedEntityByIdRequest(
-                expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: 2 },
-                { disabled: false, templateIds: allowedEntityTemplatesIds },
-            ),
-        {
-            enabled: false,
-            onSuccess: (data) => {
-                const { extendedRelationshipsTemplates, currentExtendedRelationships } = handleExpandedRelationships(
-                    data,
-                    expandedEntity,
-                    connectionsTemplates,
-                    relationshipTemplates,
-                    entityTemplates,
-                );
-
-                setExpandedRelationshipTemplates(extendedRelationshipsTemplates);
-                setExpandedRelationships(currentExtendedRelationships);
-            },
-        },
-    );
-
     const handleOpen = async () => {
         setSelectedConnections([]);
         setOpenModal(true);
-        await getExpandedData();
     };
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
-    });
+    } as UseReactToPrintOptions);
 
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
+
+    const options = {
+        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
+        previewPropertiesOnly: {
+            show: showPreviewPropertiesOnly,
+            set: setShowPreviewPropertiesOnly,
+            label: 'entityPage.print.showOnlyPreviewProperties',
+        },
+        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
+    };
 
     return (
         <>
             <MeltaTooltip title={i18next.t('entityPage.print.header')}>
-                <Button variant="contained" startIcon={<PrintOutlined />} onClick={handleOpen}>
+                <Button variant="contained" startIcon={<PrintOutlined />} onClick={handleOpen} sx={{ color: 'white' }}>
                     {i18next.t('actions.print')}
                 </Button>
             </MeltaTooltip>
@@ -128,27 +83,31 @@ const Print: React.FC<{
                         ref={componentRef}
                         entityTemplate={entityTemplate}
                         expandedEntity={expandedEntity}
-                        connectionsTemplatesToPrint={selectedConnections}
-                        expandedRelationships={expandedRelationships}
+                        connectionsTemplates={selectedConnections}
+                        connectionsInstances={connectionsInstances}
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}
-                        options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
+                        options={{ showDisabled, showEntityDates, showEntityFiles: !!selectedFiles.length, showPreviewPropertiesOnly }}
                     />
                 </ThemeProvider>
             </div>
             {openModal && (
                 <PrintOptionsDialog
                     open={openModal}
-                    entityConnections={{
-                        connectionsTemplates,
-                        expandedRelationshipTemplates,
-                        expandedRelationships,
-                        selectedConnections,
-                        setSelectedConnections,
+                    printItem={{
+                        type: PrintType.Entity,
+                        instance: expandedEntity,
+                        template: entityTemplate,
+                        entityConnections: {
+                            connectionsTemplates,
+                            setConnectionsTemplates,
+                            setConnectionsInstances,
+                            selectedConnections,
+                            setSelectedConnections,
+                        },
+                        options,
                     }}
-                    instance={expandedEntity}
-                    template={entityTemplate}
                     handleClose={handleClose}
                     files={files}
                     setFiles={setFiles}
@@ -157,16 +116,8 @@ const Print: React.FC<{
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
-                    options={{
-                        date: { show: showDate, set: setShowDate, label: 'entityPage.print.showDate' },
-                        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
-                        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
-                        previewPropertiesOnly: {
-                            show: showPreviewPropertiesOnly,
-                            set: setShowPreviewPropertiesOnly,
-                            label: 'entityPage.print.showOnlyPreviewProperties',
-                        },
-                    }}
+                    title={title}
+                    setTitle={setTitle}
                 />
             )}
         </>

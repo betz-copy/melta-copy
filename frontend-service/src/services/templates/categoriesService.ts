@@ -14,7 +14,6 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
         const file: Partial<File> = { name: iconFileId };
         return { ...restOfCategory, icon: { file, name: getFileName(iconFileId) } };
     }
-
     return restOfCategory;
 };
 
@@ -61,4 +60,17 @@ const deleteCategoryRequest = async (categoryId: string) => {
     return data;
 };
 
-export { createCategoryRequest, getAllCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest };
+const updateCategoryTemplatesOrderRequest = async (templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) => {
+    const { data } = await axios.patch(`${categories}/templatesOrder/${templateId}`, { newIndex, srcCategoryId, newCategoryId });
+
+    return data;
+};
+
+export {
+    createCategoryRequest,
+    getAllCategoryRequest,
+    updateCategoryRequest,
+    categoryObjectToCategoryForm,
+    deleteCategoryRequest,
+    updateCategoryTemplatesOrderRequest,
+};

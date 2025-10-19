@@ -1,70 +1,65 @@
 /* eslint-disable consistent-return */
-import { Request, Response, NextFunction } from 'express';
+// middleware/busboyMiddleware.ts
+import { UploadedFile } from '@microservices/shared';
 import Busboy from 'busboy';
+import { NextFunction, Request, Response } from 'express';
 import { PassThrough } from 'stream';
-import ReadableStreamClone from 'readable-stream-clone';
-import { UploadedFile } from '../../express/files/interface';
+import config from '../../config';
 
-export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.is('multipart/form-data')) return next();
+const busboyMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.headers['content-type']?.startsWith('multipart/form-data')) return next();
 
-    try {
-        const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
-        const fields: Record<string, unknown> = {};
-        const allFiles: UploadedFile[] = [];
+    const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
+    const files: UploadedFile[] = [];
+    const fields: Record<string, unknown> = {};
 
-        let singleFileField: UploadedFile | null = null;
+    busboy.on('file', (fieldname, file, { filename, encoding, mimeType }) => {
+        const passthrough = new PassThrough({
+            highWaterMark: config.service.highWaterMark,
+        });
+        let size = 0;
+        const validFileName = Buffer.from(filename, 'binary').toString('utf8');
 
-        busboy.on('file', (fieldname, file, { encoding, filename, mimeType }) => {
-            const copiedStream = new ReadableStreamClone(file);
-            const passthrough = new PassThrough();
-            file.pipe(passthrough);
+        file.on('data', (chunk) => {
+            size += chunk.length;
+            passthrough.write(chunk);
+        });
 
-            const validFileName = Buffer.from(filename, 'binary').toString('utf8');
-            let size = 0;
+        file.on('end', () => {
+            passthrough.end();
 
-            const fileData: UploadedFile = {
+            files.push({
                 fieldname,
                 originalname: validFileName,
                 encoding,
                 mimetype: mimeType,
-                stream: copiedStream,
                 size,
-            };
-
-            file.on('data', (data) => {
-                size += data.length;
-                fileData.size = size;
-            });
-
-            file.on('end', () => {
-                allFiles.push(fileData);
-
-                if (fieldname === 'file') {
-                    singleFileField = fileData;
-                }
+                stream: passthrough,
             });
         });
 
-        busboy.on('field', (fieldname, val) => {
-            fields[fieldname] = val;
+        file.on('error', (err) => {
+            passthrough.destroy(err);
         });
+    });
 
-        busboy.on('finish', () => {
-            req.body = fields;
+    busboy.on('field', (fieldname, value) => {
+        fields[fieldname] = value;
+    });
 
-            if (singleFileField) req.file = singleFileField;
-            if (allFiles.length) req.files = allFiles;
+    busboy.on('finish', () => {
+        req.body = fields;
+        if (files.length) {
+            req.files = files;
+        }
+        next();
+    });
 
-            next();
-        });
-
-        busboy.on('error', (err) => {
-            next(err);
-        });
-
-        req.pipe(busboy);
-    } catch (err) {
+    busboy.on('error', (err) => {
         next(err);
-    }
+    });
+
+    req.pipe(busboy);
 };
+
+export default busboyMiddleware;

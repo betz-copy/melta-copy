@@ -1,5 +1,36 @@
 import Joi from 'joi';
-import { ColorSchema, ExtendedJoi, fileSchema, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes, filterOfTemplateSchema, ViewType } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
+
+const searchFilterSchema = Joi.object({
+    $and: Joi.array().items(filterOfTemplateSchema),
+    $or: Joi.array().items(filterOfTemplateSchema),
+});
+
+const childTemplatePropertySchema = Joi.object({
+    defaultValue: Joi.any(),
+    filters: searchFilterSchema,
+    isEditableByUser: Joi.boolean(),
+    display: Joi.boolean(),
+});
+
+const ChildTemplateSchema = {
+    name: Joi.string().required(),
+    displayName: Joi.string().required(),
+    description: Joi.string().allow(''),
+    parentTemplateId: MongoIdSchema.required(),
+    category: MongoIdSchema.required(),
+    properties: Joi.object({
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+    }).required(),
+    disabled: Joi.boolean().default(false),
+    actions: Joi.string(),
+    viewType: Joi.string().valid(ViewType.categoryPage, ViewType.userPage).required(),
+    isFilterByCurrentUser: Joi.boolean().default(false),
+    isFilterByUserUnit: Joi.boolean().default(false),
+    filterByCurrentUserField: Joi.string(),
+    filterByUnitUserField: Joi.string(),
+};
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -21,6 +52,7 @@ export const updateCategorySchema = Joi.object({
         displayName: Joi.string(),
         iconFileId: Joi.string().allow(null),
         color: ColorSchema,
+        templatesOrder: ExtendedJoi.stringToArray(),
     },
     params: {
         id: MongoIdSchema.required(),
@@ -34,6 +66,19 @@ export const deleteCategorySchema = Joi.object({
     body: {},
     params: {
         id: MongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/templates/categories/templatesOrder/:templateId
+export const updateCategoryTempOrderSchema = Joi.object({
+    query: {},
+    body: {
+        newCategoryId: MongoIdSchema.required(),
+        srcCategoryId: MongoIdSchema.required(),
+        newIndex: Joi.number().required().min(0),
+    },
+    params: {
+        templateId: MongoIdSchema.required(),
     },
 });
 
@@ -57,6 +102,7 @@ export const createEntityTemplateSchema = Joi.object({
         enumPropertiesColors: ExtendedJoi.stringToObject(),
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
+        fieldGroups: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {},
@@ -104,6 +150,7 @@ export const updateEntityTemplateSchema = Joi.object({
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         documentTemplatesIds: ExtendedJoi.stringToArray(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
+        fieldGroups: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {
@@ -111,6 +158,18 @@ export const updateEntityTemplateSchema = Joi.object({
     },
     file: iconFileSchema,
     files: Joi.array().items(fileSchema),
+});
+
+// PATCH /api/entities/templates/:templateId/actions
+export const updateEntityTemplateActionSchema = Joi.object({
+    body: {
+        actions: Joi.string().required(),
+        isChildTemplate: Joi.boolean(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
 });
 
 // PATCH /api/templates/entities/:id/status
@@ -243,6 +302,148 @@ export const searchRulesRequestSchema = Joi.object({
         search: Joi.string(),
         entityTemplateIds: Joi.array().items(MongoIdSchema),
         disabled: Joi.boolean(),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/templates/child/search
+export const searchChildTemplatesSchema = Joi.object({
+    body: {
+        search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
+        categoryIds: Joi.array().items(MongoIdSchema),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    query: {},
+    params: {},
+});
+
+// GET /api/templates/child
+export const getAllChildTemplatesSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
+});
+
+// POST /api/templates/child
+export const createChildTemplateSchema = Joi.object({
+    body: {
+        ...ChildTemplateSchema,
+    },
+    query: {},
+    params: {},
+});
+
+export const updateChildTemplateSchema = Joi.object({
+    body: {
+        ...ChildTemplateSchema,
+    },
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+export const deleteChildTemplateSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+// GET /api/templates/config/all
+export const getAllConfigsSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {},
+});
+
+// GET /api/templates/config/:type
+export const getConfigByTypeSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        type: Joi.string()
+            .valid(...Object.values(ConfigTypes))
+            .required(),
+    },
+});
+
+// PUT /api/templates/config/:configId
+export const updateOrderConfigSchema = Joi.object({
+    query: {},
+    body: {
+        newIndex: Joi.number().min(0).required(),
+        item: MongoIdSchema.required(),
+    },
+    params: {
+        configId: MongoIdSchema.required(),
+    },
+});
+
+// POST /api/templates/config
+export const createOrderConfigSchema = Joi.object({
+    query: {},
+    body: {
+        type: Joi.string()
+            .valid(...Object.values(ConfigTypes))
+            .required(),
+        order: Joi.array().items(MongoIdSchema),
+    },
+    params: {},
+});
+
+// Printing Templates
+const printingTemplateBodySchema = Joi.object({
+    name: Joi.string().required(),
+    sections: Joi.array()
+        .items(
+            Joi.object({
+                categoryId: MongoIdSchema.required(),
+                entityTemplateId: MongoIdSchema.required(),
+                selectedColumns: Joi.array().items(Joi.string()).required(),
+            }),
+        )
+        .required(),
+    compactView: Joi.boolean().required(),
+    addEntityCheckbox: Joi.boolean().required(),
+    appendSignatureField: Joi.boolean().required(),
+});
+
+export const createPrintingTemplateSchema = Joi.object({
+    query: {},
+    body: printingTemplateBodySchema,
+});
+
+export const updatePrintingTemplateSchema = Joi.object({
+    query: {},
+    body: printingTemplateBodySchema,
+});
+
+export const deletePrintingTemplateSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+export const getPrintingTemplateByIdSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+export const searchPrintingTemplatesSchema = Joi.object({
+    body: {
+        search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
     },

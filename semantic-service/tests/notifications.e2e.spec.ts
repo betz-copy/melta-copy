@@ -2,44 +2,21 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Express } from 'express';
 
-import config from '../src/config';
+import { ProcessStatus, INotification, NotificationType } from '@microservices/shared';
 import Server from '../src/express/server';
-import { INotification, NotificationType } from '../src/express/notifications/interface';
-import { ProcessStatus } from '../src/utils/interfaces/processes';
-
-const { mongo } = config;
 
 const fakeObjectId = '111111111111111111111111';
 const fakeObjectId2 = '222222222222222222222222';
 const fakeObjectId3 = '333333333333333333333333';
 
-const removeAllCollections = async () => {
-    const collections = Object.keys(mongoose.connection.collections);
-
-    for (const collectionName of collections) {
-        const collection = mongoose.connection.collections[collectionName];
-        await collection.deleteMany({});
-    }
-};
-
 describe('e2e notifications api testing', () => {
     let app: Express;
 
     beforeAll(async () => {
-        await mongoose.connect(mongo.url);
         app = Server.createExpressApp();
-    });
-
-    afterAll(async () => {
-        await mongoose.disconnect();
-    });
-
-    beforeEach(async () => {
-        await removeAllCollections();
     });
 
     describe('/isAlive', () => {

@@ -1,8 +1,14 @@
-import { IFormula } from './interfaces/formula';
-import { IArgument, IVariable, isPropertyOfVariable } from './interfaces/formula/argument';
-import { isEquation } from './interfaces/formula/equation';
-import { isCountAggFunction, isRegularFunction } from './interfaces/formula/function';
-import { isAggregationGroup, isGroup } from './interfaces/formula/group';
+import {
+    IArgument,
+    IVariable,
+    isPropertyOfVariable,
+    isCountAggFunction,
+    isRegularFunction,
+    isEquation,
+    isAggregationGroup,
+    isGroup,
+    IFormula,
+} from '@microservices/shared';
 
 export const getParametersOfArgument = (argument: IArgument): Array<{ variable: IVariable; property?: string }> => {
     if (isPropertyOfVariable(argument)) {

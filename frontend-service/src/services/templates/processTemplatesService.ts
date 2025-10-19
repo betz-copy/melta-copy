@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { environment } from '../../globals';
 import fileDetails from '../../interfaces/fileDetails';
-import { ProcessTemplateFormInputProperties, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
+import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import {
     IMongoProcessTemplatePopulated,
     ICreateProcessTemplateBody,
@@ -11,18 +11,24 @@ import {
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
 } from '../../interfaces/processes/processTemplate';
+import { extractProperties } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
 export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area', 'signature'];
+
+export type ExtractedProcessProps = {
+    properties: ProcessTemplateFormInputProperties[];
+    propertiesPath: Record<string, string>;
+};
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
 ): ProcessTemplateWizardValues | undefined => {
     if (!processTemplate) return undefined;
     const { details, steps, ...restOfProcessTemplate } = processTemplate;
-    const detailsPropertiesArray: ProcessTemplateFormInputProperties[] = [];
-    const detailsAttachmentProperties: ProcessTemplateFormInputProperties[] = [];
+    const detailsPropertiesArray: ProcessTemplatePropertyByType[] = [];
+    const detailsAttachmentProperties: ProcessTemplatePropertyByType[] = [];
     const stepsForm: ProcessTemplateWizardValues['steps'] = [];
 
     details.propertiesOrder.forEach((key) => {
@@ -48,18 +54,18 @@ const processTemplateObjectToProcessTemplateForm = (
         };
 
         if (value.format === 'fileId') {
-            detailsAttachmentProperties.push(property);
+            detailsAttachmentProperties.push({ type: 'field', data: property });
         } else if (value.items?.format === 'fileId') {
             property.type = 'multipleFiles';
 
-            detailsAttachmentProperties.push(property);
+            detailsAttachmentProperties.push({ type: 'field', data: property });
         } else {
-            detailsPropertiesArray.push(property);
+            detailsPropertiesArray.push({ type: 'field', data: property });
         }
     });
     steps.forEach((step) => {
-        const stepsPropertiesArray: ProcessTemplateFormInputProperties[] = [];
-        const stepsAttachmentProperties: ProcessTemplateFormInputProperties[] = [];
+        const stepsPropertiesArray: ProcessTemplatePropertyByType[] = [];
+        const stepsAttachmentProperties: ProcessTemplatePropertyByType[] = [];
         step.propertiesOrder.forEach((key) => {
             const value = step.properties.properties[key];
 
@@ -83,19 +89,18 @@ const processTemplateObjectToProcessTemplateForm = (
             };
 
             if (value.format === 'fileId') {
-                stepsAttachmentProperties.push(property);
+                stepsAttachmentProperties.push({ type: 'field', data: property });
             } else if (value.items?.format === 'fileId') {
                 property.type = 'multipleFiles';
 
-                stepsAttachmentProperties.push(property);
+                stepsAttachmentProperties.push({ type: 'field', data: property });
             } else {
-                stepsPropertiesArray.push(property);
+                stepsPropertiesArray.push({ type: 'field', data: property });
             }
         });
 
-        stepsForm.push({
-            _id: step._id,
-            draggableId: step._id,
+        const stepForm: ProcessTemplateWizardValues['steps'][number] = {
+            draggableId: step._id || uuid(),
             properties: stepsPropertiesArray,
             attachmentProperties: stepsAttachmentProperties,
             name: step.name,
@@ -105,7 +110,14 @@ const processTemplateObjectToProcessTemplateForm = (
                 name: step.iconFileId,
             } as fileDetails,
             reviewers: step.reviewers,
-        });
+            disableAddingReviewers: step.disableAddingReviewers,
+        };
+
+        if (step._id && step._id !== '') {
+            stepForm._id = step._id;
+        }
+
+        stepsForm.push(stepForm);
     });
 
     return {
@@ -154,13 +166,16 @@ const addAttachmentProperties = (
             };
             propertiesOrder.push(name);
         }
-
         if (required) detailsSchema.required.push(name);
     });
 };
 
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
+
+    const { properties: extractDetailsProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsProperties);
+    const { properties: extractDetailsAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsAttachmentProperties);
+
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
 
@@ -170,7 +185,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         required: [],
     };
 
-    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+    extractDetailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
         if (!deleted) {
             detailsSchema.properties[name] = {
                 title,
@@ -187,7 +202,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         }
     });
 
-    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties, detailsSchema);
+    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, extractDetailsAttachmentProperties, detailsSchema);
 
     steps.forEach((step) => {
         const stepPropertiesOrder: string[] = [];
@@ -196,7 +211,10 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.properties);
+        const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.attachmentProperties);
+
+        extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
             if (!deleted) {
                 stepSchema.properties[name] = {
                     title,
@@ -213,13 +231,14 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             }
         });
 
-        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties, stepSchema);
+        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, extractStepAttachmentProperties, stepSchema);
 
         const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({
             _id: step._id!,
             properties: stepSchema,
             displayName: step.displayName,
+            disableAddingReviewers: step.disableAddingReviewers,
             iconFileId: !step.icon || step.icon!.file instanceof File || step.icon.name === '' ? null : step.icon!.file.name!,
             name: step.name,
             propertiesOrder: stepPropertiesOrder,

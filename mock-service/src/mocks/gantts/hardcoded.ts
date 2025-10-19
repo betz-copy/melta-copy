@@ -1,6 +1,6 @@
-import { IGantt } from '../../gantts';
+import { IGantt } from '@microservices/shared';
 
-export const getHardcodedRealGantts = (fliesOnId: string, flightId: string, tripId: string): IGantt[] => {
+const getHardcodedRealGantts = (fliesOnId: string, flightId: string, tripId: string): IGantt[] => {
     return [
         {
             name: 'flightsAndTrips',
@@ -32,3 +32,5 @@ export const getHardcodedRealGantts = (fliesOnId: string, flightId: string, trip
         },
     ];
 };
+
+export default getHardcodedRealGantts;

@@ -1,16 +1,24 @@
 /* eslint-disable class-methods-use-this */
+import {
+    IMongoStepTemplate,
+    IMongoStepInstance,
+    IStepInstance,
+    UpdateStepReqBody,
+    DefaultManagerMongo,
+    IUpdateProcessStepMetadata,
+    ActionsLog,
+    NotFoundError,
+    ServiceError,
+    ValidationError,
+} from '@microservices/shared';
 import { ClientSession, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
-import { IMongoStepTemplate } from '../../templates/steps/interface';
+import { InstanceNotFoundError, StepNotPartOfProcessError } from '../../error';
 import ProcessInstanceManager from '../processes/manager';
-import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from './interface';
 import { StepInstanceSchema } from './model';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
-import { ActionsLog, IUpdateProcessStepMetadata } from '../../../externalServices/activityLog/interface';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
     private elasticSearchManager: ElasticSearchManager;
@@ -19,6 +27,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
 
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
+        this.workspaceId = workspaceId;
         this.elasticSearchManager = new ElasticSearchManager(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }
@@ -30,14 +39,14 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     }
 
     async getStepById(id: string): Promise<IMongoStepInstance> {
-        return this.model.findById(id).orFail(new InstanceNotFoundError('step', id)).lean();
+        return this.model.findById(id).orFail(new InstanceNotFoundError('step', id)).lean<IMongoStepInstance>();
     }
 
     async getSteps(ids: string[]): Promise<IMongoStepInstance[]> {
         return this.model
             .find({ _id: { $in: ids } })
             .orFail(new NotFoundError('No matching step Templates found'))
-            .lean();
+            .lean<IMongoStepInstance[]>();
     }
 
     async getStepTemplateByStepInstanceId(id: string): Promise<IMongoStepTemplate> {
@@ -81,7 +90,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                     },
                 )
                 .orFail(new InstanceNotFoundError('step', id))
-                .lean();
+                .lean<IMongoStepInstance>();
         } else {
             const updatedProcessStatus = processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
 
@@ -91,7 +100,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                 return this.model
                     .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
                     .orFail(new InstanceNotFoundError('step', id))
-                    .lean();
+                    .lean<IMongoStepInstance>();
             });
         }
         const updatedProcess = await processInstanceManager.getProcessById(processId, true);

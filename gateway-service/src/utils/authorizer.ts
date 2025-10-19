@@ -1,13 +1,11 @@
 import { Request } from 'express';
+import { PermissionScope, PermissionType, ISubCompactPermissions, createController, RelatedPermission } from '@microservices/shared';
 import { typedObjectEntries } from '.';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
-import { WorkspaceService } from '../express/workspaces/service';
-import { UserService } from '../externalServices/userService';
-import { PermissionScope, PermissionType } from '../externalServices/userService/interfaces/permissions';
-import { ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
-import { createWorkspacesController } from './express';
+import WorkspaceService from '../express/workspaces/service';
+import UserService from '../externalServices/userService';
 import DefaultController from './express/controller';
-import { WorkspaceManager } from '../express/workspaces/manager';
+import WorkspaceManager from '../express/workspaces/manager';
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
 
@@ -20,7 +18,7 @@ export class Authorizer extends DefaultController {
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
         workspaceHierarchyIds.push(this.workspaceId);
 
-        const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
+        const userPermissions = await UserService.getRelatedPermissions(userId, RelatedPermission.User, workspaceHierarchyIds);
 
         const hierarcyId = workspaceHierarchyIds.find((id) => Boolean(userPermissions[id]));
 
@@ -98,7 +96,7 @@ export class Authorizer extends DefaultController {
 
     async userIsRootAdmin(req: Request) {
         const rootWorkspace = await WorkspaceManager.getFile('/');
-        const userPermissions = await UserService.getUserPermissions(req.user!.id, [rootWorkspace._id]);
+        const userPermissions = await UserService.getRelatedPermissions(req.user!.id, RelatedPermission.User, [rootWorkspace._id]);
 
         const rootPermissions = userPermissions[rootWorkspace._id];
 
@@ -115,4 +113,4 @@ export class Authorizer extends DefaultController {
     }
 }
 
-export const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer, true);
+export const AuthorizerControllerMiddleware = createController(Authorizer, true);

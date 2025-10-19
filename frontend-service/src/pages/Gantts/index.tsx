@@ -36,7 +36,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
     return (
         <>
             <Grid container direction="column" padding="0 4rem">
-                <Grid container item justifyContent="space-between" padding="0.5rem">
+                <Grid container justifyContent="space-between" padding="0.5rem">
                     <Box>
                         <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue || undefined)} />
                     </Box>
@@ -53,8 +53,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                         queryKey={queryKey}
                         queryFunction={async ({ pageParam }) => searchGantts({ limit: infiniteScrollPageCount, step: pageParam, search })}
                         onQueryError={(error) => {
-                            // eslint-disable-next-line no-console
-                            console.log('failed loading gantts: ', error);
+                            console.error('failed loading gantts: ', error);
                             toast.error(i18next.t('gantts.searchFailed'));
                         }}
                         emptyText={i18next.t('gantts.noGanttsFound')}

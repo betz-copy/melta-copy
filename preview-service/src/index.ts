@@ -1,9 +1,9 @@
+import { logger } from '@microservices/shared';
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import { config } from './config';
-import { Server } from './express/server';
+import config from './config';
+import Server from './express/server';
 import PreviewConsumer from './rabbit/consumer';
-import logger from './utils/logger/logsLogger';
 
 const {
     rabbit,

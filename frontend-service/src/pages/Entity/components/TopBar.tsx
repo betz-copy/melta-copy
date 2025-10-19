@@ -2,7 +2,7 @@ import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
-import { IConnectionTemplateOfExpandedEntity } from '..';
+import { INestedRelationshipTemplates } from '..';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { IEntityExpanded } from '../../../interfaces/entities';
@@ -15,7 +15,7 @@ import { Print } from './print';
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    connectionsTemplates: INestedRelationshipTemplates[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
     const theme = useTheme();
 
@@ -38,36 +38,36 @@ const EntityTopBar: React.FC<{
             style={{ top: 0, right: 0, zIndex: 1 }}
         >
             <Box display="flex" alignItems="center" gap="15px">
-                <Grid item>
+                <Grid>
                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                 </Grid>
-                <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                <Grid sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                     {entityTemplate.iconFileId ? (
                         <CustomIcon iconUrl={entityTemplate.iconFileId} height="30px" width="30px" color={theme.palette.primary.main} />
                     ) : (
                         <AppRegistration sx={{ color: theme.palette.primary.main }} />
                     )}
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Link href={`/category/${entityTemplate.category._id}`} style={{ textDecoration: 'none' }}>
                         <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="20px">
                             {entityTemplate.category.displayName}
                         </Typography>
                     </Link>
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="20px">
                         {'>'}
                     </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Typography color={theme.palette.primary.main} fontWeight="700" component="h4" variant="h4" fontSize="24px">
                         {entityTemplate.displayName}
                     </Typography>
                 </Grid>
             </Box>
             <Box>
-                <Print entityTemplate={entityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
+                <Print entityTemplate={entityTemplate} expandedEntity={expandedEntity} connections={connectionsTemplates} />
                 <ActivityLog entityTemplate={entityTemplate} expandedEntity={expandedEntity} />
             </Box>
         </Box>

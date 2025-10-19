@@ -1,5 +1,5 @@
 import * as joi from 'joi';
-import { basicFilterOperationTypes, numberFilterOperationTypes, textFilterOperationTypes } from '../../interfaces/agGrid';
+import { basicFilterOperationTypes, numberFilterOperationTypes, textFilterOperationTypes } from '@microservices/shared';
 
 export const agGridSetFilterSchema = joi.object({
     filterType: joi.valid('set').required(),

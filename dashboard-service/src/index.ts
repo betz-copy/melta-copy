@@ -1,9 +1,9 @@
+import { logger } from '@microservices/shared';
 import axios from 'axios';
 import 'elastic-apm-node/start';
 import mongoose from 'mongoose';
 import config from './config';
 import Server from './express/server';
-import logger from './utils/logger/logsLogger';
 
 const { mongo, service } = config;
 

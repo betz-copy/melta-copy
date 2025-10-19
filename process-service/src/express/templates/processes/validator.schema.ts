@@ -1,5 +1,6 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, updateProcessTemplateBody, createProcessTemplateBody } from '../../../utils/joi';
+import { MongoIdSchema } from '@microservices/shared';
+import { createProcessTemplateBody, updateProcessTemplateBody } from '../../../utils/joi';
 
 // GET /api/processes/templates/search-by-reviewer/:reviewerId
 export const searchTemplatesByReviewerIdRequestSchema = Joi.object({

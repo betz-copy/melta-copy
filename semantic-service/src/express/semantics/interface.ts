@@ -19,17 +19,3 @@ export interface IElasticDoc extends Omit<IIndexFilesRequest, 'minioFileIds'> {
     workspaceId: string;
     chunkIndex: number;
 }
-
-// { [templateId]: { [entityId]: { minioFileId: string, text: string }[] } }
-export type ISemanticSearchResult = Record<string, Record<string, { minioFileId: string; text: string }[]>>;
-
-export interface IRerankResult {
-    index: number;
-    text: string;
-    score: number;
-}
-
-export interface IRerankRequest {
-    query: string;
-    texts: string[];
-}

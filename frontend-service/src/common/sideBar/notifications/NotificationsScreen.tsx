@@ -7,7 +7,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
-import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
+import { IGetMyNotificationsRequestQuery } from '../../../services/notificationService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { InfiniteScroll } from '../../InfiniteScroll';
@@ -25,6 +25,9 @@ interface NotificationsScreenProps {
     sideBarWidth: CSSProperties['width'];
     notificationCountDetails: INotificationGroupCountDetails;
     updateNotificationCountDetails: () => void;
+    side: 'left' | 'right';
+    manyNotificationSeenRequest: (types: NotificationType[]) => Promise<INotificationPopulated[]>;
+    getMyNotificationsRequest: (query: IGetMyNotificationsRequestQuery) => Promise<INotificationPopulated[]>;
 }
 
 interface IGroups {
@@ -49,6 +52,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     sideBarWidth,
     notificationCountDetails,
     updateNotificationCountDetails,
+    side = 'right',
+    manyNotificationSeenRequest,
+    getMyNotificationsRequest,
 }) => {
     const groupNames = Object.keys(groups) as (keyof typeof groups)[];
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
@@ -91,8 +97,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             onError: (error, groupName) => {
                 const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
 
-                // eslint-disable-next-line no-console
-                console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
+                console.error(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
                 toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
             },
         },
@@ -109,8 +114,12 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         <PopperSidebar
             open={open}
             setOpen={setOpen}
-            title={i18next.t('notifications.title')}
-            side="right"
+            title={
+                <Typography color={theme.palette.primary.main} fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
+                    {i18next.t('notifications.title')}
+                </Typography>
+            }
+            side={side}
             sideMargin={sideBarWidth}
             isCheckBoxClicked={isCheckBoxClicked}
         >
@@ -124,10 +133,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             label={
                                 <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
                                     {groupName === 'general' ? <MarkChatUnreadOutlined /> : <SmsOutlined />}
-                                    <Grid item fontWeight={selectedGroup !== groupName ? 400 : undefined}>
+                                    <Grid fontWeight={selectedGroup !== groupName ? 400 : undefined}>
                                         {i18next.t(`notifications.groups.${groupName}`)}
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                                     </Grid>
                                 </Grid>
@@ -153,7 +162,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             ) : (
                 <>
                     <Grid sx={{ display: 'flex', justifyContent: 'space-between', padding: '18px' }}>
-                        <Grid item>
+                        <Grid>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
                                 options={(notificationsMoreData as unknown as IExpandedGroups)[selectedGroup]}
@@ -179,7 +188,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         </Grid>
                         {!openCalenders && (
                             <Grid
-                                item
                                 sx={{
                                     borderRadius: '10px',
                                     display: 'flex',
@@ -256,7 +264,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             })
                         }
                         onQueryError={(error) => {
-                            console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
+                            console.error('failed to get notifications. error:', error);
                             toast.error(i18next.t('notifications.failedToGetNotifications'));
                         }}
                         endText={i18next.t('notifications.noNotificationsLeft')}
@@ -266,7 +274,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         }}
                     >
                         {(notification) => (
-                            <Grid item style={{ padding: '8px' }}>
+                            <Grid style={{ padding: '8px' }}>
                                 <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />
                             </Grid>
                         )}
@@ -275,6 +283,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     <Grid
                         container
                         sx={{
+                            width: '100%',
                             position: 'absolute',
                             bottom: 0,
                             justifyContent: 'flex-end',

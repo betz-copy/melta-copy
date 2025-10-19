@@ -1,12 +1,12 @@
 import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
+import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
-import { IMetadata, IWorkspace, WorkspaceTypes } from './interface';
-import { WorkspacesModel } from './model';
+import WorkspacesModel from './model';
 import { escapeRegExp } from '../../utils/regex';
 
-export class WorkspacesManager {
+class WorkspacesManager {
     static async getWorkspaceIds(type: IWorkspace['type']) {
         const workspaces = await WorkspacesModel.find({ type }, { _id: 1 }).lean().exec();
 
@@ -162,3 +162,5 @@ export class WorkspacesManager {
         return WorkspacesModel.find(query).sort({ name: 1 }).lean().exec();
     }
 }
+
+export default WorkspacesManager;

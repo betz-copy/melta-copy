@@ -1,13 +1,12 @@
+import { fileSchema, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
-import { excelTemplateSchema, ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
-import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 import config from '../../config';
+import { excelTemplateSchema, ExtendedJoi } from '../../utils/joi';
+import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
 const {
     instanceService: { searchEntitiesMaxLimit },
 } = config;
-
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
 // POST /api/instances/entities
 export const createEntityInstanceSchema = Joi.object({
@@ -15,6 +14,7 @@ export const createEntityInstanceSchema = Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: {},
@@ -27,9 +27,25 @@ export const updateEntityInstanceSchema = Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: { id: Joi.string().required() },
+    files: Joi.array().items(fileSchema),
+});
+
+// PUT /api/instances/entities/bulk
+export const updateMultipleEntitiesSchema = Joi.object({
+    body: Joi.object({
+        templateId: Joi.string().required(),
+        properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
+        ignoredRules: ExtendedJoi.stringToObject().default({}),
+        entitiesToUpdate: ExtendedJoi.stringToObject(),
+        propertiesToRemove: ExtendedJoi.stringToArray().items(Joi.string()).default([]),
+        childTemplateId: Joi.string(),
+    }).unknown(true),
+    query: {},
+    params: {},
     files: Joi.array().items(fileSchema),
 });
 
@@ -38,6 +54,7 @@ export const updateEntityStatusSchema = Joi.object({
     body: Joi.object({
         disabled: Joi.boolean().required(),
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        childTemplateId: Joi.string(),
     }).unknown(true),
     query: {},
     params: { id: Joi.string().required() },
@@ -47,6 +64,7 @@ export const updateEntityStatusSchema = Joi.object({
 const baseDeleteSchema = Joi.object({
     selectAll: Joi.boolean().required(),
     templateId: Joi.string().required(),
+    childTemplateId: Joi.string(),
     deleteAllRelationships: Joi.boolean(),
 });
 
@@ -90,6 +108,7 @@ export const exportEntitiesSchema = Joi.object({
             displayColumns: Joi.array().items(Joi.string()),
             headersOnly: Joi.boolean(),
             insertEntities: Joi.array().items(Joi.object().pattern(Joi.string(), Joi.any())),
+            isChildTemplate: Joi.boolean(),
         }),
     },
     query: {},
@@ -100,7 +119,7 @@ export const exportEntitiesSchema = Joi.object({
 export const exportEntityToDocumentSchema = Joi.object({
     body: {
         documentTemplateId: Joi.string().required(),
-        entityProperties: Joi.object(),
+        entity: Joi.object(),
     },
     query: {},
     params: {},
@@ -117,6 +136,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(),
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+            childTemplateId: Joi.string(),
         }),
         sort: Joi.any(),
     },
@@ -149,6 +169,7 @@ export const searchEntitiesByLocationRequestSchema = Joi.object({
 export const getEntitiesCountByTemplates = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
+        childTemplateIds: Joi.array().items(Joi.string()),
         textSearch: Joi.string().allow(''),
         shouldSemanticSearch: Joi.boolean().default(true),
     },
@@ -228,6 +249,18 @@ export const loadEntitiesSchema = Joi.object({
                 .default([]),
         ),
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string().optional(),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/instances/entities/getChangedEntitiesFromExcel
+export const getChangedEntitiesFromExcelSchema = Joi.object({
+    body: {
+        file: excelTemplateSchema,
+        templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {},
@@ -238,17 +271,28 @@ export const editReadExcelSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
         templateId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     query: {},
     params: {},
 });
 
-// POST /api/instances/entities/editExcel
-export const editExcelSchema = Joi.object({
+// POST /api/instances/entities/editManyEntitiesByExcel
+export const editManyEntitiesByExcelSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
-        entities: ExtendedJoi.stringToArray({ templateId: Joi.string(), properties: Joi.object() }).default([]),
-        ignoredRules: ExtendedJoi.stringToArray(brokenRuleSchema),
+        childTemplateId: Joi.string(),
+        entities: ExtendedJoi.stringToArray(
+            Joi.array()
+                .items(
+                    Joi.object({
+                        templateId: Joi.string().required(),
+                        properties: Joi.object().required(),
+                        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+                    }),
+                )
+                .default([]),
+        ),
     },
     query: {},
     params: {},

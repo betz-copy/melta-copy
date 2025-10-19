@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { IBaseUser } from './interface';
-import { config } from '../../config';
+import { IBaseUser } from '@microservices/shared';
+import config from '../../config';
 
 const UserSchema = new mongoose.Schema(
     {
@@ -27,6 +27,11 @@ const UserSchema = new mongoose.Schema(
         profile: {
             type: String,
         },
+        roleIds: { type: [String], index: true },
+        units: {
+            type: Map,
+            of: [String],
+        },
         preferences: {
             darkMode: {
                 type: Boolean,
@@ -40,21 +45,16 @@ const UserSchema = new mongoose.Schema(
                 type: String,
             },
         },
-        externalMetadata: {
-            kartoffelId: {
-                type: String,
-                required: true,
-                unique: true,
-                index: true,
-            },
-            digitalIdentitySource: {
-                type: String,
-                required: true,
-                index: true,
-            },
+        kartoffelId: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
         },
     },
     { timestamps: true, versionKey: false },
 );
 
-export const UsersModel = mongoose.model<IBaseUser>(config.mongo.usersCollectionName, UserSchema);
+const UsersModel = mongoose.model<IBaseUser>(config.mongo.usersCollectionName, UserSchema);
+
+export default UsersModel;

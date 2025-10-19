@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign */
+import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
-import { excelConfig } from './excelConfig';
-import { hexToARGB } from './colors';
+import hexToARGB from './colors';
+import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
-import { CoordinateSystem, locationConverterToString } from './map';
+
+const { dateTime, date: dateFormat } = config.formats;
 
 interface IExcelStyle {
     columnHeader: {
@@ -64,15 +64,17 @@ const createWorkbook = async (fileName: string) => {
 
 const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     const { propertyType } = excelConfig;
-    const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+    const type = propertyType[propertyTemplate.format ?? propertyTemplate.type];
 
     if (type === propertyType.string) {
         if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
         if (propertyTemplate.pattern) return `${propertyType.regex}`;
     }
-    if (type === propertyType.array && propertyTemplate.items?.type === 'string')
+    if (type === propertyType.array && propertyTemplate.items) {
+        if (propertyTemplate.items.format === 'user') return propertyType.users;
+        if (propertyTemplate.items.format === 'fileId') return propertyType.files;
         return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
-
+    }
     return type;
 };
 
@@ -117,19 +119,16 @@ export const indexToExcelColumn = (index: number): string => {
 //     }
 // };
 
-const createWorksheet = async (
-    workbook: Excel.Workbook,
-    template: IMongoEntityTemplatePopulated,
-    displayColumns?: string[],
-    headersOnly?: boolean,
-) => {
+const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateItem, displayColumns?: string[], headersOnly?: boolean) => {
+    const { metaData: template } = templateItem;
+
     const worksheet = workbook.addWorksheet(template.displayName);
-    const { properties } = template.properties;
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    let columnIndex = 0;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let columnIndex = 0; // TODO: make data validation work in office excel
 
-    Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
+    Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
         const shouldAddColumn = headersOnly ? isIncludedColumn(propertyTemplate) : displayColumns?.includes(propertyKey);
 
         if (shouldAddColumn) {
@@ -148,10 +147,12 @@ const createWorksheet = async (
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        if (headersOnly) {
-            const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
-            cell.note = type;
-        }
+
+        const type =
+            externalColumns.find(({ header }) => header === cell.value) ??
+            TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+
+        cell.note = type;
         cell.fill = {
             type: 'pattern',
             pattern: 'solid',
@@ -212,20 +213,23 @@ const readOnlyCell = (cell: Cell) => {
 const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
-    template: IMongoEntityTemplatePopulated,
+    templateItem: TemplateItem,
     workspace: { path: string; id: string },
     displayColumns?: string[],
     headersOnly?: boolean,
     skip: number = 0,
 ) => {
+    const { type, metaData: template } = templateItem;
+    const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
     });
-    const { properties } = template.properties;
-    const { createdAt, updatedAt, disabled } = template;
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+    const { disabled, createdAt, updatedAt } = template;
+
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, createdAt, updatedAt })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
@@ -236,7 +240,9 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
+
             if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
+
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
@@ -268,10 +274,10 @@ const styleAWorksheet = (
 
                             if (cellValue.includes(':')) {
                                 cell.value = date;
-                                cell.numFmt = 'dd/mm/yyyy hh:mm';
+                                cell.numFmt = dateTime;
                             } else {
                                 cell.value = new Date(date.setHours(0, 0, 0, 0));
-                                cell.numFmt = 'dd/mm/yyyy';
+                                cell.numFmt = dateFormat;
                             }
                         }
                     }
@@ -285,8 +291,11 @@ const styleAWorksheet = (
                     if (!headersOnly) {
                         // Check if value is simple list
                         if (value.type === 'string' && value.enum) {
-                            if (template?.enumPropertiesColors?.[key]?.[row?.[key]])
-                                cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
+                            if (parentTemplate.enumPropertiesColors?.[key]?.[row?.[key]])
+                                cell.font = {
+                                    ...excelStyle.cell.font,
+                                    color: { argb: hexToARGB(parentTemplate.enumPropertiesColors[key][row[key]]) },
+                                };
                         }
                         // Check if value is multiple list
                         if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');

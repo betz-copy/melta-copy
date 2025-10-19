@@ -5,11 +5,12 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ActionTypes, ICreateRelationshipMetadata, ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
+import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';
 import { environment } from '../../../globals';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -59,12 +60,12 @@ const CreateWithRuleBreachDialog: React.FC<{
         },
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
 
-                console.log('failed to create rule breach request. error:', err);
+                console.error('failed to create rule breach request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
             },
             onSuccess: () => {
@@ -80,10 +81,7 @@ const CreateWithRuleBreachDialog: React.FC<{
             isSubmitting={isLoadingCreateRelationship || isLoadingCreateRuleBreachRequest}
             onCancel={handleClose}
             onSubmit={async () => {
-                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-                    const rule = rules.get(ruleId)!;
-                    return rule.actionOnFail === 'ENFORCEMENT';
-                });
+                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT);
 
                 if (someBrokenRuleIsEnforcement) {
                     await createRuleBreachRequest();

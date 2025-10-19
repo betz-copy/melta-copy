@@ -1,0 +1,13 @@
+diff --git a/node_modules/@ag-grid-enterprise/core/dist/package/main.esm.mjs b/node_modules/@ag-grid-enterprise/core/dist/package/main.esm.mjs
+index b7b2a9a..2916c90 100644
+--- a/node_modules/@ag-grid-enterprise/core/dist/package/main.esm.mjs
++++ b/node_modules/@ag-grid-enterprise/core/dist/package/main.esm.mjs
+@@ -538,7 +538,7 @@ var GridLicenseManager = class extends BeanStub {
+   }
+   validateLicense() {
+     this.licenseManager = new LicenseManager(_getDocument(this.gos));
+-    this.licenseManager.validateLicense();
++    // this.licenseManager.validateLicense();
+   }
+   static getLicenseDetails(licenseKey) {
+     return new LicenseManager(null).getLicenseDetails(licenseKey);

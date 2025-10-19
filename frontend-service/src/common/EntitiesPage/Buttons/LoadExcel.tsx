@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { TableButton } from '../../TableButton';
 import { LoadEntitiesWizard } from '../../wizards/excel/LoadEntitiesWizard';
@@ -9,6 +9,7 @@ const LoadExcelButton: React.FC<{
     initialValues?: EntityWizardValues;
     popoverText?: string;
     onSuccessCreate: () => void;
+    children?: ReactNode;
 }> = ({ children, disabled, initialValues, popoverText, onSuccessCreate }) => {
     const [loadEntitiesState, setLoadEntitiesState] = useState<{
         isOpen: boolean;

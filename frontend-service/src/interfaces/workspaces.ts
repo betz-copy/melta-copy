@@ -13,6 +13,7 @@ export interface IMetadata {
     shouldNavigateToEntityPage: boolean;
     isDrawerOpen: boolean;
     flowCube: boolean;
+    isDashboardHomePage: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;
@@ -36,6 +37,21 @@ export interface IMetadata {
     searchLimits: {
         bulk: number;
     };
+    unitFieldSplitDepth: number;
+    clientSide: {
+        usersInfoChildTemplateId: string;
+        numOfPropsToShow: number;
+        clientSideWorkspaceName: 'simba' | 'azarim';
+        fullNameField: string;
+    };
+    mapPage: {
+        showMapPage: boolean;
+        sourceTemplateId: string;
+        destTemplateId: string;
+        sourceFieldForColor: string;
+    };
+    unitsArray: string[];
+    numOfRelationshipFieldsToShow: number;
 }
 
 export interface IWorkspace {

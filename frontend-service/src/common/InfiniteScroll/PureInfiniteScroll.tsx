@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, Key } from 'react';
 import { Grid } from '@mui/material';
+import React, { JSX, Key, useEffect, useRef } from 'react';
 import { GetNextPageParamFunction, QueryFunction, QueryKey, useInfiniteQuery } from 'react-query';
 import { ShowMore } from './ShowMore';
 
@@ -51,22 +51,24 @@ export const PureInfiniteScroll = <T extends any>({
 
         observer.observe(currentShowMoreRef);
         return () => observer.unobserve(currentShowMoreRef);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showMoreRef, isFetchingNextPage, hasNextPage]);
 
     return (
-        <>
-            {data?.pages.map((page) =>
-                page.map((item) => (
-                    <Grid
-                        justifyContent="space-between"
-                        item
-                        key={getItemId(item)}
-                        {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
-                    >
-                        {children(item)}
-                    </Grid>
-                )),
-            )}
+        <Grid direction="column" width="100%">
+            <Grid container direction="row" gap={3}>
+                {data?.pages.map((page) =>
+                    page.map((item) => (
+                        <Grid
+                            justifyContent="space-between"
+                            key={getItemId(item)}
+                            {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
+                        >
+                            {children(item)}
+                        </Grid>
+                    )),
+                )}
+            </Grid>
 
             <ShowMore
                 ref={showMoreRef}
@@ -75,6 +77,6 @@ export const PureInfiniteScroll = <T extends any>({
                 emptyText={emptyText}
                 endText={endText}
             />
-        </>
+        </Grid>
     );
 };

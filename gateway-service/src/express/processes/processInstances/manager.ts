@@ -1,50 +1,48 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import config from '../../../config';
-import { InstancesService } from '../../../externalServices/instanceService';
 import {
+    PermissionScope,
+    PermissionType,
+    IMongoStepTemplate,
+    IProcessDetails,
+    ProcessPropertyFormats,
+    IMongoStepInstance,
+    IGenericStepPopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessInstancePopulated,
+    InstanceProperties,
+    IProcessInstance,
+    IProcessInstanceSearchProperties,
+    Status,
+    IReferencedEntityForProcess,
     IArchiveProcessNotificationMetadata,
     IDeleteProcessNotificationMetadata,
     INewProcessNotificationMetadata,
     IProcessReviewerUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadata,
     NotificationType,
-} from '../../../externalServices/notificationService/interfaces';
-import {
     IArchiveProcessNotificationMetadataPopulated,
     IDeleteProcessNotificationMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
-} from '../../../externalServices/notificationService/interfaces/populated';
-import { ProcessService } from '../../../externalServices/processService';
-import { IGenericStepPopulated } from '../../../externalServices/processService/interfaces';
-import {
-    IMongoProcessInstancePopulated,
-    IMongoProcessInstanceWithSteps,
-    InstanceProperties,
-    IProcessInstance,
-    IReferencedEntityForProcess,
-    ISearchProcessInstancesBody,
-    Status,
-} from '../../../externalServices/processService/interfaces/processInstance';
-import { IProcessDetails, PropertyFormats } from '../../../externalServices/processService/interfaces/processTemplate';
-import { IMongoStepInstance } from '../../../externalServices/processService/interfaces/stepInstance';
-import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
-import { StorageService } from '../../../externalServices/storageService';
-import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '../../../externalServices/userService/interfaces/permissions';
+    ServiceError,
+    UploadedFile,
+} from '@microservices/shared';
+import config from '../../../config';
+import InstancesService from '../../../externalServices/instanceService';
+import ProcessService from '../../../externalServices/processService';
+import StorageService from '../../../externalServices/storageService';
+import EntityTemplateService from '../../../externalServices/templates/entityTemplateService';
 import { filteredMap } from '../../../utils';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
-import { RabbitManager } from '../../../utils/rabbit';
-import { ServiceError } from '../../error';
-import { InstancesManager } from '../../instances/manager';
-import { UsersManager } from '../../users/manager';
-import { WorkspaceManager } from '../../workspaces/manager';
+import RabbitManager from '../../../utils/rabbit';
+import InstancesManager from '../../instances/manager';
+import UsersManager from '../../users/manager';
+import WorkspaceManager from '../../workspaces/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
-import { UploadedFile } from '../../../utils/busboy/interface';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -74,7 +72,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const updatedProperties: InstanceProperties = { ...properties };
 
         const entityProperties = Object.entries(template.properties || {}).filter(
-            ([key, value]) => value.format === PropertyFormats.EntityReference && properties[key] !== undefined,
+            ([key, value]) => value.format === ProcessPropertyFormats.EntityReference && properties[key] !== undefined,
         );
 
         if (entityProperties.length === 0) return properties;
@@ -106,7 +104,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return updatedProperties;
     }
 
-    private async getPopulatedProcess(process: IMongoProcessInstanceWithSteps, userId: string): Promise<IMongoProcessInstancePopulated> {
+    private async getPopulatedProcess(process: IMongoProcessInstancePopulated, userId: string): Promise<IMongoProcessInstanceReviewerPopulated> {
         const processTemplate = await this.service.getProcessTemplateById(process.templateId);
         const details = await this.getPropertiesWithEntities(process.details, processTemplate.details.properties, userId);
 
@@ -142,7 +140,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     async checkEntityReferenceFields(properties: InstanceProperties, schema: IProcessDetails['properties']) {
         await Promise.all(
             Object.entries(schema.properties).map(async ([key, value]) => {
-                if (value.format === PropertyFormats.EntityReference && properties[key] !== undefined) {
+                if (value.format === ProcessPropertyFormats.EntityReference && properties[key] !== undefined) {
                     try {
                         await this.instancesService.getEntityInstanceById(properties[key]);
                     } catch {
@@ -242,7 +240,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return updatedPopulatedProcess;
     }
 
-    private async deleteAllProcessFiles({ templateId, steps, details }: IMongoProcessInstanceWithSteps) {
+    private async deleteAllProcessFiles({ templateId, steps, details }: IMongoProcessInstancePopulated) {
         const filesIdsToDelete = await this.collectFileIdsToDelete(templateId, steps, details);
 
         if (filesIdsToDelete.length) {
@@ -272,9 +270,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const fileIds: string[] = [];
 
         Object.entries(templateProperties.properties || {}).forEach(([key, value]) => {
-            if ((value.format === PropertyFormats.FileId || value.format === PropertyFormats.Signature) && instanceProperties[key]) {
+            if ((value.format === ProcessPropertyFormats.FileId || value.format === ProcessPropertyFormats.Signature) && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
-            } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
+            } else if (value.items?.format === ProcessPropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(...instanceProperties[key]);
             }
         });
@@ -295,8 +293,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return populatedProcess;
     }
 
-    async searchProcessInstances(searchBody: ISearchProcessInstancesBody, userId: string) {
-        const query: ISearchProcessInstancesBody = { ...searchBody };
+    async searchProcessInstances(searchBody: IProcessInstanceSearchProperties, userId: string) {
+        const query: IProcessInstanceSearchProperties = { ...searchBody };
 
         const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
@@ -307,7 +305,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
     }
 
-    private async sendNewProcessNotification(process: IMongoProcessInstancePopulated) {
+    private async sendNewProcessNotification(process: IMongoProcessInstanceReviewerPopulated) {
         const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
 
         const processesManagersIds = await UsersManager.searchUserIds({
@@ -330,7 +328,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
     }
 
-    async sendProcessStatusUpdateNotification(process: IMongoProcessInstancePopulated, status: Status, stepId?: string) {
+    async sendProcessStatusUpdateNotification(process: IMongoProcessInstanceReviewerPopulated, status: Status, stepId?: string) {
         const metadata: IProcessStatusUpdateNotificationMetadata = {
             processId: process._id,
             status,
@@ -353,7 +351,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
     }
 
-    async sendDeleteProcessNotification(process: IMongoProcessInstancePopulated) {
+    async sendDeleteProcessNotification(process: IMongoProcessInstanceReviewerPopulated) {
         await this.rabbitManager.createNotification<IDeleteProcessNotificationMetadata, IDeleteProcessNotificationMetadataPopulated>(
             await this.getAllReviewersIds(process.steps, true),
             NotificationType.deleteProcess,
@@ -364,7 +362,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
     }
 
-    async sendArchiveProcessNotification(process: IMongoProcessInstancePopulated, isArchived: boolean) {
+    async sendArchiveProcessNotification(process: IMongoProcessInstanceReviewerPopulated, isArchived: boolean) {
         await this.rabbitManager.createNotification<IArchiveProcessNotificationMetadata, IArchiveProcessNotificationMetadataPopulated>(
             await this.getAllReviewersIds(process.steps, true),
             NotificationType.archivedProcess,

@@ -1,16 +1,16 @@
-import { Grid, IconButton, Link, Typography } from '@mui/material';
-import React, { ReactNode, useMemo, useState } from 'react';
 import { AutoAwesome } from '@mui/icons-material';
+import { Grid, IconButton, Link, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { environment } from '../../globals';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
+import { HighlightText } from '../../utils/HighlightText';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
-import { HighlightText } from '../../utils/HighlightText';
-import { MeltaTooltip } from '../MeltaTooltip';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const OpenPreviewContent: React.FC<{
     fileName: string;
@@ -19,7 +19,8 @@ const OpenPreviewContent: React.FC<{
     showText?: boolean;
     searchValue?: string;
     highlightAll?: boolean;
-}> = ({ fileName, onClick, img, showText, searchValue, highlightAll }) => {
+    color?: string;
+}> = ({ fileName, onClick, img, showText, searchValue, highlightAll, color }) => {
     const text = useMemo(() => getFileNameWithoutExtension(fileName), [fileName]);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
@@ -35,6 +36,7 @@ const OpenPreviewContent: React.FC<{
                 {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
                 {showText && (
                     <Typography
+                        color={color}
                         sx={{
                             marginRight: '5px',
                             fontSize: workspace.metadata.agGrid.defaultFontSize,
@@ -66,12 +68,17 @@ const OpenPreview: React.FC<{
     onClick?: () => Promise<void>;
     searchValue?: string;
     entityFileIdsWithTexts?: ISemanticSearchResult[string][string];
-}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts }) => {
-    const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
+    defaultFileName?: string;
+    disabled?: boolean;
+    color?: string;
+}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts, defaultFileName, disabled, color }) => {
+    const fileName = defaultFileName ?? (typeof fileId === 'string' ? getFileName(fileId) : fileId.name);
+
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 
     const handleButtonClick = async () => {
+        if (disabled) return;
         setOpen(true);
     };
 
@@ -96,6 +103,7 @@ const OpenPreview: React.FC<{
                 searchValue={searchValue}
                 onClick={onClick}
                 highlightAll={highlightAll}
+                color={color}
             />
         );
         return onClick ? (
@@ -133,6 +141,7 @@ const OpenPreview: React.FC<{
                     showText={showText}
                     searchValue={searchValue}
                     highlightAll={highlightAll}
+                    color={color}
                 />
                 {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
             </Grid>
@@ -146,6 +155,7 @@ const OpenPreview: React.FC<{
                 showText={showText}
                 searchValue={searchValue}
                 highlightAll={highlightAll}
+                color={color}
             />
             {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
         </Grid>

@@ -32,7 +32,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                     </IconButton>
                 }
                 title={entityTemplate?.displayName}
-                titleTypographyProps={{ variant: 'h4' }}
+                slotProps={{ title: { variant: 'h4' } }}
             />
             <CardContent>
                 {/* if no entityTemplate, didnt find template of entity in react-query state */}
@@ -41,6 +41,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                 ) : (
                     <EntityPropertiesInternal
                         properties={entity.properties}
+                        coloredFields={entity.coloredFields}
                         entityTemplate={entityTemplate}
                         darkMode={darkMode}
                         showPreviewPropertiesOnly

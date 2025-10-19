@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { InfiniteScroll } from '../../common/InfiniteScroll';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
+import { environment } from '../../globals';
+import { PermissionScope } from '../../interfaces/permissions';
+import { IMongoProcessInstancePopulated, Status } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { searchProcessesRequest } from '../../services/processesService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard from './ProcessCard';
-import { searchProcessesRequest } from '../../services/processesService';
-import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
-import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { BlueTitle } from '../../common/BlueTitle';
-import { environment } from '../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -69,17 +69,16 @@ const ProcessesList: React.FC<{
     }, [isWaitingForMeFilterOn, search, templatesToShowCheckbox, startDateInput, endDateInput]);
 
     return (
-        <Grid item container direction="column" spacing={2}>
+        <Grid container direction="column" spacing={2}>
             {isWaitingForMeFilterOn && (
                 <Grid
-                    item
                     container
                     flexDirection="column"
                     marginTop="15px"
                     sx={{ backgroundColor: darkMode ? '#434343' : '#CCCFE5', borderRadius: '20px', padding: '15px' }}
                     rowGap={3}
                 >
-                    <Grid item>
+                    <Grid>
                         <BlueTitle
                             component="h4"
                             variant="h6"
@@ -87,18 +86,18 @@ const ProcessesList: React.FC<{
                             title={i18next.t('processInstancesPage.waitForMyApprove')}
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <ViewingBox minHeight="80vh">
                             {loadingWaitingForMeProcesses && (
                                 <Grid container width="100%" justifyContent="center">
-                                    <Grid item>
+                                    <Grid>
                                         <CircularProgress sx={{ alignSelf: 'center' }} size="24px" />
                                     </Grid>
                                 </Grid>
                             )}
                             {!loadingWaitingForMeProcesses &&
                                 waitingForMeProcesses.map((process) => (
-                                    <Grid item key={process._id}>
+                                    <Grid key={process._id}>
                                         <ProcessCard
                                             processInstance={process}
                                             onChangedProcessDialogClose={(processId: string | null) => {
@@ -123,7 +122,7 @@ const ProcessesList: React.FC<{
                     </Grid>
                 </Grid>
             )}
-            <Grid item>
+            <Grid>
                 <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstancePopulated>
                         queryKey={[
@@ -149,8 +148,7 @@ const ProcessesList: React.FC<{
                             });
                         }}
                         onQueryError={(error) => {
-                            // eslint-disable-next-line no-console
-                            console.log('failed loading all processes:', error);
+                            console.error('failed loading all processes:', error);
                             toast.error(i18next.t('processInstancesPage.failedToLoadAllProcesses'));
                         }}
                         getNextPageParam={(lastPage, allPages) => {

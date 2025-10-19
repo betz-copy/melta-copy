@@ -4,10 +4,10 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import { ActionTypes, IActionMetadataPopulated, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
-import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
 
 const ExecWithRuleBreachDialog: React.FC<{
     isSubmitting: boolean;
@@ -23,17 +23,14 @@ const ExecWithRuleBreachDialog: React.FC<{
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-        const rule = rules.get(ruleId)!;
-        return rule.actionOnFail === 'ENFORCEMENT';
-    });
+    const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT);
 
     return (
         <Dialog
             open
             fullWidth
             maxWidth="sm"
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', borderColor: 'red', borderWidth: '2px', borderStyle: 'dashed' } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white', borderColor: 'red', borderWidth: '2px', borderStyle: 'dashed' } } }}
         >
             <DialogTitle>
                 {i18next.t('execActionWithRuleBreach.actionBroke')}

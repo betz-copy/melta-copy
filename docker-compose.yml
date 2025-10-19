@@ -1,12 +1,19 @@
-version: "3.8"
+version: '3.8'
 
 secrets:
   npm_token:
+    # the token has an expiration date because gitlab is annoying
+    # currently the expiration date is 25/9/26
     file: ./npm_token_secret.txt
 
 services:
   user-service:
-    build: ./user-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'user-service'
+    command: ['npm', 'run', 'start', '-w', 'user-service']
     environment:
       PORT: 8000
       MONGO_URL: ${USER_SERVICE_MONGO_URL}
@@ -16,7 +23,12 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
   storage-service:
-    build: ./storage-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'storage-service'
+    command: ['npm', 'run', 'start', '-w', 'storage-service']
     environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
@@ -31,22 +43,35 @@ services:
       SYSTEM_MELTA_BASE_URL: ${SYSTEM_MELTA_BASE_URL}
 
   template-service:
-    build: ./template-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'template-service'
+    command: ['npm', 'run', 'start', '-w', 'template-service']
     environment:
       PORT: 8000
       MONGO_URL: ${TEMPLATE_SERVICE_MONGO_URL}
       RABBIT_URL: ${RABBIT_URL}
       MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME: ${MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME}
+      MONGO_PRINTING_TEMPLATES_COLLECTION_NAME: ${MONGO_PRINTING_TEMPLATES_COLLECTION_NAME}
       MONGO_RULES_COLLECTION_NAME: ${MONGO_RULES_COLLECTION_NAME}
       MONGO_ENTITY_TEMPLATES_COLLECTION_NAME: ${MONGO_ENTITY_TEMPLATES_COLLECTION_NAME}
+      MONGO_CHILD_TEMPLATES_COLLECTION_NAME: ${MONGO_CHILD_TEMPLATES_COLLECTION_NAME}
       MONGO_CATEGORIES_COLLECTION_NAME: ${MONGO_CATEGORIES_COLLECTION_NAME}
+      MONGO_CONFIGS_COLLECTION_NAME: ${MONGO_CONFIGS_COLLECTION_NAME}
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   instance-service:
-    build: ./instance-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'instance-service'
+    command: ['npm', 'run', 'start', '-w', 'instance-service']
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
@@ -61,7 +86,12 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   global-search-service:
-    build: ./global-search-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'global-search-service'
+    command: ['npm', 'run', 'start', '-w', 'global-search-service']
     environment:
       NEO4J_URL: ${NEO4J_URL}
       NEO4J_USERNAME: ${NEO4J_USERNAME}
@@ -75,7 +105,12 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   activity-log-service:
-    build: ./activity-log-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'activity-log-service'
+    command: ['npm', 'run', 'start', '-w', 'activity-log-service']
     environment:
       PORT: 8000
       MONGO_URL: ${ACTIVITY_LOG_SERVICE_MONGO_URL}
@@ -86,7 +121,12 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   notification-service:
-    build: ./notification-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'notification-service'
+    command: ['npm', 'run', 'start', '-w', 'notification-service']
     environment:
       PORT: 8000
       MONGO_URL: ${NOTIFICATION_SERVICE_MONGO_URL}
@@ -97,7 +137,12 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   rule-breach-service:
-    build: ./rule-breach-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'rule-breach-service'
+    command: ['npm', 'run', 'start', '-w', 'rule-breach-service']
     environment:
       PORT: 8000
       MONGO_URL: ${RULE_BREACH_SERVICE_MONGO_URL}
@@ -108,7 +153,12 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   process-service:
-    build: ./process-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'process-service'
+    command: ['npm', 'run', 'start', '-w', 'process-service']
     environment:
       PORT: 8000
       MONGO_URL: ${PROCESS_SERVICE_MONGO_URL}
@@ -125,7 +175,12 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   gantt-service:
-    build: ./gantt-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'gantt-service'
+    command: ['npm', 'run', 'start', '-w', 'gantt-service']
     environment:
       PORT: 8000
       MONGO_URL: ${GANTT_SERVICE_MONGO_URL}
@@ -136,7 +191,10 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   preview-service:
-    build: ./preview-service
+    build:
+      context: .
+      dockerfile: ./preview-service/Dockerfile
+    command: ['npm', 'run', 'start', '-w', 'preview-service']
     environment:
       PORT: 8000
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
@@ -150,7 +208,12 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
   workspace-service:
-    build: ./workspace-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'workspace-service'
+    command: ['npm', 'run', 'start', '-w', 'workspace-service']
     environment:
       PORT: 8000
       MONGO_URL: ${WORKSPACE_SERVICE_MONGO_URL}
@@ -159,17 +222,26 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
   dashboard-service:
-    build: ./dashboard-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'dashboard-service'
+    command: ['npm', 'run', 'start', '-w', 'dashboard-service']
     environment:
       PORT: 8000
       MONGO_URL: ${DASHBOARD_SERVICE_MONGO_URL}
       MONGO_CHARTS_COLLECTION_NAME: ${MONGO_CHART_COLLECTION_NAME}
+      MONGO_DASHBOARD_COLLECTION_NAME: ${MONGO_DASHBOARD_COLLECTION_NAME}
       MONGO_IFRAMES_COLLECTION_NAME: ${MONGO_IFRAMES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   gateway-service:
     build:
-      context: ./gateway-service
+      context: .
+      dockerfile: gateway-service/Dockerfile
+      args:
+        SERVICE_NAME: 'gateway-service'
       secrets:
         - npm_token
     environment:
@@ -206,7 +278,11 @@ services:
       DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
 
   # frontend-service:
-  #   build: ./frontend-service
+  #   build:
+  #     context: ./frontend-service
+  #     dockerfile: Dockerfile
+  #     args:
+  #       SERVICE_NAME: 'frontend-service'
 
   nginx:
     image: nginx:alpine
@@ -220,14 +296,20 @@ services:
       MAIL_HOSTS: ${MAIL_HOSTS}
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
-      USE_AUTH: "true"
+      USE_AUTH: 'true'
       RABBIT_URI: ${RABBIT_URL}
       REDIS_CONNECTION_URI: ${REDIS_HOST}
 
   cron-service:
-    build: ./cron-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'cron-service'
+    command: ['npm', 'run', 'start', '-w', 'cron-service']
     environment:
       PORT: 8000
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       WORKSPACE_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
@@ -236,9 +318,15 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}
+      KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
 
   semantic-service:
-    build: ./semantic-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'semantic-service'
+    command: ['npm', 'run', 'start', '-w', 'semantic-service']
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}

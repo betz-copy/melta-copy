@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import FormData = require('form-data'); // TODO: yona - Check if could replace with es6 import
+import axios from 'axios';
 import config from './config';
 import { trycatch } from './utils';
-import { createAxiosInstance } from './utils/axios';
-import FormData = require('form-data');
-import axios from 'axios';
+import createAxiosInstance from './utils/axios';
 
 const { url, uploadFileRoute, fileData, fileName, isAliveRoute } = config.storageService;
 export const uploadFile = async (workspaceId: string) => {
@@ -16,16 +17,15 @@ export const uploadFile = async (workspaceId: string) => {
         await fs.promises.writeFile(filePath, fileData);
 
         const formData = new FormData();
-        formData.append('file', fs.createReadStream(filePath));
+        formData.append('files', fs.createReadStream(filePath));
 
         const { data } = await axiosInstance.post(url + uploadFileRoute, formData, {
             headers: formData.getHeaders(),
         });
 
         await fs.promises.unlink(filePath);
-        return data.path;
+        return data.map(({ path: resultPath }) => resultPath)[0];
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error in mockFileService:', error);
         throw error;
     }

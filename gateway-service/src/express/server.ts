@@ -6,8 +6,8 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 
 import { StatusCodes } from 'http-status-codes';
+import { errorMiddleware } from '@microservices/shared';
 import { initPassport } from '../utils/express/passport';
-import { errorMiddleware } from './error';
 import appRouter from './router';
 import morganMiddleware from '../utils/express/morgan.middleware';
 import config from '../config';
@@ -32,7 +32,7 @@ class Server {
         app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
         app.use(cookieParser());
 
-        app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
+        app.get(['/isAlive', '/isalive', '/health'], (_req, res) => {
             res.status(StatusCodes.OK).send('alive');
         });
 
@@ -43,7 +43,7 @@ class Server {
 
         app.use(appRouter);
 
-        app.use('*', (_req, res) => {
+        appRouter.all(/(.*)/, (_req, res) => {
             res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
         });
 

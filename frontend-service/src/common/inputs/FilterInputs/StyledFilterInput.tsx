@@ -1,13 +1,14 @@
-import { styled, TextField } from '@mui/material';
+import { styled } from '@mui/material';
+import { ViewModeTextField } from '../ViewModeTextField';
 
-export const StyledFilterInput = styled(TextField)(({ theme }) => ({
+export const StyledFilterInput = styled(ViewModeTextField)(({ theme }) => ({
     '& .MuiInputBase-root': {
         borderRadius: '7px',
         backgroundColor: theme.palette.mode === 'dark' ? undefined : 'white',
     },
     '& .MuiInputBase-input': {
         color: theme.palette.mode === 'dark' ? undefined : ' rgba(83, 86, 110, 1)',
-        fontSize: '14px',
+        fontSize: '1rem',
         fontWeight: '400',
     },
     '& fieldset': {

@@ -19,13 +19,17 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
+    IUpdateMultipleEntitiesMetadata,
+    IUpdateMultipleEntitiesMetadataPopulated,
 } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
+import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { environment } from '../../../globals';
 import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+import { IBrokenRuleEntity } from '../../../interfaces/excel';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -69,42 +73,72 @@ const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData
     };
 };
 
-interface IActionOnEntityWithRuleBreachDialogProps {
+type BaseActionProps = {
     isLoadingActionOnEntity: boolean;
     handleClose: () => void;
     doActionEntity: () => Promise<any>;
-    actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity | ActionTypes.UpdateEntity;
     currEntity?: IEntity;
-    brokenRules: IRuleBreachPopulated['brokenRules'];
-    rawBrokenRules: IRuleBreach['brokenRules'];
     entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
     onCreateRuleBreachRequest: () => void;
+    loadEntities?: boolean;
+};
+
+export interface IActionOnSingleEntityWithRuleBreachDialogProps extends BaseActionProps {
+    actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity | ActionTypes.UpdateEntity | ActionTypes.CreateClientSideEntity;
+    brokenRules: IRuleBreachPopulated['brokenRules'];
+    rawBrokenRules: IRuleBreach['brokenRules'];
     actions?: IActionPopulated[];
     rawActions?: IAction[];
-    loadEntities?: boolean;
 }
 
-const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreachDialogProps> = ({
-    isLoadingActionOnEntity,
-    handleClose,
-    doActionEntity,
-    actionType,
-    currEntity,
-    brokenRules,
-    rawBrokenRules,
-    entityFormData,
-    onUpdatedRuleBlock,
-    onCreateRuleBreachRequest,
-    actions,
-    rawActions,
-    loadEntities,
-}) => {
+export interface IActionOnMultipleEntitiesWithRuleBreachDialogProps extends BaseActionProps {
+    actionType: ActionTypes.UpdateMultipleEntities;
+    brokenRulesEntity: IBrokenRuleEntity[];
+}
+
+export type IActionOnEntityWithRuleBreachDialogProps =
+    | IActionOnSingleEntityWithRuleBreachDialogProps
+    | IActionOnMultipleEntitiesWithRuleBreachDialogProps;
+
+const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreachDialogProps> = (componentProps) => {
+    const {
+        isLoadingActionOnEntity,
+        handleClose,
+        doActionEntity,
+        actionType,
+        currEntity,
+        entityFormData,
+        onUpdatedRuleBlock,
+        onCreateRuleBreachRequest,
+        loadEntities,
+    } = componentProps;
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
-    let actionMetadataWithoutFiles: ICreateEntityMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
-    let actionMetadataPopulated: ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated | IUpdateEntityMetadataPopulated;
+    const { rawBrokenRules, brokenRules, actions, rawActions, entities } =
+        actionType === ActionTypes.UpdateMultipleEntities
+            ? {
+                  rawBrokenRules: componentProps?.brokenRulesEntity?.flatMap((entity) => entity.rawBrokenRules) ?? [],
+                  brokenRules: componentProps?.brokenRulesEntity?.flatMap((entity) => entity.brokenRules) ?? [],
+                  actions: componentProps?.brokenRulesEntity?.flatMap((entity) => entity.actions) ?? [],
+                  rawActions: componentProps?.brokenRulesEntity?.flatMap((entity) => entity.rawActions) ?? [],
+                  entities: componentProps?.brokenRulesEntity?.map((entity) => entity.entities[0]) ?? [],
+              }
+            : {
+                  rawBrokenRules: componentProps?.rawBrokenRules ?? [],
+                  brokenRules: componentProps?.brokenRules ?? [],
+                  actions: componentProps?.actions ?? [],
+                  rawActions: componentProps?.rawActions ?? [],
+                  entities: [],
+              };
+
+    let actionMetadataWithoutFiles: ICreateEntityMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateMultipleEntitiesMetadata;
+    let actionMetadataPopulated:
+        | ICreateEntityMetadataPopulated
+        | IDuplicateEntityMetadataPopulated
+        | IUpdateEntityMetadataPopulated
+        | IUpdateMultipleEntitiesMetadataPopulated;
 
     const { template, properties, attachmentsProperties } = entityFormData;
     if (actionType === ActionTypes.CreateEntity) {
@@ -138,6 +172,21 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             entityId: currEntity!.properties._id,
             updatedFields: updatedFieldsWithoutFiles,
         } satisfies IUpdateEntityMetadata;
+    } else if (actionType === ActionTypes.UpdateMultipleEntities) {
+        actionMetadataPopulated =
+            entities?.map((entity) =>
+                getUpdateEntityActionMetadata(
+                    { properties: entity.properties as IEntity['properties'], templateId: entityFormData.template._id },
+                    entityFormData,
+                ),
+            ) || [];
+
+        actionMetadataWithoutFiles = (actionMetadataPopulated || [])?.map((actionMetadata) => {
+            return {
+                entityId: actionMetadata.entity!.properties._id,
+                updatedFields: pickBy(actionMetadata.updatedFields, (value) => !(value instanceof File)),
+            } satisfies IUpdateEntityMetadata;
+        });
     } else {
         throw new Error('unsupported action type. cant create actionMetadata');
     }
@@ -163,11 +212,11 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             ),
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
-                console.log('failed to create rule breach request. error:', err);
+                console.error('failed to create rule breach request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
             },
             onSuccess: () => {
@@ -183,13 +232,16 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             isSubmitting={isLoadingActionOnEntity || isLoadingCreateRuleBreachRequest}
             onCancel={handleClose}
             onSubmit={async () => {
-                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-                    const rule = rules.get(ruleId)!;
-                    return rule.actionOnFail === 'ENFORCEMENT';
-                });
+                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT);
 
                 if (someBrokenRuleIsEnforcement) {
-                    if (loadEntities) {
+                    if (actionType === ActionTypes.UpdateMultipleEntities) {
+                        Object.values(componentProps?.brokenRulesEntity).map(
+                            async ({ rawBrokenRules: currRawBrokenRules, rawActions: currRawActions }) => {
+                                createRuleBreachRequest({ overrideActions: currRawActions, overrideBrokenRules: currRawBrokenRules });
+                            },
+                        );
+                    } else if (loadEntities) {
                         const groupedRawBrokenRules = groupBrokenRulesByEntity(rawBrokenRules);
                         const groupedRawActions = groupActionsByEntityId(rawActions!);
 

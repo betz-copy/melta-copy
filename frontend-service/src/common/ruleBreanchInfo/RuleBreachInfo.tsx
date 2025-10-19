@@ -5,10 +5,10 @@ import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
 import { IUser } from '../../interfaces/users';
-import { IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const RuleBreachInfo: React.FC<{
-    originUser?: IUser;
+    originUser?: IUser | null;
     brokenRules: IRuleBreachPopulated['brokenRules'];
     actions: IActionPopulated[];
     isCompact: boolean;
@@ -17,13 +17,13 @@ const RuleBreachInfo: React.FC<{
 
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
+            <Grid>
                 {actions.length > 1 && (
                     <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${actions.length} ${i18next.t(
                         'ruleBreachInfo.actionsBrokeTheFollowingRules',
                     )}:`}</Typography>
                 )}
-                {actions.length === 1 && (
+                {actions.length === 1 && actions[0].actionType !== ActionTypes.CronjobRun && (
                     <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${i18next.t(
                         'ruleBreachInfo.actionBrokeTheFollowingRules',
                     )}:`}</Typography>
@@ -32,14 +32,14 @@ const RuleBreachInfo: React.FC<{
             {actions.map((action, index) => {
                 return (
                     // eslint-disable-next-line react/no-array-index-key
-                    <Grid item container key={index} borderBottom={actions.length > 1 ? 0.2 : 0} borderColor="#d3d3d3" spacing={2}>
+                    <Grid container key={index} borderBottom={actions.length > 1 ? 0.2 : 0} borderColor="#d3d3d3" spacing={2}>
                         {actions.length > 1 && (
-                            <Grid item>
+                            <Grid>
                                 <Typography sx={{ textDecoration: 'underline' }}>{index + 1}</Typography>
                             </Grid>
                         )}
 
-                        <Grid item marginBottom={2}>
+                        <Grid marginBottom={2}>
                             <ActionInfo
                                 originUser={originUser}
                                 actionType={action.actionType}
@@ -52,7 +52,7 @@ const RuleBreachInfo: React.FC<{
                     </Grid>
                 );
             })}
-            <Grid item>
+            <Grid>
                 <BrokenRulesInfo brokenRules={brokenRules} actions={actions} isCompact={isCompact} />
             </Grid>
         </Grid>

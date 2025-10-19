@@ -1,27 +1,20 @@
-import React, { ReactElement, useEffect } from 'react';
-import { Grid, Box, Tab, useTheme } from '@mui/material';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box } from '@mui/material';
 import i18next from 'i18next';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { CategoriesRow } from './components/CategoriesRow';
-import { EntityTemplatesRow } from './components/EntityTemplatesRow';
-import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
-import { RulesRow } from './components/RulesRow';
-import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
+import React, { ReactElement, useEffect } from 'react';
+import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
 import '../../css/pages.css';
-import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { ConfigurationManagement } from './components/ConfigurationManagement';
+import { useUserStore } from '../../stores/user';
+import CategoriesRow from './components/CategoriesRow';
+import ConfigurationManagement from './components/ConfigurationManagement';
+import PrintingTemplatesRow from './components/PrintingTemplatesRow';
+import ProcessTemplatesRow from './components/ProcessTemplates/ProcessTemplatesRow';
+import RelationshipTemplatesRow from './components/RelationshipTemplatesRow';
+import RulesRow from './components/RulesRow';
+import EntityTemplatesRow from './entityTemplatesRow';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
-    const theme = useTheme();
-    const { trackPageView } = useMatomo();
-
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
-
-    const [searchParams, setSearchParams] = useSearchParams({ tab: 'categories' });
-    const tabValue = searchParams.get('tab') ?? 'categories';
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -31,6 +24,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         relationshipTemplates: <RelationshipTemplatesRow />,
         rules: <RulesRow />,
         processTemplates: <ProcessTemplatesRow />,
+        printingTemplates: <PrintingTemplatesRow />,
         configurationManagement: <ConfigurationManagement />,
     };
 
@@ -50,18 +44,11 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         processTemplates:
             currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        printingTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         configurationManagement: !!currentUser.currentWorkspacePermissions.admin,
     };
-
-    useEffect(() => {
-        const tabPath = window.location.href;
-        trackPageView({
-            documentTitle: `System Management - ${tabValue}`,
-            href: tabPath,
-        });
-    }, [tabValue, trackPageView]);
-
-    const defaultTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
 
     return (
         <Box
@@ -72,39 +59,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                 paddingLeft: '30px',
             }}
         >
-            <TabContext value={tabValue}>
-                <Grid container direction="column">
-                    <Grid item>
-                        <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
-                            {defaultTabs.map((tabName) => (
-                                <Tab
-                                    key={tabName}
-                                    label={i18next.t(tabName)}
-                                    value={tabName}
-                                    wrapped
-                                    style={{
-                                        fontWeight: tabValue === tabName ? '600' : '400',
-                                        fontSize: '16px',
-                                        fontFamily: 'Rubik',
-                                    }}
-                                    sx={{
-                                        borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
-                                    }}
-                                />
-                            ))}
-                        </TabList>
-                    </Grid>
-                    <Grid item>
-                        {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
-                            return (
-                                <TabPanel key={tabName} value={tabName}>
-                                    {tabComponent}
-                                </TabPanel>
-                            );
-                        })}
-                    </Grid>
-                </Grid>
-            </TabContext>
+            <MeltaTabs defaultTab="categories" tabsComponentsMapping={tabsComponentsMapping} tabsPermissionsMapping={tabsPermissionsMapping} />
         </Box>
     );
 };

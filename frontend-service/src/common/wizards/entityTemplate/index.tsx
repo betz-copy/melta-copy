@@ -6,23 +6,28 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
+import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
+import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
+import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
-import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -53,32 +58,49 @@ export interface EntityTemplateFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+        filters?: IFilterTemplate[];
+    };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
     };
     archive?: boolean;
     mapSearch?: boolean;
+    fieldGroup?: FieldGroupData;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
+    isProfileImage?: boolean;
 }
+
+type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
+
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
         'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
-    properties: EntityTemplateFormInputProperties[];
-    attachmentProperties: EntityTemplateFormInputProperties[];
-    archiveProperties: EntityTemplateFormInputProperties[];
+    properties: PropertyItem[];
+    attachmentProperties: EntityTemplatePropertyByType[];
+    archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
+    enumPropertiesColors?: string[];
 }
 
-const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
+const EntityTemplateWizard: React.FC<
+    WizardBaseType<EntityTemplateWizardValues> & { searchEntityTemplatesQueryKey: (string | IMongoCategory[])[] }
+> = ({
     open,
     handleClose,
+    searchEntityTemplatesQueryKey,
     initialStep = 0,
     initialValues = {
         name: '',
         displayName: '',
         icon: undefined,
-        category: { displayName: '', name: '', _id: '', color: '' },
+        category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [] },
         disabled: false,
         properties: [],
         archiveProperties: [],
@@ -101,18 +123,48 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
-        (entityTemplate: EntityTemplateWizardValues) =>
-            isEditMode
-                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate)
-                : createEntityTemplateRequest(entityTemplate),
+        async (entityTemplate: EntityTemplateWizardValues) => {
+            if (isEditMode) {
+                return await updateEntityTemplateRequest(
+                    (initialValues as EntityTemplateWizardValues & { _id: string })._id,
+                    entityTemplate,
+                    queryClient,
+                );
+            }
+            const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
+            return { template: createdTemplate, childTemplates: [] };
+        },
         {
-            onSuccess: async (data) => {
+            onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.invalidateQueries(['searchEntityTemplates']);
+                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    return childTemplateMap!;
+                });
+
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
+
+                    try {
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
+                        queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+                    } catch (error) {
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                    }
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
+                    try {
+                        queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
+                            const newCategoryMap = new Map(categories!);
+                            newCategoryMap.set(data.category._id, data.category);
+
+                            return newCategoryMap;
+                        });
+                    } catch (error) {
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                    }
                 }
 
                 try {
@@ -121,12 +173,13 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
+
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {
-                const errorMetadata = error.response?.data?.metadata;
+                const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
                     const { type, property, relatedTemplateName } = errorMetadata;
@@ -147,7 +200,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false, queryClient);
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
@@ -170,13 +223,14 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     return;
                 }
 
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
 
-                console.log('failed to create/update entity template. error', error);
+                console.error('failed to create/update entity template. error', error);
             },
         },
     );

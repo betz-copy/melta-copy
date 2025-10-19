@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { intervalToDuration, isFuture, isToday, isTomorrow, isYesterday, parse } from 'date-fns';
 import i18next from 'i18next';
 import { HighlightText } from '../HighlightText';
+import { environment } from '../../globals';
+
+const { date: dateFormat, time } = environment.formats;
 
 const CalculateDateDifference: React.FC<{ date: string; searchValue?: string }> = ({ date, searchValue }) => {
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -10,7 +13,7 @@ const CalculateDateDifference: React.FC<{ date: string; searchValue?: string }> 
 
     const timeRegex = /\d{2}:\d{2}(:\d{2})?/;
     const isDateTime = timeRegex.test(date);
-    const parsedDate = isDateTime ? parse(date, 'dd/MM/yyyy, HH:mm:ss', new Date()) : parse(date, 'dd/MM/yyyy', new Date());
+    const parsedDate = isDateTime ? parse(date, [dateFormat, time].join(', '), new Date()) : parse(date, dateFormat, new Date());
 
     const { minutes = 0, hours = 0, years = 0, months = 0, days = 0 } = intervalToDuration({ start: currentDateTime, end: parsedDate });
 
@@ -25,6 +28,7 @@ const CalculateDateDifference: React.FC<{ date: string; searchValue?: string }> 
         }, secondsUntilSecondOfDate * 1000);
 
         return () => clearTimeout(initialTimeoutId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {

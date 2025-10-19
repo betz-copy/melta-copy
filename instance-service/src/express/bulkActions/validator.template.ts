@@ -2,15 +2,22 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import groupBy from 'lodash.groupby';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import {
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IAction,
+    IEntity,
+    ActionErrors,
+    ValidationError,
+    CoordinateSystem,
+} from '@microservices/shared';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
-import { IEntity } from '../entities/interface';
-import { EntityManager } from '../entities/manager';
-import { ValidationError } from '../error';
-import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
+import EntityManager from '../entities/manager';
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
@@ -19,6 +26,9 @@ const ajv = new Ajv({ allErrors: true });
 
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
+ajv.addFormat('comment', /.*/);
+ajv.addFormat('kartoffelUserField', /.*/);
+ajv.addFormat('unitField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -28,6 +38,15 @@ ajv.addFormat('user', {
 });
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('location', {
+    type: 'string',
+    validate: (location) => {
+        const locationObj = JSON.parse(location);
+        return (
+            locationObj.location && (locationObj.coordinateSystem === CoordinateSystem.UTM || locationObj.coordinateSystem === CoordinateSystem.WGS84)
+        );
+    },
+});
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -39,11 +58,20 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
+});
+
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -53,7 +81,7 @@ ajv.addKeyword({
     type: 'number',
 });
 
-export class BulkActionValidator extends DefaultController {
+class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -168,3 +196,5 @@ export class BulkActionValidator extends DefaultController {
         );
     }
 }
+
+export default BulkActionValidator;

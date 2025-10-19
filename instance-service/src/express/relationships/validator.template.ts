@@ -1,12 +1,11 @@
 import axios from 'axios';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { addPropertyToRequest } from '../../utils/express';
+import { addPropertyToRequest, ValidationError } from '@microservices/shared';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
-import { EntityManager } from '../entities/manager';
-import { ValidationError } from '../error';
+import EntityManager from '../entities/manager';
 
 export default class RelationshipValidator extends DefaultController<EntityManager> {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;

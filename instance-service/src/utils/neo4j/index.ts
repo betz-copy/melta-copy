@@ -1,7 +1,7 @@
 import neo4j, { Driver, Neo4jError, QueryResult, Session, SessionMode, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
+import { logger } from '@microservices/shared';
 import config from '../../config';
-import logger from '../logger/logsLogger';
 
 const { url, auth, connectionRetries, connectionRetryDelay, workspaceNamePrefix } = config.neo4j;
 

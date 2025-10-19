@@ -1,7 +1,6 @@
 import * as joi from 'joi';
+import { Status, INotification, NotificationType } from '@microservices/shared';
 import { mongoIdSchema } from '.';
-import { INotification, NotificationType } from '../../../express/notifications/interface';
-import { ProcessStatus } from '../../interfaces/processes';
 
 export const ruleBreachAlertMetadataSchema = joi.object({
     alertId: mongoIdSchema.required(),
@@ -24,7 +23,7 @@ export const processStatusUpdateMetadataSchema = joi.object({
     stepId: mongoIdSchema,
     status: joi
         .string()
-        .valid(...Object.values(ProcessStatus))
+        .valid(...Object.values(Status))
         .required(),
 });
 export const newProcessMetadataSchema = joi.object({

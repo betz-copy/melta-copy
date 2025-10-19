@@ -1,28 +1,27 @@
-import React, { useState } from 'react';
+import { Close, History } from '@mui/icons-material';
 import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
-import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
-import CloseIcon from '@mui/icons-material/Close';
-import { History } from '@mui/icons-material';
-import { BlueTitle } from '../../BlueTitle';
-import { ProcessDetailsValues } from './ProcessDetails';
+import { environment } from '../../../globals';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import { getProcessByIdRequest, deleteProcessRequest } from '../../../services/processesService';
-import ProcessSummary from './ProcessSummaryStep/index';
-import ProcessStepsStep from './ProcessSteps/index';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+import { ActivitiesContent } from '../../../pages/Entity/components/activityLog/ActivitiesContent';
+import { deleteProcessRequest, getProcessByIdRequest } from '../../../services/processesService';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import BlueTitle from '../../MeltaDesigns/BlueTitle';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { ProcessDetailsValues } from './ProcessDetails';
+import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import GeneralDetails from './ProcessDetails/GeneralDetails';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { ActivitiesContent } from '../../../pages/Entity/components/activityLog/ActivitiesContent';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { environment } from '../../../globals';
+import ProcessStepsStep from './ProcessSteps/index';
+import ProcessSummary from './ProcessSummaryStep/index';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -81,11 +80,9 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
 
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
-    const [activeStep, setActiveStep] = React.useState(
-        stepTemplate ? processTemplate.steps.findIndex((step) => step._id === stepTemplate._id) + 1 : 0,
-    );
+    const [activeStep, setActiveStep] = useState(stepTemplate ? processTemplate.steps.findIndex((step) => step._id === stepTemplate._id) + 1 : 0);
 
-    const [contentDisplay, setContentDisplay] = React.useState<'SUMMARY' | 'REVIEWERS'>(environment.processDetailsContentDisplay.summary);
+    const [contentDisplay, setContentDisplay] = useState<'SUMMARY' | 'REVIEWERS'>(environment.processDetailsContentDisplay.summary);
 
     const classes = wizardContentStyles();
 
@@ -102,7 +99,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
         },
         {
             onError: (error: AxiosError) => {
-                console.log('failed to delete process. error:', error);
+                console.error('failed to delete process. error:', error);
                 toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
             },
             onSuccess: () => {
@@ -111,7 +108,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
         },
     );
 
-    const [openActivityPopper, setOpenActivityPopper] = React.useState(false);
+    const [openActivityPopper, setOpenActivityPopper] = useState(false);
 
     return (
         <Dialog
@@ -119,10 +116,12 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
             open={open}
             fullWidth
             maxWidth="xl"
-            PaperProps={{
-                style: {
-                    height: '85vh',
-                    overflowY: 'visible',
+            slotProps={{
+                paper: {
+                    style: {
+                        height: '85vh',
+                        overflowY: 'visible',
+                    },
                 },
             }}
         >
@@ -138,12 +137,11 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         color: (theme) => theme.palette.grey[500],
                     }}
                 >
-                    <CloseIcon fontSize="large" />
+                    <Close fontSize="large" />
                 </IconButton>
-                <Grid container flexDirection="row" height="100%" flexWrap="nowrap">
+                <Grid container flexDirection="row" height="100%" flexWrap="nowrap" width="100%" size={{ xs: 12 }}>
                     <Grid
                         container
-                        item
                         height="100%"
                         flexDirection="column"
                         alignItems="center"
@@ -157,10 +155,10 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             boxShadow: '10px 10px 15px 10px #888888',
                         }}
                     >
-                        <Grid container item flexDirection="column" width="100%" height="100%">
-                            <Grid item height="5%">
+                        <Grid container flexDirection="column" width="100%" height="100%">
+                            <Grid height="5%">
                                 <MeltaTooltip
-                                    componentsProps={{
+                                    slotProps={{
                                         tooltip: {
                                             sx: {
                                                 bgcolor: 'rgba(181, 181, 181, 0.9)',
@@ -185,7 +183,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     />
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid item height="95%">
+                            <Grid height="95%">
                                 <GeneralDetails
                                     detailsFormikData={detailsFormikData}
                                     processInstance={processInstance}
@@ -202,10 +200,10 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
+                    <Grid container flexBasis="75%" flexDirection="column" padding="15px">
                         {activeStep === 0 && contentDisplay === environment.processDetailsContentDisplay.summary && (
                             <Grid container flexDirection="column" width="100%" height="100%" flexWrap="nowrap">
-                                <Grid item alignSelf="flex-end" height="50px">
+                                <Grid alignSelf="flex-end" height="50px">
                                     <MeltaTooltip
                                         title={
                                             openActivityPopper
@@ -226,16 +224,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     </MeltaTooltip>
                                 </Grid>
                                 {openActivityPopper && (
-                                    <Grid
-                                        item
-                                        container
-                                        direction="column"
-                                        wrap="nowrap"
-                                        overflow="none"
-                                        height="75vh"
-                                        style={{ overflowY: 'auto' }}
-                                        padding="20px"
-                                    >
+                                    <Grid direction="column" wrap="nowrap" overflow="none" height="75vh" style={{ overflowY: 'auto' }} padding="20px">
                                         <ActivitiesContent activityEntityId={processInstance._id} entityTemplate={processTemplate.details} />
                                     </Grid>
                                 )}

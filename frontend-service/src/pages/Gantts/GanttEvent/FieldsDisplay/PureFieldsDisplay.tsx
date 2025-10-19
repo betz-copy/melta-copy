@@ -1,10 +1,10 @@
 import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment } from 'react';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IEntity } from '../../../../interfaces/entities';
-import { environment } from '../../../../globals';
 import { formatToString } from '../../../../common/EntityProperties';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
+import { environment } from '../../../../globals';
+import { IEntity } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const { ganttSettings } = environment;
 
@@ -27,14 +27,14 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                 return (
                     <Fragment key={field}>
                         {!expanded && Boolean(index) && (
-                            <Grid item>
+                            <Grid>
                                 <Typography fontSize={14} sx={{ ...textStyle }}>
                                     {ganttSettings.separators.field}
                                 </Typography>
                             </Grid>
                         )}
 
-                        <Grid item>
+                        <Grid>
                             <MeltaTooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded}>
                                 <Typography
                                     fontSize={14}
@@ -45,7 +45,16 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                         ...textStyle,
                                     }}
                                 >
-                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], property, { pureString: true })}`}
+                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(
+                                        entity.properties[field],
+                                        property,
+                                        field,
+                                        undefined,
+                                        undefined,
+                                        {
+                                            pureString: true,
+                                        },
+                                    )}`}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>

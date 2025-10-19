@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, ColorSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema, variableNameValidation } from '@microservices/shared';
 
 // GET /api/categories/:categoryId
 export const getCategoryByIdSchema = Joi.object({
@@ -50,5 +50,18 @@ export const updateCategorySchema = Joi.object({
     },
     params: {
         categoryId: MongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/categories/templatesOrder/:templateId
+export const changeTemplatesOrderSchema = Joi.object({
+    query: {},
+    body: {
+        newCategoryId: MongoIdSchema.required(),
+        srcCategoryId: MongoIdSchema.required(),
+        newIndex: Joi.number().required().min(0),
+    },
+    params: {
+        templateId: MongoIdSchema.required(),
     },
 });

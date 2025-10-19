@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
@@ -30,6 +30,7 @@ import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
 import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -43,7 +44,7 @@ const RuleBreachDialog: React.FC<{
 }> = ({ isOpen, handleClose, ruleBreach, breachType, refreshBreaches, onUpdatedRuleBreach }) => {
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const [value, setValue] = React.useState('1');
+    const [value, setValue] = useState('1');
 
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         setValue(newValue);
@@ -67,10 +68,13 @@ const RuleBreachDialog: React.FC<{
         },
         {
             onError: (error: AxiosError, status) => {
-                console.log('failed to review ruleBreach. error:', error);
+                console.error('failed to review ruleBreach. error:', error);
 
-                if (error.response?.data?.metadata?.errorCode === errorCodes.ruleBlock) {
-                    const newRuleBreach = { ...ruleBreach, brokenRules: error.response?.data?.metadata?.brokenRules } as IRuleBreachRequestPopulated;
+                if ((error.response?.data as IErrorResponse)?.metadata?.errorCode === errorCodes.ruleBlock) {
+                    const newRuleBreach = {
+                        ...ruleBreach,
+                        brokenRules: (error.response?.data as IErrorResponse)?.metadata?.brokenRules,
+                    } as IRuleBreachRequestPopulated;
                     onUpdatedRuleBreach(newRuleBreach);
 
                     toast.error(i18next.t('ruleManagement.newBreachDetected'));
@@ -113,7 +117,9 @@ const RuleBreachDialog: React.FC<{
         <Dialog
             open={isOpen}
             onClose={handleClose}
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', height: (ruleBreach?.actions?.length || 0) > 1 ? '840px' : 'fit-content' } }}
+            slotProps={{
+                paper: { sx: { bgcolor: darkMode ? '#060606' : 'white', height: (ruleBreach?.actions?.length || 0) > 1 ? '840px' : 'fit-content' } },
+            }}
             fullWidth
         >
             <DialogTitle>
@@ -146,19 +152,19 @@ const RuleBreachDialog: React.FC<{
                             </TabPanel>
                             <TabPanel value="2">
                                 <Grid flexDirection="column">
-                                    <Grid item>
+                                    <Grid>
                                         <Typography variant="body1">{`${i18next.t('ruleBreachInfo.actionsBrokeTheFollowingRules')}:`}</Typography>
                                     </Grid>
-                                    <Grid container item paddingRight="15px">
+                                    <Grid container paddingRight="15px">
                                         {ruleBreach.actions.map((action, index) => {
                                             return (
                                                 // eslint-disable-next-line react/no-array-index-key
-                                                <Grid item container key={index} spacing={2}>
-                                                    <Grid item>
+                                                <Grid container key={index} spacing={2}>
+                                                    <Grid>
                                                         <Typography>{index + 1}.</Typography>
                                                     </Grid>
 
-                                                    <Grid item>
+                                                    <Grid>
                                                         <ActionInfo
                                                             actionType={action.actionType}
                                                             actionMetadata={action.actionMetadata}
@@ -172,7 +178,7 @@ const RuleBreachDialog: React.FC<{
                                         })}
                                     </Grid>
                                     {ruleBreach.originUser && (
-                                        <Grid item marginTop="15px">
+                                        <Grid marginTop="15px">
                                             <Box component="span">{i18next.t('ruleBreachAlertNotification.by')}</Box>{' '}
                                             <Box component="span" fontWeight="bold">
                                                 {ruleBreach.originUser.fullName}

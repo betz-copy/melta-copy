@@ -1,11 +1,12 @@
 import Joi from 'joi';
-import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
-import { WorkspaceTypes } from './interface';
+import { WorkspaceTypes, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 
 const metadataSchema = Joi.object({
     shouldNavigateToEntityPage: Joi.boolean(),
     isDrawerOpen: Joi.boolean(),
     flowCube: Joi.boolean(),
+    isDashboardHomePage: Joi.boolean(),
     agGrid: Joi.object({
         rowCount: Joi.number(),
         defaultExpandedRowCount: Joi.number(),
@@ -29,6 +30,21 @@ const metadataSchema = Joi.object({
     searchLimits: Joi.object({
         bulk: Joi.number(),
     }).optional(),
+    unitFieldSplitDepth: Joi.number(),
+    clientSide: Joi.object({
+        usersInfoChildTemplateId: Joi.string(),
+        numOfPropsToShow: Joi.number(),
+        clientSideWorkspaceName: Joi.string().valid('simba', 'azarim'),
+        fullNameField: Joi.string(),
+    }).optional(),
+    mapPage: Joi.object({
+        showMapPage: Joi.boolean(),
+        sourceTemplateId: Joi.string().allow(''),
+        destTemplateId: Joi.string().allow(''),
+        sourceFieldForColor: Joi.string().allow(''),
+    }).optional(),
+    unitsArray: Joi.array().items(Joi.string().trim()).optional(),
+    numOfRelationshipFieldsToShow: Joi.number(),
 }).optional();
 
 const workspaceSchema = Joi.object({

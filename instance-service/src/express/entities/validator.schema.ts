@@ -1,3 +1,4 @@
+import { searchFilterSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
 import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
@@ -62,7 +63,7 @@ export const convertFieldsToPluralRequestSchema = Joi.object({
 /**
  * GET /api/instances/entities/get-is-field-used/:id
  */
-export const getIfValuefieldIsUsedRequestSchema = Joi.object({
+export const getIfValueFieldIsUsedRequestSchema = Joi.object({
     body: {},
     params: {
         id: Joi.string().required(),
@@ -96,40 +97,11 @@ export const createEntityRequestSchema = Joi.object({
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
         duplicatedFromId: Joi.string().optional(),
+        childTemplateId: Joi.string().optional(),
     },
     query: {},
     params: {},
 });
-
-// format of properties keys in entity template
-export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
-
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // regex syntax of Neo4j (Java Regular Expression). validated by neo itself
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
 
 /**
  * POST /api/instances/entities/expanded/:id
@@ -140,13 +112,22 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
         disabled: Joi.boolean().default(null),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
-        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),
+        expandedParams: Joi.object()
+            .pattern(
+                Joi.string(),
+                Joi.object({
+                    minLevel: Joi.number().integer().min(1).max(Joi.ref('maxLevel')).optional(),
+                    maxLevel: Joi.number().integer().min(1).required(),
+                }),
+            )
+            .default({}),
         filters: Joi.object()
             .pattern(Joi.string(), {
                 filter: searchFilterSchema,
             })
             .default({}),
         userId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     params: {
         id: Joi.string().required(),
@@ -168,17 +149,23 @@ const searchByTemplateSchema = {
         )
         .unique('field')
         .default([]),
+    userEntityId: Joi.string().optional(),
 };
 
 export const chartSchema = Joi.object({
-    body: Joi.array().items(
-        Joi.object({
-            _id: Joi.string(),
-            xAxis: Joi.any(),
-            yAxis: Joi.any(),
-            filter: searchFilterSchema,
-        }),
-    ),
+    body: Joi.object({
+        childTemplateId: Joi.string(),
+        chartsData: Joi.array()
+            .items(
+                Joi.object({
+                    _id: Joi.string(),
+                    xAxis: Joi.any(),
+                    yAxis: Joi.any(),
+                    filter: searchFilterSchema,
+                }),
+            )
+            .required(),
+    }),
     query: {},
     params: {
         templateId: Joi.string().required(),
@@ -225,29 +212,52 @@ const semanticSearchResult = Joi.object().pattern(
     ),
 );
 
-// /**
-//  * POST /api/instances/entities/delete/bulk
-//  */
-const baseDeleteSchema = Joi.object({
-    selectAll: Joi.boolean().required(),
-    templateId: Joi.string().required(),
-    deleteAllRelationships: Joi.boolean(),
-});
-
-const selectAllSchema = baseDeleteSchema.keys({
-    selectAll: Joi.valid(true).required(),
+// * search body for multiple select
+const selectAllSchema = Joi.object({
     idsToExclude: Joi.array().items(Joi.string()),
     filter: searchFilterSchema,
     textSearch: Joi.string().allow(''),
 });
 
-const specificIdsSchema = baseDeleteSchema.keys({
-    selectAll: Joi.valid(false).required(),
+const specificIdsSchema = Joi.object({
     idsToInclude: Joi.array().items(Joi.string()).min(1).required(),
 });
 
+const multipleSelectSchema = Joi.object({
+    selectAll: Joi.boolean().required(),
+}).when(Joi.object({ selectAll: Joi.valid(true) }).unknown(), {
+    then: selectAllSchema,
+    otherwise: specificIdsSchema,
+});
+
+// /**
+//  * POST /api/instances/entities/delete/bulk
+//  */
+const baseDeleteSchema = Joi.object({
+    templateId: Joi.string().required(),
+    deleteAllRelationships: Joi.boolean(),
+    selectAll: Joi.boolean().required(),
+    childTemplateId: Joi.string().optional(),
+});
+
 export const deleteEntitiesByIdsRequestSchema = Joi.object({
-    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
+    body: baseDeleteSchema.concat(multipleSelectSchema),
+    query: {},
+    params: {},
+});
+
+// /**
+//  * POST /api/instances/entities/get/multiple-select
+//  */
+
+const baseUpdateSchema = Joi.object({
+    templateId: Joi.string().required(),
+    selectAll: Joi.boolean().required(),
+    showRelationships: Joi.boolean().default(false),
+});
+
+export const getSelectedEntitiesRequestSchema = Joi.object({
+    body: baseUpdateSchema.concat(multipleSelectSchema),
     query: {},
     params: {},
 });
@@ -271,6 +281,18 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
         semanticSearchResult,
+    },
+    query: {},
+    params: {},
+});
+
+/*
+ * POST /api/instances/entities/count/user-entity-id
+ */
+export const countEntitiesOfTemplatesByUserEntityIdRequestSchema = Joi.object({
+    body: {
+        templateIds: Joi.array().items(Joi.string()).required(),
+        userEntityId: Joi.string().required(),
     },
     query: {},
     params: {},
@@ -347,8 +369,10 @@ export const updateEntityByIdRequestSchema = Joi.object({
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        userId: Joi.string().required(),
+        userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
+        updateOnlyGivenProps: Joi.boolean().default(false),
+        childTemplateId: Joi.string().optional(),
     },
     query: {},
     params: {
@@ -426,4 +450,10 @@ export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
     params: {
         templateId: Joi.string().required(),
     },
+});
+
+export const runRulesWithTodayFuncRequestSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
 });

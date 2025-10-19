@@ -1,8 +1,8 @@
 import axios from 'axios';
 
+import { IEntityTemplate, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalService from '../../utils/externalService';
-import { IEntityTemplate, ISearchEntityTemplatesBody } from './interfaces';
 
 const {
     templateService: {
@@ -12,12 +12,12 @@ const {
     },
 } = config;
 
-export class TemplateManagerService extends DefaultExternalService {
+class TemplateManagerService extends DefaultExternalService {
     constructor(workspaceId: string) {
         super(workspaceId, axios.create({ baseURL: url, timeout }));
     }
 
-    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}): Promise<IEntityTemplate[]> {
+    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}): Promise<IMongoEntityTemplate[]> {
         const { data } = await this.api.post(`${baseRoute}${searchTemplatesRoute}`, body);
         return data;
     }
@@ -27,3 +27,5 @@ export class TemplateManagerService extends DefaultExternalService {
         return data;
     }
 }
+
+export default TemplateManagerService;

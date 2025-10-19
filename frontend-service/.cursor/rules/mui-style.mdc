@@ -1,0 +1,15 @@
+---
+description: MUI theming & component-usage conventions
+globs: 
+alwaysApply: false
+---
+
+## Theming
+1. Define a single `src/theme.ts` exporting `createTheme({ palette, typography, components })`.  
+2. Wrap `<App />` with `<ThemeProvider theme={theme}>`.  
+3. Override component variants via the `components` key—not ad-hoc `sx`—to keep consistency. :contentReference[oaicite:4]{index=4}  
+
+## Component rules
+* Always use `@mui/material` imports (tree-shakable).  
+* Prefer `sx` prop for **one-off tweaks**; escalate to `styled()` or theme overrides when reuse is likely. :contentReference[oaicite:5]{index=5}  
+* Keep iconography consistent with `@mui/icons-material`; alias at import (`import { FilterList as FilterIcon }`).  

@@ -1,13 +1,7 @@
 import { Router } from 'express';
-import {
-    createWorkspacesController,
-    translateWorkspaceParameter,
-    translateWorkspaceParameterFlow,
-    translateWorkspaceParameterFlowColumns,
-    wrapMiddleware,
-} from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
-import { InstancesValidator } from '../instances/middlewares';
+import { createController, wrapMiddleware, ValidateRequest } from '@microservices/shared';
+import { translateWorkspaceParameter, translateWorkspaceParameterFlow, translateWorkspaceParameterFlowColumns } from '../../utils/express';
+import InstancesValidator from '../instances/middlewares';
 import FlowCubeController from './controller';
 import {
     getEntityTemplateByIdSchema,
@@ -20,8 +14,8 @@ import {
 import validateFlowHeaders from './flowMiddleware';
 
 const FlowCubeRouter: Router = Router();
-const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
-const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
+const FlowCubeControllerMiddleware = createController(FlowCubeController);
+const InstancesValidatorMiddleware = createController(InstancesValidator, true);
 
 // entities
 FlowCubeRouter.post(

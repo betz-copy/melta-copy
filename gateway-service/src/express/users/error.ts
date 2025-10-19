@@ -1,9 +1,9 @@
+import { ServiceError } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import { ServiceError } from '../error';
 
-export class DigitalIdentitySourceDoesNotExistsError extends ServiceError {
-    constructor(source: string, kartoffelId: string) {
-        super(StatusCodes.NOT_FOUND, `Digital identity source '${source}' does not exist for external user ${kartoffelId}`);
+export class ExternalUserNotFound extends ServiceError {
+    constructor(kartoffelId: string) {
+        super(StatusCodes.NOT_FOUND, `${kartoffelId} not found`);
     }
 }
 

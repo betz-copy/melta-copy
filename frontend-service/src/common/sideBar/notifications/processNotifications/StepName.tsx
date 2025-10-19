@@ -2,10 +2,10 @@ import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { getStepName } from '../../../../utils/processes';
-import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
-import { MeltaTooltip } from '../../../MeltaTooltip';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 
 interface StepNameProps {
     step: IMongoStepInstancePopulated | null;
@@ -14,6 +14,7 @@ interface StepNameProps {
 export const StepName: React.FC<StepNameProps> = ({ step }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const stepName = useMemo(() => (step ? getStepName(step.templateId, processTemplatesMap) : undefined), [step]);
 
     return (

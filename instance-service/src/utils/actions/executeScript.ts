@@ -1,15 +1,15 @@
+/* eslint-disable import/prefer-default-export */
 import * as ts from 'typescript-actions';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import { formatDate } from 'date-fns/format';
 import { isDate } from 'date-fns';
-import { IEntity, IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
+import { IMongoEntityTemplate, IEntity, ValidationError, BadRequestError, IChildTemplatePopulated } from '@microservices/shared';
+import { IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import { EntityValidator } from '../../express/entities/validator.template';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../config';
 import { generateInterfaceWithRelationships } from './interfaceGenerator';
-import { EntityManager } from '../../express/entities/manager';
-import { BadRequestError, ValidationError } from '../../express/error';
+import EntityManager from '../../express/entities/manager';
 
 const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;
 
@@ -29,6 +29,7 @@ const addDefaultFunctionsToActionCode = (
     entityTemplate: IMongoEntityTemplate,
     crudAction: IEntityCrudAction,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    childTemplate?: IChildTemplatePopulated,
 ) => {
     const defaultCode = `class CustomError extends Error {
            constructor(message: string) {
@@ -36,7 +37,7 @@ const addDefaultFunctionsToActionCode = (
                this.name = 'ACTIONS_CUSTOM_ERROR';
             }
         }
-        ${generateInterfaceWithRelationships(entitiesTemplatesByIds)}
+        ${generateInterfaceWithRelationships(entitiesTemplatesByIds, entityTemplate, childTemplate)}
         const actions: { entityId: string; properties: Record<string, any> }[] = [];
         function updateEntity(entityId: string, properties: Record<string, any>): void {
           actions.push({ entityId, properties });
@@ -64,7 +65,7 @@ const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
                 message: (error as Error).message,
             });
 
-        throw new ValidationError(`Error executing VM code  of actions: ${error}`);
+        throw new ValidationError(`Error executing VM code of actions: ${error}`);
     }
 };
 
@@ -96,10 +97,9 @@ const manipulateOnExecutionOutput = async (
 
                 const propertyValue = properties[name];
 
-                if (value.format === 'relationshipReference') {
+                if (value.format === 'relationshipReference')
                     entityAfterManipulations.properties[name] =
-                        typeof propertyValue === 'object' ? propertyValue._id : currentEntity.properties[name].properties._id;
-                }
+                        typeof propertyValue === 'object' && propertyValue._id ? propertyValue._id : currentEntity.properties[name].properties._id;
 
                 if (value.format === 'date-time' && isDate(propertyValue)) entityAfterManipulations.properties[name] = propertyValue.toISOString();
 
@@ -108,6 +108,8 @@ const manipulateOnExecutionOutput = async (
 
                 if (value.serialCurrent && currentEntity.properties[name] !== propertyValue)
                     throw new ValidationError("can't change serial number properties");
+
+                if (value.format === 'location') entityAfterManipulations.properties[name] = JSON.stringify(propertyValue);
             });
 
             entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);
@@ -126,9 +128,10 @@ export const executeActionCodeAndGetEntitiesToUpdate = (
     transaction: Transaction,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
     workspaceId: string,
+    childTemplate?: IChildTemplatePopulated,
 ): Promise<IExecutionOutput[]> => {
     const fixedEntity = getPopulatedRelationshipReferencesFields(entity);
-    const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds);
+    const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds, childTemplate);
 
     const executionOutput = executeActionCodeInVM(fixedEntity, jsCode);
 

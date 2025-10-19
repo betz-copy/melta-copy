@@ -1,9 +1,9 @@
-import React from 'react';
-import { Card, CardHeader, Grid, IconButton } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import { Card, CardHeader, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import { BlueTitle } from '../../BlueTitle';
+import React from 'react';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
+import BlueTitle from '../../MeltaDesigns/BlueTitle';
 
 interface EntityCardProps {
     customActionButton?: {

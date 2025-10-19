@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
-import { IMongoEntityTemplate } from './interface';
+import { fetchPropertyFromRequest, DefaultController, IMongoEntityTemplate } from '@microservices/shared';
 import { EntityTemplateManager } from './manager';
-import { fetchPropertyFromRequest } from '../../utils/express';
 
 class EntityTemplateController extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
@@ -11,6 +9,10 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
 
     async searchEntityTemplates(req: Request, res: Response) {
         res.json(await this.manager.getTemplates(req.body));
+    }
+
+    async searchEntityTemplatesIncludesFormat(req: Request, res: Response) {
+        res.json(await this.manager.getTemplatesByFormat(req.body));
     }
 
     async getEntityTemplateById(req: Request, res: Response) {

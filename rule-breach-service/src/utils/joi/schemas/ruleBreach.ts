@@ -1,6 +1,6 @@
 import * as joi from 'joi';
+import { ActionTypes } from '@microservices/shared';
 import { mongoIdSchema } from '.';
-import { ActionTypes } from '../../interfaces/actionMetadata';
 import { validateActionMetadata } from '../validateActionMetadata';
 
 const causesOfInstanceSchema = joi.object({
@@ -24,13 +24,14 @@ export const brokenRuleSchema = joi.object({
             entityId: joi.string().required(),
             causes: joi.array().items(causesOfInstanceSchema).required(),
         })
+        .min(1)
         .required(),
 });
 
 export const brokenRulesSchema = joi.array().items(brokenRuleSchema).min(1);
 
 export const ruleBreachSchema = joi.object({
-    originUserId: mongoIdSchema.required(),
+    originUserId: mongoIdSchema.allow(null).required(),
     brokenRules: brokenRulesSchema.required(),
     actions: joi.array().items({
         actionType: joi

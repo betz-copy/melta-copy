@@ -1,56 +1,80 @@
-import { InstancesService } from '../../externalServices/instanceService';
-import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import {
+    ChartItem,
     ChartsAndGenerator,
+    DashboardItemType,
     IAxisField,
     IChart,
     IChartBody,
-    IMongoChart,
+    IChartPermission,
     IChartType,
+    IChildTemplatePopulated,
     IColumnOrLineMetaData,
-    IPermission,
+    IMongoChart,
+    IMongoEntityTemplatePopulated,
     IPieMetaData,
-    ChartService,
-} from '../../externalServices/dashboardService/chartService';
-import TemplatesManager from '../templates/manager';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
-import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+    ISubCompactPermissions,
+} from '@microservices/shared';
+import ChartService from '../../externalServices/dashboardService/chartService';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
+import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
+import TemplatesManager from '../templates/manager';
 
-export class ChartManager extends DefaultManagerProxy<ChartService> {
+class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
 
     private templateManager: TemplatesManager;
+
+    private DashboardItemService: DashboardItemService;
 
     constructor(workspaceId: string) {
         super(new ChartService(workspaceId));
         this.instanceService = new InstancesService(workspaceId);
         this.templateManager = new TemplatesManager(workspaceId);
+        this.DashboardItemService = new DashboardItemService(workspaceId);
     }
 
     async getChartById(chartId: string) {
-        return this.service.getChartById(chartId);
+        const chart = await this.service.getChartById(chartId);
+        const dashboardChartsItems = await this.DashboardItemService.getDashboardRelatedItems([chartId]);
+        const usedInDashboard = (dashboardChartsItems[chartId] ?? []).length > 0;
+
+        return { ...chart, usedInDashboard };
     }
 
     hasPermissionToRelatedTemplate(
         field: IAxisField,
-        allowedEntityTemplates: IMongoEntityTemplatePopulated[],
-        chartEntityTemplate?: IMongoEntityTemplatePopulated,
+        allowedEntityTemplates: (IChildTemplatePopulated | IMongoEntityTemplatePopulated)[],
+        chartEntityTemplate?: IChildTemplatePopulated | IMongoEntityTemplatePopulated,
+        isChildTemplate?: boolean,
     ) {
         if (typeof field === 'string') {
             const propertyTemplate = chartEntityTemplate?.properties.properties[field];
             if (propertyTemplate?.format === 'relationshipReference') {
-                const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                return allowedEntityTemplates?.some((allowedEntityTemplate) => allowedEntityTemplate._id === relatedTemplateId);
+                const { relatedTemplateId } = propertyTemplate.relationshipReference!;
+
+                return allowedEntityTemplates.some((template) =>
+                    isChildTemplate
+                        ? (template as IChildTemplatePopulated).parentTemplate._id === relatedTemplateId
+                        : (template as IMongoEntityTemplatePopulated)._id === relatedTemplateId,
+                );
             }
         }
 
         return true;
     }
 
-    async validateAllowedRelatedTemplate(userId: string, permissionsOfUserId: ISubCompactPermissions, { type, metaData, templateId }: IChart) {
+    async validateAllowedRelatedTemplate(
+        userId: string,
+        permissionsOfUserId: ISubCompactPermissions,
+        { type, metaData, templateId, childTemplateId }: IChart,
+    ) {
         const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
+        const allowedChildTemplates = await this.templateManager.getAllowedChildEntitiesTemplates(permissionsOfUserId);
+
         const chartEntityTemplate = allowedEntityTemplates.find((template) => template._id === templateId);
+        const chartChildTemplate = allowedChildTemplates.find((template) => template.parentTemplate._id === templateId);
 
         switch (type) {
             case IChartType.Column:
@@ -59,12 +83,22 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
                     xAxis: { field },
                 } = metaData as IColumnOrLineMetaData;
 
-                return this.hasPermissionToRelatedTemplate(field, allowedEntityTemplates, chartEntityTemplate);
+                return this.hasPermissionToRelatedTemplate(
+                    field,
+                    [...allowedChildTemplates, ...allowedEntityTemplates],
+                    childTemplateId ? chartChildTemplate : chartEntityTemplate,
+                    !!childTemplateId,
+                );
             }
             case IChartType.Pie: {
                 const { dividedByField } = metaData as IPieMetaData;
 
-                return this.hasPermissionToRelatedTemplate(dividedByField, allowedEntityTemplates, chartEntityTemplate);
+                return this.hasPermissionToRelatedTemplate(
+                    dividedByField,
+                    [...allowedChildTemplates, ...allowedEntityTemplates],
+                    childTemplateId ? chartChildTemplate : chartEntityTemplate,
+                    !!childTemplateId,
+                );
             }
 
             default:
@@ -76,7 +110,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         const chartPermissionChecks = await Promise.all(
             charts.map(async (chart) => {
                 const hasPermission =
-                    chart.permission === IPermission.Protected || (chart.permission === IPermission.Private && userId === chart.createdBy);
+                    chart.permission === IChartPermission.Protected || (chart.permission === IChartPermission.Private && userId === chart.createdBy);
 
                 const isAllowedRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chart);
 
@@ -87,46 +121,76 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return chartPermissionChecks.filter((chart): chart is IMongoChart => chart !== null);
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string) {
-        return this.service.getChartsByTemplateId(templateId, textSearch);
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string) {
+        return this.service.getChartsByTemplateId(templateId, textSearch, childTemplateId);
+    }
+
+    async generateCharts(allowedCharts: IMongoChart[], templateId: string, childTemplateId?: string) {
+        const chartsData: IChartBody[] = allowedCharts.map(({ _id, type, metaData, filter }) => ({
+            _id,
+            ...getMetaDataAxes(type, metaData, filter),
+        }));
+
+        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData, childTemplateId);
+
+        const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
+
+        const dashboardChartsItems =
+            allowedCharts.length > 0 ? await this.DashboardItemService.getDashboardRelatedItems(allowedCharts.map(({ _id }) => _id)) : {};
+
+        const generatedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
+            ...chart,
+            usedInDashboard: (dashboardChartsItems[chart._id] ?? []).length > 0,
+            chart: generatedChartsMap.get(chart._id.toString())!,
+        }));
+
+        return generatedAndDataCharts;
     }
 
     async getChartsOfTemplateId(
         templateId: string,
         userId: string,
         permissionsOfUserId: ISubCompactPermissions,
-        textSearch?: string,
+        { textSearch, childTemplateId }: { textSearch?: string; childTemplateId?: string },
     ): Promise<ChartsAndGenerator[]> {
-        const charts = await this.getChartsByTemplateId(templateId, textSearch);
+        const charts = await this.getChartsByTemplateId(templateId, textSearch, childTemplateId);
 
         const allowedCharts = await this.getChartsWithPermissions(charts, userId, permissionsOfUserId);
 
-        const chartsData: IChartBody[] = allowedCharts.map(({ _id, type, metaData, filter }) => ({
-            _id,
-            ...getMetaDataAxes(type, metaData, filter),
-        }));
+        const generatedAndDataCharts = await this.generateCharts(allowedCharts, templateId, childTemplateId);
 
-        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData);
-
-        const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
-
-        const GeneratedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
-            ...chart,
-            chart: generatedChartsMap.get(chart._id.toString())!,
-        }));
-
-        return GeneratedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        return generatedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
-    async createChart(chartData: IChart) {
-        return this.service.createChart(chartData);
+    async searchChartByUserId(templateId: string, userId: string, body: { textSearch?: string; childTemplateId?: string }) {
+        const { textSearch, childTemplateId } = body;
+        const charts = await this.getChartsByTemplateId(templateId, textSearch, childTemplateId);
+
+        return charts.filter((chart) => chart.createdBy === userId && chart.permission === IChartPermission.Protected);
     }
 
-    async updateChart(chartId: string, updatedChart: IChart) {
+    async createChart(chartData: IChart, toDashboard: boolean = false) {
+        const createdChart = await this.service.createChart(chartData);
+
+        if (toDashboard)
+            await this.DashboardItemService.createDashboardItem({ type: DashboardItemType.Chart, metaData: createdChart._id } as ChartItem);
+
+        return createdChart;
+    }
+
+    async updateChart(chartId: string, updatedChart: IChart, deleteReferenceDashboardItems: boolean = false) {
+        if (deleteReferenceDashboardItems) {
+            await this.DashboardItemService.deleteDashboardItemByRelatedItem(chartId);
+        }
         return this.service.updateChart(chartId, updatedChart);
     }
 
-    async deleteChart(chartId: string) {
+    async deleteChart(chartId: string, deleteReferenceDashboardItems: boolean = false) {
+        if (deleteReferenceDashboardItems) {
+            await this.DashboardItemService.deleteDashboardItemByRelatedItem(chartId);
+        }
         return this.service.deleteChart(chartId);
     }
 }
+
+export default ChartManager;

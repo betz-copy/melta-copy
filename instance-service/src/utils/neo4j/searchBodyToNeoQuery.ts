@@ -1,13 +1,22 @@
+import {
+    FilterLogicalOperator,
+    IEntitySingleProperty,
+    IFilterGroup,
+    IFilterOfField,
+    IFilterOfTemplate,
+    IMongoEntityTemplate,
+    ISearchBatchBody,
+} from '@microservices/shared';
+import { fromZonedTime } from 'date-fns-tz';
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
-import { IMongoEntityTemplate, IEntitySingleProperty } from '../../externalServices/templates/interfaces/entityTemplates';
-import { getNeo4jDate, getNeo4jDateTime } from './lib';
-import { ISearchBatchBody, IFilterOfField, ISearchFilter, IFilterOfTemplate } from '../../express/entities/interface';
 import config from '../../config';
-import { addDefaultFieldsToTemplate } from '../addDefaultsFieldsToEntityTemplate';
+import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';
+import { getNeo4jDate, getNeo4jDateTime } from './lib';
 
 const {
     neo4j: { specialCharsToEscapeNeo4jQuery },
+    timezone,
 } = config;
 
 export const escapeRegExp = (text: string) => {
@@ -21,6 +30,54 @@ export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
 };
 
 export type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
+
+const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
+    // fromZonedTime is used because for all non-relative date filters are in UTC, but new Date() is in Israel time
+    const today: Date = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const setToEndOfDay = (date: Date) => {
+        if (isDateTime) date.setHours(23, 59, 59, 999);
+
+        return convertToTimeZone(date);
+    };
+
+    const convertToTimeZone = (date: Date) => {
+        if (isDateTime) return fromZonedTime(date, timezone);
+
+        return date;
+    };
+
+    switch (rhs) {
+        case 'thisWeek': {
+            const dayOfWeek = today.getDay();
+            const firstDay = new Date(today);
+            firstDay.setDate(today.getDate() - dayOfWeek);
+            const lastDay = new Date(firstDay);
+            lastDay.setDate(firstDay.getDate() + 6);
+
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        case 'thisMonth': {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        case 'thisYear': {
+            const firstDay = new Date(today.getFullYear(), 0, 1);
+            const lastDay = new Date(today.getFullYear(), 11, 31);
+
+            return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        default: {
+            return new Date(rhs as string);
+        }
+    }
+};
 
 const simplePartFilterOfFieldToNeoQuery = (
     field: string,
@@ -41,9 +98,9 @@ const simplePartFilterOfFieldToNeoQuery = (
 
     let rhsParamValue: boolean | string | number | Neo4jDate<number> | Neo4jDateTime<number> | null;
     if (rhs && fieldTemplate.format === 'date') {
-        rhsParamValue = getNeo4jDate(new Date(rhs as string));
+        rhsParamValue = getNeo4jDate(convertRhsToRelativeDate(operator, rhs));
     } else if (rhs && fieldTemplate.format === 'date-time') {
-        rhsParamValue = getNeo4jDateTime(new Date(rhs as string));
+        rhsParamValue = getNeo4jDateTime(convertRhsToRelativeDate(operator, rhs, true));
     } else {
         rhsParamValue = rhs;
     }
@@ -156,6 +213,18 @@ const inFilterOfArrayField = (field: string, rhs: NonNullable<IFilterOfField['$i
     const rhsParamName = 'rhs';
     const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
 
+    if (rhs.includes(null))
+        return {
+            cypherQuery: `
+            (
+                (node.${field} IS NULL AND $${rhsParamPath} IS NOT NULL) OR 
+                size([rhsItem IN $${rhsParamPath} WHERE rhsItem IS NOT NULL AND rhsItem IN node.${field}]) > 0 OR
+                (any(rhsItem IN $${rhsParamPath} WHERE rhsItem IS NULL) AND any(item IN node.${field} WHERE item IS NULL))
+            )
+            `,
+            parameters: { [rhsParamName]: rhs.filter((rhsItem) => rhsItem !== null) },
+        };
+
     return { cypherQuery: `size([rhsItem IN $${rhsParamPath} WHERE rhsItem IN node.${field}]) > 0`, parameters: { [rhsParamName]: rhs } };
 };
 
@@ -235,6 +304,19 @@ const filterOfFieldToNeoQuery = (
             default:
                 throw new Error(`missing implementation for filter type "${filterType}" of filter of field`);
         }
+
+        if (fieldTemplate.format === 'user') {
+            const userIdFilterString = simplePartFilterOfFieldToNeoQuery(
+                `\`${field}.id_userField\``,
+                filterType as '$eq' | '$ne' | '$rgx' | '$gt' | '$gte' | '$lt' | '$lte' | '$not',
+                filterRhs,
+                `${parametersParentVariableName}.\`${filterType}\``,
+                fieldTemplate,
+            );
+
+            partFilterOfFieldQuery.cypherQuery = `(${partFilterOfFieldQuery.cypherQuery}) OR (${userIdFilterString.cypherQuery})`;
+        }
+
         return { cypherQuery: partFilterOfFieldQuery.cypherQuery, parameters: { [filterType]: partFilterOfFieldQuery.parameters } };
     });
 
@@ -247,25 +329,29 @@ const filterOfFieldToNeoQuery = (
 };
 
 const filterOfTemplateToNeoQuery = (
-    filterOfTemplate: IFilterOfTemplate,
+    filterOfTemplate: IFilterGroup,
     parametersParentVariableName: string,
     entityTemplate: IMongoEntityTemplate,
 ): CypherQueryWithParameters => {
     const fieldsNeoQueries: CypherQueryWithParameters[] = Object.entries(filterOfTemplate)
         .filter(([_field, filterOfField]) => Boolean(filterOfField))
-        .map(([field, filterOfField]) => {
+        .map(([filterKey, filterOfField]) => {
+            if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
+                // eslint-disable-next-line no-use-before-define
+                return filterLogicalOperatorsToNeoQuery(filterKey, filterOfField, parametersParentVariableName, entityTemplate);
+            }
+
             const filterOfFieldQuery = filterOfFieldToNeoQuery(
-                field,
+                filterKey,
                 filterOfField!,
-                `${parametersParentVariableName}.${field}`,
-                entityTemplate.properties.properties[field],
+                `${parametersParentVariableName}.${filterKey}`,
+                entityTemplate.properties.properties[filterKey],
             );
             return {
                 cypherQuery: filterOfFieldQuery.cypherQuery,
-                parameters: { [field]: filterOfFieldQuery.parameters },
+                parameters: { [filterKey]: filterOfFieldQuery.parameters },
             };
         });
-
     return {
         cypherQuery: fieldsNeoQueries.map((fieldNeoQuery) => `(${fieldNeoQuery.cypherQuery})`).join(' AND '),
         parameters: fieldsNeoQueries
@@ -274,51 +360,31 @@ const filterOfTemplateToNeoQuery = (
     };
 };
 
-const filterToNeoQuery = (
-    filter: ISearchFilter,
+const filterLogicalOperatorsToNeoQuery = (
+    field: FilterLogicalOperator,
+    filterOfField: IFilterOfTemplate | IFilterGroup[],
     parametersParentVariableName: string,
     entityTemplate: IMongoEntityTemplate,
-): CypherQueryWithParameters => {
-    const { $or, $and } = filter;
-
-    let andQuery: CypherQueryWithParameters | null = null;
-    if (Array.isArray($and)) {
-        const andNeoQueries = $and.map((currFilterOfTemplate, i) =>
-            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$and\`[${i}]`, entityTemplate),
+) => {
+    if (Array.isArray(filterOfField)) {
+        const queries = filterOfField.map((currFilterOfTemplate, i) =>
+            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`${field}\`[${i}]`, entityTemplate),
         );
-        andQuery = {
-            cypherQuery: andNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' AND '),
-            parameters: {
-                $and: andNeoQueries.map(({ parameters }) => parameters),
-            },
-        };
-    } else if ($and) {
-        const andSingleQuery = filterOfTemplateToNeoQuery($and, `${parametersParentVariableName}.\`$and\``, entityTemplate);
-        andQuery = {
-            cypherQuery: andSingleQuery.cypherQuery,
-            parameters: { $and: andSingleQuery.parameters },
-        };
-    }
 
-    let orQuery: CypherQueryWithParameters | null = null;
-    if ($or) {
-        const orNeoQueries = $or.map((currFilterOfTemplate, i) =>
-            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$or\`[${i}]`, entityTemplate),
-        );
-        orQuery = {
-            cypherQuery: orNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
+        const logicalOperator = field === FilterLogicalOperator.AND ? ' AND ' : ' OR ';
+
+        return {
+            cypherQuery: queries.map(({ cypherQuery }) => `(${cypherQuery})`).join(logicalOperator),
             parameters: {
-                $or: orNeoQueries.map(({ parameters }) => parameters),
+                [field]: queries.map(({ parameters }) => parameters),
             },
         };
     }
 
-    const andCypherQuery = andQuery ? `(${andQuery.cypherQuery})` : '';
-    const orCypherQuery = orQuery ? `(${orQuery.cypherQuery})` : '';
-
+    const andSingleQuery = filterOfTemplateToNeoQuery(filterOfField, `${parametersParentVariableName}.\`$and\``, entityTemplate);
     return {
-        cypherQuery: `${andCypherQuery}${andQuery && orQuery ? 'AND' : ''}${orCypherQuery}`,
-        parameters: { ...andQuery?.parameters, ...orQuery?.parameters },
+        cypherQuery: andSingleQuery.cypherQuery,
+        parameters: { $and: andSingleQuery.parameters },
     };
 };
 
@@ -333,11 +399,18 @@ export const templatesFilterToNeoQuery = (
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
         }
 
-        const filterOfTemplateQuery = filterToNeoQuery(
-            filter,
+        const field = filter?.$and ? FilterLogicalOperator.AND : FilterLogicalOperator.OR;
+
+        const filterOfTemplateQuery = filterLogicalOperatorsToNeoQuery(
+            field,
+            filter[field]!,
             `${filterParamsVariableName}["${templateId}"]`,
             addDefaultFieldsToTemplate(entityTemplatesMap.get(templateId)!),
         );
+
+        if (!filterOfTemplateQuery.cypherQuery) {
+            return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
+        }
 
         return {
             cypherQuery: `node:\`${templateId}\` AND (${filterOfTemplateQuery.cypherQuery})`,
@@ -359,7 +432,7 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
     return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
-const buildFulltextSearchQuery = (
+const buildFullTextSearchQuery = (
     searchBody: ISearchBatchBody,
     filterQuery: { cypherQuery: string; parameters: any },
     indexHandling: string,
@@ -367,6 +440,7 @@ const buildFulltextSearchQuery = (
     calculateOverallCount: boolean,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
+    userEntityId?: string,
 ) => {
     const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
     const entityIdMatch = entityIdsToInclude?.length
@@ -385,6 +459,13 @@ const buildFulltextSearchQuery = (
         `
         : '';
 
+    const userEntityIdMatch = userEntityId
+        ? `
+        MATCH (node)-[relationship]-(otherEntity)
+        WHERE otherEntity._id = $userEntityId
+        `
+        : '';
+
     if (calculateOverallCount) {
         return {
             cypherQuery: `
@@ -396,6 +477,7 @@ const buildFulltextSearchQuery = (
                     ${entityIdMatch}
                 }
                 ${entityIdExclude}
+                ${userEntityIdMatch} 
                 RETURN count(node)
             `,
             parameters: {
@@ -404,6 +486,7 @@ const buildFulltextSearchQuery = (
                 ...filterQuery.parameters,
                 ...(entityIdsToInclude?.length && { entityIdsToInclude }),
                 ...(entityIdsToExclude?.length && { entityIdsToExclude }),
+                ...(userEntityId && { userEntityId }),
             },
         };
     }
@@ -440,12 +523,13 @@ const buildFulltextSearchQuery = (
 };
 
 // TODO clean code
-const fulltextSearchToNeoQuery = (
+const fullTextSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     prefixIndexName: string,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
+    userEntityId?: string,
     calculateOverallCount = false,
 ) => {
     const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
@@ -459,7 +543,7 @@ const fulltextSearchToNeoQuery = (
         latestIndex,
     };
 
-    return buildFulltextSearchQuery(
+    return buildFullTextSearchQuery(
         searchBody,
         filterQuery,
         indexHandling,
@@ -467,10 +551,11 @@ const fulltextSearchToNeoQuery = (
         calculateOverallCount,
         entityIdsToInclude,
         entityIdsToExclude,
+        userEntityId,
     );
 };
 
-const fulltextBatchSearchToNeoQuery = (
+const fullTextBatchSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     entityIdsToInclude?: string[],
@@ -490,7 +575,7 @@ const fulltextBatchSearchToNeoQuery = (
         indexNames: globalSearchIndexes,
     };
 
-    return buildFulltextSearchQuery(
+    return buildFullTextSearchQuery(
         searchBody,
         filterQuery,
         indexHandling,
@@ -506,28 +591,31 @@ const searchToNeoQuery = (
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
+    userEntityId?: string,
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
     if (globalSearchIndexes.length === 0)
-        return fulltextSearchToNeoQuery(
+        return fullTextSearchToNeoQuery(
             searchBody,
             entityTemplatesMap,
             config.neo4j.templateSearchIndexPrefix,
             entityIdsToInclude,
             entityIdsToExclude,
+            userEntityId,
             calculateOverallCount,
         );
     if (globalSearchIndexes.length === 1)
-        return fulltextSearchToNeoQuery(
+        return fullTextSearchToNeoQuery(
             searchBody,
             entityTemplatesMap,
             config.neo4j.globalSearchIndexPrefix,
             entityIdsToInclude,
             entityIdsToExclude,
+            userEntityId,
             calculateOverallCount,
         );
-    return fulltextBatchSearchToNeoQuery(
+    return fullTextBatchSearchToNeoQuery(
         searchBody,
         entityTemplatesMap,
         entityIdsToInclude,
@@ -543,13 +631,29 @@ export const searchWithRelationshipsToNeoQuery = (
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
-    const { entityIdsToInclude, entityIdsToExclude, ...restOfSearchBody } = searchBody;
+    const { entityIdsToInclude, entityIdsToExclude, userEntityId, ...restOfSearchBody } = searchBody;
 
     if (calculateOverallCount) {
-        return searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, entityIdsToExclude, true, globalSearchIndexes);
+        return searchToNeoQuery(
+            restOfSearchBody,
+            entityTemplatesMap,
+            entityIdsToInclude,
+            entityIdsToExclude,
+            userEntityId,
+            true,
+            globalSearchIndexes,
+        );
     }
 
-    const searchNeoQuery = searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, entityIdsToExclude, false, globalSearchIndexes);
+    const searchNeoQuery = searchToNeoQuery(
+        restOfSearchBody,
+        entityTemplatesMap,
+        entityIdsToInclude,
+        entityIdsToExclude,
+        userEntityId,
+        false,
+        globalSearchIndexes,
+    );
 
     const showRelationshipsPerTemplate = mapValues(restOfSearchBody.templates, ({ showRelationships }) => ({
         shouldShowRelationships: Boolean(showRelationships),
@@ -566,20 +670,22 @@ export const searchWithRelationshipsToNeoQuery = (
         WITH node, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
         
         OPTIONAL MATCH (node)-[relationship]-(otherEntity)
-        WHERE shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
+        
+        WHERE ${userEntityId ? `otherEntity._id = $userEntityId OR` : ''} shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
 
-        WITH node, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities
-        WITH node, relationships, otherEntities, CASE
+        WITH node, otherEntity, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities
+        WITH node, otherEntity, relationships, otherEntities, CASE
         WHEN NOT shouldShowRelationships THEN NULL
         WHEN size(relationships) = 0 then []
+        ${userEntityId ? `WHEN otherEntity._id = $userEntityId THEN relationships` : ''} 
         ELSE [i IN range(0, size(relationships) - 1) | {relationship: relationships[i], otherEntity: otherEntities[i]}]
         END as relationshipsList
-
         RETURN node, relationshipsList AS relationships
         `,
         parameters: {
             ...searchNeoQuery.parameters,
             showRelationshipsPerTemplate,
+            ...(userEntityId && { userEntityId }),
         },
     };
 };

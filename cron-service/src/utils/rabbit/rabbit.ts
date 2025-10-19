@@ -1,14 +1,18 @@
 import { menash } from 'menashmq';
+import { INotificationMetadata, NotificationType } from '@microservices/shared';
 import config from '../../config';
-import { INotificationMetadata, NotificationType } from '../../notification/interface';
 
 const {
     rabbit,
     service: { workspaceIdHeaderName },
 } = config;
 
-export class RabbitManager {
-    constructor(private workspaceId: string) {}
+class RabbitManager {
+    private workspaceId: string;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+    }
 
     async createNotification<NotificationMetadata extends INotificationMetadata>(
         viewers: string[],
@@ -19,4 +23,10 @@ export class RabbitManager {
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
+
+    async runRulesWithTodayFuncQueue() {
+        return menash.send(rabbit.runRulesWithTodayFuncQueue, {}, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
+    }
 }
+
+export default RabbitManager;

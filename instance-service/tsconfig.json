@@ -1,26 +1,11 @@
 {
-  "compilerOptions": {
-    "target": "ES2019",
-    "module": "CommonJS",
-    "allowJs": false,
-    "sourceMap": true,
-    "removeComments": true,
-    "strict": true,
-    "noImplicitAny": false,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": false,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist/",
-    "esModuleInterop": true,
-    "lib": ["ES2020.Promise", "ESNext"]
-  },
-  "include": ["src/**/*"],
-  "exclude" : ["src/**/*.spec.ts", "src/**/*.mock.ts"]
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "paths": {
+            "@microservices/shared/*": ["./*/src"]
+        }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["src/**/*.spec.ts", "src/**/*.mock.ts"]
 }

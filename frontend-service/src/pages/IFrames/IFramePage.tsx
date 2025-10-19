@@ -37,9 +37,9 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFra
 
     return (
         <Grid container width="100%" height="100%" flexDirection="column" flexWrap="nowrap">
-            <Grid item>
+            <Grid>
                 <IFrameHeadline
-                    iFrame={iFrameData!}
+                    iFrame={iFrame ?? iFrameData!}
                     setIFramesOrder={setIFramesOrder}
                     isIFramePage={isIFramePage}
                     setIFrameDeleted={setIFrameDeleted}

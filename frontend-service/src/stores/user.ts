@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IUser } from '../interfaces/users';
+import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 
 export interface UserState {
     user: {
@@ -13,11 +13,14 @@ export interface UserState {
         };
         displayName: string;
         unit: string;
+        units?: Record<string, string[]>;
         rank: string;
         exp: number;
         iat: number;
 
         currentWorkspacePermissions: ISubCompactPermissions;
+        kartoffelId?: string;
+        clientSideWorkspaceId?: string;
     } & IUser;
     setUser: (user: UserState['user']) => void;
 }
@@ -44,10 +47,7 @@ export const useUserStore = create<UserState>((set) => ({
         mail: '',
         profile: '',
         preferences: {},
-        externalMetadata: {
-            kartoffelId: '',
-            digitalIdentitySource: '',
-        },
+        kartoffelId: '',
         permissions: {},
         currentWorkspacePermissions: {},
     },

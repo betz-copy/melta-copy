@@ -3,26 +3,30 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { useUserStore } from '../../../stores/user';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { CategoryWizard } from '../../../common/wizards/category';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { IMongoCategoryOrderConfig } from '../../../interfaces/config';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
-import { Box } from './Box';
-import { CardMenu } from './CardMenu';
-import { CreateButton } from './CreateButton';
+import { updateConfigCategoryOrderRequest } from '../../../services/templates/configService';
+import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { allowedCategories } from '../../../utils/permissions/templatePermissions';
+import { mapCategories } from '../../../utils/templates';
+import { Box } from './Box';
+import { ViewingCard } from './Card';
+import { CardMenu } from './CardMenu';
+import { CreateButton } from './CreateButton';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -81,19 +85,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
             width={250}
             title={
                 <Grid container direction="row" justifyContent="space-between" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
-                    <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                        <Grid item>
+                    <Grid container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid>
                             <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />
                         </Grid>
 
-                        <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        <Grid sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {category.iconFileId ? (
                                 <CustomIcon color={theme.palette.primary.main} iconUrl={category.iconFileId} height="24px" width="24px" />
                             ) : (
                                 <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="small" />
                             )}
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
@@ -111,7 +115,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             </MeltaTooltip>
                         </Grid>
                     </Grid>
-                    <Grid item container flexBasis="10%">
+                    <Grid container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
@@ -138,6 +142,7 @@ const CategoriesRow: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const categoryOrder = queryClient.getQueryData<IMongoCategoryOrderConfig>('getCategoryOrder');
     const allowedCategoriesToShow = allowedCategories(categories, currentUser);
 
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
@@ -165,6 +170,17 @@ const CategoriesRow: React.FC = () => {
                 return data!;
             });
 
+            queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', (categoryConfig) => {
+                const { order } = categoryConfig!;
+                const index = order.indexOf(id);
+
+                if (index > -1) {
+                    order.splice(index, 1);
+                }
+
+                return { ...categoryConfig!, order };
+            });
+
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
             toast.success(i18next.t('wizard.category.deletedSuccessfully'));
         },
@@ -173,76 +189,143 @@ const CategoriesRow: React.FC = () => {
         },
     });
 
+    const { mutateAsync: changeOrder } = useMutation(
+        ({ categoryId, newIndex }: { categoryId: string; newIndex: number }) => {
+            return updateConfigCategoryOrderRequest(categoryOrder!._id, newIndex, categoryId);
+        },
+        {
+            onSuccess(data) {
+                queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', data);
+                queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(allowedCategoriesToShow, data.order));
+            },
+            onError(error: AxiosError) {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToEdit')} />);
+            },
+        },
+    );
+
+    const onDragEnd = (result: DropResult) => {
+        const { source, destination, draggableId } = result;
+        if (!destination) {
+            return;
+        }
+
+        if (source.droppableId === destination.droppableId && source.index !== destination.index) {
+            const { _id, ...restCategory } = categories.get(draggableId)!;
+            allowedCategoriesToShow.splice(source.index, 1);
+            allowedCategoriesToShow.splice(destination.index, 0, { _id, ...restCategory });
+
+            changeOrder({ categoryId: _id, newIndex: destination.index });
+        }
+    };
+
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const theme = useTheme();
 
     return (
-        <Grid item container gap="10px">
-            <Box
-                header={
-                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography
-                            style={{
-                                fontSize: headlineSubTitleFontSize,
-                                fontWeight: '400',
-                                color: '#9398C2',
-                            }}
-                        >
-                            {i18next.t('general')}
-                        </Typography>
-                        {isHoverOnBox && (
-                            <IconButton onClick={() => {}}>
-                                <Edit color="primary" />
-                            </IconButton>
-                        )}
-                    </Grid>
-                }
-                addingIcon={
-                    <CreateButton
-                        onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}
-                        text={i18next.t('systemManagement.newCategory')}
-                    />
-                }
-                onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
+        <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable
+                direction="vertical"
+                droppableId={workspace._id}
+                isDropDisabled={false}
+                isCombineEnabled={false}
+                ignoreContainerClipping={false}
             >
-                {allowedCategoriesToShow &&
-                    allowedCategoriesToShow.map((category) => (
-                        <CategoryCard
-                            key={category._id}
-                            category={category}
-                            setCategoryWizardDialogState={setCategoryWizardDialogState}
-                            setDeleteCategoryDialogState={setDeleteCategoryDialogState}
-                        />
-                    ))}
-            </Box>
+                {(provided) => (
+                    <Grid ref={provided.innerRef} {...provided.droppableProps}>
+                        <Grid container gap="10px">
+                            <Box
+                                header={
+                                    <Grid container justifyContent="space-between" alignItems="center" height="40px">
+                                        <Typography
+                                            style={{
+                                                fontSize: headlineSubTitleFontSize,
+                                                fontWeight: '400',
+                                                color: '#9398C2',
+                                            }}
+                                        >
+                                            {i18next.t('general')}
+                                        </Typography>
+                                        {isHoverOnBox && (
+                                            <IconButton onClick={() => {}}>
+                                                <Edit color="primary" />
+                                            </IconButton>
+                                        )}
+                                    </Grid>
+                                }
+                                addingIcon={
+                                    <CreateButton
+                                        onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}
+                                        text={i18next.t('systemManagement.newCategory')}
+                                    />
+                                }
+                                onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
+                            >
+                                {categories &&
+                                    allowedCategoriesToShow.map((category, index) => {
+                                        return (
+                                            <Draggable
+                                                draggableId={category._id}
+                                                key={category._id}
+                                                index={index}
+                                                isDragDisabled={
+                                                    !!(
+                                                        !currentUser.currentWorkspacePermissions.admin &&
+                                                        currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.scope ===
+                                                            PermissionScope.read
+                                                    )
+                                                }
+                                            >
+                                                {(draggableProvided) => (
+                                                    <Grid
+                                                        ref={draggableProvided.innerRef}
+                                                        {...draggableProvided.draggableProps}
+                                                        {...draggableProvided.dragHandleProps}
+                                                    >
+                                                        <CategoryCard
+                                                            key={category._id}
+                                                            category={category}
+                                                            setCategoryWizardDialogState={setCategoryWizardDialogState}
+                                                            setDeleteCategoryDialogState={setDeleteCategoryDialogState}
+                                                        />
+                                                    </Grid>
+                                                )}
+                                            </Draggable>
+                                        );
+                                    })}
+                            </Box>
 
-            {/* TODO - add when category group will be supported */}
-            <Grid>
-                <IconButtonWithPopover
-                    popoverText={i18next.t('soon')}
-                    style={{ display: 'flex', gap: '0.25rem', height: '40px', borderRadius: '5px', cursor: 'default', opacity: 0.5 }}
-                >
-                    <AddCircle color="primary" />
-                    <Typography color={theme.palette.primary.main} sx={{ fontSize: '0.9rem' }}>
-                        {i18next.t('systemManagement.newCollection')}
-                    </Typography>
-                </IconButtonWithPopover>
-            </Grid>
+                            {/* TODO - add when category group will be supported */}
+                            <Grid>
+                                <IconButtonWithPopover
+                                    popoverText={i18next.t('soon')}
+                                    style={{ display: 'flex', gap: '0.25rem', height: '40px', borderRadius: '5px', cursor: 'default', opacity: 0.5 }}
+                                >
+                                    <AddCircle color="primary" />
+                                    <Typography color={theme.palette.primary.main} sx={{ fontSize: '0.9rem' }}>
+                                        {i18next.t('systemManagement.newCollection')}
+                                    </Typography>
+                                </IconButtonWithPopover>
+                            </Grid>
 
-            <CategoryWizard
-                open={categoryWizardDialogState.isWizardOpen}
-                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
-                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
-                isEditMode={Boolean(categoryWizardDialogState.category)}
-            />
-            <AreYouSureDialog
-                open={deleteCategoryDialogState.isDialogOpen}
-                handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
-                onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
-                isLoading={isLoading}
-            />
-        </Grid>
+                            <CategoryWizard
+                                open={categoryWizardDialogState.isWizardOpen}
+                                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
+                                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
+                                isEditMode={Boolean(categoryWizardDialogState.category)}
+                            />
+                            <AreYouSureDialog
+                                open={deleteCategoryDialogState.isDialogOpen}
+                                handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
+                                onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
+                                isLoading={isLoading}
+                            />
+                        </Grid>
+                    </Grid>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 };
 
-export { CategoriesRow };
+export default CategoriesRow;

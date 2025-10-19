@@ -1,23 +1,29 @@
-import config from '../../config';
-import { IChartBody } from '../dashboardService/chartService';
-import { IMongoRule } from '../../express/templates/rules/interfaces';
-import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
-import { ISemanticSearchResult } from '../semanticSearch/interface';
-import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import {
+    IMongoRule,
+    IEntitySingleProperty,
+    IAction,
+    IBrokenRule,
     IConstraintsOfTemplate,
     ICountSearchResult,
-    IDeleteBody,
+    IDeleteEntityBody,
     IEntity,
+    IBulkOfActions,
     ISearchBatchBody,
-    ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-} from './interfaces/entities';
-import { IRelationship } from './interfaces/relationships';
+    IRelationship,
+    ISemanticSearchResult,
+    ISearchEntitiesByLocationBody,
+    IChartBody,
+    IMultipleSelect,
+    IEntityWithDirectRelationships,
+    IEntityExpanded,
+    IRuleMail,
+} from '@microservices/shared';
+import config from '../../config';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
     instanceService: {
@@ -32,7 +38,7 @@ const {
     },
 } = config;
 
-export class InstancesService extends DefaultExternalServiceApi {
+class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
@@ -64,22 +70,31 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
-        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
+    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
+        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
             duplicatedFromId,
+            childTemplateId,
         });
 
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
-        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
+    async updateEntityInstance(
+        id: string,
+        entity: IEntity,
+        ignoredRules: IBrokenRule[],
+        userId?: string,
+        childTemplateId?: string,
+        convertToRelationshipField = false,
+    ) {
+        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
+            childTemplateId,
             convertToRelationshipField,
         });
 
@@ -87,7 +102,7 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
-        const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
+        const { data } = await this.api.patch<object>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
             existingRelationships,
             addFieldToSrcEntity,
             fieldName,
@@ -103,7 +118,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         const { data } = await this.api.post<string[]>(`${baseEntitiesRoute}/delete/bulk`, deleteBody);
 
         return data;
@@ -111,6 +126,16 @@ export class InstancesService extends DefaultExternalServiceApi {
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async getEntitiesWithDirectRelationships(searchBody: IMultipleSelect<boolean>, templateId: string) {
+        const { data } = await this.api.post<IEntityWithDirectRelationships[]>(`${baseEntitiesRoute}/get/multiple-select`, {
+            ...searchBody,
+            templateId,
+            showRelationships: false,
+        });
 
         return data;
     }
@@ -136,11 +161,11 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(
-            `${baseEntitiesRoute}/chart/${templateId}`,
+    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[], childTemplateId?: string) => {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, {
             chartsData,
-        );
+            childTemplateId,
+        });
 
         return data;
     };
@@ -243,8 +268,8 @@ export class InstancesService extends DefaultExternalServiceApi {
         dryRun: boolean,
         userId: string,
         ignoredRules: IBrokenRule[] = [],
-    ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
-        const { data } = await this.api.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
+    ): Promise<PromiseSettledResult<IBulkOfActions>[]> {
+        const { data } = await this.api.post<PromiseSettledResult<IBulkOfActions>[]>(
             `${baseBulkActionsRoute}/bulk`,
             { actionsGroups, ignoredRules, userId },
             { params: { dryRun } },
@@ -252,4 +277,34 @@ export class InstancesService extends DefaultExternalServiceApi {
 
         return data;
     }
+
+    async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count/user-entity-id`, {
+            templateIds,
+            userEntityId,
+        });
+        return data;
+    }
+
+    async getExpandedEntityByIdRequest(
+        entityId: string,
+        expandedParams: { [key: string]: number },
+        options?: { templateIds: string[] },
+        userId?: string,
+    ) {
+        const { data } = await this.api.post<IEntityExpanded>(`${baseEntitiesRoute}/expanded/${entityId}`, {
+            ...options,
+            expandedParams,
+            userId,
+        });
+        return data;
+    }
+
+    async runRulesWithTodayFunc() {
+        const { data } = await this.api.post<{ brokenRulesOfWarningOnFail: IBrokenRule[] }>(`${baseEntitiesRoute}/runRulesWithTodayFunc`);
+
+        return data;
+    }
 }
+
+export default InstancesService;

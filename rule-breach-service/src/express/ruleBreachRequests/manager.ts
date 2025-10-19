@@ -1,12 +1,17 @@
+import {
+    IRuleBreachRequest,
+    RuleBreachRequestStatus,
+    ActionTypes,
+    IActionMetadata,
+    IBrokenRule,
+    IRuleBreach,
+    IAgGridRequest,
+    DefaultManagerMongo,
+} from '@microservices/shared';
 import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import { ActionTypes, IActionMetadata } from '../../utils/interfaces/actionMetadata';
-import { IAgGridRequest } from '../../utils/interfaces/agGrid';
-import { IBrokenRule, IRuleBreach } from '../../utils/interfaces/ruleBreach';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
-import { IRuleBreachRequest, RuleBreachRequestStatus } from './interface';
-import { RuleBreachRequestsSchema } from './model';
+import RuleBreachRequestsSchema from './model';
 
 export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRuleBreachRequest> {
     constructor(workspaceId: string) {
@@ -16,7 +21,7 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
     public async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {
         const { startRow, endRow, sortModel, filterModel } = agGridRequest;
 
-        const sort = translateAgGridSortModel(sortModel);
+        const sort = translateAgGridSortModel(sortModel || []);
         const query = translateAgGridFilterModel(filterModel);
 
         const [rows, lastRowIndex] = await Promise.all([
@@ -79,7 +84,8 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
                 },
             ],
         };
-        return this.model.updateMany(filter, { status }, { new: true }).lean();
+
+        return this.model.updateMany(filter, { status, new: true }).lean<IRuleBreachRequest[]>();
     }
 
     public async updateRuleBreachRequestStatus(

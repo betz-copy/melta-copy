@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-import { config } from '../../config';
-import { BadRequestError } from '../error';
-import { Colors, IMetadata, IWorkspace } from './interface';
+import { BadRequestError, Colors, IMetadata, IWorkspace } from '@microservices/shared';
+import config from '../../config';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
 const MetadataSchema = new mongoose.Schema<IMetadata>(
@@ -9,6 +8,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         shouldNavigateToEntityPage: { type: Boolean },
         isDrawerOpen: { type: Boolean },
         flowCube: { type: Boolean },
+        isDashboardHomePage: { type: Boolean },
         agGrid: {
             rowCount: { type: Number },
             defaultExpandedRowCount: { type: Number },
@@ -32,6 +32,21 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         searchLimits: {
             bulk: { type: Number },
         },
+        unitFieldSplitDepth: { type: Number },
+        clientSide: {
+            usersInfoChildTemplateId: { type: String },
+            numOfPropsToShow: { type: Number },
+            clientSideWorkspaceName: { type: String },
+            fullNameField: { type: String },
+        },
+        mapPage: {
+            showMapPage: { type: Boolean },
+            sourceTemplateId: { type: String },
+            destTemplateId: { type: String },
+            sourceFieldForColor: { type: String },
+        },
+        unitsArray: { type: [String] },
+        numOfRelationshipFieldsToShow: { type: Number },
     },
     { _id: false },
 );
@@ -87,4 +102,6 @@ WorkspacesSchema.post('findOneAndUpdate', handleMongooseDuplicateKeyError);
 
 WorkspacesSchema.index({ name: 1, path: 1, type: 1 }, { unique: true });
 
-export const WorkspacesModel = mongoose.model<IWorkspace>(config.mongo.workspacesCollectionName, WorkspacesSchema);
+const WorkspacesModel = mongoose.model<IWorkspace>(config.mongo.workspacesCollectionName, WorkspacesSchema);
+
+export default WorkspacesModel;

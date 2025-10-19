@@ -2,9 +2,10 @@ import { Box, Grid } from '@mui/material';
 import React from 'react';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
+import { IUser } from '../../interfaces/users';
 
 interface UserArrayInputProps extends IUserAutocomplete {
-    currentUsers: string[];
+    currentUsers: string[] | IUser[];
     onRemove?: <T>(index: number) => T | undefined;
 }
 
@@ -22,6 +23,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
     onRemove,
     overrideSx,
     readOnly,
+    helperText,
 }) => {
     return (
         <Box>
@@ -36,17 +38,26 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                     onBlur={onBlur}
                     onFocus={onFocus}
                     isError={isError}
+                    helperText={helperText}
                     displayValue={displayValue}
                     onDisplayValueChange={onDisplayValueChange}
                     overrideSx={overrideSx}
                     readOnly={readOnly}
                 />
             </Grid>
-            <Grid container spacing={1}>
-                {currentUsers.map((user, index) => (
-                    <CreateUserCard key={user} userName={user} userIndex={index} remove={() => onRemove?.(index)} readOnly={readOnly} />
-                ))}
-            </Grid>
+            <Box
+                sx={{
+                    maxHeight: '90px',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                }}
+            >
+                <Grid container spacing={1}>
+                    {currentUsers.map((user, index) => (
+                        <CreateUserCard key={user} user={user} userIndex={index} remove={() => onRemove?.(index)} readOnly={readOnly} />
+                    ))}
+                </Grid>
+            </Box>
         </Box>
     );
 };

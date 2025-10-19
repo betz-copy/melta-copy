@@ -11,9 +11,11 @@ import notificationsRouter from './notifications/router';
 import processesRouter from './processes/router';
 import RulesBreachesRouter from './ruleBreaches/router';
 import templatesRouter from './templates/router';
-import { usersRouter } from './users/router';
-import { workspaceRouter } from './workspaces/router';
-import { ChartsRouter } from './templateCharts/router';
+import usersRouter from './users/router';
+import workspaceRouter from './workspaces/router';
+import ChartsRouter from './templateCharts/router';
+import ClientSideRouter from './clientSide/router';
+import dashboardItemsRouter from './dashboardItems/router';
 
 const apiRouter = Router();
 
@@ -74,6 +76,10 @@ apiRouter.use('/iframes', iFramesRouter);
 
 apiRouter.use('/charts', ChartsRouter);
 
+apiRouter.use('/dashboard', dashboardItemsRouter);
+
 apiRouter.use('/workspaces', workspaceRouter);
+
+apiRouter.use('/client-side', ClientSideRouter);
 
 export default apiRouter;

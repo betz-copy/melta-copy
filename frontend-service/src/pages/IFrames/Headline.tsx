@@ -1,25 +1,21 @@
-import { Hive as HiveIcon } from '@mui/icons-material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import { Hive as HiveIcon, Delete, Edit, Favorite, FavoriteBorder, OpenInFull } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import Iframe from 'react-iframe';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import Iframe from 'react-iframe';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { IFrameWizard } from '../../common/wizards/iFrame';
+import { DashboardItemType } from '../../interfaces/dashboard';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
-import { useUserStore } from '../../stores/user';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
+import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 
 const IFrameHeadline: React.FC<{
     iFrame: IMongoIFrame;
@@ -39,9 +35,18 @@ const IFrameHeadline: React.FC<{
     const [deleteIFrameDialogState, setDeleteIFrameDialogState] = useState<{
         isDialogOpen: boolean;
         iFrameId: string | null;
+        usedInDashboard?: boolean;
     }>({
         isDialogOpen: false,
         iFrameId: null,
+    });
+
+    const [editIFrameDialogState, setEditIFrameDialogState] = useState<{
+        isWizardOpen: boolean;
+        iFrame: IMongoIFrame | null;
+    }>({
+        isWizardOpen: false,
+        iFrame: null,
     });
 
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
@@ -54,20 +59,26 @@ const IFrameHeadline: React.FC<{
     const handleClose = () => {
         setOpenFullSize(false);
     };
-    const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
-        onSuccess: (data) => {
-            queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
-                if (!oldData) return [];
-                return oldData.filter((iframe) => iframe._id !== data._id);
-            });
-            setIFrameDeleted!((prev: boolean) => !prev);
-            setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
-            toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
+
+    const closeEditDialog = () => setEditIFrameDialogState({ isWizardOpen: false, iFrame: null });
+
+    const { isLoading, mutateAsync } = useMutation(
+        ({ id, usedInDashboard }: { id: string; usedInDashboard?: boolean }) => deleteIFrame(id, usedInDashboard),
+        {
+            onSuccess: (data) => {
+                queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                    if (!oldData) return [];
+                    return oldData.filter((iframe) => iframe._id !== data._id);
+                });
+                setIFrameDeleted!((prev: boolean) => !prev);
+                setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
+                toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
+            },
+            onError: (err: AxiosError) => {
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
+            },
         },
-        onError: (err: AxiosError) => {
-            toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
-        },
-    });
+    );
 
     return (
         <Grid
@@ -82,7 +93,7 @@ const IFrameHeadline: React.FC<{
         >
             <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
                 <Grid container wrap="nowrap" alignItems="start" sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Grid item sx={{ paddingLeft: '20px', display: 'flex' }}>
+                    <Grid sx={{ paddingLeft: '20px', display: 'flex' }}>
                         {iFrame.iconFileId ? (
                             <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
                         ) : (
@@ -90,7 +101,7 @@ const IFrameHeadline: React.FC<{
                         )}
                     </Grid>
                     <MeltaTooltip title={iFrame.url} placement="bottom-end">
-                        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Grid sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography
                                 style={{
                                     textOverflow: 'ellipsis',
@@ -111,7 +122,7 @@ const IFrameHeadline: React.FC<{
                 </Grid>
                 {!isIFramePage && (
                     <Grid container wrap="nowrap" justifyContent="flex-end">
-                        <Grid item style={{ padding: '20px' }}>
+                        <Grid style={{ padding: '20px' }}>
                             {isHovered && (
                                 <Grid sx={{ display: 'flex' }}>
                                     {currentUser.currentWorkspacePermissions.admin && (
@@ -120,16 +131,28 @@ const IFrameHeadline: React.FC<{
                                             <Grid>
                                                 <MeltaTooltip title={i18next.t('actions.delete')}>
                                                     <IconButton
-                                                        onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}
+                                                        onClick={() =>
+                                                            setDeleteIFrameDialogState({
+                                                                isDialogOpen: true,
+                                                                iFrameId: iFrame._id,
+                                                                usedInDashboard: iFrame.usedInDashboard,
+                                                            })
+                                                        }
                                                     >
-                                                        <DeleteIcon color="primary" fontSize="small" />
+                                                        <Delete color="primary" fontSize="small" />
                                                     </IconButton>
                                                 </MeltaTooltip>
                                             </Grid>
                                             <Grid>
                                                 <MeltaTooltip title={i18next.t('actions.edit')}>
-                                                    <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
-                                                        <EditIcon color="primary" fontSize="small" />
+                                                    <IconButton
+                                                        onClick={() =>
+                                                            iFrame.usedInDashboard
+                                                                ? setEditIFrameDialogState({ isWizardOpen: true, iFrame })
+                                                                : setIFrameWizardDialogState({ isWizardOpen: true, iFrame })
+                                                        }
+                                                    >
+                                                        <Edit color="primary" fontSize="small" />
                                                     </IconButton>
                                                 </MeltaTooltip>
                                             </Grid>
@@ -162,9 +185,9 @@ const IFrameHeadline: React.FC<{
                                                         }}
                                                     >
                                                         {placeInSideBar ? (
-                                                            <FavoriteIcon color="primary" fontSize="small" />
+                                                            <Favorite color="primary" fontSize="small" />
                                                         ) : (
-                                                            <FavoriteBorderIcon color="primary" fontSize="small" />
+                                                            <FavoriteBorder color="primary" fontSize="small" />
                                                         )}
                                                     </IconButton>
                                                 </MeltaTooltip>
@@ -178,7 +201,7 @@ const IFrameHeadline: React.FC<{
                                                     setOpenFullSize(true);
                                                 }}
                                             >
-                                                <OpenInFullIcon color="primary" fontSize="small" />
+                                                <OpenInFull color="primary" fontSize="small" />
                                             </IconButton>
                                         </MeltaTooltip>
                                     </Grid>
@@ -194,10 +217,12 @@ const IFrameHeadline: React.FC<{
                 open={openFullSize}
                 onClose={handleClose}
                 maxWidth={false}
-                PaperProps={{
-                    style: {
-                        height: '90vh',
-                        width: '88vw',
+                slotProps={{
+                    paper: {
+                        style: {
+                            height: '90vh',
+                            width: '88vw',
+                        },
                     },
                 }}
             >
@@ -213,11 +238,23 @@ const IFrameHeadline: React.FC<{
                 }}
             />
 
-            <AreYouSureDialog
-                open={deleteIFrameDialogState.isDialogOpen}
+            <ConfirmEditCommonItem
+                isDialogOpen={editIFrameDialogState.isWizardOpen}
+                handleClose={closeEditDialog}
+                onEditYes={() => {
+                    closeEditDialog();
+                    setIFrameWizardDialogState({ isWizardOpen: true, iFrame: editIFrameDialogState.iFrame });
+                }}
+                type={DashboardItemType.Iframe}
+            />
+
+            <ConfirmDeleteDashboardItem
+                isDialogOpen={deleteIFrameDialogState.isDialogOpen}
                 handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}
-                onYes={() => mutateAsync(deleteIFrameDialogState.iFrameId!)}
+                onDeleteYes={() => mutateAsync({ id: deleteIFrameDialogState.iFrameId!, usedInDashboard: deleteIFrameDialogState.usedInDashboard })}
                 isLoading={isLoading}
+                type={DashboardItemType.Iframe}
+                commonItemProps={{ isNotDashboardPage: true, usedInDashboard: deleteIFrameDialogState.usedInDashboard }}
             />
         </Grid>
     );

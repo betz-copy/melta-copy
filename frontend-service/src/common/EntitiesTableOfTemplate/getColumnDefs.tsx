@@ -1,13 +1,20 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import { Grid } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { Grid, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
-import { Link } from 'wouter';
-import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
+import { Link } from 'wouter';
 import { IButtonPopoverProps } from '.';
+import { environment } from '../../globals';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
+import { UserState } from '../../stores/user';
 import {
     booleanColDef,
     dateColDef,
@@ -23,18 +30,22 @@ import {
     userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
+import { getChildrenWithWritePermission } from '../../utils/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
+import { emptyEntityTemplate } from '../dialogs/entity';
+import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
+import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
+import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
+    addRelationshipReferenceButtonProps?: string;
     menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
@@ -56,6 +67,14 @@ export interface IGetColumnDefsOptions<Data extends any> {
     searchValue?: string;
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
+    pageType?: string;
+    columnsToShow?: string[];
+    entityTemplateMap?: IEntityTemplateMap;
+    childEntityTemplateMap?: IChildTemplateMap;
+    currentUser: UserState['user'];
+    currentClientSideUser: IEntity;
+    actionsColumnWidth?: number;
+    darkMode: boolean;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -65,6 +84,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     onNavigateToRow,
     hideNonPreview = false,
     deleteRowButtonProps,
+    addRelationshipReferenceButtonProps,
     editRowButtonProps,
     menuRowButtonProps,
     hasPermissionToTemplate = true,
@@ -80,12 +100,25 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
     entityTemplates,
+    pageType,
+    columnsToShow,
+    entityTemplateMap,
+    childEntityTemplateMap,
+    currentUser,
+    currentClientSideUser,
+    actionsColumnWidth = 200,
+    darkMode,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
 
-    const columnDefs = template.propertiesOrder.map((property) => {
+    const filteredProperties = template.propertiesOrder.filter(
+        (propertyOrder) =>
+            !template.properties.properties[propertyOrder]?.comment && template.properties.properties[propertyOrder]?.display !== false,
+    );
+
+    const columnDefs = filteredProperties.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
@@ -94,16 +127,21 @@ export const getColumnDefs = <Data extends any = EntityData>({
 
         const hideField = template.properties.hide.includes(property);
 
-        const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
+        // Pass propertyToGet to extract a different property from the object
+        const valueGetter = ({ data }, propertyToGet = property) => (data ? getEntityPropertiesData(data)[propertyToGet] : undefined);
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
-        const hideColumn =
-            template.propertiesPreview.length === 0 && hideNonPreview
-                ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
-                : archive ||
-                  (defaultVisibleColumns[property] !== undefined
-                      ? !defaultVisibleColumns[property]
-                      : hideNonPreview && !template.propertiesPreview.includes(property));
+        const isPreviewEmpty = template.propertiesPreview.length === 0;
+        const isPropertyInPreview = template.propertiesPreview.includes(property);
+        const isFirstTwoProperties = firstTwoPropsOrder.includes(property);
+        const isDefaultVisibilityColumn = defaultVisibleColumns[property] !== undefined;
+        const isColumnInDisplayList = columnsToShow?.includes(property) ?? true;
+
+        const hideColumn = hideNonPreview
+            ? isPreviewEmpty && hideNonPreview && !isFirstTwoProperties
+            : archive ||
+              (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
+              !isColumnInDisplayList;
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
@@ -187,6 +225,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 hideColumn,
                 searchValue,
                 editable,
+                propertyTemplate.relationshipReference!.filters,
             );
         if (propertyTemplate.enum)
             return enumColDef(
@@ -233,11 +272,41 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 editable,
             );
         if (propertyTemplate.items?.format === 'fileId') {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight, isLastColumn);
+            return enumFilesColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                defaultColumnWidths[property],
+                rowHeight,
+                isLastColumn,
+                hideColumn,
+            );
         }
-        if (propertyTemplate.format === 'user') {
-            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], isLastColumn, hideColumn);
+
+        const isKartoffelImageRef = propertyTemplate.expandedUserField?.kartoffelField === 'image';
+        if (propertyTemplate.format === 'user' || isKartoffelImageRef) {
+            return userColDef(
+                property,
+                isKartoffelImageRef
+                    ? (prop) => {
+                          // TODO: use this method to get the properties of all related field?
+                          const userField = propertyTemplate.expandedUserField?.relatedUserField;
+                          return valueGetter(prop, userField);
+                      }
+                    : valueGetter,
+                { title: propertyTemplate.title },
+                [],
+                defaultColumnWidths[property],
+                isLastColumn,
+                darkMode,
+                hideColumn,
+                {
+                    shouldRenderChip: !isKartoffelImageRef,
+                    ...(isKartoffelImageRef && { userIcon: { size: 34, overrideSx: { marginTop: '0.5rem' } } }),
+                },
+            );
         }
+
         if (propertyTemplate.items?.format === 'user') {
             return userArrayColDef(
                 property,
@@ -248,8 +317,10 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 rowHeight,
                 isLastColumn,
                 hideColumn,
+                darkMode,
             );
         }
+
         return stringColDef(
             property,
             valueGetter,
@@ -317,14 +388,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
         return orderA - orderB;
     });
 
-    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps) {
+    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps || addRelationshipReferenceButtonProps) {
         columnDefs.push({
             field: `actions-${template._id}`,
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
             pinned: 'left',
             menuTabs: [],
             sortable: false,
-            width: 200,
+            width: actionsColumnWidth,
             flex: 0,
             resizable: false,
             lockPosition: true,
@@ -338,12 +409,42 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
 
+                const destTemplate = addRelationshipReferenceButtonProps
+                    ? (childEntityTemplateMap?.get(addRelationshipReferenceButtonProps) ??
+                      entityTemplateMap?.get(addRelationshipReferenceButtonProps))
+                    : undefined;
+
+                const getInitialProperties = (relatedTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): Record<string, any> => {
+                    const relatedProperties = relatedTemplate.properties.properties ?? {};
+
+                    return Object.entries(relatedProperties).reduce(
+                        (acc, [key, prop]) => {
+                            if (prop.relationshipReference?.relatedTemplateId === template._id) {
+                                acc[key] = {
+                                    templateId: template._id,
+                                    properties: entity,
+                                };
+                            }
+                            return acc;
+                        },
+                        {} as Record<string, any>,
+                    );
+                };
+
                 return (
                     <Grid container flexWrap="nowrap">
                         {onNavigateToRow && (
-                            <Grid item>
+                            <Grid>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}`}
+                                    href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
+                                        getEntityPropertiesData(data)._id
+                                    }${
+                                        pageType === environment.clientSideId
+                                            ? ''
+                                            : isChildTemplate(template)
+                                              ? `?childTemplateId=${template._id}`
+                                              : ''
+                                    }`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -363,7 +464,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
                         {deleteRowButtonProps && (
-                            <Grid item>
+                            <Grid>
                                 <IconButtonWithPopover
                                     popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
                                     iconButtonProps={{
@@ -379,7 +480,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
                         {editRowButtonProps && (
-                            <Grid item>
+                            <Grid>
                                 <IconButtonWithPopover
                                     popoverText={
                                         disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
@@ -396,10 +497,12 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-                        {onNavigateToRow && (
-                            <Grid item>
+                        {onNavigateToRow && pageType !== environment.clientSideId && (
+                            <Grid>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph${
+                                        isChildTemplate(template) ? `?childTemplateId=${template._id}` : ''
+                                    }`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}
@@ -418,14 +521,18 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 </Link>
                             </Grid>
                         )}
-
-                        {menuRowButtonProps && !template?.disabled && (
-                            <Grid item>
+                        {menuRowButtonProps && !template?.disabled && pageType !== environment.clientSideId && (
+                            <Grid>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
-                                            state: { entityTemplate: template, expandedEntity: { entity: data } },
-                                        });
+                                        navigate(
+                                            `/entity/${getRowId(data)}/duplicate${
+                                                isChildTemplate(template) ? `?childTemplateId=${template._id}` : ''
+                                            }`,
+                                            {
+                                                state: { entityTemplate: template, expandedEntity: { entity: data } },
+                                            },
+                                        );
                                     }}
                                     onDeleteClick={() => {
                                         setSelectedRow(getRowId(data));
@@ -440,6 +547,44 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
                                 />
+                            </Grid>
+                        )}
+
+                        {addRelationshipReferenceButtonProps && (
+                            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+                                <AddEntityButton
+                                    initialStep={1}
+                                    disabled={
+                                        destTemplate
+                                            ? !isUserHasWritePermissions(currentClientSideUser, currentUser, destTemplate) || destTemplate?.disabled
+                                            : childEntityTemplateMap
+                                              ? !getChildrenWithWritePermission(
+                                                    childEntityTemplateMap,
+                                                    addRelationshipReferenceButtonProps,
+                                                    currentUser,
+                                                    currentClientSideUser,
+                                                ).length
+                                              : true
+                                    }
+                                    initialValues={{
+                                        template: destTemplate || emptyEntityTemplate,
+                                        properties: {
+                                            disabled: false,
+                                            ...(getInitialProperties(destTemplate || emptyEntityTemplate) ?? {}),
+                                        },
+                                        attachmentsProperties: {},
+                                    }}
+                                    style={{ borderRadius: '7px', width: '135px' }}
+                                    popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
+                                    chooseMode={IChooseTemplateMode.OnlyChildren}
+                                    parentId={addRelationshipReferenceButtonProps}
+                                    getInitialProperties={getInitialProperties}
+                                >
+                                    <AddIcon fontSize="small" />
+                                    <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 10px' }}>
+                                        {i18next.t('location.newRequest')}
+                                    </Typography>
+                                </AddEntityButton>
                             </Grid>
                         )}
                     </Grid>

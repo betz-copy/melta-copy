@@ -2,6 +2,26 @@
 import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
+import {
+    IMongoStepTemplate,
+    IMongoProcessTemplate,
+    IProcessDetails,
+    IMongoProcessTemplatePopulated,
+    IMongoStepInstance,
+    CreateProcessReqBody,
+    IMongoProcessInstance,
+    IMongoProcessInstancePopulated,
+    IProcessInstance,
+    IProcessInstanceSearchProperties,
+    InstanceProperties,
+    ProcessInstanceDocument,
+    UpdateProcessReqBody,
+    DefaultManagerMongo,
+    ActionsLog,
+    Status,
+    ServiceError,
+    ValidationError,
+} from '@microservices/shared';
 import config from '../../../config';
 import ajv from '../../../utils/ajv';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
@@ -11,27 +31,11 @@ import {
     searchAllowedProcessInstanceWaitForMe,
     transaction,
 } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
-import { IMongoProcessTemplate, IMongoProcessTemplatePopulated, IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
-import { IMongoStepTemplate } from '../../templates/steps/interface';
-import { IMongoStepInstance } from '../steps/interface';
 import StepInstanceManager from '../steps/manager';
-import {
-    CreateProcessReqBody,
-    IMongoProcessInstance,
-    IMongoProcessInstancePopulated,
-    IProcessInstance,
-    IProcessInstanceSearchProperties,
-    InstanceProperties,
-    ProcessInstanceDocument,
-    Status,
-    UpdateProcessReqBody,
-} from './interface';
 import { ProcessInstanceSchema } from './model';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
-import { ActionsLog } from '../../../externalServices/activityLog/interface';
+import { InstanceNotFoundError, InstancePropertiesValidationError } from '../../error';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
 
@@ -164,7 +168,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const { steps: processSteps } = await this.getProcessById(id);
         const deletedProcess: IMongoProcessInstance = await transaction(async (session) => {
             await this.stepInstanceManager.deleteStepsByIds(stepsIds, session);
-            return this.model.findByIdAndDelete(id, { session }).orFail(new InstanceNotFoundError('process', id)).lean();
+            return this.model.findByIdAndDelete(id, { session }).orFail(new InstanceNotFoundError('process', id)).lean<IMongoProcessInstance>();
         });
         await this.elasticSearchManager.deleteDocumentOnElastic(deletedProcess._id);
 
@@ -197,7 +201,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const updatedProcess: IMongoProcessInstancePopulated = await transaction(async (session) => {
             await this.stepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
-            const { steps, ...processData } = updatedData;
+            const { steps: _steps, ...processData } = updatedData;
             return this.model
                 .findByIdAndUpdate(id, processData, {
                     new: true,
@@ -205,7 +209,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 })
                 .populate(config.processFields.steps)
                 .orFail(new InstanceNotFoundError('process', id))
-                .lean();
+                .lean<IMongoProcessInstancePopulated>();
         });
 
         await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);

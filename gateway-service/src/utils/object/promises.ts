@@ -1,4 +1,4 @@
-export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
+import { Awaited } from '@microservices/shared';
 
 export const objectMap = async <T extends object, Func extends (key: string, value: T[keyof T]) => Promise<any>>(
     obj: T,

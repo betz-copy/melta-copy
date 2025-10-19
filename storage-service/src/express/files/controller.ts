@@ -1,10 +1,10 @@
-import archiver from 'archiver';
+import * as archiver from 'archiver';
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { ServiceError } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
-import { ServiceError } from '../error';
-import { FilesManager } from './manager';
+import FilesManager from './manager';
 
 export default class FilesController extends DefaultController<FilesManager> {
     constructor(workspaceId: string) {
@@ -51,7 +51,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     }
 
     async uploadFile(req: express.Request, res: express.Response) {
-        res.json(await this.manager.uploadFile(req.file));
+        res.json(await this.manager.uploadFile(req.file ?? req.files![0]));
     }
 
     async uploadFiles(req: express.Request, res: express.Response) {

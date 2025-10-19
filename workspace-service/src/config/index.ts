@@ -1,8 +1,8 @@
 import * as env from 'env-var';
-import { Colors, IWorkspace } from '../express/workspaces/interface';
+import { Colors, IWorkspace } from '@microservices/shared';
 import './dotenv';
 
-export const config = {
+const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
@@ -45,3 +45,5 @@ export const config = {
         },
     },
 };
+
+export default config;

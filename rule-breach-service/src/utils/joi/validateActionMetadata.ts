@@ -1,7 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { IAction } from '../interfaces/ruleBreach';
-import { ActionTypes } from '../interfaces/actionMetadata';
+import { ActionTypes, IAction } from '@microservices/shared';
 import {
     createEntityMetadataSchema,
     duplicateEntityMetadataSchema,
@@ -9,6 +8,7 @@ import {
     deleteRelationshipMetadataSchema,
     updateEntityMetadataSchema,
     updateEntityStatusMetadataSchema,
+    cronjobMetadataSchema as cronjobRunMetadataSchema,
 } from './schemas/actionMetadata';
 
 export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
@@ -33,6 +33,9 @@ export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
             break;
         case ActionTypes.UpdateStatus:
             schema = updateEntityStatusMetadataSchema;
+            break;
+        case ActionTypes.CronjobRun:
+            schema = cronjobRunMetadataSchema;
             break;
 
         default:

@@ -1,11 +1,11 @@
 import { Request } from 'express';
-import { GanttsService, IGantt } from '../../externalServices/ganttsService';
+import { ForbiddenError, IGantt } from '@microservices/shared';
+import GanttsService from '../../externalServices/ganttsService';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError } from '../error';
-import { InstancesValidator } from '../instances/middlewares';
+import InstancesValidator from '../instances/middlewares';
 
-export class GanttsValidator extends DefaultController {
+class GanttsValidator extends DefaultController {
     private ganttsService: GanttsService;
 
     private instancesValidator: InstancesValidator;
@@ -61,3 +61,5 @@ export class GanttsValidator extends DefaultController {
         await this.validateUserHasPermissionsToGantt(req, undefined, req.params.ganttId);
     }
 }
+
+export default GanttsValidator;

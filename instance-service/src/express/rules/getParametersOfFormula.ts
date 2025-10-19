@@ -1,9 +1,16 @@
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
-import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
-import { IArgument, IVariable, isPropertyOfVariable } from '../../externalServices/templates/interfaces/rules/formula/argument';
-import { isCountAggFunction, isRegularFunction } from '../../externalServices/templates/interfaces/rules/formula/function';
-import { isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
-import { isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
+import {
+    ActionOnFail,
+    IArgument,
+    IFormula,
+    IMongoRule,
+    IVariable,
+    isAggregationGroup,
+    isCountAggFunction,
+    isEquation,
+    isGroup,
+    isPropertyOfVariable,
+    isRegularFunction,
+} from '@microservices/shared';
 
 interface IParameterOfFormula {
     variable: IVariable;
@@ -94,6 +101,5 @@ const isRuleDependentOnEntity = (rule: IMongoRule, entityTemplateId: string, upd
     });
 };
 
-export const filterDependentRulesOnEntity = (rules: IMongoRule[], entityTemplateId: string, updatedProperties?: string[]) => {
-    return rules.filter((rule) => isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties));
-};
+export const filterDependentRulesOnEntity = (rules: IMongoRule[], entityTemplateId: string, updatedProperties?: string[]) =>
+    rules.filter((rule) => rule.actionOnFail === ActionOnFail.INDICATOR || isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties));

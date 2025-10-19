@@ -23,6 +23,7 @@ const config = {
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
+        runRulesWithTodayFuncQueue: env.get('RUN_RULES_WITH_TODAY_FUNC_QUEUE_NAME').default('run-rules-with-today-func-queue').asString(),
         retryOptions: {
             minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
             retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
@@ -66,6 +67,21 @@ const config = {
         dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
         displayCronDates: env.get('DISPLAY_CRON_DATES').default('true').asString(),
+    },
+    userFieldsSync: {
+        usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
+        isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
+    },
+    rulesWithTodayFunc: {
+        runOnStart: env.get('RULES_WITH_TODAY_FUNC_RUN_ON_START').default('false').asBool(), // for development
+        cronTime: env.get('RULES_WITH_TODAY_FUNC_CRON_TIME').default('0 0 * * *').asString(),
+        runCron: env.get('RULES_WITH_TODAY_FUNC_RUN_CRON').default('true').asBool(),
+    },
+    kartoffel: {
+        url: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
     },
 };
 

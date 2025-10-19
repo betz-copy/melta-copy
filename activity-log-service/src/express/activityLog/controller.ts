@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
-import { IActivityLog } from './interface';
+import { IActivityLog, DefaultController } from '@microservices/shared';
 import ActivityLogManager from './manager';
 
 export default class ActivityLogController extends DefaultController<IActivityLog, ActivityLogManager> {
@@ -9,9 +8,21 @@ export default class ActivityLogController extends DefaultController<IActivityLo
     }
 
     async getActivity(req: Request, res: Response) {
-        const { limit, skip, actions } = req.query;
+        const { limit, skip, actions, searchText, fieldsSearch, usersSearch, startDateRange, endDateRange } = req.query;
         const { entityId } = req.params;
 
-        res.json(await this.manager.getActivity(entityId, Number(limit), Number(skip), actions as string[]));
+        res.json(
+            await this.manager.getActivity(
+                entityId,
+                Number(limit),
+                Number(skip),
+                fieldsSearch as string[],
+                usersSearch as string[],
+                actions as string[],
+                searchText as string | undefined,
+                startDateRange as Date | undefined,
+                endDateRange as Date | undefined,
+            ),
+        );
     }
 }

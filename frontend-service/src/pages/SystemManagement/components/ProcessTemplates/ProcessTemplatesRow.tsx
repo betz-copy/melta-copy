@@ -65,12 +65,12 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 
     return (
-        <Grid item container marginBottom="30px" gap="30px">
+        <Grid container marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
-                <Grid item>
+                <Grid>
                     <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchProcesses')} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <CreateButton
                         onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
                         text={i18next.t('systemManagement.newProcessTemplate')}
@@ -85,8 +85,7 @@ const ProcessTemplatesRow: React.FC = () => {
                         .splice(pageParam, infiniteScrollPageCount)
                 }
                 onQueryError={(error) => {
-                    // eslint-disable-next-line no-console
-                    console.log('failed to search process templates error:', error);
+                    console.error('failed to search process templates error:', error);
                     toast.error(i18next.t('failedToLoadResults'));
                 }}
                 getItemId={(processTemplate) => processTemplate._id}
@@ -104,6 +103,7 @@ const ProcessTemplatesRow: React.FC = () => {
                         processTemplate={processTemplate}
                         setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
                         setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
+                        setDuplicateProcessTemplateDialogState={setProcessTemplateWizardDialogState}
                     />
                 )}
             </InfiniteScroll>
@@ -111,7 +111,7 @@ const ProcessTemplatesRow: React.FC = () => {
                 open={processTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}
                 initialValues={processTemplateObjectToProcessTemplateForm(processTemplateWizardDialogState.processTemplate)}
-                isEditMode={Boolean(processTemplateWizardDialogState.processTemplate)}
+                isEditMode={Boolean(processTemplateWizardDialogState.processTemplate?._id)}
             />
             <AreYouSureDialog
                 open={deleteProcessTemplateDialogState.isDialogOpen}
@@ -123,4 +123,4 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 };
 
-export { ProcessTemplatesRow };
+export default ProcessTemplatesRow;

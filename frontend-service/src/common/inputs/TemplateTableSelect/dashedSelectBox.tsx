@@ -1,14 +1,14 @@
-import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import React from 'react';
 import { IEntity } from '../../../interfaces/entities';
-import { AddIconWithText } from '../../AddIconWithText';
-import IconButtonWithPopover from '../../IconButtonWithPopover';
-import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { AddIconWithText } from '../../AddIconWithText';
 import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
+import IconButtonWithPopover from '../../IconButtonWithPopover';
 
 const DashedSelectBox: React.FC<{
     text: string;
@@ -27,7 +27,12 @@ const DashedSelectBox: React.FC<{
 
     const userHasPermissions = !entityTemplate
         ? undefined
-        : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entityTemplate.category, entityTemplate._id, checkUsersPermissions);
+        : checkUserTemplatePermission(
+              currentUser.currentWorkspacePermissions,
+              entityTemplate.category._id,
+              entityTemplate._id,
+              checkUsersPermissions,
+          );
 
     const disabled = !entityTemplate || userHasPermissions === false;
 
@@ -54,8 +59,8 @@ const DashedSelectBox: React.FC<{
                     minHeight,
                 }}
             >
-                <Grid container item justifyContent="center" alignItems="center" spacing={2}>
-                    <Grid xs={12} container item display="flex" justifyContent="center">
+                <Grid container justifyContent="center" alignItems="center" spacing={2}>
+                    <Grid size={{ xs: 12 }} container display="flex" justifyContent="center">
                         <IconButtonWithPopover popoverText={popoverText} disabled={disabled} style={{ borderRadius: '5px' }}>
                             <AddIconWithText
                                 textStyle={{ display: 'flex', alignItems: 'center', fontSize: '19px', fontVariant: 'h4' }}
@@ -68,7 +73,7 @@ const DashedSelectBox: React.FC<{
                     </Grid>
 
                     {addNewEntityLabel && (
-                        <Grid xs={12} container item display="flex" justifyContent="center">
+                        <Grid size={{ xs: 12 }} container display="flex" justifyContent="center">
                             <AddEntityButton
                                 initialStep={1}
                                 disabled={disabled}

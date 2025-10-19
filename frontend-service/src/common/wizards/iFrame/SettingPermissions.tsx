@@ -1,22 +1,34 @@
+import { Hive } from '@mui/icons-material';
+import { Card, CardContent, Divider, FormControlLabel, FormGroup, Grid, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import { Card, CardContent, Divider, FormControlLabel, FormGroup, Typography } from '@mui/material';
 import * as Yup from 'yup';
-import { StepComponentProps } from '..';
 import { IFrameWizardValues } from '.';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
+import { StepComponentProps } from '..';
 import { ICategoryMap } from '../../../interfaces/categories';
+import { ViewMode } from '../../../interfaces/dashboard';
 import { useUserStore } from '../../../stores/user';
+import { CustomIcon } from '../../CustomIcon';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 
-const settingIFramesPermissionsSchema = {
+const settingIFramesPermissionsSchema = Yup.object({
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),
-};
+});
 
-const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors }) => {
+const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues> & { viewMode?: ViewMode }> = ({
+    values,
+    touched,
+    errors,
+    viewMode,
+    handleBlur,
+    setFieldValue,
+}) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const currentUser = useUserStore((state) => state.user);
+    const theme = useTheme();
+    const isReadonlyMode = viewMode === ViewMode.ReadOnly;
 
     const allowedCategoriesIds = currentUser.currentWorkspacePermissions.admin
         ? Array.from(categories.values()).map(({ _id }) => _id)
@@ -33,49 +45,80 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     };
 
     useEffect(() => {
-        // eslint-disable-next-line no-param-reassign
-        values.categoryIds = selectedCategories;
+        setFieldValue('categoryIds', selectedCategories);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategories]);
 
     return (
-        <Card variant="outlined" sx={{ width: '27%' }}>
+        <Card variant="outlined" sx={{ width: viewMode ? '100%' : '27%', border: isReadonlyMode ? 'none' : undefined }}>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
-                <FormGroup>
-                    <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
-                        control={
-                            <MeltaCheckbox
-                                checked={selectedCategories.length === allowedCategoriesIds.length}
-                                onChange={(e) => {
-                                    handleAllSelected(e.target.checked);
-                                }}
+                <FormGroup onBlur={() => handleBlur({ target: { name: 'categoryIds' } })}>
+                    {viewMode !== ViewMode.ReadOnly && (
+                        <>
+                            <FormControlLabel
+                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
+                                control={
+                                    <MeltaCheckbox
+                                        checked={selectedCategories.length === allowedCategoriesIds.length}
+                                        onChange={(e) => handleAllSelected(e.target.checked)}
+                                    />
+                                }
                             />
-                        }
-                    />
-                    <Divider />
-                    {Array.from(
-                        categories.values(),
-                        (currentCategory) =>
-                            allowedCategoriesIds.includes(currentCategory._id) && (
+                            <Divider />
+                        </>
+                    )}
+
+                    <Grid maxHeight="70vh" overflow="auto" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {Array.from(categories.values(), (currentCategory) => {
+                            const isAllowed = allowedCategoriesIds.includes(currentCategory._id);
+                            const isSelected = selectedCategories.includes(currentCategory._id);
+
+                            if (!isAllowed) return null;
+
+                            if (isReadonlyMode)
+                                return (
+                                    isSelected && (
+                                        <Grid container spacing={1.5} paddingLeft={3} paddingTop={1}>
+                                            <Grid>
+                                                {currentCategory.iconFileId ? (
+                                                    <CustomIcon
+                                                        iconUrl={currentCategory.iconFileId}
+                                                        height="20px"
+                                                        width="20px"
+                                                        color={theme.palette.primary.main}
+                                                    />
+                                                ) : (
+                                                    <Hive
+                                                        sx={{
+                                                            color: theme.palette.primary.main,
+                                                            height: '20px',
+                                                            width: '20px',
+                                                        }}
+                                                    />
+                                                )}
+                                            </Grid>
+
+                                            <Grid>
+                                                <Typography key={currentCategory._id}>{currentCategory.displayName}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                );
+
+                            return (
                                 <FormControlLabel
                                     key={currentCategory._id}
                                     sx={{ paddingLeft: 3 }}
                                     label={currentCategory.displayName}
                                     labelPlacement="end"
-                                    control={
-                                        <MeltaCheckbox
-                                            checked={selectedCategories.includes(currentCategory._id)}
-                                            onChange={() => {
-                                                handleCheckboxChange(currentCategory._id);
-                                            }}
-                                        />
-                                    }
+                                    control={<MeltaCheckbox checked={isSelected} onChange={() => handleCheckboxChange(currentCategory._id)} />}
                                 />
-                            ),
-                    )}
+                            );
+                        })}
+                    </Grid>
                 </FormGroup>
+
                 {touched.categoryIds && errors.categoryIds && (
                     <Typography color="error" sx={{ mt: 2 }}>
                         {errors.categoryIds}

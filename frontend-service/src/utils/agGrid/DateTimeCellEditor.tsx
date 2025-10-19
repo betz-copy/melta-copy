@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { TextField, FormControl } from '@mui/material';
-import { DateTimePicker, DatePicker } from '@mui/x-date-pickers';
-import heLocale from 'date-fns/locale/he';
+import { FormControl, TextField } from '@mui/material';
+import { DatePicker, DateTimePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import i18next from 'i18next';
 import { format } from 'date-fns';
-import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjfsDatesWidgets';
+import { he } from 'date-fns/locale';
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
+import { environment } from '../../globals';
+
+const { dateTime, date: dateFormat } = environment.formats;
 
 interface DateTimeCellEditorProps {
     value: string | Date | null;
@@ -32,28 +35,34 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
     return (
         <LocalizationProvider
             dateAdapter={AdapterDateFns}
-            adapterLocale={heLocale}
-            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+            adapterLocale={he}
+            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
         >
             <FormControl fullWidth>
                 {dateOrDateTime === 'dateTime' ? (
                     <DateTimePicker
                         value={selectedValue}
                         onChange={handleDateChange}
-                        componentsProps={{ actionBar: { actions: ['clear', 'cancel', 'accept'] } }}
-                        renderInput={(params) => <TextField {...params} />}
+                        format={dateTime}
+                        enableAccessibleFieldDOMStructure={false}
                         ampm={false}
-                        disableOpenPicker={false}
-                        ToolbarComponent={CustomDateTimePickerToolbar}
+                        slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
+                        slotProps={{
+                            actionBar: { actions: ['clear', 'cancel', 'accept'] },
+                            textField: { fullWidth: true },
+                        }}
                     />
                 ) : (
                     <DatePicker
                         value={selectedValue}
                         onChange={handleDateChange}
-                        componentsProps={{ actionBar: { actions: ['clear', 'cancel', 'accept'] } }}
-                        renderInput={(params) => <TextField {...params} />}
-                        disableOpenPicker={false}
-                        ToolbarComponent={CustomDateTimePickerToolbar}
+                        format={dateFormat}
+                        enableAccessibleFieldDOMStructure={false}
+                        slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
+                        slotProps={{
+                            actionBar: { actions: ['clear', 'cancel', 'accept'] },
+                            textField: { fullWidth: true },
+                        }}
                     />
                 )}
             </FormControl>

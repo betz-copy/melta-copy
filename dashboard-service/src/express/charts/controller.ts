@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
-import { ChartManager } from './manager';
-import { IMongoChart } from './interface';
+import { DefaultController, IMongoChart } from '@microservices/shared';
+import ChartManager from './manager';
 
 class ChartController extends DefaultController<IMongoChart, ChartManager> {
     constructor(workspaceId: string) {
@@ -13,7 +12,7 @@ class ChartController extends DefaultController<IMongoChart, ChartManager> {
     }
 
     async getChartByTemplateId(req: Request, res: Response) {
-        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, req.body.textSearch));
+        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, req.body.textSearch, req.body.childTemplateId));
     }
 
     async createChart(req: Request, res: Response) {

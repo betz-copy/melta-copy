@@ -1,4 +1,4 @@
-export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true; value: V } | { include: false; value?: any } | undefined) => {
+const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true; value: V } | { include: false; value?: any } | undefined) => {
     const newArr: V[] = [];
 
     for (let i = 0; i < arr.length; i++) {
@@ -11,3 +11,5 @@ export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true;
 
     return newArr;
 };
+
+export default filteredMap;

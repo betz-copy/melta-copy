@@ -2,11 +2,21 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
+import { IMongoRole, IRole } from '../interfaces/roles';
+import {
+    IExternalUser,
+    IKartoffelUser,
+    IMongoUser,
+    IUser,
+    IUserPopulated,
+    IUserPreferences,
+    IUserSearchBody,
+    RelatedPermission,
+} from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const {
-    api: { users },
+    api: { users, roles },
 } = environment;
 
 export const getMyUserRequest = async () => {
@@ -25,12 +35,18 @@ export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
 };
 
 export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
-    const { data } = await axios.post<{ users: IUser[]; count: number }>(`${users}/search`, searchBody);
+    const { data } = await axios.post<{ users: IUserPopulated[]; count: number }>(`${users}/search`, searchBody);
     return data;
 };
 
-export const createUserRequest = async (kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions) => {
-    const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions });
+export const createUserRequest = async (
+    kartoffelId: string,
+    permissions: ICompactPermissions,
+    workspaceId: string,
+    roleIds?: string[],
+    units?: Record<string, string[]>,
+) => {
+    const { data } = await axios.post<IUser>(users, { kartoffelId, permissions, workspaceId, roleIds, units });
     return data;
 };
 
@@ -55,19 +71,40 @@ export const updateUserPreferencesMetadataRequest = async (
     return data;
 };
 
-export const updateUserExternalMetadataRequest = async (userId: string, kartoffelId: string, digitalIdentitySource: string) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/externalMetadata`, { kartoffelId, digitalIdentitySource });
+export const updateUserRoleIdsRequest = async (
+    userId: string,
+    workspaceId: string,
+    permissions: ICompactNullablePermissions,
+    roleIds?: IUser['roleIds'],
+) => {
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/roleIds`, { workspaceId, roleIds, permissions });
     return data;
 };
 
-export const syncUserPermissionsRequest = async (userId: string, permissions: ICompactNullablePermissions) => {
-    const { data } = await axios.post<ICompactPermissions>(`${users}/${userId}/permissions/sync`, permissions);
+export const updateUserUnitsRequest = async (userId: string, workspaceId: string, units?: IUser['units']) => {
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/units`, { workspaceId, units });
     return data;
 };
 
-export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
+export const syncPermissionsRequest = async (
+    relatedId: string,
+    permissionType: RelatedPermission,
+    permissions: ICompactNullablePermissions,
+    dontDeleteUser?: boolean,
+    units?: IUser['units'],
+) => {
+    const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, {
+        permissionType,
+        permissions,
+        dontDeleteUser,
+        units,
+    });
+    return data;
+};
+
+export const searchExternalUsersRequest = async (search: string, workspaceId?: string, isKartoffelUser?: boolean) => {
     if (search.length < 2) return [];
-    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
+    const { data } = await axios.get<IExternalUser[] | IKartoffelUser[]>(`${users}/external`, { params: { search, workspaceId, isKartoffelUser } });
     return data;
 };
 
@@ -84,7 +121,44 @@ export const getUserProfileRequest = async (user: Partial<IUser>) => {
     return URL.createObjectURL(data);
 };
 
-export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
-    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`);
+export const searchUsersByPermissions = async (workspaceId: string, search?: string): Promise<IMongoUser[]> => {
+    const params = search ? { search } : undefined;
+
+    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`, { params });
+    return data;
+};
+
+export const getRoleByIdRequest = async (roleId: string) => {
+    const { data } = await axios.get<IRole>(`${roles}/${roleId}`);
+    return data;
+};
+
+export const searchRolesRequest = async (searchBody: IUserSearchBody) => {
+    const { data } = await axios.post<{ roles: IRole[]; count: number }>(`${roles}/search`, searchBody);
+    return data;
+};
+
+export const createRoleRequest = async (name: string, permissions: ICompactPermissions) => {
+    const { data } = await axios.post<IRole>(roles, { name, permissions });
+    return data;
+};
+
+export const updateRoleRequest = async (roleId: string, name: string) => {
+    const { data } = await axios.patch<IRole>(`${roles}/${roleId}`, { name });
+    return data;
+};
+
+export const searchRolesByPermissionsRequest = async (workspaceId: string): Promise<IMongoRole[]> => {
+    const { data } = await axios.get<IMongoRole[]>(`${roles}/search/${workspaceId}`);
+    return data;
+};
+
+export const getUserRolePerWorkspaceRequest = async (workspaceId: string, roleIds: string[]) => {
+    const { data } = await axios.post<IRole>(`${users}/userRoleWorkspace/${workspaceId}`, { roleIds });
+    return data;
+};
+
+export const getAllWorkspaceRolesRequest = async (workspaceIds: string[]) => {
+    const { data } = await axios.post<IRole[]>(`${users}/roles/workspaces`, { workspaceIds });
     return data;
 };

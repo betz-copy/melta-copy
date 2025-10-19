@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { Grid } from '@mui/material';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
-import { Grid } from '@mui/material';
 import { environment } from '../../globals';
 
 interface ResizeBoxProps {
@@ -9,8 +9,10 @@ interface ResizeBoxProps {
     isSideBarOpen: boolean;
     isDimensionsChange: boolean;
     setIsDimensionsChange: (value: boolean) => void;
+    children?: ReactNode;
 }
 const { iFrameDimensionKey, iFrameSpace, sideBarCloseWidth, sideBarOpenWidth, relativeMaxHight } = environment.iFrames;
+
 const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = false, isDimensionsChange, setIsDimensionsChange }) => {
     const localStorageKey = `${iFrameDimensionKey}${id}`;
 
@@ -40,6 +42,7 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = fal
             setDimensions(getDimensions());
             setIsDimensionsChange(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDimensionsChange]);
 
     const onResizeStart = () => {

@@ -1,20 +1,28 @@
+import {
+    ActionOnFail,
+    ForbiddenError,
+    IAction,
+    IBrokenRule,
+    IChildTemplatePopulated,
+    IExportEntitiesBody,
+    IMongoEntityTemplatePopulated,
+    IRelationship,
+    IRule,
+    PermissionScope,
+    ServiceError,
+} from '@microservices/shared';
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { IAction } from '../../externalServices/ruleBreachService/interfaces';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import InstancesService from '../../externalServices/instanceService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError, ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
-import { IRule } from '../templates/rules/interfaces';
-import { InstancesManager } from './manager';
+import InstancesManager from './manager';
 
-export class InstancesValidator extends DefaultController {
+class InstancesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
 
     private instancesService: InstancesService;
@@ -35,8 +43,10 @@ export class InstancesValidator extends DefaultController {
     }
 
     // entities
-    private async getCategoryIdFromTemplateId(templateId: string) {
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+    private async getCategoryIdFromTemplateId(templateId: string, isChildTemplate?: boolean) {
+        const template = isChildTemplate
+            ? await this.entityTemplateService.getChildTemplateById(templateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
         return template.category._id;
     }
 
@@ -46,8 +56,8 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanCreateEntityInstance(req: Request) {
-        const { templateId } = req.body;
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
+        const { templateId, childTemplateId } = req.body;
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
     async getAllowedEntityTemplatesForInstances(
@@ -60,11 +70,14 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
-        const allowedEntityTemplates = await this.getAllowedEntityTemplatesForInstances(
-            await this.authorizer.getWorkspacePermissions(user.id),
-            user.id,
-        );
-        const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+        const permissions = await this.authorizer.getWorkspacePermissions(user.id);
+
+        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+            this.getAllowedEntityTemplatesForInstances(permissions, user.id),
+            this.getAllowedChildTemplatesForInstances(permissions),
+        ]);
+
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {
@@ -72,22 +85,36 @@ export class InstancesValidator extends DefaultController {
         }
     }
 
+    async getAllowedChildTemplatesForInstances(
+        userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+    ): Promise<IChildTemplatePopulated[]> {
+        if (!userPermissions.admin && !userPermissions.instances) return [];
+        const allowedCategories = Object.keys(userPermissions.instances?.categories ?? {});
+        return this.entityTemplateService.searchChildTemplates(userPermissions.admin ? {} : { categoryIds: allowedCategories });
+    }
+
     async validateUserCanSearchEntitiesBatch(req: Request) {
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(req.body.templates));
+        const templateIds = Object.entries(req.body.templates ?? {}).map(([templateId, template]) => {
+            if (typeof template === 'object' && template !== null && 'childTemplateId' in template)
+                return (template.childTemplateId as string | undefined) ?? templateId;
+            return templateId;
+        });
+
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
     }
 
     async validateUserCanSearchEntitiesByTemplates(req: Request) {
-        const { templateIds } = req.body;
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
+        const { templateIds, childTemplateIds } = req.body;
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, [...templateIds, ...childTemplateIds]);
     }
 
     async validateUserCanSearchEntitiesOfTemplate(req: Request) {
         const { templateId } = req.params;
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, [templateId]);
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, req.body.childTemplateId || [templateId]);
     }
 
     async validateUserCanExportEntities(req: Request) {
-        const { templates } = req.body;
+        const { templates } = req.body as IExportEntitiesBody;
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
@@ -96,9 +123,13 @@ export class InstancesValidator extends DefaultController {
         templateId: string,
         permissionScope: PermissionScope,
         givenCategoryId?: string,
+        childTemplateId?: string,
     ) {
-        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
+        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(childTemplateId || templateId, !!childTemplateId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+
+        const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
+        const childTemplate = childTemplates.find(({ _id }) => _id === childTemplateId);
 
         if (
             !userPermissions.admin?.scope &&
@@ -107,8 +138,8 @@ export class InstancesValidator extends DefaultController {
                     category === categoryId &&
                     (scope === permissionScope ||
                         scope === PermissionScope.write ||
-                        entityTemplates?.[templateId]?.scope === permissionScope ||
-                        entityTemplates?.[templateId]?.scope === PermissionScope.write),
+                        entityTemplates?.[childTemplate?._id ?? templateId]?.scope === permissionScope ||
+                        entityTemplates?.[childTemplate?._id ?? templateId]?.scope === PermissionScope.write),
             )
         ) {
             throw new ForbiddenError(
@@ -120,15 +151,16 @@ export class InstancesValidator extends DefaultController {
 
     async validateUserCanWriteEntityInstance(req: Request) {
         const { id } = req.params;
+        const { childTemplateId } = req.body;
         const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
-    async validateUserCanDeleteEntityInstances(req: Request) {
-        const { templateId } = req.body;
+    async validateUserCanWriteBulkEntityInstances(req: Request) {
+        const { templateId, childTemplateId } = req.body;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], userId: string) {
@@ -168,13 +200,13 @@ export class InstancesValidator extends DefaultController {
         const { id } = req.params;
         const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, undefined, req.body.childTemplateId);
     }
 
     async validateUserCanGetChart(req: Request) {
         const { templateId } = req.params;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, undefined, req.body.childTemplateId);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {
@@ -186,10 +218,14 @@ export class InstancesValidator extends DefaultController {
 
         const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
-        const allAllowedEntityTemplates = (await templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id)).map(
-            (entityTemplate) => entityTemplate._id,
-        );
-        const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allAllowedEntityTemplates.includes(templateId));
+        const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
+            templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id),
+            this.getAllowedChildTemplatesForInstances(permissionsOfUserId),
+        ]);
+
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
+
+        const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allowedEntityTemplateIds.includes(templateId));
 
         if (!isAllowedAllTemplates)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
@@ -235,7 +271,16 @@ export class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
+        await this.validateEnforcementRules(user, ignoredRules);
+    }
 
+    async validateUserCanIgnoreRulesMultipleUpdate(req: Request) {
+        const { ignoredRules } = req.body;
+        const { user } = req;
+        await this.validateEnforcementRules(user, Object.values(ignoredRules).flat() as IBrokenRule[]);
+    }
+
+    private async validateEnforcementRules(user: Express.User | undefined, ignoredRules: IBrokenRule[]) {
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
@@ -246,8 +291,10 @@ export class InstancesValidator extends DefaultController {
             ignoredRules.map((ignoredRule) => this.relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
         );
 
-        if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
+        if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== ActionOnFail.WARNING)) {
             throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
     }
 }
+
+export default InstancesValidator;

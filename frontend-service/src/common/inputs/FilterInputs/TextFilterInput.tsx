@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
@@ -15,6 +15,10 @@ interface TextFilterProps {
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
+    hideFilterType?: boolean;
+    forceEqualsType?: boolean;
+    error?: boolean;
+    helperText?: string;
 }
 
 const TextFilterInput: React.FC<TextFilterProps> = ({
@@ -24,43 +28,64 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     type,
     handleFilterTypeChange,
     handleFilterFieldChange,
+    error,
+    helperText,
+    hideFilterType = false,
+    forceEqualsType = false,
 }) => {
-    return (
-        <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
-            <Grid item xs={entityFilter ? 5 : 12}>
-                <TypeSelectFilter
-                    filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
-                    handleFilterTypeChange={handleFilterTypeChange}
-                    readOnly={readOnly}
-                    type={type}
-                />
-            </Grid>
+    useEffect(() => {
+        if (forceEqualsType && filterField && filterField.type !== 'equals') {
+            handleFilterTypeChange('equals');
+        }
+    }, [forceEqualsType, filterField]);
 
-            <Grid item xs={entityFilter ? 7 : 12}>
+    return (
+        <Grid
+            container
+            justifyContent="center"
+            direction={entityFilter ? 'row' : 'column'}
+            spacing={1}
+            sx={{ height: 'fit-content', display: 'flex', flexWrap: 'nowrap' }}
+        >
+            {!hideFilterType && (
+                <Grid size={{ xs: entityFilter ? 5 : 12 }}>
+                    <TypeSelectFilter
+                        filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
+                        handleFilterTypeChange={handleFilterTypeChange}
+                        readOnly={readOnly || forceEqualsType}
+                        type={type}
+                    />
+                </Grid>
+            )}
+
+            <Grid size={{ xs: hideFilterType ? 12 : entityFilter ? 7 : 12 }}>
                 <StyledFilterInput
-                    inputProps={{
-                        readOnly,
-                        style: {
-                            textOverflow: 'ellipsis',
-                        },
-                    }}
                     size="small"
                     fullWidth
                     type={type}
-                    value={filterField?.filter ?? ''}
+                    value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
+                    disabled={readOnly}
+                    error={error}
+                    helperText={helperText}
                     onChange={(e) => {
                         const { value } = e.target;
-
                         const updatedFilter =
                             type === 'number'
-                                ? ({ ...filterField, filter: value ? Number(value) : undefined } as IAGGidNumberFilter)
-                                : ({ ...filterField, filter: value } as IAGGridTextFilter);
+                                ? ({
+                                      ...filterField,
+                                      filter: value ? Number(value) : undefined,
+                                      type: forceEqualsType ? 'equals' : filterField?.type,
+                                  } as IAGGidNumberFilter)
+                                : ({
+                                      ...filterField,
+                                      filter: value || undefined,
+                                      type: forceEqualsType ? 'equals' : filterField?.type,
+                                  } as IAGGridTextFilter);
 
-                        handleFilterFieldChange(
-                            updatedFilter,
-                            Boolean(filterField !== undefined && filterField.type && value !== undefined && value !== ''),
-                        );
+                        handleFilterFieldChange(updatedFilter);
                     }}
+                    readOnly={readOnly}
+                    forceOutlined
                 />
             </Grid>
         </Grid>

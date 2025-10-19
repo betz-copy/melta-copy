@@ -33,6 +33,10 @@ export interface ShragaUser {
 
 export interface IConnectedUser {
     id: string;
+    kartoffelId?: string;
+    clientSideWorkspaceId?: string;
+    usersInfoChildTemplateId?: string;
+    clientSideWorkspaceName?: string;
 }
 
 const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, userId, password, done) => {
@@ -64,7 +68,7 @@ export const initPassport = () => {
             },
         ),
     );
- 
+
     passport.use(
         new ShragaStrategy({ shragaURL, callbackURL, useEnrichId }, (user: ShragaUser, next: any) => {
             next(null, user);
@@ -83,7 +87,9 @@ export const initPassport = () => {
 declare global {
     // These declaration are merged into express's Request type
     // this extends @types/passport which extends @types/express
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         export interface User extends IConnectedUser {}
     }
 }

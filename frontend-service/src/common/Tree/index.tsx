@@ -1,98 +1,113 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RichTreeViewPro, TreeItem2Props, TreeViewBaseItem } from '@mui/x-tree-view-pro';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { RichTreeViewPro, TreeViewBaseItem, RichTreeViewProProps, useTreeViewApiRef, TreeItemProps } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
-import { Box, Divider } from '@mui/material';
-import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
-import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
+import { SelectAll } from './SelectAll';
+import { Box, Divider } from '@mui/material';
+import _ from 'lodash';
 
-interface TreeProps<T extends {}> {
+interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
+    // All of the treeItems that the tree has.
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
     getItemLabel: (item: T) => string;
-    multi: boolean;
+    // Display a selectAll checkbox
+    selectAll?: boolean;
     onSelectItems?: (itemIds: string | string[]) => any;
     isDraggable?: boolean;
+    allowMultiSelect?: boolean;
     allowDraggingBetweenParents?: boolean;
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
-    selectAll?: boolean;
-    flattenedTree?: T[];
+    // Tree Items that should be displayed out of all of the tree items.
+    // For example when a searchbar is present use this.
     filteredTreeItems?: T[];
-    isSelectDisabled?: boolean;
+    isSelectable?: boolean;
+    dragAllowNewRoot?: boolean;
     onDragEnd?: (params: { itemId: string; oldPosition: TreeViewItemReorderPosition; newPosition: TreeViewItemReorderPosition }) => void;
+    removeDivider?: boolean;
     showIcon?: boolean;
-    // If true parents only represent the state of their children.
-    parentInfersChildren?: boolean;
 }
 
-const Tree = <T extends {}>({
+export const flattenTree = <T extends {}>(
+    treeItems: TreeViewBaseItem<T>[],
+    getItemId: (item: T) => string,
+    shouldCountParents: boolean,
+    revertedTemplates: any[] = [],
+): any[] => {
+    treeItems.forEach((treeItem) => {
+        const { children, ...rest } = treeItem;
+
+        if (children) {
+            flattenTree(children, getItemId, shouldCountParents, revertedTemplates);
+
+            if (shouldCountParents) revertedTemplates.push(rest);
+        } else {
+            revertedTemplates.push(rest);
+        }
+    });
+
+    return revertedTemplates;
+};
+
+const Tree = <T extends Record<string, any>>({
     treeItems,
     onSelectItems,
     getItemId,
     getItemLabel,
     preSelectedItemsIds,
     preExpandedItemIds,
-    isDraggable,
-    allowDraggingBetweenParents,
-    selectAll,
-    flattenedTree,
-    filteredTreeItems = treeItems,
-    isSelectDisabled,
-    multi = true,
-    parentInfersChildren = true,
+    allowDraggingBetweenParents = true,
+    isSelectable = true,
+    allowMultiSelect = true,
+    isDraggable = false,
+    dragAllowNewRoot = true,
     onDragEnd,
+    removeDivider,
+    selectAll,
     showIcon,
+    filteredTreeItems = treeItems,
+    onClick,
+    onKeyUp,
+    selectionPropagation = { descendants: true, parents: true }, // In order to auto select children
+    ...restOfProps
 }: TreeProps<T>): React.ReactElement => {
-    const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
-        useTreeUtils(getItemId, parentInfersChildren, treeItems);
+    const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
+    const [selectedItemIds, setSelectedItemIds] = useState<string[]>(preSelectedItemsIds ?? []);
 
-    const isFirstRender = useRef<boolean>(true);
+    const apiRef = useTreeViewApiRef();
 
-    const selectedIdsWithParents = useMemo(
-        () => selectParentIfAllChildrenAreSelected(treeItems, getItemId, preSelectedItemsIds),
-        [getItemId, preSelectedItemsIds, selectParentIfAllChildrenAreSelected, treeItems],
+    const memoizedTreeItem = useCallback(
+        (props: TreeItemProps) => <TreeItem {...props} removeDivider={removeDivider} showIcon={showIcon} />,
+        [showIcon],
     );
 
-    const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
+    const flattenTreeIds = useMemo(
+        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map(getItemId),
+        [getItemId, treeItems, selectionPropagation, flattenTree],
+    );
 
     useEffect(() => {
-        setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds ?? []);
-    }, [JSON.stringify(preSelectedItemsIds), JSON.stringify(selectedIdsWithParents)]);
-
-    const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
+        onSelectItems?.(selectedItemIds);
+    }, [selectedItemIds]);
 
     useEffect(() => {
-        if (!onSelectItems || isFirstRender.current || JSON.stringify(selectedIdsWithParents) === JSON.stringify(selectedItemsIds)) {
-            isFirstRender.current = false;
-            return;
+        setExpandedItemsIds(preExpandedItemIds ?? []);
+    }, [preExpandedItemIds, setExpandedItemsIds]);
+
+    useEffect(() => {
+        if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) {
+            setSelectedItemIds(preSelectedItemsIds ?? []);
         }
-
-        let result: string[];
-
-        if (multi) {
-            if (parentInfersChildren) {
-                result = getSelectedLeafIds();
-            } else {
-                result = selectedItemsIds;
-            }
-        } else {
-            result = [selectedItemsIds?.[0]];
-        }
-
-        onSelectItems(result);
-    }, [JSON.stringify(selectedItemsIds)]);
+    }, [preSelectedItemsIds, setSelectedItemIds]);
 
     return (
         <>
             {selectAll && (
                 <>
-                    <SelectAll
-                        allOptionIds={(flattenedTree ?? flattenTree(treeItems, getItemId)).map(getItemId)}
-                        setSelectedOptionIds={setSelectedItemsIds}
-                        selectedOptionIds={selectedItemsIds}
-                    />
+                    <SelectAll allOptionIds={flattenTreeIds} setSelectedOptionIds={setSelectedItemIds} selectedOptionIds={selectedItemIds} />
                     <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                         <Divider style={{ width: '199px' }} />
                     </Box>
@@ -100,29 +115,34 @@ const Tree = <T extends {}>({
             )}
             <RichTreeViewPro
                 style={{ direction: 'rtl' }}
-                checkboxSelection={!isSelectDisabled}
+                checkboxSelection={isSelectable}
                 multiSelect
                 items={filteredTreeItems}
                 getItemId={getItemId}
                 getItemLabel={getItemLabel}
-                selectedItems={selectedItemsIds}
-                onSelectedItemsChange={(_event, itemIds) => {
-                    setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi));
-                }}
-                onExpandedItemsChange={(_event: React.SyntheticEvent, itemIds: string[]) => {
-                    setExpandedItemsIds(itemIds);
-                }}
+                apiRef={apiRef}
+                onSelectedItemsChange={(_, itemIds) => setSelectedItemIds(itemIds)}
+                selectedItems={selectedItemIds}
+                onExpandedItemsChange={(_, itemIds) => setExpandedItemsIds(itemIds)}
                 expandedItems={expandedItemsIds}
                 itemsReordering={isDraggable}
                 expansionTrigger="iconContainer"
                 slots={{
                     expandIcon: ChevronLeft,
                     collapseIcon: ExpandLess,
-                    item: TreeItemWrapper,
+                    item: memoizedTreeItem,
                 }}
-                experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
-                canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
+                canMoveItemToNewPosition={(params) => {
+                    const isDraggingToRoot = params.newPosition.parentId === null;
+
+                    return (
+                        (!isDraggingToRoot || dragAllowNewRoot) &&
+                        (allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId)
+                    );
+                }}
                 onItemPositionChange={onDragEnd}
+                selectionPropagation={selectionPropagation}
+                {...restOfProps}
             />
         </>
     );

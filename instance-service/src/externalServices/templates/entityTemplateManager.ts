@@ -1,6 +1,6 @@
-import { TemplatesManagerService } from '.';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import TemplatesManagerService from '.';
 import config from '../../config';
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from './interfaces/entityTemplates';
 
 const {
     templateService: {
@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-export class EntityTemplateManagerService extends TemplatesManagerService {
+class EntityTemplateManagerService extends TemplatesManagerService {
     // entity templates
     async getEntityTemplateById(id: string) {
         const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
@@ -28,3 +28,5 @@ export class EntityTemplateManagerService extends TemplatesManagerService {
         return data;
     }
 }
+
+export default EntityTemplateManagerService;

@@ -1,34 +1,47 @@
+import { createController, ValidateRequest } from '@microservices/shared';
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import TemplatesController from './controller';
-import { TemplatesValidator } from './middlewares';
+import TemplatesValidator from './middlewares';
 import {
     convertToRelationshipFieldRequestSchema,
     createCategorySchema,
+    createChildTemplateSchema,
     createEntityTemplateSchema,
+    createPrintingTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
+    deleteChildTemplateSchema,
     deleteEntityTemplateSchema,
     deleteFieldValueSchema,
+    deletePrintingTemplateSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getAllChildTemplatesSchema,
+    getAllConfigsSchema,
     getCategoriesSchema,
+    getConfigByTypeSchema,
+    getPrintingTemplateByIdSchema,
+    searchChildTemplatesSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
+    searchPrintingTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
+    updateCategoryTempOrderSchema,
+    updateChildTemplateSchema,
+    updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
+    updatePrintingTemplateSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const {
     templateService: { url, requestTimeout, baseRoute },
@@ -45,8 +58,8 @@ const TemplatesServiceProxy = createProxyMiddleware({
 
 const templatesRouter: Router = Router();
 
-const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
-const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
+const templatesControllerMiddleware = createController(TemplatesController);
+const templatesValidatorMiddleware = createController(TemplatesValidator, true);
 
 // all needed categories
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
@@ -83,6 +96,37 @@ templatesRouter.post(
     templatesControllerMiddleware.searchCategories,
 );
 
+templatesRouter.patch(
+    '/categories/templatesOrder/:templateId',
+    ValidateRequest(updateCategoryTempOrderSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryTemplatesOrder,
+);
+
+// config
+
+templatesRouter.get(
+    `/config/all`,
+    ValidateRequest(getAllConfigsSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getAllConfigs,
+);
+
+templatesRouter.get(
+    '/config/:type',
+    ValidateRequest(getConfigByTypeSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.getConfigByType,
+);
+
+templatesRouter.put(
+    '/config/categoryOrder/:configId',
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryOrderConfig,
+);
+
+templatesRouter.post('/config/categoryOrder', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.createOrderConfig);
+
 // entities (templates)
 templatesRouter.put(
     '/entities/update-enum-field/:id',
@@ -96,8 +140,13 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
-templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
-templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates); // todo shirel
+templatesRouter.patch(
+    '/entities/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    AuthorizerControllerMiddleware.userIsRootAdmin,
+    templatesControllerMiddleware.updateEntityTemplateAction,
+);
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',
     busboyMiddleware,
@@ -217,6 +266,78 @@ templatesRouter.post(
     ValidateRequest(searchRulesRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchRulesTemplates,
+);
+
+// child templates
+templatesRouter.post(
+    '/child',
+    busboyMiddleware,
+    ValidateRequest(createChildTemplateSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
+    templatesControllerMiddleware.createChildTemplate,
+);
+
+templatesRouter.post(
+    '/child/search',
+    ValidateRequest(searchChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.get(
+    '/child',
+    ValidateRequest(getAllChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.put(
+    '/child/:id',
+    ValidateRequest(updateChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateChildTemplate,
+);
+
+templatesRouter.delete(
+    '/child/:id',
+    ValidateRequest(deleteChildTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    TemplatesServiceProxy,
+);
+
+// Printing Templates CRUD
+templatesRouter.post(
+    '/print',
+    ValidateRequest(createPrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.createPrintingTemplate,
+);
+templatesRouter.get('/print/all', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.getAllPrintingTemplates);
+
+templatesRouter.get(
+    '/print/:id',
+    ValidateRequest(getPrintingTemplateByIdSchema),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.getPrintingTemplateById,
+);
+templatesRouter.put(
+    '/print/:id',
+    ValidateRequest(updatePrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updatePrintingTemplate,
+);
+templatesRouter.delete(
+    '/print/:id',
+    ValidateRequest(deletePrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.deletePrintingTemplate,
+);
+templatesRouter.post(
+    '/print/search',
+    ValidateRequest(searchPrintingTemplatesSchema),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.searchPrintingTemplates,
 );
 
 export default templatesRouter;

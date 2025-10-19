@@ -1,3 +1,23 @@
+import {
+    ActionErrors,
+    addPropertyToRequest,
+    CoordinateSystem,
+    FilterLogicalOperator,
+    getFilterFromChildTemplate,
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IFilterGroup,
+    IFilterOfField,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    IUniqueConstraintOfTemplate,
+    matchValueAgainstFilter,
+    ValidationError,
+} from '@microservices/shared';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
@@ -6,39 +26,23 @@ import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'da
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
-import { addPropertyToRequest } from '../../utils/express';
+import FilterValidation from '../../error';
+import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
+import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
-import { ValidationError } from '../error';
-import {
-    IFilterOfField,
-    IFilterOfTemplate,
-    IGetExpandedEntityBody,
-    ISearchBatchBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
-    IUniqueConstraintOfTemplate,
-} from './interface';
-import { ActionErrors } from '../bulkActions/interface';
+import { IGetExpandedEntityBody } from './interface';
 
-const { neo4j, ajvCustomFormats } = config;
-
-enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
+const { neo4j, ajvCustomFormats, timezone } = config;
 
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
+ajv.addFormat('comment', ajvCustomFormats.commentFieldRegex);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -46,6 +50,8 @@ ajv.addFormat('user', {
         return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
     },
 });
+ajv.addFormat('kartoffelUserField', /.*/);
+ajv.addFormat('unitField', /.*/);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
 ajv.addFormat('location', {
@@ -64,16 +70,24 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'number',
 });
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
+});
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -88,11 +102,14 @@ export class EntityValidator extends DefaultController {
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
+    private childTemplateManagerService: ChildTemplateManagerService;
+
     constructor(workspaceId: string) {
         super(undefined);
 
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
+        this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
@@ -131,13 +148,46 @@ export class EntityValidator extends DefaultController {
         }
     }
 
+    async getChildFilters(childTemplateId: string): Promise<ISearchFilter | undefined> {
+        const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
+        return getFilterFromChildTemplate(childTemplate);
+    }
+
+    validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
+        const notValidKey = matchValueAgainstFilter(properties, filter);
+        if (notValidKey)
+            throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
+                properties,
+                errors: [
+                    {
+                        type: ActionErrors.validation,
+                        metadata: {
+                            message: `FilterValidationError: Property ${notValidKey} do not match the filter`,
+                            path: `/${notValidKey}`,
+                            schemaPath: `/${notValidKey}`,
+                            params: {},
+                        },
+                    },
+                ],
+            });
+    }
+
     async validateEntityRequest(req: Request) {
-        const { templateId, properties } = req.body;
+        const { templateId, properties, childTemplateId } = req.body;
 
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
 
         this.validateEntity(entityTemplate, properties);
 
+        if (childTemplateId) {
+            const filter = await this.getChildFilters(childTemplateId);
+            this.validatePropertiesMatchFilters(req.body.properties, filter);
+        }
+        addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+    }
+
+    async validateTemplateExistence(req: Request) {
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
@@ -182,11 +232,13 @@ export class EntityValidator extends DefaultController {
     }
 
     private strictIsValidDateString(dateString: string, expectedFormat: string) {
+        if (neo4j.relativeDateFilters.includes(dateString)) return true;
+
         const parsedDate = parse(dateString, expectedFormat, new Date());
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);
     }
 
-    private validateSimplePartFilterOfField(rhs: boolean | string | number | null, templateOfField: IEntitySingleProperty, path: string) {
+    private validateSimplePartFilterOfField(rhs: boolean | string | number | RegExp | null, templateOfField: IEntitySingleProperty, path: string) {
         if (rhs === null) return;
 
         const { type, format } = templateOfField;
@@ -238,12 +290,23 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    private validateFilterOfTemplate(filterOfTemplate: IFilterOfTemplate, template: IMongoEntityTemplate, path: string) {
-        Object.entries(filterOfTemplate).forEach(([field, filterOfField]) => {
+    private validateFilterOfTemplate(filterOfTemplate: IFilterGroup, template: IMongoEntityTemplate, path: string) {
+        Object.entries(filterOfTemplate).forEach(([filterKey, filterOfField]) => {
             if (!filterOfField) return;
 
-            if (!template.propertiesOrder.includes(field)) throw new ValidationError(`field ${path}.${field} doesnt exist in template`);
-            this.validateFilterOfField(filterOfField, template.properties.properties[field], `${path}.${field}`);
+            if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
+                if (Array.isArray(filterOfField)) {
+                    filterOfField.map((currFilterOfTemplate, i) =>
+                        this.validateFilterOfTemplate(currFilterOfTemplate, template, `${path}.\`${filterKey}\`[${i}]`),
+                    );
+                    return;
+                }
+                this.validateFilterOfTemplate(filterOfField, template, `${path}.\`$and\``);
+                return;
+            }
+
+            if (!template.propertiesOrder.includes(filterKey)) throw new ValidationError(`field ${path}.${filterKey} doesnt exist in template`);
+            this.validateFilterOfField(filterOfField, template.properties.properties[filterKey], `${path}.${filterKey}`);
         });
     }
 
@@ -256,9 +319,7 @@ export class EntityValidator extends DefaultController {
         if ($or) {
             $or.forEach((orPart, index) => this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`));
         }
-
         if (!$and) return;
-
         if (Array.isArray($and)) {
             $and.forEach((andPart, index) => this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`));
         } else {
@@ -343,7 +404,7 @@ export class EntityValidator extends DefaultController {
 
         const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId]);
 
-        if (filter) this.validateFilter(filter, entityTemplateForValidation, 'filter');
+        if (filter) this.validateFilterOfTemplate(filter, entityTemplateForValidation, 'filter');
 
         this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
 
@@ -419,7 +480,7 @@ export class EntityValidator extends DefaultController {
         const templateIds = Object.keys(searchBody);
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length) {
-            throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+            throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
@@ -437,7 +498,7 @@ export class EntityValidator extends DefaultController {
 
 // same format as dates shown in UI
 const formatDateTimeForFullTextSearch = (date: Date) => {
-    return formatFnsInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
+    return formatFnsInTimeZone(date, timezone, 'dd/MM/yyyy, HH:mm:ss');
 };
 
 const formatDateForFullTextSearch = (date: Date) => {
@@ -454,97 +515,126 @@ export const getFilesName = (files: string[]): string => {
     return fileNames.join(', ');
 };
 
-export const addStringFieldsAndNormalizeSpecialStringValues = (
+/**
+ * Prepares the entityProperties to be inserted to neo4j.
+ * Adds suffixes to special keys (such as booleans and users)
+ * And changes some of the values to strings (dates, users, bools etc...)
+ * @param recursiveRelationshipReference
+ * @returns flattened entity (i.e. an object with no nested properties, using key paths as keys).
+ */
+export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
-    entityTemplate: IMongoEntityTemplate,
+    entityTemplate: IMongoEntityTemplate | IEntityTemplate,
+    entityTemplateService: EntityTemplateManagerService,
+    coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
-): Record<string, any> => {
-    const normalizedEntity = {};
+): Promise<Record<string, any>> => {
+    const normalizedEntity: Record<string, any> = {};
 
-    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-        if (!(key in entityProperties)) {
-            if (value.type === 'boolean') {
-                normalizedEntity[key] = false;
-                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+    await Promise.all(
+        Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
+            if (Object.keys(coloredFields ?? {}).includes(key) && entityProperties[key] !== undefined)
+                normalizedEntity[`${key}${neo4j.colorPropertySuffix}`] = coloredFields?.[key];
+
+            if (!(key in entityProperties)) {
+                if (value.type === 'boolean') {
+                    normalizedEntity[key] = false;
+                    normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+                }
+                return;
             }
 
-            return;
-        }
+            const propertyValue = entityProperties[key];
+            const { type, format, items } = value;
 
-        const propertyValue = entityProperties[key];
-        const { type, format, items } = value;
-        if (format === 'user') {
-            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
-                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-                    JSON.parse(propertyValue)[userField.originalFieldName];
-            });
-            return;
-        }
-
-        if (type === 'array' && items?.format === 'user') {
-            config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
-                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                    (user) => JSON.parse(user)[userField.originalFieldName],
-                );
-            });
-
-            return;
-        }
-
-        // For Neo4j fulltext search (supports only string properties)
-        if (type !== 'string') {
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
-        }
-
-        if (type === 'boolean') {
-            normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
-        }
-
-        if (type === 'array' && value.items?.format === 'fileId') {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
-        }
-
-        if (type === 'string' && (format === 'fileId' || format === 'signature')) {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
-        }
-
-        if (type === 'string' && format === 'date') {
-            normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
-
-            return;
-        }
-
-        if (type === 'string' && format === 'date-time') {
-            normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(new Date(propertyValue));
-
-            return;
-        }
-
-        if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-            if (recursiveRelationshipReference) {
-                normalizedEntity[key] = propertyValue.properties[value.relationshipReference!.relatedTemplateField] || propertyValue.properties._id;
-            } else {
-                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
-                Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {
-                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+            if (format === 'user') {
+                config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                        JSON.parse(propertyValue)[originalFieldName];
                 });
+                return;
             }
 
-            return;
-        }
-        if (type === 'string' && format === 'location') {
-            const location = JSON.parse(propertyValue);
-            normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
-            normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
+            if (type === 'array' && items?.format === 'user') {
+                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                        (user: string) => JSON.parse(user)[originalFieldName],
+                    );
+                });
+                return;
+            }
 
-            return;
-        }
+            // For Neo4j fulltext search (supports only string properties)
+            if (type !== 'string') {
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
+            }
 
-        normalizedEntity[key] = propertyValue;
-    });
+            if (type === 'boolean') {
+                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
+            }
+
+            if (type === 'array' && items?.format === 'fileId') {
+                normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
+            }
+
+            if (type === 'string' && (format === 'fileId' || format === 'signature')) {
+                normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
+            }
+
+            if (type === 'string' && format === 'date') {
+                const date = new Date(propertyValue);
+                normalizedEntity[key] = getNeo4jDate(date);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(date);
+                return;
+            }
+
+            if (type === 'string' && format === 'date-time') {
+                const dateTime = new Date(propertyValue);
+                normalizedEntity[key] = getNeo4jDateTime(dateTime);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(dateTime);
+                return;
+            }
+
+            if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
+                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+
+                if (recursiveRelationshipReference) {
+                    const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
+
+                    const hasNestedRelationship = Object.values(relatedEntityTemplate.properties.properties).some(
+                        ({ format: nestedFormat }) => nestedFormat === 'relationshipReference',
+                    );
+
+                    relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
+                        propertyValue.properties,
+                        relatedEntityTemplate,
+                        entityTemplateService,
+                        coloredFields,
+                        hasNestedRelationship,
+                    );
+                }
+
+                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
+                Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
+                    if (innerKey !== 'coloredProperties')
+                        normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                });
+
+                return;
+            }
+
+            if (type === 'string' && format === 'location') {
+                const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
+
+                normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
+                normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
+                return;
+            }
+
+            normalizedEntity[key] = propertyValue;
+        }),
+    );
 
     return normalizedEntity;
 };

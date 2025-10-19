@@ -1,19 +1,27 @@
+import {
+    ActionErrors,
+    ActionTypes,
+    BadRequestError,
+    IBrokenRuleEntity,
+    IBrokenRulesError,
+    IEntity,
+    IChildTemplatePopulated,
+    IFailedEntity,
+    IMongoEntityTemplatePopulated,
+    IWorkspace,
+    ServiceError,
+    UploadedFile,
+} from '@microservices/shared';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
-import { BadRequestError, ServiceError } from '../../express/error';
-import { IWorkspace } from '../../express/workspaces/interface';
-import { ActionErrors, ActionTypes, IBrokenRuleEntity, IFailedEntity } from '../../externalServices/ruleBreachService/interfaces';
-import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { UploadedFile } from '../busboy/interface';
 import { getValidationErrorEntities, readExcelFile } from './getFunctions';
-import { IBrokenRulesError, IEntity } from '../../externalServices/instanceService/interfaces/entities';
 
 const { errorCodes, loadExcel } = config;
 
 export const getAllEntitiesFromExcel = async (
     files: UploadedFile[],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
 ) => {
@@ -22,14 +30,13 @@ export const getAllEntitiesFromExcel = async (
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
-    return fileEntities;
+    return readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
     Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
 
-export const getSerialStarters = (template: IMongoEntityTemplatePopulated): Record<string, number> => {
+export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IChildTemplatePopulated): Record<string, number> => {
     return Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
         .reduce((acc, [key, value]) => {
@@ -38,7 +45,7 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated): Reco
         }, {});
 };
 
-export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
@@ -53,7 +60,12 @@ export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], e
 
                 failedEntities.push({
                     properties: entity.properties,
-                    errors: [{ type: ActionErrors.unique, metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties } }],
+                    errors: [
+                        {
+                            type: ActionErrors.unique,
+                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties, uniqueGroupName: '' },
+                        },
+                    ],
                 });
             }
 
@@ -76,7 +88,9 @@ export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], e
                     break;
             }
         }
-        if (data.type === errorCodes.templateValidationError) getValidationErrorEntities(error as AxiosError, failedEntities);
+
+        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
+            getValidationErrorEntities(error as AxiosError, failedEntities);
     } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,

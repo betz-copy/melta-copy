@@ -1,26 +1,27 @@
-import React, { useState } from 'react';
-import i18next from 'i18next';
-import { Form, Formik, FormikErrors, FormikProps, yupToFormErrors } from 'formik';
-import * as Yup from 'yup';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { AxiosError } from 'axios';
+import { Form, Formik, FormikErrors, FormikProps, yupToFormErrors } from 'formik';
+import i18next from 'i18next';
+import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
+import * as Yup from 'yup';
+import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
+import { IErrorResponse } from '../../../interfaces/error';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { IRelationship } from '../../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { createRelationshipRequest } from '../../../services/relationshipsService';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { trycatch } from '../../../utils/trycatch';
+import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
-import StrechableArrowRight from './strechableArrowRight';
-import { trycatch } from '../../../utils/trycatch';
-import { createRelationshipRequest } from '../../../services/relationshipsService';
-import { IRelationship } from '../../../interfaces/relationships';
-import { ErrorToast } from '../../ErrorToast';
-import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import { environment } from '../../../globals';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { PermissionScope } from '../../../interfaces/permissions';
+import StrechableArrowRight from './strechableArrowRight';
 
 const { errorCodes } = environment;
 
@@ -194,7 +195,7 @@ const CreateRelationshipDialog: React.FC<{
         },
         {
             onError: (err: AxiosError, { relationshipInstancePopulated }) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setCreateWithRuleBreachDialogState({
                         isOpen: true,
@@ -204,7 +205,7 @@ const CreateRelationshipDialog: React.FC<{
                     });
                 }
 
-                console.log('failed to create relationship. error:', err);
+                console.error('failed to create relationship. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('addRelationshipDialog.failedToCreateRelationship')} />);
             },
             onSuccess: (createdRelationship, { relationshipInstancePopulated: { sourceEntity, destinationEntity } }) => {
@@ -218,7 +219,7 @@ const CreateRelationshipDialog: React.FC<{
 
     return (
         <>
-            <Dialog open={isOpen} fullWidth maxWidth="xl" PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}>
+            <Dialog open={isOpen} fullWidth maxWidth="xl" slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white' } } }}>
                 <Formik
                     initialValues={initialValues}
                     onSubmit={(values) =>
@@ -237,7 +238,7 @@ const CreateRelationshipDialog: React.FC<{
                             <DialogTitle>{i18next.t('addRelationshipDialog.title')}</DialogTitle>
                             <DialogContent>
                                 <Grid container alignItems="center" spacing={1}>
-                                    <Grid item xs={4}>
+                                    <Grid size={{ xs: 4 }}>
                                         <SourceOrDestinationEntityInput
                                             field="sourceEntity"
                                             formikProps={formikProps}
@@ -245,19 +246,19 @@ const CreateRelationshipDialog: React.FC<{
                                             addNewEntityLabel={i18next.t('addRelationshipDialog.addSourceEntityLabel')}
                                         />
                                     </Grid>
-                                    <Grid item xs={4} container direction="column" alignItems="stretch" spacing={1}>
-                                        <Grid item>
+                                    <Grid size={{ xs: 4 }} container direction="column" alignItems="stretch" spacing={1}>
+                                        <Grid>
                                             <Box sx={{ margin: '5px' }}>
                                                 <RelationshipTemplateInput formikProps={formikProps} />
                                             </Box>
                                         </Grid>
-                                        <Grid item container justifyContent="center">
-                                            <Grid item xs={8}>
+                                        <Grid container justifyContent="center">
+                                            <Grid size={{ xs: 8 }}>
                                                 <StrechableArrowRight />
                                             </Grid>
                                         </Grid>
                                     </Grid>
-                                    <Grid item xs={4}>
+                                    <Grid size={{ xs: 4 }}>
                                         <SourceOrDestinationEntityInput
                                             field="destinationEntity"
                                             formikProps={formikProps}

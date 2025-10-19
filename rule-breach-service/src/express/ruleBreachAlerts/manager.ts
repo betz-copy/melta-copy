@@ -1,11 +1,8 @@
+import { DefaultManagerMongo, IRuleBreachAlert, IAgGridRequest, IRuleBreach } from '@microservices/shared';
 import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import { IAgGridRequest } from '../../utils/interfaces/agGrid';
-import { IRuleBreach } from '../../utils/interfaces/ruleBreach';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
-import { IRuleBreachAlert } from './interface';
-import { RuleBreachAlertsSchema } from './model';
+import RuleBreachAlertsSchema from './model';
 
 export default class RuleBreachAlertsManager extends DefaultManagerMongo<IRuleBreachAlert> {
     constructor(workspaceId: string) {

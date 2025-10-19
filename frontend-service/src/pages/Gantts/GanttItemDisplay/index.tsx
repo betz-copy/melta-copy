@@ -1,16 +1,16 @@
-import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
-import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
+import React, { useMemo } from 'react';
+import { useQueryClient } from 'react-query';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { environment } from '../../../globals';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
-import { EntityTemplateDisplay } from './EntityTemplateDisplay';
-import { environment } from '../../../globals';
-import { GanttItemEdit } from './GanttItemEdit';
 import { ConnectionIcon } from './ConnectionIcon.styled';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { EntityTemplateDisplay } from './EntityTemplateDisplay';
+import { GanttItemEdit } from './GanttItemEdit';
 
 const { separators } = environment.ganttSettings;
 

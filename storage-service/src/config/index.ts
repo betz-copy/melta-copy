@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import * as env from 'env-var';
-import { fileExtension } from './documentExtension';
+import fileExtension from './documentExtension';
 
-export const config = {
+const config = {
     busboy: {
         fileKeyName: 'file',
         filesKeyName: 'files',
@@ -13,6 +13,10 @@ export const config = {
         workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
+        highWaterMark: env
+            .get('HIGH_WATER_MARK')
+            .default(600 * 1024 * 1024)
+            .asInt(),
     },
     minio: {
         url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
@@ -67,7 +71,9 @@ export const config = {
     document: {
         previewPrefix: env.get('DOCUMENT_PREVIEW_PREFIX').default('preview').asString(),
         previewFileType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default('.pdf').asString(),
-        documentType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default(fileExtension.document).asArray(),
+        documentType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default(fileExtension.document.join(',')).asArray(),
         uuidLength: env.get('FILE_UUID_LENGTH').default(32).asInt(),
     },
 };
+
+export default config;

@@ -1,6 +1,6 @@
-import { IWorkspace, WorkspaceTypes } from '../interfaces/workspaces';
+import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
 
-export const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
+const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
     return [
         {
             name: '504',
@@ -20,5 +20,25 @@ export const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
                 primary: '#1E2775',
             },
         },
+        {
+            name: 'simba',
+            displayName: 'Simba',
+            path: '/',
+            type: WorkspaceTypes.dir,
+            colors: {
+                primary: '#1E2775',
+            },
+        },
+        {
+            name: 'test',
+            displayName: 'Test',
+            path: '/simba',
+            type: WorkspaceTypes.mlt,
+            colors: {
+                primary: '#1E2775',
+            },
+        },
     ];
 };
+
+export default getWorkspacesToCreate;

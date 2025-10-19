@@ -3,24 +3,123 @@ import { Autocomplete, Button, CircularProgress, Grid, TextField } from '@mui/ma
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { exportEntityToDocumentRequest } from '../../../services/entitiesService';
 import { getLongDate } from '../../../utils/date';
 import { getFileName } from '../../../utils/getFileName';
 import { EntityWizardValues } from '.';
+import { IEntity } from '../../../interfaces/entities';
+import { locationConverterToString } from '../../../utils/map/convert';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/RjsfLocationWidget';
+import _ from 'lodash';
 
 export const ExportFormats: React.FC<{
     properties: EntityWizardValues['properties'];
+    templateId: IEntity['templateId'];
     documentTemplateIds?: string[];
     disabled?: boolean;
     justifyContent?: React.CSSProperties['justifyContent'];
-}> = ({ properties, documentTemplateIds = [], disabled = false, justifyContent }) => {
+}> = ({ properties, templateId, documentTemplateIds = [], disabled = false, justifyContent }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates: IEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const formatFieldsForExport = (): EntityWizardValues['properties'] => {
+        // the copy is created so it wouldn't change the original expandedEntity.
+        const propertyCopy = _.cloneDeep(properties);
+
+        for (const [fieldKey, field] of Object.entries(entityTemplates.get(templateId)!.properties.properties)) {
+            if (field?.format === 'relationshipReference' && field?.relationshipReference?.relatedTemplateField) {
+                const relatedField: string = field.relationshipReference.relatedTemplateField;
+                const relationshipObject = propertyCopy?.[fieldKey];
+
+                if (relationshipObject && typeof relationshipObject === 'object' && relationshipObject.properties) {
+                    const relatedEntityTemplate = entityTemplates.get(field.relationshipReference.relatedTemplateId);
+
+                    if (relatedEntityTemplate) {
+                        if (relatedEntityTemplate?.properties.properties[relatedField].format === 'location') {
+                            //is a location
+                            propertyCopy[fieldKey] = {
+                                ...relationshipObject.properties?.[relatedField],
+                                coordinateSystem: relationshipObject.properties?.[`${relatedField}_coordinateSystem`],
+                            };
+                        } else {
+                            const relationshipField = relationshipObject.properties?.[relatedField];
+                            propertyCopy[fieldKey] = relationshipField;
+                        }
+                    } else {
+                        propertyCopy[fieldKey] = i18next.t('templateEntitiesAutocomplete.noWritePermissions');
+                    }
+                }
+            } else if (field?.format === 'user') {
+                // Sometimes and somewhere user is sent as a stringified JSON.
+                try {
+                    propertyCopy[fieldKey] = JSON.parse(propertyCopy[fieldKey]);
+                } catch {
+                    propertyCopy[fieldKey] = propertyCopy[fieldKey];
+                }
+            } else if (field.type === 'array' && field.items?.format === 'user') {
+                // Sometimes and somewhere users are sent as an array of stringified JSONs, and sometimes as an object with arrays of each user field.
+                const parsed = propertyCopy[fieldKey].map((field) => {
+                    try {
+                        return JSON.parse(field);
+                    } catch {
+                        return field;
+                    }
+                });
+
+                propertyCopy[fieldKey] = {
+                    ids: parsed.map((user) => user._id),
+                    fullNames: parsed.map((user) => user.fullName),
+                    jobTitles: parsed.map((user) => user.jobTitle),
+                    hierarchies: parsed.map((user) => user.hierarchy),
+                    mails: parsed.map((user) => user.mail),
+                };
+            }
+
+            const expandedField = propertyCopy?.[fieldKey];
+
+            if (expandedField?.location) {
+                propertyCopy[fieldKey] =
+                    expandedField.coordinateSystem === CoordinateSystem.UTM
+                        ? locationConverterToString(expandedField.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                        : expandedField.location;
+            } else if (
+                expandedField?.fullName &&
+                expandedField?.mail &&
+                (expandedField?.id || expandedField?._id) &&
+                expandedField?.hierarchy &&
+                expandedField?.jobTitle
+            ) {
+                propertyCopy[fieldKey] = expandedField.fullName;
+            } else if (Array.isArray(expandedField)) {
+                propertyCopy[fieldKey] = expandedField.map((item) => {
+                    try {
+                        return JSON.parse(item).fullName;
+                    } catch {
+                        return item;
+                    }
+                });
+            } else if (
+                expandedField?.fullNames &&
+                expandedField?.mails &&
+                expandedField?.ids &&
+                expandedField?.hierarchies &&
+                expandedField?.jobTitles
+            ) {
+                propertyCopy[fieldKey] = expandedField.fullNames;
+            }
+        }
+
+        return propertyCopy;
+    };
+
     const [selectedFileToExport, setSelectedFileToExport] = useState('');
 
     const { isLoading: isExportToFileLoading, mutate: exportMutation } = useMutation(
-        ({ documentTemplateId, entityProperties }: { documentTemplateId: string; entityProperties: EntityWizardValues['properties'] }) =>
-            exportEntityToDocumentRequest(documentTemplateId, entityProperties),
+        ({ documentTemplateId, entity }: { documentTemplateId: string; entity: IEntity }) =>
+            exportEntityToDocumentRequest(documentTemplateId, entity),
         {
             onSuccess: (file) => {
                 const [fileName, fileExtension] = getFileName(selectedFileToExport).split('.');
@@ -33,8 +132,8 @@ export const ExportFormats: React.FC<{
     );
 
     return (
-        <Grid container item justifyContent={justifyContent} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
-            <Grid item>
+        <Grid container justifyContent={justifyContent} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
+            <Grid>
                 <Autocomplete
                     options={documentTemplateIds.map((fileName) => ({
                         label: getFileName(fileName),
@@ -67,7 +166,7 @@ export const ExportFormats: React.FC<{
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <Button
                     sx={{
                         borderRadius: '0.5rem',
@@ -77,7 +176,10 @@ export const ExportFormats: React.FC<{
                     variant="contained"
                     startIcon={isExportToFileLoading ? <CircularProgress /> : <FileDownloadOutlined />}
                     onClick={() => {
-                        exportMutation({ documentTemplateId: selectedFileToExport, entityProperties: properties });
+                        exportMutation({
+                            documentTemplateId: selectedFileToExport,
+                            entity: { templateId, properties: formatFieldsForExport() as IEntity['properties'] },
+                        });
                     }}
                     disabled={!selectedFileToExport?.length || isExportToFileLoading}
                 >

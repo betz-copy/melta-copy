@@ -14,7 +14,7 @@ interface TypeSelectFilterProps {
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    readOnly: boolean;
+    readOnly?: boolean;
     type: string;
 }
 
@@ -40,10 +40,11 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
             SelectProps={{
                 IconComponent: IoIosArrowDown,
             }}
+            disabled={readOnly}
         >
             {filterOptions[type].map((option: string) => (
                 <MenuItem key={option} value={option}>
-                    {i18next.t(`filters.${option}`)}
+                    {i18next.t(`filters.${type === 'string' ? 'text' : type}.${option}`)}
                 </MenuItem>
             ))}
         </StyledFilterInput>

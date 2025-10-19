@@ -1,15 +1,17 @@
 import Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { IEntityTemplate, IEnumPropertiesColors, IProperties } from './interface';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties, ColorSchema, variableNameValidation, searchFilterSchema } from '@microservices/shared';
 import config from '../../config';
-import { ColorSchema, variableNameValidation } from '../../utils/joi';
 
 const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
+ajv.addFormat('comment', /.*/);
+ajv.addFormat('kartoffelUserField', /.*/);
+ajv.addFormat('unitField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -39,13 +41,31 @@ ajv.addKeyword({
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
+ajv.addKeyword({ keyword: 'isProfileImage', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'comment',
+    'kartoffelUserField',
+    'unitField',
+];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -58,8 +78,7 @@ const propertiesArraySchema = Joi.array()
             format: Joi.string()
                 .valid(...stringFormats)
                 .when('type', { not: 'string', then: Joi.forbidden() })
-                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() })
-                .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
+                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             readOnly: Joi.valid(true),
             identifier: Joi.valid(true),
@@ -104,10 +123,25 @@ const propertiesArraySchema = Joi.array()
                 relationshipTemplateDirection: Joi.string().valid('outgoing', 'incoming').required(),
                 relatedTemplateId: Joi.string().required(),
                 relatedTemplateField: Joi.string().required(),
+                filters: searchFilterSchema.custom((value) => {
+                    // todo: upgrade mongo version up to 5 and then delete that convert
+                    if (value) return JSON.stringify(value);
+                    return value;
+                }),
             }).when('format', { is: 'relationshipReference', then: Joi.required(), otherwise: Joi.forbidden() }),
+            expandedUserField: Joi.object({
+                relatedUserField: Joi.string().required(),
+                kartoffelField: Joi.string().required(),
+            }).when('format', { is: 'kartoffelUserField', then: Joi.required(), otherwise: Joi.forbidden() }),
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
+            comment: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
+            color: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
+            hideFromDetailsPage: Joi.boolean().when('format', { not: 'comment', then: Joi.forbidden() }),
+            isProfileImage: Joi.boolean()
+                .when('format', { not: 'kartoffelUserField', then: Joi.forbidden() })
+                .when('expandedUserField.kartoffelField', { not: 'image', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);
@@ -169,6 +203,13 @@ export const innerPropertiesSchema = Joi.object()
         return value;
     });
 
+export const innerFieldGroupsSchema = Joi.array().items(
+    Joi.object({
+        name: Joi.string().required(),
+        displayName: Joi.string().required(),
+        fields: Joi.array().items(Joi.string()).unique().required(),
+    }),
+);
 const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: string[], helpers) => {
     const { properties } = helpers.state.ancestors[0].properties;
     const propertiesKeys = Object.keys(properties);

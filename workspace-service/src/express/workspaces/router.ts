@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { wrapController } from '../../utils/express';
-import { ValidateRequest } from '../../utils/joi';
-import { WorkspacesController } from './controller';
+import { wrapController, ValidateRequest } from '@microservices/shared';
+import WorkspacesController from './controller';
 import {
     createOneSchema,
     deleteOneSchema,
@@ -15,7 +14,7 @@ import {
     updateOneSchema,
 } from './validator.schema';
 
-export const workspacesRouter: Router = Router();
+const workspacesRouter: Router = Router();
 
 workspacesRouter.post('/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspacesController.getWorkspaceIds));
 
@@ -40,3 +39,5 @@ workspacesRouter.put('/:id', ValidateRequest(updateOneSchema), wrapController(Wo
 workspacesRouter.patch('/:id/metadata', ValidateRequest(updateMetadataSchema), wrapController(WorkspacesController.updateMetadata));
 
 workspacesRouter.post('/search', ValidateRequest(searchWorkspacesSchema), wrapController(WorkspacesController.getWorkspaces));
+
+export default workspacesRouter;

@@ -24,6 +24,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -62,6 +63,12 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { isChildTemplate } from '../../utils/templates';
+import { useUserStore } from '../../stores/user';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -85,14 +92,27 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
+export enum TablePageType {
+    category = 'category',
+    relationship = 'relationship',
+    globalSearch = 'globalSearch',
+    clientSide = 'client-side',
+    map = 'map',
+}
+
 export const getDatasource = <Data extends any = EntityData>(
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
     defaultFilter?: ISearchFilter,
+    pageType?: string,
+    clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
+    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
+
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
             if (rowData) {
@@ -106,15 +126,27 @@ export const getDatasource = <Data extends any = EntityData>(
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
             const { result: data, err } = await trycatch(() =>
-                searchEntitiesOfTemplateRequest(
-                    template._id,
-                    agGridToSearchEntitiesOfTemplateRequest(
-                        { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
-                        template,
-                        // tableCount, // comment out  waiting for Itay
-                        defaultFilter,
-                    ),
-                ),
+                pageType === 'client-side'
+                    ? searchEntitiesOfTemplateClientSideRequest(
+                          parentTemplateId,
+                          clientSideUserEntityId!,
+                          agGridToSearchEntitiesOfTemplateRequest(
+                              { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                              template,
+                              // tableCount, // comment out  waiting for Itay
+                              defaultFilter,
+                          ),
+                      )
+                    : searchEntitiesOfTemplateRequest(
+                          parentTemplateId,
+                          agGridToSearchEntitiesOfTemplateRequest(
+                              { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                              template,
+                              // tableCount, // comment out  waiting for Itay
+                              defaultFilter,
+                          ),
+                          childTemplateId ? [childTemplateId] : [],
+                      ),
             );
 
             if (err || !data) {
@@ -139,7 +171,7 @@ export type IConnection = {
 
 export const getRowModelProps = <Data extends any = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
     // tableCount: number,// comment out  waiting for Itay
@@ -147,6 +179,8 @@ export const getRowModelProps = <Data extends any = EntityData>(
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
     defaultFilter?: ISearchFilter,
+    pageType?: string,
+    clientSideUserEntityId?: string,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -159,7 +193,15 @@ export const getRowModelProps = <Data extends any = EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], defaultFilter),
+        serverSideDatasource: getDatasource<IConnection>(
+            template,
+            quickFilterText,
+            datasourceOnFail,
+            rowData as IConnection[],
+            defaultFilter,
+            pageType,
+            clientSideUserEntityId,
+        ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -170,13 +212,14 @@ export const getRowModelProps = <Data extends any = EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
     editRowButtonProps?: IButtonPopoverProps<Data>;
     menuRowButtonProps?: boolean;
+    addRelationshipReferenceButtonProps?: string;
     hasPermissionToTemplate?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
@@ -196,7 +239,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
         shouldSaveColumnOrder: boolean;
         shouldSavePagination: boolean;
         shouldSaveScrollPosition: boolean;
-        pageType?: string;
+        pageType?: TablePageType | `entity-${string}`;
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
@@ -208,6 +251,9 @@ export type EntitiesTableOfTemplateProps<Data> = {
     editable?: boolean;
     defaultFilter?: FilterModel;
     disableFilter?: boolean;
+    columnsToShow?: string[];
+    setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    actionsColumnWidth?: number;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -221,6 +267,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     scrollIntoView: () => void;
     showSideBar: () => void;
     getDisplayColumns: () => string[];
+    resizeTableHeight: (newHeight: number) => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -233,6 +280,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             getEntityPropertiesData,
             rowModelType,
             deleteRowButtonProps,
+            addRelationshipReferenceButtonProps,
             editRowButtonProps,
             menuRowButtonProps,
             rowData,
@@ -245,7 +293,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onFilter,
             hasPermissionToTemplate,
             ignoreType,
-            refetch,
             hasInstances,
             multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
@@ -253,18 +300,27 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             editable = true,
             defaultFilter,
             disableFilter = false,
+            columnsToShow,
+            setUpdatedTemplateIds,
+            actionsColumnWidth,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumnsRef = useRef<Record<string, boolean>>(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
-        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
+
+        const childTemplateId = isChildTemplate(template) ? template._id : undefined;
+
+        const currentUser = useUserStore((state) => state.user);
+        const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -277,7 +333,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [gridHeight, setGridHeight] = useState<number>(() =>
             infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
         );
-
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
         const [currEditingCell, setCurrEditingCell] = useState<any>();
@@ -291,6 +346,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rawActions?: IAction[];
         }>({ isOpen: false });
 
+        const filteredColumns = Object.keys(pickBy(template.properties.properties, (property) => property.comment === undefined));
+
         const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
 
@@ -303,16 +360,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             (id: string) =>
                 deleteEntityRequest({
                     selectAll: false,
-                    templateId: template?._id as string,
+                    templateId: isChildTemplate(template) ? template.parentTemplate._id : template?._id,
                     idsToInclude: [id],
                     deleteAllRelationships: false,
+                    childTemplateId,
                 } as IDeleteEntityBody<false>),
             {
                 onError: (error: AxiosError) => {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                 },
                 onSuccess: () => {
-                    refetch?.();
+                    setUpdatedTemplateIds?.([isChildTemplate(template) ? template.parentTemplate._id : template?._id]);
                     toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
                 },
                 onSettled: () => {
@@ -331,12 +389,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 currEntity: IEntity;
                 disabled: boolean;
                 ignoredRules?: IRuleBreach['brokenRules'];
-            }) => updateEntityStatusRequest(currentEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+            }) => updateEntityStatusRequest(currentEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
             {
                 onSuccess: (data) => {
                     if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
                     else toast.success(i18next.t('entityPage.activatedSuccessfully'));
-                    refetch?.();
+                    setUpdatedTemplateIds?.([data.templateId]);
                 },
                 onError: (_err: AxiosError, { disabled }) => {
                     if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
@@ -353,58 +411,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
         };
 
-        useImperativeHandle(ref, () => ({
-            getExcelData() {
-                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
-            },
-            resetFilter() {
-                gridRef.current?.api.setFilterModel(defaultFilterModel);
-            },
-            refreshServerSide() {
-                gridRef.current?.api.refreshServerSide({ purge: true });
-            },
-            updateRowDataClientSide(data: Data) {
-                gridRef.current?.api.forEachNode((rowNode) => {
-                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                        rowNode.updateData(data);
-                    }
-                });
-            },
-            isFiltered() {
-                const filters = gridRef.current?.api.getFilterModel();
-                return !filters || !isEqual(filters, defaultFilterModel);
-            },
-            getFilterModel() {
-                return gridRef.current!.api.getFilterModel();
-            },
-            getSortModel() {
-                return getSortModel();
-            },
-            scrollIntoView() {
-                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
-            },
-            showSideBar() {
-                const gridApi = gridRef.current?.api;
-                if (!gridApi) return;
-                const isSideBarOpen = gridApi.isToolPanelShowing();
-                gridApi.setSideBarVisible(!isSideBarOpen);
-                if (isSideBarOpen) {
-                    gridApi.closeToolPanel();
-                } else {
-                    gridApi.openToolPanel('columns');
-                }
-            },
-            getDisplayColumns: () => {
-                const validKeys = Object.keys(template.properties.properties);
-                return (
-                    gridRef.current?.api
-                        .getAllDisplayedColumns()
-                        .map((column) => column.getColId())
-                        .filter((colId) => validKeys.includes(colId)) || []
-                );
-            },
-        }));
-
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
             getEntityPropertiesData,
@@ -412,6 +418,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
             deleteRowButtonProps,
             menuRowButtonProps,
+            addRelationshipReferenceButtonProps,
             hideNonPreview,
             editRowButtonProps,
             hasPermissionToTemplate,
@@ -427,6 +434,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             searchValue: quickFilterText,
             disableEditCell: !editable || editRowButtonProps?.disabledButton,
             entityTemplates,
+            pageType: saveStorageProps.pageType,
+            columnsToShow,
+            entityTemplateMap: entityTemplates,
+            childEntityTemplateMap: childTemplates,
+            currentUser,
+            currentClientSideUser: clientSideUserEntity,
+            actionsColumnWidth,
+            darkMode,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -448,6 +463,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             '.ag-cell-inline-editing input': {
                 border: 'none !important',
             },
+            '.ag-theme-material .ag-header-cell-text': {
+                fontSize: '14px !important',
+            },
         };
 
         const updateVisibleColumns = (params: ColumnVisibleEvent<Data, any> | GridReadyEvent<Data, any>) => {
@@ -468,7 +486,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
                 const { disabled, ...rest } = params.api.getFilterModel();
-                const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
+                const filterModel = params.column.isVisible() ? rest : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
 
@@ -527,12 +545,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             const { api } = params;
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
-            const templateKeys = Object.keys(template.properties.properties);
+
             const uniqKeys = ['disabled', 'createdAt', 'updatedAt'];
             const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix) && !uniqKeys.includes(key));
-            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
+            const isRemovedFields = defaultKeys.some((key) => !filteredColumns.includes(key));
 
-            if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
+            if (filteredColumns.length === defaultKeys.length && filteredColumns.every((key, index) => key === defaultKeys[index])) return;
 
             handleColumnsOrder(params);
 
@@ -543,9 +561,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            Object.keys(defaultColumnWidths).length > 0
-                ? api.autoSizeColumns(columnsKeys)
-                : api.autoSizeColumns(Object.keys(template.properties.properties));
+            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 
@@ -582,11 +598,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             {
                 onSuccess: () => {
                     toast.success(i18next.t('wizard.entity.editedSuccessfully'));
-                    gridRef.current?.api.refreshServerSide();
+                    const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+                    setUpdatedTemplateIds?.([parentTemplateId]);
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                    const errorMetadata = err.response?.data?.metadata;
+                    const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
                     switch (errorMetadata?.errorCode) {
                         case errorCodes.failedConstraintsValidation:
@@ -667,7 +684,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 return getSortModel();
             },
             scrollIntoView() {
-                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+                if (!tableRef.current) return;
+                const ro = new ResizeObserver((_el, observer) => {
+                    tableRef.current!.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    observer.disconnect();
+                });
+                ro.observe(tableRef.current);
+                return () => ro.disconnect();
             },
             showSideBar() {
                 const gridApi = gridRef.current?.api;
@@ -678,10 +701,23 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 else gridApi.openToolPanel('columns');
             },
             getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+            resizeTableHeight: (newHeight: number) => setGridHeight(newHeight),
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances, defaultFilter),
+            () =>
+                getRowModelProps(
+                    rowModelType,
+                    template,
+                    rowData,
+                    pageRowCount!,
+                    quickFilterText,
+                    datasourceOnFail,
+                    hasInstances,
+                    defaultFilter as ISearchFilter | undefined,
+                    saveStorageProps.pageType,
+                    clientSideUserEntity?.properties?._id,
+                ),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
         );
 
@@ -692,7 +728,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 panels.push({
                     statusPanel: MultiSelectStatusBar,
                     align: 'left',
-                    statusPanelParams: { template, quickFilterText },
+                    statusPanelParams: {
+                        template,
+                        quickFilterText,
+                        setUpdatedTemplateIds,
+                    },
                 });
 
             return panels;
@@ -719,6 +759,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     }}
                     ref={tableRef}
+                    width="100%"
                 >
                     <AgGridReact<Data>
                         ref={gridRef}
@@ -794,7 +835,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             suppressHeaderFilterButton: disableFilter,
                         }}
                         onGridReady={(params) => {
-                            if (saveStorageProps.pageType) {
+                            if (saveStorageProps.pageType === TablePageType.map) {
+                                gridRef.current?.api.autoSizeAllColumns();
+                            } else if (saveStorageProps.pageType) {
                                 const updatedVisibleColumns = updateVisibleColumns(params);
                                 const visibleKeys = Object.keys(updatedVisibleColumns).filter((key) => updatedVisibleColumns[key] === true);
                                 autoSizeAll(params, visibleKeys);
@@ -868,11 +911,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
                             const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
+                            const isEmptyArray = params.newValue.length === 0;
                             const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
                                 // eslint-disable-next-line no-nested-ternary
-                                [params.column.getColId()]: isEmpty ? (isRequired ? undefined : '') : params.newValue,
+                                [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 

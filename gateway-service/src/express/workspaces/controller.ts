@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { WorkspaceManager } from './manager';
+import WorkspaceManager from './manager';
 
-export class WorkspaceController extends DefaultController<WorkspaceManager> {
+class WorkspaceController extends DefaultController<WorkspaceManager> {
     constructor(workspaceId: string) {
         super(new WorkspaceManager(workspaceId));
     }
@@ -39,3 +39,5 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
         res.json(await this.manager.deleteOne(req.params.id));
     }
 }
+
+export default WorkspaceController;

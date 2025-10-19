@@ -1,16 +1,15 @@
+import { Grid, Skeleton, Typography } from '@mui/material';
+import i18next from 'i18next';
 import React from 'react';
-import { Typography, Grid, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
-import randomColor from 'randomcolor';
-import { IActivityLog } from '../../../../services/activityLogService';
-import { getUserByIdRequest } from '../../../../services/userService';
-import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { getShortDate } from '../../../../utils/date';
-import UserAvatar from '../../../../common/UserAvatar';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IActivityLog } from '../../../../services/activityLogService';
+import { getUserByIdRequest } from '../../../../services/userService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { getShortDate } from '../../../../utils/date';
+import ActionText from './ActionText';
 
 const ActivityLogRow: React.FC<{
     log: IActivityLog;
@@ -21,38 +20,37 @@ const ActivityLogRow: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <Grid container>
-            <Grid item padding="10px">
-                {isLoading ? (
-                    <Skeleton variant="circular" width={40} height={40} />
-                ) : (
-                    <UserAvatar user={user!} size={40} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
-                )}
+        <Grid container flexDirection="column" padding="15px">
+            <Grid container size={{ xs: 9}}>
+                <Grid container marginTop="-3px">
+                    {isLoading ? <Skeleton width="15vw" /> : <ActionText log={log} entityTemplate={entityTemplate} />}
+                </Grid>
             </Grid>
-            <Grid item container xs={9}>
-                <Grid item container justifyContent="space-between" width="15vw">
-                    <Grid item xs>
+            <Grid container flexWrap="nowrap" justifyContent="space-between" alignItems="center" marginTop="10px">
+                <Grid container spacing="5px">
+                    <Grid>
+                        <Typography variant="subtitle1" fontSize="12px" fontFamily="Rubik" fontWeight="400" color="#5A6173">
+                            {i18next.t('entityPage.activityLog.by')}
+                        </Typography>
+                    </Grid>
+                    <Grid>
                         {isLoading ? (
                             <Skeleton variant="text" width="7vw" />
                         ) : (
-                            <Typography variant="subtitle1" fontSize="15px" fontFamily="Rubik" fontWeight="500">
+                            <Typography variant="subtitle1" fontSize="12px" fontFamily="Rubik" fontWeight="400" color="primary">
                                 {user?.fullName}
                             </Typography>
                         )}
                     </Grid>
-                    <Grid item>
-                        {isLoading ? (
-                            <Skeleton variant="text" width="5vw" />
-                        ) : (
-                            <Typography variant="subtitle1" color={darkMode ? 'lightgray' : 'gray'} fontFamily="Rubik" fontSize="15px">
-                                {getShortDate(log.timestamp)}
-                            </Typography>
-                        )}
-                    </Grid>
                 </Grid>
-
-                <Grid item container marginTop="-3px">
-                    {isLoading ? <Skeleton width="15vw" /> : <ActionText log={log} entityTemplate={entityTemplate} />}
+                <Grid width="130px">
+                    {isLoading ? (
+                        <Skeleton variant="text" width="5vw" />
+                    ) : (
+                        <Typography variant="subtitle1" color={darkMode ? 'lightgray' : '#5A6173'} fontFamily="Rubik" fontSize="11px">
+                            {getShortDate(log.timestamp)}
+                        </Typography>
+                    )}
                 </Grid>
             </Grid>
         </Grid>

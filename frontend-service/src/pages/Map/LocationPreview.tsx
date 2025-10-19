@@ -1,38 +1,21 @@
-import React, { useEffect, useRef } from 'react';
-import { Cartesian3, Color } from 'cesium';
-import { Viewer, Entity, PolygonGraphics, PointGraphics, PolylineGraphics, BillboardGraphics } from 'resium';
 import * as Cesium from 'cesium';
+import { Cartesian3 } from 'cesium';
+import React, { useEffect, useRef } from 'react';
 import { useQueryClient } from 'react-query';
+import { Viewer } from 'resium';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { locationToWGS84String, jerusalemCoordinates } from '../../utils/map';
-import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
+import { jerusalemCoordinates } from '../../utils/map';
 import { convertWGS94ToECEF } from '../../utils/map/convert';
-
-export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
-    <Entity name={name} description={locationToWGS84String(polygon)} onClick={onClick}>
-        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
-        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
-        {polygon.map((position, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <Entity key={`${position.x}, ${position.y} - ${index}`} position={position}>
-                <PointGraphics color={Color.BLACK} outlineColor={Color.fromCssColorString('#11695a')} pixelSize={10} outlineWidth={2} />
-            </Entity>
-        ))}
-    </Entity>
-);
-
-export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
-    <Entity name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
-        <BillboardGraphics image="/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
-    </Entity>
-);
+import { BaseLayers } from './BaseLayers';
+import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
 
 type Props = {
     entityProperties: IEntity['properties'];
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
 };
 
 const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {

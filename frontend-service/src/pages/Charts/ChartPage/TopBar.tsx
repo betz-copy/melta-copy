@@ -3,11 +3,11 @@ import { Box, CircularProgress, Grid, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { BlueTitle } from '../../../common/BlueTitle';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../../common/TopBar';
-import { IBasicChart } from '../../../interfaces/charts';
+import { IChart } from '../../../interfaces/charts';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
@@ -21,7 +21,7 @@ interface IChartTopBar {
     onDelete: () => void;
     isLoading: boolean;
     setReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
-    formik: FormikProps<IBasicChart>;
+    formik: FormikProps<IChart>;
     template: IMongoEntityTemplatePopulated;
     filterRecord: IGraphFilterBodyBatch;
     setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
@@ -59,16 +59,14 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
             >
                 <Grid>
                     <BlueTitle
-                        title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')} - ${
-                            template.displayName
-                        }`}
+                        title={`${i18next.t(`actions.${edit ? 'edit' : 'create'}ment`)} ${i18next.t('charts.chart')}`}
                         component="h4"
                         variant="h4"
                         style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}
                     />
                 </Grid>
 
-                <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
+                <Grid container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                     {readonly ? (
                         <IconButtonWithPopover
                             popoverText={hasEditAndDeletePermission ? i18next.t('actions.edit') : i18next.t('charts.dontHavePermissionToEditChart')}
@@ -81,11 +79,11 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
                     ) : (
                         <Grid container justifyContent="space-between" alignItems="center" width="fit-content" wrap="nowrap">
                             {isLoading ? (
-                                <Grid item container alignItems="center" justifyContent="space-around" width="8rem">
+                                <Grid container alignItems="center" justifyContent="space-around" width="8rem">
                                     <CircularProgress size={30} />
                                 </Grid>
                             ) : (
-                                <Grid item container>
+                                <Grid container>
                                     {edit && (
                                         <IconButtonWithPopover
                                             popoverText={i18next.t('actions.cancel')}
@@ -133,7 +131,6 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
                     )}
                 </Grid>
             </TopBarGrid>
-
             <AreYouSureDialog open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={onDelete} />
         </Box>
     );

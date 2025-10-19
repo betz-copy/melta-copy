@@ -1,3 +1,4 @@
+import { ExpandMore } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
@@ -7,9 +8,10 @@ import { toast } from 'react-toastify';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { MeltaTooltip } from '../MeltaTooltip';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import UserAvatar from '../UserAvatar';
 
-export interface IUserAutocomplete<TMode = 'internal' | 'external'> {
+export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     mode: TMode;
     value: IUser | null;
     displayValue?: string;
@@ -55,6 +57,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     overrideSx,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
@@ -67,12 +70,11 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         ['searchUsers', mode, currentDisplayValue],
         () => {
             if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
+            if (mode === 'kartoffel') return searchExternalUsersRequest(currentDisplayValue, workspace._id, true);
             return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {
-            onError: () => {
-                toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
-            },
+            onError: () => toast.error(i18next.t('userAutocomplete.failedToSearchUsers')),
             enabled: false,
             retry: false,
             initialData: [],
@@ -80,18 +82,18 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
+    const isValueExist = value && value.fullName != '';
 
     return (
-        <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.displayName ? '' : (value?.fullName ?? '')} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={(_e, newValue, reason) => {
-                    if (newValue) {
-                        setInputValue(newValue.displayName);
-                        onChange?.(_e, newValue, reason);
-                    }
+                    if (newValue) setInputValue(newValue.displayName || newValue?.fullName);
+                    onChange?.(_e, newValue, reason);
                 }}
+                popupIcon={<ExpandMore />}
                 onInputChange={(_e, newValue, reason) => {
                     setInputValue(newValue);
                     onDisplayValueChange?.(_e, newValue, reason);
@@ -101,7 +103,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 }}
                 disabled={disabled}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
-                getOptionLabel={({ displayName }) => displayName}
+                getOptionLabel={({ displayName, fullName }) => displayName || fullName}
                 getOptionDisabled={isOptionDisabled}
                 isOptionEqualToValue={(option, currValue) => option._id === currValue?._id}
                 options={
@@ -125,21 +127,34 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        InputProps={{
-                            ...params.InputProps,
-                            required,
-                            readOnly,
-                            endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
-                        }}
-                        InputLabelProps={{
-                            ...(params.InputLabelProps,
-                            readOnly && {
-                                sx: {
-                                    '&.Mui-focused': {
-                                        color: 'rgba(0, 0, 0, 0.6)',
-                                    },
+                        slotProps={{
+                            input: {
+                                ...params.InputProps,
+                                required,
+                                readOnly,
+                                endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
+                                startAdornment: isValueExist ? (
+                                    <UserAvatar
+                                        user={{ ...value, _id: value.kartoffelId ?? value._id ?? (value as any).id }}
+                                        tooltip={undefined}
+                                        shouldGetKartoffelImage
+                                    />
+                                ) : undefined,
+                                inputProps: {
+                                    ...params.inputProps,
+                                    style: isValueExist ? { display: 'none' } : {},
                                 },
-                            }),
+                            },
+                            inputLabel: {
+                                ...(params.InputLabelProps,
+                                readOnly && {
+                                    sx: {
+                                        '&.Mui-focused': {
+                                            color: 'rgba(0, 0, 0, 0.6)',
+                                        },
+                                    },
+                                }),
+                            },
                         }}
                         sx={{
                             ...(readOnly

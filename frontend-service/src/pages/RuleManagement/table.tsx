@@ -91,7 +91,7 @@ const getColumnDefs = (
         {
             field: 'originUser',
             headerName: i18next.t('ruleManagement.originUser'),
-            valueFormatter: (params) => params.value.displayName,
+            valueFormatter: (params) => params.value?.displayName,
             menuTabs: [],
             sortable: false,
         },
@@ -172,8 +172,7 @@ const RuleBreachTable = forwardRef<
 
     const datasourceOnFail = (err: unknown) => {
         toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-        // eslint-disable-next-line no-console
-        console.log('failed to load data from datasource. err:', err);
+        console.error('failed to load data from datasource. err:', err);
     };
 
     const getGlobalStyles = () => {

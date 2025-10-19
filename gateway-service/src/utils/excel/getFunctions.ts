@@ -1,41 +1,42 @@
-import Excel, { CellModel } from 'exceljs';
-import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { excelConfig } from './excelConfig';
-import { BadRequestError, ServiceError } from '../../express/error';
 import {
     ActionErrors,
     ActionTypes,
+    BadRequestError,
+    CoordinateSystem,
+    extractUtmLocation,
+    getCoordinateSystem,
     IAction,
     IActionPopulated,
     IBrokenRule,
     IBrokenRuleEntity,
+    IBrokenRulePopulated,
+    IChildTemplatePopulated,
+    IChildTemplateProperty,
     ICreateEntityMetadata,
-    IFailedEntity,
-} from '../../externalServices/ruleBreachService/interfaces';
-import {
+    ICreateEntityMetadataPopulated,
     IEntity,
+    IEntitySingleProperty,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
-    IValidationErrorData,
-} from '../../externalServices/instanceService/interfaces/entities';
-import {
-    IBrokenRulePopulated,
-    ICreateEntityMetadataPopulated,
-    IUpdateEntityMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
-import config from '../../config';
-import { UploadedFile } from '../busboy/interface';
-import {
-    CoordinateSystem,
-    extractUtmLocation,
-    getCoordinateSystem,
+    IFailedEntity,
+    IMongoEntityTemplatePopulated,
+    isChildTemplate,
     isValidUTM,
     isValidWGS84,
+    IUpdateEntityMetadataPopulated,
+    IValidationErrorData,
     locationConverterToString,
+    logger,
+    ServiceError,
     stringToCoordinates,
-} from './map';
+    UploadedFile,
+} from '@microservices/shared';
+import { AxiosError } from 'axios';
+import Excel, { CellModel } from 'exceljs';
+import { StatusCodes } from 'http-status-codes';
+import excelConfig from './excelConfig';
+
+import config from '../../config';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 
@@ -85,14 +86,17 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
     return value;
 };
 
-export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
-    const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
-    const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-    const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    const isSignature = propertyTemplate.format === 'signature';
-    const isUser = propertyTemplate.format === 'user';
-    const isUsers = propertyTemplate.items?.format === 'user';
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature;
+export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
+    const formats = ['relationshipReference', 'fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
+    const itemsFormats = ['fileId', 'user'];
+
+    const unValidFormats =
+        formats.includes(propertyTemplate.format ?? '') ||
+        (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
+    const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
+    const isDisplay = 'display' in propertyTemplate ? !!propertyTemplate.display : true;
+
+    return !unValidFormats && !isSerialNumber && isDisplay;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
@@ -133,7 +137,7 @@ const getUpdatedEntity = (
     entities: IEntityWithDirectRelationships[],
     entity: IEntity,
     identifier: keyof IEntity['properties'],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
 ): IEntity | undefined => {
     const existingEntity = entities.find((e) => e.entity.properties[identifier] === entity.properties[identifier]);
 
@@ -155,7 +159,7 @@ const getUpdatedEntity = (
 
 const readExcelFile = async (
     files: UploadedFile[],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],
@@ -198,7 +202,7 @@ const readExcelFile = async (
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
                     } catch (error: any) {
-                        console.error("there's an error in the entity", { error });
+                        logger.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {
                             failedProperties.push({ key, value, cellValue, format: 'date-time' });
                             isFailed = true;
@@ -215,7 +219,11 @@ const readExcelFile = async (
                     const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier ?? '', template);
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
-                    entities.push({ templateId: template._id, properties: rowData, ignoredRules: [] });
+                    entities.push({
+                        templateId: isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        properties: rowData,
+                        ignoredRules: [],
+                    });
                 }
             });
 
@@ -347,4 +355,4 @@ const convertIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[
     );
 };
 
-export { readExcelFile, getValidationErrorEntities, convertIdOfBrokenRules };
+export { convertIdOfBrokenRules, getValidationErrorEntities, readExcelFile };

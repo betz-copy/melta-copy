@@ -1,18 +1,17 @@
 import http from 'http';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
+import { logger, FileTypes } from '@microservices/shared';
 import mammoth from 'mammoth';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
-import logger from '../logger/logsLogger';
 import readExcelData from '../textExtractors/excel';
 import { extractPptxText } from '../textExtractors/pptx';
-import { FileTypes } from '../types';
 import extractTextFromDoc from '../textExtractors/doc';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
-export class MinIOClient {
+class MinIOClient {
     private minioClient: Client;
 
     constructor(private bucketName: string) {
@@ -90,3 +89,5 @@ export class MinIOClient {
         }
     }
 }
+
+export default MinIOClient;

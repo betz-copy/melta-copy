@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
+import { ConfigTypes } from '@microservices/shared';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { TemplatesManager } from './manager';
@@ -55,6 +56,36 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.getAllAllowedCategories(permissionsOfUserId));
     }
 
+    async updateCategoryTemplatesOrder(req: Request, res: Response) {
+        const { srcCategoryId, newCategoryId, newIndex }: { srcCategoryId: string; newCategoryId: string; newIndex: number } = req.body;
+
+        res.json(await this.manager.updateCategoryTemplatesOrder(req.params.templateId, newIndex, srcCategoryId, newCategoryId));
+    }
+
+    // config
+    async getAllConfigs(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.getAllConfigs(permissionsOfUserId));
+    }
+
+    async getConfigByType(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.getConfigByType(req.params.type as ConfigTypes, permissionsOfUserId));
+    }
+
+    async updateCategoryOrderConfig(req: Request, res: Response) {
+        const { newIndex, item }: { newIndex: number; item: string } = req.body;
+        res.json(await this.manager.updateCategoryOrderConfig(req.params.configId, newIndex, item));
+    }
+
+    async createOrderConfig(req: Request, res: Response) {
+        res.json(await this.manager.createCategoryOrderConfig(req.body));
+    }
+
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
@@ -88,6 +119,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         );
     }
 
+    async updateEntityTemplateAction(req: Request, res: Response) {
+        const { actions, isChildTemplate } = req.body;
+        res.json(await this.manager.updateEntityTemplateAction(req.params.templateId, actions, isChildTemplate));
+    }
+
     async updateEntityTemplateStatus(req: Request, res: Response) {
         res.json(await this.manager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
@@ -107,6 +143,19 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery, user.id));
+    }
+
+    // childTemplates
+    async createChildTemplate(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.createChildTemplate(req.body, permissionsOfUserId, user!.id));
+    }
+
+    async updateChildTemplate(req: Request, res: Response) {
+        const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.updateChildTemplate(req.params.id, req.user!.id, req.body, permissionsOfUserId));
     }
 
     // relationshipTemplates
@@ -160,5 +209,35 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user!.id));
+    }
+
+    // Printing Templates
+    async createPrintingTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createPrintingTemplate(req.body));
+    }
+
+    async getAllPrintingTemplates(_req: Request, res: Response) {
+        res.json(await this.manager.getAllPrintingTemplates());
+    }
+
+    async getPrintingTemplateById(req: Request, res: Response) {
+        res.json(await this.manager.getPrintingTemplateById(req.params.id));
+    }
+
+    async updatePrintingTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updatePrintingTemplate(req.params.id, req.body));
+    }
+
+    async deletePrintingTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deletePrintingTemplate(req.params.id));
+    }
+
+    async searchPrintingTemplates(req: Request, res: Response) {
+        res.json(await this.manager.searchPrintingTemplates(req.body));
+    }
+
+    // child templates
+    async updateChildTemplateById(req: Request, res: Response) {
+        res.json(await this.manager.updateChildTemplateById(req.params.id, req.body));
     }
 }

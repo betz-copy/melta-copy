@@ -3,16 +3,28 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import Joi from 'joi';
 import isEqual from 'lodash.isequal';
-import DefaultController from '../../utils/express/controller';
-import { defaultValidationOptions, joiValidate } from '../../utils/joi';
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '../entityTemplate/interface';
+import {
+    IEntitySingleProperty,
+    IEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IRelevantTemplates,
+    IRule,
+    IConstant,
+    IPropertyOfVariable,
+    IVariable,
+    isConstant,
+    ICountAggFunction,
+    IRegularFunction,
+    ISumAggFunction,
+    IAggregationGroup,
+    DefaultController,
+    defaultValidationOptions,
+    IFormula,
+} from '@microservices/shared';
+import { flatten } from 'flat';
+import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
-import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
-import { IRelevantTemplates, IRule } from './interfaces';
-import { IConstant, IPropertyOfVariable, IVariable, isConstant } from './interfaces/formula/argument';
-import { ICountAggFunction, IRegularFunction, ISumAggFunction } from './interfaces/formula/function';
-import { IAggregationGroup } from './interfaces/formula/group';
 
 const numberRegExp = '[1-9]\\d*'; // digits that doesnt start with 0
 const dateDurationRegExp = new RegExp(`^(${numberRegExp}Y)?(${numberRegExp}M)?(${numberRegExp}D)?$`);
@@ -80,7 +92,7 @@ const sumAggFunctionSchema = Joi.object({
 
 const regularFunctionSchema = Joi.object({
     isRegularFunction: Joi.boolean().valid(true).required(),
-    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime').required(),
+    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime', 'getToday').required(),
     arguments: Joi.array().items(Joi.object()).required(),
 });
 
@@ -121,7 +133,7 @@ const formulaSchema = Joi.alternatives(
     Joi.object({ isAggregationGroup: Joi.boolean().valid(true).required() }).unknown(true),
 ).messages({ 'alternatives.match': 'formula must be one of equation/group/aggregationGroup' });
 
-export class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
+class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {
@@ -159,22 +171,46 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                     // todo: block in UI too, or support it
                     throw new Error('array not supported in formulas! sorry!');
                 }
-                if (format === 'relationshipReference') {
-                    throw new Error('relationshipReference not supported in formulas! sorry!');
-                }
                 return type;
         }
     }
 
-    private validatePropertyExistInEntityTemplate(property: string, entityTemplate: IEntityTemplatePopulated): IConstant['type'] {
+    private validatePropertyExistInEntityTemplate(
+        property: string,
+        entityTemplate: IEntityTemplatePopulated,
+        relevantTemplates: IRelevantTemplates,
+    ): IConstant['type'] {
         const entityTemplateWithDefaults = this.addDefaultFieldsToTemplate(entityTemplate);
-
         const propertyTemplate = entityTemplateWithDefaults.properties.properties[property];
-        if (propertyTemplate) {
-            return this.jsonSchemaTypeToType(propertyTemplate);
+
+        if (!propertyTemplate) {
+            throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
         }
 
-        throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
+        // If it's a relationshipReference, get the type from the related template's field
+        if (propertyTemplate.format === 'relationshipReference' && propertyTemplate.relationshipReference) {
+            const { relatedTemplateId } = propertyTemplate.relationshipReference;
+            const relatedFieldKey = propertyTemplate.relationshipReference.relatedTemplateField;
+
+            const relatedTemplate = [
+                relevantTemplates.entityTemplate,
+                ...relevantTemplates.connectionsTemplatesOfEntityTemplate.map((connection) => connection.otherEntityTemplate),
+            ].find((template) => template._id === relatedTemplateId);
+
+            if (!relatedTemplate) {
+                throw new Error(`related template "${relatedTemplateId}" not found in relevantTemplates`);
+            }
+
+            const relatedTemplateWithDefaults = this.addDefaultFieldsToTemplate(relatedTemplate);
+            const referencedField = relatedTemplateWithDefaults.properties.properties[relatedFieldKey];
+            if (!referencedField) {
+                throw new Error(`related field "${relatedFieldKey}" not found in template "${relatedTemplateId}"`);
+            }
+
+            return this.jsonSchemaTypeToType(referencedField);
+        }
+
+        return this.jsonSchemaTypeToType(propertyTemplate);
     }
 
     private validateConstant(constant: any): IConstant['type'] {
@@ -238,12 +274,12 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                 aggregationGroupsContext,
             );
 
-            return this.validatePropertyExistInEntityTemplate(property, otherEntityTemplate);
+            return this.validatePropertyExistInEntityTemplate(property, otherEntityTemplate, relevantTemplates);
         }
 
         assert(variable.entityTemplateId === relevantTemplates.entityTemplate._id, 'variable.entityTemplateId must be the same as entityTemplateId');
 
-        return this.validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate);
+        return this.validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate, relevantTemplates);
     }
 
     private validateCountAggFunction(
@@ -270,7 +306,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
             aggregationGroupsContext,
         );
 
-        return this.validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate);
+        return this.validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate, relevantTemplates);
     }
 
     private validateRegularFunction(
@@ -321,6 +357,17 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                 );
 
                 return 'dateTime';
+            }
+
+            case 'getToday': {
+                assert(funcArguments.length === 0, 'getToday function mustnt contain arguments');
+
+                // dont allow getToday() to use in relationshipfields (in aggregation functions).
+                // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
+                // DB indexes optimization for rule w/ getToday not yet implemented, but to have the option in the future
+                assert(aggregationGroupsContext.length === 0, 'getToday function is not allowed inside aggregation, because of performance issues');
+
+                return 'date';
             }
 
             default:
@@ -375,7 +422,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         (groupData.subFormulas as Array<any>).forEach((subFormula) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions
-            return this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
+            this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
         });
     }
 
@@ -406,12 +453,10 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         if (formulaData.isEquation) this.validateEquation(formulaData, relevantTemplates, aggregationGroupsContext);
         if (formulaData.isGroup) this.validateGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        if (formulaData.isAggregationGroup) {
-            this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        }
+        if (formulaData.isAggregationGroup) this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
     }
 
-    private async validateAndGetRelevantTemplates(rule: IRule): Promise<IRelevantTemplates> {
+    private async validateAndGetRelevantTemplates(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>): Promise<IRelevantTemplates> {
         const entityTemplate = await this.entityTemplateManager.getTemplateById(rule.entityTemplateId);
 
         const relationshipTemplatesOfEntityAsSource = (await this.manager.searchTemplates({
@@ -443,7 +488,13 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
         return { entityTemplate, connectionsTemplatesOfEntityTemplate };
     }
 
-    async validateRuleFormula(rule: IRule) {
+    doesFormulaHaveTodayFunc(formula: IFormula) {
+        const flattedFormula = flatten<IFormula, Record<string, any>>(formula);
+
+        return Object.keys(flattedFormula).some((key) => key.endsWith('functionType') && flattedFormula[key] === 'getToday');
+    }
+
+    async validateRuleFormula(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>) {
         const relevantTemplates = await this.validateAndGetRelevantTemplates(rule);
 
         this.validateFormula(rule.formula, relevantTemplates, []);
@@ -451,5 +502,10 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
     async validateRuleFormulaMiddleware(req: Request) {
         await this.validateRuleFormula(req.body);
+
+        // eslint-disable-next-line no-underscore-dangle
+        req.body.doesFormulaHaveTodayFunc = this.doesFormulaHaveTodayFunc(req.body.formula);
     }
 }
+
+export default RuleValidator;

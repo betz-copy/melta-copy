@@ -1,6 +1,6 @@
-import { IRule } from '../templates/rules/interfaces';
+import { ActionOnFail, IRule } from '@microservices/shared';
 
-export const rulesCreator = (
+const rulesCreator = (
     fliesOnId: string,
     flightInTripId: string,
     departueFromId: string,
@@ -9,11 +9,11 @@ export const rulesCreator = (
     touristId: string,
     tripId: string,
     airportId: string,
-): IRule[] => [
+): Omit<IRule, 'doesFormulaHaveTodayFunc'>[] => [
     {
         name: 'סוכן נסיעות אחד על טיסה',
         description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         disabled: false,
         entityTemplateId: flightId,
         formula: {
@@ -41,7 +41,7 @@ export const rulesCreator = (
     {
         name: 'טיסה אחת ביום לטיול',
         description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         disabled: false,
         entityTemplateId: tripId,
         formula: {
@@ -149,7 +149,7 @@ export const rulesCreator = (
     {
         name: 'התראה על טיסות בסבב פעיל',
         description: 'התראה על כל טיסה חדשה שמחוברת לסבב פעיל',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         disabled: false,
         entityTemplateId: airportId,
         formula: {
@@ -252,3 +252,5 @@ export const rulesCreator = (
         },
     },
 ];
+
+export default rulesCreator;

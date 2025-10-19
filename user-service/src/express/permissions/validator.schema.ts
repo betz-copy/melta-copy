@@ -1,16 +1,17 @@
 import * as joi from 'joi';
+import { PermissionTypeOptions, RelatedPermission } from '@microservices/shared';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactNullablePermissionsSchema, SubCompactNullablePermissionSchema } from '../../utils/joi/schemas/permission/compact';
-import { PermissionTypeOptions } from './interface';
 
-// GET /api/permissions/compact/find-by-user-id/:userId
-export const getCompactPermissionsOfUserRequestSchema = joi.object({
+// GET /api/permissions/compact/find-by-related-id/:relatedId
+export const getCompactPermissionsRequestSchema = joi.object({
     query: {},
     body: {
         workspaceIds: joi.array().items(mongoIdSchema.required()),
+        permissionType: joi.string().valid(RelatedPermission.User, RelatedPermission.Role).required(),
     },
     params: {
-        userId: mongoIdSchema.required(),
+        relatedId: mongoIdSchema.required(),
     },
 });
 
@@ -18,8 +19,10 @@ export const getCompactPermissionsOfUserRequestSchema = joi.object({
 export const syncCompactPermissionsRequestSchema = joi.object({
     query: {},
     body: {
-        userId: mongoIdSchema.required(),
+        relatedId: mongoIdSchema.required(),
+        permissionType: joi.string().valid(RelatedPermission.User, RelatedPermission.Role).required(),
         permissions: CompactNullablePermissionsSchema.required(),
+        dontDeleteUser: joi.boolean(),
     },
     params: {},
 });
@@ -35,7 +38,7 @@ export const deletePermissionsFromMetadataRequestSchema = joi.object({
                 .string()
                 .valid(...PermissionTypeOptions)
                 .required(),
-            userId: mongoIdSchema.optional(),
+            relatedId: mongoIdSchema.optional(),
         },
     },
     params: {},

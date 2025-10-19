@@ -1,3 +1,4 @@
+import { IMongoChart, IChart } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
@@ -5,92 +6,13 @@ const {
     dashboardService: { url, baseRoute, requestTimeout, charts },
 } = config;
 
-export enum IChartType {
-    Column = 'column',
-    Line = 'line',
-    Pie = 'pie',
-    Number = 'number',
-}
-
-export enum IAggregationType {
-    CountAll = 'countAll',
-    CountDistinct = 'countDistinct',
-    Average = 'average',
-    Sum = 'sum',
-    Maximum = 'maximum',
-    Minimum = 'minimum',
-}
-
-interface IAggregation {
-    type: IAggregationType;
-    byField?: string;
-}
-
-export type IAxisField = IAggregation | string;
-
-export interface IAxis {
-    field: IAxisField;
-    title: string;
-}
-
-export interface IColumnOrLineMetaData {
-    xAxis: IAxis;
-    yAxis: IAxis;
-}
-
-export interface IPieMetaData {
-    dividedByField: string;
-    aggregationType: IAggregation;
-}
-
-export interface INUmberMetaData {
-    accumulator: IAxisField;
-}
-
-export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INUmberMetaData;
-
-export enum IPermission {
-    Protected = 'protected',
-    Private = 'private',
-}
-
-export interface IChart {
-    name: string;
-    description: string;
-    templateId: string;
-    type: IChartType;
-    metaData: IChartTypeMetaData;
-    filter?: string;
-    createdBy: string;
-    permission: IPermission;
-}
-
-export interface IMongoChart extends IChart {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface IChartBody {
-    _id: string;
-    xAxis: IAxisField;
-    yAxis?: IAxisField;
-    filter: string;
-}
-
-type GeneratorChart = { x: any; y: number }[];
-
-export interface ChartsAndGenerator extends IMongoChart {
-    chart: GeneratorChart;
-}
-
-export class ChartService extends DefaultExternalServiceApi {
+class ChartService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}${charts.baseRoute}`, timeout: requestTimeout });
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string): Promise<IMongoChart[]> {
-        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch });
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string): Promise<IMongoChart[]> {
+        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch, childTemplateId });
         return data;
     }
 
@@ -114,3 +36,5 @@ export class ChartService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default ChartService;

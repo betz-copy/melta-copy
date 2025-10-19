@@ -1,7 +1,6 @@
 import axios from 'axios';
+import { logger, IRerankRequest, IRerankResult } from '@microservices/shared';
 import config from '../../config';
-import { IRerankRequest, IRerankResult } from '../../express/semantics/interface';
-import logger from '../../utils/logger/logsLogger';
 
 const {
     modelApi: {
@@ -9,7 +8,7 @@ const {
     },
 } = config;
 
-export class ModelRerankingApiService {
+class ModelRerankingApiService {
     static api = axios.create({ baseURL: baseUrl, timeout: requestTimeout });
 
     static async rerank(body: IRerankRequest): Promise<IRerankResult[] | undefined> {
@@ -28,3 +27,5 @@ export class ModelRerankingApiService {
         }
     }
 }
+
+export default ModelRerankingApiService;

@@ -1,6 +1,7 @@
 import { Autocomplete, Chip, TextField } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import React, { CSSProperties } from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
 
 interface IFormikAutoCompleteProps<T> {
     formik: FormikProps<any>;
@@ -58,14 +59,23 @@ export const FormikAutoComplete = <T,>({
                     label={label}
                     sx={style}
                     variant={readonly ? 'standard' : 'outlined'}
+                    slotProps={{
+                        input: {
+                            ...params.InputProps,
+                            endAdornment: !readonly && params.InputProps.endAdornment,
+                            readOnly: readonly,
+                            ...(readonly && { disableUnderline: true }),
+                        },
+                    }}
                 />
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (
                     // eslint-disable-next-line react/jsx-key
-                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : option} />
+                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : String(option)} />
                 ))
             }
+            popupIcon={<IoIosArrowDown fontSize="Medium" />}
         />
     );
 };

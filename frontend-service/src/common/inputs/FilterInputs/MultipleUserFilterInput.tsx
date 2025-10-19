@@ -2,13 +2,17 @@ import React from 'react';
 import { UserArrayInput } from '../UserArrayInput';
 import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { IUser } from '../../../interfaces/users';
 
 interface MultipleUserFilterInputProps {
     filterField: IAGGridSetFilter | undefined;
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
-    handleCheckboxChange: (option: string, checked: boolean) => void;
+    handleCheckboxChange: (option: (string | IUser)[], checked: boolean) => void;
     readOnly: boolean;
+    isUsersArray?: boolean;
+    isError?: boolean;
+    helperText?: string;
 }
 
 const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
@@ -17,6 +21,9 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
     setInputValue,
     handleCheckboxChange,
     readOnly,
+    isUsersArray = false,
+    isError,
+    helperText,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -27,17 +34,18 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
             label=""
             onChange={(_e, chosenUser, reason) => {
                 if (reason !== 'selectOption' || !chosenUser) return;
-                handleCheckboxChange(chosenUser.fullName, true);
+                handleCheckboxChange(isUsersArray ? [chosenUser] : [chosenUser.fullName], true);
 
                 setInputValue('');
             }}
-            isError={false}
+            isError={Boolean(isError)}
+            helperText={helperText}
             displayValue={inputValue}
             onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
             currentUsers={filterField?.values as string[]}
             onRemove={(index) => {
                 const currentUser = filterField?.values[index];
-                handleCheckboxChange(currentUser as string, false);
+                handleCheckboxChange([currentUser as string], false);
                 return undefined;
             }}
             overrideSx={{

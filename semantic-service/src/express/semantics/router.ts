@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import SemanticController from './controller';
 import { rerank, search } from './validator.schema';
 

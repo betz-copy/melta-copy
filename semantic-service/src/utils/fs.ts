@@ -2,7 +2,7 @@ import { Stream } from 'stream';
 import { chunk } from 'llm-chunk';
 import config from '../config';
 import { IElasticDoc } from '../express/semantics/interface';
-import { ModelEmbeddingApiService } from '../externalServices/model/embedding';
+import ModelEmbeddingApiService from '../externalServices/model/embedding';
 
 const {
     model: { charsToRemove, sentenceSplitter, maxSentenceLength, llmChunkSplitterOptions },

@@ -1,25 +1,38 @@
 import { ClientSession, FilterQuery } from 'mongoose';
+import {
+    DefaultManagerMongo,
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplate,
+    IRelationshipTemplate,
+    NotFoundError,
+    IMongoCategory,
+} from '@microservices/shared';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
-
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { withTransaction } from '../../utils/mongoose';
-import { NotFoundError } from '../error';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
-import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
-import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
-import { EntityTemplateSchema } from './model';
+import CategoryManager from '../category/manager';
+import EntityTemplateSchema from './model';
+import ChildTemplateManager from '../childTemplate/manager';
 
 export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {
     private globalSearchIndexCreator: GlobalSearchIndexCreator;
 
     private relationshipTemplateManager: RelationshipTemplateManager;
 
+    private categoryManager: CategoryManager;
+
+    private childTemplateManager: ChildTemplateManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
         this.globalSearchIndexCreator = new GlobalSearchIndexCreator(workspaceId);
         this.relationshipTemplateManager = new RelationshipTemplateManager(workspaceId);
+        this.categoryManager = new CategoryManager(workspaceId);
+        this.childTemplateManager = new ChildTemplateManager(workspaceId);
     }
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
@@ -38,20 +51,60 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             query.category = { $in: categoryIds };
         }
 
-        return this.model.find(query).populate('category').limit(limit).skip(skip).lean().exec();
+        return this.model
+            .find(query)
+            .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
+            .limit(limit)
+            .skip(skip)
+            .lean()
+            .exec() as Promise<IEntityTemplatePopulated[]>;
+    }
+
+    getTemplatesByFormat({ format }: { format: string }) {
+        const query: FilterQuery<IEntityTemplate> = {
+            $expr: {
+                $gt: [
+                    {
+                        $size: {
+                            $filter: {
+                                input: {
+                                    $objectToArray: '$properties.properties',
+                                },
+                                as: 'item',
+                                cond: {
+                                    $eq: ['$$item.v.format', format],
+                                },
+                            },
+                        },
+                    },
+                    0,
+                ],
+            },
+        };
+
+        return this.model.find(query).lean().exec();
     }
 
     getAllTemplates() {
         return this.model.find().lean().exec();
     }
 
-    getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
-        return this.model
-            .findById(id)
+    async getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
+        const targetTemplate: IEntityTemplatePopulated = (await this.model
+            .findById<IEntityTemplatePopulated>(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
-            .exec();
+            .exec()) as IEntityTemplatePopulated;
+
+        Object.entries(targetTemplate.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
+            }
+        });
+
+        return targetTemplate;
     }
 
     getTemplatesByCategory(category: string) {
@@ -102,6 +155,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     }
 
     async createTemplate(templateData: Omit<IEntityTemplate, 'disabled'>) {
+        Object.entries(templateData.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
+            }
+        });
+
         let entityTemplate: IEntityTemplatePopulated | null = null;
 
         if (this.hasRelationshipsProperties(templateData)) {
@@ -119,12 +179,16 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
                     .orFail(new NotFoundError('Entity Template not found'))
                     .lean()
-                    .exec();
+                    .exec() as Promise<IEntityTemplatePopulated>;
             });
         } else {
             const createdEntityTemplate = await this.model.create(templateData);
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
+
+        const { templatesOrder } = entityTemplate.category;
+        templatesOrder.push(entityTemplate._id.toString());
+        await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
 
@@ -133,11 +197,11 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
-            const deletedEntityTemplate: IMongoEntityTemplate = await this.model
+            const deletedEntityTemplate: IMongoEntityTemplate = (await this.model
                 .findByIdAndDelete(id, { session })
                 .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
-                .exec();
+                .exec()) as IMongoEntityTemplate;
 
             await Promise.all(
                 Object.values(deletedEntityTemplate.properties.properties).map(async (property) => {
@@ -146,6 +210,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     }
                 }),
             );
+
+            const category: IMongoCategory = await this.categoryManager.getCategoryById(deletedEntityTemplate.category);
+            const index: number = category.templatesOrder.indexOf(id);
+
+            if (index !== -1) {
+                category.templatesOrder.splice(index, 1);
+            }
+
+            await this.categoryManager.updateCategory(category._id, { templatesOrder: category.templatesOrder });
         });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnDeleteTemplate(id);
@@ -218,6 +291,14 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
         }
 
+        if (currentEntityTemplate.displayName !== updatedEntityTemplate.displayName) {
+            await this.childTemplateManager.updateChildrenDisplayNames(
+                updatedEntityTemplate._id,
+                currentEntityTemplate.displayName,
+                updatedEntityTemplate.displayName,
+            );
+        }
+
         return updatedEntityTemplate;
     }
 
@@ -227,6 +308,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
+        Object.entries(updatedTemplateData.properties.properties).forEach(([_name, value]) => {
+            if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
+            }
+        });
+
         const currentEntityTemplate = await this.getTemplateById(id);
 
         const newEntityTemplate = session
@@ -298,6 +386,14 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
+            .orFail(new NotFoundError('Entity Template not found'))
+            .lean()
+            .exec();
+    }
+
+    async updateEntityTemplateCategory(tempId: string, categoryId: string) {
+        return this.model
+            .findByIdAndUpdate(tempId, { category: categoryId }, { new: true })
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();

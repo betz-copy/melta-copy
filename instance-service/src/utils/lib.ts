@@ -5,10 +5,10 @@ import isEqualWith from 'lodash.isequalwith';
 import isObject from 'lodash.isobject';
 import pickBy from 'lodash.pickby';
 
+import { Awaited } from '@microservices/shared';
+
 // eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
-
-export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 
 export const isBoolean = (value: string) => value === 'true' || value === 'false';
 

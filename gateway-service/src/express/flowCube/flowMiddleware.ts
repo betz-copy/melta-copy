@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { BadRequestError, ForbiddenError } from '@microservices/shared';
 import config from '../../config';
-import { BadRequestError, ForbiddenError } from '../error';
-import { UserService } from '../../externalServices/userService';
+import UserService from '../../externalServices/userService';
 
 const validateFlowHeaders = async (req: Request, res: Response, next: NextFunction) => {
     try {

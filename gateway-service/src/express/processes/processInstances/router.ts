@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createWorkspacesController } from '../../../utils/express';
+import { createController, ValidateRequest } from '@microservices/shared';
 
 import InstancesController from './controller';
 import {
@@ -10,13 +10,12 @@ import {
     getProcessInstanceSchema,
     archivedProcessStatusSchema,
 } from './validator.schema';
-import ValidateRequest from '../../../utils/joi';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
-import { busboyMiddleware } from '../../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 
 const InstancesRouter: Router = Router();
 
-const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
+const InstancesControllerMiddleware = createController(InstancesController);
 
 InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware.getProcessInstance);
 InstancesRouter.post(

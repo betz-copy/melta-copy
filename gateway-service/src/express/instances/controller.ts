@@ -1,18 +1,26 @@
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
-import { InstancesManager } from './manager';
+import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
+import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
-import { IDeleteBody, ISearchEntitiesByLocationBody } from '../../externalServices/instanceService/interfaces/entities';
 
-export class InstancesController extends DefaultController<InstancesManager> {
+class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
         super(new InstancesManager(workspaceId));
     }
 
     async createEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id));
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
+        res.json(
+            await this.manager.createEntityInstance(
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+                childTemplateId,
+            ),
+        );
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -25,26 +33,48 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
+        const { templateId, insertBrokenEntities, childTemplateId } = req.body;
         res.json(
             await this.manager.loadEntities(
-                req.body.templateId,
+                templateId,
                 req.user!.id,
+                childTemplateId,
                 req.files || (req.file ? [req.file] : []),
-                req.body.insertBrokenEntities,
+                insertBrokenEntities,
             ),
         );
     }
 
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
-        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.file!));
+        const { templateId, childTemplateId } = req.body;
+
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, childTemplateId));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {
-        res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
+        const { entities, childTemplateId } = req.body;
+
+        res.json(await this.manager.editManyEntitiesByExcel(entities, req.user!.id, childTemplateId));
+    }
+
+    async updateMultipleEntities(req: Request, res: Response) {
+        const { ignoredRules, entitiesToUpdate, propertiesToRemove, childTemplateId, ...instanceData } = req.body;
+        res.json(
+            await this.manager.updateMultipleEntities(
+                instanceData,
+                propertiesToRemove,
+                entitiesToUpdate,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+                childTemplateId,
+            ),
+        );
     }
 
     async updateEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
+
         res.json(
             await this.manager.updateEntityInstance(
                 req.params.id,
@@ -52,6 +82,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }
@@ -66,7 +97,8 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
+        const { childTemplateId, ...restBody } = req.body;
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, restBody));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
@@ -75,7 +107,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async duplicateEntityInstance(req: Request, res: Response) {
-        const { ignoredRules, ...instanceData } = req.body;
+        const { ignoredRules, childTemplateId, ...instanceData } = req.body;
         res.json(
             await this.manager.duplicateEntityInstance(
                 req.params.id,
@@ -83,12 +115,13 @@ export class InstancesController extends DefaultController<InstancesManager> {
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
                 req.user!.id,
+                childTemplateId,
             ),
         );
     }
 
     async deleteEntityInstances(req: Request, res: Response) {
-        const body = req.body as IDeleteBody;
+        const body = req.body as IDeleteEntityBody;
 
         res.json(await this.manager.deleteEntityInstances(body));
     }
@@ -118,7 +151,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.send(
             await this.manager.exportEntityToDocumentTemplate({
                 documentTemplateId: req.query.documentTemplateId as string,
-                entityProperties: (await this.manager.service.getEntityInstanceById(req.params.entityId)).properties,
+                entity: await this.manager.service.getEntityInstanceById(req.params.entityId),
             }),
         );
     }
@@ -129,3 +162,5 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
     }
 }
+
+export default InstancesController;

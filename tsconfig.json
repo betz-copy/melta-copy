@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "target": "ES2019",
+        "module": "commonjs",
+        "allowJs": false,
+        "sourceMap": true,
+        "removeComments": true,
+        "strict": true,
+        "noImplicitAny": false,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": false,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "isolatedModules": true,
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "lib": ["ES2020.Promise"]
+    },
+    "exclude": ["node_modules", "dist", ".eslintrc.js"]
+}

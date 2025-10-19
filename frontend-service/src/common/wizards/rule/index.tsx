@@ -1,19 +1,17 @@
 import React from 'react';
-
-import { toast } from 'react-toastify';
-import { useMutation, useQueryClient } from 'react-query';
+import { ImmutableTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import { Utils as QbUtils, ImmutableTree } from '@react-awesome-query-builder/mui';
-
-import { StepType, Wizard, WizardBaseType } from '../index';
-import { CreateRule, createRuleSchema } from './CreateRule';
-import { ErrorToast } from '../../ErrorToast';
-import { IRule, IRuleMap } from '../../../interfaces/rules';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { ActionOnFail, IRule, IRuleMap } from '../../../interfaces/rules';
 import { createRuleRequest, updateRuleRequest } from '../../../services/templates/rulesService';
+import { ErrorToast } from '../../ErrorToast';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateFormula, formulaValidation } from './CreateFormula';
+import { CreateRule, createRuleSchema } from './CreateRule';
 
-export interface RuleWizardValues extends Omit<IRule, 'formula'> {
+export interface RuleWizardValues extends Omit<IRule, 'formula' | 'doesFormulaHaveTodayFunc'> {
     formula: ImmutableTree;
 }
 
@@ -37,7 +35,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
     initialValues = {
         name: '',
         description: '',
-        actionOnFail: 'WARNING',
+        actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: '',
         formula: QbUtils.loadTree({ id: QbUtils.uuid(), type: 'group' }),
         disabled: false,
@@ -52,19 +50,16 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             onSuccess: (data) => {
                 queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchRulesTemplates']);
-                if (isEditMode) {
-                    toast.success(i18next.t('wizard.rule.editedSuccessfully'));
-                } else {
-                    toast.success(i18next.t('wizard.rule.createdSuccessfully'));
-                }
+                toast.success(i18next.t(`wizard.rule.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`));
                 handleClose();
             },
             onError: (error: AxiosError) => {
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.rule.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
             },
         },
     );
@@ -76,7 +71,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={isEditMode ? i18next.t('wizard.rule.updateTitle') : i18next.t('wizard.rule.createTitle')}
+            title={i18next.t(`wizard.rule.${isEditMode ? 'updateTitle' : 'createTitle'}`)}
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

@@ -1,20 +1,21 @@
 /* eslint-disable no-restricted-globals */
-import React, { useState, useEffect } from 'react';
-import { TextField, Switch, InputAdornment } from '@mui/material';
+import { Autocomplete, InputAdornment, TextField } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import MeltaSwitch from '../../../common/MeltaDesigns/MeltaSwitch';
+import { environment } from '../../../globals';
+import { IMetadata } from '../../../interfaces/workspaces';
+import { BackendConfigState } from '../../../services/backendConfigService';
 import { updateMetadata } from '../../../services/workspacesService';
 import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
-import { IMetadata } from '../../../interfaces/workspaces';
-import { environment } from '../../../globals';
-import { BackendConfigState } from '../../../services/backendConfigService';
 
 interface FieldProps {
     keyPath: string;
-    value: string | number | boolean;
-    defaultValue: string | number | boolean;
-    updateConfig: (path: string, newValue: string | number | boolean) => void;
+    value: string | number | boolean | string[];
+    defaultValue: string | number | boolean | string[];
+    updateConfig: (path: string, newValue: string | number | boolean | string[]) => void;
     workspaceMetadata: any;
     updateWorkspaceMetadata: (changes: any) => void;
     workspaceId: string;
@@ -23,7 +24,7 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfig, workspaceMetadata, updateWorkspaceMetadata, workspaceId }) => {
     const translateConfigProp = i18next.t(`DynamicsConfigs.${keyPath}`);
 
-    const [inputValue, setInputValue] = useState<string | number | boolean>(value);
+    const [inputValue, setInputValue] = useState<string | number | boolean | string[]>(value);
     const [isModified, setIsModified] = useState(false);
     const queryClient = useQueryClient();
     const { unit } = environment;
@@ -34,14 +35,14 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         setIsModified(false);
     }, [value]);
 
-    const isValidInput = (val: string | number | boolean) => {
+    const isValidInput = (val: string | number | boolean | string[]) => {
         return val !== unit && val !== null && !(typeof val === 'number' && isNaN(val));
     };
     const isGatewayConfig = (path: string) => {
         return path === 'excel.entitiesFileLimit' || path === 'excel.filesLimit';
     };
 
-    const updateConfigValue = async (val: string | number | boolean) => {
+    const updateConfigValue = async (val: string | number | boolean | string[]) => {
         updateConfig(keyPath, val);
 
         const changes: Partial<IMetadata> = {};
@@ -88,7 +89,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         updateConfigValue(defaultValue);
     };
 
-    const handleInputChange = (newValue: string | number | boolean) => {
+    const handleInputChange = (newValue: string | number | boolean | string[]) => {
         setInputValue(newValue);
         setIsModified(isValidInput(newValue) && newValue !== value);
     };
@@ -108,18 +109,22 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                 <TextField
                     value={typeof inputValue === 'string' && inputValue.endsWith(unit) ? inputValue.replace(unit, '') : inputValue}
                     variant="standard"
-                    type="number"
-                    InputProps={{
-                        startAdornment:
-                            typeof value === 'string' && (value as string).endsWith(unit) ? (
-                                <InputAdornment position="start">{unit}</InputAdornment>
-                            ) : null,
-                        disableUnderline: true,
+                    type={typeof inputValue === 'string' && inputValue.endsWith(unit) ? 'number' : 'text'}
+                    slotProps={{
+                        input: {
+                            startAdornment:
+                                typeof value === 'string' && (value as string).endsWith(unit) ? (
+                                    <InputAdornment position="start">{unit}</InputAdornment>
+                                ) : null,
+                            disableUnderline: true,
+                        },
                     }}
                     onChange={(e) => {
                         const newValue = e.target.value;
                         if (/^\d*$/.test(newValue)) {
                             handleInputChange(`${newValue}${unit}`);
+                        } else {
+                            handleInputChange(newValue);
                         }
                     }}
                     onKeyDown={handleKeyDown}
@@ -128,7 +133,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
             break;
         case 'boolean':
             inputElement = (
-                <Switch
+                <MeltaSwitch
                     id={keyPath}
                     name={keyPath}
                     checked={Boolean(inputValue)}
@@ -140,6 +145,30 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                 />
             );
             break;
+
+        case 'object':
+            if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
+                inputElement = (
+                    <Autocomplete
+                        multiple
+                        freeSolo
+                        options={[]}
+                        value={(inputValue as string[]) || []}
+                        onChange={(_e, newValue) => {
+                            const trimmed = newValue.map((v) => v.trim()).filter((v) => v.length > 0);
+                            handleInputChange(trimmed);
+                        }}
+                        isOptionEqualToValue={(option, val) => option.trim() === val.trim()}
+                        filterSelectedOptions
+                        renderInput={(params) => (
+                            <TextField {...params} variant="standard" InputProps={{ ...params.InputProps, disableUnderline: true }} />
+                        )}
+                        style={{ width: '100%' }}
+                    />
+                );
+            }
+            break;
+
         case 'number':
         default:
             inputElement = (
@@ -147,7 +176,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     type="number"
                     value={inputValue}
                     variant="standard"
-                    InputProps={{ disableUnderline: true }}
+                    slotProps={{ input: { disableUnderline: true } }}
                     onChange={(e) => {
                         const newValue = parseInt(e.target.value, 10);
                         if (newValue > 0 || isNaN(newValue)) handleInputChange(newValue);

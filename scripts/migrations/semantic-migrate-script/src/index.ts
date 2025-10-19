@@ -2,7 +2,7 @@ import { initializeRabbit } from './utils/rabbitmq';
 import { initializeMongo } from './utils/mongo';
 import { initializeNeo } from './utils/neo4j';
 import { WorkspaceService, WorkspaceTypes } from './services/workspace';
-import { IMongoEntityTemplate } from './clients/mongo/interface';
+import { IMongoEntityTemplate } from '@microservices/shared';
 import { listFilesInDB } from './clients/neo4j';
 import { Driver } from 'neo4j-driver';
 import { sendToQueue } from './clients/rabbit/manager';

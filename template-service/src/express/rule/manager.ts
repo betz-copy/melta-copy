@@ -1,12 +1,10 @@
+import { DefaultManagerMongo, IMongoRule, IRule, NotFoundError } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
-import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { IMongoRule, IRule } from './interfaces';
-import { RuleTemplateSchema } from './model';
+import RuleTemplateSchema from './model';
 
-export class RuleManager extends DefaultManagerMongo<IMongoRule> {
+class RuleManager extends DefaultManagerMongo<IMongoRule> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.ruleCollectionName, RuleTemplateSchema);
     }
@@ -22,7 +20,7 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
             .exec();
     }
 
-    async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
+    async updateRuleById(ruleId: string, updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | 'doesFormulaHaveTodayFunc'>) {
         return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
@@ -43,12 +41,24 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
         return this.model.create({ ...rule, disabled: false });
     }
 
-    async searchRules(searchBody: { search?: string; entityTemplateIds?: string[]; disabled?: boolean; limit: number; skip: number }) {
-        const { search, entityTemplateIds, disabled, limit, skip } = searchBody;
+    async searchRules(searchBody: {
+        search?: string;
+        entityTemplateIds?: string[];
+        doesFormulaHaveTodayFunc?: boolean;
+        disabled?: boolean;
+        limit: number;
+        skip: number;
+    }) {
+        const { search, entityTemplateIds, doesFormulaHaveTodayFunc, disabled, limit, skip } = searchBody;
         const query: FilterQuery<IMongoRule> = {};
 
         if (disabled !== undefined) {
             query.disabled = disabled;
+        }
+
+        if (doesFormulaHaveTodayFunc !== undefined) {
+            // eslint-disable-next-line no-underscore-dangle
+            query.doesFormulaHaveTodayFunc = doesFormulaHaveTodayFunc;
         }
 
         if (search) {
@@ -62,3 +72,5 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
         return this.model.find(query).limit(limit).skip(skip).lean().exec();
     }
 }
+
+export default RuleManager;

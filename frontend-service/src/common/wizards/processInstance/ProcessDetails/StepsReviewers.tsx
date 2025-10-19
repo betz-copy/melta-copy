@@ -1,18 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import _debounce from 'lodash.debounce';
-import { Card, Grid, CardHeader, CardContent, Fab } from '@mui/material';
-import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
+import { ScatterPlotOutlined as HiveIcon, NavigateBefore, NavigateNext } from '@mui/icons-material';
+import { Card, CardContent, CardHeader, Fab, Grid } from '@mui/material';
 import i18next from 'i18next';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import React, { useEffect, useRef, useState } from 'react';
 import { IDetailsStepProp } from '.';
-import { ReviewerSelector } from './ReviewerSelector';
-import { CustomIcon } from '../../../CustomIcon';
-import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
-import { useDarkModeStore } from '../../../../stores/darkMode';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IUser } from '../../../../interfaces/users';
-import { BlueTitle } from '../../../BlueTitle';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
+import { CustomIcon } from '../../../CustomIcon';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { ReviewerSelector } from './ReviewerSelector';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -33,7 +30,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
         };
     }, []);
     return (
-        <Grid item xs={10} marginBottom={1}>
+        <Grid size={{ xs: 10 }} marginBottom={1}>
             <Card
                 ref={cardRef}
                 sx={{
@@ -74,6 +71,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                                 ? values.steps[getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!._id]
                                 : values.steps[stepTemplate._id] || []
                         }
+                        disableAddingReviewers={stepTemplate.disableAddingReviewers}
                         forcedReviewers={stepTemplate.reviewers}
                         onAdd={(newReviewer, reviewers) => {
                             if (isEditMode && processInstance) {
@@ -109,8 +107,8 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent', height: '100%', justifyContent: 'space-between', padding: '20px' }}>
-            <Grid container item flexDirection="column" height="100%" sx={{ justifyContent: 'space-between' }}>
-                <Grid item height="90%">
+            <Grid container flexDirection="column" height="100%" sx={{ justifyContent: 'space-between' }}>
+                <Grid height="90%">
                     <CardContent
                         sx={{
                             height: '100%',
@@ -121,7 +119,7 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                     >
                         <Grid container rowSpacing={3} flexWrap="wrap" sx={{ overflowY: 'auto' }} height="100%">
                             {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated) => (
-                                <Grid item key={stepTemplate._id} xs={12} sm={6} md={4}>
+                                <Grid key={stepTemplate._id} size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReviewCard
                                         stepTemplate={stepTemplate}
                                         values={values}
@@ -135,8 +133,8 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                     </CardContent>
                 </Grid>
 
-                <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
-                    <Grid item>
+                <Grid container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
+                    <Grid>
                         {!viewMode && (
                             <Fab
                                 size="small"
@@ -148,13 +146,13 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 color="primary"
                                 variant="extended"
                             >
-                                <NavigateNextIcon />
+                                <NavigateNext />
                                 {i18next.t('wizard.processInstance.backTo')}
                             </Fab>
                         )}
                     </Grid>
                     {!processInstance && (
-                        <Grid item>
+                        <Grid>
                             <Fab
                                 size="small"
                                 onClick={() => {
@@ -168,12 +166,12 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 color="primary"
                             >
                                 {i18next.t('wizard.processInstance.createProcess')}
-                                <NavigateBeforeIcon />
+                                <NavigateBefore />
                             </Fab>
                         </Grid>
                     )}
                     {isEditMode && (
-                        <Grid item>
+                        <Grid>
                             <Fab
                                 size="small"
                                 onClick={() => {
@@ -188,7 +186,7 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 color="primary"
                             >
                                 {i18next.t('wizard.processInstance.saveBth')}
-                                <NavigateBeforeIcon />
+                                <NavigateBefore />
                             </Fab>
                         </Grid>
                     )}

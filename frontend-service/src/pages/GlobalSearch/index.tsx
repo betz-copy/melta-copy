@@ -7,6 +7,8 @@ import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { TablePageType } from '../../common/EntitiesTableOfTemplate';
 
 const GlobalSearch: React.FC<{}> = () => {
     const currentUser = useUserStore((state) => state.user);
@@ -15,12 +17,13 @@ const GlobalSearch: React.FC<{}> = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
 
     const allowedCategories = currentUser.currentWorkspacePermissions.admin
         ? Array.from(categories.values())
         : Array.from(categories.values()).filter((category) => Boolean(currentUser.currentWorkspacePermissions.instances?.categories[category._id]));
 
-    const allowedTemplates = Array.from(entityTemplates.values()).filter((entityTemplate) =>
+    const allowedTemplates = [...entityTemplates.values(), ...childTemplates.values()].filter((entityTemplate) =>
         allowedCategories.find((category) => category._id === entityTemplate.category._id),
     );
 
@@ -35,7 +38,7 @@ const GlobalSearch: React.FC<{}> = () => {
         />
     ) : (
         <EntitiesPage
-            pageType="globalSearch"
+            pageType={TablePageType.globalSearch}
             templates={allowedTemplates}
             categories={allowedCategories}
             excelExportAllTablesFileName={`${i18next.t('pages.globalSearch')}.xlsx`}

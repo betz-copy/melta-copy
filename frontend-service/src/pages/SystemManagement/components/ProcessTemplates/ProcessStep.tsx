@@ -2,7 +2,7 @@ import { ChevronLeft, ExpandMore, ScatterPlotOutlined as HiveIcon } from '@mui/i
 import { Button, Grid, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import { CustomIcon } from '../../../../common/CustomIcon';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessProperties } from './ProcessProperties';
 import { StepReviewers } from './StepReviewers';
@@ -16,8 +16,8 @@ export const ProcessStep: React.FC<StepProps> = ({ step }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Grid item container direction="row" marginLeft="20px">
-            <Grid item container direction="row" alignItems="center" gap="10px">
+        <Grid container direction="row" marginLeft="20px">
+            <Grid container direction="row" alignItems="center" gap="10px">
                 <Button
                     style={{ maxWidth: '250px' }}
                     onClick={(event) => {
@@ -50,7 +50,7 @@ export const ProcessStep: React.FC<StepProps> = ({ step }) => {
                 </Button>
             </Grid>
             {isOpen && (
-                <Grid item container direction="column" marginLeft="20px">
+                <Grid container direction="column" marginLeft="20px">
                     <ProcessProperties properties={step.properties.properties} />
                     <StepReviewers reviewers={step.reviewers} />
                 </Grid>

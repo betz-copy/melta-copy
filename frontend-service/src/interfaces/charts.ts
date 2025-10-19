@@ -1,15 +1,17 @@
-export interface IBasicChart {
+export interface IChart {
     name: string;
     description: string;
     type: IChartType;
     metaData: IChartTypeMetaData;
     permission: IPermission;
     filter?: string;
-    templateId?: string;
-    createdBy?: string;
+    templateId: string;
+    createdBy: string;
+    usedInDashboard?: boolean;
+    childTemplateId?: string;
 }
 
-export interface IChart extends IBasicChart {
+export interface IMongoChart extends IChart {
     _id: string;
     createdAt: Date;
     updatedAt: Date;
@@ -53,11 +55,11 @@ export interface IPieMetaData {
     aggregationType: IAggregation;
 }
 
-export interface INUmberMetaData {
+export interface INumberMetaData {
     accumulator: IAggregation;
 }
 
-export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INUmberMetaData;
+export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INumberMetaData;
 
 export enum IPermission {
     Protected = 'protected',
@@ -81,8 +83,8 @@ export type HighchartType = Exclude<IChartType, IChartType.Number>;
 
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';
 
-type GeneratorChart = { x: any; y: any }[];
+export type GeneratedChart = { x: any; y: number }[];
 
-export interface ChartsAndGenerator extends IChart {
-    chart: GeneratorChart;
+export interface ChartsAndGenerator extends IMongoChart {
+    chart: GeneratedChart;
 }

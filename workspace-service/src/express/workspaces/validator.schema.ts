@@ -1,12 +1,12 @@
 import * as Joi from 'joi';
-import { FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
-import { Colors, WorkspaceTypes } from './interface';
+import { Colors, WorkspaceTypes, FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '@microservices/shared';
 
 // Joi schema for IMetadata
 const metadataSchema = Joi.object({
     shouldNavigateToEntityPage: Joi.boolean(),
     isDrawerOpen: Joi.boolean(),
     flowCube: Joi.boolean(),
+    isDashboardHomePage: Joi.boolean(),
     agGrid: Joi.object({
         rowCount: Joi.number(),
         defaultExpandedRowCount: Joi.number(),
@@ -30,6 +30,21 @@ const metadataSchema = Joi.object({
     searchLimits: Joi.object({
         bulk: Joi.number(),
     }).optional(),
+    unitFieldSplitDepth: Joi.number(),
+    clientSide: Joi.object({
+        usersInfoChildTemplateId: Joi.string(),
+        numOfPropsToShow: Joi.number(),
+        clientSideWorkspaceName: Joi.string().valid('simba', 'azarim'),
+        fullNameField: Joi.string(),
+    }).optional(),
+    mapPage: Joi.object({
+        showMapPage: Joi.boolean(),
+        sourceTemplateId: Joi.string().allow(''),
+        destTemplateId: Joi.string().allow(''),
+        sourceFieldForColor: Joi.string().allow(''),
+    }).optional(),
+    unitsArray: Joi.array().items(Joi.string().trim()).optional(),
+    numOfRelationshipFieldsToShow: Joi.number(),
 }).optional();
 
 // Joi schema for Workspace

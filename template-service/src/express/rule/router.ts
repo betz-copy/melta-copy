@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import RuleController from './controller';
-import { RuleValidator } from './validator';
+import RuleValidator from './validator';
 import {
     createRuleRequestSchema,
     deleteRuleByIdRequestSchema,

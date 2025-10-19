@@ -1,3 +1,4 @@
+import { IFrame, IMongoIframe, ISearchIFramesBody } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
@@ -5,26 +6,7 @@ const {
     dashboardService: { url, baseRoute, requestTimeout, iframes },
 } = config;
 
-export interface IFrame {
-    name: string;
-    url: string;
-    categoryIds: string[];
-    iconFileId: string | null;
-    placeInSideBar?: boolean;
-}
-
-export interface IMongoIframe extends IFrame {
-    _id: string;
-}
-
-export interface ISearchIFramesBody {
-    search?: string;
-    limit: number;
-    skip: number;
-    ids?: string[];
-}
-
-export class IFramesService extends DefaultExternalServiceApi {
+class IFramesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}${iframes.baseRoute}`, timeout: requestTimeout });
     }
@@ -58,3 +40,5 @@ export class IFramesService extends DefaultExternalServiceApi {
         await this.api.delete(`/${iframeId}`);
     }
 }
+
+export default IFramesService;

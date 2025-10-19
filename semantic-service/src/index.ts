@@ -1,8 +1,8 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
+import { logger } from '@microservices/shared';
 import Server from './express/server';
 import config from './config';
-import logger from './utils/logger/logsLogger';
 import SemanticConsumer from './rabbit/consumer';
 import ElasticClient from './utils/elastic';
 

@@ -1,4 +1,4 @@
-import DoneIcon from '@mui/icons-material/Done';
+import { Done as DoneIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -40,8 +40,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     const { mutate, isLoading, isSuccess } = useMutation(() => notificationSeenRequest(notification._id), {
         onSuccess: onSeen,
         onError: (error) => {
-            // eslint-disable-next-line no-console
-            console.log('failed to set notification as seen. error:', error);
+            console.error('failed to set notification as seen. error:', error);
             toast.error(i18next.t('notifications.failedSetAsSeen'));
         },
     });
@@ -64,11 +63,11 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         >
             <CardContent sx={{ '&:last-child': { padding: '15px' } }}>
                 <Grid container direction="column">
-                    <Grid item container justifyContent="flex-end" wrap="nowrap">
+                    <Grid container justifyContent="flex-end" wrap="nowrap">
                         <Typography sx={{ fontSize: '11px', fontWeight: '350px' }}>{getShortDate(notification.createdAt)}</Typography>
                     </Grid>
 
-                    <Grid item sx={{ padding: '10px' }}>
+                    <Grid sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification notificationMetadata={notification.metadata} />}
                         {isRuleBreachRequestNotification(notification) && (
                             <RuleBreachRequestNotification notificationMetadata={notification.metadata} />
@@ -90,15 +89,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isArchiveProcessNotification(notification) && <ArchiveProcessNotification notificationMetadata={notification.metadata} />}
                     </Grid>
                     <Grid container wrap="nowrap" margin="-5px">
-                        <Grid
-                            item
-                            container
-                            justifyContent="flex-end"
-                            onMouseEnter={() => setIsHovered(true)}
-                            onMouseLeave={() => setIsHovered(false)}
-                        >
+                        <Grid container justifyContent="flex-end" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
                             <LoadingButton onClick={() => mutate()} loading={isLoading}>
-                                <Grid item container alignItems="center" fontSize="12px" fontWeight={400}>
+                                <Grid container alignItems="center" fontSize="12px" fontWeight={400}>
                                     {isHovered && <DoneIcon fontSize="small" />}
                                     {i18next.t('notifications.setAsSeen')}
                                 </Grid>

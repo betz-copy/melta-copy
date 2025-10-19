@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
-import { createWorkspacesController } from '../../utils/express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import ValidateRequest from '../../utils/joi';
-import { InstancesController } from './controller';
-import { InstancesValidator } from './middlewares';
+import InstancesController from './controller';
+import InstancesValidator from './middlewares';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,
@@ -21,9 +20,11 @@ import {
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     loadEntitiesSchema,
-    editExcelSchema,
+    editManyEntitiesByExcelSchema,
+    updateMultipleEntitiesSchema,
+    getChangedEntitiesFromExcelSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const { instanceService } = config;
 
@@ -38,8 +39,8 @@ const InstanceManagerProxy = createProxyMiddleware({
 
 const InstancesRouter: Router = Router();
 
-const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
-const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
+const InstancesControllerMiddleware = createController(InstancesController);
+const InstancesValidatorMiddleware = createController(InstancesValidator, true);
 
 // entities (Instances)
 InstancesRouter.post(
@@ -79,33 +80,42 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/export',
-    InstancesValidatorMiddleware.validateUserCanExportEntities,
     ValidateRequest(exportEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanExportEntities,
     InstancesControllerMiddleware.exportEntities,
 );
 
 InstancesRouter.post(
     '/entities/loadEntities',
     busboyMiddleware,
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.loadEntities,
 );
 
 InstancesRouter.post(
     '/entities/getChangedEntitiesFromExcel',
     busboyMiddleware,
+    ValidateRequest(getChangedEntitiesFromExcelSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(loadEntitiesSchema),
     InstancesControllerMiddleware.getChangedEntitiesFromExcel,
 );
 
-InstancesRouter.post(
+InstancesRouter.put(
     '/entities/editManyEntitiesByExcel',
     busboyMiddleware,
+    ValidateRequest(editManyEntitiesByExcelSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(editExcelSchema),
     InstancesControllerMiddleware.editManyEntitiesByExcel,
+);
+
+InstancesRouter.put(
+    '/entities/bulk',
+    busboyMiddleware,
+    ValidateRequest(updateMultipleEntitiesSchema),
+    InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
+    InstancesValidatorMiddleware.validateUserCanIgnoreRulesMultipleUpdate,
+    InstancesControllerMiddleware.updateMultipleEntities,
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
@@ -143,7 +153,7 @@ InstancesRouter.post(
 InstancesRouter.post(
     '/entities/delete/bulk',
     ValidateRequest(deleteEntityInstancesSchema),
-    InstancesValidatorMiddleware.validateUserCanDeleteEntityInstances,
+    InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
     InstancesControllerMiddleware.deleteEntityInstances,
 );
 InstancesRouter.patch(

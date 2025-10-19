@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { IUser } from '@microservices/shared';
 import config from './config';
-import { IUser } from './interfaces/users';
 import { trycatch } from './utils';
 
 const { url, usersRoute, isAliveRoute } = config.usersService;

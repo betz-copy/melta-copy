@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import IconButton from '@mui/material/IconButton';
-import ExpandMoreSharpIcon from '@mui/icons-material/ExpandMoreSharp';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Check from '@mui/icons-material/Check';
+import { Check, ExpandMoreSharp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ValueSourcesProps } from '@react-awesome-query-builder/mui';
@@ -13,7 +12,7 @@ import { ValueSourcesProps } from '@react-awesome-query-builder/mui';
 // copied file from raqb library. github.com/ukrbublik/react-awesome-query-builder/blob/d17da0103e90c96d3aa081304129b2b355b89c9a/packages/mui/modules/widgets/core/MuiValueSources.jsx
 // added explicit "ltr". see below. in order to work in RTL mui enviorment, but speicifly keep the raqb in LTR
 export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProps) => {
-    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     const handleOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -58,11 +57,11 @@ export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProp
     return (
         <div>
             <IconButton size="small" onClick={toggleOpenClose}>
-                <ExpandMoreSharpIcon />
+                <ExpandMoreSharp />
             </IconButton>
 
-            {/* added PaperProps={{ dir: 'ltr' }} */}
-            <Menu anchorEl={anchorEl} open={open} onClose={handleClose} PaperProps={{ dir: 'ltr' }}>
+            {/* added slotProps={{ paper: { dir: 'ltr' }}} */}
+            <Menu anchorEl={anchorEl} open={open} onClose={handleClose} slotProps={{ paper: { dir: 'ltr' } }}>
                 <FormControl component="fieldset" sx={{ p: 0 }}>
                     <FormLabel component="legend" sx={{ p: 2, pt: 0, pb: 1 }}>
                         {title}
