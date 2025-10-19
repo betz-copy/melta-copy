@@ -128,6 +128,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filters',
         'defaultValue',
         'isFilterByCurrentUser',
+        'filterByCurrentUserField',
+        'filterByUnitUserField',
         'isFilterByUserUnit',
         'display',
         'isProfileImage',
@@ -228,9 +230,7 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
-            if (schema.format === 'comment') {
-                return <Component {...props} />;
-            }
+            if (schema.format === 'comment') return <Component {...props} />;
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 

@@ -44,7 +44,7 @@ const RjsfUserWidget = ({
             onBlur={({ target: { value: newValue } }) => onBlur(id, newValue)}
             onFocus={({ target: { value: newValue } }) => onFocus(id, newValue)}
             autoFocus={autofocus}
-            isError={rawErrors.length > 0}
+            isError={!!rawErrors.length}
             disabled={disabled}
             textFieldProps={{
                 ...textFieldProps,

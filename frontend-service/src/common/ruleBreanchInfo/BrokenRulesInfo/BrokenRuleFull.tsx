@@ -91,7 +91,7 @@ export const BrokenRuleFull: React.FC<{
                                         )}
                                     </Grid>
                                     <Grid>
-                                        {causesWithoutMainEntity.length > 0 && (
+                                        {!!causesWithoutMainEntity.length && (
                                             <>
                                                 {causesWithoutMainEntity.length > 1 && (
                                                     <Typography paddingLeft="15px">{i18next.t('ruleBreachInfo.relationshipsCombination')}</Typography>

@@ -64,7 +64,7 @@ const CategoryCheckboxPermission: React.FC<{
                     disabled={disabled || permissionType.write.checked}
                     indeterminate={
                         !categoryPermissions.scope &&
-                        Object.keys(templatesPermissions ?? {}).length > 0 &&
+                        !!Object.keys(templatesPermissions ?? {}).length &&
                         Object.keys(templatesPermissions ?? {}).length <= entityTemplates.length
                     }
                 />
@@ -77,8 +77,8 @@ const CategoryCheckboxPermission: React.FC<{
                     disabled={disabled}
                     indeterminate={
                         categoryPermissions.scope !== PermissionScope.write &&
-                        Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
-                            .length > 0 &&
+                        !!Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
+                            .length &&
                         Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
                             .length <= entityTemplates.length
                     }

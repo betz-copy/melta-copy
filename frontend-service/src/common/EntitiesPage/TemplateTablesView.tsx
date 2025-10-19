@@ -48,7 +48,7 @@ export const getDefaultFilterFromTemplate = (
         }
     }
 
-    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
+    return filterClauses.length ? { $and: filterClauses } : undefined;
 };
 
 const TemplateTablesViewResults = forwardRef<

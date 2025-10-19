@@ -46,7 +46,7 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
 
             return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         case 'set':
-            return Array.isArray(filter.values) && filter.values.length > 0;
+            return Array.isArray(filter.values) && !!filter.values.length;
         default:
             return false;
     }

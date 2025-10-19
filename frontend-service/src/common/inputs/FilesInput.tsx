@@ -109,7 +109,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
 
             <Grid container sx={inputStyle} {...getRootProps()}>
                 <input {...getInputProps()} />
-                {files.length > 0 ? (
+                {!!files.length ? (
                     <Grid flexWrap="wrap" overflow="auto" width="100%">
                         {files.map((file: FilesInputProps['files'][number], index) => (
                             // eslint-disable-next-line react/no-array-index-key

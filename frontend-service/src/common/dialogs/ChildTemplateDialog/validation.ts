@@ -31,7 +31,7 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
 
             return operatorMap[filterField.type];
         case 'set':
-            return filterField.values && filterField.values.length > 0 ? '$in' : null;
+            return filterField.values && !!filterField.values.length ? '$in' : null;
         default:
             console.warn('Unsupported filter type:', filterField);
             return null;

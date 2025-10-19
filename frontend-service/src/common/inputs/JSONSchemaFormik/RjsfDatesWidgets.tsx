@@ -99,7 +99,7 @@ const getRjsfDateOrDateTimeWidget =
                             variant,
                             onBlur: _onBlur,
                             onFocus: _onFocus,
-                            error: !hideError && rawErrors.length > 0,
+                            error: !hideError && !!rawErrors.length,
                             InputLabelProps: { shrink: readonly || undefined },
                             placeholder: defaultValue?.toString(),
                         },

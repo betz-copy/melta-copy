@@ -124,7 +124,7 @@ const EditProps: React.FC<{
     }, [absoluteDirty]);
 
     useEffect(() => {
-        if (multipleSelectionProps) setWasDirty(Object.keys(values.attachmentsProperties).length > 0);
+        if (multipleSelectionProps) setWasDirty(!!Object.keys(values.attachmentsProperties).length);
     }, [values.attachmentsProperties]);
 
     if (isMultipleSelection) {
@@ -176,7 +176,7 @@ const EditProps: React.FC<{
         />
     );
 
-    const propertiesFilesComp = templateFileKeys.length > 0 && (
+    const propertiesFilesComp = !!templateFileKeys.length && (
         <>
             <BlueTitle
                 title={i18next.t('wizard.entityTemplate.attachments')}
@@ -190,7 +190,7 @@ const EditProps: React.FC<{
                 </p>
             )}
             {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                <Grid key={key} marginTop={index > 0 ? 2 : 0}>
+                <Grid key={key} marginTop={index ? 2 : 0}>
                     {value.items ? (
                         <InstanceFileInput
                             key={key}
@@ -278,7 +278,7 @@ const EditProps: React.FC<{
                     <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                     </Grid>
-                    {templateFileKeys.length > 0 && (
+                    {!!templateFileKeys.length && (
                         <Grid container flexDirection="column">
                             <Grid marginTop="20px" alignSelf="stretch">
                                 <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
