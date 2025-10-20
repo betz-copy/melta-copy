@@ -214,9 +214,7 @@ class EntityManager extends DefaultManagerNeo4j {
     };
 
     throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
-        if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-            throw err;
-        }
+        if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') throw err;
 
         const { message: neo4jMessage } = err;
 
@@ -231,6 +229,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 templateId: label,
                 property: fixedProperty,
             };
+
             throw new ServiceError(badRequestStatus, `[NEO4J] instance is missing required property`, {
                 errorCode: config.errorCodes.failedConstraintsValidation,
                 constraint: requiredConstraint,

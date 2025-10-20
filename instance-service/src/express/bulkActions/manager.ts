@@ -428,27 +428,26 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         const constraints = await this.entityManager.getAllConstraints();
 
         actions.forEach((action, index) => {
-            if (action.actionType === ActionTypes.CreateEntity) {
-                const { templateId, properties } = action.actionMetadata as ICreateEntityMetadata;
-                const templateConstraint = constraints.find((constraint) => constraint.templateId === templateId);
+            const { templateId, properties } = action.actionMetadata as ICreateEntityMetadata;
+            const templateConstraint = constraints.find((constraint) => constraint.templateId === templateId);
 
-                if (templateConstraint) {
-                    const missingProperty = templateConstraint.requiredConstraints.find(
-                        (requiredProperty) => !Object.keys(properties).includes(requiredProperty),
-                    );
+            if (templateConstraint) {
+                const missingProperty = templateConstraint.requiredConstraints.find(
+                    (requiredProperty) => !Object.keys(properties).includes(requiredProperty),
+                );
 
-                    if (missingProperty) {
-                        const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
-                            type: ActionErrors.required,
-                            templateId,
-                            property: missingProperty,
-                            index,
-                        };
-                        throw new BadRequestError('instance is missing required property', {
-                            errorCode: config.errorCodes.failedConstraintsValidation,
-                            constraint: requiredConstraint,
-                        });
-                    }
+                if (missingProperty) {
+                    const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
+                        type: ActionErrors.required,
+                        templateId,
+                        property: missingProperty,
+                        index,
+                    };
+
+                    throw new BadRequestError('instance is missing required property', {
+                        errorCode: config.errorCodes.failedConstraintsValidation,
+                        constraint: requiredConstraint,
+                    });
                 }
             }
         });
@@ -510,7 +509,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
                     );
 
-                    this.throwRequiredErrors(actions);
+                    await this.throwRequiredErrors(actions);
 
                     // collecting all the entitiesIds and their rules for preparation to search their related rules
                     const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } = await this.getEntitiesIdsRulesReasonsBefore(

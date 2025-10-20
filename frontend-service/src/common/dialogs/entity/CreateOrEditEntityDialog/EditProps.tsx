@@ -88,12 +88,11 @@ const EditProps: React.FC<{
             const fieldPropertiesEnum = schema.properties[field]?.enum;
             const itemFieldProperties = schema.properties[field]?.items?.enum;
 
-            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
+            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined)
                 setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
-            }
-            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
+
+            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined)
                 setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
-            }
         });
     }, [values.template]);
 
@@ -139,9 +138,7 @@ const EditProps: React.FC<{
         if (!checked) {
             setFieldTouched(`properties.${field}`, false);
             setFieldValue(`properties.${field}`, undefined);
-        } else if (schema.properties[field].defaultValue) {
-            setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
-        }
+        } else if (schema.properties[field].defaultValue) setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
 
         const relatedUserFields = {};
 
@@ -285,7 +282,7 @@ const EditProps: React.FC<{
                             </Grid>
                         </Grid>
                     )}
-                    <Grid marginTop="20px" marginBottom="20px">
+                    <Grid marginTop="20px" marginBottom="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
                         {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
                     </Grid>
                     {externalErrors.action && (

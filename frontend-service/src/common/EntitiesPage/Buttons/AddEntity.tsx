@@ -111,6 +111,13 @@ const AddEntityButton: React.FC<{
                           : 'md'
                 }
                 fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            overflow: 'hidden',
+                        },
+                    },
+                }}
             >
                 <CreateOrEditEntityDetails
                     mutationProps={{

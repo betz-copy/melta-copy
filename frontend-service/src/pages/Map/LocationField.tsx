@@ -215,6 +215,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                                 </MeltaTooltip>
                             </ToggleButtonGroup>
                         )}
+
                         <IconButtonWithPopover
                             popoverText={i18next.t('location.clear')}
                             iconButtonProps={{

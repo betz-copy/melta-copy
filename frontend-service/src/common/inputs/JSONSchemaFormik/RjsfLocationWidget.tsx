@@ -132,7 +132,7 @@ const RjsfLocationWidget = ({
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     const handleCloseDialog = () => {
-        onChange(JSON.stringify({ location: newLocationValue, coordinateSystem }));
+        onChange(newLocationValue?.length ? JSON.stringify({ location: newLocationValue, coordinateSystem }) : undefined);
         setMapOpen(false);
     };
 
