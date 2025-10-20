@@ -12,6 +12,10 @@ import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';
 import { CreateRuleColorField, CreateRuleEmailNotification } from './CreateIndicatorRuleControls';
+import { getIn } from 'formik';
+import { environment } from '../../../globals';
+
+const { errorColor } = environment;
 
 const validMailField = (value: string): boolean => {
     try {
@@ -93,7 +97,7 @@ const createRuleSchema = Yup.object({
     if (values.fieldColor?.display === true || values.mail?.display === true) return true;
 
     return this.createError({
-        path: 'fieldColor',
+        path: 'indicatorMustChooseOne',
         message: i18next.t('wizard.rule.mustSelectOneIndicatorConfig'),
     });
 });
@@ -135,6 +139,8 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
         handleChange(event);
     };
+
+    const hasCheckedOneIndicator = touched.actionOnFail && values.actionOnFail === ActionOnFail.INDICATOR && getIn(errors, 'indicatorMustChooseOne');
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -195,6 +201,9 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
                 {values.actionOnFail === ActionOnFail.INDICATOR && (
                     <Grid container direction="column" gap={2}>
+                        <FormHelperText sx={{ color: hasCheckedOneIndicator ? errorColor : '#9398C2', fontSize: '14px' }}>
+                            {i18next.t('wizard.rule.atLeastOne')}
+                        </FormHelperText>
                         <CreateRuleColorField
                             fieldColor={values.fieldColor}
                             touched={touched.fieldColor}

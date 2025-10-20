@@ -144,7 +144,6 @@ export const CreateRuleColorField: React.FC<CreateRuleColorFieldProps> = ({
 }) => {
     return (
         <Grid container direction="column" gap={2}>
-            <FormHelperText sx={{ color: '#9398C2', fontSize: '14px' }}>{i18next.t('wizard.rule.atLeastOne')}</FormHelperText>
             <FormControlLabel
                 control={
                     <MeltaCheckbox
