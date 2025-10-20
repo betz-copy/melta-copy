@@ -79,18 +79,7 @@ export const updateRuleByIdRequestSchema = Joi.object({
             .required(),
         fieldColor: fieldColorSchema,
         mail: mailSchema,
-    }).when(Joi.object({ actionOnFail: Joi.valid(ActionOnFail.INDICATOR) }).unknown(), {
-        then: Joi.object()
-            .custom((value, helpers) => {
-                if ((value.fieldColor || value.mail) && value.fieldColor?.display !== true && value.mail?.display !== true) {
-                    return helpers.error('indicator.custom');
-                }
-
-                return value;
-            })
-            .messages({ 'indicator.custom': 'Indicator rule must have either mail or fieldColor' }),
-        otherwise: Joi.object({ fieldColor: Joi.forbidden(), mail: Joi.forbidden() }),
-    }),
+    }).when(indicatorCondition, { then: indicatorSchema, otherwise: nonIndicatorSchema }),
     query: {},
     params: {
         ruleId: MongoIdSchema.required(),
