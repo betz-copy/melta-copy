@@ -656,7 +656,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                                 ${
-                                    selectedIndexesToRemove.length > 0 &&
+                                    !!selectedIndexesToRemove.length &&
                                     getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
                                         ?.title
                                 }

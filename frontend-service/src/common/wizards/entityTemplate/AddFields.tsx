@@ -297,7 +297,7 @@ export const FieldBlockWrapper = ({
             },
         },
     );
-    const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+    const areThereAnyInstances = isEditMode && !!areThereInstancesByTemplateIdResponse!.count;
 
     const getNewValues = (
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],

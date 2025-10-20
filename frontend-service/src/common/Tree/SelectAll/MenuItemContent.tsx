@@ -49,7 +49,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                 </Grid>
             )}
             {showIcon ? (
-                option.iconFileId?.length > 0 ? (
+                !!option.iconFileId?.length ? (
                     <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
                 ) : (
                     <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />

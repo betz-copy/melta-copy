@@ -243,11 +243,9 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
         const trimValue = localOption.trim();
         setEditError('');
         if (value.options[tagIndex] === trimValue) setEditIndex(null);
-        else if (trimValue.length === 0) {
-            setEditError('errorPage.emptyInputError');
-        } else if (value.options.includes(trimValue)) {
-            setEditError('errorPage.duplicateValue');
-        } else if (checkIfOldEnumValue) {
+        else if (trimValue.length === 0) setEditError('errorPage.emptyInputError');
+        else if (value.options.includes(trimValue)) setEditError('errorPage.duplicateValue');
+        else if (checkIfOldEnumValue) {
             handleUpdateEnumField(templateId, tagIndex, trimValue, value);
             return;
         } else {
@@ -328,9 +326,8 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                         const lastValue = currValue.pop();
                         const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
 
-                        if (isDisabled) {
-                            updateOldDisabledEnumVals(trimmedValue);
-                        } else {
+                        if (isDisabled) updateOldDisabledEnumVals(trimmedValue);
+                        else {
                             setValues?.((prev) => ({
                                 ...prev,
                                 options: trimmedValue,
@@ -461,9 +458,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                                 <IconButton
                                                     size="small"
                                                     onClick={() => {
-                                                        if (!isDeleteLoading) {
-                                                            setOpenDelete(true);
-                                                        }
+                                                        if (!isDeleteLoading) setOpenDelete(true);
                                                     }}
                                                     disabled={isDeleteLoading}
                                                 >
@@ -669,9 +664,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 }}
                 onYes={() => {
                     if (openDelete) handleDelete(editIndex!);
-                    else {
-                        handleSaveEdit(editIndex!);
-                    }
+                    else handleSaveEdit(editIndex!);
                 }}
                 isLoading={isLoading}
                 body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}

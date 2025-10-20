@@ -124,6 +124,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const getEntityTemplatesToShowGroupedByCategories = (
         entityTemplatesToShow: IMongoEntityTemplatePopulated[],
+        searchText?: string,
     ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
         const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] = [];
         categoriesToShow.forEach((category) => {
@@ -137,7 +138,7 @@ const EntityTemplatesRow: React.FC = () => {
             });
         });
 
-        return categoriesToShowMapEntities;
+        return categoriesToShowMapEntities.filter((categoryWithEntities) => (searchText ? categoryWithEntities.entityTemplates.length : true));
     };
 
     const { mutateAsync: updateEntityTemplateStatusAsync } = useMutation(
@@ -231,7 +232,6 @@ const EntityTemplatesRow: React.FC = () => {
                 queryClient,
             );
         },
-
         {
             onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
@@ -386,6 +386,7 @@ const EntityTemplatesRow: React.FC = () => {
                                         if (res === 0) return Number(a.disabled) - Number(b.disabled);
                                         return res;
                                     }),
+                                searchText,
                             ).splice(pageParam, infiniteScrollPageCount);
                         }}
                         onQueryError={(error) => {

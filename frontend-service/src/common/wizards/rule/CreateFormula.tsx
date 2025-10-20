@@ -194,15 +194,15 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 <Query {...config} value={values.formula} onChange={onChange} renderBuilder={renderBuilder} />
             </ThemeProvider>
             {errors.formula && (
-                <Grid container sx={{ color: '#d32f2f' }}>
+                <Grid container alignItems="center" sx={{ color: '#d32f2f' }}>
                     <PriorityHighIcon />
-                    <div style={{ fontSize: 'larger' }}>{String(errors.formula)}</div>
+                    <div style={{ fontSize: '14px' }}>{String(errors.formula)}</div>
                 </Grid>
             )}
             {formulaHasGetTodayFunc && (
-                <Grid container wrap="nowrap" sx={{ color: '#FFAC2F' }}>
+                <Grid container wrap="nowrap" alignItems="center" sx={{ color: '#FFAC2F' }}>
                     <PriorityHighIcon />
-                    <div style={{ fontSize: 'larger', whiteSpace: 'pre-wrap' }}>{i18next.t('wizard.rule.todayVariableInfo')}</div>
+                    <div style={{ fontSize: '14px', whiteSpace: 'pre-wrap' }}>{i18next.t('wizard.rule.todayVariableInfo')}</div>
                 </Grid>
             )}
         </Grid>

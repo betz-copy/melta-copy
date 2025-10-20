@@ -57,7 +57,7 @@ const RjsfTemplateReferenceWidget = ({
                 required={required}
                 disabled
                 value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
-                error={rawErrors.length > 0}
+                error={!!rawErrors.length}
             />
         );
 
@@ -71,7 +71,7 @@ const RjsfTemplateReferenceWidget = ({
             onChange={handleEntityChange}
             onDisplayValueChange={handleEntityInputChange}
             displayValue={inputValue}
-            isError={rawErrors.length > 0}
+            isError={!!rawErrors.length}
             onBlur={handleBlur}
             disabled={disabled}
             relationFilters={filters}

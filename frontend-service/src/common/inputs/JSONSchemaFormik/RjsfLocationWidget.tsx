@@ -170,7 +170,7 @@ const RjsfLocationWidget = ({
                             }}
                             type={(options.inputType ?? inputType) as string}
                             value={newLocationValue ?? ''}
-                            error={error || rawErrors.length > 0}
+                            error={error || !!rawErrors.length}
                             onChange={_onChange}
                             onBlur={_onBlur}
                             onFocus={_onFocus}

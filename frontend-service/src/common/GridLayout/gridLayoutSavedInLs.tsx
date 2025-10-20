@@ -38,7 +38,7 @@ const LocalStorageGridLayout = <T extends { _id: string }>({
     useEffect(() => {
         const savedLayout = getSavedLayout();
 
-        if (!savedLayout && items.length > 0) layout.set(generateLayoutDetails(items).lg);
+        if (!savedLayout && !!items.length) layout.set(generateLayoutDetails(items).lg);
 
         if (savedLayout && items.length > savedLayout.length) {
             const updatedLayout = [...savedLayout];
@@ -81,7 +81,7 @@ const LocalStorageGridLayout = <T extends { _id: string }>({
 
     return (
         <div>
-            {layout.value.length > 0 && (
+            {!!layout.value.length && (
                 <GridLayout
                     style={{ direction: 'ltr' }}
                     rowHeight={30}

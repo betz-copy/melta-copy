@@ -70,7 +70,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
                             let count = 0;
 
-                            if (parentTemplates.length > 0) {
+                            if (parentTemplates.length) {
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,

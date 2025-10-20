@@ -75,11 +75,7 @@ export const DraftWarningDialog: React.FC<{
                                 sx={{ borderRadius: '8px' }}
                                 onClick={() => {
                                     const filterProperties = {
-                                        ...Object.fromEntries(
-                                            Object.entries(values.properties).filter(
-                                                ([_key, value]) => typeof value === 'string' && !value.startsWith('data:image/png;base64,'),
-                                            ),
-                                        ),
+                                        ...values.properties,
                                         disabled: values.properties.disabled ?? false,
                                     };
                                     const newValues = { ...values, properties: filterProperties };

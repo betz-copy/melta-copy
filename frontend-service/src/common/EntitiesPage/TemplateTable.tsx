@@ -60,7 +60,7 @@ export const isUserHasWritePermissions = (
     currentUser: UserState['user'],
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ) =>
-    Object.keys(currentClientSideUser).length > 0 ||
+    !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
 const TemplateTable = forwardRef<

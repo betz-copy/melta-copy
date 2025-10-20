@@ -168,7 +168,7 @@ const PrintOptionsDialog: React.FC<{
                         />
                     </Grid>
                     <Grid>
-                        {type === PrintType.Entity && printItem.entityConnections.connectionsTemplates.length > 0 && (
+                        {type === PrintType.Entity && !!printItem.entityConnections.connectionsTemplates.length && (
                             <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
                         )}
                     </Grid>

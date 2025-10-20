@@ -30,7 +30,7 @@ export const SelectAll = ({
         >
             <MenuItemContent
                 checked={selectedOptionIds.length === allOptionIds.length}
-                indeterminate={selectedOptionIds.length < allOptionIds.length && selectedOptionIds.length > 0}
+                indeterminate={selectedOptionIds.length < allOptionIds.length && !!selectedOptionIds.length}
                 label={i18next.t('selectChooseAll')}
                 order={0}
             />

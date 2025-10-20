@@ -131,22 +131,17 @@ const generateNeo4jQueryFromRegularFunction = (
             parameters: dateTimeArgument.parameters,
         };
     }
-    if (
-        func.functionType === 'addToDate' ||
-        func.functionType === 'addToDateTime' ||
-        func.functionType === 'subFromDate' ||
-        func.functionType === 'subFromDateTime'
-    ) {
+    if (['addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime'].includes(func.functionType)) {
         const [dateArgument, durationArgument] = funcArguments;
 
-        const operator = func.functionType === 'addToDate' || func.functionType === 'addToDateTime' ? '+' : '-';
+        const operator = ['addToDate', 'addToDateTime'].includes(func.functionType) ? '+' : '-';
 
         return {
             cypherCalculation: `
             ${dateArgument.cypherCalculation}
             ${durationArgument.cypherCalculation}
-            WITH *, ${dateArgument.resultValueVariableName} ${operator} ${durationArgument.resultValueVariableName} as ${resultValueVariableName},
-            { arguments: [${dateArgument.resultCausesVariableName}, ${durationArgument.resultCausesVariableName}], resultValue: ${resultValueVariableName} } as ${resultCausesVariableName}
+            WITH *, ${dateArgument.resultValueVariableName} ${operator} ${durationArgument.resultValueVariableName} as ${resultValueVariableName}
+            WITH *, { arguments: [${dateArgument.resultCausesVariableName}, ${durationArgument.resultCausesVariableName}], resultValue: ${resultValueVariableName} } as ${resultCausesVariableName}
             `,
             resultValueVariableName,
             resultCausesVariableName,
@@ -165,7 +160,7 @@ const generateNeo4jQueryFromRegularFunction = (
         };
     }
 
-    throw new Error('invalid functionType, shouldnt reach here');
+    throw new Error(`invalid functionType, shouldn't reach here`);
 };
 
 // duration is of format "[nY][nM][nD][nH]" (square brackets means optional)

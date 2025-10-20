@@ -130,7 +130,7 @@ const useMutationHandler = (
         },
     );
 
-    if (Object.keys(clientSideUserEntity || {}).length > 0) {
+    if (Object.keys(clientSideUserEntity || {}).length) {
         const queryClient = useQueryClient();
 
         const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
@@ -180,7 +180,7 @@ const useMutationHandler = (
                 mutationPromise,
                 {
                     pending: `${i18next.t(`actions.${isUpdate ? 'update' : 'create'}`)} ${
-                        entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
+                        !!entityTemplate.displayName.length ? entityTemplate.displayName : i18next.t('entity')
                     }`,
                     success: {
                         render({ data }: { data?: IEntity }) {
@@ -213,7 +213,7 @@ const useMutationHandler = (
                                     <Button
                                         variant="text"
                                         onClick={() => {
-                                            if (data) onError?.({ ...values, properties: { ...data?.properties } });
+                                            if (data) onError?.(values);
                                         }}
                                         sx={{ marginRight: '5px' }}
                                     >

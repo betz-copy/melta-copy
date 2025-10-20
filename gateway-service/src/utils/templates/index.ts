@@ -1,5 +1,7 @@
 import {
     BadRequestError,
+    childTemplateKeys,
+    dePopulateChildProperties,
     IConstraintsOfTemplate,
     IEntitySingleProperty,
     IMongoEntityTemplatePopulated,
@@ -8,6 +10,8 @@ import {
     ServiceError,
 } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
+import _, { cloneDeep } from 'lodash';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import config from '../../config';
 
 const { relationshipTemplateHasRules, moreThenOneRelationshipInstanceExist } = config.errorCodes;
@@ -69,4 +73,72 @@ const getRelatedTemplateIds = (template: IMongoEntityTemplatePopulated) => {
     return templateIds;
 };
 
-export { buildNewRelationshipField, getRelatedTemplateIds, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships };
+const updateChildTemplatesOnParentUpdate = async (
+    entityTemplateService: EntityTemplateService,
+    parentId: string,
+    removedProperties: string[],
+    newRequired: string[],
+    oldRequired: string[],
+) => {
+    const childTemplates = await entityTemplateService.searchChildTemplates({ parentTemplatesIds: [parentId] });
+
+    return Promise.all(
+        childTemplates.flatMap((childTemplate) => {
+            let hasChildChanged = false;
+            const { properties: childProperties, parentTemplate, category, ...restOfChildTemplate } = childTemplate;
+
+            if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
+                hasChildChanged = true;
+
+                removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
+            }
+
+            const requiredDiff = _.xor(newRequired, oldRequired);
+
+            if (requiredDiff.length > 0 || hasChildChanged) {
+                const newProps = {};
+                requiredDiff.forEach((prop) => {
+                    if (newRequired.includes(prop)) {
+                        newProps[prop] = {
+                            display: true,
+                        };
+                    } else {
+                        delete childProperties.properties[prop];
+                    }
+                });
+
+                const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = _.pick(
+                    {
+                        parentTemplateId: parentTemplate._id,
+                        category: category._id,
+                        properties: {
+                            properties: cloneDeep({
+                                ...dePopulateChildProperties(childProperties.properties),
+                                ...newProps,
+                            }),
+                        },
+                        ...restOfChildTemplate,
+                    },
+                    childTemplateKeys,
+                );
+
+                return entityTemplateService.updateChildTemplate(childTemplate._id, {
+                    ...newChildTemplate,
+                    filterByCurrentUserField: filterByCurrentUserField || undefined,
+                    filterByUnitUserField: filterByUnitUserField || undefined,
+                });
+            }
+
+            return [];
+        }),
+    );
+};
+
+export {
+    buildNewRelationshipField,
+    getRelatedTemplateIds,
+    validateNoDependentRules,
+    validateRequiredConstraints,
+    validateUniqueRelationships,
+    updateChildTemplatesOnParentUpdate,
+};

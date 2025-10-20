@@ -2,10 +2,8 @@
 /* eslint-disable no-param-reassign */
 import {
     BadRequestError,
-    childTemplateKeys,
     ConfigTypes,
     DashboardItemType,
-    dePopulateChildProperties,
     IAxisField,
     ICategory,
     ICategoryOrderConfig,
@@ -56,7 +54,7 @@ import {
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import _, { cloneDeep, groupBy, pick } from 'lodash';
+import _, { groupBy } from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import _omit from 'lodash/omit';
@@ -74,7 +72,13 @@ import RelationshipsTemplateService from '../../externalServices/templates/relat
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import {
+    buildNewRelationshipField,
+    updateChildTemplatesOnParentUpdate,
+    validateNoDependentRules,
+    validateRequiredConstraints,
+    validateUniqueRelationships,
+} from '../../utils/templates';
 import { prepareChartForUpdate, prepareDashboardItemForUpdate, processAndUpdateItems } from '../../utils/templates/deletePropertyFromFilter';
 import InstancesManager from '../instances/manager';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
@@ -1157,8 +1161,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (property) => !currProperties.properties[property] && !removedProperties.includes(property),
         );
 
-        const newRequiredProperties = newProperties.filter((property) => updatedTemplateData.properties.required.includes(property));
-
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
 
@@ -1228,8 +1230,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName,
         );
 
-        const childTemplates = await this.entityTemplateService.searchChildTemplates({ parentTemplatesIds: [id] });
-
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
@@ -1260,52 +1260,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (updatedTemplate.category._id !== currTemplate.category._id)
             await this.updateEntityTemplateScope(updatedTemplate, permissionsOfUserId, userId);
 
-        const updatedChildTemplates = await Promise.all([
-            ...childTemplates
-                .map((childTemplate) => {
-                    let hasChildChanged = false;
-                    const { properties: childProperties, parentTemplate, category, ...restOfChildTemplate } = childTemplate;
-
-                    if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
-                        hasChildChanged = true;
-
-                        removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
-                    }
-
-                    if (newRequiredProperties.length > 0 || hasChildChanged) {
-                        const newProps = {};
-                        newRequiredProperties.forEach((prop) => {
-                            newProps[prop] = {
-                                display: true,
-                            };
-                        });
-
-                        const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = pick(
-                            {
-                                parentTemplateId: parentTemplate._id,
-                                category: category._id,
-                                properties: {
-                                    properties: cloneDeep({
-                                        ...dePopulateChildProperties(childProperties.properties),
-                                        ...newProps,
-                                    }),
-                                },
-                                ...restOfChildTemplate,
-                            },
-                            childTemplateKeys,
-                        );
-
-                        return this.entityTemplateService.updateChildTemplate(childTemplate._id, {
-                            ...newChildTemplate,
-                            filterByCurrentUserField: filterByCurrentUserField || undefined,
-                            filterByUnitUserField: filterByUnitUserField || undefined,
-                        });
-                    }
-
-                    return null;
-                })
-                .filter((childTemplate) => childTemplate !== null),
-        ]);
+        const updatedChildTemplates = await updateChildTemplatesOnParentUpdate(
+            this.entityTemplateService,
+            id,
+            removedProperties,
+            updatedTemplateData.properties.required,
+            required,
+        );
 
         const template = this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
 

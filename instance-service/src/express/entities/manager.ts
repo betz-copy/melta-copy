@@ -47,6 +47,7 @@ import {
     ValidationError,
 } from '@microservices/shared';
 import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
+import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
@@ -57,16 +58,15 @@ import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
-import { startOfToday, startOfYesterday } from 'date-fns';
-import GatewayServiceProducer from '../../externalServices/gateway/producer';
-import filteredMap from '../../utils/filteredMap';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import GatewayServiceProducer from '../../externalServices/gateway/producer';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
+import filteredMap from '../../utils/filteredMap';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -91,14 +91,14 @@ import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templa
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import BulkActionManager from '../bulkActions/manager';
 import RelationshipManager from '../relationships/manager';
+import { getCausesOfRuleFailure } from '../rules/calcNewCausesOfRuleFailure';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IRuleFailure } from '../rules/interfaces';
 import { runRuleOnEntitiesOfTemplate, runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
-import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
-import { getCausesOfRuleFailure } from '../rules/calcNewCausesOfRuleFailure';
 import { updateColorsForIndicatorRulesWithTodayFunc } from './updateColorsForBrokenRulesWithIndicator';
+import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
 const {
     brokenRulesFakeEntityIdPrefix,
@@ -727,9 +727,8 @@ class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityById(results[0].properties._id);
+            const createdEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
             const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
-
             return { createdEntity, actions: fixedActions, emails: results.emails };
         }
 
@@ -1387,7 +1386,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 { disabled },
             );
 
-            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
+            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction, entityTemplate);
 
             const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
@@ -1514,46 +1513,55 @@ class EntityManager extends DefaultManagerNeo4j {
     ): Promise<{ fixedProperties: Record<string, any>; createdRelationships: IRelationship[]; deletedRelationships: IRelationship[] }> {
         const entityId = entity.properties._id;
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
+        const entityPropertiesList = Object.keys(entityProperties);
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
 
         await Promise.all(
-            updatedProperties.map(async (updatedProperty) => {
-                const property = entityTemplate.properties.properties[updatedProperty];
-                if (property?.format === 'relationshipReference') {
-                    if (entity.properties[updatedProperty]) {
-                        const relatedEntityId = entity.properties[updatedProperty].properties._id;
-                        const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
-                            relationshipReference: property.relationshipReference!,
-                            relatedEntityId,
-                            originalEntityId: entityId,
-                            transaction,
-                        });
+            entityPropertiesList.map(async (entityProperty) => {
+                const property = entityTemplate.properties.properties[entityProperty];
 
-                        deletedRelationships.push(deletedRelationship);
-                    }
+                if (property?.format !== 'relationshipReference') return;
 
-                    const relatedEntityId =
-                        typeof entityProperties[updatedProperty] === 'string'
-                            ? entityProperties[updatedProperty]
-                            : entityProperties[updatedProperty].properties._id;
+                const relatedEntityId =
+                    typeof entityProperties[entityProperty] === 'string'
+                        ? entityProperties[entityProperty]
+                        : entityProperties[entityProperty].properties._id;
 
+                if (!updatedProperties.includes(entityProperty)) {
                     if (relatedEntityId) {
-                        const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+                        const { fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+                        fixedProperties[entityProperty] = fixedField;
+                    }
+                    return;
+                }
 
-                        fixedProperties[updatedProperty] = fixedField;
+                if (entity.properties[entityProperty]) {
+                    const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
+                        relationshipReference: property.relationshipReference!,
+                        relatedEntityId,
+                        originalEntityId: entityId,
+                        transaction,
+                    });
 
-                        if (!convertToRelationshipField) {
-                            const { createdRelationship } = await this.createRelationshipReference(
-                                property.relationshipReference!,
-                                relatedEntity,
-                                entityId,
-                                transaction,
-                                userId,
-                            );
+                    deletedRelationships.push(deletedRelationship);
+                }
 
-                            createdRelationships.push(createdRelationship);
-                        }
+                if (relatedEntityId) {
+                    const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+
+                    fixedProperties[entityProperty] = fixedField;
+
+                    if (!convertToRelationshipField) {
+                        const { createdRelationship } = await this.createRelationshipReference(
+                            property.relationshipReference!,
+                            relatedEntity,
+                            entityId,
+                            transaction,
+                            userId,
+                        );
+
+                        createdRelationships.push(createdRelationship);
                     }
                 }
             }),
@@ -1565,7 +1573,7 @@ class EntityManager extends DefaultManagerNeo4j {
         updatedEntity: IEntity,
         updatedProperties: string[],
         transaction: Transaction,
-        entityTemplate?: IEntityTemplate,
+        entityTemplate: IEntityTemplate,
     ) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
@@ -1601,7 +1609,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
-                            value: relatedEntitiesChangedValues,
+                            value: await addStringFieldsAndNormalizeSpecialStringValues(
+                                relatedEntitiesChangedValues,
+                                entityTemplate,
+                                this.entityTemplateManagerService,
+                            ),
                         },
                     },
                 );
@@ -1752,7 +1764,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0]?.properties?._id);
+            const updatedEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
             const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
 
             return { updatedEntity, actions: fixedActions, emails: results.emails };

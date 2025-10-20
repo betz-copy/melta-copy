@@ -25,8 +25,6 @@ import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 
-const { signaturePrefix } = environment;
-
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
@@ -157,7 +155,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const finalMutationProps = useMemo(() => {
-        if (Object.keys(clientSideUserEntity).length > 0) {
+        if (Object.keys(clientSideUserEntity).length) {
             return {
                 ...mutationProps,
                 actionType: ActionTypes.CreateClientSideEntity,
@@ -179,7 +177,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
         entityTemplate,
         setInitialValuePropsToFilter,
-        signaturePrefix,
         payload,
     );
 
@@ -290,7 +287,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     variant="contained"
                                                     startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
                                                     onClick={() =>
-                                                        Object.keys(errors).length > 0
+                                                        Object.keys(errors).length
                                                             ? ''
                                                             : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
                                                     }

@@ -27,12 +27,9 @@ export interface DraftsState {
 const getDraftsCopy = (drafts: DraftsState['drafts'], categoryId: string, templateId: string): DraftsState['drafts'] => {
     const draftsCopy = cloneDeep(drafts);
 
-    if (!(categoryId in draftsCopy)) {
-        draftsCopy[categoryId] = {};
-    }
-    if (!(templateId in draftsCopy[categoryId]!)) {
-        draftsCopy[categoryId]![templateId] = [];
-    }
+    if (!(categoryId in draftsCopy)) draftsCopy[categoryId] = {};
+
+    if (!(templateId in draftsCopy[categoryId]!)) draftsCopy[categoryId]![templateId] = [];
 
     return draftsCopy;
 };

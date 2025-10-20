@@ -91,7 +91,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             )
             .filter((f): f is ISearchFilter => !!f);
 
-        return childTemplatesFilters.length > 0 && isChildTemplate ? { $or: childTemplatesFilters } : undefined;
+        return !!childTemplatesFilters.length && isChildTemplate ? { $or: childTemplatesFilters } : undefined;
     };
 
     const parseAndAddDisabled = (filters: string | undefined): ISearchFilter => {
