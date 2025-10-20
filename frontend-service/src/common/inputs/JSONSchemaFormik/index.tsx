@@ -194,14 +194,19 @@ const mergeErrorSchemas = (
     errors1: ErrorSchema<{}>,
     errors2: ErrorSchema<{}>,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-) => {
-    const merged = { ...errors1 };
-    for (const key in errors2) {
-        if (errors2.hasOwnProperty(key)) {
-            if (!merged[key]) merged[key] = errors2[key];
-            else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
-        }
-    }
+): ErrorSchema<{}> => {
+    const merged = Object.entries(errors2).reduce(
+        (acc, [key, value]) => {
+            if (!acc?.[key]?.__errors) {
+                acc[key] = { __errors: [value] };
+            } else {
+                acc[key].__errors = [...new Set([...acc[key]._errors, value])];
+            }
+
+            return acc;
+        },
+        { ...errors1 },
+    );
 
     return convertErrorsToNestedGroups(template, merged);
 };
@@ -302,7 +307,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
 
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique, values.template);
+    console.log({ rjsfExtraUniqueErrors, uniqueErrors });
+    console.log(mergeErrorSchemas(rjsfExtraErrors, rjsfExtraUniqueErrors, values.template));
 
     const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({
@@ -381,7 +387,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
             }}
             validator={validator}
-            extraErrors={mergedErrors}
+            extraErrors={mergeErrorSchemas(rjsfExtraErrors, rjsfExtraUniqueErrors, values.template)}
             tagName="div"
             readonly={readonly}
             widgets={Widgets}
