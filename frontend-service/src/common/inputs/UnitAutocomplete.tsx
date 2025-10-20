@@ -65,31 +65,38 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
                 loading={isLoading}
                 loadingText={i18next.t('unitAutocomplete.loading')}
                 noOptionsText={i18next.t('unitAutocomplete.noOptions')}
-                renderValue={(selected, getTagProps) =>
-                    selected.map((option, index) => (
-                        <Chip
-                            {...getTagProps({ index })}
-                            key={option}
-                            label={option}
-                            deleteIcon={<Clear sx={{ color: darkMode ? '#EBEFFA' : '#9398C2', fontSize: 16 }} />}
-                            sx={{
-                                fontFamily: 'Rubik, sans-serif',
-                                fontWeight: 400,
-                                fontSize: '14px',
-                                borderRadius: '10px',
-                                padding: '12px 4px',
-                                backgroundColor: darkMode ? '#53566E' : '#EBEFFA',
-                                color: darkMode ? '#EBEFFA' : '#53566E',
-                                '& .MuiChip-deleteIcon': {
-                                    color: darkMode ? '#EBEFFA' : '#9398C2',
-                                },
-                                height: '22px',
-                                minWidth: '74px',
-                            }}
-                            variant="outlined"
-                        />
-                    ))
-                }
+                renderValue={(selected, getTagProps) => (
+                    <div
+                        style={{
+                            maxHeight: '100px',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        {selected.map((option, index) => (
+                            <Chip
+                                {...getTagProps({ index })}
+                                key={option}
+                                label={option}
+                                deleteIcon={<Clear sx={{ color: darkMode ? '#EBEFFA' : '#9398C2', fontSize: 16 }} />}
+                                sx={{
+                                    fontFamily: 'Rubik, sans-serif',
+                                    fontWeight: 400,
+                                    fontSize: '14px',
+                                    borderRadius: '10px',
+                                    padding: '12px 4px',
+                                    backgroundColor: darkMode ? '#53566E' : '#EBEFFA',
+                                    color: darkMode ? '#EBEFFA' : '#53566E',
+                                    '& .MuiChip-deleteIcon': {
+                                        color: darkMode ? '#EBEFFA' : '#9398C2',
+                                    },
+                                    height: '22px',
+                                    minWidth: '74px',
+                                }}
+                                variant="outlined"
+                            />
+                        ))}
+                    </div>
+                )}
                 renderInput={(params) => (
                     <TextField
                         {...params}
