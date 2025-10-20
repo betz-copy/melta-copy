@@ -20,6 +20,7 @@ export const HeatmapBox: React.FC<IHeatmapBoxProps> = ({ heatmapBox }) => {
             sx={{
                 bgcolor: heatmapBox.ganttEvents.length ? heatmapColors.now : heatmapColors.idle,
                 minWidth: '10rem',
+                display: 'block',
             }}
         >
             <CardHeader
