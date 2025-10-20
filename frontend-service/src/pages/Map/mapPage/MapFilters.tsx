@@ -19,14 +19,26 @@ type Props = {
     entityTemplateMap: IEntityTemplateMap;
     darkMode: boolean;
     clearAutocompleteSearch: () => void;
-    sourceTemplate?: IMongoEntityTemplatePopulated;
     filters: {
         value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> };
         set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>>;
     };
+    sourceTemplate?: IMongoEntityTemplatePopulated;
+    isSearchShape?: boolean;
+    applyFilterWithShapeSearch: (filters: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => void;
 };
 
-const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocompleteSearch, sourceTemplate, filters }: Props) => {
+const MapFilters = ({
+    moveToEntityLocations,
+    entityTemplateMap,
+    clearAutocompleteSearch,
+    sourceTemplate,
+    filters,
+    isSearchShape,
+    applyFilterWithShapeSearch,
+}: Props) => {
+    console.log({ isSearchShape });
+
     const theme = useTheme();
     const [openFilter, setOpenFilter] = useState(false);
 
@@ -85,7 +97,7 @@ const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocomplet
         {
             enabled: false,
             onSuccess: (data) => {
-                if (data.count > 1000) toast.error(i18next.t('templateEntitiesAutocomplete.tooManyResults', { count: data.count }));
+                if (data.count > 1000) toast.warn(i18next.t('templateEntitiesAutocomplete.tooManyResults', { count: data.count }));
                 else moveToEntityLocations(data.entities.map((entity) => entity.entity));
             },
             onError: () => {
@@ -93,6 +105,7 @@ const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocomplet
             },
         },
     );
+    console.log({ filtersVal: filters.value });
 
     return (
         <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
@@ -149,7 +162,10 @@ const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocomplet
                             disabled={!Object.entries(filters.value.listFields).length && !filters.value.autoSearch.length}
                             onClick={() => {
                                 clearAutocompleteSearch();
-                                filters.set({ autoSearch: '', listFields: {} });
+                                const clearedFilters = { autoSearch: '', listFields: {} };
+
+                                filters.set(clearedFilters);
+                                if (isSearchShape) applyFilterWithShapeSearch(clearedFilters);
                             }}
                         >
                             {i18next.t('location.clearFilter')}
@@ -179,14 +195,19 @@ const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocomplet
                                     key={`${field.name}-${index}`}
                                     multiple
                                     options={field.enum ?? field.items?.enum ?? []}
+                                    disabled={filters.value.autoSearch.length < 2}
                                     onChange={(_e, newValue) => {
-                                        filters.set((prev) => ({
-                                            ...prev,
-                                            listFields: {
-                                                ...prev.listFields,
-                                                [field.name]: newValue,
-                                            },
-                                        }));
+                                        filters.set((prev) => {
+                                            const newListFields = { ...prev.listFields };
+
+                                            if (newValue.length === 0) delete newListFields[field.name];
+                                            else newListFields[field.name] = newValue;
+
+                                            return {
+                                                ...prev,
+                                                listFields: newListFields,
+                                            };
+                                        });
                                     }}
                                     value={filters.value.listFields[field.name] || []}
                                     renderTags={(selected) =>
@@ -205,10 +226,10 @@ const MapFilters = ({ moveToEntityLocations, entityTemplateMap, clearAutocomplet
                     </Box>
 
                     <Button
-                        disabled={!Object.entries(filters.value.listFields).length && !filters.value.autoSearch.length}
+                        disabled={!Object.entries(filters.value.listFields).length && filters.value.autoSearch.length < 2}
                         variant="contained"
                         sx={{ width: 'auto', alignSelf: 'end', borderRadius: '7px' }}
-                        onClick={() => refetch()}
+                        onClick={() => (isSearchShape ? applyFilterWithShapeSearch(filters.value) : refetch())}
                     >
                         {i18next.t('location.search')}
                     </Button>

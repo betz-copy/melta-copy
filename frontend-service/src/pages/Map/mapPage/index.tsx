@@ -54,7 +54,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const viewerRef = useRef<any>(null);
 
-    const [{ autoSearch, listFields }, setFilters] = React.useState<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>({
+    const [{ autoSearch, listFields }, setFilters] = useState<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>({
         autoSearch: '',
         listFields: {},
     });
@@ -91,7 +91,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
 
-    useEffect(() => {
+    const applyFilterWithShapeSearch = ({ autoSearch, listFields }: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => {
         const allItems = [...polygons, ...coordinates];
 
         const filtered = allItems.filter(
@@ -125,12 +125,13 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 } => !Array.isArray(item.position),
             ),
         });
-    }, [polygons, coordinates, listFields, autoSearch, sourceTemplateId]);
+    };
+
+    useEffect(() => {
+        applyFilterWithShapeSearch({ autoSearch, listFields });
+    }, [polygons, coordinates]);
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
-    const sourceSearchResults = [...filteredCoordinates, ...filteredPolygons]
-        .filter(({ node }) => node.templateId === sourceTemplate?._id)
-        .map(({ node }) => node);
 
     const sourceTemplateColors = sourceTemplate?.enumPropertiesColors?.[sourceFieldForColor];
 
@@ -146,6 +147,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             ),
         ),
     });
+
+    const sourceSearchResults = [...filteredCoordinates, ...searchedEntitiesMarkers, ...filteredPolygons, ...searchedEntitiesPolygons]
+        .filter(({ node }) => node.templateId === sourceTemplate?._id)
+        .map(({ node }) => node);
 
     useEffect(() => {
         const animateCamera = () => {
@@ -325,7 +330,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         ],
                     }));
 
-                    // applyFilter();
+                    applyFilterWithShapeSearch({ autoSearch, listFields });
                 });
             });
         },
@@ -354,8 +359,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 },
             };
 
-            console.log({ templatesPayload });
-
             const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };
 
             if (polygon && !drawingMode && polygon.length)
@@ -380,6 +383,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setDrawingMode(null);
 
         setSearchResults({ coordinates: [], polygons: [] });
+        setFilterResult([]);
     };
 
     const onClear = () => {
@@ -393,6 +397,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: ShapeType | null) => {
         if (isDrawingShape(newShape) && isDrawingShape(shapeType) && shapeType !== newShape) resetDrawing();
+        setFilterResult([]);
 
         setShapeType(newShape);
     };
@@ -498,6 +503,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 }}
                                 sourceTemplate={sourceTemplate}
                                 filters={{ value: { autoSearch, listFields }, set: setFilters }}
+                                isSearchShape={Boolean(circle.radius || polygon.length)}
+                                applyFilterWithShapeSearch={applyFilterWithShapeSearch}
                             />
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}

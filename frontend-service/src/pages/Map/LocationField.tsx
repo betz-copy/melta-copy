@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Close, Delete, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
+import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
@@ -215,6 +215,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                                 </MeltaTooltip>
                             </ToggleButtonGroup>
                         )}
+
                         <IconButtonWithPopover
                             popoverText={i18next.t('location.clear')}
                             iconButtonProps={{
@@ -226,8 +227,14 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                                 height: '34px',
                             }}
                         >
-                            <Delete htmlColor={theme.palette.primary.main} />
+                            <DeleteTwoTone
+                                sx={{
+                                    height: 20,
+                                    color: darkMode ? '#9398c2' : '#1E2775',
+                                }}
+                            />
                         </IconButtonWithPopover>
+
                         {config && <BaseLayers viewerRef={viewerRef} config={config} />}
                     </div>
                 </div>
