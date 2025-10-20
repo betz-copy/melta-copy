@@ -35,8 +35,8 @@ const Stepper = <T extends object>({
                             <Grid direction="column" justifyContent="start" alignItems="flex-start" size={{ xs: 12 }}>
                                 <Grid container direction="row" justifyContent="start" alignItems="center">
                                     <Grid display="flex" justifyContent="center" alignContent="center">
-                                        <StepNumberTypography type={type} direction="column">
-                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                        <StepNumberTypography type={type}>
+                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : (index + 1).toString().padStart(2, '0')}
                                         </StepNumberTypography>
                                     </Grid>
                                     <Grid>
@@ -76,8 +76,8 @@ const Stepper = <T extends object>({
                             <Grid>
                                 <Grid container justifyContent="center" alignItems="center">
                                     <Grid display="flex" justifyContent="center" alignContent="center">
-                                        <StepNumberTypography type={type} direction="row">
-                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                        <StepNumberTypography type={type}>
+                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : (index + 1).toString().padStart(2, '0')}
                                         </StepNumberTypography>
                                     </Grid>
                                     <Grid>

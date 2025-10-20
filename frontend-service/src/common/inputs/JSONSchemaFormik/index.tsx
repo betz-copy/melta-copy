@@ -40,19 +40,14 @@ export type ErrorMessage<T extends string | LeafError> = {
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
-        if (ajvError.keyword === 'required') {
-            return [ajvError.params.missingProperty, i18next.t('validation.required')];
-        }
+        if (ajvError.keyword === 'required') return [ajvError.params.missingProperty, i18next.t('validation.required')];
 
         const field = ajvError.instancePath.slice(1); // for example: /field1/subfield2
         const schemaOfField = schema.properties[field];
-        if (ajvError.keyword === 'format') {
+        if (ajvError.keyword === 'format')
             return [field, `${i18next.t('validation.mustBeEqualToFormat')}  ${i18next.t(`propertyTypes.${ajvError.params.format}`)}`];
-        }
 
-        if (ajvError.keyword === 'pattern') {
-            return [field, schemaOfField.patternCustomErrorMessage!];
-        }
+        if (ajvError.keyword === 'pattern') return [field, schemaOfField.patternCustomErrorMessage!];
 
         return [field, ajvError.message];
     });
@@ -67,9 +62,7 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
 
     template?.fieldGroups?.forEach((fieldGroup) => {
         fieldGroup.fields.forEach((field) => {
-            if (originalErrors[field]) {
-                finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
-            }
+            if (originalErrors[field]) finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
         });
     });
 
@@ -163,9 +156,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
         const value = data[field];
-        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter))
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
-        }
     });
 
     return { ...formikErrors, ...childTemplateFilterErrors };
@@ -175,13 +167,9 @@ const formikErrorsToRjsfExtraErrorsRec = (
     formikErrors: ErrorMessage<string> | string,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): ErrorSchema<{}> => {
-    if (typeof formikErrors === 'string') {
-        return { __errors: [formikErrors] };
-    }
+    if (typeof formikErrors === 'string') return { __errors: [formikErrors] };
 
-    if (Array.isArray(formikErrors)) {
-        return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
-    }
+    if (Array.isArray(formikErrors)) return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
 
     if (typeof formikErrors === 'object' && formikErrors !== null) {
         const newObj: Record<string, any> = {};
@@ -251,10 +239,9 @@ const getComponent = (
         return getWrappedComponent;
     }
 
-    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
-    };
-
+    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => (
+        <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />
+    );
     return getWrappedComponent;
 };
 

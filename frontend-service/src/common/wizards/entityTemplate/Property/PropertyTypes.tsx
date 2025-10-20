@@ -667,7 +667,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                     else handleSaveEdit(editIndex!);
                 }}
                 isLoading={isLoading}
-                body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
+                body={`${i18next.t('draftSaveDialog.enumChangeDisclaimer')} ${entity}`}
             />
         </>
     );
