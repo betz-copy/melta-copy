@@ -137,7 +137,7 @@ const EntityTemplateWizard: React.FC<
         {
             onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
                     return childTemplateMap!;
                 });
@@ -149,7 +149,7 @@ const EntityTemplateWizard: React.FC<
 
                     try {
                         const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
-                        queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+                        queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }

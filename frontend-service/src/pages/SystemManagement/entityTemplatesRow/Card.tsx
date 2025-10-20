@@ -11,7 +11,14 @@ import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { EntityTemplateType, IChildTemplateMap, IChildTemplatePopulated, TemplateItem, ViewType } from '../../../interfaces/childTemplates';
+import {
+    EntityTemplateType,
+    IChildTemplateMap,
+    IChildTemplatePopulated,
+    IMongoChildTemplatePopulated,
+    TemplateItem,
+    ViewType,
+} from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
@@ -77,12 +84,13 @@ interface EntityTemplateCardProps {
             mutationProps?: IMutationWithPayload;
         }>
     >;
-    updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
+    updateTemplateStatusAsync: UseMutateAsyncFunction<
+        IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
         unknown,
         {
             entityTemplateId: string;
             disabled: boolean;
+            isChild?: boolean;
         },
         unknown
     >;
@@ -99,7 +107,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
     setAddChildTemplateDialogState,
-    updateEntityTemplateStatusAsync,
+    updateTemplateStatusAsync,
     entityHasWritePermission,
     isDisabledView = false,
     isChildTemplate = false,
@@ -109,7 +117,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const hasWritePermission = useMemo(() => {
@@ -281,9 +289,16 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 }}
                                 onDisableClick={
                                     childTemplates?.get(entityTemplate._id)
-                                        ? undefined
+                                        ? () => {
+                                              updateTemplateStatusAsync({
+                                                  entityTemplateId: entityTemplate._id,
+                                                  disabled: !entityTemplate.disabled,
+                                                  isChild: true,
+                                              });
+                                              setIsHoverOnCard(false);
+                                          }
                                         : () => {
-                                              updateEntityTemplateStatusAsync({
+                                              updateTemplateStatusAsync({
                                                   entityTemplateId: entityTemplate._id,
                                                   disabled: !entityTemplate.disabled,
                                               });

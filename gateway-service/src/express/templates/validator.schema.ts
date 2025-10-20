@@ -355,6 +355,16 @@ export const deleteChildTemplateSchema = Joi.object({
         id: MongoIdSchema.required(),
     },
 });
+
+// PATCH /api/templates/child/:id/status
+export const updateChildTemplateStatusSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean(),
+    },
+    query: {},
+    params: { id: MongoIdSchema.required() },
+});
+
 // GET /api/templates/config/all
 export const getAllConfigsSchema = Joi.object({
     query: {},

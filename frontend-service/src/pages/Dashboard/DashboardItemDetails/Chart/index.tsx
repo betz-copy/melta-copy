@@ -40,8 +40,8 @@ const Chart: React.FC = () => {
     const { isDashboardPage = false, dashboardId = '' } = window.history.state ?? {};
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
-    const childTemplate = childEntityTemplates.get(templateId ?? '');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+    const childTemplate = childTemplates.get(templateId ?? '');
     const currTemplateId = childTemplate ? childTemplate.parentTemplate._id : templateId;
 
     const { data: chart, isLoading: isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
@@ -120,8 +120,8 @@ const Chart: React.FC = () => {
             isDashboardPage
                 ? ''
                 : childTemplate
-                ? childEntityTemplates.get(childTemplate._id)?.displayName
-                : entityTemplates.get(currTemplateId!)?.displayName
+                  ? childTemplates.get(childTemplate._id)?.displayName
+                  : entityTemplates.get(currTemplateId!)?.displayName
         } `;
 
         return { path, title };

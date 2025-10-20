@@ -35,7 +35,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     useQuery('getCategories', () => undefined, { enabled: false });
     useQuery('getCategoryOrder', () => undefined, { enabled: false });
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
-    useQuery('getChildEntityTemplates', () => undefined, { enabled: false });
+    useQuery('getChildTemplates', () => undefined, { enabled: false });
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
     useQuery('getRules', () => undefined, { enabled: false });
     useQuery('getProcessTemplates', () => undefined, { enabled: false });
@@ -68,7 +68,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder ? categoryOrder.order : []));
             queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', categoryOrder);
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
-            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));

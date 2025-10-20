@@ -109,3 +109,14 @@ export const updateEntityTemplateActionSchema = Joi.object({
         templateId: MongoIdSchema.required(),
     },
 });
+
+// PUT /api/entities/child/:templateId/status
+export const updateChildTemplateStatusSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});

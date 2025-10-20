@@ -34,6 +34,7 @@ import {
     updateCategorySchema,
     updateCategoryTempOrderSchema,
     updateChildTemplateSchema,
+    updateChildTemplateStatusSchema,
     updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
@@ -297,6 +298,13 @@ templatesRouter.put(
     ValidateRequest(updateChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.updateChildTemplate,
+);
+
+templatesRouter.patch(
+    '/child/:id/status',
+    ValidateRequest(updateChildTemplateStatusSchema),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteChildTemplate,
+    templatesControllerMiddleware.updateChildTemplateStatus,
 );
 
 templatesRouter.delete(

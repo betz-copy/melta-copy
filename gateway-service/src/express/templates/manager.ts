@@ -1698,17 +1698,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async getAllowedChildEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         if (!userPermissions?.admin && !userPermissions?.instances) return [];
 
-        const allChildEntityTemplates = await this.entityTemplateService.searchChildTemplates({});
+        const allChildTemplates = await this.entityTemplateService.searchChildTemplates({});
 
-        if (userPermissions?.admin) return allChildEntityTemplates;
+        if (userPermissions?.admin) return allChildTemplates;
 
         const ids: string[] = [];
-        const allChildTemplateIds = new Set(Object.values(allChildEntityTemplates).map((childTemplate) => childTemplate._id));
+        const allChildTemplateIds = new Set(Object.values(allChildTemplates).map((childTemplate) => childTemplate._id));
 
         for (const [categoryId, category] of Object.entries(userPermissions?.instances?.categories ?? {})) {
             const entityTemplateIds = Object.keys(category?.entityTemplates ?? {});
             if (category.scope) {
-                const templatesInCategory = Object.values(allChildEntityTemplates)
+                const templatesInCategory = Object.values(allChildTemplates)
                     .filter((template) => template.category._id === categoryId)
                     .map((template) => template._id);
 
@@ -1720,6 +1720,19 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.entityTemplateService.searchChildTemplates({ ids });
+    }
+
+    async updateChildTemplateStatus(id: string, disabledStatus: boolean) {
+        const updatedChildTemplate = await this.entityTemplateService.updateChildTemplateStatus(id, disabledStatus);
+
+        const allConstraints = await this.instancesService.getAllConstraints();
+        const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === updatedChildTemplate._id);
+
+        return this.populateTemplateConstraints(
+            updatedChildTemplate,
+            constraintsOfTemplate?.requiredConstraints ?? [],
+            constraintsOfTemplate?.uniqueConstraints ?? [],
+        );
     }
 
     // rules

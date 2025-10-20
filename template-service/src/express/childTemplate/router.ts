@@ -8,32 +8,35 @@ import {
     getChildTemplateByIdSchema,
     searchChildTemplatesSchema,
     updateChildTemplateSchema,
+    updateChildTemplateStatusSchema,
     updateEntityTemplateActionSchema,
 } from './validator.schema';
 import ChildTemplateValidator from './validator.template';
 
-const entityChildTemplateRouter: Router = Router();
+const childTemplateRouter: Router = Router();
 
 const controller = createController(ChildTemplateController);
 const validatorController = createController(ChildTemplateValidator, true);
 
-entityChildTemplateRouter.post('/search', ValidateRequest(searchChildTemplatesSchema), controller.searchChildTemplates);
+childTemplateRouter.post('/search', ValidateRequest(searchChildTemplatesSchema), controller.searchChildTemplates);
 
-entityChildTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), controller.getAllChildTemplates);
+childTemplateRouter.get('/', ValidateRequest(getAllChildTemplatesSchema), controller.getAllChildTemplates);
 
-entityChildTemplateRouter.post('/', ValidateRequest(createChildTemplateSchema), controller.createChildTemplate);
+childTemplateRouter.post('/', ValidateRequest(createChildTemplateSchema), controller.createChildTemplate);
 
-entityChildTemplateRouter.get('/:id', ValidateRequest(getChildTemplateByIdSchema), controller.getChildTemplateById);
+childTemplateRouter.get('/:id', ValidateRequest(getChildTemplateByIdSchema), controller.getChildTemplateById);
 
-entityChildTemplateRouter.put('/:id', ValidateRequest(updateChildTemplateSchema), controller.updateChildTemplate);
+childTemplateRouter.put('/:id', ValidateRequest(updateChildTemplateSchema), controller.updateChildTemplate);
 
-entityChildTemplateRouter.delete('/:id', ValidateRequest(deleteChildTemplateSchema), controller.deleteChildTemplate);
+childTemplateRouter.delete('/:id', ValidateRequest(deleteChildTemplateSchema), controller.deleteChildTemplate);
 
-entityChildTemplateRouter.patch(
+childTemplateRouter.patch(
     '/:templateId/actions',
     ValidateRequest(updateEntityTemplateActionSchema),
     validatorController.validateActionCode,
     controller.updateEntityTemplateAction,
 );
 
-export default entityChildTemplateRouter;
+childTemplateRouter.patch('/:templateId/status', ValidateRequest(updateChildTemplateStatusSchema), controller.updateChildTemplateStatus);
+
+export default childTemplateRouter;

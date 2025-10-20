@@ -74,7 +74,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
             .findById(id)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
             .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
-            .orFail(new NotFoundError('Entity Child Template not found'))
+            .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
 
@@ -100,7 +100,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
 
         const updatedDoc = await this.model
             .findByIdAndUpdate(id, childTemplateToUpdate, { new: true })
-            .orFail(new NotFoundError('Entity Child Template not found'));
+            .orFail(new NotFoundError('Child Template not found'));
 
         return this.getChildTemplateById(updatedDoc._id);
     }
@@ -119,7 +119,17 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
-            .orFail(new NotFoundError('Entity Child Template not found'))
+            .orFail(new NotFoundError('Child Template not found'))
+            .lean()
+            .exec();
+    }
+
+    async updateChildTemplateStatus(id: string, disabledStatus: boolean) {
+        return this.model
+            .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
     }

@@ -68,7 +68,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
     const queryClient = useQueryClient();
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === template._id);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);

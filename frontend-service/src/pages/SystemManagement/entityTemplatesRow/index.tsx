@@ -15,11 +15,11 @@ import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, TemplateItem } from '../../../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
-import { deleteChildTemplate } from '../../../services/templates/childTemplatesService';
+import { deleteChildTemplate, updateChildTemplateStatusRequest } from '../../../services/templates/childTemplatesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
@@ -141,19 +141,32 @@ const EntityTemplatesRow: React.FC = () => {
         return categoriesToShowMapEntities.filter((categoryWithEntities) => (searchText ? categoryWithEntities.entityTemplates.length : true));
     };
 
-    const { mutateAsync: updateEntityTemplateStatusAsync } = useMutation(
-        ({ entityTemplateId, disabled }: { entityTemplateId: string; disabled: boolean }) =>
-            updateEntityTemplateStatusRequest(entityTemplateId, disabled),
+    const { mutateAsync: updateTemplateStatusAsync } = useMutation<
+        IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        unknown,
+        { entityTemplateId: string; disabled: boolean; isChild?: boolean }
+    >(
+        async ({ entityTemplateId, disabled, isChild }) =>
+            isChild
+                ? await updateChildTemplateStatusRequest(entityTemplateId, disabled)
+                : await updateEntityTemplateStatusRequest(entityTemplateId, disabled),
         {
-            onSuccess: (data) => {
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+            onSuccess: (data, { isChild }) => {
+                if (isChild)
+                    queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
+                        childTemplateMap!.set(data._id, data as IChildTemplatePopulated),
+                    );
+                else
+                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
-                if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
-                else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
+
+                if (data.disabled) toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.disabledSuccessfully`));
+                else toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.activatedSuccessfully`));
             },
-            onError: (_err, variables) => {
-                if (variables.disabled) toast.error(i18next.t('wizard.entityTemplate.failedToDisable'));
-                else toast.error(i18next.t('wizard.entityTemplate.failedToActivate'));
+            onError: (_err, { disabled, isChild }) => {
+                if (disabled) toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToDisable`));
+                else toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToActivate`));
             },
         },
     );
@@ -185,13 +198,13 @@ const EntityTemplatesRow: React.FC = () => {
 
     const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteChildTemplate(id), {
         onSuccess: async (_data, id) => {
-            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prev) => {
+            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (prev) => {
                 const updated = new Map(prev);
                 updated.delete(id);
                 return updated;
             });
 
-            queryClient.invalidateQueries('getChildEntityTemplates');
+            queryClient.invalidateQueries('getChildTemplates');
             queryClient.invalidateQueries('getEntityTemplates');
             setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
             toast.success(i18next.t('entityTemplatesRow.succeededToDeleteEntityTemplate'));
@@ -205,7 +218,7 @@ const EntityTemplatesRow: React.FC = () => {
         const templateId = deleteEntityTemplateDialogState.entityTemplateId;
         if (!templateId) return;
 
-        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
         const isChildTemplate = childTemplates?.has(templateId);
 
         try {
@@ -235,7 +248,7 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
                     return childTemplateMap!;
                 });
@@ -279,7 +292,7 @@ const EntityTemplatesRow: React.FC = () => {
                     }),
                 );
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
                     Array.from(childTemplateMap!).forEach(([key, child]) => {
                         const parentId = child.parentTemplate.category.toString();
                         if (parentId === data.oldCategory._id && parentId !== data.newCategory._id && child.parentTemplate._id === templateId) {
@@ -408,7 +421,7 @@ const EntityTemplatesRow: React.FC = () => {
                                     entityTemplatesWithCategory={entityTemplatesWithCategory}
                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                    updateTemplateStatusAsync={updateTemplateStatusAsync}
                                     loadedEntityTemplateId={loadedEntityTemplateId}
                                     setAddActionsDialogState={setAddActionsToEntityTemplateDialogState}
                                     setAddChildTemplateDialogState={setAddChildTemplateDialogState}

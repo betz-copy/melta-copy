@@ -26,9 +26,9 @@ const GraphNodeMenu: React.FC<{
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const queryClient = useQueryClient();
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const childEntityTemplate = [...childEntityTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId);
+    const childEntityTemplate = [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId);
 
     const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(

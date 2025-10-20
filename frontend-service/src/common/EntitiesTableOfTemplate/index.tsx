@@ -308,7 +308,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     ) => {
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
 
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
