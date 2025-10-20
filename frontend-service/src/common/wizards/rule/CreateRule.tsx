@@ -1,4 +1,5 @@
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
+import { getIn } from 'formik';
 import Handlebars from 'handlebars';
 import i18next from 'i18next';
 import { omit } from 'lodash';
@@ -6,14 +7,13 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { RuleWizardValues } from '.';
+import { environment } from '../../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionOnFail } from '../../../interfaces/rules';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';
 import { CreateRuleColorField, CreateRuleEmailNotification } from './CreateIndicatorRuleControls';
-import { getIn } from 'formik';
-import { environment } from '../../../globals';
 
 const { errorColor } = environment;
 

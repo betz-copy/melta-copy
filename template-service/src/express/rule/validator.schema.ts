@@ -15,6 +15,23 @@ export const mailSchema = Joi.object({
     sendAssociatedUsers: Joi.boolean().default(false),
 }).or('sendAssociatedUsers', 'sendPermissionUsers');
 
+const indicatorCondition = Joi.object({ actionOnFail: Joi.valid(ActionOnFail.INDICATOR) }).unknown();
+
+const indicatorSchema = Joi.object().custom((value, helpers) => {
+    const fieldColorDisplay = value.fieldColor?.display === true;
+    const mailDisplay = value.fieldColor.display === true;
+    if (!fieldColorDisplay && !mailDisplay) {
+        return helpers.error('indicator.custom');
+    }
+
+    return value;
+});
+
+const nonIndicatorSchema = Joi.object({
+    fieldColor: Joi.forbidden(),
+    mail: Joi.forbidden(),
+});
+
 // GET /api/templates/rules/:ruleId
 export const getRuleByIdRequestSchema = Joi.object({
     query: {},
@@ -46,21 +63,7 @@ export const createRuleRequestSchema = Joi.object({
         disabled: Joi.boolean().default(false),
         fieldColor: fieldColorSchema,
         mail: mailSchema,
-    }).when(Joi.object({ actionOnFail: Joi.valid(ActionOnFail.INDICATOR) }).unknown(), {
-        then: Joi.object()
-            .custom((value, helpers) => {
-                const fieldColorDisplay = value.fieldColor?.display === true;
-                const mailDisplay = value.fieldColor.display === true;
-
-                if (!fieldColorDisplay && !mailDisplay) {
-                    return helpers.error('indicator.custom');
-                }
-
-                return value;
-            })
-            .messages({ 'indicator.custom': 'Indicator rule must have either mail or fieldColor' }),
-        otherwise: Joi.object({ fieldColor: Joi.forbidden(), mail: Joi.forbidden() }),
-    }),
+    }).when(indicatorCondition, { then: indicatorSchema, otherwise: nonIndicatorSchema }),
     query: {},
     params: {},
 });

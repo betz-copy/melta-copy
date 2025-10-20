@@ -20,8 +20,30 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
             .exec();
     }
 
+    formatIndicatorRule(updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | 'doesFormulaHaveTodayFunc'>) {
+        const $set: Record<string, any> = {};
+        const $unset: Record<string, any> = {};
+
+        for (const [key, value] of Object.entries(updatedFields)) {
+            if (value && typeof value === 'object' && value.display === false) {
+                $unset[key] = '';
+            } else {
+                $set[key] = value;
+            }
+        }
+
+        const update: Record<string, any> = {};
+        if (Object.keys($set).length) update.$set = $set;
+        if (Object.keys($unset).length) update.$unset = $unset;
+        return update;
+    }
+
     async updateRuleById(ruleId: string, updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | 'doesFormulaHaveTodayFunc'>) {
-        return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
+        return this.model
+            .findByIdAndUpdate(ruleId, this.formatIndicatorRule(updatedFields), { new: true })
+            .orFail(new NotFoundError('Rule not found'))
+            .lean()
+            .exec();
     }
 
     async updateRuleStatusById(ruleId: string, disabled: boolean) {
