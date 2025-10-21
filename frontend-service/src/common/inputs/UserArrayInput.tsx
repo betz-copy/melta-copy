@@ -44,7 +44,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                     onDisplayValueChange={onDisplayValueChange}
                     overrideSx={overrideSx}
                     readOnly={readOnly}
-                    required={required}
+                    required={required && !currentUsers?.length}
                 />
             </Grid>
             <Box

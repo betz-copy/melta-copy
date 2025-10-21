@@ -138,10 +138,9 @@ const MultipleSelect: React.FC<{
                                     style: isMultiple ? { display: 'none' } : {},
                                 },
                             },
-                            inputLabel: { shrink: readonly || undefined },
+                            inputLabel: { shrink: readonly || undefined, required },
                         }}
                         color={color as TextFieldProps['color']}
-                        required={required}
                     />
                 );
             }}

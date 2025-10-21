@@ -127,7 +127,6 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        required={required}
                         slotProps={{
                             input: {
                                 ...params.InputProps,
@@ -155,6 +154,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                         },
                                     },
                                 }),
+                                required,
                             },
                         }}
                         sx={{
