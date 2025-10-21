@@ -152,15 +152,15 @@ const EntityTemplatesRow: React.FC = () => {
                 : await updateEntityTemplateStatusRequest(entityTemplateId, disabled),
         {
             onSuccess: (data, { isChild }) => {
-                if (isChild)
+                if (isChild) {
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
                         childTemplateMap!.set(data._id, data as IChildTemplatePopulated),
                     );
-                else
+                    queryClient.invalidateQueries('getChildTemplates');
+                } else {
                     queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-
-                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
-
+                    queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+                }
                 if (data.disabled) toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.disabledSuccessfully`));
                 else toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.activatedSuccessfully`));
             },

@@ -217,9 +217,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onOptionsIconClick={async () => {
-                                    if (childTemplates?.get(entityTemplate._id)) {
-                                        return;
-                                    }
+                                    if (childTemplates?.get(entityTemplate._id)) return;
                                     await checkEntityTemplateHasEntities([entityTemplate]);
                                 }}
                                 onEditClick={() => {
