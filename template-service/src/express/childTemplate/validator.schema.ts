@@ -120,3 +120,14 @@ export const updateChildTemplateStatusSchema = Joi.object({
         templateId: MongoIdSchema.required(),
     },
 });
+
+// PUT /api/entities/child/:parentId/multiStatuses
+export const multiUpdateChildTemplateStatusByParentIdSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        parentId: MongoIdSchema.required(),
+    },
+});

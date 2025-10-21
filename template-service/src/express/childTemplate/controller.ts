@@ -42,6 +42,11 @@ class ChildTemplateController extends DefaultController<IMongoChildTemplate, Chi
         const { templateId: id } = req.params;
         res.json(await this.manager.updateChildTemplateStatus(id, req.body.disabled));
     }
+
+    async multiUpdateChildTemplateStatusByParentId(req: Request, res: Response) {
+        const { parentId } = req.params;
+        res.json(await this.manager.multiUpdateChildTemplateStatusByParentId(parentId, req.body.disabled));
+    }
 }
 
 export default ChildTemplateController;

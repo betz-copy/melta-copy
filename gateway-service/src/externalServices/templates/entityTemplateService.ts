@@ -254,6 +254,14 @@ class EntityTemplateService extends TemplatesManagerService {
 
         return data;
     }
+
+    async multiUpdateChildTemplateStatusByParentId(parentId: string, disabledStatus: boolean) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated[]>(`${baseChildTemplatesRoute}/${parentId}/multiStatuses`, {
+            disabled: disabledStatus,
+        });
+
+        return data;
+    }
 }
 
 export default EntityTemplateService;

@@ -6,6 +6,7 @@ import {
     deleteChildTemplateSchema,
     getAllChildTemplatesSchema,
     getChildTemplateByIdSchema,
+    multiUpdateChildTemplateStatusByParentIdSchema,
     searchChildTemplatesSchema,
     updateChildTemplateSchema,
     updateChildTemplateStatusSchema,
@@ -38,5 +39,11 @@ childTemplateRouter.patch(
 );
 
 childTemplateRouter.patch('/:templateId/status', ValidateRequest(updateChildTemplateStatusSchema), controller.updateChildTemplateStatus);
+
+childTemplateRouter.patch(
+    '/:parentId/multiStatuses',
+    ValidateRequest(multiUpdateChildTemplateStatusByParentIdSchema),
+    controller.multiUpdateChildTemplateStatusByParentId,
+);
 
 export default childTemplateRouter;

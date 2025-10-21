@@ -304,6 +304,7 @@ templatesRouter.patch(
     '/child/:id/status',
     ValidateRequest(updateChildTemplateStatusSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteChildTemplate,
+    templatesValidatorMiddleware.validateCanEnableChildTemplate,
     templatesControllerMiddleware.updateChildTemplateStatus,
 );
 

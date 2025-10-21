@@ -1,4 +1,4 @@
-import { ForbiddenError, NotFoundError, PermissionScope } from '@microservices/shared';
+import { ForbiddenError, NotFoundError, PermissionScope, ValidationError } from '@microservices/shared';
 import { Request } from 'express';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
@@ -168,6 +168,15 @@ class TemplatesValidator extends DefaultController {
             throw new ForbiddenError('user not authorized', {
                 metadata: `user does not have write permission on child template ${childTemplate}`,
             });
+    }
+
+    async validateCanEnableChildTemplate(req: Request): Promise<void> {
+        const { disabled } = req.body;
+        const childTemplateId = req.params.id;
+        const childTemplates = await this.entityTemplateService.getAllChildTemplates();
+        const childTemplate = childTemplates.find((template) => template._id === childTemplateId);
+        if (!disabled && childTemplate?.parentTemplate.disabled)
+            throw new ValidationError('Cannot enable child template under a disabled parent template');
     }
 }
 

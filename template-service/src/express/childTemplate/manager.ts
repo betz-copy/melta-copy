@@ -125,13 +125,28 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
     }
 
     async updateChildTemplateStatus(id: string, disabledStatus: boolean) {
-        return this.model
+        const populatedWithParent = await this.model
             .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
             .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
             .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
+
+        return populateChildTemplateWithParent(populatedWithParent);
+    }
+
+    async multiUpdateChildTemplateStatusByParentId(parentTemplateId: string, disabledStatus: boolean) {
+        await this.model.updateMany({ parentTemplateId }, { $set: { disabled: disabledStatus } });
+
+        const populatedWithParent = await this.model
+            .find({ parentTemplateId })
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .lean()
+            .exec();
+
+        return populatedWithParent.map(populateChildTemplateWithParent);
     }
 }
 

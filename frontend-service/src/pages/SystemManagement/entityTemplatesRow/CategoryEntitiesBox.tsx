@@ -49,7 +49,11 @@ interface CategoryEntitiesBoxProps {
         }>
     >;
     updateTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        | IMongoChildTemplatePopulated
+        | {
+              entityTemplate: IMongoEntityTemplatePopulated;
+              childTemplates: IMongoChildTemplatePopulated[];
+          },
         unknown,
         {
             entityTemplateId: string;
