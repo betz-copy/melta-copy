@@ -91,6 +91,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
 
+    const isSearchShape = Boolean(circle.radius || polygon.length);
+
     const applyFilterWithShapeSearch = ({ autoSearch, listFields }: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => {
         const allItems = [...polygons, ...coordinates];
 
@@ -127,9 +129,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         });
     };
 
-    useEffect(() => {
-        applyFilterWithShapeSearch({ autoSearch, listFields });
-    }, [polygons, coordinates]);
+    useEffect(() => applyFilterWithShapeSearch({ autoSearch, listFields }), [polygons, coordinates]);
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
 
@@ -152,6 +152,12 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         .filter(({ node }) => node.templateId === sourceTemplate?._id)
         .map(({ node }) => node);
 
+    const viewedCount = isSearchShape
+        ? filteredCoordinates.length + filteredPolygons.length
+        : searchedEntitiesMarkers.length + searchedEntitiesPolygons.length;
+
+    const totalCount = coordinates.length + polygons.length;
+
     useEffect(() => {
         const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
@@ -164,6 +170,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5);
                 camera.flyToBoundingSphere(boundingSphere, { duration: 1.5, offset });
             };
+            console.log({ cameraFocus });
 
             switch (cameraFocus) {
                 case CameraFocusType.Circle: {
@@ -491,8 +498,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                             }}
                         >
                             <MapFilters
-                                moveToEntityLocations={(entity: IEntity[]) => {
-                                    setFilterResult(entity);
+                                moveToEntityLocations={(entities: IEntity[]) => {
+                                    setFilterResult(entities);
                                     setCameraFocus(CameraFocusType.Search);
                                 }}
                                 entityTemplateMap={entityTemplateMap}
@@ -503,8 +510,15 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 }}
                                 sourceTemplate={sourceTemplate}
                                 filters={{ value: { autoSearch, listFields }, set: setFilters }}
-                                isSearchShape={Boolean(circle.radius || polygon.length)}
+                                isSearchShape={isSearchShape}
                                 applyFilterWithShapeSearch={applyFilterWithShapeSearch}
+                                numOfViewedEntitiesText={i18next.t(
+                                    isSearchShape ? 'location.showingEntitiesOfTotal' : 'location.showingEntitiesCount',
+                                    {
+                                        count: viewedCount,
+                                        ...(isSearchShape && { total: totalCount }),
+                                    },
+                                )}
                             />
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}

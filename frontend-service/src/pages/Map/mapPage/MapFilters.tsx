@@ -26,6 +26,7 @@ type Props = {
     sourceTemplate?: IMongoEntityTemplatePopulated;
     isSearchShape?: boolean;
     applyFilterWithShapeSearch: (filters: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => void;
+    numOfViewedEntitiesText?: string;
 };
 
 const MapFilters = ({
@@ -36,9 +37,8 @@ const MapFilters = ({
     filters,
     isSearchShape,
     applyFilterWithShapeSearch,
+    numOfViewedEntitiesText,
 }: Props) => {
-    console.log({ isSearchShape });
-
     const theme = useTheme();
     const [openFilter, setOpenFilter] = useState(false);
 
@@ -106,6 +106,7 @@ const MapFilters = ({
         },
     );
     console.log({ filtersVal: filters.value });
+    console.log({ data });
 
     return (
         <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
@@ -146,9 +147,7 @@ const MapFilters = ({
                 >
                     <Grid container justifyContent="space-between" alignItems="center">
                         <Typography color={theme.palette.primary.main} fontSize="12px">
-                            {data && Array.isArray(data.entities) && data.entities.length > 0 && (
-                                <>{i18next.t('location.showingEntitiesCount', { count: data.entities.length })}</>
-                            )}
+                            {numOfViewedEntitiesText}
                         </Typography>
 
                         <Button
