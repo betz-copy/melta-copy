@@ -274,7 +274,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setValues,
     errors,
     uniqueErrors,
-    touched,
     setFieldTouched,
     isEditMode = false,
     toPrint = false,
@@ -298,17 +297,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         });
     }, [values.template]);
 
-    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors, values.template);
-    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => {
-        const fieldGroup = values.template?.fieldGroups?.find((group) => group.fields.includes(key));
-        if (fieldGroup) return touched[`${fieldGroup.name}_${key}`];
-        return touched[key];
-    });
+    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors ?? {}, values.template);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
-
-    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    console.log({ rjsfExtraUniqueErrors, uniqueErrors });
-    console.log(mergeErrorSchemas(rjsfExtraErrors, rjsfExtraUniqueErrors, values.template));
 
     const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({

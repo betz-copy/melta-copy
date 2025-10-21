@@ -1,7 +1,7 @@
 import { useFormik, yupToFormErrors } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { ProcessDetailsValues } from '.';
@@ -61,7 +61,7 @@ export const getInitialDetailsValues = (
     };
 };
 
-const getValidationErrors = async (values) => {
+export const getValidationErrors = async (values) => {
     const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
     const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<IProcessDetails>(validationSchemaErr);
 
