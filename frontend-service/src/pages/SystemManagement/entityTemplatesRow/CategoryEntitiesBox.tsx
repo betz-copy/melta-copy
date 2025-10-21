@@ -123,10 +123,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
-            if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) {
-                return true;
-            }
-
+            if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) return true;
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
@@ -268,7 +265,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             ...entityTemplate,
                                                             category: childTemplate.category,
                                                             _id: childTemplate._id,
-                                                            disabled: childTemplate.disabled,
+                                                            disabled: childTemplates?.get(childTemplate._id)!.disabled!,
                                                         }}
                                                         setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                         setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
