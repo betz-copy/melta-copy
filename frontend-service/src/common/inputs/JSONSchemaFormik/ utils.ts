@@ -74,7 +74,7 @@ const getFieldUiSchema = (
 
         return {
             'ui:options': {
-                disabled: !(propertySchema.accountBalance && !isEditMode) || !isGoalUser,
+                disabled: !(propertySchema.accountBalance && !isEditMode) && !isGoalUser,
                 readonly: !isGoalUser,
                 defaultValue,
             },

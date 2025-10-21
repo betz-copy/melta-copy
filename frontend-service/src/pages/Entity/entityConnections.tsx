@@ -20,7 +20,7 @@ interface EntityConnectionsProps {
     getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplatePopulated) => {
         isEditButtonsDisabled: boolean;
         disabledButtonText: string;
-        permissionToRelatedTemplate: boolean;
+        hasPermissionToRelatedTemplate: boolean;
     };
     connectionsTemplates?: INestedRelationshipTemplates[];
 }
@@ -88,20 +88,45 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
     return (
         <>
             {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
-                <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                    <Grid container size={{ xs: 5 }} alignItems="center" gap="20px">
-                        <Grid alignContent="center">
-                            <RelationshipIcon />
-                        </Grid>
-                        <Grid>
-                            <BlueTitle
-                                title={i18next.t('entityPage.relationshipTitle')}
-                                component="h5"
-                                variant="h5"
-                                style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
-                            />
-                        </Grid>
+                <Grid data-tour="connected-entities" sx={{ mt: '2rem' }}>
+                    <Grid
+                        container
+                        alignItems="center"
+                        gap="10px"
+                        sx={{
+                            backgroundColor: '#CCCFE580',
+                            borderRadius: '20px 20px 0px 0px',
+                            px: 2,
+                            py: 0.8,
+                        }}
+                    >
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                color: '#1E2775',
+                                fontWeight: 600,
+                                fontSize: '18px',
+                                paddingLeft: '55px',
+                            }}
+                        >
+                            {i18next.t('entityPage.relationshipTitle')}
+                        </Typography>
                     </Grid>
+                    <Box
+                        sx={{
+                            backgroundColor: '#4752B6',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 40,
+                            height: 40,
+                            mt: '-25px',
+                            ml: 1.5,
+                        }}
+                    >
+                        <RelationshipIcon color="white" />
+                    </Box>
                     <Grid>
                         <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -161,7 +186,7 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                                                     ? relationship.destinationEntity
                                                     : relationship.sourceEntity;
 
-                                            const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate } =
+                                            const { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate } =
                                                 getButtonStateByRelatedTemplate(relatedTemplate);
 
                                             return (
@@ -173,7 +198,7 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                                                     connectionTemplate={connectionTemplate}
                                                     isEditButtonsDisabled={isEditButtonsDisabled}
                                                     disabledButtonText={disabledButtonText}
-                                                    hasPermissionToTemplate={Boolean(permissionToRelatedTemplate) || isAdmin}
+                                                    hasPermissionToTemplate={hasPermissionToRelatedTemplate || isAdmin}
                                                 />
                                             );
                                         })}

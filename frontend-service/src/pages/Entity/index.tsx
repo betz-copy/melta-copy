@@ -60,7 +60,7 @@ export const getButtonState = (
         disabledButtonText = i18next.t('ruleManagement.create-relationship');
     }
 
-    return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate };
+    return { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate: Boolean(permissionToRelatedTemplate) };
 };
 
 const ConnectionsTableTitle: React.FC<{
@@ -397,13 +397,13 @@ const Entity: React.FC = () => {
     );
 
     const getButtonStateByRelatedTemplate = (relatedTemplate: IMongoEntityTemplatePopulated) => {
-        const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate } = getButtonState(
+        const { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate } = getButtonState(
             isEntityDisabled,
             hasWritePermissionToCurrTemplate,
             relatedTemplate,
             currentUser.currentWorkspacePermissions,
         );
-        return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate };
+        return { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate };
     };
 
     return (
@@ -429,14 +429,33 @@ const Entity: React.FC = () => {
                         />
                     ) : (
                         <TabContext value={selectTransfersOrConnections}>
-                            <TabList
-                                onChange={(_event, newValue) => setSelectTransfersOrConnections(newValue)}
-                                TabIndicatorProps={{ style: { display: 'none' } }}
-                                aria-label="icon label tabs example"
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'flex-end',
+                                    p: 0,
+                                    m: 0,
+                                }}
                             >
-                                <Tab icon={<RelationshipIcon />} value="walletTransfers" />
-                                <Tab icon={<AccountBalanceWallet />} value="connectionsByCategories" />
-                            </TabList>
+                                <TabList
+                                    onChange={(_event, newValue) => setSelectTransfersOrConnections(newValue)}
+                                    TabIndicatorProps={{ style: { display: 'none' } }}
+                                    sx={{
+                                        minHeight: 'auto',
+                                        p: 0,
+                                        m: 0,
+                                        gap: 0,
+                                        '& .MuiTab-root': {
+                                            minWidth: 'auto',
+                                            p: 1,
+                                        },
+                                    }}
+                                >
+                                    <Tab icon={<RelationshipIcon />} value="walletTransfers" />
+                                    <Tab icon={<AccountBalanceWallet />} value="connectionsByCategories" />
+                                </TabList>
+                            </Box>
                             <TabPanel value="walletTransfers">
                                 <EntityConnections
                                     currentEntityTemplate={currentEntityTemplate}

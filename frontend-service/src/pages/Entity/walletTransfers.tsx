@@ -7,13 +7,13 @@ import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { defaultColDef } from '../PermissionsManagement/components/table';
-import { Avatar, Grid, Typography } from '@mui/material';
+import { Avatar, Box, Grid, Typography } from '@mui/material';
 import { Link } from 'wouter';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { isChildTemplate } from '../../utils/templates';
 import { useQueryClient } from 'react-query';
 import { useUserStore } from '../../stores/user';
-import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, AccountBalanceWalletOutlined } from '@mui/icons-material';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -40,7 +40,7 @@ export const WalletTransfers: React.FC<any> = ({
     getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplatePopulated) => {
         isEditButtonsDisabled: boolean;
         disabledButtonText: string;
-        permissionToRelatedTemplate: boolean;
+        hasPermissionToRelatedTemplate: boolean;
     };
 }) => {
     const queryClient = useQueryClient();
@@ -92,13 +92,13 @@ export const WalletTransfers: React.FC<any> = ({
 
             const relatedTemplate = sourceIsWallet ? connection.destinationEntity : connection.sourceEntity;
             const populatedRelatedTemplate = entityTemplates.get(relatedTemplate.templateId)!;
-            const { permissionToRelatedTemplate } = getButtonStateByRelatedTemplate(populatedRelatedTemplate);
+            const { hasPermissionToRelatedTemplate } = getButtonStateByRelatedTemplate(populatedRelatedTemplate);
 
             return {
                 template: nonCurrentWalletTemplate,
                 entity: nonCurrentWalletEntity,
                 direction,
-                permissionToRelatedTemplate,
+                hasPermissionToRelatedTemplate,
                 _sortKey: createdAt,
             };
         })
@@ -185,18 +185,22 @@ export const WalletTransfers: React.FC<any> = ({
             field: 'transfer.accountBalance',
             headerName: i18next.t('entityPage.walletTransfer.accountBalance'),
             valueGetter: (params) => {
-                // Reset on the first (newest) row
                 if (params.node.rowIndex === 0) {
+                    // start from the *current* wallet balance
                     runningBalance = Number(currentEntityBalance);
                 }
 
                 const amount = Number(params.data?.entity?.properties?.[params.data?.template.walletTransfer?.amount] ?? 0);
 
-                // Because we move backward in time, *reverse* the math:
-                // If money came in ("from" wallet → +), we need to ADD it back to go to the previous state.
-                // If money went out ("to" wallet → -), we need to SUBTRACT it back.
-                runningBalance += params.data?.direction === 'to' ? +amount : -amount;
+                // We move BACKWARD in time, so we show the balance *after* the current transaction,
+                // then update for the next (earlier) one.
 
+                // Apply the transaction (backwards):
+                // "to"  → money went OUT → subtract
+                // "from" → money came IN → add
+                runningBalance += params.data?.direction === 'to' ? -amount : +amount;
+
+                // Return this transaction's resulting balance
                 return runningBalance.toLocaleString();
             },
             filter: 'agTextColumnFilter',
@@ -254,13 +258,54 @@ export const WalletTransfers: React.FC<any> = ({
     const rowModelProps = useMemo(() => getRowModelProps(infiniteScrollPageCount), []);
 
     return (
-        <AgGridTable
-            defaultColDef={defaultColDef as any}
-            getRowId={(data: any) => data.entity._id}
-            // quickFilterText={quickFilterText}
-            rowModelProps={rowModelProps}
-            columnDefs={columnDefs}
-            ref={walletTransferTableRef as ForwardedRef<WalletTransferTableRef<WalletTransferData>>}
-        />
+        <Grid data-tour="connected-entities" sx={{ mt: '2rem' }}>
+            <Grid
+                container
+                alignItems="center"
+                gap="10px"
+                sx={{
+                    backgroundColor: '#CCCFE580',
+                    borderRadius: '20px 20px 0px 0px',
+                    px: 2,
+                    py: 0.8,
+                }}
+            >
+                <Typography
+                    variant="h6"
+                    sx={{
+                        color: '#1E2775',
+                        fontWeight: 600,
+                        fontSize: '18px',
+                        paddingLeft: '55px',
+                    }}
+                >
+                    {i18next.t('entityPage.walletTransfersTitle')}
+                </Typography>
+            </Grid>
+            <Box
+                sx={{
+                    backgroundColor: '#4752B6',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 40,
+                    height: 40,
+                    mt: '-25px',
+                    ml: 1.5,
+                }}
+            >
+                <AccountBalanceWalletOutlined sx={{ color: '#FFFFFF', fontSize: '22px' }} />
+            </Box>
+            <Grid container sx={{ marginTop: 2 }}>
+                <AgGridTable
+                    defaultColDef={defaultColDef as any}
+                    getRowId={(data: any) => data.entity._id}
+                    rowModelProps={rowModelProps}
+                    columnDefs={columnDefs}
+                    ref={walletTransferTableRef as ForwardedRef<WalletTransferTableRef<WalletTransferData>>}
+                />
+            </Grid>
+        </Grid>
     );
 };

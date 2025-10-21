@@ -111,6 +111,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
     // shirel - dont run when edit template already as a relationship tpo wallet
     useEffect(() => {
+        if (!orderedItems?.length || !templates?.size) return;
         const templateHasAccountBalance = (template: any) => {
             return Object.values(template?.properties?.properties ?? {}).some((property: any) => property.accountBalance);
         };
@@ -137,7 +138,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 return false;
             }),
         );
-    }, [orderedItems, templates, setIsTransferTemplate, values[propertiesType]]);
+    }, [orderedItems, templates, setIsTransferTemplate]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
