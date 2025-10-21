@@ -20,6 +20,7 @@ const UserInput: React.FC<UserInputProps> = ({
     textFieldProps,
     onBlur,
     onFocus,
+    required,
 }) => {
     const handleUserChange = (_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) => {
         if (!chosenUser) {
@@ -57,6 +58,7 @@ const UserInput: React.FC<UserInputProps> = ({
                 currentUser.set(undefined);
             }}
             textFieldProps={textFieldProps}
+            required={required}
         />
     );
 };

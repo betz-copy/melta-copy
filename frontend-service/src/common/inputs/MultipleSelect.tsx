@@ -54,6 +54,7 @@ const MultipleSelect: React.FC<{
     label,
     color,
     placeholder,
+    required,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore<IUser>((state) => state.user);
@@ -140,6 +141,7 @@ const MultipleSelect: React.FC<{
                             inputLabel: { shrink: readonly || undefined },
                         }}
                         color={color as TextFieldProps['color']}
+                        required={required}
                     />
                 );
             }}

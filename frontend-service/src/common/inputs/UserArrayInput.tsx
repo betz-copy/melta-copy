@@ -24,6 +24,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
     overrideSx,
     readOnly,
     helperText,
+    required,
 }) => {
     return (
         <Box>
@@ -43,6 +44,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                     onDisplayValueChange={onDisplayValueChange}
                     overrideSx={overrideSx}
                     readOnly={readOnly}
+                    required={required}
                 />
             </Grid>
             <Box
