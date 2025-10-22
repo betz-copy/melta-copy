@@ -272,17 +272,17 @@ const EditProps: React.FC<{
                     )}
                 </Box>
                 <Box>
-                    <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
+                    <Grid marginTop="20px" marginBottom="20px" style={{ overflowY: 'auto', maxHeight: '48rem' }}>
                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
-                    </Grid>
-                    {!!templateFileKeys.length && (
-                        <Grid container flexDirection="column">
-                            <Grid marginTop="20px" alignSelf="stretch">
-                                <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
+
+                        {!!templateFileKeys.length && (
+                            <Grid container flexDirection="column">
+                                <Grid marginTop="20px" marginBottom="20px" alignSelf="stretch">
+                                    <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    )}
-                    <Grid marginTop="20px" marginBottom="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
+                        )}
+
                         {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
                     </Grid>
                     {externalErrors.action && (
