@@ -58,7 +58,7 @@ const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
 };
 
 interface EntityTemplateCardProps {
-    entityTemplate: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated;
     setEntityTemplateWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
@@ -103,6 +103,7 @@ interface EntityTemplateCardProps {
     isChildTemplate?: boolean;
     title?: string;
     categoryColor: string;
+    parentDisabled?: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -117,6 +118,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     isChildTemplate = false,
     title = entityTemplate.displayName,
     categoryColor,
+    parentDisabled = false,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
@@ -315,6 +317,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     isDisabled: entityTemplate.disabled,
                                     isEditDisabled: entityTemplate.disabled || !hasWritePermission,
                                     tooltipTitle: entityTemplateCardTooltip(),
+                                    disabledErrorTooltip:
+                                        isChildTemplate && parentDisabled ? i18next.t('childTemplate.enableUnderDisabledParent') : undefined,
                                 }}
                             />
                         )}
@@ -428,7 +432,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             textAlign: 'right',
                                         }}
                                     >
-                                        {key}
+                                        {value.title}
                                     </Typography>
                                 </MeltaTooltip>
                             </Grid>

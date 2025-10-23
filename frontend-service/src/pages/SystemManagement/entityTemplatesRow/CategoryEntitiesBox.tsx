@@ -271,6 +271,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             _id: childTemplate._id,
                                                             disabled: childTemplates?.get(childTemplate._id)!.disabled!,
                                                         }}
+                                                        parentDisabled={entityTemplate.disabled}
                                                         setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                         setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                         setAddActionsDialogState={setAddActionsDialogState}
