@@ -82,7 +82,7 @@ const MyPermissions: React.FC<{
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const { unitsArray } = workspace.metadata;
 

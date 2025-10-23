@@ -662,9 +662,12 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 };
 
 const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disabledStatus: boolean) => {
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/status`, {
-        disabled: disabledStatus,
-    });
+    const { data } = await axios.patch<{ entityTemplate: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
+        `${entityTemplates}/${entityTemplateId}/status`,
+        {
+            disabled: disabledStatus,
+        },
+    );
     return data;
 };
 

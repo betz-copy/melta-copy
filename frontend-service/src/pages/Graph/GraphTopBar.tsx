@@ -30,9 +30,9 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const entityTemplate = childTemplateId ? childEntityTemplates.get(childTemplateId) : templateId ? entityTemplates.get(templateId) : undefined;
+    const entityTemplate = childTemplateId ? childTemplates.get(childTemplateId) : templateId ? entityTemplates.get(templateId) : undefined;
 
     return (
         <Grid

@@ -20,7 +20,7 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         res.json(await this.manager.getTemplateById(id));
     }
 
-    async getTemplatesUsingRelationshipReferance(req: Request, res: Response) {
+    async getTemplatesUsingRelationshipReference(req: Request, res: Response) {
         res.json(await this.manager.getTemplatesUsingRelationshipReference(req.params.relatedTemplateId));
     }
 

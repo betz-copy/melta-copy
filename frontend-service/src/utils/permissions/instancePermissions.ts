@@ -122,7 +122,7 @@ const handleCheckCategoryByTemplates = (
     permissions: ICompact<IInstancesPermission>['categories'],
     categoryId: string,
     entityTemplates: entityTemplatePermissionDialog[],
-    childEntityTemplates: childTemplatePermissionDialog[],
+    childTemplates: childTemplatePermissionDialog[],
 ) => {
     const categoriesPermissions = { ...permissions };
     let countRead = 0;
@@ -136,7 +136,7 @@ const handleCheckCategoryByTemplates = (
         else if (templateScope === PermissionScope.write) countWrite++;
     });
 
-    const templatesCount = entityTemplates.length + childEntityTemplates.length;
+    const templatesCount = entityTemplates.length + childTemplates.length;
 
     if (countRead + countWrite === templatesCount)
         categoriesPermissions[categoryId] = getChangedCategoryPermissions(
@@ -156,7 +156,7 @@ const handleUncheckCategoryByTemplates = (
     categoryId: string,
     templateIds: string[],
     entityTemplates: entityTemplatePermissionDialog[],
-    childEntityTemplates: childTemplatePermissionDialog[],
+    childTemplates: childTemplatePermissionDialog[],
 ) => {
     return handleCheckCategoryByTemplates(
         templateIds.reduce((acc, templateId) => {
@@ -169,7 +169,7 @@ const handleUncheckCategoryByTemplates = (
                             scope:
                                 acc[categoryId]?.scope === PermissionScope.write
                                     ? PermissionScope.write
-                                    : acc?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
+                                    : (acc?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read),
                             fields: {},
                         };
                     }
@@ -185,7 +185,7 @@ const handleUncheckCategoryByTemplates = (
         }, permissions),
         categoryId,
         entityTemplates,
-        childEntityTemplates,
+        childTemplates,
     );
 };
 
@@ -196,12 +196,12 @@ export const getChangedTemplatePermission = (
     categoryId: string,
     templateIds: string[],
     entityTemplates: entityTemplatePermissionDialog[],
-    childEntityTemplates: childTemplatePermissionDialog[],
+    childTemplates: childTemplatePermissionDialog[],
 ) => {
     let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateIds);
 
     if (checked) {
-        categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates, childEntityTemplates);
+        categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates, childTemplates);
     } else {
         categoriesPermissions = handleUncheckCategoryByTemplates(
             categoriesPermissions,
@@ -210,7 +210,7 @@ export const getChangedTemplatePermission = (
             categoryId,
             templateIds,
             entityTemplates,
-            childEntityTemplates,
+            childTemplates,
         );
     }
 

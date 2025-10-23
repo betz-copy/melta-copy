@@ -45,7 +45,7 @@ const ChooseTemplate: React.FC<{
     const currentClientSideUser = useClientSideUserStore((state) => state.clientSideUser);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const entityTemplatesArray = Array.from(entityTemplates.values());
     const childTemplatesArray = Array.from(childTemplates.values());
@@ -64,11 +64,11 @@ const ChooseTemplate: React.FC<{
                 : isAuthorized(template._id, template.category._id),
         );
 
-        const filterChildEntityTemplates = childTemplatesArray.filter((child) =>
+        const filterChildTemplates = childTemplatesArray.filter((child) =>
             categoryId ? child.category._id === categoryId : isAuthorized(child._id, child.category._id),
         );
 
-        entityTemplatesFiltered = [...filterEntityTemplates, ...filterChildEntityTemplates];
+        entityTemplatesFiltered = [...filterEntityTemplates, ...filterChildTemplates];
     }
 
     const activeEntityTemplatesFiltered = entityTemplatesFiltered.filter((entity) => !entity.disabled);

@@ -42,7 +42,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const theme = useTheme();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const allowedChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const allowedChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const childTemplatesOfRelatedTemplate =
         Array.from(allowedChildTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
