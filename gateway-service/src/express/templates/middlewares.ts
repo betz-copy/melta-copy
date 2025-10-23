@@ -150,10 +150,7 @@ class TemplatesValidator extends DefaultController {
     // Child Templates
     async validateUserCanUpdateOrDeleteChildTemplate(req: Request): Promise<void> {
         const childTemplateId = req.params.id;
-        const childTemplates = await this.entityTemplateService.getAllChildTemplates();
-        const childTemplate = childTemplates.find((template) => template._id === childTemplateId);
-
-        if (!childTemplate) throw new NotFoundError('Child Template not found');
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
 
         if (typeof childTemplate.category !== 'string' && typeof childTemplate.category !== 'object')
             throw new NotFoundError('Child Template category is invalid');
@@ -173,8 +170,8 @@ class TemplatesValidator extends DefaultController {
     async validateCanEnableChildTemplate(req: Request): Promise<void> {
         const { disabled } = req.body;
         const childTemplateId = req.params.id;
-        const childTemplates = await this.entityTemplateService.getAllChildTemplates();
-        const childTemplate = childTemplates.find((template) => template._id === childTemplateId);
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
+
         if (!disabled && childTemplate?.parentTemplate.disabled)
             throw new ValidationError('Cannot enable child template under a disabled parent template');
     }

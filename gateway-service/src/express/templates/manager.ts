@@ -1335,20 +1335,22 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             : await this.entityTemplateService.multiUpdateChildTemplateStatusByParentId(id, disabledStatus);
 
         const allConstraints = await this.instancesService.getAllConstraints();
-        const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === updatedEntityTemplate._id);
+        const constraintsOfTemplate = allConstraints.filter(({ templateId }) => templateId === updatedEntityTemplate._id);
+
+        const { requiredConstraints, uniqueConstraints } = constraintsOfTemplate.reduce(
+            (acc, constraint) => {
+                acc.requiredConstraints.push(...constraint.requiredConstraints);
+                acc.uniqueConstraints.push(...constraint.uniqueConstraints);
+
+                return acc;
+            },
+            { requiredConstraints: [] as string[], uniqueConstraints: [] as IUniqueConstraintOfTemplate[] },
+        );
 
         return {
-            entityTemplate: this.populateTemplateConstraints(
-                updatedEntityTemplate,
-                constraintsOfTemplate?.requiredConstraints ?? [],
-                constraintsOfTemplate?.uniqueConstraints ?? [],
-            ),
+            entityTemplate: this.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints ?? [], uniqueConstraints ?? []),
             childTemplates: updatedChildTemplates.map((childTemplate) => {
-                return this.populateTemplateConstraints(
-                    childTemplate,
-                    constraintsOfTemplate?.requiredConstraints ?? [],
-                    constraintsOfTemplate?.uniqueConstraints ?? [],
-                );
+                return this.populateTemplateConstraints(childTemplate, requiredConstraints ?? [], uniqueConstraints ?? []);
             }),
         };
     }
@@ -1738,13 +1740,19 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const updatedChildTemplate = await this.entityTemplateService.updateChildTemplateStatus(id, disabledStatus);
 
         const allConstraints = await this.instancesService.getAllConstraints();
-        const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === updatedChildTemplate._id);
+        const constraintsOfTemplate = allConstraints.filter(({ templateId }) => templateId === updatedChildTemplate._id);
 
-        return this.populateTemplateConstraints(
-            updatedChildTemplate,
-            constraintsOfTemplate?.requiredConstraints ?? [],
-            constraintsOfTemplate?.uniqueConstraints ?? [],
+        const { requiredConstraints, uniqueConstraints } = constraintsOfTemplate.reduce(
+            (acc, constraint) => {
+                acc.requiredConstraints.push(...constraint.requiredConstraints);
+                acc.uniqueConstraints.push(...constraint.uniqueConstraints);
+
+                return acc;
+            },
+            { requiredConstraints: [] as string[], uniqueConstraints: [] as IUniqueConstraintOfTemplate[] },
         );
+
+        return this.populateTemplateConstraints(updatedChildTemplate, requiredConstraints, uniqueConstraints);
     }
 
     async updateChildTemplateById(templateId: string, childTemplate: IChildTemplate) {
