@@ -153,33 +153,31 @@ const EntityTemplatesRow: React.FC = () => {
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
                         childTemplateMap!.set(childTemplate._id, childTemplate),
                     );
-                    queryClient.invalidateQueries('getChildTemplates');
                 } else {
                     const { entityTemplate, childTemplates } = data as {
                         entityTemplate: IMongoEntityTemplatePopulated;
                         childTemplates: IMongoChildTemplatePopulated[];
                     };
+
                     queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                         entityTemplateMap!.set(entityTemplate._id, entityTemplate),
                     );
+
                     queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                        childTemplates.forEach((template) => {
-                            (childTemplateMap ?? new Map()).set(template._id, template);
-                        });
+                        childTemplates.forEach((template) => (childTemplateMap ?? new Map()).set(template._id, template));
 
                         return new Map(childTemplateMap);
                     });
-
-                    queryClient.invalidateQueries('getChildTemplates');
                 }
-                if (disabled) toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.disabledSuccessfully`));
-                else toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.activatedSuccessfully`));
+                queryClient.invalidateQueries('getChildTemplates');
+
+                toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.${disabled ? 'disabled' : 'activated'}Successfully`));
 
                 if (!disabled && !isChild) toast.warn(i18next.t('childTemplate.enableChildren'));
             },
             onError: (err, { disabled, isChild }) => {
-                console.log({ err });
                 if (((err as AxiosError).response?.data as any).message === 'Cannot enable child template under a disabled parent template')
                     toast.error(i18next.t('childTemplate.enableUnderDisabledParent'));
                 else if (disabled) toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToDisable`));

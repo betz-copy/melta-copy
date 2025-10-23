@@ -58,7 +58,7 @@ const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
 };
 
 interface EntityTemplateCardProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
     setEntityTemplateWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
@@ -289,24 +289,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             : { type: EntityTemplateType.Parent, metaData: entityTemplate },
                                     });
                                 }}
-                                onDisableClick={
-                                    childTemplates?.get(entityTemplate._id)
-                                        ? () => {
-                                              updateTemplateStatusAsync({
-                                                  entityTemplateId: entityTemplate._id,
-                                                  disabled: !entityTemplate.disabled,
-                                                  isChild: true,
-                                              });
-                                              setIsHoverOnCard(false);
-                                          }
-                                        : () => {
-                                              updateTemplateStatusAsync({
-                                                  entityTemplateId: entityTemplate._id,
-                                                  disabled: !entityTemplate.disabled,
-                                              });
-                                              setIsHoverOnCard(false);
-                                          }
-                                }
+                                onDisableClick={() => {
+                                    updateTemplateStatusAsync({
+                                        entityTemplateId: entityTemplate._id,
+                                        disabled: !entityTemplate.disabled,
+                                        isChild: isChildTemplate,
+                                    });
+                                    setIsHoverOnCard(false);
+                                }}
                                 onAddChildTemplateClick={
                                     childTemplates?.get(entityTemplate._id)
                                         ? undefined

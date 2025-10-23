@@ -28,6 +28,7 @@ export const CardMenu: React.FC<{
         tooltipTitle: string;
         editTooltipTitle?: string;
         disableForReadPermissions?: boolean;
+        isDisableDisabled?: boolean;
     };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
@@ -206,7 +207,7 @@ export const CardMenu: React.FC<{
                                         <DoNotDisturbOnOutlinedIcon color="action" />
                                     )
                                 }
-                                disabled={disabledProps?.disableForReadPermissions}
+                                disabled={disabledProps?.isDisableDisabled || disabledProps?.disableForReadPermissions}
                             />
                         </Grid>
                     </MeltaTooltip>
