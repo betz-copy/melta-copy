@@ -262,6 +262,26 @@ interface JSONSchemaFormFormikProps {
     };
 }
 
+const extractGroupFieldValue = (
+    formData: any,
+    schema: IProperties & {
+        required: string[];
+    },
+): any => {
+    const copiedFormData = structuredClone(formData);
+    Object.entries(copiedFormData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
+        // if the value is an object without properties, we assume it's a grouped field and flatten it
+        // rjsf library does support grouped fields, but we do not save them as so in the db.
+        if (value && typeof value === 'object' && !value.properties && schema.properties[key] && schema.properties[key]?.format !== 'location') {
+            for (const [groupedKey, groupedValue] of Object.entries(value)) {
+                copiedFormData[groupedKey] = groupedValue;
+            }
+        }
+    });
+
+    return copiedFormData;
+};
+
 const createGroupedSchema = (
     values: any,
     schema: IProperties & {
@@ -273,7 +293,7 @@ const createGroupedSchema = (
             const propertyInSchema = schema.properties[field];
             if (!propertyInSchema) return acc;
 
-            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+            if (propertyInSchema.defaultValue !== undefined) propertyInSchema.default = propertyInSchema.defaultValue;
 
             delete schema.properties[field];
             return { ...acc, [field]: propertyInSchema };
@@ -363,36 +383,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             onChange={({ formData }, id) => {
                 if (!id) return;
 
-                Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
-                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
-                        formData[key] = undefined;
-                    }
-                    // if the value is an object without properties, we assume it's a grouped field and flatten it
-                    // rjsf library does support grouped fields, but we do not save them as so in the db.
-                    if (
-                        value &&
-                        typeof value === 'object' &&
-                        !value.properties &&
-                        schema.properties[key] &&
-                        schema.properties[key]?.format !== 'location'
-                    ) {
-                        for (const [groupedKey, groupedValue] of Object.entries(value)) {
-                            if (Array.isArray(groupedValue)) {
-                                const isPlaceHolderArray = groupedValue.length === 1 && (groupedValue[0] === undefined || groupedValue[0] === null);
-
-                                if (groupedValue.length === 0) {
-                                    formData[groupedKey] = [undefined];
-                                } else if (!isPlaceHolderArray) {
-                                    formData[groupedKey] = groupedValue;
-                                }
-                            } else {
-                                formData[groupedKey] = groupedValue;
-                            }
-                        }
-                    }
-                });
-
-                setValues(formData);
+                setValues(extractGroupFieldValue(formData, schema));
             }}
             formData={values.properties}
             showErrorList={false}
