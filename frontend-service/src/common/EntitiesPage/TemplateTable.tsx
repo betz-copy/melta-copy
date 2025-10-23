@@ -181,7 +181,7 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled() || template.disabled;
     const loadExcelTooltip = isLoadExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
         : undefined;
@@ -191,7 +191,7 @@ const TemplateTable = forwardRef<
         return Object.values(properties).some((property) => property.identifier);
     };
 
-    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
+    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled() || template.disabled;
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
         : undefined;

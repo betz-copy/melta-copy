@@ -15,7 +15,7 @@ const ClientSideMainPage: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.clientSide;
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);

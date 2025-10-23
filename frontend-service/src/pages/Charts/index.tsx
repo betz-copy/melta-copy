@@ -31,9 +31,9 @@ const ChartsPage: React.FC = () => {
     const [currentLocation, navigate] = useLocation();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const childEntityTemplate = childEntityTemplates.get(templateId as string);
+    const childEntityTemplate = childTemplates.get(templateId as string);
     const fatherEntityTemplate = entityTemplates.get((childEntityTemplate ? childEntityTemplate.parentTemplate._id : templateId) as string)!;
     const template = childEntityTemplate || fatherEntityTemplate;
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;

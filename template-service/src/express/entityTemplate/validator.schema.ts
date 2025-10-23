@@ -57,7 +57,7 @@ export const getEntityTemplateByIdSchema = Joi.object({
 });
 
 // GET /api/entities/templates/related/:relatedTemplateId
-export const getTemplatesUsingRelationshipReferanceSchema = Joi.object({
+export const getTemplatesUsingRelationshipReferenceSchema = Joi.object({
     query: {},
     body: {},
     params: { relatedTemplateId: MongoIdSchema.required() },

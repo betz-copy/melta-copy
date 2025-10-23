@@ -133,7 +133,7 @@ const useMutationHandler = (
     if (Object.keys(clientSideUserEntity || {}).length) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
