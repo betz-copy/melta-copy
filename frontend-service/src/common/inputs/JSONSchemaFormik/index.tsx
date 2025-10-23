@@ -11,7 +11,7 @@ import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
@@ -267,6 +267,53 @@ interface JSONSchemaFormFormikProps {
     };
 }
 
+const extractGroupFieldValue = (
+    formData: any,
+    schema: IProperties & {
+        required: string[];
+    },
+): any => {
+    const copiedFormData = structuredClone(formData);
+    Object.entries(copiedFormData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
+        // if the value is an object without properties, we assume it's a grouped field and flatten it
+        // rjsf library does support grouped fields, but we do not save them as so in the db.
+        if (value && typeof value === 'object' && !value.properties && schema.properties[key] && schema.properties[key]?.format !== 'location') {
+            for (const [groupedKey, groupedValue] of Object.entries(value)) {
+                copiedFormData[groupedKey] = groupedValue;
+            }
+        }
+    });
+
+    return copiedFormData;
+};
+
+const createGroupedSchema = (
+    values: any,
+    schema: IProperties & {
+        required: string[];
+    },
+) =>
+    values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
+        const properties = fields.reduce((acc, field) => {
+            const propertyInSchema = schema.properties[field];
+            if (!propertyInSchema) return acc;
+
+            if (propertyInSchema.defaultValue !== undefined) propertyInSchema.default = propertyInSchema.defaultValue;
+
+            delete schema.properties[field];
+            return { ...acc, [field]: propertyInSchema };
+        }, {});
+
+        return {
+            ...acc,
+            [name]: {
+                type: 'object',
+                title: displayName,
+                properties,
+            },
+        };
+    }, {} as RJSFSchema);
+
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     readonly,
     schema,
@@ -320,28 +367,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         [],
     );
 
-    const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
-        const properties = fields.reduce((acc, field) => {
-            const propertyInSchema = schema.properties[field];
-            if (!propertyInSchema) return acc;
-
-            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
-
-            delete schema.properties[field];
-            return { ...acc, [field]: propertyInSchema };
-        }, {});
-
-        return {
-            ...acc,
-            [name]: {
-                type: 'object',
-                title: displayName,
-                properties,
-            },
-        };
-    }, {} as RJSFSchema);
-
-    schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
+    schema.properties = { ...schema.properties, ...(createGroupedSchema(values, schema) ?? {}) };
 
     const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
@@ -350,21 +376,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
-            onChange={({ formData }) => {
-                Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
-                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
-                        formData[key] = undefined;
-                    }
-                    // if the value is an object without properties, we assume it's a grouped field and flatten it
-                    // rjsf library does support grouped fields, but we do not save them as so in the db.
-                    if (value && typeof value === 'object' && !value.properties && schema.properties[key]?.format !== 'location') {
-                        for (const [groupedKey, groupedValue] of Object.entries(value)) {
-                            formData[groupedKey] = groupedValue;
-                        }
-                    }
-                });
+            onChange={({ formData }, id) => {
+                if (!id) return;
 
-                setValues(formData);
+                setValues(extractGroupFieldValue(formData, schema));
             }}
             formData={values.properties}
             showErrorList={false}

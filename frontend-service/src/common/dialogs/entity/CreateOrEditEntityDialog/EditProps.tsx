@@ -138,11 +138,11 @@ const EditProps: React.FC<{
         if (!checked) {
             setFieldTouched(`properties.${field}`, false);
             setFieldValue(`properties.${field}`, undefined);
-        } else if (schema.properties[field].defaultValue) setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
+        } else if (schema.properties[field]?.defaultValue) setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
 
         const relatedUserFields = {};
 
-        if (schema.properties[field].format === 'user') {
+        if (schema.properties[field]?.format === 'user') {
             Object.entries(schema.properties).forEach(([key, value]) => {
                 if (value.format === 'kartoffelUserField' && value.expandedUserField?.relatedUserField === field) {
                     relatedUserFields[key] = checked;
@@ -163,7 +163,11 @@ const EditProps: React.FC<{
         <JSONSchemaFormik
             schema={schema}
             values={values}
-            setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+            setValues={(propertiesValues) => {
+                if (!isEqual(values.properties, propertiesValues)) return setFieldValue('properties', propertiesValues);
+                // without the if it enters a render loop when in field groups
+                return Promise.resolve();
+            }}
             errors={errors.properties ?? {}}
             uniqueErrors={{ ...externalErrors.unique }}
             touched={touched.properties ?? {}}
