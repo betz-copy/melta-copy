@@ -11,7 +11,7 @@ import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
@@ -262,6 +262,33 @@ interface JSONSchemaFormFormikProps {
     };
 }
 
+const createGroupedSchema = (
+    values: any,
+    schema: IProperties & {
+        required: string[];
+    },
+) =>
+    values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
+        const properties = fields.reduce((acc, field) => {
+            const propertyInSchema = schema.properties[field];
+            if (!propertyInSchema) return acc;
+
+            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+
+            delete schema.properties[field];
+            return { ...acc, [field]: propertyInSchema };
+        }, {});
+
+        return {
+            ...acc,
+            [name]: {
+                type: 'object',
+                title: displayName,
+                properties,
+            },
+        };
+    }, {} as RJSFSchema);
+
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     readonly,
     schema,
@@ -324,28 +351,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         [],
     );
 
-    const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
-        const properties = fields.reduce((acc, field) => {
-            const propertyInSchema = schema.properties[field];
-            if (!propertyInSchema) return acc;
-
-            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
-
-            delete schema.properties[field];
-            return { ...acc, [field]: propertyInSchema };
-        }, {});
-
-        return {
-            ...acc,
-            [name]: {
-                type: 'object',
-                title: displayName,
-                properties,
-            },
-        };
-    }, {} as RJSFSchema);
-
-    schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
+    schema.properties = { ...schema.properties, ...(createGroupedSchema(values, schema) ?? {}) };
 
     const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
@@ -354,7 +360,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
-            onChange={({ formData }) => {
+            onChange={({ formData }, id) => {
+                if (!id) return;
+
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         formData[key] = undefined;
