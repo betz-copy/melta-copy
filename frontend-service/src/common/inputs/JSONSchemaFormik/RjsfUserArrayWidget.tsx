@@ -11,7 +11,7 @@ const serializeUser = (user) =>
         mail: user?.mail,
     });
 
-const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options }: WidgetProps) => {
+const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options, required }: WidgetProps) => {
     const [inputValue, setInputValue] = useState('');
     const { defaultValue } = options;
 
@@ -20,6 +20,7 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
 
     return (
         <UserArrayInput
+            required={required}
             mode="internal"
             value={null}
             label={label}

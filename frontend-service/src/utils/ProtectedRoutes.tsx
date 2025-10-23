@@ -85,7 +85,7 @@ export const DashboardProtectedRoute: React.FC<{
 
     if (dashboardType === DashboardItemType.Chart) {
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
 
         const entityTemplate = entityTemplates?.get(templateId);
         const childTemplate = childTemplates?.get(templateId);

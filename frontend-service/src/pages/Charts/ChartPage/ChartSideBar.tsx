@@ -42,8 +42,8 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
-    const entityTemplateOptions = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+    const entityTemplateOptions = [...entityTemplates.keys(), ...childTemplates.keys()];
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
@@ -72,16 +72,16 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                 setChangeTemplateWarning({
                                     isOpen: true,
                                     newTemplate: newValue,
-                                    fatherTemplateId: childEntityTemplates.get(newValue as string)?.parentTemplate._id,
+                                    fatherTemplateId: childTemplates.get(newValue as string)?.parentTemplate._id,
                                 });
                             else {
-                                const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
+                                const childTemplate = newValue ? childTemplates.get(newValue as string) : undefined;
                                 const templateId = childTemplate?.parentTemplate._id || newValue || '';
                                 setFieldValue('templateId', templateId);
                                 if (!!childTemplate) setFieldValue('childTemplateId', newValue!);
                             }
                         }}
-                        getOptionLabel={(id) => childEntityTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
+                        getOptionLabel={(id) => childTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
                         multiple={false}
                         readonly={viewMode === ViewMode.ReadOnly}
                         style={{ width: 295 }}

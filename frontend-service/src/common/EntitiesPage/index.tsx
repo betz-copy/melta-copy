@@ -64,7 +64,7 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
 
-    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {

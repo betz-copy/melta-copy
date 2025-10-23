@@ -72,12 +72,12 @@ class InstancesValidator extends DefaultController {
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
         const permissions = await this.authorizer.getWorkspacePermissions(user.id);
 
-        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+        const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
             this.getAllowedEntityTemplatesForInstances(permissions, user.id),
             this.getAllowedChildTemplatesForInstances(permissions),
         ]);
 
-        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {

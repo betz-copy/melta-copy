@@ -5,7 +5,7 @@ import { AxiosError } from 'axios';
 import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ProcessStepValues } from '.';
@@ -134,6 +134,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     onSetNextStep = () => {},
 }) => {
     const currentUser = useUserStore((state) => state.user);
+    const [isSavePressed, setIsSavedPressed] = useState(false);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const queryClient = useQueryClient();
 
@@ -208,6 +209,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                     return [{ ...property }];
                 });
 
+                console.log({ errors });
+
                 return (
                     <Form style={{ height: '100%', paddingTop: '10px' }}>
                         <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">
@@ -233,7 +236,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 setValues={(propertiesValues) => {
                                                     return setFieldValue('properties', propertiesValues);
                                                 }}
-                                                errors={errors.properties ?? {}}
+                                                errors={isSavePressed ? (errors.properties ?? {}) : {}}
                                                 touched={touched.properties ?? {}}
                                                 setFieldTouched={(field) => {
                                                     return setFieldTouched(`properties.${field}`);
@@ -269,7 +272,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         setFieldValue={setFieldValue}
                                                                         required={required.includes(key)}
                                                                         value={values.attachmentsProperties[key]}
-                                                                        error={errors.properties?.[key] as string}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
                                                                     />
                                                                 ) : (
@@ -280,7 +283,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         setFieldValue={setFieldValue}
                                                                         required={required.includes(key)}
                                                                         value={values.attachmentsProperties[key]}
-                                                                        error={errors.properties?.[key] as string}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
                                                                     />
                                                                 )}
@@ -432,7 +435,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 <Grid container justifyContent="flex-start" flexBasis="33%">
                                     <Grid>
                                         {isTherePrevStep && (
-                                            <Button disabled={isStepEditMode} onClick={() => onSetPrevStep()}>
+                                            <Button
+                                                disabled={isStepEditMode}
+                                                onClick={() => {
+                                                    setIsSavedPressed(false);
+                                                    onSetPrevStep();
+                                                }}
+                                            >
                                                 <Typography>￫ {i18next.t('wizard.processInstance.step.prevStep')}</Typography>
                                             </Button>
                                         )}
@@ -455,6 +464,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                     )
                                                                 }
                                                                 onClick={() => {
+                                                                    setIsSavedPressed(false);
                                                                     setIsStepEditMode(false);
                                                                     resetForm();
                                                                 }}
@@ -474,6 +484,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         <DoneIcon />
                                                                     )
                                                                 }
+                                                                onClick={() => setIsSavedPressed(true)}
                                                             >
                                                                 {i18next.t('wizard.processInstance.saveBth')}
                                                             </Button>

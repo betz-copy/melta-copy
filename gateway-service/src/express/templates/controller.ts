@@ -158,6 +158,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.updateChildTemplate(req.params.id, req.user!.id, req.body, permissionsOfUserId));
     }
 
+    async updateChildTemplateStatus(req: Request, res: Response) {
+        res.json(await this.manager.updateChildTemplateStatus(req.params.id, req.body.disabled));
+    }
+
     // relationshipTemplates
     async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await this.manager.createRelationshipTemplate(req.body));

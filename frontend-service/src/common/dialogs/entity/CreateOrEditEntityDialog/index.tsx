@@ -126,6 +126,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
+    const [isSubmitPressed, setIsSubmitPressed] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
     const isEditMode = actionType === ActionTypes.UpdateEntity;
@@ -224,7 +225,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <EditProps
                                             setFieldValue={setFieldValue}
                                             values={values}
-                                            errors={errors}
+                                            errors={isSubmitPressed ? errors : {}}
                                             touched={touched}
                                             setFieldTouched={setFieldTouched}
                                             initialValues={formInitialValues}
@@ -286,11 +287,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     type="submit"
                                                     variant="contained"
                                                     startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                        setIsSubmitPressed(true);
                                                         Object.keys(errors).length
                                                             ? ''
-                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                    }
+                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
+                                                    }}
                                                     disabled={!dirty || isLoading}
                                                 >
                                                     {i18next.t('entityPage.save')}

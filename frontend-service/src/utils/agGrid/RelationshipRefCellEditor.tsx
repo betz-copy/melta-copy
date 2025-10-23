@@ -21,7 +21,7 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({ v
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId);
 
     const relatedTemplate = entityTemplates.get(relatedTemplateId);

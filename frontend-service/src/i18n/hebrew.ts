@@ -1826,6 +1826,13 @@ export default {
         failedToUpdateChildTemplate: 'נכשל לעדכן תבנית ישות בן',
         succeededToCreateChildTemplate: 'תבנית בן נוצרה בהצלחה',
         succeededToUpdateChildTemplate: 'תבנית בן עודכנה בהצלחה',
+        failedToCreate: 'נכשל ליצור תבנית ישות בן',
+        failedToDisable: 'נכשל להשבית תבנית ישות בן',
+        disabledSuccessfully: 'תבנית ישות בן הושבתה בהצלחה',
+        enableChildren: 'תבניות בן נשארות מושבתות, יש להפעיל אותן בנפרד',
+        enableUnderDisabledParent: 'תבנית ישות בן לא יכולה להיות מופעלת כאשר תבנית האב מושבתת',
+        failedToActivate: 'נכשל להפעיל תבנית ישות בן',
+        activatedSuccessfully: 'תבנית ישות בן הופעלה בהצלחה',
         childTemplates: 'תבניות בן',
         buttons: {
             create: 'צור תבנית בן',

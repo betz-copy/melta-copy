@@ -19,9 +19,9 @@ export const getRelevantEntityTemplate = (
     childTemplateId?: string,
 ): IChildTemplatePopulated | IMongoEntityTemplatePopulated => {
     const queryClient = useQueryClient();
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const childEntityTemplate = childTemplateId ? childEntityTemplates.get(childTemplateId) : undefined;
+    const childEntityTemplate = childTemplateId ? childTemplates.get(childTemplateId) : undefined;
     const fatherEntityTemplate = entityTemplates.get(templateId)!;
     return childEntityTemplate || fatherEntityTemplate;
 };
