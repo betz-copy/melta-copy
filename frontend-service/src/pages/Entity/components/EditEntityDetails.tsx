@@ -23,7 +23,6 @@ import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfa
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
-import { isEqual } from 'lodash';
 
 const { errorCodes } = environment;
 
@@ -154,12 +153,7 @@ const EditEntityDetails: React.FC<{
                                                 <JSONSchemaFormik
                                                     schema={filterFieldsFromPropertiesSchema(entityTemplate.properties)}
                                                     values={values}
-                                                    setValues={(propertiesValues) => {
-                                                        if (!isEqual(values.properties, propertiesValues))
-                                                            return setFieldValue('properties', propertiesValues);
-                                                        // without the if it enters a render loop when in field groups
-                                                        return Promise.resolve();
-                                                    }}
+                                                    setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                     errors={errors.properties ?? {}}
                                                     uniqueErrors={externalErrors.unique}
                                                     touched={touched.properties ?? {}}
