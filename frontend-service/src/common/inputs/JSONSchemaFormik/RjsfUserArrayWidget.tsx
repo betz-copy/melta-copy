@@ -18,6 +18,8 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
     const users = Array.isArray(value) && value[0] ? value.map((user) => JSON.parse(user)) : (defaultValue ?? []);
     const [currentUsers, setCurrentUsers] = useState(Array.isArray(users) ? users.filter(Boolean) : []);
 
+    if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
+
     return (
         <UserArrayInput
             required={required}

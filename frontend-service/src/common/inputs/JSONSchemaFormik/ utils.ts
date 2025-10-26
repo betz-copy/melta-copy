@@ -42,7 +42,7 @@ const getFieldUiSchema = (
     propertySchema: IEntitySingleProperty,
     unitsOptions?: string[],
 ): UiSchema => {
-    const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue;
+    const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue ?? undefined;
     const enumPropertiesColors = values.template?.enumPropertiesColors;
     if (propertySchema.archive) return {};
 
