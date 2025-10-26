@@ -55,7 +55,7 @@ const config = {
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
-        relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear').asArray(),
+        relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear,untilToday,fromToday').asArray(),
         updateColorsForRulesWithTodayFuncParallelLimit: env.get('UPDATE_COLORS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(20).asIntPositive(),
         sendAlertForRulesWithTodayFuncParallelLimit: env.get('SEND_ALERTS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(100).asIntPositive(),
     },

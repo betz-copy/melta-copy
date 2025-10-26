@@ -73,6 +73,14 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
             return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
         }
 
+        case 'untilToday': {
+            return setToEndOfDay(today);
+        }
+
+        case 'fromToday': {
+            return convertToTimeZone(today);
+        }
+
         default: {
             return new Date(rhs as string);
         }
