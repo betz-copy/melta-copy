@@ -479,9 +479,9 @@ export class EntityValidator extends DefaultController {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
         const templateIds = Object.keys(searchBody);
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
-        if (entityTemplates.length < templateIds.length) {
+        if (entityTemplates.length < templateIds.length)
             throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
-        }
+
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(

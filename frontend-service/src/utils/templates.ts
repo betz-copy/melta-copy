@@ -1,5 +1,5 @@
 import { IMongoCategory } from '../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntityExpanded } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
@@ -15,11 +15,62 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 export const populateRelationshipTemplate = (
     { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate }: IMongoRelationshipTemplate,
     entityTemplates: IEntityTemplateMap,
+    groupChildTemplate?: Record<string, IChildTemplatePopulated[]>,
 ): IMongoRelationshipTemplatePopulated => {
     return {
-        sourceEntity: entityTemplates.get(sourceEntityId)!,
-        destinationEntity: entityTemplates.get(destinationEntityId)!,
+        sourceEntity: entityTemplates.get(sourceEntityId) ?? getFakeParentByChildren(sourceEntityId, groupChildTemplate),
+        destinationEntity: entityTemplates.get(destinationEntityId) ?? getFakeParentByChildren(destinationEntityId, groupChildTemplate),
         ...restOfRelationshipTemplate,
+    };
+};
+
+export const groupChildTemplatesByParent = (
+    childTemplates: IChildTemplateMap,
+    entityTemplates: IEntityTemplateMap,
+): Record<string, IChildTemplatePopulated[]> => {
+    const grouped: Record<string, IChildTemplatePopulated[]> = {};
+
+    for (const childTemplate of childTemplates.values()) {
+        const parentId = childTemplate.parentTemplate._id.toString();
+
+        if (!entityTemplates.get(parentId)) {
+            // to use it only if there are permission only to children
+            if (!grouped[parentId]) grouped[parentId] = [childTemplate];
+            else grouped[parentId].push(childTemplate);
+        }
+    }
+
+    return grouped;
+};
+
+const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string, IChildTemplatePopulated[]>) => {
+    console.log('y', { id, groupChildTemplate });
+
+    const relevantGroup = groupChildTemplate?.[id] ?? [];
+    console.log({ relevantGroup });
+
+    const relevantProperties = {};
+    const propertiesOrder: string[] = [];
+    relevantGroup.forEach(({ properties: { properties } }) => {
+        Object.entries(properties).forEach(([key, value]) => {
+            if (relevantProperties[key] && !value.filters) return;
+            if (!relevantProperties[key]) {
+                relevantProperties[key] = value;
+                propertiesOrder.push(key);
+            }
+            if (relevantProperties[key] && value.filters)
+                relevantProperties[key].filters = JSON.stringify({
+                    $or: [...JSON.parse(relevantProperties[key].filters).$or, JSON.parse(value.filters).$or],
+                });
+        });
+    });
+    console.log({ 0: relevantGroup[0] });
+    if (!relevantGroup.length) return {};
+    return {
+        ...relevantGroup[0],
+        properties: { ...relevantGroup[0].properties, properties: relevantProperties, propertiesOrder },
+        _id: id,
+        displayName: relevantGroup[0].parentTemplate.displayName,
     };
 };
 
@@ -30,6 +81,7 @@ export const getFullRelationshipTemplates = (
     depth: number,
     parentRelationshipTemplate?: IMongoRelationshipTemplatePopulated,
     expandedEntity?: IEntityExpanded,
+    groupChildTemplate?: Record<string, IChildTemplatePopulated[]>,
     filterOnlyThoseWithInstances = false,
 ): INestedRelationshipTemplates[] => {
     const result: INestedRelationshipTemplates[] = [];
@@ -40,19 +92,26 @@ export const getFullRelationshipTemplates = (
             parentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
                 relationshipTemplate._id;
 
-        const isConnected =
-            relationshipTemplate.sourceEntityId === parentEntityTemplate._id || relationshipTemplate.destinationEntityId === parentEntityTemplate._id;
+        const connection =
+            relationshipTemplate.sourceEntityId === parentEntityTemplate._id
+                ? 'sourceEntity'
+                : relationshipTemplate.destinationEntityId === parentEntityTemplate._id
+                  ? 'destinationEntity'
+                  : undefined;
 
-        if (isSelfProperty || !isConnected) continue;
+        if (isSelfProperty || !connection) continue;
 
-        const hasInstances = expandedEntity?.connections.some(({ relationship }) => relationship.templateId === relationshipTemplate._id)!;
+        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id)!;
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 
         if (parentRelationshipTemplate?._id === relationshipTemplate._id) continue;
 
         result.push({
-            relationshipTemplate: populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+            relationshipTemplate: {
+                ...populateRelationshipTemplate(relationshipTemplate, entityTemplates, groupChildTemplate),
+                [connection]: parentEntityTemplate,
+            },
             hasInstances,
             isExpandedEntityRelationshipSource: relationshipTemplate.sourceEntityId === parentEntityTemplate._id,
             children: [],

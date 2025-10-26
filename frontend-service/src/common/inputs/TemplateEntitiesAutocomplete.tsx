@@ -17,10 +17,34 @@ import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView';
 import { useUserStore } from '../../stores/user';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
+
+export const getChildTemplatesFilter = (
+    childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],
+    isChildTemplate?: boolean,
+): ISearchFilter | undefined => {
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const currentUserKartoffelId = currentUser?.kartoffelId;
+
+    const childTemplatesFilters = childTemplatesOfRelatedTemplate
+        .map((childTemplate) =>
+            getDefaultFilterFromTemplate(
+                childTemplate,
+                true,
+                currentUserKartoffelId,
+                currentUser?.units?.[workspace._id] ?? [],
+                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+            ),
+        )
+        .filter((f): f is ISearchFilter => !!f);
+
+    return !!childTemplatesFilters.length && isChildTemplate ? { $or: childTemplatesFilters } : undefined;
+};
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -73,30 +97,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
 
-    const currentUser = useUserStore((state) => state.user);
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
-    const currentUserKartoffelId = currentUser?.kartoffelId;
-
-    const getChildTemplatesFilter = (): ISearchFilter | undefined => {
-        const childTemplatesFilters = childTemplatesOfRelatedTemplate
-            .map((childTemplate) =>
-                getDefaultFilterFromTemplate(
-                    childTemplate,
-                    true,
-                    currentUserKartoffelId,
-                    currentUser?.units?.[workspace._id] ?? [],
-                    isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
-                ),
-            )
-            .filter((f): f is ISearchFilter => !!f);
-
-        return !!childTemplatesFilters.length && isChildTemplate ? { $or: childTemplatesFilters } : undefined;
-    };
-
     const parseAndAddDisabled = (filters: string | undefined): ISearchFilter => {
         const disabledCondition: ISearchFilter = { $and: { disabled: { $eq: false } } };
-        const childTemplatesFilter = getChildTemplatesFilter();
+        const childTemplatesFilter = getChildTemplatesFilter(childTemplatesOfRelatedTemplate, isChildTemplate);
         const filtersArray: ISearchFilter[] = [];
 
         if (filters) {

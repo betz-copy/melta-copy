@@ -262,9 +262,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.getAllowedEntitiesTemplates(permissionsOfUserId, userId),
         ]);
 
-        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map(({ _id }) => _id);
 
-        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates(allowedEntityTemplatesIds);
+        const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
+
+        // const allowedChildTemplatesIds = childTemplatesPopulated
+        //     .map(({ parentTemplate: { _id } }) => _id)
+        //     .filter((id) => !allowedEntityTemplatesIds.includes(id));
+
+        // const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates([...allowedEntityTemplatesIds, ...allowedChildTemplatesIds]);
+        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates([...allowedEntityTemplatesIds]);
         const { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship } = await this.getAllowedTemplatesAndRules(
             allowedEntityTemplatesIds,
             allowedRelationshipsTemplates,
@@ -290,8 +297,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates, uniqueConstraints),
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
-
-        const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
         try {

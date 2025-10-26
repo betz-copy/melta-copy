@@ -20,9 +20,7 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
             if (selectedProperty && filterField) {
                 const propertyTemplate = properties.properties[selectedProperty];
                 acc[_id].push(filterModelToFilterOfTemplatePerField(propertyTemplate, selectedProperty, filterField));
-            } else {
-                acc[_id].push({});
-            }
+            } else acc[_id].push({});
 
             return acc;
         },

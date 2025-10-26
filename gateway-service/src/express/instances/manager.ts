@@ -188,16 +188,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             entityIdsToInclude: Object.keys(entitiesWithFiles),
         });
 
-        if (body.sort?.length) {
-            return searchResult;
-        }
+        if (body.sort?.length) return searchResult;
 
         const texts = createTextsFromEntitiesWithFiles(searchResult, entitiesWithFiles, body.textSearch);
         const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
 
-        if (!rerank?.length) {
-            return searchResult;
-        }
+        if (!rerank?.length) return searchResult;
 
         return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
     }

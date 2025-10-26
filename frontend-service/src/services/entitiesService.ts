@@ -159,16 +159,16 @@ export const getExpandedEntityByIdRequest = async (
         childTemplateId?: string;
     },
     filterRecord: IGraphFilterBodyBatch = {},
+    childTemplateFilters?: ISearchFilter,
 ) => {
     const filters = filterModelToFilterOfGraph(filterRecord);
-    const batch = (
-        await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
-            ...options,
-            expandedParams,
-            filters,
-        })
-    ).data;
-    return batch;
+
+    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+        ...options,
+        expandedParams,
+        filters: { ...filters, ...childTemplateFilters },
+    });
+    return data;
 };
 
 export const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
