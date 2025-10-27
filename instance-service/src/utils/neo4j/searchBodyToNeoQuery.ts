@@ -36,16 +36,16 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
     const today: Date = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const setToEndOfDay = (date: Date) => {
-        if (isDateTime) date.setHours(23, 59, 59, 999);
-
-        return convertToTimeZone(date);
-    };
-
     const convertToTimeZone = (date: Date) => {
         if (isDateTime) return fromZonedTime(date, timezone);
 
         return date;
+    };
+
+    const setToEndOfDay = (date: Date) => {
+        if (isDateTime) date.setHours(23, 59, 59, 999);
+
+        return convertToTimeZone(date);
     };
 
     switch (rhs) {
