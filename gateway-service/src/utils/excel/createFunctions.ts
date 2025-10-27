@@ -1,13 +1,5 @@
 /* eslint-disable no-param-reassign */
-import {
-    logger,
-    CoordinateSystem,
-    EntityTemplateType,
-    IEntity,
-    IEntitySingleProperty,
-    locationConverterToString,
-    TemplateItem,
-} from '@microservices/shared';
+import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
@@ -181,7 +173,6 @@ const relationshipRefCell = (
     workspacePath: string,
     insertEntities?: boolean,
 ) => {
-    logger.info(`Creating relationship reference cell for key: ${key} ${row}`, { row: row[key].properties });
     cell.value = insertEntities
         ? row[key]
         : {
