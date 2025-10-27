@@ -248,10 +248,20 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanCreateRelationshipInstance(req: Request) {
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(req.body.relationshipInstance);
+        const childTemplatesOfParents = this.entityTemplateService.searchChildTemplates({
+            parentTemplatesIds: relatedTemplates.map(({ _id }) => _id),
+        });
+
 
         await Promise.all(
             relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
+                this.validateUserPermissionForEntityInstance(
+                    req,
+                    template._id,
+                    PermissionScope.write,
+                    template.category._id,
+                    childTemplatesOfParents[0]._id,
+                ),
             ),
         );
     }
@@ -261,9 +271,7 @@ class InstancesValidator extends DefaultController {
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(relationshipInstance);
 
         await Promise.all(
-            relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
-            ),
+            relatedTemplates.map(({ _id, category }) => this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id)),
         );
     }
 

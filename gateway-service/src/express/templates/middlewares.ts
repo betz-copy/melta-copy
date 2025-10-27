@@ -58,13 +58,11 @@ class TemplatesValidator extends DefaultController {
 
     async validateUserCanCreateRelationshipTemplateUnderCategory(req: Request) {
         const { sourceEntityId, destinationEntityId } = req.body;
-        console.log({ sourceEntityId, destinationEntityId });
 
         const [relatedCategories, userPermissions] = await Promise.all([
             this.getRelatedCategoriesFromRelationshipTemplate(sourceEntityId, destinationEntityId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
-        console.log({ relatedCategories });
 
         const categoriesOfEntitiesWithWritePermission = relatedCategories.filter(
             (categoryId) =>
