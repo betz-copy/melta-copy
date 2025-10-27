@@ -192,9 +192,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     filesToUpload.push([`${key}`, file]);
                 }
             });
-        } else {
-            filesToUpload.push([`${key}`, value]);
-        }
+        } else filesToUpload.push([`${key}`, value]);
     });
 
     Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
@@ -244,13 +242,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
 
     formData.append('templateId', isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id);
 
-    if (isChildTemplate(entity.template)) {
-        formData.append('childTemplateId', entity.template._id);
-    }
+    if (isChildTemplate(entity.template)) formData.append('childTemplateId', entity.template._id);
 
-    if (ignoredRules) {
-        formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    }
+    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
 
     const { data } = await axios.post<IEntity>(entities, formData);
     return data;

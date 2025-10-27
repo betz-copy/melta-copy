@@ -44,31 +44,32 @@ export const groupChildTemplatesByParent = (
 };
 
 const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string, IChildTemplatePopulated[]>) => {
-    console.log('y', { id, groupChildTemplate });
-
     const relevantGroup = groupChildTemplate?.[id] ?? [];
-    console.log({ relevantGroup });
 
     const relevantProperties = {};
     const propertiesOrder: string[] = [];
     relevantGroup.forEach(({ properties: { properties } }) => {
         Object.entries(properties).forEach(([key, value]) => {
             if (relevantProperties[key] && !value.filters) return;
-            if (!relevantProperties[key]) {
+            else if (!relevantProperties[key]) {
                 relevantProperties[key] = value;
                 propertiesOrder.push(key);
+            } else if (relevantProperties[key] && value.filters) {
+                relevantProperties[key].filters = relevantProperties[key].filters
+                    ? JSON.stringify({
+                          $or: [...JSON.parse(relevantProperties[key].filters).$or, JSON.parse(value.filters).$or],
+                      })
+                    : value.filters;
             }
-            if (relevantProperties[key] && value.filters)
-                relevantProperties[key].filters = JSON.stringify({
-                    $or: [...JSON.parse(relevantProperties[key].filters).$or, JSON.parse(value.filters).$or],
-                });
         });
     });
-    console.log({ 0: relevantGroup[0] });
+
     if (!relevantGroup.length) return {};
+
     return {
         ...relevantGroup[0],
-        properties: { ...relevantGroup[0].properties, properties: relevantProperties, propertiesOrder },
+        properties: { ...relevantGroup[0].properties, properties: relevantProperties },
+        propertiesOrder,
         _id: id,
         displayName: relevantGroup[0].parentTemplate.displayName,
     };

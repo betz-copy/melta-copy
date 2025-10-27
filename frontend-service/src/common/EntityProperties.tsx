@@ -2,6 +2,7 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
+import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
@@ -21,7 +22,6 @@ import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import UserAvatar from './UserAvatar';
-import _ from 'lodash';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -509,7 +509,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
-            <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
+            <Grid container width="100%" style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey) => {
                         const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));

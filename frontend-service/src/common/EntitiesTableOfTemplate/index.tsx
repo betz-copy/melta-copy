@@ -34,20 +34,25 @@ import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../interfaces/error';
 import { IRelationship } from '../../interfaces/relationships';
 import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
     deleteEntityRequest,
     searchEntitiesOfTemplateRequest,
     updateEntityRequestForMultiple,
     updateEntityStatusRequest,
 } from '../../services/entitiesService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -55,6 +60,7 @@ import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
+import { isChildTemplate } from '../../utils/templates';
 import { trycatch } from '../../utils/trycatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -63,12 +69,6 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
-import { useClientSideUserStore } from '../../stores/clientSideUser';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { isChildTemplate } from '../../utils/templates';
-import { useUserStore } from '../../stores/user';
-import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -109,9 +109,10 @@ export const getDatasource = <Data extends any = EntityData>(
     defaultFilter?: ISearchFilter,
     pageType?: string,
     clientSideUserEntityId?: string,
+    childTemplatesOfParentIds?: string[],
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
-    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
+    const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : undefined;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -145,7 +146,7 @@ export const getDatasource = <Data extends any = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
-                          childTemplateId ? [childTemplateId] : [],
+                          childTemplateIds?.length ? childTemplateIds : [],
                       ),
             );
 
@@ -181,6 +182,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     defaultFilter?: ISearchFilter,
     pageType?: string,
     clientSideUserEntityId?: string,
+    childTemplatesOfParentIds?: string[],
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -201,6 +203,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
             defaultFilter,
             pageType,
             clientSideUserEntityId,
+            childTemplatesOfParentIds,
         ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
@@ -254,6 +257,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
+    childTemplatesOfParent?: IChildTemplatePopulated[];
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -303,6 +307,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             columnsToShow,
             setUpdatedTemplateIds,
             actionsColumnWidth,
+            childTemplatesOfParent,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -442,8 +447,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             currentClientSideUser: clientSideUserEntity,
             actionsColumnWidth,
             darkMode,
+            workspace,
+            childTemplatesOfParent,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
+        const childTemplatesOfParentIds = childTemplatesOfParent?.map(({ _id }) => _id);
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
@@ -717,8 +725,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     defaultFilter as ISearchFilter | undefined,
                     saveStorageProps.pageType,
                     clientSideUserEntity?.properties?._id,
+                    childTemplatesOfParentIds,
                 ),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds],
         );
 
         const statusPanels = useMemo(() => {
