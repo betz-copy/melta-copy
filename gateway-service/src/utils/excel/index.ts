@@ -11,6 +11,8 @@ import {
     IWorkspace,
     ServiceError,
     UploadedFile,
+    logger,
+    INotFoundRelationshipRefError,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -45,11 +47,26 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IChi
         }, {});
 };
 
-export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+export const classifyEntityErrors = (
+    error: any,
+    failedEntities: IFailedEntity[],
+    entity: IEntity,
+    allBrokenRulesEntities: IBrokenRuleEntity[],
+    originalEntity?: IEntity['properties'],
+) => {
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
+        logger.info('Not found error metadata', error.metadata);
+        failedEntities.push({
+            properties: entity.properties,
+            errors: [{ type: ActionErrors.notFound, metadata: error.metadata as INotFoundRelationshipRefError }],
+        });
+    }
+
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
         const { data } = error.response;
+
         if (typeof data.StatusCodes === 'string')
             if (data.StatusCodes === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
                 const templateIdMatch = error.message.match(loadExcel.templateIdRegex);
@@ -107,7 +124,14 @@ export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[]
                     actionMetadata: entity,
                 },
             ],
-            entities: [{ properties: entity.properties }],
+            entities: [
+                {
+                    properties: {
+                        ...entity.properties,
+                        ...(originalEntity || {}),
+                    },
+                },
+            ],
         });
     }
 };

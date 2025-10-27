@@ -429,7 +429,7 @@ export const templatesFilterToNeoQuery = (
 };
 
 export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
-    return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
+    return sortModel?.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
 const buildFullTextSearchQuery = (

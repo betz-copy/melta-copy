@@ -1,5 +1,13 @@
 /* eslint-disable no-param-reassign */
-import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
+import {
+    logger,
+    CoordinateSystem,
+    EntityTemplateType,
+    IEntity,
+    IEntitySingleProperty,
+    locationConverterToString,
+    TemplateItem,
+} from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
@@ -166,11 +174,20 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const relationshipRefCell = (cell: Excel.Cell, [key, value]: [string, IEntitySingleProperty], row: Record<string, any>, workspacePath: string) => {
-    cell.value = {
-        text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-        hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
-    };
+const relationshipRefCell = (
+    cell: Excel.Cell,
+    [key, value]: [string, IEntitySingleProperty],
+    row: Record<string, any>,
+    workspacePath: string,
+    insertEntities?: boolean,
+) => {
+    logger.info(`Creating relationship reference cell for key: ${key} ${row}`, { row: row[key].properties });
+    cell.value = insertEntities
+        ? row[key]
+        : {
+              text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+              hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+          };
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
@@ -186,13 +203,15 @@ const fixComplexProperties = (
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
+    insertEntities?: boolean,
 ) => {
+    logger.info(`Fixing complex property for key: ${key} at row index: ${rowIndex}`);
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
     const isSignature = value.format === 'signature';
 
     if (value.format === 'relationshipReference') {
-        relationshipRefCell(cell, [key, value], row, workspace.path);
+        relationshipRefCell(cell, [key, value], row, workspace.path, insertEntities);
         return true;
     }
     if (isSingleFile || isFileArray || isSignature) {
@@ -217,6 +236,7 @@ const styleAWorksheet = (
     workspace: { path: string; id: string },
     displayColumns?: string[],
     headersOnly?: boolean,
+    insertEntities?: boolean,
     skip: number = 0,
 ) => {
     const { type, metaData: template } = templateItem;
@@ -237,6 +257,7 @@ const styleAWorksheet = (
         }, {});
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
+        logger.info(`Styling column ${key} at index ${columnIndex}`);
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
@@ -247,7 +268,7 @@ const styleAWorksheet = (
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
 
-                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
+                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace, insertEntities);
                 if (!isComplex) {
                     cell.value = row[key];
 
@@ -304,6 +325,7 @@ const styleAWorksheet = (
             }
         });
     });
+
     Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
         if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
     });

@@ -14,7 +14,7 @@ import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import { EntityData, IEntity, INotFoundError, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
@@ -54,6 +54,9 @@ const isPropertyInvalid = <Data extends any = EntityData>(
             case ActionErrors.validation: {
                 return (error.metadata as IValidationError).path.slice(1).includes(property);
             }
+            case ActionErrors.notFound: {
+                return (error.metadata as IRequiredConstraint).property === property;
+            }
             default:
                 break;
         }
@@ -65,6 +68,7 @@ const errorColDef = <Data extends any = EntityData>(
     props: ICellRendererParams<Data, any | undefined>,
     error: IError,
     value: Partial<IEntitySingleProperty>,
+    entityTemplatesMap?: IEntityTemplateMap,
 ) => {
     let message = '';
     switch (error.type) {
@@ -84,6 +88,14 @@ const errorColDef = <Data extends any = EntityData>(
                 const typeDescription = i18next.t(`propertyTypes.${value.format ?? value.type}`);
                 message = `${i18next.t('wizard.entity.loadEntities.notValid')} ${allowedValues || typeDescription}`;
             } else message = metadata.message;
+            break;
+        }
+        case ActionErrors.notFound: {
+            const metadata = error.metadata as INotFoundError;
+            message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
+                templateName: entityTemplatesMap?.get(metadata.relatedTemplateId)?.name,
+                propertyName: metadata.relatedIdentifier,
+            });
             break;
         }
         default:
@@ -309,17 +321,26 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     isLastColumn: boolean,
     entityTemplates: IEntityTemplateMap,
     hideColumn = false,
+    ignoreType = false,
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
     filters?: string | ISearchFilter,
 ): ColDef => {
     const relatedEntityTemplate = entityTemplates.get(relatedTemplateId!)!;
+
     return {
         field,
         headerName: value.title,
-        valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) =>
-            props.value ? (
+        cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) => {
+            console.log({ propssss: props });
+
+            if (!props.value) return null;
+            const error = isPropertyInvalid(props, field, ignoreType);
+            console.log({ error });
+
+            if (error) return errorColDef(props, error, value, entityTemplates);
+
+            return (
                 <RelationshipReferenceView
                     entity={props.value}
                     relatedTemplateId={relatedTemplateId}
@@ -327,7 +348,9 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
                     searchValue={searchValue}
                     color={getColor(props, field)}
                 />
-            ) : null,
+            );
+        },
+        valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,

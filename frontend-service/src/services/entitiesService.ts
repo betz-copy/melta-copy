@@ -44,6 +44,8 @@ export const loadEntitiesRequest = async (
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
+    console.log('hiii', { insertBrokenEntities });
+
     const formData = new FormData();
     if (files)
         Object.entries(files).forEach(([key, value]) => {
@@ -58,9 +60,9 @@ export const loadEntitiesRequest = async (
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
             properties: mapValues(entity.properties, (property, key) => {
+                console.log({ property });
+
                 switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
                         const location = JSON.parse(property);

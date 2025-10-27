@@ -24,6 +24,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async exportEntities(req: Request, res: Response) {
+        console.log('Export entities request body');
         const filePath = await this.manager.exportEntities(req.body);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
@@ -33,7 +34,9 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
+        console.dir({ body: req.body }, { depth: null });
         const { templateId, insertBrokenEntities, childTemplateId } = req.body;
+        console.dir({ templateId, childTemplateId, files: req.files, insertBrokenEntities }, { depth: null });
         res.json(
             await this.manager.loadEntities(
                 templateId,

@@ -87,7 +87,7 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
-    const formats = ['relationshipReference', 'fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
+    const formats = ['fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
     const itemsFormats = ['fileId', 'user'];
 
     const unValidFormats =

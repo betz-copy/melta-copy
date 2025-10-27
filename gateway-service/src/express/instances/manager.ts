@@ -27,25 +27,28 @@ import {
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
+    INotFoundRelationshipRefError,
     IRelationship,
     IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
+    ISearchResult,
     ISearchSort,
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
     logger,
     matchValueAgainstFilter,
+    NotFoundError,
     TemplateItem,
     UploadedFile,
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
-import { mapValues, omit } from 'lodash';
+import _, { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
@@ -254,7 +257,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (headersOnly) return;
 
         if (insertEntities) {
-            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns);
+            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns, undefined, !!insertEntities);
             return;
         }
 
@@ -286,6 +289,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 workspace,
                 displayColumns,
                 headersOnly,
+                undefined,
                 skip,
             );
         }
@@ -328,6 +332,19 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let entities = insertBrokenEntities;
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
 
+        const relatedTemplates = Object.entries(template.properties.properties)
+            .filter(([, property]) => property.format === 'relationshipReference')
+            .map(([fieldName, property]) => ({
+                fieldName,
+                relatedTemplateId: property.relationshipReference?.relatedTemplateId,
+            }))
+            .filter((item): item is { fieldName: string; relatedTemplateId: string } => Boolean(item.fieldName && item.relatedTemplateId));
+
+        const templates = await this.entityTemplateService.searchEntityTemplates(userId, {
+            ids: relatedTemplates.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
+        });
+        const templatesMap = keyBy(templates, '_id');
+
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
@@ -338,19 +355,72 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const searchBody: ISearchBatchBody = { skip: 0, limit: entities!.length, templates: {} };
+        const relatedTemplatesWithIdentifier: { fieldName: string; relatedTemplateId: string; identifierField: string }[] = [];
+
+        relatedTemplates.forEach(({ fieldName, relatedTemplateId }) => {
+            const relatedTemplate: IMongoEntityTemplatePopulated = templatesMap[relatedTemplateId || '']!;
+            const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+            relatedTemplatesWithIdentifier.push({ fieldName, relatedTemplateId, identifierField: identifierField || '' });
+
+            const entitiesValues = entities?.map((entity) => entity.properties[fieldName]);
+
+            const orFilters = {
+                $or: (entitiesValues ?? []).map((value) => ({
+                    [identifierField || '']: { $eq: value },
+                })),
+            };
+
+            const templateFilter: ISearchFilter = {
+                $and: [{ disabled: { $eq: false } }, orFilters],
+            };
+
+            searchBody.templates = {
+                ...searchBody.templates,
+                [relatedTemplateId]: { filter: templateFilter, showRelationships: false },
+            };
+        });
+
+        let searchResults: ISearchResult = { count: 0, entities: [] };
+
+        if (relatedTemplatesWithIdentifier.length) searchResults = await this.service.searchEntitiesBatch(searchBody);
 
         const handleCreateEntity = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
+            const originalProperties = { ...entity.properties };
+
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
+
+                if (relatedTemplatesWithIdentifier.length > 0) {
+                    Object.entries(entity.properties).forEach(([key, value]) => {
+                        const match = relatedTemplatesWithIdentifier.find((rel) => rel.fieldName === key && !!rel.identifierField && !!value);
+                        if (!match) return;
+
+                        const foundEntity = searchResults.entities.find(
+                            ({ entity: result }) =>
+                                result.templateId === match.relatedTemplateId && result.properties[match.identifierField] === value,
+                        );
+
+                        if (!foundEntity)
+                            throw new NotFoundError(`Related entity not found for ${key} with value ${value}`, {
+                                property: key,
+                                relatedTemplateId: match.relatedTemplateId,
+                                relatedIdentifier: match.identifierField,
+                            } as INotFoundRelationshipRefError);
+
+                        entity.properties = { ...entity.properties, [key]: foundEntity ? foundEntity.entity.properties._id : undefined };
+                    });
+                }
+
                 const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 
                 succeededEntities.push(result);
             } catch (error) {
-                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities, originalProperties);
             }
         };
-
+        logger.info('after classify', { failedEntities });
         if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleCreateEntity(entity);
         else await Promise.all(entities!.map(async (entity) => handleCreateEntity(entity)));
 
