@@ -1,10 +1,10 @@
+import { wrapMiddleware } from '@microservices/shared';
 import { Router } from 'express';
 import passport from 'passport';
-import { wrapMiddleware } from '@microservices/shared';
-import authenticationRouter from './authentication/router';
 import config from '../config';
-import apiRouter from './apiRouter';
 import UserService from '../externalServices/userService';
+import apiRouter from './apiRouter';
+import authenticationRouter from './authentication/router';
 
 const appRouter = Router();
 

@@ -1,13 +1,13 @@
 import {
     IArgument,
-    IVariable,
-    isPropertyOfVariable,
-    isCountAggFunction,
-    isRegularFunction,
-    isEquation,
-    isAggregationGroup,
-    isGroup,
     IFormula,
+    IVariable,
+    isAggregationGroup,
+    isCountAggFunction,
+    isEquation,
+    isGroup,
+    isPropertyOfVariable,
+    isRegularFunction,
 } from '@microservices/shared';
 
 export const getParametersOfArgument = (argument: IArgument): Array<{ variable: IVariable; property?: string }> => {

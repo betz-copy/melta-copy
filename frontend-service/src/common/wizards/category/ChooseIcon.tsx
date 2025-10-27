@@ -1,7 +1,7 @@
 import React from 'react';
-import { CategoryWizardValues } from './index';
-import { StepComponentProps } from '../index';
 import { ImagePicker } from '../../inputs/ImagePicker';
+import { StepComponentProps } from '../index';
+import { CategoryWizardValues } from './index';
 
 const ChooseIcon: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, setFieldValue }) => (
     <ImagePicker

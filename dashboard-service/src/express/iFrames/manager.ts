@@ -1,8 +1,8 @@
+import { DefaultManagerMongo, IFrame, IMongoIframe, ISearchIFramesBody, NotFoundError } from '@microservices/shared';
 import { FilterQuery, Types } from 'mongoose';
-import { DefaultManagerMongo, IMongoIframe, IFrame, ISearchIFramesBody, NotFoundError } from '@microservices/shared';
 import config from '../../config';
-import IFrameSchema from './model';
 import { escapeRegExp } from '../../utils';
+import IFrameSchema from './model';
 
 class IFrameManager extends DefaultManagerMongo<IMongoIframe> {
     constructor(workspaceId: string) {

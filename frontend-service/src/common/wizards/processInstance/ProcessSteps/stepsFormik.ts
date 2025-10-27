@@ -1,8 +1,8 @@
 import pickBy from 'lodash.pickby';
-import { IReferencedEntityForProcess, InstanceProperties } from '../../../../interfaces/processes/processInstance';
-import { ProcessStepValues } from './index';
+import { InstanceProperties, IReferencedEntityForProcess } from '../../../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { ProcessStepValues } from './index';
 
 const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemplate: IMongoStepTemplatePopulated) => {
     const newProperties = {};

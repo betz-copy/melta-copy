@@ -100,7 +100,7 @@ export enum TablePageType {
     map = 'map',
 }
 
-export const getDatasource = <Data extends any = EntityData>(
+export const getDatasource = <Data = EntityData>(
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
@@ -170,7 +170,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data extends any = EntityData>(
+export const getRowModelProps = <Data = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     rowData: Data[] | undefined,
@@ -275,7 +275,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data extends any>(
+    <Data,>(
         {
             template,
             onRowSelected,
@@ -569,7 +569,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            !!Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
+            Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 
@@ -622,7 +622,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     );
                                     gridRef.current?.api.refreshServerSide();
                                     break;
-                                case 'UNIQUE':
+                                case 'UNIQUE': {
                                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                                     const constraintPropsDisplayNames = properties.map(
                                         (prop) => `${prop}-${template.properties.properties[prop].title}`,
@@ -636,6 +636,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     });
                                     gridRef.current?.api.refreshServerSide();
                                     break;
+                                }
                                 default:
                                     break;
                             }
@@ -644,7 +645,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             toast.error(errorMetadata?.message);
                             gridRef.current?.api.refreshServerSide();
                             break;
-                        case errorCodes.ruleBlock:
+                        case errorCodes.ruleBlock: {
                             const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
 
                             setUpdateWithRuleBreachDialogState({
@@ -657,6 +658,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             });
                             toast.error(i18next.t('wizard.entity.failedToEdit'));
                             break;
+                        }
                         default:
                             break;
                     }

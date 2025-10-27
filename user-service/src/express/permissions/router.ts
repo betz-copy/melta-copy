@@ -1,11 +1,11 @@
+import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { wrapController, ValidateRequest } from '@microservices/shared';
+import PermissionsController from './controller';
 import {
     deletePermissionsFromMetadataRequestSchema,
     getCompactPermissionsRequestSchema,
     syncCompactPermissionsRequestSchema,
 } from './validator.schema';
-import PermissionsController from './controller';
 
 const permissionsRouter = Router();
 

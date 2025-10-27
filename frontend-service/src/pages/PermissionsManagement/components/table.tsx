@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { PermissionScope } from '../../../interfaces/permissions';
+import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
+import { IRole } from '../../../interfaces/roles';
 import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
@@ -17,8 +19,6 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { trycatch } from '../../../utils/trycatch';
-import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
-import { IRole } from '../../../interfaces/roles';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -173,7 +173,7 @@ const columnDefs = (
     },
 ];
 
-const getDatasource = <Data extends any = PermissionData>(
+const getDatasource = <Data = PermissionData>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
     onFail: (err: unknown) => void | undefined,
@@ -224,7 +224,7 @@ const getDatasource = <Data extends any = PermissionData>(
     };
 };
 
-const getRowModelProps = <Data extends any = PermissionData>(
+const getRowModelProps = <Data = PermissionData>(
     workspace: IWorkspace,
     paginationPageSize: number,
     quickFilterText: string | undefined,

@@ -1,10 +1,10 @@
 import 'elastic-apm-node/start';
-import menash from 'menashmq';
 import { logger } from '@microservices/shared';
+import menash from 'menashmq';
 import config from './config';
 import checkForDateNotifications from './cron/dateNotificationsCheck';
-import { updateKartoffelFields } from './cron/usersSyncing';
 import runRulesWithTodayFuncCronjob from './cron/runRulesWithTodayFunc';
+import { updateKartoffelFields } from './cron/usersSyncing';
 
 const { service, rabbit, notifications, userFieldsSync, rulesWithTodayFunc } = config;
 

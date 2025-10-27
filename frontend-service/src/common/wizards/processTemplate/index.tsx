@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
-import React from 'react';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
+
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
-import { StepType, Wizard, WizardBaseType } from '../index';
-import { ErrorToast } from '../../ErrorToast';
-import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
-import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
-import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
-import { IUser } from '../../../interfaces/users';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { IUser } from '../../../interfaces/users';
+import { createProcessTemplateRequest, updateProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
+import { ErrorToast } from '../../ErrorToast';
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
+import { StepType, Wizard, WizardBaseType } from '../index';
+import { AddDetailsFields, addDetailsFieldsSchema } from './AddDetailsFields';
+import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 
 export interface ProcessTemplateFormInputProperties {
     name: string;

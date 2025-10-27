@@ -18,6 +18,7 @@ const RjsfUserWidget = ({
     readonly,
     hideError,
     formContext,
+    required,
     ...textFieldProps
 }: WidgetProps) => {
     const [currentUser, setCurrentUser] = useState(value ? JSON.parse(value) : undefined);
@@ -46,6 +47,7 @@ const RjsfUserWidget = ({
             autoFocus={autofocus}
             isError={!!rawErrors.length}
             disabled={disabled}
+            required={required}
             textFieldProps={{
                 ...textFieldProps,
                 uischema: uiSchema,

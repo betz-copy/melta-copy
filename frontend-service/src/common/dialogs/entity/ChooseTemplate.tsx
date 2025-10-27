@@ -5,15 +5,15 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
-import { emptyEntityTemplate, EntityWizardValues } from '.';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { useUserStore } from '../../../stores/user';
-import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { getInitialValuesWithDefaults } from './CreateOrEditEntityDialog';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
+import { useUserStore } from '../../../stores/user';
 import { getChildrenWithWritePermission } from '../../../utils/childTemplates';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { EntityWizardValues, emptyEntityTemplate } from '.';
+import { getInitialValuesWithDefaults } from './CreateOrEditEntityDialog';
 
 export enum IChooseTemplateMode {
     TemplatesAndChildren = 'templatesAndChildren',

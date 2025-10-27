@@ -1,5 +1,5 @@
+import { ColorSchema, ConfigTypes, fileSchema, filterOfTemplateSchema, iconFileSchema, MongoIdSchema, ViewType } from '@microservices/shared';
 import Joi from 'joi';
-import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema, ConfigTypes, filterOfTemplateSchema, ViewType } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
 const searchFilterSchema = Joi.object({

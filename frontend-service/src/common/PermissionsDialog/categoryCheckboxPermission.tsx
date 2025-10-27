@@ -6,9 +6,9 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { PermissionData } from '../../interfaces/users';
 import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
-import PermissionScopeBtn from './PermissionScopeBtn';
 import EntityTemplateCheckboxPermission from './entityTemplateCheckboxPermission';
 import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
+import PermissionScopeBtn from './PermissionScopeBtn';
 
 const CategoryCheckboxPermission: React.FC<{
     categoryDisplayName: string;

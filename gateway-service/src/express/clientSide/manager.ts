@@ -7,13 +7,13 @@ import {
     UploadedFile,
 } from '@microservices/shared';
 import config from '../../config';
-import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import InstancesService from '../../externalServices/instanceService';
-import DefaultManagerProxy from '../../utils/express/manager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
-import TemplatesManager from '../templates/manager';
+import DefaultManagerProxy from '../../utils/express/manager';
 import InstanceManager from '../instances/manager';
 import NotificationsService from '../notifications/manager';
+import TemplatesManager from '../templates/manager';
 
 class ClientSideManager extends DefaultManagerProxy<null> {
     private entityTemplateService: EntityTemplateService;

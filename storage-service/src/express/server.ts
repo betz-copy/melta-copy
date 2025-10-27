@@ -1,12 +1,11 @@
-import * as http from 'http';
-import express from 'express';
-import * as bodyParser from 'body-parser';
-import helmet from 'helmet';
-
-import { once } from 'events';
 import { errorMiddleware } from '@microservices/shared';
-import appRouter from './router';
+import * as bodyParser from 'body-parser';
+import { once } from 'events';
+import express from 'express';
+import helmet from 'helmet';
+import * as http from 'http';
 import config from '../config';
+import appRouter from './router';
 
 class Server {
     private app: express.Application;

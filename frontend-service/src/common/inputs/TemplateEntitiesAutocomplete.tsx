@@ -6,21 +6,21 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
+import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { locationConverterToString } from '../../utils/map/convert';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
+import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView';
-import { useUserStore } from '../../stores/user';
-import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 
 export const getChildTemplatesFilter = (
     childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],

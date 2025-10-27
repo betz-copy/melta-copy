@@ -1,24 +1,24 @@
+import { Box, CssBaseline } from '@mui/material';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { AuthService } from '../../services/authService';
-import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getAllClientSideTemplates, GetAllClientSideTemplatesType } from '../../services/clientSideService';
+import { GetAllClientSideTemplatesType, getAllClientSideTemplates } from '../../services/clientSideService';
 import { getById } from '../../services/workspacesService';
-import { Box, CssBaseline } from '@mui/material';
+import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import '../../css/index.css';
-import { prefixer } from 'stylis';
 import createCache from '@emotion/cache';
-import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
-import { mapTemplates } from '../../utils/templates';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import ErrorPage from '../ErrorPage';
+import { prefixer } from 'stylis';
+import rtlPlugin from 'stylis-plugin-rtl';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { mapTemplates } from '../../utils/templates';
+import ErrorPage from '../ErrorPage';
 import ClientSidePageInner from './ClientSidePageInner';
 
 const cacheRtl = createCache({

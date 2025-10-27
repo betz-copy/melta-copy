@@ -13,6 +13,7 @@ import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -30,19 +31,14 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
-import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 
-const getColor = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
+const getColor = <Data = EntityData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
     (props.data as { coloredFields: IEntity['coloredFields'] })?.coloredFields?.[field];
 
 const hasErrors = (data: any): data is IFailedEntity =>
     data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
 
-const isPropertyInvalid = <Data extends any = EntityData>(
-    props: ICellRendererParams<Data, any | undefined>,
-    property: string,
-    ignoreType = false,
-) => {
+const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
@@ -61,11 +57,7 @@ const isPropertyInvalid = <Data extends any = EntityData>(
     });
 };
 
-const errorColDef = <Data extends any = EntityData>(
-    props: ICellRendererParams<Data, any | undefined>,
-    error: IError,
-    value: Partial<IEntitySingleProperty>,
-) => {
+const errorColDef = <Data = EntityData>(props: ICellRendererParams<Data, any | undefined>, error: IError, value: Partial<IEntitySingleProperty>) => {
     let message = '';
     switch (error.type) {
         case ActionErrors.required:
@@ -122,7 +114,7 @@ const errorColDef = <Data extends any = EntityData>(
     );
 };
 
-export const numberColDef = <Data extends any = EntityData>(
+export const numberColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -166,7 +158,7 @@ export const numberColDef = <Data extends any = EntityData>(
     };
 };
 
-export const regexColDef = <Data extends any = EntityData>(
+export const regexColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -196,7 +188,7 @@ export const regexColDef = <Data extends any = EntityData>(
     };
 };
 
-export const stringColDef = <Data extends any = EntityData>(
+export const stringColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -231,7 +223,7 @@ export const stringColDef = <Data extends any = EntityData>(
     };
 };
 
-export const fileColDef = <Data extends any = EntityData>(
+export const fileColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -261,7 +253,7 @@ export const fileColDef = <Data extends any = EntityData>(
     };
 };
 
-export const locationColDef = <Data extends any = EntityData>(
+export const locationColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
@@ -299,7 +291,7 @@ export const locationColDef = <Data extends any = EntityData>(
     };
 };
 
-export const relatedTemplateColDef = <Data extends any = EntityData>(
+export const relatedTemplateColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -342,7 +334,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     };
 };
 
-export const booleanColDef = <Data extends any = EntityData>(
+export const booleanColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -387,7 +379,7 @@ export const booleanColDef = <Data extends any = EntityData>(
     };
 };
 
-export const enumColDef = <Data extends any = EntityData>(
+export const enumColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -438,7 +430,7 @@ export const enumColDef = <Data extends any = EntityData>(
     };
 };
 
-export const enumArrayColDef = <Data extends any = EntityData>(
+export const enumArrayColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -500,7 +492,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         },
     };
 };
-export const userColDef = <Data extends any = IUser>(
+export const userColDef = <Data = IUser>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -549,7 +541,7 @@ export const userColDef = <Data extends any = IUser>(
     };
 };
 
-export const userArrayColDef = <Data extends any = IEntity>(
+export const userArrayColDef = <Data = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -607,7 +599,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
     };
 };
 
-export const enumFilesColDef = <Data extends any = EntityData>(
+export const enumFilesColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -659,7 +651,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     };
 };
 
-export const dateColDef = <Data extends any = EntityData>(
+export const dateColDef = <Data = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -740,7 +732,7 @@ interface TranslatedEnumColDefOptions<Data> {
     isLastColumn?: boolean;
 }
 
-export const translatedEnumColDef = <Data extends any = EntityData>({
+export const translatedEnumColDef = <Data = EntityData>({
     field,
     valueGetter,
     title,

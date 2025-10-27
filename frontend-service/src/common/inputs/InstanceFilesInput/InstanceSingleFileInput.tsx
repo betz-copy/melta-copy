@@ -1,10 +1,10 @@
-import React from 'react';
-import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
+import i18next from 'i18next';
+import React from 'react';
 import { Accept } from 'react-dropzone';
-import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
+import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import FileInput from '../ImageFileInput';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
@@ -13,7 +13,7 @@ interface InstanceFileInputProps {
     fileFieldName: string;
     fieldTemplateTitle: string;
     setFieldValue: (field: string, value: File | undefined) => void;
-    required: Boolean;
+    required: boolean;
     value: File | undefined;
     error: string | undefined;
     acceptedFilesTypes?: Accept;

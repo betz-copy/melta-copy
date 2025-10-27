@@ -1,6 +1,6 @@
+import { logger } from '@microservices/shared';
 import neo4j, { Driver, Neo4jError, QueryResult, Session, SessionMode, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
-import { logger } from '@microservices/shared';
 import config from '../../config';
 
 const { url, auth, connectionRetries, connectionRetryDelay, workspaceNamePrefix } = config.neo4j;
@@ -114,11 +114,11 @@ export default class Neo4jClient {
     }
 
     static async close() {
-        if (this.isInitialized) await Neo4jClient.driver.close();
+        if (Neo4jClient.isInitialized) await Neo4jClient.driver.close();
     }
 
     static async verifyConnectivity() {
-        await retry(() => this.driver.verifyConnectivity(), {
+        await retry(() => Neo4jClient.driver.verifyConnectivity(), {
             retries: connectionRetries,
             delay: connectionRetryDelay,
             logger: logger.info.bind(logger),

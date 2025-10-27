@@ -20,11 +20,11 @@ import {
     IEntityWithIgnoredRules,
     IFailedEntity,
     IMongoEntityTemplatePopulated,
+    IUpdateEntityMetadataPopulated,
+    IValidationErrorData,
     isChildTemplate,
     isValidUTM,
     isValidWGS84,
-    IUpdateEntityMetadataPopulated,
-    IValidationErrorData,
     locationConverterToString,
     logger,
     ServiceError,
@@ -34,9 +34,8 @@ import {
 import { AxiosError } from 'axios';
 import Excel, { CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
-import excelConfig from './excelConfig';
-
 import config from '../../config';
+import excelConfig from './excelConfig';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 

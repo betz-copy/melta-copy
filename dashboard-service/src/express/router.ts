@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import chartsRouter from './charts/router';
-import iFramesRouter from './iFrames/router';
 import dashboardRouter from './dashboard/router';
+import iFramesRouter from './iFrames/router';
 
 const appRouter = Router();
 

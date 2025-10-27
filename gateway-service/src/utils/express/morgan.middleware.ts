@@ -1,6 +1,6 @@
-import morgan, { StreamOptions } from 'morgan';
-import { StatusCodes } from 'http-status-codes';
 import { logger } from '@microservices/shared';
+import { StatusCodes } from 'http-status-codes';
+import morgan, { StreamOptions } from 'morgan';
 
 const stream: StreamOptions = {
     write: (message) => {

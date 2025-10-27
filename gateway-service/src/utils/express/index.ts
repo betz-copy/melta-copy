@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
+
+import { dataLogger, FunctionKey } from '@microservices/shared';
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
-import { dataLogger, FunctionKey } from '@microservices/shared';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import WorkspaceService from '../../express/workspaces/service';

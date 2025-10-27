@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Autocomplete } from '@mui/material';
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { FilterMode } from '.';
 

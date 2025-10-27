@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, IMongoRelationshipTemplate } from '@microservices/shared';
+import { Request, Response } from 'express';
 import { RelationshipTemplateManager } from './manager';
 
 class RelationshipTemplateController extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {

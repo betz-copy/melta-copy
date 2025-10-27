@@ -5,12 +5,12 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
+import UserAvatar from '../../common/UserAvatar';
 import { ICompactPermissions } from '../../interfaces/permissions/permissions';
 import { IMongoUser, RelatedPermission } from '../../interfaces/users';
 import { syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';
-import UserAvatar from '../../common/UserAvatar';
 
 interface IPermissionsDialogCardProps {
     user: IMongoUser;
@@ -22,7 +22,7 @@ interface IPermissionsDialogCardProps {
 export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ user, workspaceId, usersQueryKey, canModify }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const [hover, setHover] = useState<Boolean>(false);
+    const [hover, setHover] = useState<boolean>(false);
 
     const getPermissionScope = (permissions: ICompactPermissions): string => {
         return i18next.t(`permissions.scopes.${permissions[workspaceId].admin?.scope ?? permissions[workspaceId].permissions?.scope}`);

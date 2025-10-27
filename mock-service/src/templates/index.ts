@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import axios from 'axios';
-import { trycatch } from '../utils';
 import config from '../config';
+import { trycatch } from '../utils';
 
 const { url, isAliveRoute } = config.templateService;
 

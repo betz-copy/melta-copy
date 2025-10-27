@@ -1,16 +1,17 @@
 /* eslint-disable class-methods-use-this */
-import { ClientSession, FilterQuery, Types } from 'mongoose';
-import { StatusCodes } from 'http-status-codes';
+
 import {
+    DefaultManagerMongo,
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
     IProcessSingleProperty,
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
-    DefaultManagerMongo,
     ServiceError,
 } from '@microservices/shared';
+import { StatusCodes } from 'http-status-codes';
+import { ClientSession, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';

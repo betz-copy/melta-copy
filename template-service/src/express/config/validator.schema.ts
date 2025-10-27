@@ -1,5 +1,5 @@
+import { ConfigTypes, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
-import { MongoIdSchema, ConfigTypes } from '@microservices/shared';
 
 // GET /api/config/all
 export const getAllConfigsSchema = Joi.object({

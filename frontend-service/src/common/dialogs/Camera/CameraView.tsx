@@ -1,7 +1,7 @@
-import { Button } from '@mui/material';
-import React, { useRef } from 'react';
 import { Camera as CameraIcon } from '@mui/icons-material';
+import { Button } from '@mui/material';
 import i18next from 'i18next';
+import React, { useRef } from 'react';
 import { toast } from 'react-toastify';
 
 interface ICameraViewProps {

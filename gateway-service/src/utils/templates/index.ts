@@ -11,8 +11,8 @@ import {
 } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
 import _, { cloneDeep } from 'lodash';
-import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import config from '../../config';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 
 const { relationshipTemplateHasRules, moreThenOneRelationshipInstanceExist } = config.errorCodes;
 

@@ -1,4 +1,4 @@
-import { Box, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled } from '@mui/material';
+import { Box, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';

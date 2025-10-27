@@ -1,5 +1,5 @@
+import { ICreateProcessTemplateBody, IMongoProcessTemplatePopulated } from '@microservices/shared';
 import axios from 'axios';
-import { IMongoProcessTemplatePopulated, ICreateProcessTemplateBody } from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
 import createAxiosInstance from './utils/axios';

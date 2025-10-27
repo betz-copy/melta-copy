@@ -2,18 +2,18 @@ import { FileDownloadOutlined } from '@mui/icons-material';
 import { Autocomplete, Button, CircularProgress, Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
+import _ from 'lodash';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IEntity } from '../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntityToDocumentRequest } from '../../../services/entitiesService';
 import { getLongDate } from '../../../utils/date';
 import { getFileName } from '../../../utils/getFileName';
-import { EntityWizardValues } from '.';
-import { IEntity } from '../../../interfaces/entities';
 import { locationConverterToString } from '../../../utils/map/convert';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/RjsfLocationWidget';
-import _ from 'lodash';
+import { EntityWizardValues } from '.';
 
 export const ExportFormats: React.FC<{
     properties: EntityWizardValues['properties'];

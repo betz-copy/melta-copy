@@ -1,7 +1,7 @@
-import { ConsumerMessage } from 'menashmq';
 import { ActionTypes, IBrokenRule, logger } from '@microservices/shared';
-import InstancesService from '../../../externalServices/instanceService';
+import { ConsumerMessage } from 'menashmq';
 import config from '../../../config';
+import InstancesService from '../../../externalServices/instanceService';
 import RuleBreachesManager from '../../ruleBreaches/manager';
 
 const {

@@ -2,15 +2,15 @@ import { CircularProgress } from '@mui/material';
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { IAxisField, IChartType } from '../../../interfaces/charts';
+import { IChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { ChartForm } from '../../../interfaces/dashboard';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { useDebouncedFilter } from '../../../utils/dashboard/useDebouncedFilter';
+import { isChildTemplate } from '../../../utils/templates';
 import { HighchartGenerator } from './HighchartGenerator';
 import { NumberChartGenerator } from './NumberChartGenerator';
-import { IChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { isChildTemplate } from '../../../utils/templates';
 
 interface IChartGeneratorProps {
     formikValues: ChartForm;

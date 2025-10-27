@@ -4,13 +4,13 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { IFrameWizardValues } from '.';
-import { StepComponentProps } from '..';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { ViewMode } from '../../../interfaces/dashboard';
 import { useUserStore } from '../../../stores/user';
 import { CustomIcon } from '../../CustomIcon';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { StepComponentProps } from '..';
+import { IFrameWizardValues } from '.';
 
 const settingIFramesPermissionsSchema = Yup.object({
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),

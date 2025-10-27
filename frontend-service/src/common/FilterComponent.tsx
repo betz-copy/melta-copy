@@ -38,13 +38,14 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
             return filter.filter !== undefined && filter.filter !== '';
         case 'number':
             return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
-        case 'date':
+        case 'date': {
             if (!filter.dateFrom) return false;
             if (relativeDateFilters.includes(filter.type) || filter.dateFrom === ByCurrentDefaultValue.byCurrentDate) return true;
 
             const isDateFromValid = isValidDate(parse(filter.dateFrom, loggingDate, new Date()));
 
             return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
+        }
         case 'set':
             return Array.isArray(filter.values) && !!filter.values.length;
         default:

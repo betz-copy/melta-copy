@@ -5,10 +5,10 @@ import React, { CSSProperties } from 'react';
 import { useLocation } from 'wouter';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import PopperSidebar from '../../../common/PopperSidebar';
+import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { DashboardItemCard, DashboardItemCardProps } from './DashboardItemCard';
-import { environment } from '../../../globals';
 
 const { chartPath, tablePath, iFramePath } = environment.dashboard;
 

@@ -1,12 +1,12 @@
-import Neo4jClient from '../../../utils/neo4j';
-import { IEntity } from '../../entities/interface';
-import RelationshipManager from '../manager';
 import config from '../../../config';
-import { IRelationship } from '../interfaces';
-import EntityManager from '../../entities/manager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
+import Neo4jClient from '../../../utils/neo4j';
+import { IEntity } from '../../entities/interface';
+import EntityManager from '../../entities/manager';
+import { IRelationship } from '../interfaces';
+import RelationshipManager from '../manager';
 
 const { neo4j } = config;
 

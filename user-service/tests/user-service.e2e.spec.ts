@@ -1,10 +1,10 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+
+import { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import * as mongoose from 'mongoose';
 import * as request from 'supertest';
-import { Express } from 'express';
-
-import { StatusCodes } from 'http-status-codes';
 import { config } from '../src/config';
 import Server from '../src/express/server';
 import { IUser } from '../src/express/users/interface';

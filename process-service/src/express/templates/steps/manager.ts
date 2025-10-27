@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
+
+import { DefaultManagerMongo, IMongoStepTemplate, IStepTemplate, NotFoundError, ValidationError } from '@microservices/shared';
 import { ClientSession } from 'mongoose';
-import { IMongoStepTemplate, IStepTemplate, DefaultManagerMongo, ValidationError, NotFoundError } from '@microservices/shared';
 import config from '../../../config';
 import { NoMatchingStepsError, TemplateNotFoundError } from '../../error';
 import { StepTemplateSchema } from './model';

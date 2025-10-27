@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import StepInstanceManager from './manager';
 import DefaultController from '../../../utils/express/controller';
+import StepInstanceManager from './manager';
 
 class StepInstanceController extends DefaultController<StepInstanceManager> {
     constructor(workspaceId: string) {

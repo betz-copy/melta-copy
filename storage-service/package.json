@@ -8,11 +8,7 @@
         "dev": "npm run build && npm start",
         "build": "tsc",
         "build:watch": "tsc --watch",
-        "clean": "rimraf dist",
-        "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix",
-        "prettier": "prettier --config .prettierrc.js 'src/**/*.ts' --check",
-        "prettier:fix": "prettier --config .prettierrc.js 'src/**/*.ts' --write"
+        "clean": "rimraf dist"
     },
     "author": "Unknown",
     "license": "ISC",

@@ -1,5 +1,5 @@
-import { menash } from 'menashmq';
 import { INotificationMetadata, NotificationType } from '@microservices/shared';
+import { menash } from 'menashmq';
 import config from '../../config';
 
 const {

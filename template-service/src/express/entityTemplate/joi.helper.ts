@@ -1,7 +1,7 @@
-import Joi from 'joi';
+import { ColorSchema, IEntityTemplate, IEnumPropertiesColors, IProperties, searchFilterSchema, variableNameValidation } from '@microservices/shared';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { IEntityTemplate, IEnumPropertiesColors, IProperties, ColorSchema, variableNameValidation, searchFilterSchema } from '@microservices/shared';
+import Joi from 'joi';
 import config from '../../config';
 
 const { notifications, ajvCustomFormats } = config;

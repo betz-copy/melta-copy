@@ -1707,6 +1707,8 @@ export default {
             thisWeek: 'השבוע',
             thisMonth: 'החודש',
             thisYear: 'השנה',
+            untilToday: 'עד היום',
+            fromToday: 'מהיום',
         },
         text: {
             equals: 'שווה',

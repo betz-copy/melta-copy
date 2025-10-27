@@ -1,12 +1,12 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import config from '../../config';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import IFramesController from './controller';
 import IFramesValidator from './middlewares';
 import { createIFrameSchema, deleteIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
-import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
-import config from '../../config';
 
 const {
     dashboardService: { url, baseRoute, requestTimeout, iframes },

@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
+import { asNumber, getUiOptions, guessType, WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import MultipleSelect from '../MultipleSelect';
 

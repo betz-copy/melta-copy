@@ -10,6 +10,7 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
@@ -24,10 +25,9 @@ import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
-import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
-import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 

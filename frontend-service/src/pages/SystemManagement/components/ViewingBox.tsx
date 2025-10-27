@@ -1,5 +1,5 @@
-import React, { CSSProperties, ComponentProps } from 'react';
-import { Grid, CardContent } from '@mui/material';
+import { CardContent, Grid } from '@mui/material';
+import React, { ComponentProps, CSSProperties } from 'react';
 
 interface ViewingBoxProps {
     children: React.ReactNode;

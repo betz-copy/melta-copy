@@ -34,13 +34,13 @@ import {
     IPrintingTemplate,
     IRelationship,
     IRule,
-    isChildTemplate,
     ISearchEntityTemplatesBody,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
     ISubCompactPermissions,
     IUniqueConstraintOfTemplate,
     IUpdateOrDeleteEnumFieldReqData,
+    isChildTemplate,
     logger,
     MongoBaseFields,
     NotFoundError,
@@ -55,9 +55,9 @@ import {
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import _, { groupBy } from 'lodash';
+import _omit from 'lodash/omit';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
-import _omit from 'lodash/omit';
 import config from '../../config';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import GanttsService from '../../externalServices/ganttsService';
@@ -748,7 +748,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         // eslint-disable-next-line no-prototype-builtins
-        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !currTemplate.properties.properties.hasOwnProperty(key));
+        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !Object.hasOwn(currTemplate.properties.properties, key));
 
         if (newSerialNumberFields.length) {
             const newSerialNumberValues = {};

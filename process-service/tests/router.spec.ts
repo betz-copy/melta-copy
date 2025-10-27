@@ -1,10 +1,8 @@
-import * as request from 'supertest';
-import mongoose from 'mongoose';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import Server from '../src/express/server';
-import processTemplateExample1 from './mock/templates';
-import { IMongoProcessTemplatePopulated } from '../src/express/templates/processes/interface';
+import mongoose from 'mongoose';
+import * as request from 'supertest';
+import { ServiceError } from '../src/express/error';
 import {
     CreateProcessReqBody,
     IMongoProcessInstancePopulated,
@@ -12,10 +10,12 @@ import {
     Status,
     UpdateProcessReqBody,
 } from '../src/express/instances/processes/interface';
-import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
-import { ServiceError } from '../src/express/error';
+import Server from '../src/express/server';
+import { IMongoProcessTemplatePopulated } from '../src/express/templates/processes/interface';
+import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
+import processTemplateExample1 from './mock/templates';
 
 const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus, INTERNAL_SERVER_ERROR: internalServerErrorStatus } = StatusCodes;
 
@@ -472,7 +472,7 @@ describe('Test Process Service', () => {
                 await Promise.all(
                     processInstance.steps.map(async ({ _id }) => {
                         const response = StepInstanceManager.getStepById(_id);
-                        await expect(response).rejects.toThrowError(new RegExp('not found'));
+                        await expect(response).rejects.toThrowError(/not found/);
                     }),
                 );
             });

@@ -1,10 +1,10 @@
 import isEqualWith from 'lodash.isequalwith';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IUser } from '../../interfaces/users';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoChildTemplatePopulated, ViewType } from '../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { IUser } from '../../interfaces/users';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
