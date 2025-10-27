@@ -1,16 +1,16 @@
-import React from 'react';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { QueryClient, useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepType, Wizard, WizardBaseType } from '../index';
+import i18next from 'i18next';
+import React from 'react';
+import { QueryClient, useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import fileDetails from '../../../interfaces/fileDetails';
-import { ErrorToast } from '../../ErrorToast';
 import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
-import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
-import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
+import { ErrorToast } from '../../ErrorToast';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseIFrameIcon } from './ChooseIcon';
+import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
+import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from './SettingPermissions';
 
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;

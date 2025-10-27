@@ -1,5 +1,5 @@
-import * as env from 'env-var';
 import { Colors, IWorkspace } from '@microservices/shared';
+import * as env from 'env-var';
 import './dotenv';
 
 const config = {

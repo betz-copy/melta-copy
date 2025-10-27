@@ -1,6 +1,6 @@
-import React from 'react';
 import { MenuItem } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { MenuItemContent } from './MenuItemContent';
 
 export const SelectAll = ({

@@ -2,13 +2,13 @@ import { ScatterPlotOutlined as HiveIcon, NavigateBefore, NavigateNext } from '@
 import { Card, CardContent, CardHeader, Fab, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
-import { IDetailsStepProp } from '.';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IUser } from '../../../../interfaces/users';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
 import { CustomIcon } from '../../../CustomIcon';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {

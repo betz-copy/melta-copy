@@ -1,5 +1,5 @@
-import { StatusCodes } from 'http-status-codes';
 import { ServiceError } from '@microservices/shared';
+import { StatusCodes } from 'http-status-codes';
 
 // eslint-disable-next-line import/prefer-default-export
 export class RoleDoesNotExistError extends ServiceError {

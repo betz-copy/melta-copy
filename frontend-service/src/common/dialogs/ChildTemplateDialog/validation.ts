@@ -78,7 +78,7 @@ const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
         display: Yup.boolean().optional(),
     })
         .optional()
-        .test('filter-default-match', i18next.t('validation.matchFilter', { fieldName }), function (value) {
+        .test('filter-default-match', i18next.t('validation.matchFilter', { fieldName }), (value) => {
             if (!value) return true;
 
             const { defaultValue, filters } = value;

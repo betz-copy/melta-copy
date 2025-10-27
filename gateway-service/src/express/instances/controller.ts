@@ -1,9 +1,9 @@
+import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
+import { Request, Response } from 'express';
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
-import { Request, Response } from 'express';
-import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
-import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
+import InstancesManager from './manager';
 
 class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {

@@ -1,19 +1,19 @@
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { FilterList } from '@mui/icons-material';
 import { Box, Button, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { getOptionsAndGroupsMiniFiltered, SelectCheckboxGroupProps, SelectCheckboxProps } from '../../common/SelectCheckBox';
+import { Search } from '../../common/SelectCheckBox/Search';
+import Tree from '../../common/Tree';
+import { SelectAll } from '../../common/Tree/SelectAll';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
-import Tree from '../../common/Tree';
 import { groupTemplatesByCategory } from '../../utils/hooks/useTreeUtils';
-import { Search } from '../../common/SelectCheckBox/Search';
-import { SelectAll } from '../../common/Tree/SelectAll';
 
 const useStyles = makeStyles(() => ({
     button: {

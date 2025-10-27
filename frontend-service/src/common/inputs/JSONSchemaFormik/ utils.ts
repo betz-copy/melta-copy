@@ -1,11 +1,11 @@
 import { UiSchema } from '@rjsf/utils';
+import { flatten } from 'flat';
+import { FormikHelpers } from 'formik';
+import i18next from 'i18next';
 import _ from 'lodash';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
-import { EntityWizardValues } from '../../dialogs/entity';
-import i18next from 'i18next';
-import { FormikHelpers } from 'formik';
 import { IKartoffelUser } from '../../../interfaces/users';
-import { flatten } from 'flat';
+import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {

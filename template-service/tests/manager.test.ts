@@ -1,12 +1,13 @@
 // import * as mockingooseNoTypes from 'mockingoose';
-import { Query, Document } from 'mongoose';
-import request from 'supertest';
+
 import { Express } from 'express';
-import Server from '../src/express/server';
-import * as entityTemplateManager from '../src/entityTemplateManager';
-import RelationshipTemplateModel from '../src/express/relationshipTemplate/model';
-import { IRelationshipTemplate } from '../src/express/relationshipTemplate/interface';
 import { StatusCodes } from 'http-status-codes';
+import { Document, Query } from 'mongoose';
+import request from 'supertest';
+import * as entityTemplateManager from '../src/entityTemplateManager';
+import { IRelationshipTemplate } from '../src/express/relationshipTemplate/interface';
+import RelationshipTemplateModel from '../src/express/relationshipTemplate/model';
+import Server from '../src/express/server';
 
 jest.mock('../src/entityTemplateManager');
 const entityTemplateManagerMocked = jest.mocked(entityTemplateManager, true);

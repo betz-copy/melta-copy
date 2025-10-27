@@ -1,34 +1,34 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import EntityController from './controller';
 import {
+    chartSchema,
+    convertFieldsToPluralRequestSchema,
+    convertToRelationshipFieldRequestSchema,
+    countEntitiesOfTemplatesByUserEntityIdRequestSchema,
     countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
-    deleteEntitiesByTemplateIdRequestSchema,
     deleteEntitiesByIdsRequestSchema,
+    deleteEntitiesByTemplateIdRequestSchema,
+    deletePropertiesOfTemplateRequestSchema,
     enumerateNewSerialNumberFieldsRequestSchema,
     getAllConstraintsRequestSchema,
     getConstraintsOfTemplateRequestSchema,
+    getDependentRulesRequestSchema,
     getEntitiesByIdsRequestSchema,
     getEntityByIdRequestSchema,
     getExpandedGraphByIdRequestSchema,
     getIfValueFieldIsUsedRequestSchema,
+    getSelectedEntitiesRequestSchema,
+    runRulesWithTodayFuncRequestSchema,
     searchEntitiesBatchRequestSchema,
+    searchEntitiesByLocation,
     searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
+    updateEntityByIdRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
-    deletePropertiesOfTemplateRequestSchema,
-    chartSchema,
-    convertFieldsToPluralRequestSchema,
-    searchEntitiesByLocation,
-    updateEntityByIdRequestSchema,
-    getDependentRulesRequestSchema,
-    convertToRelationshipFieldRequestSchema,
-    countEntitiesOfTemplatesByUserEntityIdRequestSchema,
-    getSelectedEntitiesRequestSchema,
-    runRulesWithTodayFuncRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 

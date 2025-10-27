@@ -1,5 +1,5 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import GanttController from './controller';
 import GanttsValidator from './middlewares';

@@ -1,10 +1,10 @@
-import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
 import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { FilterQuery } from 'mongoose';
 import { transaction } from '../../utils/mongoose';
+import { escapeRegExp } from '../../utils/regex';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
 import WorkspacesModel from './model';
-import { escapeRegExp } from '../../utils/regex';
 
 class WorkspacesManager {
     static async getWorkspaceIds(type: IWorkspace['type']) {

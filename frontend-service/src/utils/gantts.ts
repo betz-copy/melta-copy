@@ -1,17 +1,17 @@
 /* eslint-disable consistent-return */
 import i18next from 'i18next';
-import * as Yup from 'yup';
 import cloneDeep from 'lodash.clonedeep';
+import * as Yup from 'yup';
+import { environment } from '../globals';
 import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
 import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
+import { getEntitiesWithDirectConnections } from '../services/entitiesService';
 import { getEntityTemplateColor } from './colors';
 import { dateBetween, getDayEnd, getDayStart } from './date';
 import { filteredMap } from './filteredMap';
-import { getEntitiesWithDirectConnections } from '../services/entitiesService';
-import { environment } from '../globals';
 
 const { groupByEntitiesChunkSize } = environment.ganttSettings;
 

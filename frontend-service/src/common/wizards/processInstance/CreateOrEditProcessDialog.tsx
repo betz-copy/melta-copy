@@ -1,4 +1,4 @@
-import { NavigateBefore, Close } from '@mui/icons-material';
+import { Close, NavigateBefore } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';

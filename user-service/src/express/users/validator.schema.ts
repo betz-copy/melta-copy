@@ -1,8 +1,8 @@
 import * as joi from 'joi';
+import config from '../../config';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { SubCompactPermissionSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
-import config from '../../config';
 import { agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema, agGridTextFilterSchema } from './agGridValidator.schema';
 
 const { maxFindLimit } = config.mongo;

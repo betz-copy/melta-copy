@@ -64,7 +64,7 @@ const IFramesPageHeadline: React.FC<{
         });
     };
     return (
-        <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container  width="100%" justifyContent="space-between" alignItems="center" wrap="nowrap">
+        <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container width="100%" justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid container spacing={3} wrap="nowrap" alignItems="center">
                 <Grid>
                     <BlueTitle title={i18next.t('pages.iFrames')} component="h4" variant="h4" style={{ fontSize: headlineTitleFontSize }} />

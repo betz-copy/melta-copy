@@ -1,6 +1,7 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
+import _ from 'lodash';
 import _cloneDeep from 'lodash.clonedeep';
 import _debounce from 'lodash.debounce';
 import _isEqual from 'lodash.isequal';
@@ -8,8 +9,10 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import {
     createUserRequest,
     getAllWorkspaceRolesRequest,
@@ -20,16 +23,11 @@ import {
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
-import UserAutocomplete from '../inputs/UserAutocomplete';
-
-import _ from 'lodash';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
-import BlueTitle from '../MeltaDesigns/BlueTitle';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
 import UnitAutocomplete from '../inputs/UnitAutocomplete';
+import UserAutocomplete from '../inputs/UserAutocomplete';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
 
 export const defaultEmptyUser = {

@@ -1,6 +1,6 @@
 import axios from '../../axios';
-import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { environment } from '../../globals';
+import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const { childTemplates } = environment.api;
 

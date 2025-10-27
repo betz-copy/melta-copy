@@ -1,20 +1,20 @@
-import Neo4jClient from '../../../utils/neo4j';
-import { IEntity } from '../../entities/interface';
-import { IBrokenRule } from '../interfaces';
-import { BadRequestError } from '../../error';
-import EntityManager from '../../entities/manager';
-import RelationshipManager from '../../relationships/manager';
 import config from '../../../config';
-import { trycatch } from '../../../utils/lib';
+import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import {
     generateTemplates,
     mockEntityTemplatesRoutes,
     mockRelationshipTemplatesRoutes,
     mockRulesRoutes,
 } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
+import { trycatch } from '../../../utils/lib';
+import Neo4jClient from '../../../utils/neo4j';
+import { IEntity } from '../../entities/interface';
+import EntityManager from '../../entities/manager';
+import { BadRequestError } from '../../error';
+import RelationshipManager from '../../relationships/manager';
+import { IBrokenRule } from '../interfaces';
 import { sortBrokenRules } from '../throwIfActionCausedRuleFailures';
-import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import ProcessTemplateManager from './manager';
 import DefaultController from '../../../utils/express/controller';
+import ProcessTemplateManager from './manager';
 
 export default class ProcessTemplatesController extends DefaultController<ProcessTemplateManager> {
     constructor(workspaceId: string) {

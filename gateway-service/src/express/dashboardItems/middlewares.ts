@@ -1,5 +1,5 @@
-import { Request } from 'express';
 import { ForbiddenError } from '@microservices/shared';
+import { Request } from 'express';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 

@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
-import { defaultEntityTemplatePopulated } from '.';
 import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
@@ -16,6 +15,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { Box } from '../components/Box';
 import { CreateButton } from '../components/CreateButton';
+import { defaultEntityTemplatePopulated } from '.';
 import EntityTemplateCard from './Card';
 
 interface CategoryEntitiesBoxProps {

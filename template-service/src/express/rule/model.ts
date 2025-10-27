@@ -1,6 +1,5 @@
-import mongoose from 'mongoose';
-
 import { ActionOnFail } from '@microservices/shared';
+import mongoose from 'mongoose';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
 const RuleTemplateSchema = new mongoose.Schema(

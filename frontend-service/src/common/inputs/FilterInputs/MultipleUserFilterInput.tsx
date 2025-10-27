@@ -1,8 +1,8 @@
 import React from 'react';
-import { UserArrayInput } from '../UserArrayInput';
-import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
-import { useDarkModeStore } from '../../../stores/darkMode';
 import { IUser } from '../../../interfaces/users';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
+import { UserArrayInput } from '../UserArrayInput';
 
 interface MultipleUserFilterInputProps {
     filterField: IAGGridSetFilter | undefined;

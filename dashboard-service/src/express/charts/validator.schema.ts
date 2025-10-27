@@ -1,4 +1,4 @@
-import { searchFilterSchema, IAggregationType, IChartPermission, IChartType, MongoIdSchema } from '@microservices/shared';
+import { IAggregationType, IChartPermission, IChartType, MongoIdSchema, searchFilterSchema } from '@microservices/shared';
 import Joi from 'joi';
 
 const aggregationSchema = Joi.object({

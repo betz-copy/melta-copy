@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Box, Card, CardContent, CardHeader, Collapse, Divider, IconButton, Typography } from '@mui/material';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { GanttEvent } from '../GanttEvent';
-import { environment } from '../../../globals';
+import { Box, Card, CardContent, CardHeader, Collapse, Divider, IconButton, Typography } from '@mui/material';
+import React, { useState } from 'react';
 import { NavButton } from '../../../common/NavButton';
+import { environment } from '../../../globals';
 import { IGanttHeatmapBox } from '../../../interfaces/gantts';
+import { GanttEvent } from '../GanttEvent';
 
 const { heatmapColors } = environment.ganttSettings;
 

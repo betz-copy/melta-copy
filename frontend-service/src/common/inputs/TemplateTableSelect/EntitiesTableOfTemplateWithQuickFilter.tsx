@@ -18,7 +18,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'stretch' }}>
             <div>
                 <Grid container justifyContent="center">
-                    <Grid size={{ xs: 8}}>
+                    <Grid size={{ xs: 8 }}>
                         <SearchInput onChange={setQuickFilterTextDebounced} />
                     </Grid>
                 </Grid>

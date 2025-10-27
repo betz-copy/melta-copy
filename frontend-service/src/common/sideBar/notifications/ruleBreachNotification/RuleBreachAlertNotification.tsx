@@ -1,10 +1,10 @@
-import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
-import { IRuleBreachAlertNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import React from 'react';
 import { environment } from '../../../../globals';
+import { IRuleBreachAlertNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { NotificationColor } from '../../../notificationColor';
+import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 
 export const RuleBreachAlertNotification: React.FC<{ notificationMetadata: IRuleBreachAlertNotificationMetadataPopulated }> = ({
     notificationMetadata: { alert },

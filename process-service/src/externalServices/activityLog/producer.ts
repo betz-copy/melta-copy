@@ -1,8 +1,8 @@
 /* eslint-disable import/prefer-default-export */
 import { ServiceError } from '@microservices/shared';
-import { IActivityLog } from './interface';
 import config from '../../config';
 import { DefaultExternalServiceRabbit } from '../../utils/rabbit/manager';
+import { IActivityLog } from './interface';
 
 const { rabbit } = config;
 

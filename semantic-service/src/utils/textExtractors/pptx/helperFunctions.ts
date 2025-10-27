@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
-import { parseStringPromise } from 'xml2js';
 import { posix as path } from 'path';
+import { parseStringPromise } from 'xml2js';
 import config from '../../../config';
 
 const { diagramTypesToFilterBy } = config.minio.pptx;

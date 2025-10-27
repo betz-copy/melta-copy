@@ -27,8 +27,8 @@ import RjsfTextWidget from './RjsfStringWidget';
 import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
-import RjsfUserWidget from './RjsfUserWidget';
 import RjsfUserAvatarWidget from './RjsfUserAvarWidget';
+import RjsfUserWidget from './RjsfUserWidget';
 
 const { dateRegex } = environment;
 

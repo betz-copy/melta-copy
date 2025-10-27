@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import RuleBreachesManager from './manager';
 import DefaultController from '../../utils/express/controller';
+import RuleBreachesManager from './manager';
 
 class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     constructor(workspaceId: string) {

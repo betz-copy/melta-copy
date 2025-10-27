@@ -34,20 +34,25 @@ import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../interfaces/error';
 import { IRelationship } from '../../interfaces/relationships';
 import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
     deleteEntityRequest,
     searchEntitiesOfTemplateRequest,
     updateEntityRequestForMultiple,
     updateEntityStatusRequest,
 } from '../../services/entitiesService';
+import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -55,6 +60,7 @@ import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
+import { isChildTemplate } from '../../utils/templates';
 import { trycatch } from '../../utils/trycatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -63,12 +69,6 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
-import { useClientSideUserStore } from '../../stores/clientSideUser';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { isChildTemplate } from '../../utils/templates';
-import { useUserStore } from '../../stores/user';
-import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -100,7 +100,7 @@ export enum TablePageType {
     map = 'map',
 }
 
-export const getDatasource = <Data extends any = EntityData>(
+export const getDatasource = <Data = EntityData>(
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
@@ -169,7 +169,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data extends any = EntityData>(
+export const getRowModelProps = <Data = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     rowData: Data[] | undefined,
@@ -271,7 +271,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data extends any>(
+    <Data,>(
         {
             template,
             onRowSelected,
@@ -561,7 +561,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            !!Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
+            Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 
@@ -614,7 +614,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     );
                                     gridRef.current?.api.refreshServerSide();
                                     break;
-                                case 'UNIQUE':
+                                case 'UNIQUE': {
                                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                                     const constraintPropsDisplayNames = properties.map(
                                         (prop) => `${prop}-${template.properties.properties[prop].title}`,
@@ -628,6 +628,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     });
                                     gridRef.current?.api.refreshServerSide();
                                     break;
+                                }
                                 default:
                                     break;
                             }
@@ -636,7 +637,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             toast.error(errorMetadata?.message);
                             gridRef.current?.api.refreshServerSide();
                             break;
-                        case errorCodes.ruleBlock:
+                        case errorCodes.ruleBlock: {
                             const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
 
                             setUpdateWithRuleBreachDialogState({
@@ -649,6 +650,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             });
                             toast.error(i18next.t('wizard.entity.failedToEdit'));
                             break;
+                        }
                         default:
                             break;
                     }

@@ -1,5 +1,5 @@
-import Joi from 'joi';
 import { ActionTypes } from '@microservices/shared';
+import Joi from 'joi';
 import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 
 const createRelationshipSchema = Joi.object({

@@ -1,13 +1,13 @@
 import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
+import { IUser } from '../../interfaces/users';
+import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
-import { RJSFSchema } from '@rjsf/utils';
-import { useUserStore } from '../../stores/user';
-import { IUser } from '../../interfaces/users';
-import { useWorkspaceStore } from '../../stores/workspace';
 
 export interface ISelectOption {
     label: string;

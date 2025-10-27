@@ -3,6 +3,7 @@ import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipPopulated } from '../../interfaces/relationships';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
     ActionTypes,
     IActionPopulated,
@@ -12,7 +13,6 @@ import {
     IUpdateEntityMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 
 export const getActionsByFailureOnEntity = (
     failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] },
@@ -134,18 +134,21 @@ export const getEntityForEntityInfo = (entity: IEntity | string | null, actions:
             },
         };
     }
-    const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
-        if (
-            currentAction.actionType === ActionTypes.UpdateEntity &&
-            (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-        ) {
-            return {
-                ...previousUpdatedProperties,
-                ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-            };
-        }
-        return previousUpdatedProperties;
-    }, (entity as IEntity).properties);
+    const updatedProperties = actions.reduce(
+        (previousUpdatedProperties, currentAction) => {
+            if (
+                currentAction.actionType === ActionTypes.UpdateEntity &&
+                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+            ) {
+                return {
+                    ...previousUpdatedProperties,
+                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
+                };
+            }
+            return previousUpdatedProperties;
+        },
+        (entity as IEntity).properties,
+    );
 
     return {
         templateId: (entity as IEntity).templateId,

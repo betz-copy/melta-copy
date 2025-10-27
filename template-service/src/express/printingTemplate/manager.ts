@@ -1,5 +1,5 @@
-import { ClientSession, FilterQuery } from 'mongoose';
 import { DefaultManagerMongo, IMongoPrintingTemplate, IPrintingTemplate, NotFoundError } from '@microservices/shared';
+import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import PrintingTemplateSchema from './model';

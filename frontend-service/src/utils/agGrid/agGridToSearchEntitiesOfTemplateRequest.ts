@@ -149,10 +149,11 @@ export const dateFilterToFilterOfTemplate = (
             return { [field]: { $gt: dateFrom } };
         case 'greaterThanOrEqual':
             return { [field]: { $gte: dateFrom } };
-        case 'inRange':
+        case 'inRange': {
             // eslint-disable-next-line no-case-declarations
             const dateTo = new Date(new Date(dateToString!).getTime() - timezoneOffset).toISOString().split('T')[0];
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
+        }
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -190,10 +191,11 @@ export const dateTimeFilterToFilterOfTemplate = (
             return { [field]: { $gt: getDayEnd(dateFrom).toISOString() } }; // dont include this day
         case 'greaterThanOrEqual':
             return { [field]: { $gte: getDayStart(dateFrom).toISOString() } }; // include this day
-        case 'inRange':
+        case 'inRange': {
             // eslint-disable-next-line no-case-declarations
             const dateTo = new Date(dateToString!);
             return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateTo).toISOString() } };
+        }
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -219,12 +221,13 @@ export const filterModelToFilterOfTemplatePerField = (
             } else {
                 return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
             }
-        case 'set':
+        case 'set': {
             const filtersValues = Array.isArray(fieldFilter.values)
                 ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName || null : item))
                 : fieldFilter.values;
 
             return setFilterToFilterOfTemplate(field, filtersValues);
+        }
         default:
             throw new Error('Invalid supported ag-grid filter type');
     }

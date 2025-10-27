@@ -1,14 +1,15 @@
 /* eslint-disable new-cap */
 /* eslint-disable import/no-unresolved */
-import React from 'react';
-import { Editor, Monaco, loader } from '@monaco-editor/react';
-import { editor } from 'monaco-editor';
+
+import { Editor, loader, Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
+import { editor } from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 interface codeEditorProps {

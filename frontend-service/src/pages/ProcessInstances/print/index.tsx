@@ -4,7 +4,7 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
-import { useReactToPrint, UseReactToPrintOptions } from 'react-to-print';
+import { UseReactToPrintOptions, useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { MenuButton } from '../../../common/MenuButton';
 import PrintOptionsDialog, { PrintType } from '../../../common/print/PrintOptionsDialog';

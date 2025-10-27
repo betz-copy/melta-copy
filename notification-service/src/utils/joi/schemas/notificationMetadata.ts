@@ -1,5 +1,5 @@
+import { INotification, NotificationType, Status } from '@microservices/shared';
 import * as joi from 'joi';
-import { Status, INotification, NotificationType } from '@microservices/shared';
 import { mongoIdSchema } from '.';
 
 export const ruleBreachAlertMetadataSchema = joi.object({

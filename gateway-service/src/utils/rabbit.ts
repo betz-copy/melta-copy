@@ -1,17 +1,17 @@
-import { menash } from 'menashmq';
 import {
-    IUser,
-    INotificationMetadata,
-    NotificationType,
-    logger,
-    IRuleIndicatorAlertNotificationMetadata,
     IKartoffelUser,
+    INotificationMetadata,
+    IRuleIndicatorAlertNotificationMetadata,
+    IUser,
+    logger,
+    NotificationType,
 } from '@microservices/shared';
+import { menash } from 'menashmq';
 import config from '../config';
+import UsersManager from '../express/users/manager';
 // eslint-disable-next-line import/extensions
 import MailManager from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
-import UsersManager from '../express/users/manager';
 
 const {
     rabbit,

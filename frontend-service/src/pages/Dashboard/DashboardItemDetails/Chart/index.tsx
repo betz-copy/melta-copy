@@ -7,12 +7,12 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import * as Yup from 'yup';
-import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFields';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
 import { IMongoChart, IPermission } from '../../../../interfaces/charts';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
@@ -23,8 +23,8 @@ import { chartValidationSchema } from '../../../../utils/charts/getChartAxes';
 import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../../utils/dashboard/formik';
 import ChartSideBar from '../../../Charts/ChartPage/ChartSideBar';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
+import DashboardItemDetails from '..';
 import BodyComponent from './BodyComponent';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const { dashboardPath, chartPath } = environment.dashboard;
 

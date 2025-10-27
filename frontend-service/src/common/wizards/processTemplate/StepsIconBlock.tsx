@@ -1,14 +1,15 @@
 /* eslint-disable react/no-array-index-key */
-import React from 'react';
-import { AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/material';
-import _debounce from 'lodash.debounce';
+
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import i18next from 'i18next';
+import { AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/material';
 import { FormikErrors } from 'formik';
+import i18next from 'i18next';
+import _debounce from 'lodash.debounce';
+import React from 'react';
+import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 import { ProcessTemplateWizardValues } from '.';
 import { ChooseStepsIcon } from './ChooseStepIcon';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
-import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 
 const StepsIconBlock: React.FC<StepsGenericBlockProps> = ({ title, values, setFieldValue, propIndex, errors, touched }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;

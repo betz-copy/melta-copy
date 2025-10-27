@@ -2,10 +2,10 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import * as request from 'supertest';
-import { Express } from 'express';
 
-import { ProcessStatus, INotification, NotificationType } from '@microservices/shared';
+import { INotification, NotificationType, ProcessStatus } from '@microservices/shared';
+import { Express } from 'express';
+import * as request from 'supertest';
 import Server from '../src/express/server';
 
 const fakeObjectId = '111111111111111111111111';

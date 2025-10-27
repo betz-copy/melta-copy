@@ -1,6 +1,6 @@
-import React from 'react';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import React from 'react';
 import { IErrorResponse } from '../interfaces/error';
 
 const ErrorToast: React.FC<{ axiosError: AxiosError; defaultErrorMessage: string }> = ({ axiosError, defaultErrorMessage }) => {

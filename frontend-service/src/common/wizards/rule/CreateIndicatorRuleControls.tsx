@@ -2,11 +2,11 @@ import { Autocomplete, FormControl, FormControlLabel, FormHelperText, Grid, Text
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { RuleWizardValues } from '.';
 import { environment } from '../../../globals';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import TextArea from '../../inputs/TextArea';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { RuleWizardValues } from '.';
 
 const { errorColor } = environment;
 

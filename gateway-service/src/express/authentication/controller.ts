@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
-import UsersManager from '../users/manager';
 import { ShragaUser } from '../../utils/express/passport';
-import { AuthenticationManager } from './manager';
+import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
+import { AuthenticationManager } from './manager';
 
 const { accessTokenName, clientSideURLPrefix, unauthorizedId } = config.authentication.shragaAuthentication;
 

@@ -1,7 +1,7 @@
 import { fileSchema, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
 import config from '../../config';
-import { excelTemplateSchema, ExtendedJoi } from '../../utils/joi';
+import { ExtendedJoi, excelTemplateSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
 const {

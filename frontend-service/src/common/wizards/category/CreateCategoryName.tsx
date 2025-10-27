@@ -1,12 +1,12 @@
-import React from 'react';
-import { TextField, Grid } from '@mui/material';
-import * as Yup from 'yup';
+import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { useQueryClient } from 'react-query';
-import { CategoryWizardValues } from './index';
-import { StepComponentProps } from '../index';
-import { variableNameValidation } from '../../../utils/validation';
+import * as Yup from 'yup';
 import { IMongoCategory } from '../../../interfaces/categories';
+import { variableNameValidation } from '../../../utils/validation';
+import { StepComponentProps } from '../index';
+import { CategoryWizardValues } from './index';
 
 export const useCreateCategoryNameSchema = (currentCategoryId?: string) => {
     const queryClient = useQueryClient();

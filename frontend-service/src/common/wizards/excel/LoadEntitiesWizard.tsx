@@ -1,24 +1,25 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useState } from 'react';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import fileDownload from 'js-file-download';
-import { useMutation } from 'react-query';
+
 import { Grid } from '@mui/material';
-import { StepType, Wizard, WizardBaseType } from '..';
-import OpenPreview from '../../FilePreview/OpenPreview';
-import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
-import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import i18next from 'i18next';
+import fileDownload from 'js-file-download';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { UploadExcel } from './excelSteps/UploadExcel';
-import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
-import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
-import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
-import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
+import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../interfaces/excel';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
+import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { isChildTemplate } from '../../../utils/templates';
+import OpenPreview from '../../FilePreview/OpenPreview';
+import { StepType, Wizard, WizardBaseType } from '..';
+import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
+import { StatusEntitiesTables } from './excelSteps/StatusEntitiesTables';
+import { UploadExcel } from './excelSteps/UploadExcel';
 
 const { excelExtension } = environment.loadExcel;
 

@@ -1,5 +1,5 @@
+import { iconFileSchema, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
-import { MongoIdSchema, iconFileSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../../utils/joi';
 
 // GET /api/processes/templates

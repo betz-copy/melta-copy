@@ -1,4 +1,4 @@
-import { ServiceError, NotificationType } from '@microservices/shared';
+import { NotificationType, ServiceError } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
 
 export class NotificationDoesNotExistError extends ServiceError {

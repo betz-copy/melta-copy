@@ -1,12 +1,12 @@
-import mongoose from 'mongoose';
 import {
-    NotFoundError,
-    DefaultManagerMongo,
     ConfigTypes,
+    DefaultManagerMongo,
+    ICategoryOrderConfig,
     IMongoBaseConfig,
     IMongoCategoryOrderConfig,
-    ICategoryOrderConfig,
+    NotFoundError,
 } from '@microservices/shared';
+import mongoose from 'mongoose';
 import config from '../../config';
 import { ConfigSchema, orderConfigSchema } from './model';
 

@@ -6,7 +6,6 @@ import i18next from 'i18next';
 import React, { memo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { Link } from 'wouter';
-import { IButtonPopoverProps } from '.';
 import { environment } from '../../globals';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity } from '../../interfaces/entities';
@@ -38,8 +37,9 @@ import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
 import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
+import { IButtonPopoverProps } from '.';
 
-export interface IGetColumnDefsOptions<Data extends any> {
+export interface IGetColumnDefsOptions<Data> {
     template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
@@ -77,7 +77,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     darkMode: boolean;
 }
 
-export const getColumnDefs = <Data extends any = EntityData>({
+export const getColumnDefs = <Data = EntityData>({
     template,
     getRowId,
     getEntityPropertiesData,

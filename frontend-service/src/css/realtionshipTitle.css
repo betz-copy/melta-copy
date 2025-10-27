@@ -1,29 +1,29 @@
 .arrow:before {
-    color: #1E2775;
+    color: #1e2775;
     border-right: 21px solid;
     border-top: 20px solid transparent;
     border-bottom: 20px solid transparent;
     display: inline-block;
-    content: '';
+    content: "";
     position: absolute;
     left: -20px;
     top: 0;
 }
 
 .arrow:after {
-    color: #1E2775;
+    color: #1e2775;
     border-right: 21px solid transparent;
     border-top: 20px solid;
     border-bottom: 20px solid;
     display: inline-block;
-    content: '';
+    content: "";
     position: absolute;
     right: -20px;
     top: 0;
 }
 
 .arrow {
-    background-color: #1E2775;
+    background-color: #1e2775;
     height: 40px;
     line-height: 40px;
     display: inline-block;

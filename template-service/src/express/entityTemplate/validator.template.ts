@@ -1,18 +1,18 @@
-import { Request } from 'express';
-import * as ts from 'typescript-actions';
 import {
     addPropertyToRequest,
-    DefaultController,
-    IMongoEntityTemplate,
-    IEntitySingleProperty,
     BadRequestError,
+    DefaultController,
     EntityTemplateType,
-    TemplateItem,
+    IEntitySingleProperty,
+    IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
+    TemplateItem,
 } from '@microservices/shared';
+import { Request } from 'express';
+import * as ts from 'typescript-actions';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import EntityTemplateManager from './manager';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
+import EntityTemplateManager from './manager';
 
 class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {

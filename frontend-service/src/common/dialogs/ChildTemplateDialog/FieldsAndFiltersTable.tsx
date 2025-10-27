@@ -36,7 +36,7 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
                     ? i18next.t('childTemplate.currentDate')
                     : new Date(value).toLocaleDateString('he-IL');
 
-            case 'user':
+            case 'user': {
                 if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('childTemplate.byUser');
 
                 const userObj = JSON.parse(value);
@@ -45,6 +45,7 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
                 }
 
                 return value;
+            }
             default:
                 return value;
         }

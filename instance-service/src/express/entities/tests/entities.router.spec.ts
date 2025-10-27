@@ -1,14 +1,13 @@
 import { Express } from 'express';
-import request from 'supertest';
-
 import { StatusCodes } from 'http-status-codes';
-import Neo4jClient from '../../../utils/neo4j';
-import Server from '../../server';
-import { formatDate } from '../../../utils/neo4j/lib';
+import request from 'supertest';
 import config from '../../../config';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
+import Neo4jClient from '../../../utils/neo4j';
+import { formatDate } from '../../../utils/neo4j/lib';
+import Server from '../../server';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
