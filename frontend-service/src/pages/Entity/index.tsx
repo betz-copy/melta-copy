@@ -11,13 +11,14 @@ import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDia
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
+import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded, ISearchFilter } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
@@ -32,7 +33,6 @@ import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
-import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -369,7 +369,7 @@ const Entity: React.FC = () => {
 
     const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
 
-    const filters: ISearchFilter = Object.fromEntries(
+    const filters: any = Object.fromEntries(
         Object.entries(groupChildTemplate)
             .map(([key, children]) => {
                 const filter = getChildTemplatesFilter(children, true);
@@ -393,7 +393,7 @@ const Entity: React.FC = () => {
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate: IChildTemplatePopulated | IMongoEntityTemplatePopulated = childTemplateId
+    const currentEntityTemplate = childTemplateId
         ? childTemplates.get(childTemplateId)!
         : entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
 
@@ -417,7 +417,6 @@ const Entity: React.FC = () => {
                     ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate.displayName
                     : currentEntityTemplate.displayName,
             },
-            // currentEntityTemplate,
             1,
             undefined,
             expandedEntity,

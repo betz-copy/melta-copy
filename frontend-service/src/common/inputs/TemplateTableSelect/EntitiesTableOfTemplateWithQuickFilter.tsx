@@ -24,7 +24,6 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
         ({ parentTemplate: { _id } }) => _id === entityTemplate._id,
     );
     const defaultFilter = getChildTemplatesFilter(childTemplatesOfParent, true);
-    console.log({ entityTemplate });
 
     return (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'stretch' }}>
