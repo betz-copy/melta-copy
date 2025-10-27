@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { IMongoCategory, ICategoryOrderConfig, IMongoCategoryOrderConfig, ConfigTypes } from '@microservices/shared';
+import { ConfigTypes, ICategoryOrderConfig, IMongoCategory, IMongoCategoryOrderConfig } from '@microservices/shared';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 

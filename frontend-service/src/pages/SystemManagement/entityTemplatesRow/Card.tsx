@@ -3,7 +3,6 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
-import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
@@ -29,6 +28,7 @@ import { getFileName } from '../../../utils/getFileName';
 import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
+import { defaultEntityTemplatePopulated } from '.';
 
 const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];

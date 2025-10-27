@@ -1,5 +1,5 @@
-import * as mongoose from 'mongoose';
 import { IBaseUser } from '@microservices/shared';
+import * as mongoose from 'mongoose';
 import config from '../../config';
 
 const UserSchema = new mongoose.Schema(

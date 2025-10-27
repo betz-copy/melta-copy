@@ -1,14 +1,17 @@
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import mapValues from 'lodash.mapvalues';
+import pickBy from 'lodash.pickby';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import pickBy from 'lodash.pickby';
-import mapValues from 'lodash.mapvalues';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
+import { IErrorResponse } from '../../../interfaces/error';
+import { IBrokenRuleEntity } from '../../../interfaces/excel';
 import {
     ActionTypes,
     IAction,
@@ -23,13 +26,10 @@ import {
     IUpdateMultipleEntitiesMetadataPopulated,
 } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
-import { environment } from '../../../globals';
-import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
-import { IBrokenRuleEntity } from '../../../interfaces/excel';
-import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 

@@ -675,7 +675,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const allResults = await this.service.searchEntitiesBatch({
             ...searchBody,
             templates: templatesWithoutChildId,
-            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).flatMap(Object.keys) : undefined,
         });
 
         const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(allResults, searchBody.textSearch, semanticSearchResult);

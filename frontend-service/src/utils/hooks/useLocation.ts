@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Cartesian3, Math as CesiumMath } from 'cesium';
 import * as Cesium from 'cesium';
+import { Cartesian3, Math as CesiumMath } from 'cesium';
+import { useEffect, useMemo, useState } from 'react';
 import { useCesium } from 'resium';
-import { parsePolygon, stringToCoordinates } from '../map';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IEntity } from '../../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { parsePolygon, stringToCoordinates } from '../map';
 
 const { squareLength } = environment.map;
 

@@ -1,10 +1,9 @@
+import { errorMiddleware } from '@microservices/shared';
 import * as bodyParser from 'body-parser';
 import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';
 import * as http from 'http';
-
-import { errorMiddleware } from '@microservices/shared';
 import config from '../config';
 import appRouter from './router';
 

@@ -1,6 +1,6 @@
 import config from '../../config';
-import { IActivityLog } from './interface';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
+import { IActivityLog } from './interface';
 
 const {
     activityLogService: { url, requestTimeout, baseRoute },

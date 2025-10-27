@@ -1,21 +1,21 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
-import ClientSideController from './controller';
-import {
-    getInstancesByTemplateIdSchema,
-    countEntitiesOfTemplatesByUserEntityIdSchema,
-    getAllClientSideTemplatesSchema,
-    searchEntitiesOfTemplateSchema,
-    getExpandedEntityByIdRequestSchema,
-    createClientSideEntitySchema,
-} from './validator.schema';
-import ClientSideValidator from './middlewares';
+import { Router } from 'express';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import {
     getMyNotificationGroupCountRequestSchema,
     getMyNotificationsRequestSchema,
     manyNotificationSeenRequestSchema,
 } from '../notifications/validator.schema';
+import ClientSideController from './controller';
+import ClientSideValidator from './middlewares';
+import {
+    countEntitiesOfTemplatesByUserEntityIdSchema,
+    createClientSideEntitySchema,
+    getAllClientSideTemplatesSchema,
+    getExpandedEntityByIdRequestSchema,
+    getInstancesByTemplateIdSchema,
+    searchEntitiesOfTemplateSchema,
+} from './validator.schema';
 
 const ClientSideRouter: Router = Router();
 

@@ -2,6 +2,7 @@
 import {
     ActionTypes,
     BadRequestError,
+    basicFilterOperationTypes,
     ForbiddenError,
     IAction,
     IActionMetadataPopulated,
@@ -26,6 +27,7 @@ import {
     IMongoEntityTemplatePopulated,
     INotificationMetadata,
     INotificationMetadataPopulated,
+    InstancesSubclassesPermissions,
     IRelationship,
     IRelationshipForBrokenRules,
     IRuleBreach,
@@ -46,14 +48,12 @@ import {
     IUpdateEntityStatusMetadata,
     IUpdateEntityStatusMetadataPopulated,
     IUser,
-    InstancesSubclassesPermissions,
+    logger,
     NotificationType,
     PermissionScope,
     PermissionType,
     RuleBreachRequestStatus,
     UploadedFile,
-    basicFilterOperationTypes,
-    logger,
 } from '@microservices/shared';
 import pickBy from 'lodash.pickby';
 import config from '../../config';

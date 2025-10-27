@@ -6,13 +6,9 @@ const INSTANCE_SERVICE_URL = 'http://localhost:8007';
 
 const COUNT_1_RULE_IDS = ['6690bbed306c5aece178ae0e'];
 const NO_OVERLAPPING_FLIGHTS_RULE_ID = '6690bbed306c5aece178ae16';
-const ALL_RULE_IDS = ['6690bbed306c5aece178ae0e', '6690bbed306c5aece178ae16']
+const ALL_RULE_IDS = ['6690bbed306c5aece178ae0e', '6690bbed306c5aece178ae16'];
 
-
-const getMongoModels = async ({
-    ruleModelName = 'rules',
-    alertModelName = 'rule-breach-alerts',
-} = {}) => {
+const getMongoModels = async ({ ruleModelName = 'rules', alertModelName = 'rule-breach-alerts' } = {}) => {
     console.log('starting...');
     const templateServiceConn = await mongoose.createConnection(MONGO_URL, {
         useNewUrlParser: true,
@@ -108,7 +104,7 @@ const migrateCount1Rules = async () => {
 
 const getPinnedEntityIdOfBrokenRule = (alert, rule, relationships, isPinnedAsSource) => {
     if (action.actionType === 'update-entity') {
-        const someRelationshipOfRule = relationships.find(rel => rel.templateId === rule.relationshipTemplateId);
+        const someRelationshipOfRule = relationships.find((rel) => rel.templateId === rule.relationshipTemplateId);
         if (someRelationshipOfRule) return isPinnedAsSource ? someRelationshipOfRule.sourceEntityId : someRelationshipOfRule.destinationEntityId;
         return '00000000-0000-0000-0000-000000000000';
     }
@@ -117,13 +113,13 @@ const getPinnedEntityIdOfBrokenRule = (alert, rule, relationships, isPinnedAsSou
     }
 
     throw new Error(`not possible alert.actionType ${alert.actionType}`);
-}
+};
 
 const migrateRuleBreaches = async () => {
     const {
         ruleModel: oldRuleModel,
         relationshipModel,
-        alertModel: alertModel,
+        alertModel,
     } = await getMongoModels({ ruleModelName: 'rules-backups', alertModelName: 'rule-breach-alerts-fixes' });
 
     for (const ruleId of ALL_RULE_IDS) {
@@ -181,102 +177,103 @@ const getNoOverlappingFormulaByOldRule = (rule, dateTimeOverlappingField) => {
     return {
         isGroup: true,
         ruleOfGroup: 'AND',
-        subFormulas: [{
-            isAggregationGroup: true,
-            variableOfAggregation: {
-                entityTemplateId: rule.pinnedEntityTemplateId,
-                aggregatedRelationship: {
-                    relationshipTemplateId: rule.relationshipTemplateId,
-                    otherEntityTemplateId: rule.unpinnedEntityTemplateId,
-                },
-            },
-            aggregation: 'EVERY',
-            ruleOfGroup: 'AND',
-            subFormulas: [
-                {
-                    isAggregationGroup: true,
-                    variableOfAggregation: {
-                        entityTemplateId: rule.pinnedEntityTemplateId,
-                        aggregatedRelationship: {
-                            relationshipTemplateId: rule.relationshipTemplateId,
-                            otherEntityTemplateId: rule.unpinnedEntityTemplateId,
-                            variableNameSuffix: '2',
-                        },
+        subFormulas: [
+            {
+                isAggregationGroup: true,
+                variableOfAggregation: {
+                    entityTemplateId: rule.pinnedEntityTemplateId,
+                    aggregatedRelationship: {
+                        relationshipTemplateId: rule.relationshipTemplateId,
+                        otherEntityTemplateId: rule.unpinnedEntityTemplateId,
                     },
-                    aggregation: 'EVERY',
-                    ruleOfGroup: 'OR',
-                    subFormulas: [
-                        {
-                            isEquation: true,
-                            operatorBool: 'equals',
-                            lhsArgument: {
-                                isPropertyOfVariable: true,
-                                variable: {
-                                    entityTemplateId: rule.pinnedEntityTemplateId,
-                                    aggregatedRelationship: {
-                                        relationshipTemplateId: rule.relationshipTemplateId,
-                                        otherEntityTemplateId: rule.unpinnedEntityTemplateId,
-                                    },
-                                },
-                                property: '_id',
-                            },
-                            rhsArgument: {
-                                isPropertyOfVariable: true,
-                                variable: {
-                                    entityTemplateId: rule.pinnedEntityTemplateId,
-                                    aggregatedRelationship: {
-                                        relationshipTemplateId: rule.relationshipTemplateId,
-                                        otherEntityTemplateId: rule.unpinnedEntityTemplateId,
-                                        variableNameSuffix: '2',
-                                    },
-                                },
-                                property: '_id',
-                            },
-                        },
-                        {
-                            isEquation: true,
-                            operatorBool: 'notEqual',
-                            lhsArgument: {
-                                isRegularFunction: true,
-                                functionType: 'toDate',
-                                arguments: [
-                                    {
-                                        isPropertyOfVariable: true,
-                                        variable: {
-                                            entityTemplateId: rule.pinnedEntityTemplateId,
-                                            aggregatedRelationship: {
-                                                relationshipTemplateId: rule.relationshipTemplateId,
-                                                otherEntityTemplateId: rule.unpinnedEntityTemplateId,
-                                            },
-                                        },
-                                        property: dateTimeOverlappingField,
-                                    },
-                                ],
-                            },
-                            rhsArgument: {
-                                isRegularFunction: true,
-                                functionType: 'toDate',
-                                arguments: [
-                                    {
-                                        isPropertyOfVariable: true,
-                                        variable: {
-                                            entityTemplateId: rule.pinnedEntityTemplateId,
-                                            aggregatedRelationship: {
-                                                relationshipTemplateId: rule.relationshipTemplateId,
-                                                otherEntityTemplateId: rule.unpinnedEntityTemplateId,
-                                                variableNameSuffix: '2',
-                                            },
-                                        },
-                                        property: dateTimeOverlappingField,
-                                    },
-                                ],
-                            },
-                        },
-                    ],
                 },
-            ],
-        }],
-
+                aggregation: 'EVERY',
+                ruleOfGroup: 'AND',
+                subFormulas: [
+                    {
+                        isAggregationGroup: true,
+                        variableOfAggregation: {
+                            entityTemplateId: rule.pinnedEntityTemplateId,
+                            aggregatedRelationship: {
+                                relationshipTemplateId: rule.relationshipTemplateId,
+                                otherEntityTemplateId: rule.unpinnedEntityTemplateId,
+                                variableNameSuffix: '2',
+                            },
+                        },
+                        aggregation: 'EVERY',
+                        ruleOfGroup: 'OR',
+                        subFormulas: [
+                            {
+                                isEquation: true,
+                                operatorBool: 'equals',
+                                lhsArgument: {
+                                    isPropertyOfVariable: true,
+                                    variable: {
+                                        entityTemplateId: rule.pinnedEntityTemplateId,
+                                        aggregatedRelationship: {
+                                            relationshipTemplateId: rule.relationshipTemplateId,
+                                            otherEntityTemplateId: rule.unpinnedEntityTemplateId,
+                                        },
+                                    },
+                                    property: '_id',
+                                },
+                                rhsArgument: {
+                                    isPropertyOfVariable: true,
+                                    variable: {
+                                        entityTemplateId: rule.pinnedEntityTemplateId,
+                                        aggregatedRelationship: {
+                                            relationshipTemplateId: rule.relationshipTemplateId,
+                                            otherEntityTemplateId: rule.unpinnedEntityTemplateId,
+                                            variableNameSuffix: '2',
+                                        },
+                                    },
+                                    property: '_id',
+                                },
+                            },
+                            {
+                                isEquation: true,
+                                operatorBool: 'notEqual',
+                                lhsArgument: {
+                                    isRegularFunction: true,
+                                    functionType: 'toDate',
+                                    arguments: [
+                                        {
+                                            isPropertyOfVariable: true,
+                                            variable: {
+                                                entityTemplateId: rule.pinnedEntityTemplateId,
+                                                aggregatedRelationship: {
+                                                    relationshipTemplateId: rule.relationshipTemplateId,
+                                                    otherEntityTemplateId: rule.unpinnedEntityTemplateId,
+                                                },
+                                            },
+                                            property: dateTimeOverlappingField,
+                                        },
+                                    ],
+                                },
+                                rhsArgument: {
+                                    isRegularFunction: true,
+                                    functionType: 'toDate',
+                                    arguments: [
+                                        {
+                                            isPropertyOfVariable: true,
+                                            variable: {
+                                                entityTemplateId: rule.pinnedEntityTemplateId,
+                                                aggregatedRelationship: {
+                                                    relationshipTemplateId: rule.relationshipTemplateId,
+                                                    otherEntityTemplateId: rule.unpinnedEntityTemplateId,
+                                                    variableNameSuffix: '2',
+                                                },
+                                            },
+                                            property: dateTimeOverlappingField,
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
     };
 };
 
@@ -306,12 +303,11 @@ const migrateNoOverlappingRules = async () => {
     console.log(`updated rule!`, newRule);
 };
 
-
 const main = async () => {
     await migrateCount1Rules();
     await migrateNoOverlappingRules();
     await migrateRuleBreaches();
 
-    mongoose.connections.forEach(conn => conn.close());
-}
+    mongoose.connections.forEach((conn) => conn.close());
+};
 main();

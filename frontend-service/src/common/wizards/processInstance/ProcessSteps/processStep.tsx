@@ -8,7 +8,6 @@ import pickBy from 'lodash.pickby';
 import React, { FC, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ProcessStepValues } from '.';
 import { PermissionScope } from '../../../../interfaces/permissions';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
@@ -26,6 +25,7 @@ import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik'
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { EntityReference } from '../EntityReference';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../ProcessSummaryStep/ProcessStatus';
+import { ProcessStepValues } from '.';
 import { getStepValuesFromStepInstance } from './stepsFormik';
 
 export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {

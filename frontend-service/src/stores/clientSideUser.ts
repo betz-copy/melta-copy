@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { IKartoffelUser } from '../interfaces/users';
 import { IEntity } from '../interfaces/entities';
+import { IKartoffelUser } from '../interfaces/users';
 
 export interface ClientSideUserState {
     clientSideUser: IKartoffelUser;

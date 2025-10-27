@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
+import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { RelationshipTitle } from '../../RelationshipTitle';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { getEntityTemplateColor } from '../../../utils/colors';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
-import { getEntityTemplateColor } from '../../../utils/colors';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import { RelationshipTitle } from '../../RelationshipTitle';
 
 interface RelationshipInfoProps {
     relationship: IMongoRelationshipTemplatePopulated | null;

@@ -5,7 +5,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
+import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -474,7 +474,7 @@ export const FieldBlockWrapper = ({
 
     const remove = (
         index: number,
-        isNewProperty: Boolean,
+        isNewProperty: boolean,
         propertyType: PropertiesTypes,
         setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
         groupIndex?: number,

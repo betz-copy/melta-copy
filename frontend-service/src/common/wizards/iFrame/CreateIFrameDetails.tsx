@@ -1,7 +1,7 @@
-import React from 'react';
-import { TextField, Grid } from '@mui/material';
-import * as Yup from 'yup';
+import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
+import * as Yup from 'yup';
 import { StepComponentProps } from '../index';
 import { IFrameWizardValues } from '.';
 

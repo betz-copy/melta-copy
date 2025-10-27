@@ -1,12 +1,12 @@
-import React from 'react';
+import { AppRegistration as AppRegistrationIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { Card, CardContent, CardHeader, IconButton } from '@mui/material';
-import { Clear as ClearIcon, AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import React from 'react';
 import { useQueryClient } from 'react-query';
 import { IEntity } from '../../../interfaces/entities';
-import { EntityPropertiesInternal } from '../../EntityProperties';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { CustomIcon } from '../../CustomIcon';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { CustomIcon } from '../../CustomIcon';
+import { EntityPropertiesInternal } from '../../EntityProperties';
 
 const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => void }> = ({ entity, onDelete }) => {
     const queryClient = useQueryClient();

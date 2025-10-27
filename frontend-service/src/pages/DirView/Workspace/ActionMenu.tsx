@@ -9,7 +9,7 @@ import { useLocation } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { updateOne } from '../../../services/workspacesService';
-import { workspaceObjectToWorkspaceForm, WorkspaceWizardValues } from '../Wizard';
+import { WorkspaceWizardValues, workspaceObjectToWorkspaceForm } from '../Wizard';
 
 interface IActionMenuProps {
     workspace: IWorkspace;

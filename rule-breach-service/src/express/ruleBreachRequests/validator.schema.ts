@@ -1,10 +1,11 @@
 /* eslint-disable import/prefer-default-export */
-import * as joi from 'joi';
+
 import { ActionTypes, RuleBreachRequestStatus } from '@microservices/shared';
-import { brokenRulesSchema, ruleBreachSchema } from '../../utils/joi/schemas/ruleBreach';
-import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
-import { validateActionMetadata } from '../../utils/joi/validateActionMetadata';
+import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
+import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
+import { brokenRulesSchema, ruleBreachSchema } from '../../utils/joi/schemas/ruleBreach';
+import { validateActionMetadata } from '../../utils/joi/validateActionMetadata';
 
 // POST /api/rule-breaches/requests/search
 export const searchRuleBreachRequestsRequestSchema = joi.object({

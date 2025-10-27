@@ -15,9 +15,9 @@ import {
     ISearchEntityTemplatesBody,
     ISubCompactPermissions,
 } from '@microservices/shared';
-import TemplatesManagerService from '.';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import TemplatesManagerService from '.';
 
 const {
     service: { workspaceIdHeaderName },

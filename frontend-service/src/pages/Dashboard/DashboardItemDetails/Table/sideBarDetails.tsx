@@ -6,11 +6,11 @@ import { InfoTypography } from '../../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../../common/inputs/ViewModeTextField';
 import { StepComponentProps } from '../../../../common/wizards';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 import { DashboardItemType, TableForm, ViewMode } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
 import { ChangeTemplate } from '../../Dialogs';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue, setValues } = formikProps;

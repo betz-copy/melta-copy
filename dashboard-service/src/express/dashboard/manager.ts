@@ -1,21 +1,21 @@
-import groupBy from 'lodash.groupby';
-import { StatusCodes } from 'http-status-codes';
-import { FilterQuery, Types } from 'mongoose';
 import {
-    DefaultManagerMongo,
-    NotFoundError,
-    IMongoChart,
-    IMongoIframe,
-    ServiceError,
     DashboardItem,
     DashboardItemType,
+    DefaultManagerMongo,
+    IMongoChart,
+    IMongoIframe,
     MongoDashboardItem,
+    NotFoundError,
+    ServiceError,
 } from '@microservices/shared';
+import { StatusCodes } from 'http-status-codes';
+import groupBy from 'lodash.groupby';
+import { FilterQuery, Types } from 'mongoose';
 import config from '../../config';
-import DashboardItemSchema from './model';
 import { escapeRegExp } from '../../utils';
 import ChartManager from '../charts/manager';
 import IFrameManager from '../iFrames/manager';
+import DashboardItemSchema from './model';
 
 class DashboardManager extends DefaultManagerMongo<MongoDashboardItem> {
     chartsManager: ChartManager;

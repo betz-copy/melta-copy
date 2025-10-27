@@ -1,15 +1,15 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
+import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
+import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 import ProcessTemplatesController from './controller';
 import {
     createProcessTemplateSchema,
     deleteProcessTemplateSchema,
-    updateProcessTemplateSchema,
     getTemplateByIdSchema,
     searchProcessTemplatesSchema,
+    updateProcessTemplateSchema,
 } from './validator.schema';
-import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
-import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 
 const TemplatesRouter: Router = Router();
 

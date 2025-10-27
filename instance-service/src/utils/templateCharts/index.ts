@@ -1,10 +1,10 @@
+import { CoordinateSystem, IAggregation, IAggregationType, IAxisField, IMongoEntityTemplate, locationConverterToString } from '@microservices/shared';
 import { fromZonedTime } from 'date-fns-tz';
 import neo4j from 'neo4j-driver';
-import { CoordinateSystem, locationConverterToString, IAggregation, IAggregationType, IAxisField, IMongoEntityTemplate } from '@microservices/shared';
 import config from '../../config';
+import EntityManager from '../../express/entities/manager';
 import { getFileName, getFilesName } from '../../express/entities/validator.template';
 import { formatDate } from '../neo4j/lib';
-import EntityManager from '../../express/entities/manager';
 
 const {
     neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },

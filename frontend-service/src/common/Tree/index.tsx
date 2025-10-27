@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { RichTreeViewPro, TreeViewBaseItem, RichTreeViewProProps, useTreeViewApiRef, TreeItemProps } from '@mui/x-tree-view-pro';
+
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
-import TreeItem from './TreeItem';
-import { SelectAll } from './SelectAll';
 import { Box, Divider } from '@mui/material';
+import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, useTreeViewApiRef } from '@mui/x-tree-view-pro';
+import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
 import _ from 'lodash';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { SelectAll } from './SelectAll';
+import TreeItem from './TreeItem';
 
 interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.

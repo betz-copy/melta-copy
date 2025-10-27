@@ -1,5 +1,5 @@
 import { AppRegistration as DefaultEntityTemplateIcon, VisibilityOff } from '@mui/icons-material';
-import { Grid, tooltipClasses, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';
@@ -9,6 +9,7 @@ import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
+import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
 import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
@@ -17,7 +18,7 @@ import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
-import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
+
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
     relatedTemplateId: string;

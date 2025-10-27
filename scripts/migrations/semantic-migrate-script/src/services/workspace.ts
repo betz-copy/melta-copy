@@ -74,7 +74,7 @@ export class WorkspaceService {
     private static workspaceService = axios.create({ baseURL: `${workspacesUri}${baseRoute}` });
 
     static async getWorkspaceIds(type: IWorkspace['type']) {
-        const { data } = await this.workspaceService.post<string[]>(`/ids`, { type });
+        const { data } = await WorkspaceService.workspaceService.post<string[]>(`/ids`, { type });
         return data;
     }
 }

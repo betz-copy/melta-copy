@@ -7,15 +7,15 @@ import { useMutation, useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IUser, IUserPopulated } from '../../../interfaces/users';
+import { getUserRolePerWorkspaceRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { getUserRolePerWorkspaceRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
-import { ErrorToast } from '../../ErrorToast';
-import { UserProfile } from './userProfile';
-import { UserDetails } from './userDetails';
-import { SelectCheckbox } from '../../SelectCheckBox';
-import { DayNightSwitch } from '../../inputs/DayNightSwitch';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { ErrorToast } from '../../ErrorToast';
+import { DayNightSwitch } from '../../inputs/DayNightSwitch';
+import { SelectCheckbox } from '../../SelectCheckBox';
+import { UserDetails } from './userDetails';
+import { UserProfile } from './userProfile';
 
 const { notificationsMoreData } = environment.notifications;
 

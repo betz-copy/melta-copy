@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
 import { FormControl } from '@mui/material';
+import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import TemplateEntitiesAutocomplete from '../../common/inputs/TemplateEntitiesAutocomplete';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IEntity } from '../../interfaces/entities';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IEntity } from '../../interfaces/entities';
+import { IEntitySingleProperty, IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 interface RelationshipRefCellEditorProps {
     value?: IEntity | null;

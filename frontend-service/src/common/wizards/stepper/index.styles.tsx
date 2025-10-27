@@ -27,29 +27,27 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
     }),
 }));
 
-const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(({
-    type,
-    theme,
-    direction,
-}) => {
-    let color: string;
+const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(
+    ({ type, theme, direction }) => {
+        let color: string;
 
-    switch (type) {
-        case 'finishedStep':
-        case 'currentStep':
-            color = theme.palette.mode === 'dark' ? 'white' : theme.palette.text.primary;
-            break;
-        case 'futureStep':
-            color = theme.palette.mode === 'dark' ? '#A7ABC7' : '#53566E';
-            break;
-    }
+        switch (type) {
+            case 'finishedStep':
+            case 'currentStep':
+                color = theme.palette.mode === 'dark' ? 'white' : theme.palette.text.primary;
+                break;
+            case 'futureStep':
+                color = theme.palette.mode === 'dark' ? '#A7ABC7' : '#53566E';
+                break;
+        }
 
-    return {
-        fontWeight: type === 'currentStep' && direction === 'row' ? 500 : 400,
-        fontSize: '14px',
-        color,
-    };
-});
+        return {
+            fontWeight: type === 'currentStep' && direction === 'row' ? 500 : 400,
+            fontSize: '14px',
+            color,
+        };
+    },
+);
 
 const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type }) => {
     const color = type === 'finishedStep' ? '#787C9E' : '#787C9E';

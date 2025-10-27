@@ -1,4 +1,4 @@
-import { Divider, Drawer as MuiDrawer, styled, Toolbar as MuiToolbar } from '@mui/material';
+import { Divider, Drawer as MuiDrawer, Toolbar as MuiToolbar, styled } from '@mui/material';
 import { sideBarTransition } from '../../theme';
 
 const drawerWidth = 240;

@@ -1,18 +1,18 @@
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { mapValues } from 'lodash';
 import axios from '../axios';
-import { environment } from '../globals';
-import { IMongoCategory } from '../interfaces/categories';
-import { ICountSearchResult, IEntity, IEntityExpanded, ISearchEntitiesOfTemplateBody, ISearchResult } from '../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
-import { locationConverterToString } from '../utils/map/convert';
-import { mapValues } from 'lodash';
+import { environment } from '../globals';
+import { IMongoCategory } from '../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { ICountSearchResult, IEntity, IEntityExpanded, ISearchEntitiesOfTemplateBody, ISearchResult } from '../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
-import { IGetMyNotificationsRequestQuery } from './notificationService';
+import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';
+import { IGetMyNotificationsRequestQuery } from './notificationService';
 
 const { clientSideRoutes, getAllClientSideTemplates: getAllClientSideTemplatesRoute } = environment.api;
 
@@ -84,20 +84,23 @@ const createEntityClientSideRequest = async (
     const entityTemplateProperties = childTemplate.parentTemplate.properties.properties;
 
     const propertiesWithDefaults = childTemplate
-        ? Object.entries(entityTemplateProperties).reduce((acc, [key]) => {
-              if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
-                  acc[key] = childTemplate.properties[key].defaultValue;
-              } else {
-                  acc[key] = entity.properties[key];
-              }
-
-              if (entity.properties[key] === undefined && entityTemplateProperties[key]?.format === 'relationshipReference') {
-                  if (entityTemplateProperties[key]?.relationshipReference?.relatedTemplateId === clientSideUserEntity?.templateId) {
-                      acc[key] = clientSideUserEntity?.properties._id;
+        ? Object.entries(entityTemplateProperties).reduce(
+              (acc, [key]) => {
+                  if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
+                      acc[key] = childTemplate.properties[key].defaultValue;
+                  } else {
+                      acc[key] = entity.properties[key];
                   }
-              }
-              return acc;
-          }, {} as Record<string, any>)
+
+                  if (entity.properties[key] === undefined && entityTemplateProperties[key]?.format === 'relationshipReference') {
+                      if (entityTemplateProperties[key]?.relationshipReference?.relatedTemplateId === clientSideUserEntity?.templateId) {
+                          acc[key] = clientSideUserEntity?.properties._id;
+                      }
+                  }
+                  return acc;
+              },
+              {} as Record<string, any>,
+          )
         : entity.properties;
 
     formData.append(

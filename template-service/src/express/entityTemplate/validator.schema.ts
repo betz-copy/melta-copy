@@ -1,12 +1,12 @@
-import Joi from 'joi';
 import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
+import Joi from 'joi';
 import {
     enumPropertiesColorsSchema,
+    innerFieldGroupsSchema,
     innerPropertiesSchema,
     orderPropertiesSchema,
-    previewPropertiesSchema,
     orderPropertiesTypeSchema,
-    innerFieldGroupsSchema,
+    previewPropertiesSchema,
     stringFormats,
 } from './joi.helper';
 

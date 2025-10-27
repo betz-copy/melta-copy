@@ -1,8 +1,9 @@
+import { createController, ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { createController, wrapController, ValidateRequest } from '@microservices/shared';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import WorkspaceController from './controller';
 import {
     createOneSchema,
@@ -14,7 +15,6 @@ import {
     updateMetadataSchema,
     updateOneSchema,
 } from './validator.schema';
-import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const controller = createController(WorkspaceController);
 

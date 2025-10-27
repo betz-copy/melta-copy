@@ -1,9 +1,9 @@
+import { basicValidateRequest, logger } from '@microservices/shared';
 import { ConsumerMessage } from 'menashmq';
-import { logger, basicValidateRequest } from '@microservices/shared';
-import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
 import config from '../config';
-import { SemanticManager } from '../express/semantics/manager';
 import { IIndexFilesRequest } from '../express/semantics/interface';
+import { SemanticManager } from '../express/semantics/manager';
+import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
 
 const {
     service: { workspaceIdHeaderName },

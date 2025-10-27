@@ -1,5 +1,5 @@
 .group {
-    background: rgb(33, 88, 166, .7);
+    background: rgb(33, 88, 166, 0.7);
     font-family: OpenSans;
 }
 .group--actions button {
@@ -7,21 +7,28 @@
     border: 1px solid gray;
     margin-right: 5px;
     height: 25px;
-    font-family: 'Rubik';
+    font-family: "Rubik";
     color: gray;
     font-weight: 450;
     background-color: white;
 }
 .group--actions button:hover {
-    box-shadow: 0 0 4px 2px rgba(70,150,240,0.25) inset, 0 0 4px 2px rgba(81, 82, 83, 0.25);
+    box-shadow:
+        0 0 4px 2px rgba(70, 150, 240, 0.25) inset,
+        0 0 4px 2px rgba(81, 82, 83, 0.25);
     border: 1px solid rgb(242, 244, 247);
-  }
-.query-builder *, .query-builder *::before, .query-builder *::after {
+}
+.query-builder *,
+.query-builder *::before,
+.query-builder *::after {
     box-sizing: border-box;
-    font-family: 'Rubik';
+    font-family: "Rubik";
     font-size: 15px;
 }
-.rule--operator, .widget--widget, .widget--valuesrc, .widget--sep {
+.rule--operator,
+.widget--widget,
+.widget--valuesrc,
+.widget--sep {
     margin-left: 18px;
 }
 .rule--header button {
@@ -30,16 +37,18 @@
     font-size: 15px;
 }
 .rule--header button:hover {
-    box-shadow: 0 0 4px 2px rgba(70,150,240,0.25) inset, 0 0 4px 2px rgba(81, 82, 83, 0.25);
+    box-shadow:
+        0 0 4px 2px rgba(70, 150, 240, 0.25) inset,
+        0 0 4px 2px rgba(81, 82, 83, 0.25);
     border: 1px solid rgb(7, 7, 7);
-  }
-  .locked {
-    border: 1px dashed rgb(33, 88, 166);;
+}
+.locked {
+    border: 1px dashed rgb(33, 88, 166);
 }
 .toggle-buttons {
     background-color: white;
     height: 25px;
-    font-family: 'Rubik';
+    font-family: "Rubik";
     color: gray;
     font-weight: 450;
     border-radius: 10%;

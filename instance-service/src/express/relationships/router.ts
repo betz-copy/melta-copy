@@ -1,11 +1,11 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import RelationshipController from './controller';
 import {
     createRelationshipRequestSchema,
     deleteRelationshipByIdRequestSchema,
-    getRelationshipsByEntitiesAndTemplate,
     getRelationshipByIdRequestSchema,
+    getRelationshipsByEntitiesAndTemplate,
     getRelationshipsByIdsRequestSchema,
     getRelationshipsCountRequestSchema,
     updateRelationshipByIdRequestSchema,

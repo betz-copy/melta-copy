@@ -1,10 +1,10 @@
-import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { INewProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
-import { ProcessName } from './ProcessName';
+import React from 'react';
 import { environment } from '../../../../globals';
+import { INewProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { NotificationColor } from '../../../notificationColor';
+import { ProcessName } from './ProcessName';
 
 export const NewProcessNotification: React.FC<{ notificationMetadata: INewProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { process },

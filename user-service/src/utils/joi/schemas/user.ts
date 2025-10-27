@@ -1,6 +1,6 @@
 import * as joi from 'joi';
-import { CompactPermissionsSchema } from './permission/compact';
 import { partialSchema } from '.';
+import { CompactPermissionsSchema } from './permission/compact';
 
 export const baseUserSchema = joi.object({
     fullName: joi.string(),

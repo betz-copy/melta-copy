@@ -1,12 +1,12 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import { TextField, TextFieldProps, styled } from '@mui/material';
-import { DateTimePickerToolbar, LocalizationProvider, PickersLocaleText, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
+import { styled, TextField, TextFieldProps } from '@mui/material';
+import { DateTimePickerToolbar, dateTimePickerToolbarClasses, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
-import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
+import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';

@@ -1,9 +1,9 @@
-import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import { Clear } from '@mui/icons-material';
+import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 export interface IUnitAutocomplete {
     value?: string[];

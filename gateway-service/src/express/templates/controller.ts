@@ -1,15 +1,15 @@
+import { ConfigTypes } from '@microservices/shared';
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { ConfigTypes } from '@microservices/shared';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import DefaultController from '../../utils/express/controller';
-import { TemplatesManager } from './manager';
+import config from '../../config';
 import { RequestWithSearchEntityTemplateBody } from '../../externalServices/templates/entityTemplateService';
 import {
     RequestWithSearchRelationshipTemplateBody,
     RequestWithSearchRuleTemplateBody,
 } from '../../externalServices/templates/relationshipsTemplateService';
-import config from '../../config';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
+import { TemplatesManager } from './manager';
 
 const { userDoesntExistUnderReq } = config.templateService;
 

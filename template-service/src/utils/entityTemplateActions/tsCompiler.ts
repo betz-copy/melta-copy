@@ -1,8 +1,9 @@
 /* eslint-disable import/prefer-default-export */
-import * as ts from 'typescript-actions';
+
+import { BadRequestError } from '@microservices/shared';
 import * as fs from 'fs';
 import * as path from 'path';
-import { BadRequestError } from '@microservices/shared';
+import * as ts from 'typescript-actions';
 
 const createCustomCompilerHost = (
     defaultCompilerHost: ts.CompilerHost,

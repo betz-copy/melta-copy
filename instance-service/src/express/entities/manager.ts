@@ -1079,7 +1079,7 @@ class EntityManager extends DefaultManagerNeo4j {
         Object.entries(acc).forEach(([key, value]) => {
             if (!value.properties) return;
             const { properties: props, coloredFields } = normalizeFields(flatten(value.properties, { safe: true }));
-            acc[key] = { ...value, properties: this.fixReturnedEntityReferencesFields(props), coloredFields };
+            acc[key] = { ...value, properties: EntityManager.fixReturnedEntityReferencesFields(props), coloredFields };
         });
 
         return acc;

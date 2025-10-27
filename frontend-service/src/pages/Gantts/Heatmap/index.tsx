@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo } from 'react';
+import { Masonry } from '@mui/lab';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { Masonry } from '@mui/lab';
-import { IScheduleComponentData, IScheduleComponentResourceData } from '../../../interfaces/syncfusion';
+import React, { useEffect, useMemo } from 'react';
 import { environment } from '../../../globals';
+import { IScheduleComponentData, IScheduleComponentResourceData } from '../../../interfaces/syncfusion';
 import { getGanttHeatmapData } from '../../../utils/gantts';
-import { HeatmapBox } from './HeatmapBox';
 import { ViewingBox } from '../../SystemManagement/components/ViewingBox';
+import { HeatmapBox } from './HeatmapBox';
 
 const { heatmapColors } = environment.ganttSettings;
 

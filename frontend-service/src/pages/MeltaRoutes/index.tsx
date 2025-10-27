@@ -5,11 +5,14 @@ import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IMongoCategoryOrderConfig } from '../../interfaces/config';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IPrintingTemplateMap } from '../../interfaces/printingTemplates';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IRuleMap } from '../../interfaces/rules';
-import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
+import { GetAllTemplatesType, getAllTemplates } from '../../services/templates/getAllTemplates';
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
@@ -17,9 +20,6 @@ import { handleWorkspace } from '../../utils/permissions';
 import { mapCategories, mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IMongoCategoryOrderConfig } from '../../interfaces/config';
-import { IPrintingTemplateMap } from '../../interfaces/printingTemplates';
 
 interface IMeltaRoutesProps {
     path: string;

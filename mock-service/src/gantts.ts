@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { IMongoEntityTemplateWithConstraintsPopulated, IMongoGantt, IMongoRelationshipTemplate } from '@microservices/shared';
+import axios from 'axios';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';
 import getHardcodedRealGantts from './mocks/gantts/hardcoded';

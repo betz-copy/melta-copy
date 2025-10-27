@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { IFrameWizardValues, updateIFramesOrderOnLocalStorage } from '../../../../common/wizards/iFrame';
 import { createIFrameDetailsSchema } from '../../../../common/wizards/iFrame/CreateIFrameDetails';
@@ -16,6 +15,7 @@ import { DashboardItemType, TabStepComponent, ViewMode } from '../../../../inter
 import { deleteDashboardItem } from '../../../../services/dashboardService';
 import { createIFrame, getIFrameById, updateIFrame } from '../../../../services/iFramesService';
 import { dashboardInitialValues } from '../../../../utils/dashboard/formik';
+import DashboardItemDetails from '..';
 import BodyComponent from './bodyComponent';
 import SideBarDetails from './sideBarDetails';
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { GridLayout } from '.';
 import { environment } from '../../globals';
 import { generateLayoutDetails, generateNewItemSizes } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
+import { GridLayout } from '.';
 import { LayoutItem } from './interface';
 
 const { defaultColumnSizes } = environment.charts;

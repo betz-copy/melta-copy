@@ -1,9 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 /* eslint-disable no-plusplus */
+
+import { IMongoProcessTemplatePopulated } from '@microservices/shared';
+import { Axios } from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
-import { Axios } from 'axios';
-import { IMongoProcessTemplatePopulated } from '@microservices/shared';
 import config from './config';
 import createAxiosInstance from './utils/axios';
 

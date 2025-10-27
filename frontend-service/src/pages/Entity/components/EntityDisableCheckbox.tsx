@@ -1,7 +1,7 @@
-import React from 'react';
-import { Grid, FormControlLabel, Checkbox } from '@mui/material';
 import { CircleRounded } from '@mui/icons-material';
+import { Checkbox, FormControlLabel, Grid } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 
 const EntityDisableCheckbox: React.FC<{ isEntityDisabled: boolean }> = ({ isEntityDisabled }) => {
     return (

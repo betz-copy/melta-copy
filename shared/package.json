@@ -5,11 +5,7 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "clean": "rimraf dist",
-        "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix",
-        "prettier": "prettier --config .prettierrc.js 'src/**/*.ts' --check",
-        "prettier:fix": "prettier --config .prettierrc.js 'src/**/*.ts' --write"
+        "clean": "rimraf dist"
     },
     "dependencies": {
         "neo4j-driver": "^5.23.0",

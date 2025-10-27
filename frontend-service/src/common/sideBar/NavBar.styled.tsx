@@ -1,4 +1,4 @@
-import { styled, ListItemText } from '@mui/material';
+import { ListItemText, styled } from '@mui/material';
 import { Link } from 'wouter';
 
 const StyledListItemText = styled(ListItemText)({

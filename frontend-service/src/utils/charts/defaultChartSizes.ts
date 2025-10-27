@@ -39,7 +39,7 @@ export const generateNewItemSizes = (layout: LayoutItem[], itemId: string) => {
 
     let x: number;
     let y: number;
-    
+
     if (availableXFromRight !== -1) {
         x = cols - itemWidth - availableXFromRight;
         y = maxY;

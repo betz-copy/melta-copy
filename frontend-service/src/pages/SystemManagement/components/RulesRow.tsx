@@ -12,6 +12,7 @@ import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { MinimizedColorPicker } from '../../../common/inputs/MinimizedColorPicker';
 import SearchInput from '../../../common/inputs/SearchInput';
 import MeltaCheckbox from '../../../common/MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { ICategoryMap } from '../../../interfaces/categories';
@@ -28,7 +29,6 @@ import { getAllAllowedRulesAndWriteEntities } from '../../../utils/permissions/t
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
-import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 
 const getRuleIcon = (rule: IMongoRule) => {
     switch (rule.actionOnFail) {

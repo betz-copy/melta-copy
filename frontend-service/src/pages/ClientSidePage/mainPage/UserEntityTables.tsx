@@ -1,15 +1,14 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import { CircularProgress, Grid, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
+import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
+import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
+import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
-import { useQuery, useQueryClient } from 'react-query';
-import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
-import { CircularProgress, Typography } from '@mui/material';
-import { Grid } from '@mui/material';
-import i18next from 'i18next';
-import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
+import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 
 interface IUserEntityTablesProps {
     childTemplates: IMongoChildTemplatePopulated[];

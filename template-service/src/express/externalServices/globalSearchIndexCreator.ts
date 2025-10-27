@@ -1,4 +1,4 @@
-import { IUpdateIndexRequest, IndexingAction } from '@microservices/shared';
+import { IndexingAction, IUpdateIndexRequest } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
 

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Grid } from '@mui/material';
+import React from 'react';
 import { IScheduleComponentData } from '../../../interfaces/syncfusion';
 import { GanttEvent } from '../GanttEvent';
 

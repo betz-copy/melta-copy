@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntity, SplitBy } from '../../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
 const {

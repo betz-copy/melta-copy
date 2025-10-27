@@ -1,15 +1,15 @@
 import { useFormik, yupToFormErrors } from 'formik';
-import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useMemo, useState } from 'react';
-import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
+import * as Yup from 'yup';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { ProcessDetailsValues } from '.';
-import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
-import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
+import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
+import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
 import { trycatch } from '../../../../utils/trycatch';
+import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { ProcessDetailsValues } from '.';
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().nullable().required(i18next.t('validation.required')),

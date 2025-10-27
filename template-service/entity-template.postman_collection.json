@@ -1,304 +1,242 @@
 {
-	"info": {
-		"_postman_id": "7568f4e3-9fa7-4fda-bbf4-065019c48ef2",
-		"name": "entity-template",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "categories",
-			"item": [
-				{
-					"name": "getCategories",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/categories",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"categories"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "createCategory",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"people\",\r\n    \"displayName\": \"אנשים\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/categories",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"categories"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getCategoryById",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/categories/:categoryId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								":categoryId"
-							],
-							"variable": [
-								{
-									"key": "categoryId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "updateCategoryById",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\":\"people\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/categories/:categoryId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								":categoryId"
-							],
-							"variable": [
-								{
-									"key": "categoryId",
-									"value": "61e7c5e53ad96d5011b16f45"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "deleteCategoryById",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/categories/:categoryId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								":categoryId"
-							],
-							"variable": [
-								{
-									"key": "categoryId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "templates",
-			"item": [
-				{
-					"name": "getTemplates",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/entities/templates",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"entities",
-								"templates"
-							],
-							"query": [
-								{
-									"key": "search",
-									"value": "",
-									"disabled": true
-								},
-								{
-									"key": "categoryId",
-									"value": "",
-									"disabled": true
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "createTemplate",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"tourist5\",\r\n    \"displayName\": \"5תייר\",\r\n    \"disabled\": false,\r\n    \"category\": \"61e7c5e53ad96d5011b16f45\",\r\n    \"properties\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"name\": {\r\n                \"type\": \"string\",\r\n                \"title\": \"שם\"\r\n            },\r\n            \"age\": {\r\n                \"type\": \"number\",\r\n                \"title\": \"גיל\"\r\n            },\r\n            \"favorite_color\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"date\",\r\n                \"title\": \"צבע\"\r\n            },\r\n            \"gender\": {\r\n                \"type\": \"string\",\r\n                \"title\": \"מין\"\r\n            }\r\n        }\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/entities/templates",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"entities",
-								"templates"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getTemplateById",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/entities/templates/:templateId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"entities",
-								"templates",
-								":templateId"
-							],
-							"variable": [
-								{
-									"key": "templateId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "deleteTemplateById",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/entities/templates/:templateId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"entities",
-								"templates",
-								":templateId"
-							],
-							"variable": [
-								{
-									"key": "templateId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "isAlive",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8000/isAlive",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"isAlive"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:8000"
-		}
-	]
+    "info": {
+        "_postman_id": "7568f4e3-9fa7-4fda-bbf4-065019c48ef2",
+        "name": "entity-template",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "categories",
+            "item": [
+                {
+                    "name": "getCategories",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "categories"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "createCategory",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"name\": \"people\",\r\n    \"displayName\": \"אנשים\"\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "categories"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "getCategoryById",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories/:categoryId",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "categories", ":categoryId"],
+                            "variable": [
+                                {
+                                    "key": "categoryId",
+                                    "value": ""
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "updateCategoryById",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"name\":\"people\"\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories/:categoryId",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "categories", ":categoryId"],
+                            "variable": [
+                                {
+                                    "key": "categoryId",
+                                    "value": "61e7c5e53ad96d5011b16f45"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "deleteCategoryById",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories/:categoryId",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "categories", ":categoryId"],
+                            "variable": [
+                                {
+                                    "key": "categoryId",
+                                    "value": ""
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "templates",
+            "item": [
+                {
+                    "name": "getTemplates",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/entities/templates",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "entities", "templates"],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "categoryId",
+                                    "value": "",
+                                    "disabled": true
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "createTemplate",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"name\": \"tourist5\",\r\n    \"displayName\": \"5תייר\",\r\n    \"disabled\": false,\r\n    \"category\": \"61e7c5e53ad96d5011b16f45\",\r\n    \"properties\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"name\": {\r\n                \"type\": \"string\",\r\n                \"title\": \"שם\"\r\n            },\r\n            \"age\": {\r\n                \"type\": \"number\",\r\n                \"title\": \"גיל\"\r\n            },\r\n            \"favorite_color\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"date\",\r\n                \"title\": \"צבע\"\r\n            },\r\n            \"gender\": {\r\n                \"type\": \"string\",\r\n                \"title\": \"מין\"\r\n            }\r\n        }\r\n    }\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/entities/templates",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "entities", "templates"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "getTemplateById",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/entities/templates/:templateId",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "entities", "templates", ":templateId"],
+                            "variable": [
+                                {
+                                    "key": "templateId",
+                                    "value": ""
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "deleteTemplateById",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/entities/templates/:templateId",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "entities", "templates", ":templateId"],
+                            "variable": [
+                                {
+                                    "key": "templateId",
+                                    "value": ""
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "isAlive",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8000/isAlive",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8000",
+                    "path": ["isAlive"]
+                }
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [""]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [""]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000"
+        }
+    ]
 }

@@ -4,18 +4,18 @@ import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
-import { getEntityTemplateFilesFieldsInfo } from '.';
-import { EntityWizardValues } from '..';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { EntityWizardValues } from '..';
 import { ChooseTemplate, IChooseTemplateMode } from '../ChooseTemplate';
 import { Draft } from '../draftWarningDialog/index';
+import { getEntityTemplateFilesFieldsInfo } from '.';
 
 const EditProps: React.FC<{
     values: FormikState<EntityWizardValues>['values'];
