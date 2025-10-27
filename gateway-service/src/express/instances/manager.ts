@@ -48,7 +48,7 @@ import {
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
-import _, { keyBy, mapValues, omit } from 'lodash';
+import { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
@@ -420,7 +420,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities, originalProperties);
             }
         };
-        logger.info('after classify', { failedEntities });
         if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleCreateEntity(entity);
         else await Promise.all(entities!.map(async (entity) => handleCreateEntity(entity)));
 

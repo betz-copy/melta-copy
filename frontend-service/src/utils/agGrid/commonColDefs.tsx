@@ -14,7 +14,7 @@ import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity, INotFoundError, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import { EntityData, IEntity, INotFoundRelationshipRefError, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
@@ -91,7 +91,7 @@ const errorColDef = <Data extends any = EntityData>(
             break;
         }
         case ActionErrors.notFound: {
-            const metadata = error.metadata as INotFoundError;
+            const metadata = error.metadata as INotFoundRelationshipRefError;
             message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
                 templateName: entityTemplatesMap?.get(metadata.relatedTemplateId)?.name,
                 propertyName: metadata.relatedIdentifier,
@@ -332,11 +332,8 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
         field,
         headerName: value.title,
         cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) => {
-            console.log({ propssss: props });
-
             if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
-            console.log({ error });
 
             if (error) return errorColDef(props, error, value, entityTemplates);
 

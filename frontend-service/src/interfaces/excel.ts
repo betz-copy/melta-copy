@@ -1,5 +1,5 @@
 import { IMongoChildTemplatePopulated } from './childTemplates';
-import { IEntity, IEntityWithIgnoredRules, INotFoundError, IRequiredConstraint, IUniqueConstraint } from './entities';
+import { IEntity, IEntityWithIgnoredRules, INotFoundRelationshipRefError, IRequiredConstraint, IUniqueConstraint } from './entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
 import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 import { IBrokenRule, IBrokenRulePopulated } from './ruleBreaches/ruleBreach';
@@ -29,7 +29,7 @@ export type IBrokenRuleEntity = {
 
 export interface IError {
     type: ActionErrors;
-    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | INotFoundError;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | INotFoundRelationshipRefError;
 }
 
 export interface IFailedEntity {

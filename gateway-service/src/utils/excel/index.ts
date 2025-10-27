@@ -11,7 +11,6 @@ import {
     IWorkspace,
     ServiceError,
     UploadedFile,
-    logger,
     INotFoundRelationshipRefError,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
@@ -55,7 +54,6 @@ export const classifyEntityErrors = (
     originalEntity?: IEntity['properties'],
 ) => {
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
-        logger.info('Not found error metadata', error.metadata);
         failedEntities.push({
             properties: entity.properties,
             errors: [{ type: ActionErrors.notFound, metadata: error.metadata as INotFoundRelationshipRefError }],

@@ -704,7 +704,6 @@ class EntityManager extends DefaultManagerNeo4j {
         duplicatedFromId?: string,
         childTemplateId?: string,
     ) {
-        console.dir({ properties }, { depth: null });
         let template = entityTemplate;
         let childTemplate: IChildTemplatePopulated | undefined;
 

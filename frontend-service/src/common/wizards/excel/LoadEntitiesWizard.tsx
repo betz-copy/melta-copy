@@ -240,22 +240,17 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         onClose();
                     }}
                     doActionEntity={() => {
-                        console.log('hi');
-
                         const brokenRulesEntities =
                             stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => ({
                                 templateId: template!._id,
                                 properties,
                             })) || [];
-                        console.log({ brokenRulesEntities });
 
                         const groupedRawBrokenRules = groupBrokenRulesByEntity(stepsData.data.brokenRulesEntities?.rawBrokenRules || []);
                         const insertBrokenEntities: IEntityWithIgnoredRules[] = brokenRulesEntities.map((brokenEntity, index) => ({
                             ...brokenEntity,
                             ignoredRules: groupedRawBrokenRules[index],
                         }));
-
-                        console.log({ groupedRawBrokenRules, insertBrokenEntities });
 
                         return loadRules(insertBrokenEntities);
                     }}

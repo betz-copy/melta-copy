@@ -102,8 +102,6 @@ export type IActionOnEntityWithRuleBreachDialogProps =
     | IActionOnMultipleEntitiesWithRuleBreachDialogProps;
 
 const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreachDialogProps> = (componentProps) => {
-    console.log({ componentProps });
-
     const {
         isLoadingActionOnEntity,
         handleClose,

@@ -45,7 +45,7 @@ export interface IRequiredConstraint {
     property: string;
 }
 
-export interface INotFoundError {
+export interface INotFoundRelationshipRefError {
     relatedTemplateId: string;
     relatedIdentifier: string;
     property: string;

@@ -205,7 +205,6 @@ const fixComplexProperties = (
     workspace: { path: string; id: string },
     insertEntities?: boolean,
 ) => {
-    logger.info(`Fixing complex property for key: ${key} at row index: ${rowIndex}`);
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
     const isSignature = value.format === 'signature';
@@ -257,7 +256,6 @@ const styleAWorksheet = (
         }, {});
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
-        logger.info(`Styling column ${key} at index ${columnIndex}`);
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
